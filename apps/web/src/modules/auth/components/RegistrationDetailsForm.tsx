@@ -70,8 +70,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
     },
   })
 
-  const showCompanyName =
-    profile === 'imobiliaria' || profile === 'construtora' || profile === 'corretor'
+  const showCompanyName = profile === 'agency' || profile === 'developer' || profile === 'broker'
 
   const acceptTerms = useWatch({ control, name: 'acceptTerms' })
 
@@ -203,7 +202,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
         <AuthFormField
           htmlFor="registration-creci"
           label={t('creci.label')}
-          required={profile === 'corretor'}
+          required={profile === 'broker'}
         >
           <RhfTextField
             id="registration-creci"
@@ -211,14 +210,14 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
             name="creci"
             placeholder={t('creci.placeholder')}
             helperText={
-              profile === 'corretor' ? t('creci.requiredHelper') : t('creci.optionalHelper')
+              profile === 'broker' ? t('creci.requiredHelper') : t('creci.optionalHelper')
             }
             fullWidth
             sx={authTextFieldSx}
           />
         </AuthFormField>
 
-        {profile === 'corretor' ? (
+        {profile === 'broker' ? (
           <Controller
             control={control}
             name="agencyId"

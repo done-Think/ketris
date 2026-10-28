@@ -102,7 +102,7 @@ describe('Charges real workflows', () => {
     cy.contains('Pagamento estornado').should('be.visible')
     cy.contains('Motivo: PIX devolvido ao locatário').should('be.visible')
     evidence().then((result) => {
-      expect(result.status).to.eq('PENDENTE')
+      expect(result.status).to.eq('PENDING')
       expect(result.paidById).to.eq(null)
       expect(result.receiptCount).to.eq(storage ? 1 : 0)
       expect(result.auditActions).to.deep.eq(['PAYMENT_REGISTERED', 'PAYMENT_REVERSED'])
@@ -121,7 +121,7 @@ describe('Charges real workflows', () => {
     cy.contains('button', 'Registrar pagamento').should('not.exist')
     cy.contains('button', 'Cancelar cobrança').should('not.exist')
     evidence().then((result) => {
-      expect(result.status).to.eq('CANCELADA')
+      expect(result.status).to.eq('CANCELED')
       expect(result.cancellationReason).to.eq('Contrato rescindido')
       expect(result.auditActions).to.deep.eq(['CANCELLED'])
     })

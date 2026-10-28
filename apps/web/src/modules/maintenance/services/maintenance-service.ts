@@ -1,5 +1,7 @@
-import type { MaintenancePrepareUploadResponseDTO } from '@server/maintenance/types/dto'
+import type { MaintenancePrepareUploadResponseDTO } from '@shared/types/generated/maintenance/dto'
 import { BaseService } from '@shared/lib/api/base-service'
+import { HttpClient, httpClient } from '@shared/lib/api/http-client'
+import { uploadToSignedUrl } from '@shared/lib/api/signed-upload'
 import type {
   CreateMaintenanceProviderPayload,
   MaintenanceProviderFilters,
@@ -30,6 +32,13 @@ import type {
 
 export class MaintenanceService extends BaseService {
   private readonly path = '/maintenance/tickets'
+
+  constructor(
+    client: HttpClient = httpClient,
+    private readonly storage = new HttpClient(''),
+  ) {
+    super(client)
+  }
 
   list(filters: MaintenanceTicketListFilters = {}): Promise<ListMaintenanceTicketsResponse> {
     const params = {
@@ -96,13 +105,7 @@ export class MaintenanceService extends BaseService {
         sha256: await maintenanceFileSha256(file),
       },
     )
-    const uploaded = await fetch(prepared.upload.url, {
-      method: 'PUT',
-      headers: prepared.upload.headers,
-      body: file,
-      credentials: 'omit',
-    })
-    if (!uploaded.ok) throw new Error('Storage upload failed')
+    await uploadToSignedUrl(this.storage, prepared.upload, file)
     return this.http
       .post<UploadMaintenanceTicketAttachmentResponse>(`${this.path}/${id}/attachments/complete`, {
         token: prepared.token,

@@ -14,139 +14,139 @@ describe('/api/crm/opportunities (integração)', () => {
   let tenantId: string
   let otherTenantId: string
   let actorToken: string
-  let imovelId: string
-  let otherTenantImovelId: string
-  let contatoId: string
-  let otherTenantContatoId: string
+  let propertyId: string
+  let otherTenantPropertyId: string
+  let contactId: string
+  let otherTenantContactId: string
   let activeId: string
   let archivedId: string
   let otherTenantOpportunityId: string
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária CRM Opportunities', slug: `crm-op-${randomUUID()}` },
+      data: { name: 'Imobiliária CRM Opportunities', slug: `crm-op-${randomUUID()}` },
     })
     tenantId = tenant.id
 
     const other = await prisma.tenant.create({
-      data: { nome: 'Outra Imobiliária', slug: `crm-op-other-${randomUUID()}` },
+      data: { name: 'Outra Imobiliária', slug: `crm-op-other-${randomUUID()}` },
     })
     otherTenantId = other.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin',
+        name: 'Admin',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const responsavel = await prisma.usuario.create({
+    const responsible = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor',
+        name: 'Corretor',
         email: `corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
-    const imovel = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: responsavel.id,
-        titulo: 'Imóvel',
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        valor: 2000,
+        responsibleId: responsible.id,
+        title: 'Imóvel',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2000,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        publishedAt: new Date(),
       },
     })
-    imovelId = imovel.id
+    propertyId = property.id
 
-    const contato = await prisma.contato.create({
-      data: { tenantId, nome: 'Carlos', email: `carlos-${randomUUID()}@exemplo.com` },
+    const contact = await prisma.contact.create({
+      data: { tenantId, name: 'Carlos', email: `carlos-${randomUUID()}@exemplo.com` },
     })
-    contatoId = contato.id
+    contactId = contact.id
 
-    const active = await prisma.oportunidade.create({
+    const active = await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId,
-        responsavelId: await propertyResponsibleId(prisma, imovelId),
-        interessadoNome: 'Ativo',
-        interessadoEmail: `ativo-${randomUUID()}@exemplo.com`,
-        valorProposto: 2000,
-        status: 'ENVIADA',
+        propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
+        interestedName: 'Ativo',
+        interestedEmail: `ativo-${randomUUID()}@exemplo.com`,
+        proposedValue: 2000,
+        status: 'SENT',
       },
     })
     activeId = active.id
 
-    const archived = await prisma.oportunidade.create({
+    const archived = await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId,
-        responsavelId: await propertyResponsibleId(prisma, imovelId),
-        interessadoNome: 'Arquivado',
-        interessadoEmail: `arquivado-${randomUUID()}@exemplo.com`,
-        valorProposto: 2000,
-        status: 'ENVIADA',
-        arquivadaEm: new Date(),
+        propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
+        interestedName: 'Arquivado',
+        interestedEmail: `arquivado-${randomUUID()}@exemplo.com`,
+        proposedValue: 2000,
+        status: 'SENT',
+        archivedAt: new Date(),
       },
     })
     archivedId = archived.id
 
-    const outroResponsavel = await prisma.usuario.create({
+    const outroResponsavel = await prisma.user.create({
       data: {
         tenantId: otherTenantId,
-        nome: 'Corretor Outro',
+        name: 'Corretor Outro',
         email: `corretor-outro-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
-    const outroImovel = await prisma.imovel.create({
+    const outroProperty = await prisma.property.create({
       data: {
         tenantId: otherTenantId,
-        responsavelId: outroResponsavel.id,
-        titulo: 'Imóvel de Outro Tenant',
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        valor: 1500,
+        responsibleId: outroResponsavel.id,
+        title: 'Imóvel de Outro Tenant',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 1500,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        publishedAt: new Date(),
       },
     })
-    otherTenantImovelId = outroImovel.id
+    otherTenantPropertyId = outroProperty.id
 
-    const outroContato = await prisma.contato.create({
-      data: { tenantId: otherTenantId, nome: 'Outro', email: `outro-${randomUUID()}@exemplo.com` },
+    const outroContact = await prisma.contact.create({
+      data: { tenantId: otherTenantId, name: 'Outro', email: `outro-${randomUUID()}@exemplo.com` },
     })
-    otherTenantContatoId = outroContato.id
+    otherTenantContactId = outroContact.id
 
-    const outraOportunidade = await prisma.oportunidade.create({
+    const outraOpportunity = await prisma.opportunity.create({
       data: {
         tenantId: otherTenantId,
-        imovelId: otherTenantImovelId,
-        responsavelId: await propertyResponsibleId(prisma, otherTenantImovelId),
-        interessadoNome: 'De Outro Tenant',
-        interessadoEmail: `outro-op-${randomUUID()}@exemplo.com`,
-        valorProposto: 1500,
-        status: 'ENVIADA',
+        propertyId: otherTenantPropertyId,
+        responsibleId: await propertyResponsibleId(prisma, otherTenantPropertyId),
+        interestedName: 'De Outro Tenant',
+        interestedEmail: `outro-op-${randomUUID()}@exemplo.com`,
+        proposedValue: 1500,
+        status: 'SENT',
       },
     })
-    otherTenantOpportunityId = outraOportunidade.id
+    otherTenantOpportunityId = outraOpportunity.id
   })
 
   afterAll(async () => {
@@ -204,7 +204,7 @@ describe('/api/crm/opportunities (integração)', () => {
       const response = await POST(
         buildPostRequest(
           {
-            propertyId: imovelId,
+            propertyId: propertyId,
             leadName: 'Novo Lead',
             leadEmail: `lead-${randomUUID()}@exemplo.com`,
             proposedValue: 3000,
@@ -215,19 +215,19 @@ describe('/api/crm/opportunities (integração)', () => {
       const json = await response.json()
 
       expect(response.status).toBe(201)
-      expect(json.opportunity.status).toBe('RASCUNHO')
-      expect(json.opportunity.propertyId).toBe(imovelId)
+      expect(json.opportunity.status).toBe('DRAFT')
+      expect(json.opportunity.propertyId).toBe(propertyId)
       expect(json.opportunity.tenantId).toBe(tenantId)
 
-      await prisma.oportunidade.delete({ where: { id: json.opportunity.id } })
+      await prisma.opportunity.delete({ where: { id: json.opportunity.id } })
     })
 
     it('aceita contactId do próprio tenant e vincula a oportunidade a ele', async () => {
       const response = await POST(
         buildPostRequest(
           {
-            propertyId: imovelId,
-            contactId: contatoId,
+            propertyId: propertyId,
+            contactId: contactId,
             leadName: 'Lead Vinculado',
             leadEmail: `lead-vinc-${randomUUID()}@exemplo.com`,
             proposedValue: 3000,
@@ -238,16 +238,16 @@ describe('/api/crm/opportunities (integração)', () => {
       const json = await response.json()
 
       expect(response.status).toBe(201)
-      expect(json.opportunity.contactId).toBe(contatoId)
+      expect(json.opportunity.contactId).toBe(contactId)
 
-      await prisma.oportunidade.delete({ where: { id: json.opportunity.id } })
+      await prisma.opportunity.delete({ where: { id: json.opportunity.id } })
     })
 
     it('retorna 404 quando o propertyId pertence a outro tenant (isolamento multi-tenant)', async () => {
       const response = await POST(
         buildPostRequest(
           {
-            propertyId: otherTenantImovelId,
+            propertyId: otherTenantPropertyId,
             leadName: 'Tentativa Cross-Tenant',
             leadEmail: `cross-${randomUUID()}@exemplo.com`,
             proposedValue: 3000,
@@ -265,8 +265,8 @@ describe('/api/crm/opportunities (integração)', () => {
       const response = await POST(
         buildPostRequest(
           {
-            propertyId: imovelId,
-            contactId: otherTenantContatoId,
+            propertyId: propertyId,
+            contactId: otherTenantContactId,
             leadName: 'Tentativa Cross-Tenant',
             leadEmail: `cross-contato-${randomUUID()}@exemplo.com`,
             proposedValue: 3000,
@@ -281,7 +281,7 @@ describe('/api/crm/opportunities (integração)', () => {
     })
 
     it('retorna 400 quando falta um campo obrigatório', async () => {
-      const response = await POST(buildPostRequest({ propertyId: imovelId }, actorToken))
+      const response = await POST(buildPostRequest({ propertyId: propertyId }, actorToken))
 
       expect(response.status).toBe(400)
     })
@@ -289,7 +289,7 @@ describe('/api/crm/opportunities (integração)', () => {
     it('retorna 401 sem Authorization header', async () => {
       const response = await POST(
         buildPostRequest({
-          propertyId: imovelId,
+          propertyId: propertyId,
           leadName: 'Sem Auth',
           leadEmail: 'x@exemplo.com',
           proposedValue: 1000,
@@ -303,86 +303,86 @@ describe('/api/crm/opportunities (integração)', () => {
   describe('escopo por AGENT', () => {
     let agentAToken: string
     let agentBToken: string
-    let imovelAgentAId: string
-    let imovelAgentBId: string
+    let agentAPropertyId: string
+    let agentBPropertyId: string
     let oppAgentAId: string
 
     beforeAll(async () => {
-      const agentA = await prisma.usuario.create({
+      const agentA = await prisma.user.create({
         data: {
           tenantId,
-          nome: 'Corretor A',
+          name: 'Corretor A',
           email: `corretor-a-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
-          papel: 'AGENT',
+          passwordHash: 'hash-fake',
+          role: 'AGENT',
         },
       })
       agentAToken = await tokenService.sign({
         id: agentA.id,
         tenantId: agentA.tenantId,
-        nome: agentA.nome,
+        name: agentA.name,
         email: agentA.email,
-        papel: agentA.papel,
-        ativo: agentA.ativo,
-        vinculoAprovadoEm: agentA.vinculoAprovadoEm,
+        role: agentA.role,
+        active: agentA.active,
+        membershipApprovedAt: agentA.membershipApprovedAt,
       })
 
-      const agentB = await prisma.usuario.create({
+      const agentB = await prisma.user.create({
         data: {
           tenantId,
-          nome: 'Corretor B',
+          name: 'Corretor B',
           email: `corretor-b-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
-          papel: 'AGENT',
+          passwordHash: 'hash-fake',
+          role: 'AGENT',
         },
       })
       agentBToken = await tokenService.sign({
         id: agentB.id,
         tenantId: agentB.tenantId,
-        nome: agentB.nome,
+        name: agentB.name,
         email: agentB.email,
-        papel: agentB.papel,
-        ativo: agentB.ativo,
-        vinculoAprovadoEm: agentB.vinculoAprovadoEm,
+        role: agentB.role,
+        active: agentB.active,
+        membershipApprovedAt: agentB.membershipApprovedAt,
       })
 
-      const imovelAgentA = await prisma.imovel.create({
+      const agentAProperty = await prisma.property.create({
         data: {
           tenantId,
-          responsavelId: agentA.id,
-          titulo: 'Imóvel do Corretor A',
-          finalidade: 'ALUGUEL',
-          tipo: 'APARTAMENTO',
-          valor: 2200,
+          responsibleId: agentA.id,
+          title: 'Imóvel do Corretor A',
+          purpose: 'RENT',
+          type: 'APARTMENT',
+          price: 2200,
           status: 'PUBLISHED',
-          publicadoEm: new Date(),
+          publishedAt: new Date(),
         },
       })
-      imovelAgentAId = imovelAgentA.id
+      agentAPropertyId = agentAProperty.id
 
-      const imovelAgentB = await prisma.imovel.create({
+      const agentBProperty = await prisma.property.create({
         data: {
           tenantId,
-          responsavelId: agentB.id,
-          titulo: 'Imóvel do Corretor B',
-          finalidade: 'ALUGUEL',
-          tipo: 'APARTAMENTO',
-          valor: 2300,
+          responsibleId: agentB.id,
+          title: 'Imóvel do Corretor B',
+          purpose: 'RENT',
+          type: 'APARTMENT',
+          price: 2300,
           status: 'PUBLISHED',
-          publicadoEm: new Date(),
+          publishedAt: new Date(),
         },
       })
-      imovelAgentBId = imovelAgentB.id
+      agentBPropertyId = agentBProperty.id
 
-      const oppAgentA = await prisma.oportunidade.create({
+      const oppAgentA = await prisma.opportunity.create({
         data: {
           tenantId,
-          imovelId: imovelAgentAId,
-          responsavelId: await propertyResponsibleId(prisma, imovelAgentAId),
-          interessadoNome: 'Lead do Corretor A',
-          interessadoEmail: `lead-a-${randomUUID()}@exemplo.com`,
-          valorProposto: 2200,
-          status: 'ENVIADA',
+          propertyId: agentAPropertyId,
+          responsibleId: await propertyResponsibleId(prisma, agentAPropertyId),
+          interestedName: 'Lead do Corretor A',
+          interestedEmail: `lead-a-${randomUUID()}@exemplo.com`,
+          proposedValue: 2200,
+          status: 'SENT',
         },
       })
       oppAgentAId = oppAgentA.id
@@ -409,7 +409,7 @@ describe('/api/crm/opportunities (integração)', () => {
       const response = await POST(
         buildPostRequest(
           {
-            propertyId: imovelAgentAId,
+            propertyId: agentAPropertyId,
             leadName: 'Novo Lead do Corretor A',
             leadEmail: `lead-novo-a-${randomUUID()}@exemplo.com`,
             proposedValue: 2500,
@@ -421,14 +421,14 @@ describe('/api/crm/opportunities (integração)', () => {
 
       expect(response.status).toBe(201)
 
-      await prisma.oportunidade.delete({ where: { id: json.opportunity.id } })
+      await prisma.opportunity.delete({ where: { id: json.opportunity.id } })
     })
 
     it('AGENT recebe 403 ao tentar criar oportunidade em imóvel do qual não é responsável', async () => {
       const response = await POST(
         buildPostRequest(
           {
-            propertyId: imovelAgentBId,
+            propertyId: agentBPropertyId,
             leadName: 'Tentativa Indevida',
             leadEmail: `tentativa-${randomUUID()}@exemplo.com`,
             proposedValue: 2500,

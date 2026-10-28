@@ -1,11 +1,21 @@
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
 
+import { ScopedMessages } from '@/i18n/scoped-messages'
+import { publicMessageNamespaces } from '@/i18n/message-selection'
+import { publicMetadata } from '@/i18n/seo'
+import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
+
 import { HomePage } from '@modules/marketplace'
 import { marketplaceQueryKeys } from '@modules/marketplace/config/marketplace-query-keys'
 import { featuredPropertiesCount } from '@modules/marketplace/config/home'
 import { marketplaceContainer } from '@server/marketplace/container'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({ params }: LocaleRoutePageProps) {
+  const { locale } = await params
+  return publicMetadata(locale, '/')
+}
 
 function asJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
@@ -40,8 +50,10 @@ export default async function HomeRoute() {
   ])
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <HomePage />
-    </HydrationBoundary>
+    <ScopedMessages namespaces={publicMessageNamespaces}>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <HomePage />
+      </HydrationBoundary>
+    </ScopedMessages>
   )
 }

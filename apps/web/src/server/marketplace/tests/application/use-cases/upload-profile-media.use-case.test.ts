@@ -18,7 +18,7 @@ function createStorage(overrides?: Partial<ProfileMediaStoragePort>): ProfileMed
 const baseInput = {
   actorId: 'user-1',
   actorTenantId: 'tenant-1',
-  actorPapel: 'AGENT' as const,
+  actorRole: 'AGENT' as const,
   target: 'broker-avatar' as const,
   filename: 'photo.jpg',
   contentType: 'image/jpeg',
@@ -62,7 +62,7 @@ describe('UploadProfileMediaUseCase', () => {
     const storage = createStorage()
     const useCase = new UploadProfileMediaUseCase(storage)
 
-    await useCase.execute({ ...baseInput, actorPapel: 'OWNER', target })
+    await useCase.execute({ ...baseInput, actorRole: 'OWNER', target })
 
     expect(storage.upload).toHaveBeenCalledWith(
       expect.objectContaining({ keyPrefix: expectedPrefix }),
@@ -74,7 +74,7 @@ describe('UploadProfileMediaUseCase', () => {
     const useCase = new UploadProfileMediaUseCase(storage)
 
     await expect(
-      useCase.execute({ ...baseInput, actorPapel: 'OWNER', target: 'broker-avatar' }),
+      useCase.execute({ ...baseInput, actorRole: 'OWNER', target: 'broker-avatar' }),
     ).rejects.toThrow('Só corretores')
     expect(storage.upload).not.toHaveBeenCalled()
   })
@@ -84,7 +84,7 @@ describe('UploadProfileMediaUseCase', () => {
     const useCase = new UploadProfileMediaUseCase(storage)
 
     await expect(
-      useCase.execute({ ...baseInput, actorPapel: 'AGENT', target: 'agency-logo' }),
+      useCase.execute({ ...baseInput, actorRole: 'AGENT', target: 'agency-logo' }),
     ).rejects.toThrow('Só administradores')
     expect(storage.upload).not.toHaveBeenCalled()
   })

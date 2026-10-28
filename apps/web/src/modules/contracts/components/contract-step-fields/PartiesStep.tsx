@@ -17,11 +17,11 @@ export function PartiesStep({ control, setValue }: ContractPartiesStepProps) {
   const ownerFields = makePartyFieldsMeta('owner').map((field) => toFieldConfig(field, t))
   const tenantFields = makePartyFieldsMeta('tenant').map((field) => toFieldConfig(field, t))
   const guarantorFields = makePartyFieldsMeta('guarantor').map((field) => toFieldConfig(field, t))
-  const hasActiveGuarantor = hasGuarantor || guaranteeType === 'FIADOR'
+  const hasActiveGuarantor = hasGuarantor || guaranteeType === 'GUARANTOR'
 
   const addGuarantor = () => {
     setValue('hasGuarantor', true, { shouldDirty: true })
-    setValue('guaranteeType', 'FIADOR', { shouldDirty: true })
+    setValue('guaranteeType', 'GUARANTOR', { shouldDirty: true })
   }
 
   return (
@@ -43,7 +43,7 @@ export function PartiesStep({ control, setValue }: ContractPartiesStepProps) {
           <SectionTitle>{t('guarantorTitle')}</SectionTitle>
           <FieldGrid control={control} fields={guarantorFields} />
           <Button
-            disabled={guaranteeType === 'FIADOR'}
+            disabled={guaranteeType === 'GUARANTOR'}
             onClick={() => setValue('hasGuarantor', false, { shouldDirty: true })}
           >
             {t('removeGuarantor')}

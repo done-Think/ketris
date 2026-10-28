@@ -1,53 +1,14 @@
-export interface ApiAgencyOverviewKpis {
-  portfolioCount: number
-  newPropertiesThisMonth: number
-  activeBrokersCount: number
-  receivedLeadsThisMonth: number
-  receivedLeadsPreviousPeriod: number
-  monthlyReceivable: number
-  monthlyReceivablePreviousMonth: number
-  overdueTotal: number
-  occupancyPercentage: number
-}
+import type { components } from '@shared/types/generated/api'
+export type ApiAgencyOverviewKpis = components['schemas']['AgencyOverviewKpis']
 
-export interface ApiAgencyRevenueMonth {
-  year: number
-  month: number
-  total: number
-}
+export type ApiAgencyRevenueMonth = components['schemas']['AgencyRevenueMonth']
 
-export interface ApiAgencyBrokerSale {
-  id: string
-  propertyId: string
-  propertyTitle: string
-  location: string | null
-  value: number
-  closedAt: string
-}
+export type ApiAgencyBrokerSale = components['schemas']['AgencyBrokerSale']
 
-export interface ApiAgencyTopBroker {
-  id: string
-  name: string
-  avatarUrl: string | null
-  hasPublicProfile: boolean
-  salesCount: number
-  revenueTotal: number
-  recentSales: ApiAgencyBrokerSale[]
-}
+export type ApiAgencyTopBroker = components['schemas']['AgencyTopBroker']
 
-export type ApiAgencyActivityType = 'CONTRACT' | 'PROPERTY' | 'VISIT' | 'LEAD'
+export type ApiAgencyActivityType = components['schemas']['AgencyActivity']['type']
 
-export interface ApiAgencyActivity {
-  id: string
-  type: ApiAgencyActivityType
-  brokerName: string
-  detail: string
-  occurredAt: string
-}
+export type ApiAgencyActivity = components['schemas']['AgencyActivity']
 
-export interface ApiAgencyOverview {
-  kpis: ApiAgencyOverviewKpis
-  revenueSeries: ApiAgencyRevenueMonth[]
-  topBrokers: ApiAgencyTopBroker[]
-  recentActivities: ApiAgencyActivity[]
-}
+export type ApiAgencyOverview = components['schemas']['AgencyOverviewResponse']

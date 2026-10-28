@@ -31,7 +31,7 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
   const errorMessage = useMaintenanceErrorMessage()
   const t = useTranslations('dashboard.maintenance.workflow')
   const { data: session } = useSession()
-  const mutation = useMaintenanceAction(session?.tenantId, ticket.id)
+  const mutation = useMaintenanceAction(ticket.id)
   const { enqueueSnackbar } = useSnackbar()
   const [selection, setSelection] = useState<MaintenanceWorkflowSelection | null>(null)
   const permissions = ticket.permissions
@@ -110,7 +110,7 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
               {request.decidedByName}: {request.decisionReason}
             </Typography>
           )}
-          {request.status === 'PENDENTE' &&
+          {request.status === 'PENDING' &&
             session?.role === 'OWNER' &&
             permissions?.collaborate && (
               <Stack direction="row" spacing={1}>

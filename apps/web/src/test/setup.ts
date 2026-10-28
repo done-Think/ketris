@@ -47,7 +47,24 @@ vi.mock('next-intl', async () => {
   }
 })
 
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
+  useParams: () => ({}),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+    push: vi.fn(),
+    refresh: vi.fn(),
+    replace: vi.fn(),
+  }),
+}))
+
 vi.mock('@/i18n/navigation', async () => {
+  const { getPathname } =
+    await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')
   const React = await import('react')
 
   function formatHref(
@@ -73,6 +90,7 @@ vi.mock('@/i18n/navigation', async () => {
   }
 
   return {
+    getPathname,
     usePathname: () => '/',
     useRouter: () => ({
       back: vi.fn(),

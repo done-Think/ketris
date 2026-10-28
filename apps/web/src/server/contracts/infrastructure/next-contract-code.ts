@@ -7,11 +7,11 @@ export async function nextContractCode(tx: Prisma.TransactionClient, tenantId: s
   await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lock}, 0))::text`
   const suffixStart = prefix.length + 1
   const rows = await tx.$queryRaw<ContractCodeSequenceRow[]>`
-    SELECT MAX(CAST(SUBSTRING("codigo" FROM ${suffixStart}::integer) AS BIGINT)) AS max
-    FROM "contratos"
+    SELECT MAX(CAST(SUBSTRING("code" FROM ${suffixStart}::integer) AS BIGINT)) AS max
+    FROM "contracts"
     WHERE "tenantId" = ${tenantId}
-      AND "codigo" LIKE ${`${prefix}%`}
-      AND SUBSTRING("codigo" FROM ${suffixStart}::integer) ~ '^[0-9]+$'
+      AND "code" LIKE ${`${prefix}%`}
+      AND SUBSTRING("code" FROM ${suffixStart}::integer) ~ '^[0-9]+$'
   `
   const next = BigInt(rows[0]?.max ?? 0) + 1n
   return `${prefix}${String(next).padStart(4, '0')}`

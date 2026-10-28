@@ -7,13 +7,13 @@ import { GetPlatformAdminUseCase } from '../../../application/use-cases/get-plat
 
 const admin: PlatformAdmin = {
   id: 'platform-admin-1',
-  nome: 'Dono Ketris',
+  name: 'Dono Ketris',
   email: 'dono@ketris.dev',
-  senhaHash: 'hash-fake',
+  passwordHash: 'hash-fake',
   role: 'ADMIN',
-  ativo: true,
+  active: true,
   createdAt: new Date('2026-01-01T00:00:00.000Z'),
-  ultimoAcessoEm: null,
+  lastAccessAt: null,
 }
 
 function createRepository(findById?: PlatformAdminRepository['findById']): PlatformAdminRepository {
@@ -34,7 +34,7 @@ describe('GetPlatformAdminUseCase', () => {
 
     const result = await useCase.execute({ platformAdminId: admin.id })
 
-    expect(result).not.toHaveProperty('senhaHash')
+    expect(result).not.toHaveProperty('passwordHash')
     expect(result.id).toBe(admin.id)
   })
 

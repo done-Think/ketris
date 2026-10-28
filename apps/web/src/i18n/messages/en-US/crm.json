@@ -115,12 +115,13 @@
         "email": "Email",
         "phone": "Phone",
         "type": "Type",
-        "notes": "Notes"
+        "notes": "Notes",
+        "avatarUrl": "Avatar URL"
       },
       "types": {
-        "PROPRIETARIO": "Owner",
-        "LOCATARIO": "Tenant",
-        "CORRETOR": "Broker"
+        "OWNER": "Owner",
+        "RENTER": "Tenant",
+        "BROKER": "Broker"
       },
       "actions": {
         "cancel": "Cancel",
@@ -129,7 +130,8 @@
       "errors": {
         "nameRequired": "Name is required.",
         "emailInvalid": "Invalid email.",
-        "textTooLong": "Text exceeds the allowed limit."
+        "textTooLong": "Text exceeds the allowed limit.",
+        "avatarUrlInvalid": "Enter a valid HTTP(S) URL"
       },
       "createSuccess": "Contact created.",
       "updateSuccess": "Contact updated.",
@@ -451,6 +453,16 @@
       "changed": "{name} is now the owner.",
       "changeError": "Could not change the owner.",
       "invalid": "Choose an active team member."
+    },
+    "activityComposer": {
+      "type": "Activity type",
+      "note": "Note",
+      "contact": "Contact made",
+      "description": "Description",
+      "save": "Record activity",
+      "required": "Describe the activity.",
+      "success": "Activity recorded.",
+      "error": "Could not record the activity."
     }
   },
   "proposalManagement": {

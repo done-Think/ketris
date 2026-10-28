@@ -19,7 +19,7 @@ export type FinancialKpiTone = 'success' | 'warning' | 'error' | 'info'
 
 export type FinancialKpi = {
   id: string
-  labelKey: string
+  labelKey: TranslationKey<'dashboard.finance.kpis'>
   value: string
   tone: FinancialKpiTone
 }
@@ -58,3 +58,4 @@ export type FinancialUpcomingDueListProps = {
   items: FinancialUpcomingDue[]
   onOpen: (id: string) => void
 }
+import type { TranslationKey } from '@/i18n/types/messages.types'

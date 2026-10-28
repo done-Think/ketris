@@ -24,7 +24,7 @@ const options = {
       agentId: 'agent',
       ownerId: null,
       renterIds: [],
-      parties: [{ id: 'party-1', name: 'Locatário Silva', role: 'LOCATARIO' }],
+      parties: [{ id: 'party-1', name: 'Locatário Silva', role: 'RENTER' }],
     },
   ],
   users: [

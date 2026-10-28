@@ -9,6 +9,30 @@ export class PropertyNotFoundError extends AppError {
   }
 }
 
+export class InquiryRejectedError extends AppError {
+  constructor() {
+    super('Não foi possível enviar a solicitação.', { status: 400, code: 'INQUIRY_REJECTED' })
+  }
+}
+
+export class InquiryQuotaExceededError extends AppError {
+  constructor(readonly retryAfter: number) {
+    super('Muitas solicitações para este imóvel. Tente novamente mais tarde.', {
+      status: 429,
+      code: 'RATE_LIMIT_EXCEEDED',
+    })
+  }
+}
+
+export class InquiryRateLimitUnavailableError extends AppError {
+  constructor() {
+    super('Serviço temporariamente indisponível.', {
+      status: 503,
+      code: 'INQUIRY_RATE_LIMIT_UNAVAILABLE',
+    })
+  }
+}
+
 export class BrokerProfileNotFoundError extends AppError {
   constructor() {
     super('Perfil de corretor não encontrado ou não está publicado.', {

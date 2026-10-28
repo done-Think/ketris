@@ -7,14 +7,14 @@ import type { ResetAccountPassword } from '../types/password-reset'
 export class PrismaPasswordResetAccountRepository implements PasswordResetAccountRepository {
   resetPassword(input: ResetAccountPassword): Promise<boolean> {
     return prisma.$transaction(async (tx) => {
-      const changed = await tx.usuario.updateMany({
+      const changed = await tx.user.updateMany({
         where: {
           id: input.userId,
           tenantId: input.tenantId,
           email: input.email,
-          versaoSessao: input.sessionVersion,
+          sessionVersion: input.sessionVersion,
         },
-        data: { senhaHash: input.passwordHash, versaoSessao: { increment: 1 } },
+        data: { passwordHash: input.passwordHash, sessionVersion: { increment: 1 } },
       })
       if (changed.count !== 1) return false
       await tx.refreshToken.updateMany({

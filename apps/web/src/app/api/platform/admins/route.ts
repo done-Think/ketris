@@ -12,7 +12,7 @@ import { createPlatformAdminRequestSchema } from '@server/platform/schemas/creat
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
-  await requirePlatformAdminRole(
+  const actor = await requirePlatformAdminRole(
     request,
     platformContainer.tokenService,
     platformContainer.platformAdminRepository,
@@ -21,7 +21,8 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const body = await parseJsonBody(request, createPlatformAdminRequestSchema)
 
   const admin = await platformContainer.createPlatformAdminUseCase.execute({
-    nome: body.name,
+    actorId: actor.id,
+    name: body.name,
     email: body.email,
     password: body.password,
     role: body.role,

@@ -1,16 +1,16 @@
-import type { AtividadeOportunidade, Contato, Lead, Oportunidade, Prisma } from '@prisma/client'
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { OpportunityActivity, Contact, Lead, Opportunity, Prisma } from '@prisma/client'
+import type { UserRole } from '@server/auth/domain/user.entity'
 
 export type CrmDatabase = Prisma.TransactionClient
-export type ContatoRow = Contato
+export type ContactRow = Contact
 export type LeadRow = Lead
-export type OportunidadeRow = Oportunidade & { responsavel: { nome: string } }
-export type AtividadeRow = AtividadeOportunidade
+export type OpportunityRow = Opportunity & { responsible: { name: string } }
+export type ActivityRow = OpportunityActivity
 
 export interface CrmScope {
   actorTenantId: string
   actorId?: string | null
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export interface CrmUseCase<Input, Output> {

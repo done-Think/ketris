@@ -29,7 +29,7 @@ export interface TeamTransferCommand {
   destinationId: string
   items: TeamTransferItems
   opportunityScope: 'open' | 'all'
-  reason: 'MANUAL' | 'DESATIVACAO'
+  reason: 'MANUAL' | 'DEACTIVATION'
   actor: { id: string; name: string }
   now: Date
 }
@@ -37,7 +37,7 @@ export interface TeamTransferCommand {
 export interface TeamStaffUser {
   id: string
   name: string
-  papel: string
+  role: string
   active: boolean
   pendingInvitation: boolean
 }

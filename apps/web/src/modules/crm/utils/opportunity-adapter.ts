@@ -1,9 +1,6 @@
-import { defaultLocale } from '@/i18n/routing'
-import type { AppLocale } from '@/i18n/types/locale.types'
 import type { CrmFormatters } from '../types/formatters'
 import type { Opportunity } from '../types/opportunity'
 import type { CrmPropertyDetail, CrmPropertySummary } from '../types/property'
-import { formatCurrency, formatDate, formatMonthlyCurrency } from './formatters'
 
 import type {
   ProposalManagementListItem,
@@ -14,17 +11,7 @@ import type {
 function toTransactionKind(
   property: CrmPropertyDetail | CrmPropertySummary | undefined,
 ): ProposalTransactionKind {
-  return property?.purpose === 'ALUGUEL' ? 'rent' : 'sale'
-}
-
-function toValueLabel(
-  amount: number,
-  transactionKind: ProposalTransactionKind,
-  locale: AppLocale,
-): string {
-  return transactionKind === 'rent'
-    ? formatMonthlyCurrency(amount, locale)
-    : formatCurrency(amount, locale)
+  return property?.purpose === 'RENT' ? 'rent' : 'sale'
 }
 
 function toReference(opportunityId: string): string {
@@ -59,8 +46,7 @@ export function mapOpportunityToProposalListItem(
   opportunity: Opportunity,
   property: CrmPropertyDetail | CrmPropertySummary | undefined,
   fallbackAddressLabel: string,
-  locale: AppLocale = defaultLocale,
-  format?: CrmFormatters,
+  format: CrmFormatters,
 ): ProposalManagementListItem {
   const transactionKind = toTransactionKind(property)
 
@@ -75,11 +61,9 @@ export function mapOpportunityToProposalListItem(
     property: toProperty(opportunity.propertyId, property, fallbackAddressLabel),
     amount: opportunity.proposedValue,
     transactionKind,
-    valueLabel:
-      format?.money(opportunity.proposedValue, transactionKind === 'rent') ??
-      toValueLabel(opportunity.proposedValue, transactionKind, locale),
+    valueLabel: format.money(opportunity.proposedValue, transactionKind === 'rent'),
     status: opportunity.status,
     createdAt: opportunity.createdAt,
-    createdLabel: format?.date(opportunity.createdAt) ?? formatDate(opportunity.createdAt, locale),
+    createdLabel: format.date(opportunity.createdAt),
   }
 }

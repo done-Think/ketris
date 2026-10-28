@@ -17,16 +17,16 @@ import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 export const GET = withErrorHandling(async (request: NextRequest, context: AgendaRouteContext) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
 
-  const actorPapel = actor.papel
+  const actorRole = actor.role
   const event = await agendaContainer.getAgendaEventUseCase.execute({
     actorTenantId: actor.tenantId,
     actorUserId: actor.sub,
-    actorPapel,
+    actorRole,
     id: (await parseRouteParams(context.params, agendaEventIdParamsSchema)).id,
   })
 
   return NextResponse.json(
-    { event: toAgendaEventReadResponse(event, actorPapel, actor.sub) },
+    { event: toAgendaEventReadResponse(event, actorRole, actor.sub) },
     { status: 200 },
   )
 })
@@ -38,26 +38,26 @@ export const PATCH = withErrorHandling(
 
     const event = await agendaContainer.updateAgendaEventUseCase.execute({
       actorTenantId: actor.tenantId,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       actorUserId: actor.sub,
       id: (await parseRouteParams(context.params, agendaEventIdParamsSchema)).id,
-      destino: body.audience,
-      inicio: body.start,
+      audience: body.audience,
+      start: body.start,
       outsideBusinessHoursConfirmed: body.outsideBusinessHoursConfirmed,
       durationMinutes: body.durationMinutes,
-      interno: body.internal,
-      responsavelId: body.responsibleId,
-      titulo: body.title,
-      tipo: body.kind,
+      internal: body.internal,
+      responsibleId: body.responsibleId,
+      title: body.title,
+      type: body.kind,
       status: body.status,
-      motivoCancelamento: body.cancellationReason,
-      imovelId: body.propertyId,
-      referenciaImovelLivre: body.propertyReference,
-      participanteNome: body.participantName,
-      participanteTelefone: body.participantPhone,
-      notas: body.notes,
-      donoEmail: body.ownerEmail,
-      participanteEmails: body.participantEmails,
+      cancellationReason: body.cancellationReason,
+      propertyId: body.propertyId,
+      freeFormPropertyReference: body.propertyReference,
+      participantName: body.participantName,
+      participantPhone: body.participantPhone,
+      notes: body.notes,
+      ownerEmail: body.ownerEmail,
+      participantEmails: body.participantEmails,
     })
 
     return NextResponse.json({ event: toAgendaEventResponse(event) }, { status: 200 })

@@ -1,33 +1,33 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { NewProperty, PropertyChanges, PropertyListFilters } from './property'
 
-export type CreatePropertyInput = Omit<NewProperty, 'tenantId' | 'responsavelId'> & {
+export type CreatePropertyInput = Omit<NewProperty, 'tenantId' | 'responsibleId'> & {
   actorTenantId: string
   actorUserId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export type DeletePropertyInput = {
   actorTenantId: string
   actorId: string
   id: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export type GetPropertyInput = {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   id: string
 }
 
 export type ListPropertiesInput = Omit<
   PropertyListFilters,
-  'tenantId' | 'responsavelId' | 'renterId' | 'proprietarioId'
+  'tenantId' | 'responsibleId' | 'renterId' | 'ownerId'
 > & {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export type PublishPropertyInput = {
@@ -35,7 +35,7 @@ export type PublishPropertyInput = {
   actorId: string
   id: string
   publishedAt?: Date
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export type TransitionPropertyFromActiveContractInput = {
@@ -47,19 +47,19 @@ export type UnpublishPropertyInput = {
   actorTenantId: string
   actorId: string
   id: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export type UpdatePropertyInput = PropertyChanges & {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   id: string
 }
 
 export interface UploadPropertyMediaUseCaseInput {
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
   filename: string
   contentType: string
   body: Buffer
@@ -67,7 +67,7 @@ export interface UploadPropertyMediaUseCaseInput {
 
 export interface ListPropertyOwnersInput {
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
   page?: number
   pageSize?: number
 }

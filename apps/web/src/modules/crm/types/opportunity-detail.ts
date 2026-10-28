@@ -109,7 +109,6 @@ export type ArchiveOpportunityDialogProps = {
 
 export type CreateOpportunityDialogProps = {
   open: boolean
-  tenantId: string
   canChooseResponsible: boolean
   isPending: boolean
   onClose: () => void
@@ -117,7 +116,6 @@ export type CreateOpportunityDialogProps = {
 }
 
 export type PropertyAutocompleteProps = {
-  tenantId: string
   value: CrmPropertySummary | null
   onChange: (property: CrmPropertySummary | null) => void
   error?: boolean
@@ -126,6 +124,9 @@ export type PropertyAutocompleteProps = {
 
 export type OpportunityResponsiblePanelProps = {
   opportunity: Opportunity
-  tenantId: string
   canManage: boolean
+}
+
+export type OpportunityActivityComposerProps = {
+  opportunityId: string
 }

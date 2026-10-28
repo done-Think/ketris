@@ -15,8 +15,8 @@ import type { Property } from '../../../types/property'
 const property = {
   id: 'property-1',
   tenantId: 'tenant-1',
-  responsavelId: 'agent-1',
-  proprietarioId: 'owner-1',
+  responsibleId: 'agent-1',
+  ownerId: 'owner-1',
 } as Property
 
 function createRepository(): PropertyRepository {
@@ -38,7 +38,7 @@ function createRepository(): PropertyRepository {
 const propertyOwner = {
   actorTenantId: 'tenant-1',
   actorId: 'owner-1',
-  actorPapel: 'PROPERTY_OWNER' as const,
+  actorRole: 'PROPERTY_OWNER' as const,
 }
 
 describe('proprietário do imóvel (PROPERTY_OWNER)', () => {
@@ -48,7 +48,7 @@ describe('proprietário do imóvel (PROPERTY_OWNER)', () => {
     await new ListPropertiesUseCase(repository).execute(propertyOwner)
 
     expect(repository.listPage).toHaveBeenCalledWith(
-      expect.objectContaining({ tenantId: 'tenant-1', proprietarioId: 'owner-1' }),
+      expect.objectContaining({ tenantId: 'tenant-1', ownerId: 'owner-1' }),
     )
   })
 
@@ -72,15 +72,16 @@ describe('proprietário do imóvel (PROPERTY_OWNER)', () => {
     await new CreatePropertyUseCase(repository, createOwnerDirectory()).execute({
       actorTenantId: 'tenant-1',
       actorUserId: 'owner-1',
-      actorPapel: 'PROPERTY_OWNER',
-      titulo: 'Casa',
-      finalidade: 'ALUGUEL',
-      tipo: 'CASA',
-      valor: 1000,
+      actorRole: 'PROPERTY_OWNER',
+      title: 'Casa',
+      purpose: 'RENT',
+      type: 'HOUSE',
+      price: 1000,
     })
 
     expect(repository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ responsavelId: 'owner-1', proprietarioId: 'owner-1' }),
+      expect.objectContaining({ responsibleId: 'owner-1', ownerId: 'owner-1' }),
+      'owner-1',
     )
   })
 
@@ -97,7 +98,7 @@ describe('proprietário do imóvel (PROPERTY_OWNER)', () => {
     const repository = createRepository()
     vi.mocked(repository.findByTenantAndId).mockResolvedValue({
       ...property,
-      proprietarioId: 'outro-dono',
+      ownerId: 'outro-dono',
     })
 
     await expect(
@@ -111,11 +112,11 @@ describe('proprietário do imóvel (PROPERTY_OWNER)', () => {
       new CreatePropertyUseCase(createRepository(), createOwnerDirectory()).execute({
         actorTenantId: 'tenant-1',
         actorUserId: 'renter-1',
-        actorPapel: 'RENTER',
-        titulo: 'Casa',
-        finalidade: 'ALUGUEL',
-        tipo: 'CASA',
-        valor: 1000,
+        actorRole: 'RENTER',
+        title: 'Casa',
+        purpose: 'RENT',
+        type: 'HOUSE',
+        price: 1000,
       }),
     ).toThrow(ForbiddenError)
   })

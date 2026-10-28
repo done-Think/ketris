@@ -5,7 +5,7 @@ import { BrokersPage } from '@modules/marketplace'
 export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
   const { locale } = await params
 
-  return createLocalizedMetadata('marketplace.metadata.brokers', locale)
+  return createLocalizedMetadata('marketplace.metadata.brokers', locale, '/brokers')
 }
 
 export default function BrokersRoutePage() {

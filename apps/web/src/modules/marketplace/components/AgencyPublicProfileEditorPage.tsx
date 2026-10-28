@@ -242,14 +242,14 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
               disabled={disabled}
               options={tenantAgents ?? []}
               value={(tenantAgents ?? []).filter((agent) =>
-                field.value.some((member) => member.usuarioId === agent.id),
+                field.value.some((member) => member.userId === agent.id),
               )}
               getOptionLabel={(agent) => agent.name}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               slotProps={teamPickerSlotProps}
               onChange={(_event, selected) =>
                 field.onChange(
-                  selected.slice(0, 6).map((agent) => ({ usuarioId: agent.id, name: agent.name })),
+                  selected.slice(0, 6).map((agent) => ({ userId: agent.id, name: agent.name })),
                 )
               }
               renderInput={(params) => (

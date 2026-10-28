@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { AgendaEvent } from '../domain/agenda-event.entity'
 import type { AgendaEventLinkedUser } from '../types/agenda-event'
 import type { AgendaEventResponseDTO, RenterAgendaEventResponseDTO } from '../types/http'
@@ -7,28 +7,28 @@ export function toAgendaEventResponse(event: AgendaEvent): AgendaEventResponseDT
   return {
     id: event.id,
     tenantId: event.tenantId,
-    responsibleId: event.responsavelId,
-    responsibleName: event.responsavelNome,
-    audience: event.destino ?? 'SHARED_TEAM',
-    internal: event.interno ?? false,
-    createdById: event.criadoPorId,
-    createdBy: event.criadoPor ? { name: event.criadoPor.nome, role: event.criadoPor.papel } : null,
-    propertyId: event.imovelId,
+    responsibleId: event.responsibleId,
+    responsibleName: event.responsibleName,
+    audience: event.audience ?? 'SHARED_TEAM',
+    internal: event.internal ?? false,
+    createdById: event.createdById,
+    createdBy: event.createdBy ? { name: event.createdBy.name, role: event.createdBy.role } : null,
+    propertyId: event.propertyId,
     propertyLabel: event.propertyLabel ?? null,
-    propertyReference: event.referenciaImovelLivre,
-    title: event.titulo,
-    kind: event.tipo,
+    propertyReference: event.freeFormPropertyReference,
+    title: event.title,
+    kind: event.type,
     status: event.status,
-    start: event.inicio.toISOString(),
-    end: event.fim.toISOString(),
-    participantName: event.participanteNome,
-    participantPhone: event.participanteTelefone,
-    notes: event.notas,
+    start: event.start.toISOString(),
+    end: event.end.toISOString(),
+    participantName: event.participantName,
+    participantPhone: event.participantPhone,
+    notes: event.notes,
     owner: event.dono ? toLinkedUserResponse(event.dono) : null,
-    participants: event.participantes.map(toLinkedUserResponse),
-    cancelledAt: event.canceladoEm?.toISOString() ?? null,
-    cancelledById: event.canceladoPorId ?? null,
-    cancellationReason: event.motivoCancelamento ?? null,
+    participants: event.participants.map(toLinkedUserResponse),
+    cancelledAt: event.canceledAt?.toISOString() ?? null,
+    cancelledById: event.canceledById ?? null,
+    cancellationReason: event.cancellationReason ?? null,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
   }
@@ -37,28 +37,28 @@ export function toAgendaEventResponse(event: AgendaEvent): AgendaEventResponseDT
 export function toRenterAgendaEventResponse(event: AgendaEvent): RenterAgendaEventResponseDTO {
   return {
     id: event.id,
-    title: event.titulo,
-    kind: event.tipo,
+    title: event.title,
+    kind: event.type,
     status: event.status,
-    start: event.inicio.toISOString(),
-    end: event.fim.toISOString(),
-    propertyId: event.imovelId,
+    start: event.start.toISOString(),
+    end: event.end.toISOString(),
+    propertyId: event.propertyId,
     propertyLabel: event.propertyLabel ?? null,
-    propertyReference: event.referenciaImovelLivre,
-    responsibleName: event.responsavelNome,
+    propertyReference: event.freeFormPropertyReference,
+    responsibleName: event.responsibleName,
   }
 }
 
 export function toAgendaEventReadResponse(
   event: AgendaEvent,
-  actorPapel: Papel,
+  actorRole: UserRole,
   actorUserId: string,
 ): AgendaEventResponseDTO | RenterAgendaEventResponseDTO {
-  return actorPapel === 'RENTER' && event.criadoPorId !== actorUserId
+  return actorRole === 'RENTER' && event.createdById !== actorUserId
     ? toRenterAgendaEventResponse(event)
     : toAgendaEventResponse(event)
 }
 
 function toLinkedUserResponse(user: AgendaEventLinkedUser) {
-  return { name: user.nome, email: user.email }
+  return { name: user.name, email: user.email }
 }

@@ -2,29 +2,29 @@ import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
 export const contractStatusSchema = z.enum([
-  'RASCUNHO',
-  'EM_REVISAO',
-  'AGUARDANDO_ASSINATURA',
-  'ASSINADO',
-  'ATIVO',
-  'ENCERRADO',
-  'CANCELADO',
+  'DRAFT',
+  'IN_REVIEW',
+  'AWAITING_SIGNATURE',
+  'SIGNED',
+  'ACTIVE',
+  'CLOSED',
+  'CANCELED',
 ])
 
-export const contractTypeSchema = z.enum(['RESIDENCIAL', 'COMERCIAL', 'TEMPORADA'])
+export const contractTypeSchema = z.enum(['RESIDENTIAL', 'COMMERCIAL', 'SEASONAL'])
 
 export const adjustmentIndexSchema = z.enum(['IPCA', 'IGPM', 'INPC'])
 
 export const contractGuaranteeTypeSchema = z.enum([
-  'FIADOR',
-  'CAUCAO',
-  'SEGURO_FIANCA',
-  'TITULO_CAPITALIZACAO',
+  'GUARANTOR',
+  'DEPOSIT',
+  'SURETY_BOND',
+  'CAPITALIZATION_BOND',
 ])
 
-export const contractPartyRoleSchema = z.enum(['LOCADOR', 'LOCATARIO', 'FIADOR'])
+export const contractPartyRoleSchema = z.enum(['LANDLORD', 'RENTER', 'GUARANTOR'])
 
-export const signatureStatusSchema = z.enum(['PENDENTE', 'ASSINADA'])
+export const signatureStatusSchema = z.enum(['PENDING', 'SIGNED'])
 
 export const contractActorSchema = z
   .object({ id: z.string(), name: z.string() })

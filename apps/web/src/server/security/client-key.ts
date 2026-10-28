@@ -4,6 +4,8 @@ import { isIP } from 'node:net'
 function firstAddress(value: string | null): string {
   const candidate = value?.split(',')[0]?.trim() ?? ''
   if (isIP(candidate)) return candidate
+  const bracketedAddress = /^\[([^\]]+)\](?::\d+)?$/.exec(candidate)?.[1]
+  if (bracketedAddress && isIP(bracketedAddress) === 6) return bracketedAddress
   const withoutPort = /^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/.exec(candidate)?.[1]
   return withoutPort && isIP(withoutPort) ? withoutPort : 'unknown'
 }

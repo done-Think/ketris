@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { authContainer } from '@server/auth/container'
-import { toAuthenticatedUser } from '@server/auth/domain/user.entity'
+import { toAuthenticatedUser } from '../../../../../../server/auth/application/authenticated-user'
 import { prisma } from '@server/db/prisma'
 import { GET } from '../../../users/route'
 
@@ -19,39 +19,39 @@ function request(query: string) {
 describe('paginação dos usuários autenticados', () => {
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Paginação Auth', slug: `list-${randomUUID()}` },
+      data: { name: 'Paginação Auth', slug: `list-${randomUUID()}` },
     })
     tenantId = tenant.id
     const other = await prisma.tenant.create({
-      data: { nome: 'Outro tenant', slug: `foreign-${randomUUID()}` },
+      data: { name: 'Outro tenant', slug: `foreign-${randomUUID()}` },
     })
     foreignId = other.id
     const owner = await authContainer.userRepository.create({
       tenantId,
-      nome: 'Gestão',
+      name: 'Gestão',
       email: `${randomUUID()}@example.test`,
-      senhaHash: 'hash-fake',
-      papel: 'OWNER',
+      passwordHash: 'hash-fake',
+      role: 'OWNER',
       emailVerifiedAt: new Date(),
     })
     token = await authContainer.tokenService.sign(toAuthenticatedUser(owner))
-    await prisma.usuario.createMany({
+    await prisma.user.createMany({
       data: [
         ...Array.from({ length: 3 }, () => ({
           tenantId,
-          nome: 'Pendente',
+          name: 'Pendente',
           email: `${randomUUID()}@example.test`,
-          senhaHash: 'hash-fake',
-          papel: 'AGENT' as const,
-          vinculoAprovadoEm: null,
+          passwordHash: 'hash-fake',
+          role: 'AGENT' as const,
+          membershipApprovedAt: null,
         })),
         {
           tenantId: foreignId,
-          nome: 'Fora do tenant',
+          name: 'Fora do tenant',
           email: `${randomUUID()}@example.test`,
-          senhaHash: 'hash-fake',
-          papel: 'AGENT',
-          vinculoAprovadoEm: null,
+          passwordHash: 'hash-fake',
+          role: 'AGENT',
+          membershipApprovedAt: null,
         },
       ],
     })

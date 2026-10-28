@@ -13,12 +13,14 @@ export function CreatePropertyFeaturesStepFields({
 
   return (
     <Box sx={styles.box}>
-      {[
-        ['bedrooms', 'bedrooms', 'number'],
-        ['bathrooms', 'bathrooms', 'number'],
-        ['parkingSpaces', 'parkingSpaces', 'number'],
-        ['area', 'area', 'number'],
-      ].map(([name, label, type]) => (
+      {(
+        [
+          ['bedrooms', 'bedrooms', 'number'],
+          ['bathrooms', 'bathrooms', 'number'],
+          ['parkingSpaces', 'parkingSpaces', 'number'],
+          ['area', 'area', 'number'],
+        ] as const
+      ).map(([name, label, type]) => (
         <Controller
           key={name}
           control={control}

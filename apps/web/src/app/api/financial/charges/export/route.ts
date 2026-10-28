@@ -14,7 +14,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const file = await financialContainer.exportChargesUseCase.execute({
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     month: query.month,
     locale: query.locale,
   })

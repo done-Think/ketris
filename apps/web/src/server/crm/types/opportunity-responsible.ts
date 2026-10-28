@@ -1,13 +1,13 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 
 export interface OpportunityResponsible {
   id: string
   name: string
-  role: Extract<Papel, 'OWNER' | 'AGENT'>
+  role: Extract<UserRole, 'OWNER' | 'AGENT'>
 }
 
 export interface ListOpportunityResponsiblesInput {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }

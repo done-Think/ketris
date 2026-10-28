@@ -40,7 +40,7 @@ beforeEach(() => {
 describe('InviteBrokerUseCase', () => {
   it('cria o acesso sem senha conhecida e envia o link de 7 dias por e-mail', async () => {
     const invitations = invitationRepository({ create: vi.fn().mockResolvedValue(stored) })
-    const team = teamRepository([staff({ id: 'owner-1', name: 'Dona', papel: 'OWNER' })])
+    const team = teamRepository([staff({ id: 'owner-1', name: 'Dona', role: 'OWNER' })])
     mailer.send.mockResolvedValue(undefined)
 
     const result = await new InviteBrokerUseCase(
@@ -75,7 +75,7 @@ describe('InviteBrokerUseCase', () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
 
     const result = await new InviteBrokerUseCase(
-      teamRepository([staff({ id: 'owner-1', papel: 'OWNER' })]),
+      teamRepository([staff({ id: 'owner-1', role: 'OWNER' })]),
       invitations,
       hasher,
       mailer,
@@ -107,7 +107,7 @@ describe('reenvio e cancelamento', () => {
     mailer.send.mockResolvedValue(undefined)
 
     await new ResendTeamInvitationUseCase(
-      teamRepository([staff({ id: 'owner-1', papel: 'OWNER' })]),
+      teamRepository([staff({ id: 'owner-1', role: 'OWNER' })]),
       invitations,
       mailer,
       () => now,

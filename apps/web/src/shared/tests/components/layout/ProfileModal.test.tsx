@@ -4,7 +4,8 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { ProfileModal } from '../../../components/layout/ProfileModal'
 
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),

@@ -1,16 +1,10 @@
 import { summarizeBilling } from '../domain/platform-billing'
-import type { BillingSummary } from '../types/platform-billing'
+import type { PlatformBilling } from '../types/billing-bundle'
 import { monthBoundsInTimeZone } from '../domain/platform-calendar'
 import { chargePlatformTenants } from '../domain/platform-tenant.entity'
-import type { ChargedPlatformTenant } from '../types/platform-tenant'
 import { groupStatusChangesByTenant } from '../domain/tenant-status-history'
 import type { PlatformPlanRepository } from './ports/platform-plan-repository.port'
 import type { PlatformTenantRepository } from './ports/platform-tenant-repository.port'
-
-export interface PlatformBilling {
-  charged: ChargedPlatformTenant[]
-  summary: BillingSummary
-}
 
 export async function loadPlatformBilling(
   platformTenantRepository: PlatformTenantRepository,

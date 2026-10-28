@@ -1,5 +1,6 @@
 import { BaseService } from '@shared/lib/api/base-service'
 import { HttpClient, httpClient } from '@shared/lib/api/http-client'
+import { uploadToSignedUrl } from '@shared/lib/api/signed-upload'
 import { sha256Hex } from '@shared/utils/sha256-hex'
 import type {
   ContractDocumentDownload,
@@ -26,13 +27,15 @@ export class ContractDocumentsService extends BaseService {
         sha256,
       },
     )
-    await this.storage.put(authorization.uploadUrl, file, {
-      headers: authorization.headers,
-      timeout: 120000,
-      skipUnauthorizedHandling: true,
-      onUploadProgress: ({ loaded, total }) =>
-        onProgress(total ? Math.round((loaded * 100) / total) : 0),
-    })
+    await uploadToSignedUrl(
+      this.storage,
+      { url: authorization.uploadUrl, headers: authorization.headers },
+      file,
+      {
+        onUploadProgress: ({ loaded, total }) =>
+          onProgress(total ? Math.round((loaded * 100) / total) : 0),
+      },
+    )
     return this.http
       .post<ContractDocumentResponse>(path, { uploadToken: authorization.uploadToken })
       .then((result) => result.document)

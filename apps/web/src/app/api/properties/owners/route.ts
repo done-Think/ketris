@@ -12,7 +12,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const query = parseQuery(request, propertyOwnersQuerySchema)
   const owners = await propertiesContainer.listPropertyOwnersUseCase.execute({
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     ...query,
   })
   return NextResponse.json(owners)

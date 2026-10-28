@@ -20,7 +20,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const page = await crmContainer.listContactsUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     filters,
   })
 
@@ -36,12 +36,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   const contact = await crmContainer.createContactUseCase.execute({
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     actorId: actor.sub,
     name: body.name,
     email: body.email,
     phone: body.phone ?? null,
-    type: body.type ?? 'LOCATARIO',
+    type: body.type ?? 'RENTER',
     avatarUrl: body.avatarUrl ?? null,
     notes: body.notes ?? null,
   })

@@ -1,0 +1,7 @@
+[
+  {
+    "source": "/en/dashboard/schedule",
+    "destination": "/en/dashboard/agenda",
+    "permanent": true
+  }
+]

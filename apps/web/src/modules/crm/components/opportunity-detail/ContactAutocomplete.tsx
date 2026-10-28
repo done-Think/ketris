@@ -7,7 +7,6 @@ import type { CrmContactAutocompleteProps } from '../../types/autocomplete'
 import { CrmAutocomplete } from '../CrmAutocomplete'
 
 export function ContactAutocomplete({
-  tenantId,
   value,
   onChange,
   error,
@@ -16,7 +15,7 @@ export function ContactAutocomplete({
   const t = useTranslations('crm.opportunityDetail')
   const [input, setInput] = useState('')
   const q = useDebouncedValue(input)
-  const query = useCrmContactOptions(tenantId, q)
+  const query = useCrmContactOptions(q)
   return (
     <CrmAutocomplete
       value={value}

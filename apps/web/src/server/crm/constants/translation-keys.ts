@@ -2,25 +2,33 @@ import type { ActivityType } from '../domain/activity.entity'
 import type { GuaranteeType, OpportunityStatus } from '../domain/opportunity.entity'
 
 export const CRM_STATUS_KEYS = {
-  RASCUNHO: 'draft',
-  ENVIADA: 'sent',
-  EM_NEGOCIACAO: 'inNegotiation',
-  ACEITA: 'accepted',
-  RECUSADA: 'rejected',
+  DRAFT: 'draft',
+  SENT: 'sent',
+  IN_NEGOTIATION: 'inNegotiation',
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
 } as const
 export const CRM_GUARANTEE_KEYS = {
-  NENHUMA: 'none',
-  FIADOR: 'guarantor',
-  CAUCAO: 'deposit',
-  SEGURO_FIANCA: 'insurance',
+  NONE: 'none',
+  GUARANTOR: 'guarantor',
+  DEPOSIT: 'deposit',
+  SURETY_BOND: 'insurance',
 } as const
 export const CRM_ACTIVITY_KEYS = {
-  NOTA: 'note',
-  MUDANCA_STATUS: 'statusChanged',
-  CONTATO_REALIZADO: 'contactMade',
-  PROPOSTA_RESPONDIDA: 'proposalResponded',
+  NOTE: 'note',
+  STATUS_CHANGE: 'statusChanged',
+  CONTACT_MADE: 'contactMade',
+  PROPOSAL_ANSWERED: 'proposalResponded',
 } as const
-const systemActionKeys: Record<string, string> = {
+const systemActionKeys: Record<
+  string,
+  | 'opportunityCreated'
+  | 'statusChanged'
+  | 'responsibleChanged'
+  | 'accepted'
+  | 'rejected'
+  | 'informationRequested'
+> = {
   OPPORTUNITY_CREATED: 'opportunityCreated',
   STATUS_CHANGED: 'statusChanged',
   RESPONSIBLE_CHANGED: 'responsibleChanged',

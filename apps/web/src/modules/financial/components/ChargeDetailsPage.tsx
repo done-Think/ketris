@@ -1,5 +1,7 @@
 'use client'
 
+import type { TranslationKey } from '@/i18n/types/messages.types'
+
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
@@ -76,7 +78,10 @@ function ChargeDetailsContent({ charge }: ChargeDetailsContentProps) {
   const registerPayment = useRegisterChargePayment()
   const reversePayment = useReverseChargePayment()
   const cancelCharge = useCancelCharge()
-  const feedback = (successKey: string, fallbackKey: string) => ({
+  const feedback = (
+    successKey: TranslationKey<'charges.feedback'>,
+    fallbackKey: TranslationKey<'charges.errors'>,
+  ) => ({
     onSuccess: () => {
       setDialog(null)
       enqueueSnackbar(t(`feedback.${successKey}`), { variant: 'success' })

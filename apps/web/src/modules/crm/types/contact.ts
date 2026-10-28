@@ -4,23 +4,25 @@ import type {
   CreateContactRequestDTO,
   ListContactsQueryDTO,
   PatchContactRequestDTO,
-} from '@server/crm/types/dto'
+} from '@shared/types/generated/crm/dto'
 import type { z } from 'zod'
 
 import type { createContactFormSchema } from '../schemas/contact-schema'
 
-export type ContactType = 'PROPRIETARIO' | 'LOCATARIO' | 'CORRETOR'
+export type ContactType = 'OWNER' | 'RENTER' | 'BROKER'
 export type ContactFilterKey = 'all' | 'owners' | 'tenants' | 'brokers'
 
 export type ContactFormValues = z.infer<ReturnType<typeof createContactFormSchema>>
 
-export type ApiContactType = 'PROPRIETARIO' | 'LOCATARIO' | 'CORRETOR'
+export type ApiContactType = 'OWNER' | 'RENTER' | 'BROKER'
 
 export type ApiContact = ContactDTO
 
 export type ApiContactListItem = ContactListItemDTO
 
-export type ContactFilters = ListContactsQueryDTO
+export type ContactFilters = Omit<ListContactsQueryDTO, 'includeArchived'> & {
+  includeArchived?: boolean
+}
 
 export type CreateContactPayload = CreateContactRequestDTO
 
@@ -49,7 +51,7 @@ export type ContactsPageResult = {
   totalCount: number
 }
 
-export type ContactFilter = 'ALL' | 'PROPRIETARIO' | 'LOCATARIO' | 'CORRETOR'
+export type ContactFilter = 'ALL' | 'OWNER' | 'RENTER' | 'BROKER'
 
 export type ContactsListProps = {
   search?: string

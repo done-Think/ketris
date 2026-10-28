@@ -34,12 +34,13 @@ import type {
   OpportunityDetailProps,
   OpportunityNextAction,
 } from '../types/opportunity-detail'
-import { errorMessage } from '../utils/error-message'
+import { extractErrorMessage } from '@shared/utils/error-message'
 import { ArchiveOpportunityDialog } from './opportunity-detail/ArchiveOpportunityDialog'
 import { DetailLoading } from './opportunity-detail/DetailLoading'
 import { EditOpportunityDialog } from './opportunity-detail/EditOpportunityDialog'
 import { OpportunityActionsFooter } from './opportunity-detail/OpportunityActionsFooter'
 import { OpportunityActivitiesPanel } from './opportunity-detail/OpportunityActivitiesPanel'
+import { OpportunityActivityComposer } from './opportunity-detail/OpportunityActivityComposer'
 import { OpportunityContactPanel } from './opportunity-detail/OpportunityContactPanel'
 import { OpportunityDetailHeader } from './opportunity-detail/OpportunityDetailHeader'
 import { OpportunityNextActionsPanel } from './opportunity-detail/OpportunityNextActionsPanel'
@@ -81,13 +82,12 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   const pipelineT = useTranslations('crm.pipeline')
   const { data: session } = useSession()
   const router = useRouter()
-  const tenantId = session?.tenantId
-  const opportunityQuery = useOpportunity(tenantId, opportunityId)
-  const activitiesQuery = useOpportunityActivities(tenantId, opportunityId)
+  const opportunityQuery = useOpportunity(opportunityId)
+  const activitiesQuery = useOpportunityActivities(opportunityId)
   const opportunity = opportunityQuery.data
-  const propertyQuery = useCrmAuthorizedProperty(tenantId, opportunity?.propertyId)
-  const updateOpportunity = useUpdateOpportunity(tenantId ?? '')
-  const archiveOpportunity = useArchiveOpportunity(tenantId ?? '')
+  const propertyQuery = useCrmAuthorizedProperty(opportunity?.propertyId)
+  const updateOpportunity = useUpdateOpportunity()
+  const archiveOpportunity = useArchiveOpportunity()
   const { enqueueSnackbar } = useSnackbar()
   const [stageMenuAnchor, setStageMenuAnchor] = useState<HTMLElement | null>(null)
   const [nextStatus, setNextStatus] = useState<OpportunityStatus | null>(null)
@@ -98,7 +98,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
     () =>
       (activitiesQuery.data ?? []).map((activity) => {
         const legacyStatus =
-          activity.type === 'MUDANCA_STATUS' &&
+          activity.type === 'STATUS_CHANGE' &&
           activity.previousStatus &&
           activity.newStatus &&
           activity.description ===
@@ -126,7 +126,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
   const nextActions = useMemo<OpportunityNextAction[]>(() => {
     if (!opportunity) return []
 
-    if (opportunity.status === 'RASCUNHO') {
+    if (opportunity.status === 'DRAFT') {
       return [
         {
           key: 'complete-draft',
@@ -143,7 +143,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
       ]
     }
 
-    if (opportunity.status === 'ENVIADA') {
+    if (opportunity.status === 'SENT') {
       return [
         {
           key: 'proposal-follow-up',
@@ -172,7 +172,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
       ]
     }
 
-    if (opportunity.status === 'EM_NEGOCIACAO') {
+    if (opportunity.status === 'IN_NEGOTIATION') {
       return [
         {
           key: 'review-counteroffer',
@@ -189,7 +189,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
       ]
     }
 
-    if (opportunity.status === 'ACEITA') {
+    if (opportunity.status === 'ACCEPTED') {
       return [
         {
           key: 'prepare-contract',
@@ -263,7 +263,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
       )
       setNextStatus(null)
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('updateStageError')), {
+      enqueueSnackbar(extractErrorMessage(error, t('updateStageError')), {
         variant: 'error',
       })
     }
@@ -296,7 +296,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
       enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
       setEditOpen(false)
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('updateError')), {
+      enqueueSnackbar(extractErrorMessage(error, t('updateError')), {
         variant: 'error',
       })
     }
@@ -309,7 +309,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
       setArchiveOpen(false)
       router.replace('/crm')
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('archiveError')), {
+      enqueueSnackbar(extractErrorMessage(error, t('archiveError')), {
         variant: 'error',
       })
     }
@@ -345,13 +345,15 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
         <Stack spacing={2} minWidth={0} sx={crmStyles.stackSx2}>
           <OpportunityResponsiblePanel
             opportunity={opportunity}
-            tenantId={tenantId ?? ''}
             canManage={session?.role === 'OWNER'}
           />
           <OpportunityNextActionsPanel actions={nextActions} />
         </Stack>
 
         <Stack spacing={2} minWidth={0} sx={crmStyles.stackSx3}>
+          {!opportunity.archivedAt && (
+            <OpportunityActivityComposer opportunityId={opportunity.id} />
+          )}
           {activitiesQuery.isError ? (
             <Alert
               severity="error"
@@ -375,7 +377,7 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           opportunity={opportunity}
           isMutating={isMutating}
           onStageMenuOpen={(event) => setStageMenuAnchor(event.currentTarget)}
-          onDiscardLead={() => setNextStatus('RECUSADA')}
+          onDiscardLead={() => setNextStatus('REJECTED')}
           onEdit={openEditDialog}
           onArchive={() => setArchiveOpen(true)}
         />

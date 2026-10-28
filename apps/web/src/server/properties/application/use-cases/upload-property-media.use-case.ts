@@ -11,7 +11,7 @@ export class UploadPropertyMediaUseCase {
   constructor(private readonly mediaStorage: PropertyMediaStoragePort) {}
 
   async execute(input: UploadPropertyMediaUseCaseInput) {
-    assertCanEditProperties(input.actorPapel)
+    assertCanEditProperties(input.actorRole)
 
     if (input.body.byteLength === 0) {
       throw new PropertyMediaValidationError('Arquivo vazio.')

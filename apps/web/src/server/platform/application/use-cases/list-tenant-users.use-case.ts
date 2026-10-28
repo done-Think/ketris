@@ -1,4 +1,4 @@
-import { toAuthenticatedUser } from '@server/auth/domain/user.entity'
+import { toAuthenticatedUser } from '../../../auth/application/authenticated-user'
 import type { UserListRepository } from '@server/auth/application/ports/user-list-repository.port'
 
 import { TenantNotFoundError } from '../../domain/errors'

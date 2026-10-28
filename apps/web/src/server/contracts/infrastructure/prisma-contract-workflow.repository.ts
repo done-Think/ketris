@@ -34,7 +34,7 @@ export class PrismaContractWorkflowRepository implements ContractWorkflowReposit
   history(contractId: string, scope: ContractReadScope, page: number, pageSize: number) {
     return prisma.$transaction(
       async (tx) => {
-        const contract = await tx.contrato.findFirst({
+        const contract = await tx.contract.findFirst({
           where: { id: contractId, ...contractReadWhere(scope) },
           select: { id: true, tenantId: true },
         })
@@ -45,7 +45,7 @@ export class PrismaContractWorkflowRepository implements ContractWorkflowReposit
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
           take: pageSize,
           skip: (page - 1) * pageSize,
-          include: { actor: { select: { id: true, nome: true } } },
+          include: { actor: { select: { id: true, name: true } } },
         })
         const totalCount = await tx.contractAuditEvent.count({ where })
         return {

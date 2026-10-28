@@ -15,8 +15,8 @@ export class CreateContactUseCase {
   constructor(private readonly contactRepository: ContactRepository) {}
 
   async execute(input: CreateContactInput): Promise<CreateContactOutput> {
-    const { actorTenantId, actorPapel, ...data } = input
-    assertCrmAccess(actorPapel)
+    const { actorTenantId, actorRole, ...data } = input
+    assertCrmAccess(actorRole)
     const email = data.email.trim().toLowerCase()
 
     const existing = await this.contactRepository.findByEmail(actorTenantId, email)

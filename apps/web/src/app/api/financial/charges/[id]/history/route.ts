@@ -16,7 +16,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Charg
   const events = await financialContainer.listChargeHistoryUseCase.execute({
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     chargeId: id,
   })
 

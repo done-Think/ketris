@@ -17,37 +17,37 @@ describe('/api/agency-dashboard/overview — ranking de corretores (integração
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Top Brokers', slug: `top-brokers-${randomUUID()}` },
+      data: { name: 'Tenant Top Brokers', slug: `top-brokers-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const owner = await prisma.usuario.create({
+    const owner = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Dona da Imobiliária',
+        name: 'Dona da Imobiliária',
         email: `top-brokers-owner-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     ownerToken = await tokenService.sign({
       id: owner.id,
       tenantId: owner.tenantId,
-      nome: owner.nome,
+      name: owner.name,
       email: owner.email,
-      papel: owner.papel,
-      ativo: owner.ativo,
-      vinculoAprovadoEm: owner.vinculoAprovadoEm,
+      role: owner.role,
+      active: owner.active,
+      membershipApprovedAt: owner.membershipApprovedAt,
     })
 
     for (let index = 1; index <= 6; index += 1) {
-      const broker = await prisma.usuario.create({
+      const broker = await prisma.user.create({
         data: {
           tenantId,
-          nome: `Corretor ${index}`,
+          name: `Corretor ${index}`,
           email: `top-brokers-${index}-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
-          papel: 'AGENT',
+          passwordHash: 'hash-fake',
+          role: 'AGENT',
         },
       })
       brokerIds.push(broker.id)
@@ -55,47 +55,47 @@ describe('/api/agency-dashboard/overview — ranking de corretores (integração
 
     async function contract(
       brokerIndex: number,
-      valor: number,
-      ativadoEm: string,
-      status: 'ATIVO' | 'RASCUNHO' = 'ATIVO',
+      price: number,
+      activatedAt: string,
+      status: 'ACTIVE' | 'DRAFT' = 'ACTIVE',
     ) {
-      const imovel = await prisma.imovel.create({
+      const property = await prisma.property.create({
         data: {
           tenantId,
-          responsavelId: brokerIds[brokerIndex - 1],
-          titulo: `Imóvel ${brokerIndex} ${ativadoEm}`,
-          finalidade: 'ALUGUEL',
-          tipo: 'APARTAMENTO',
-          valor,
+          responsibleId: brokerIds[brokerIndex - 1],
+          title: `Imóvel ${brokerIndex} ${activatedAt}`,
+          purpose: 'RENT',
+          type: 'APARTMENT',
+          price,
           status: 'RENTED',
         },
       })
-      const oportunidade = await prisma.oportunidade.create({
+      const opportunity = await prisma.opportunity.create({
         data: {
           tenantId,
-          imovelId: imovel.id,
-          responsavelId: await propertyResponsibleId(prisma, imovel.id),
-          interessadoNome: 'Interessado',
-          interessadoEmail: `top-brokers-${randomUUID()}@example.com`,
-          valorProposto: valor,
-          status: 'ACEITA',
+          propertyId: property.id,
+          responsibleId: await propertyResponsibleId(prisma, property.id),
+          interestedName: 'Interessado',
+          interestedEmail: `top-brokers-${randomUUID()}@example.com`,
+          proposedValue: price,
+          status: 'ACCEPTED',
         },
       })
-      await prisma.contrato.create({
+      await prisma.contract.create({
         data: {
           tenantId,
-          imovelId: imovel.id,
-          oportunidadeOrigemId: oportunidade.id,
-          codigo: `CTR-${randomUUID()}`,
-          tipo: 'RESIDENCIAL',
-          valor,
-          diaVencimento: 5,
-          dataInicio: new Date('2026-01-01T00:00:00.000Z'),
-          dataFim: new Date('2027-01-01T00:00:00.000Z'),
-          indiceReajuste: 'IGPM',
-          tipoGarantia: 'CAUCAO',
+          propertyId: property.id,
+          sourceOpportunityId: opportunity.id,
+          code: `CTR-${randomUUID()}`,
+          type: 'RESIDENTIAL',
+          amount: price,
+          dueDay: 5,
+          startDate: new Date('2026-01-01T00:00:00.000Z'),
+          endDate: new Date('2027-01-01T00:00:00.000Z'),
+          adjustmentIndex: 'IGPM',
+          guaranteeType: 'DEPOSIT',
           status,
-          ativadoEm: status === 'ATIVO' ? new Date(ativadoEm) : null,
+          activatedAt: status === 'ACTIVE' ? new Date(activatedAt) : null,
         },
       })
     }
@@ -105,7 +105,7 @@ describe('/api/agency-dashboard/overview — ranking de corretores (integração
     await contract(1, 2000, '2026-09-05T12:00:00.000Z')
     await contract(1, 300, '2026-09-08T12:00:00.000Z')
     await contract(1, 200, '2026-09-10T12:00:00.000Z')
-    await contract(1, 99999, '2026-09-11T12:00:00.000Z', 'RASCUNHO')
+    await contract(1, 99999, '2026-09-11T12:00:00.000Z', 'DRAFT')
     // Corretores 2 e 3 empatam em 3.000: vence a ativação mais recente (corretor 2).
     await contract(2, 3000, '2026-09-20T12:00:00.000Z')
     await contract(3, 3000, '2026-08-20T12:00:00.000Z')
@@ -117,9 +117,9 @@ describe('/api/agency-dashboard/overview — ranking de corretores (integração
 
   afterAll(async () => {
     if (tenantId) {
-      await prisma.contrato.deleteMany({ where: { tenantId } })
-      await prisma.oportunidade.deleteMany({ where: { tenantId } })
-      await prisma.imovel.deleteMany({ where: { tenantId } })
+      await prisma.contract.deleteMany({ where: { tenantId } })
+      await prisma.opportunity.deleteMany({ where: { tenantId } })
+      await prisma.property.deleteMany({ where: { tenantId } })
       await prisma.tenant.delete({ where: { id: tenantId } })
     }
     await prisma.$disconnect()

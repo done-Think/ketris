@@ -25,84 +25,84 @@ export async function seedCrmFixtures(
   assertLocalDatabase()
   if (!/^[a-z0-9-]+$/.test(suffix)) throw new Error('Identificador de fixture inválido.')
   const tenant = await prisma.tenant.create({
-    data: { nome: 'CRM E2E', slug: 'crm-e2e-' + suffix },
+    data: { name: 'CRM E2E', slug: 'crm-e2e-' + suffix },
   })
   const foreignTenant = await prisma.tenant.create({
-    data: { nome: 'Outro CRM E2E', slug: 'crm-e2e-foreign-' + suffix },
+    data: { name: 'Outro CRM E2E', slug: 'crm-e2e-foreign-' + suffix },
   })
-  const senhaHash = await bcrypt.hash(password, 10)
-  const owner = await prisma.usuario.create({
+  const passwordHash = await bcrypt.hash(password, 10)
+  const owner = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Gestora CRM E2E',
+      name: 'Gestora CRM E2E',
       email: 'owner-' + suffix + '@crm.example.test',
-      senhaHash,
-      papel: 'OWNER',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'OWNER',
+      emailVerifiedAt: new Date(),
     },
   })
-  const agent = await prisma.usuario.create({
+  const agent = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Corretor CRM E2E',
+      name: 'Corretor CRM E2E',
       email: 'agent-' + suffix + '@crm.example.test',
-      senhaHash,
-      papel: 'AGENT',
-      emailVerificadoEm: new Date(),
-      vinculoAprovadoEm: new Date(),
+      passwordHash,
+      role: 'AGENT',
+      emailVerifiedAt: new Date(),
+      membershipApprovedAt: new Date(),
     },
   })
-  const foreign = await prisma.usuario.create({
+  const foreign = await prisma.user.create({
     data: {
       tenantId: foreignTenant.id,
-      nome: 'Foreign CRM',
+      name: 'Foreign CRM',
       email: 'foreign-' + suffix + '@crm.example.test',
-      senhaHash,
-      papel: 'OWNER',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'OWNER',
+      emailVerifiedAt: new Date(),
     },
   })
-  const property = await prisma.imovel.create({
+  const property = await prisma.property.create({
     data: {
       tenantId: tenant.id,
-      responsavelId: agent.id,
-      titulo: 'Apartamento CRM não publicado',
-      finalidade: 'ALUGUEL',
-      tipo: 'APARTAMENTO',
-      valor: 1800.45,
+      responsibleId: agent.id,
+      title: 'Apartamento CRM não publicado',
+      purpose: 'RENT',
+      type: 'APARTMENT',
+      price: 1800.45,
       status: 'DRAFT',
     },
   })
-  const linkedProperty = await prisma.imovel.create({
+  const linkedProperty = await prisma.property.create({
     data: {
       tenantId: tenant.id,
-      responsavelId: owner.id,
-      titulo: 'Casa da gestão CRM',
-      finalidade: 'VENDA',
-      tipo: 'CASA',
-      valor: 500000,
+      responsibleId: owner.id,
+      title: 'Casa da gestão CRM',
+      purpose: 'SALE',
+      type: 'HOUSE',
+      price: 500000,
       status: 'DRAFT',
     },
   })
-  const foreignProperty = await prisma.imovel.create({
+  const foreignProperty = await prisma.property.create({
     data: {
       tenantId: foreignTenant.id,
-      responsavelId: foreign.id,
-      titulo: 'Imóvel de outro tenant',
-      finalidade: 'ALUGUEL',
-      tipo: 'APARTAMENTO',
-      valor: 1800,
+      responsibleId: foreign.id,
+      title: 'Imóvel de outro tenant',
+      purpose: 'RENT',
+      type: 'APARTMENT',
+      price: 1800,
       status: 'PUBLISHED',
     },
   })
-  const foreignOpportunity = await prisma.oportunidade.create({
+  const foreignOpportunity = await prisma.opportunity.create({
     data: {
       tenantId: foreignTenant.id,
-      imovelId: foreignProperty.id,
-      responsavelId: await propertyResponsibleId(prisma, foreignProperty.id),
-      interessadoNome: 'Pessoa de outra imobiliária',
-      interessadoEmail: 'foreign-' + suffix + '@crm.test',
-      valorProposto: 1800,
+      propertyId: foreignProperty.id,
+      responsibleId: await propertyResponsibleId(prisma, foreignProperty.id),
+      interestedName: 'Pessoa de outra imobiliária',
+      interestedEmail: 'foreign-' + suffix + '@crm.test',
+      proposedValue: 1800,
     },
   })
   let contactId: string | null = null,
@@ -111,27 +111,27 @@ export async function seedCrmFixtures(
   const contactName = 'Contato CRM principal'
   if (!empty) {
     for (let index = 0; index < 7; index++) {
-      const contact = await prisma.contato.create({
+      const contact = await prisma.contact.create({
         data: {
           tenantId: tenant.id,
           createdById: owner.id,
-          nome: index === 0 ? contactName : 'Contato CRM ' + index,
+          name: index === 0 ? contactName : 'Contato CRM ' + index,
           email: 'contact-' + index + '-' + suffix + '@crm.test',
-          telefone: '11999999999',
-          tipo: 'LOCATARIO',
+          phone: '11999999999',
+          type: 'RENTER',
         },
       })
-      const opportunity = await prisma.oportunidade.create({
+      const opportunity = await prisma.opportunity.create({
         data: {
           tenantId: tenant.id,
-          imovelId: property.id,
-          responsavelId: await propertyResponsibleId(prisma, property.id),
-          contatoId: contact.id,
-          interessadoNome: contact.nome,
-          interessadoEmail: contact.email,
-          interessadoTelefone: contact.telefone,
-          valorProposto: 1800.45,
-          status: 'RASCUNHO',
+          propertyId: property.id,
+          responsibleId: await propertyResponsibleId(prisma, property.id),
+          contactId: contact.id,
+          interestedName: contact.name,
+          interestedEmail: contact.email,
+          interestedPhone: contact.phone,
+          proposedValue: 1800.45,
+          status: 'DRAFT',
           createdAt: new Date(Date.now() - index * 1000),
         },
       })
@@ -139,17 +139,17 @@ export async function seedCrmFixtures(
         contactId = contact.id
         opportunityId = opportunity.id
         linkedOpportunityId = (
-          await prisma.oportunidade.create({
+          await prisma.opportunity.create({
             data: {
               tenantId: tenant.id,
-              imovelId: linkedProperty.id,
-              responsavelId: await propertyResponsibleId(prisma, linkedProperty.id),
-              contatoId: contact.id,
-              interessadoNome: contact.nome,
-              interessadoEmail: contact.email,
-              interessadoTelefone: contact.telefone,
-              valorProposto: 500000,
-              status: 'ENVIADA',
+              propertyId: linkedProperty.id,
+              responsibleId: await propertyResponsibleId(prisma, linkedProperty.id),
+              contactId: contact.id,
+              interestedName: contact.name,
+              interestedEmail: contact.email,
+              interestedPhone: contact.phone,
+              proposedValue: 500000,
+              status: 'SENT',
             },
           })
         ).id
@@ -159,13 +159,13 @@ export async function seedCrmFixtures(
       await prisma.lead.create({
         data: {
           tenantId: tenant.id,
-          responsavelId: agent.id,
-          nome: index === 5 ? 'Lead CRM Último' : 'Lead CRM ' + index,
-          telefone: '11999999999',
+          responsibleId: agent.id,
+          name: index === 5 ? 'Lead CRM Último' : 'Lead CRM ' + index,
+          phone: '11999999999',
           email: 'lead-' + index + '-' + suffix + '@crm.test',
-          interesse: 'Apartamento',
-          orcamento: 'A combinar',
-          origem: 'SITE',
+          interest: 'Apartamento',
+          budget: 'A combinar',
+          source: 'WEBSITE',
           createdAt: new Date(Date.now() - index * 1000),
         },
       })
@@ -176,7 +176,7 @@ export async function seedCrmFixtures(
     ownerEmail: owner.email,
     agentEmail: agent.email,
     propertyId: property.id,
-    propertyTitle: property.titulo,
+    propertyTitle: property.title,
     contactId,
     contactName,
     opportunityId,
@@ -189,22 +189,22 @@ export async function readCrmEvidence(
   { tenantId, contactId }: { tenantId: string; contactId: string },
 ): Promise<CrmEvidence> {
   await assertFixtureTenant(prisma, tenantId)
-  const contact = await prisma.contato.findFirst({ where: { id: contactId, tenantId } })
-  const opportunities = await prisma.oportunidade.findMany({
-    where: { tenantId, contatoId: contactId },
+  const contact = await prisma.contact.findFirst({ where: { id: contactId, tenantId } })
+  const opportunities = await prisma.opportunity.findMany({
+    where: { tenantId, contactId: contactId },
   })
   const audits = await prisma.crmAuditEvent.findMany({
     where: { tenantId, entityId: { in: [contactId, ...opportunities.map((item) => item.id)] } },
     select: { action: true, entityType: true, actorUserId: true, changedFields: true },
   })
   return {
-    contact: contact ? { name: contact.nome, email: contact.email, phone: contact.telefone } : null,
+    contact: contact ? { name: contact.name, email: contact.email, phone: contact.phone } : null,
     opportunities: opportunities.map((item) => ({
       id: item.id,
-      leadName: item.interessadoNome,
-      leadEmail: item.interessadoEmail,
-      specialConditions: item.condicoesEspeciais,
-      notes: item.observacoes,
+      leadName: item.interestedName,
+      leadEmail: item.interestedEmail,
+      specialConditions: item.specialConditions,
+      notes: item.notes,
     })),
     audits,
   }
@@ -212,8 +212,8 @@ export async function readCrmEvidence(
 export async function cleanupCrmFixtures(prisma: PrismaClient, tenantIds: string[]): Promise<null> {
   for (const tenantId of tenantIds) {
     await assertFixtureTenant(prisma, tenantId)
-    await prisma.oportunidade.deleteMany({ where: { tenantId } })
-    await prisma.imovel.deleteMany({ where: { tenantId } })
+    await prisma.opportunity.deleteMany({ where: { tenantId } })
+    await prisma.property.deleteMany({ where: { tenantId } })
     await prisma.tenant.delete({ where: { id: tenantId } })
   }
   return null

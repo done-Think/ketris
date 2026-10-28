@@ -18,7 +18,7 @@ function buildListingPrice(
 ): string {
   const formatted = formatCompactCurrency(listing.price, locale)
 
-  return listing.purpose === 'ALUGUEL' ? t('monthly', { price: formatted }) : formatted
+  return listing.purpose === 'RENT' ? t('monthly', { price: formatted }) : formatted
 }
 
 export function toBrokerProfile(

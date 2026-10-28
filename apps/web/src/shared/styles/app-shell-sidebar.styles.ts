@@ -1,0 +1,125 @@
+import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+
+export const styles = {
+  box: { position: 'relative', height: '100%' },
+  stack: (width: number, collapsed: boolean) =>
+    ({
+      width,
+      height: '100%',
+      bgcolor: brand.graphite[600],
+      color: surface.lightText,
+      overflow: 'hidden',
+      px: collapsed ? 1 : 2,
+      py: 2.5,
+      transition: 'width 180ms ease, padding 180ms ease',
+      '@media (max-height: 760px)': { py: 1.5 },
+    }) as const,
+  stack2: {
+    width: '100%',
+    height: 48,
+    flexShrink: 0,
+    mb: 1.5,
+    position: 'relative',
+    '@media (max-height: 760px)': { mb: 1 },
+  },
+  appLogo: { left: '50%', position: 'absolute', top: 0, transform: 'translateX(-50%)' },
+  stack3: (collapsed: boolean) =>
+    ({
+      mx: collapsed ? 0 : -0.5,
+      flex: 1,
+      minHeight: 0,
+      gap: 0.5,
+      '@media (max-height: 760px)': { gap: 0.25 },
+    }) as const,
+  skeleton: (collapsed: boolean) =>
+    ({
+      alignSelf: collapsed ? 'center' : 'stretch',
+      bgcolor: alpha.white[8],
+      borderRadius: `${radius.sm}px`,
+      width: collapsed ? 44 : '100%',
+      flex: '0 1 44px',
+      minHeight: 24,
+    }) as const,
+  box2: (collapsed: boolean, active: boolean) =>
+    ({
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: collapsed ? 'center' : 'flex-start',
+      gap: 1.5,
+      flex: '0 1 44px',
+      minHeight: 24,
+      px: collapsed ? 0 : 1.5,
+      width: collapsed ? 44 : '100%',
+      alignSelf: collapsed ? 'center' : 'stretch',
+      borderLeft: '3px solid',
+      borderColor: active ? 'primary.main' : 'transparent',
+      borderRadius: `${radius.sm}px`,
+      bgcolor: active ? alpha.white[8] : 'transparent',
+      color: active ? surface.lightText : alpha.white[62],
+      textDecoration: 'none',
+      transition: 'background-color 160ms ease, color 160ms ease',
+      '&:hover': {
+        bgcolor: alpha.white[8],
+        color: surface.lightText,
+      },
+    }) as const,
+  icon: (active: boolean) =>
+    ({
+      display: 'block',
+      flexShrink: 0,
+      fontSize: iconSize.md + 1,
+      width: iconSize.md + 1,
+      height: iconSize.md + 1,
+      color: active ? 'primary.main' : 'inherit',
+    }) as const,
+  typography: (collapsed: boolean, active: boolean) =>
+    ({
+      display: collapsed ? 'none' : 'flex',
+      alignItems: 'center',
+      fontFamily: 'var(--font-inter), system-ui, -apple-system, sans-serif',
+      fontSize: 14,
+      fontWeight: active ? 600 : 500,
+      lineHeight: `${iconSize.md + 1}px`,
+      letterSpacing: 0,
+    }) as const,
+  stack4: {
+    mt: 'auto',
+    pt: 2,
+    flexShrink: 0,
+    borderTop: '1px solid',
+    borderColor: alpha.white[8],
+    '@media (max-height: 760px)': { pt: 1 },
+  },
+  buttonBase: (collapsed: boolean, isPersonalProfileRoute: boolean) =>
+    ({
+      display: 'flex',
+      flexGrow: collapsed ? 0 : 1,
+      alignItems: 'center',
+      justifyContent: collapsed ? 'center' : 'flex-start',
+      gap: 1.3,
+      minWidth: 0,
+      borderRadius: `${radius.sm}px`,
+      p: 0.5,
+      bgcolor: isPersonalProfileRoute ? alpha.white[8] : 'transparent',
+      color: isPersonalProfileRoute ? surface.lightText : 'inherit',
+      '&:hover': { bgcolor: alpha.white[8] },
+    }) as const,
+  avatar: {
+    width: 38,
+    height: 38,
+    bgcolor: 'primary.main',
+    fontSize: 11,
+    fontWeight: 800,
+  },
+  box3: (collapsed: boolean) =>
+    ({ display: collapsed ? 'none' : 'block', minWidth: 0, textAlign: 'left' }) as const,
+  typography2: { fontSize: 13, fontWeight: 800 },
+  typography3: { color: alpha.white[56], fontSize: 10.5 },
+  iconButton: {
+    width: 32,
+    height: 32,
+    color: alpha.white[62],
+    '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+  },
+  logoutOutlinedIcon: { fontSize: iconSize.sm },
+} as const

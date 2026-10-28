@@ -4,7 +4,17 @@ import { maintenanceCategories } from '@shared/lib/utils/maintenance-categories'
 
 import type { SchemaMessageTranslator } from '@shared/types'
 
-export function createMaintenanceTicketSchema(t: SchemaMessageTranslator) {
+export function createMaintenanceTicketSchema(
+  t: SchemaMessageTranslator<
+    | 'categoryRequired'
+    | 'contractRequired'
+    | 'descriptionRequired'
+    | 'descriptionTooLong'
+    | 'priorityRequired'
+    | 'titleRequired'
+    | 'titleTooLong'
+  >,
+) {
   return z.object({
     contractId: z.string().min(1, t('contractRequired')),
     category: z.enum(maintenanceCategories, { message: t('categoryRequired') }),
@@ -18,7 +28,9 @@ export function createMaintenanceTicketSchema(t: SchemaMessageTranslator) {
   })
 }
 
-export function createMaintenanceScheduleSchema(t: SchemaMessageTranslator) {
+export function createMaintenanceScheduleSchema(
+  t: SchemaMessageTranslator<'invalid' | 'required'>,
+) {
   return z.object({
     scheduledDate: z
       .string()

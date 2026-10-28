@@ -16,7 +16,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: CrmId
   const contact = await crmContainer.getContactUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     contactId: (await parseRouteParams(context.params, crmIdParamsSchema)).id,
   })
 
@@ -30,7 +30,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Crm
   const contact = await crmContainer.updateContactUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     contactId: (await parseRouteParams(context.params, crmIdParamsSchema)).id,
     changes: body,
   })
@@ -45,7 +45,7 @@ export const DELETE = withErrorHandling(
     const contact = await crmContainer.archiveContactUseCase.execute({
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       contactId: (await parseRouteParams(context.params, crmIdParamsSchema)).id,
     })
 

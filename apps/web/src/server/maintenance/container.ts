@@ -28,7 +28,7 @@ const maintenanceTicketRepository = new PrismaMaintenanceTicketRepository(
     contractsContainer.createContractPartyLinkUseCase(transaction).execute({
       actorTenantId: actor.actorTenantId,
       actorId: actor.actorId,
-      actorPapel: actor.actorPapel,
+      actorRole: actor.actorRole,
       contractId: input.contractId,
       partyId: input.partyId,
       userId: input.renterId,

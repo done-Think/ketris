@@ -4,13 +4,13 @@ import type { TeamInvitationRepository } from '../../../application/ports/team-i
 import type { TeamRepository } from '../../../application/ports/team-repository.port'
 import type { TeamStaffUser } from '../../../types/team-repository'
 
-export const owner = { actorId: 'owner-1', actorTenantId: 'tenant-1', actorPapel: 'OWNER' as const }
+export const owner = { actorId: 'owner-1', actorTenantId: 'tenant-1', actorRole: 'OWNER' as const }
 
 export function staff(overrides: Partial<TeamStaffUser>): TeamStaffUser {
   return {
     id: 'agent-1',
     name: 'Marina',
-    papel: 'AGENT',
+    role: 'AGENT',
     active: true,
     pendingInvitation: false,
     ...overrides,

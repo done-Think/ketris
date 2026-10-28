@@ -16,13 +16,13 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
     { label: t('summary.parkingSpaces'), value: property.summary.parkingSpaces },
     { label: t('summary.area'), value: property.summary.area },
     { label: t('summary.condominium'), value: property.summary.condominium },
-    { label: t('summary.iptu'), value: property.summary.iptu },
+    { label: t('summary.propertyTax'), value: property.summary.propertyTax },
   ]
   const pricingItems = [
     { label: t('pricing.rent'), value: property.pricing.rent },
     { label: t('pricing.sale'), value: property.pricing.sale },
     { label: t('pricing.condominium'), value: property.pricing.condominium },
-    { label: t('pricing.iptu'), value: property.pricing.iptu },
+    { label: t('pricing.propertyTax'), value: property.pricing.propertyTax },
     { label: t('pricing.administrationFee'), value: property.pricing.administrationFee },
     { label: t('pricing.securityDeposit'), value: property.pricing.securityDeposit },
     { label: t('pricing.lastAdjustment'), value: property.pricing.lastAdjustment },

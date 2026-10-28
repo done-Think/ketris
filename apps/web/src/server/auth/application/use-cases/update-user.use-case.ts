@@ -6,7 +6,7 @@ import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { EmailConfirmationRequiredError, UserNotFoundError } from '../../domain/errors'
-import { toAuthenticatedUser } from '../../domain/user.entity'
+import { toAuthenticatedUser } from '../authenticated-user'
 import type { UserRepository } from '../ports/user-repository.port'
 
 export class UpdateUserUseCase {
@@ -15,7 +15,7 @@ export class UpdateUserUseCase {
   async execute(input: UpdateUserInput): Promise<UpdateUserOutput> {
     const isSelfUpdate = input.actorId === input.userId
 
-    if (!isSelfUpdate && !isAgencyManager(input.actorPapel)) {
+    if (!isSelfUpdate && !isAgencyManager(input.actorRole)) {
       throw new ForbiddenError('Apenas a gestão da imobiliária pode editar usuários.')
     }
 
@@ -28,7 +28,7 @@ export class UpdateUserUseCase {
     if (input.avatarUrl !== undefined) {
       if (!isSelfUpdate)
         throw new ForbiddenError('O avatar só pode ser alterado pelo próprio usuário.')
-      if (!target.ativo) throw new AccountDeactivatedError()
+      if (!target.active) throw new AccountDeactivatedError()
       assertAvatarScope(
         input.avatarUrl,
         input.actorTenantId,
@@ -37,7 +37,7 @@ export class UpdateUserUseCase {
       )
     }
 
-    if (isSelfUpdate && input.papel !== undefined) {
+    if (isSelfUpdate && input.role !== undefined) {
       throw new ForbiddenError('O próprio usuário não pode alterar seu papel.')
     }
 
@@ -46,13 +46,13 @@ export class UpdateUserUseCase {
     }
 
     const updated = await this.userRepository.update(input.userId, {
-      nome: input.nome,
+      name: input.name,
       tenantId: input.actorTenantId,
       auditActor: { kind: 'USER', id: input.actorId },
-      telefone: input.telefone,
+      phone: input.phone,
       creci: input.creci,
       avatarUrl: input.avatarUrl,
-      papel: input.papel,
+      role: input.role,
     })
 
     return toAuthenticatedUser(updated)

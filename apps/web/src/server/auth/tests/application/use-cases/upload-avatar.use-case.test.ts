@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { User, Papel } from '../../../domain/user.entity'
+import type { User, UserRole } from '../../../domain/user.entity'
 import type { UserRepository } from '../../../application/ports/user-repository.port'
 import { UploadAvatarUseCase } from '../../../application/use-cases/upload-avatar.use-case'
 import { UpdateUserUseCase } from '../../../application/use-cases/update-user.use-case'
@@ -8,12 +8,12 @@ import { UpdateUserUseCase } from '../../../application/use-cases/update-user.us
 const user: User = {
   id: 'user-1',
   tenantId: 'tenant-1',
-  nome: 'Usuário',
+  name: 'Usuário',
   email: 'user@example.test',
-  senhaHash: 'hash',
-  papel: 'RENTER',
-  ativo: true,
-  vinculoAprovadoEm: null,
+  passwordHash: 'hash',
+  role: 'RENTER',
+  active: true,
+  membershipApprovedAt: null,
   avatarUrl: null,
 }
 const input = {
@@ -46,10 +46,10 @@ function dependencies(currentUser = user) {
 }
 
 describe('own avatar access', () => {
-  it.each(['OWNER', 'AGENT', 'RENTER', 'PROPERTY_OWNER'] satisfies Papel[])(
+  it.each(['OWNER', 'AGENT', 'RENTER', 'PROPERTY_OWNER'] satisfies UserRole[])(
     'allows active %s users to upload only to their own namespace',
-    async (papel) => {
-      const deps = dependencies({ ...user, papel })
+    async (role) => {
+      const deps = dependencies({ ...user, role })
       await deps.upload.execute(input)
       expect(deps.storage.upload).toHaveBeenCalledWith(
         expect.objectContaining({ tenantId: user.tenantId, userId: user.id }),
@@ -57,7 +57,7 @@ describe('own avatar access', () => {
     },
   )
   it('revalidates user activity and tenant before writing to storage', async () => {
-    const inactive = dependencies({ ...user, ativo: false })
+    const inactive = dependencies({ ...user, active: false })
     await expect(inactive.upload.execute(input)).rejects.toMatchObject({
       code: 'ACCOUNT_DEACTIVATED',
     })
@@ -85,7 +85,7 @@ describe('own avatar access', () => {
       new UpdateUserUseCase(deps.users).execute({
         actorId: 'admin-1',
         actorTenantId: user.tenantId,
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         userId: user.id,
         avatarUrl: '/api/auth/media/avatars/tenant-1/user-1/avatar.png',
       }),
@@ -98,7 +98,7 @@ describe('own avatar access', () => {
     const base = {
       actorId: user.id,
       actorTenantId: user.tenantId,
-      actorPapel: user.papel,
+      actorRole: user.role,
       userId: user.id,
     }
     await expect(

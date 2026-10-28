@@ -23,9 +23,9 @@ export function AgencyHighlightedTeam({ brand, team }: AgencyHighlightedTeamProp
       <Box sx={styles.box2}>
         {team.map((member) => (
           <Box
-            key={member.usuarioId}
+            key={member.userId}
             component={Link}
-            href={buildPublicProfileHref(`/brokers/${member.usuarioId}`, 'broker')}
+            href={buildPublicProfileHref(`/brokers/${member.userId}`, 'broker')}
             aria-label={t('viewBrokerProfile', { name: member.name })}
             sx={getBoxStyles({ brand })}
           >

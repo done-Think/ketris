@@ -2,7 +2,7 @@ import type {
   DashboardProperty,
   DashboardPropertyMappingOptions,
 } from '../../types/dashboard-property'
-import { translatePropertyType } from '../../utils/map-dashboard-property'
+import type { PropertyType } from '../../types/property'
 
 const apartmentMedia = [
   {
@@ -55,13 +55,13 @@ export const dashboardProperties: DashboardProperty[] = [
       parkingSpaces: '2',
       area: '95m²',
       condominium: 'R$ 1.200',
-      iptu: 'R$ 380/mês',
+      propertyTax: 'R$ 380/mês',
     },
     pricing: {
       rent: 'R$ 6.500/mês',
       sale: 'Não anunciado',
       condominium: 'R$ 1.200',
-      iptu: 'R$ 380/mês',
+      propertyTax: 'R$ 380/mês',
       administrationFee: '8% sobre aluguel',
       securityDeposit: '3 aluguéis',
       lastAdjustment: 'R$ 300 há 5 dias',
@@ -135,13 +135,13 @@ export const dashboardProperties: DashboardProperty[] = [
       parkingSpaces: '1',
       area: '42m²',
       condominium: 'R$ 680',
-      iptu: 'R$ 180/mês',
+      propertyTax: 'R$ 180/mês',
     },
     pricing: {
       rent: 'R$ 3.200/mês',
       sale: 'Não anunciado',
       condominium: 'R$ 680',
-      iptu: 'R$ 180/mês',
+      propertyTax: 'R$ 180/mês',
       administrationFee: '7% sobre aluguel',
       securityDeposit: 'Seguro fiança',
       lastAdjustment: 'Sem reajuste recente',
@@ -200,13 +200,13 @@ export const dashboardProperties: DashboardProperty[] = [
       parkingSpaces: '4',
       area: '240m²',
       condominium: 'R$ 3.900',
-      iptu: 'R$ 1.450/mês',
+      propertyTax: 'R$ 1.450/mês',
     },
     pricing: {
       rent: 'Não anunciado',
       sale: 'R$ 4.500.000',
       condominium: 'R$ 3.900',
-      iptu: 'R$ 1.450/mês',
+      propertyTax: 'R$ 1.450/mês',
       administrationFee: '2% na venda',
       securityDeposit: 'Não aplicável',
       lastAdjustment: 'Preço validado há 3 dias',
@@ -265,13 +265,13 @@ export const dashboardProperties: DashboardProperty[] = [
       parkingSpaces: '3',
       area: '310m²',
       condominium: 'Isento',
-      iptu: 'R$ 980/mês',
+      propertyTax: 'R$ 980/mês',
     },
     pricing: {
       rent: 'Não anunciado',
       sale: 'R$ 3.800.000',
       condominium: 'Isento',
-      iptu: 'R$ 980/mês',
+      propertyTax: 'R$ 980/mês',
       administrationFee: '2% na venda',
       securityDeposit: 'Não aplicável',
       lastAdjustment: 'Em análise documental',
@@ -329,13 +329,13 @@ export const dashboardProperties: DashboardProperty[] = [
       parkingSpaces: '0',
       area: '34m²',
       condominium: 'R$ 520',
-      iptu: 'R$ 140/mês',
+      propertyTax: 'R$ 140/mês',
     },
     pricing: {
       rent: 'R$ 2.400/mês',
       sale: 'Não anunciado',
       condominium: 'R$ 520',
-      iptu: 'R$ 140/mês',
+      propertyTax: 'R$ 140/mês',
       administrationFee: '7% sobre aluguel',
       securityDeposit: '2 aluguéis',
       lastAdjustment: 'Publicação vence em 7 dias',
@@ -393,13 +393,13 @@ export const dashboardProperties: DashboardProperty[] = [
       parkingSpaces: '1',
       area: '78m²',
       condominium: 'R$ 940',
-      iptu: 'R$ 260/mês',
+      propertyTax: 'R$ 260/mês',
     },
     pricing: {
       rent: 'R$ 4.800/mês',
       sale: 'Não anunciado',
       condominium: 'R$ 940',
-      iptu: 'R$ 260/mês',
+      propertyTax: 'R$ 260/mês',
       administrationFee: '8% sobre aluguel',
       securityDeposit: 'Cadastro pausado',
       lastAdjustment: 'Inativado há 2 semanas',
@@ -553,24 +553,30 @@ export function localizeDashboardPropertyFixture(
   options: DashboardPropertyMappingOptions,
 ): DashboardProperty {
   const isRent = property.purpose === 'Aluguel'
+  const propertyTypes: Record<string, PropertyType> = {
+    Apartamento: 'apartment',
+    Casa: 'house',
+    Cobertura: 'penthouse',
+    Studio: 'studio',
+  }
 
   return {
     ...property,
-    type: translatePropertyType(property.type, options.messages),
+    type: options.messages.propertyTypes[propertyTypes[property.type] ?? 'other'],
     purpose: isRent ? options.messages.purposes.rent : options.messages.purposes.sale,
     price: translatePlaceholder(property.price, options),
     updatedAt: translateRelativeDate(property.updatedAt, options.locale),
     summary: {
       ...property.summary,
       condominium: translatePlaceholder(property.summary.condominium, options),
-      iptu: translatePlaceholder(property.summary.iptu, options),
+      propertyTax: translatePlaceholder(property.summary.propertyTax, options),
     },
     pricing: {
       ...property.pricing,
       rent: translatePlaceholder(property.pricing.rent, options),
       sale: translatePlaceholder(property.pricing.sale, options),
       condominium: translatePlaceholder(property.pricing.condominium, options),
-      iptu: translatePlaceholder(property.pricing.iptu, options),
+      propertyTax: translatePlaceholder(property.pricing.propertyTax, options),
       administrationFee: translateAdministrationFee(property.pricing.administrationFee, options),
       securityDeposit: translateSecurityDeposit(property.pricing.securityDeposit, options),
       lastAdjustment: translateLastAdjustment(property.pricing.lastAdjustment, options),

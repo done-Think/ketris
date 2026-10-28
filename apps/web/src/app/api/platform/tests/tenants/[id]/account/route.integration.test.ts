@@ -19,22 +19,22 @@ describe('PATCH /api/platform/tenants/[id]/account (integração)', () => {
   beforeAll(async () => {
     const actor = await prisma.platformAdmin.create({
       data: {
-        nome: 'Ator Conta',
+        name: 'Ator Conta',
         email: `ator-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
+        passwordHash: 'hash-fake',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
       role: 'ADMIN',
-      ativo: true,
+      active: true,
     })
 
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Conta', slug: `tenant-conta-${randomUUID()}` },
+      data: { name: 'Tenant Conta', slug: `tenant-conta-${randomUUID()}` },
     })
     tenantId = tenant.id
   })
@@ -49,7 +49,7 @@ describe('PATCH /api/platform/tenants/[id]/account (integração)', () => {
 
   async function createTenant() {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Histórico', slug: `tenant-historico-${randomUUID()}` },
+      data: { name: 'Tenant Histórico', slug: `tenant-historico-${randomUUID()}` },
     })
     extraTenantIds.push(tenant.id)
 
@@ -103,24 +103,24 @@ describe('PATCH /api/platform/tenants/[id]/account (integração)', () => {
   })
 
   it.each([
-    { role: 'AGENT' as const, ativo: true, status: 403 },
-    { role: 'ADMIN_AGENT' as const, ativo: true, status: 403 },
-    { role: 'ADMIN' as const, ativo: false, status: 401 },
+    { role: 'AGENT' as const, active: true, status: 403 },
+    { role: 'ADMIN_AGENT' as const, active: true, status: 403 },
+    { role: 'ADMIN' as const, active: false, status: 401 },
   ])(
     'retorna $status para platform admin $role (ativo: $ativo) sem gravar nada',
-    async ({ role, ativo, status }) => {
+    async ({ role, active, status }) => {
       const tenant = await createTenant()
       const admin = await prisma.platformAdmin.create({
         data: {
-          nome: 'Ator Sem Permissão',
+          name: 'Ator Sem Permissão',
           email: `ator-${randomUUID()}@ketris.dev`,
-          senhaHash: 'x',
+          passwordHash: 'x',
           role,
-          ativo,
+          active,
         },
       })
       // The token was issued while the admin still had access: the database decides.
-      const token = await tokenService.sign({ ...admin, role: 'ADMIN', ativo: true })
+      const token = await tokenService.sign({ ...admin, role: 'ADMIN', active: true })
 
       try {
         const response = await patch(
@@ -308,14 +308,14 @@ describe('PATCH /api/platform/tenants/[id]/account (integração)', () => {
   it('mantém o histórico quando o platform admin é removido e apaga junto com o tenant', async () => {
     const tenant = await createTenant()
     const otherAdmin = await prisma.platformAdmin.create({
-      data: { nome: 'Ator Removido', email: `ator-${randomUUID()}@ketris.dev`, senhaHash: 'x' },
+      data: { name: 'Ator Removido', email: `ator-${randomUUID()}@ketris.dev`, passwordHash: 'x' },
     })
     const otherToken = await tokenService.sign({
       id: otherAdmin.id,
-      nome: otherAdmin.nome,
+      name: otherAdmin.name,
       email: otherAdmin.email,
       role: 'ADMIN',
-      ativo: true,
+      active: true,
     })
 
     await patch(
@@ -342,47 +342,47 @@ describe('GET /api/platform/tenants – mensalidade (integração)', () => {
   beforeAll(async () => {
     const actor = await prisma.platformAdmin.create({
       data: {
-        nome: 'Ator Mensalidade',
+        name: 'Ator Mensalidade',
         email: `ator-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
+        passwordHash: 'hash-fake',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
       role: 'ADMIN',
-      ativo: true,
+      active: true,
     })
     const tenant = await prisma.tenant.create({
       data: {
-        nome: 'Corretor Mensalidade',
+        name: 'Corretor Mensalidade',
         slug: `corretor-mensalidade-${randomUUID()}`,
         accountType: 'BROKER',
       },
     })
     tenantId = tenant.id
-    const owner = await prisma.usuario.create({
+    const owner = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Responsável',
+        name: 'Responsável',
         email: `responsavel-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     // 12 properties count toward the plan; the inactive one does not.
     const statuses = [...Array<'PUBLISHED'>(12).fill('PUBLISHED'), 'INACTIVE' as const]
     for (const [index, status] of statuses.entries()) {
-      await prisma.imovel.create({
+      await prisma.property.create({
         data: {
           tenantId,
-          responsavelId: owner.id,
-          titulo: `Imóvel ${index}`,
-          finalidade: 'VENDA',
-          tipo: 'CASA',
-          valor: 1000,
+          responsibleId: owner.id,
+          title: `Imóvel ${index}`,
+          purpose: 'SALE',
+          type: 'HOUSE',
+          price: 1000,
           status,
         },
       })

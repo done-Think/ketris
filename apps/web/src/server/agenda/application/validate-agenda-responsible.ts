@@ -12,9 +12,9 @@ export async function validateAgendaResponsible(
   if (
     !user ||
     user.tenantId !== tenantId ||
-    !user.ativo ||
-    !isAgencyStaff(user.papel) ||
-    (agentOnly && (user.papel !== 'AGENT' || !user.vinculoAprovadoEm))
+    !user.active ||
+    !isAgencyStaff(user.role) ||
+    (agentOnly && (user.role !== 'AGENT' || !user.membershipApprovedAt))
   )
     throw new AgendaResponsibleNotFoundError()
 }

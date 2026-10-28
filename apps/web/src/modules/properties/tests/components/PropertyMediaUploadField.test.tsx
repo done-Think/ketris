@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { AxiosError, AxiosHeaders } from 'axios'
 
 import { PropertyMediaUploadField } from '../../components/PropertyMediaUploadField'
 import { createDashboardPropertyDefaultValues } from '../../schemas/create-dashboard-property-schema'
@@ -23,13 +24,41 @@ function Wrapper({ initialMedia = [] }: { initialMedia?: PropertyMediaInput[] })
 
 describe('PropertyMediaUploadField', () => {
   beforeEach(() => vi.resetAllMocks())
+
+  it('shows the image service failure with the affected JPG and keeps it out of the form', async () => {
+    upload.mockRejectedValue(
+      new AxiosError('Unavailable', 'ERR_BAD_RESPONSE', undefined, undefined, {
+        status: 503,
+        statusText: 'Service Unavailable',
+        config: { headers: new AxiosHeaders() },
+        headers: {},
+        data: { error: { code: 'PROPERTY_MEDIA_STORAGE_UNAVAILABLE' } },
+      }),
+    )
+    const { container } = render(
+      <QueryClientProvider client={new QueryClient()}>
+        <Wrapper />
+      </QueryClientProvider>,
+    )
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [new File(['image'], 'fachada.jpg', { type: 'image/jpeg' })] },
+    })
+    await waitFor(() =>
+      expect(notify).toHaveBeenCalledWith(
+        'O serviço de imagens está indisponível. Não foi possível enviar "fachada.jpg". Tente novamente mais tarde.',
+        { variant: 'error' },
+      ),
+    )
+    expect(container.querySelector('img')).not.toBeInTheDocument()
+    expect(container.querySelector('input[type="file"]')).not.toBeDisabled()
+  })
   it('keeps successful images and identifies each file that failed', async () => {
     upload.mockImplementation((file: File) =>
       file.name === 'failed.png'
         ? Promise.reject(new Error('storage error'))
         : Promise.resolve({
             url: '/api/properties/media/properties/tenant-1/success.png',
-            type: 'foto',
+            type: 'photo',
           }),
     )
     const { container } = render(
@@ -64,7 +93,7 @@ describe('PropertyMediaUploadField', () => {
         ? new Promise<PropertyMediaInput>((resolve) => {
             finishUpload = resolve
           })
-        : Promise.resolve({ url: '/fast.png', type: 'foto' }),
+        : Promise.resolve({ url: '/fast.png', type: 'photo' }),
     )
     const { container } = render(
       <QueryClientProvider client={new QueryClient()}>
@@ -87,7 +116,7 @@ describe('PropertyMediaUploadField', () => {
       target: { files: [new File(['image'], 'extra.png', { type: 'image/png' })] },
     })
     expect(upload).toHaveBeenCalledTimes(2)
-    await act(async () => finishUpload({ url: '/slow.png', type: 'foto' }))
+    await act(async () => finishUpload({ url: '/slow.png', type: 'photo' }))
     await waitFor(() => expect(input).not.toBeDisabled())
     expect(screen.getAllByRole('button', { name: 'Remover imagem' })).toHaveLength(3)
     expect(container.querySelector('img[src="/existing.png"]')).toBeInTheDocument()

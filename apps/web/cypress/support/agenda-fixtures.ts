@@ -20,119 +20,119 @@ export async function seedAgendaFixtures(
   assertIsolatedAgendaDatabase()
   if (!/^[a-z0-9-]+$/.test(suffix)) throw new Error('Identificador de fixture inválido.')
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Agenda E2E', slug: `agenda-e2e-agency-${suffix}`, accountType: 'AGENCY' },
+    data: { name: 'Agenda E2E', slug: `agenda-e2e-agency-${suffix}`, accountType: 'AGENCY' },
   })
   const foreign = await prisma.tenant.create({
     data: {
-      nome: 'Outra imobiliária E2E',
+      name: 'Outra imobiliária E2E',
       slug: `agenda-e2e-other-${suffix}`,
       accountType: 'AGENCY',
     },
   })
   const renters = await prisma.tenant.create({
     data: {
-      nome: 'Locatários E2E',
+      name: 'Locatários E2E',
       slug: `agenda-e2e-renters-${suffix}`,
       accountType: 'INDIVIDUAL',
     },
   })
-  const senhaHash = await bcrypt.hash(password, 10)
-  const owner = await prisma.usuario.create({
+  const passwordHash = await bcrypt.hash(password, 10)
+  const owner = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Gestora Agenda E2E',
+      name: 'Gestora Agenda E2E',
       email: `owner-${suffix}@agenda.example.test`,
-      senhaHash,
-      papel: 'OWNER',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'OWNER',
+      emailVerifiedAt: new Date(),
     },
   })
-  const agent = await prisma.usuario.create({
+  const agent = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Corretora Agenda E2E',
+      name: 'Corretora Agenda E2E',
       email: `agent-${suffix}@agenda.example.test`,
-      senhaHash,
-      papel: 'AGENT',
-      emailVerificadoEm: new Date(),
-      vinculoAprovadoEm: new Date(),
+      passwordHash,
+      role: 'AGENT',
+      emailVerifiedAt: new Date(),
+      membershipApprovedAt: new Date(),
     },
   })
-  const renter = await prisma.usuario.create({
+  const renter = await prisma.user.create({
     data: {
       tenantId: renters.id,
-      nome: 'Locatária Agenda E2E',
+      name: 'Locatária Agenda E2E',
       email: `renter-${suffix}@agenda.example.test`,
-      senhaHash,
-      papel: 'RENTER',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'RENTER',
+      emailVerifiedAt: new Date(),
     },
   })
-  const outsider = await prisma.usuario.create({
+  const outsider = await prisma.user.create({
     data: {
       tenantId: foreign.id,
-      nome: 'Outra gestão',
+      name: 'Outra gestão',
       email: `foreign-${suffix}@agenda.example.test`,
-      senhaHash,
-      papel: 'OWNER',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'OWNER',
+      emailVerifiedAt: new Date(),
     },
   })
   let propertyId = ''
   for (let index = 0; index < 26; index++) {
-    const property = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId: tenant.id,
-        responsavelId: agent.id,
-        titulo: `Imóvel E2E ${String(index).padStart(2, '0')}`,
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        valor: 1000,
+        responsibleId: agent.id,
+        title: `Imóvel E2E ${String(index).padStart(2, '0')}`,
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 1000,
       },
     })
     if (index === 0) propertyId = property.id
   }
-  const privateProperty = await prisma.imovel.create({
+  const privateProperty = await prisma.property.create({
     data: {
       tenantId: foreign.id,
-      responsavelId: outsider.id,
-      titulo: 'Privado de outra imobiliária',
-      finalidade: 'VENDA',
-      tipo: 'APARTAMENTO',
-      valor: 100000,
+      responsibleId: outsider.id,
+      title: 'Privado de outra imobiliária',
+      purpose: 'SALE',
+      type: 'APARTMENT',
+      price: 100000,
     },
   })
-  const opportunity = await prisma.oportunidade.create({
+  const opportunity = await prisma.opportunity.create({
     data: {
       tenantId: tenant.id,
-      imovelId: propertyId,
-      responsavelId: await propertyResponsibleId(prisma, propertyId),
-      interessadoNome: renter.nome,
-      interessadoEmail: renter.email,
-      valorProposto: 1000,
-      status: 'ACEITA',
+      propertyId: propertyId,
+      responsibleId: await propertyResponsibleId(prisma, propertyId),
+      interestedName: renter.name,
+      interestedEmail: renter.email,
+      proposedValue: 1000,
+      status: 'ACCEPTED',
     },
   })
-  await prisma.contrato.create({
+  await prisma.contract.create({
     data: {
       tenantId: tenant.id,
-      imovelId: propertyId,
-      oportunidadeOrigemId: opportunity.id,
-      codigo: `AGENDA-E2E-${suffix}`,
-      valor: 1000,
-      diaVencimento: 5,
-      dataInicio: new Date('2020-01-01'),
-      dataFim: new Date('2035-01-01'),
-      indiceReajuste: 'IPCA',
-      tipoGarantia: 'CAUCAO',
-      status: 'ATIVO',
-      ativadoEm: new Date(),
-      ativadoPorId: owner.id,
-      partes: {
+      propertyId: propertyId,
+      sourceOpportunityId: opportunity.id,
+      code: `AGENDA-E2E-${suffix}`,
+      amount: 1000,
+      dueDay: 5,
+      startDate: new Date('2020-01-01'),
+      endDate: new Date('2035-01-01'),
+      adjustmentIndex: 'IPCA',
+      guaranteeType: 'DEPOSIT',
+      status: 'ACTIVE',
+      activatedAt: new Date(),
+      activatedById: owner.id,
+      parties: {
         create: {
-          usuarioId: renter.id,
-          papel: 'LOCATARIO',
-          nome: renter.nome,
+          userId: renter.id,
+          role: 'RENTER',
+          name: renter.name,
           email: renter.email,
           cpf: '00000000000',
         },
@@ -148,7 +148,7 @@ export async function seedAgendaFixtures(
     ownerEmail: owner.email,
     agentEmail: agent.email,
     renterEmail: renter.email,
-    ownerName: owner.nome,
+    ownerName: owner.name,
     propertyId,
     privatePropertyId: privateProperty.id,
   }

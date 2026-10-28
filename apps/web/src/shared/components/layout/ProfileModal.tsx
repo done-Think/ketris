@@ -1,20 +1,14 @@
 'use client'
 
+import { styles } from '@shared/styles/profile-modal.styles'
+
 import { useEffect, useState } from 'react'
 import { Avatar, Box, Button, Divider, IconButton, Stack, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import {
-  alpha,
-  componentText,
-  motion,
-  radius,
-  shadows,
-  surface,
-  zIndex,
-} from '@shared/theme/tokens'
+import { componentText } from '@shared/theme/tokens'
 import type { ProfileModalProps } from '@shared/types/profile-modal'
 import { getInitials } from '@shared/utils/get-initials'
 import { LanguageSelector } from './LanguageSelector'
@@ -78,55 +72,24 @@ export function ProfileModal({
       aria-modal="true"
       aria-label={t('dialogLabel')}
       onClick={onClose}
-      sx={{
-        position: 'fixed',
-        top: 60,
-        right: 0,
-        bottom: 0,
-        left: 0,
-        zIndex: zIndex.modal,
-        bgcolor: 'transparent',
-      }}
+      sx={styles.box}
     >
-      <Box
-        onClick={(event) => event.stopPropagation()}
-        sx={{
-          position: 'fixed',
-          top: { xs: 80, sm: panelPosition.top },
-          right: { xs: 12, sm: panelPosition.right },
-          left: { xs: 12, sm: 'auto' },
-          width: { xs: 'auto', sm: '100%' },
-          maxWidth: { sm: 390 },
-          maxHeight: { xs: 'calc(100vh - 96px)', sm: 'calc(100vh - 88px)' },
-          overflowY: 'auto',
-          borderRadius: `${radius.sm}px`,
-          bgcolor: surface.paper,
-          boxShadow: shadows.modal,
-          p: 2.4,
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateY(0)' : 'translateY(-14px)',
-          transition: motion.transition.panel,
-        }}
-      >
+      <Box onClick={(event) => event.stopPropagation()} sx={styles.box2(panelPosition, isVisible)}>
         <Stack
           direction="row"
           alignItems="flex-start"
           justifyContent="space-between"
-          sx={{ mb: 2 }}
+          sx={styles.stack}
         >
-          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
-            <Avatar
-              alt={userProfile.name}
-              src={userProfile.avatar}
-              sx={{ width: 48, height: 48, flexShrink: 0 }}
-            >
+          <Stack direction="row" spacing={1.5} alignItems="center" sx={styles.stack2}>
+            <Avatar alt={userProfile.name} src={userProfile.avatar} sx={styles.avatar}>
               {!userProfile.avatar ? getInitials(userProfile.name) : null}
             </Avatar>
-            <Box sx={{ minWidth: 0 }}>
+            <Box sx={styles.box3}>
               <Typography noWrap sx={componentText.modalTitle}>
                 {userProfile.name}
               </Typography>
-              <Typography noWrap sx={{ color: 'text.secondary', ...componentText.modalSubtitle }}>
+              <Typography noWrap sx={styles.typography}>
                 {userProfile.role ? t(`roles.${userProfile.role}`) : null}
               </Typography>
             </Box>
@@ -137,29 +100,15 @@ export function ProfileModal({
         </Stack>
 
         {userProfile.company || userProfile.email ? (
-          <Box
-            sx={{
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.app,
-              px: 1.5,
-              py: 1.2,
-              mb: 2,
-            }}
-          >
+          <Box sx={styles.box4}>
             {userProfile.company ? (
-              <Typography sx={{ color: 'text.secondary', ...componentText.modalEyebrow }}>
-                {userProfile.company}
-              </Typography>
+              <Typography sx={styles.typography2}>{userProfile.company}</Typography>
             ) : null}
-            <Typography sx={{ color: 'text.primary', ...componentText.modalSubtitle }}>
-              {userProfile.email}
-            </Typography>
+            <Typography sx={styles.typography3}>{userProfile.email}</Typography>
           </Box>
         ) : null}
 
-        <Divider sx={{ mb: 1 }} />
+        <Divider sx={styles.divider} />
 
         <Stack spacing={1}>
           <LanguageSelector />
@@ -180,44 +129,9 @@ export function ProfileModal({
                 }}
                 startIcon={<Icon />}
                 fullWidth
-                sx={{
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  minHeight: 42,
-                  borderRadius: `${radius.sm}px`,
-                  color: isDanger ? 'error.main' : 'text.primary',
-                  bgcolor: isDanger ? alpha.error[6] : 'transparent',
-                  ...componentText.resetButtonText,
-                  ...componentText.modalAction,
-                  '&:hover': {
-                    bgcolor: isDanger ? alpha.error[10] : alpha.magenta[8],
-                    color: isDanger ? 'error.main' : 'primary.main',
-                  },
-                  '& .MuiButton-startIcon': {
-                    alignItems: 'center',
-                    display: 'inline-flex',
-                    height: 20,
-                    justifyContent: 'center',
-                    ml: 0,
-                    mr: 1,
-                    width: 20,
-                  },
-                  '& .MuiButton-icon > *:nth-of-type(1)': {
-                    display: 'block',
-                    fontSize: 20,
-                  },
-                }}
+                sx={styles.button(isDanger)}
               >
-                <Typography
-                  component="span"
-                  sx={{
-                    color: 'inherit',
-                    fontSize: 'inherit',
-                    fontWeight: 'inherit',
-                    lineHeight: '20px',
-                    transform: 'translateY(1px)',
-                  }}
-                >
+                <Typography component="span" sx={styles.typography4}>
                   {action.label}
                 </Typography>
               </Button>

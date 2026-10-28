@@ -9,7 +9,7 @@ describe('assertCanViewAgencyOverview', () => {
     expect(() => assertCanViewAgencyOverview('OWNER')).not.toThrow()
   })
 
-  it.each(['AGENT', 'RENTER', 'PROPERTY_OWNER'] as const)('bloqueia %s', (papel) => {
-    expect(() => assertCanViewAgencyOverview(papel)).toThrow(ForbiddenError)
+  it.each(['AGENT', 'RENTER', 'PROPERTY_OWNER'] as const)('bloqueia %s', (role) => {
+    expect(() => assertCanViewAgencyOverview(role)).toThrow(ForbiddenError)
   })
 })

@@ -21,35 +21,35 @@ import type {
 } from '../types/service'
 
 export const maintenanceStatusFromApiMap: Record<ApiMaintenanceTicketStatus, MaintenanceStatus> = {
-  ABERTO: 'open',
-  EM_ANDAMENTO: 'inProgress',
-  RESOLVIDO: 'resolved',
-  FECHADO: 'closed',
-  AGUARDANDO_CONFIRMACAO: 'pendingConfirmation',
-  CONTESTADO: 'contested',
-  CANCELADO: 'cancelled',
+  OPEN: 'open',
+  IN_PROGRESS: 'inProgress',
+  RESOLVED: 'resolved',
+  CLOSED: 'closed',
+  AWAITING_CONFIRMATION: 'pendingConfirmation',
+  DISPUTED: 'contested',
+  CANCELED: 'cancelled',
 }
 
 const statusToApiMap: Record<MaintenanceStatus, ApiMaintenanceTicketStatus> = {
-  open: 'ABERTO',
-  inProgress: 'EM_ANDAMENTO',
-  resolved: 'RESOLVIDO',
-  closed: 'FECHADO',
-  pendingConfirmation: 'AGUARDANDO_CONFIRMACAO',
-  contested: 'CONTESTADO',
-  cancelled: 'CANCELADO',
+  open: 'OPEN',
+  inProgress: 'IN_PROGRESS',
+  resolved: 'RESOLVED',
+  closed: 'CLOSED',
+  pendingConfirmation: 'AWAITING_CONFIRMATION',
+  contested: 'DISPUTED',
+  cancelled: 'CANCELED',
 }
 
 const priorityFromApiMap: Record<ApiMaintenanceTicketPriority, MaintenancePriority> = {
   NORMAL: 'normal',
-  ALTA: 'high',
-  URGENTE: 'urgent',
+  HIGH: 'high',
+  URGENT: 'urgent',
 }
 
 const priorityToApiMap: Record<MaintenancePriority, ApiMaintenanceTicketPriority> = {
   normal: 'NORMAL',
-  high: 'ALTA',
-  urgent: 'URGENTE',
+  high: 'HIGH',
+  urgent: 'URGENT',
 }
 
 export function mapMaintenanceStatusFromApi(status: ApiMaintenanceTicketStatus): MaintenanceStatus {

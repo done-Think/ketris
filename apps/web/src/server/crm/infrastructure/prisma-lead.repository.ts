@@ -1,3 +1,4 @@
+import { crmMutationAuthor } from './crm-mutation-author'
 import type { CrmPage } from '../types/pagination'
 import { crmChangedFields } from './crm-changed-fields'
 import { readCrmPage } from './read-crm-page'
@@ -12,16 +13,16 @@ function toDomain(row: LeadRow): Lead {
   return {
     id: row.id,
     tenantId: row.tenantId,
-    responsavelId: row.responsavelId,
-    name: row.nome,
-    phone: row.telefone,
+    responsibleId: row.responsibleId,
+    name: row.name,
+    phone: row.phone,
     email: row.email,
-    interest: row.interesse,
-    budget: row.orcamento,
-    source: row.origem,
-    stage: row.estagio,
-    notes: row.observacoes,
-    opportunityId: row.oportunidadeId,
+    interest: row.interest,
+    budget: row.budget,
+    source: row.source,
+    stage: row.stage,
+    notes: row.notes,
+    opportunityId: row.opportunityId,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
@@ -34,17 +35,19 @@ export class PrismaLeadRepository implements LeadRepository {
   ) {}
 
   async create(lead: NewLead): Promise<Lead> {
+    const authorId = await crmMutationAuthor(this.db, this.scope)
     const row = await this.db.lead.create({
       data: {
         tenantId: this.scope.actorTenantId,
-        responsavelId: lead.responsavelId,
-        nome: lead.name,
-        telefone: lead.phone,
+        updatedById: authorId,
+        responsibleId: lead.responsibleId,
+        name: lead.name,
+        phone: lead.phone,
         email: lead.email,
-        interesse: lead.interest,
-        orcamento: lead.budget,
-        origem: lead.source,
-        observacoes: lead.notes,
+        interest: lead.interest,
+        budget: lead.budget,
+        source: lead.source,
+        notes: lead.notes,
       },
     })
 
@@ -56,10 +59,10 @@ export class PrismaLeadRepository implements LeadRepository {
     const page = await readCrmPage(this.db, this.scope, 'lead', filters)
     const rows = await this.db.lead.findMany({
       where: { id: { in: page.ids }, tenantId: this.scope.actorTenantId },
-      include: { responsavel: { select: { nome: true } } },
+      include: { responsible: { select: { name: true } } },
     })
     const byId = new Map(
-      rows.map((row) => [row.id, { ...toDomain(row), responsibleName: row.responsavel.nome }]),
+      rows.map((row) => [row.id, { ...toDomain(row), responsibleName: row.responsible.name }]),
     )
     return {
       pagination: page.pagination,
@@ -76,7 +79,7 @@ export class PrismaLeadRepository implements LeadRepository {
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorPapel === 'AGENT' ? { responsavelId: this.scope.actorId ?? '' } : {}),
+        ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
       },
     })
 
@@ -86,38 +89,41 @@ export class PrismaLeadRepository implements LeadRepository {
   async update(id: string, changes: LeadUpdate): Promise<Lead> {
     const current = await this.findById(id)
     const changedFields = current ? crmChangedFields(current, changes) : []
+    const authorId = await crmMutationAuthor(this.db, this.scope)
     const row = await this.db.lead.update({
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorPapel === 'AGENT' ? { responsavelId: this.scope.actorId ?? '' } : {}),
+        ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
       },
       data: {
-        estagio: changes.stage,
-        observacoes: changes.notes,
+        updatedById: authorId,
+        stage: changes.stage,
+        notes: changes.notes,
       },
     })
 
-    if (changes.stage && changes.stage !== 'NOVO') await this.markFirstContact(row.id)
+    if (changes.stage && changes.stage !== 'NEW') await this.markFirstContact(row.id)
     await recordCrmAudit(this.db, this.scope, 'LEAD', row.id, 'UPDATED', changedFields)
     return toDomain(row)
   }
 
   private async markFirstContact(id: string): Promise<void> {
     await this.db.lead.updateMany({
-      where: { id, tenantId: this.scope.actorTenantId, primeiroContatoEm: null },
-      data: { primeiroContatoEm: new Date() },
+      where: { id, tenantId: this.scope.actorTenantId, firstContactAt: null },
+      data: { firstContactAt: new Date() },
     })
   }
 
   async markConverted(id: string, opportunityId: string, email?: string): Promise<Lead> {
+    const authorId = await crmMutationAuthor(this.db, this.scope)
     const row = await this.db.lead.update({
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorPapel === 'AGENT' ? { responsavelId: this.scope.actorId ?? '' } : {}),
+        ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
       },
-      data: { estagio: 'PROPOSTA', oportunidadeId: opportunityId, email },
+      data: { stage: 'PROPOSAL', opportunityId: opportunityId, email, updatedById: authorId },
     })
 
     await this.markFirstContact(row.id)

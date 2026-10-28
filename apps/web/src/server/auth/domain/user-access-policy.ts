@@ -7,11 +7,11 @@ import {
 import type { User } from './user.entity'
 
 export function assertUserCanAuthenticate(user: User): void {
-  if (!user.ativo) throw new AccountDeactivatedError()
+  if (!user.active) throw new AccountDeactivatedError()
   if (user.tenantStatus === 'SUSPENDED' || user.tenantStatus === 'CANCELED') {
     throw new TenantAccessBlockedError()
   }
-  if (user.papel === 'AGENT' && user.vinculoAprovadoEm === null) {
+  if (user.role === 'AGENT' && user.membershipApprovedAt === null) {
     throw new MembershipPendingApprovalError()
   }
   if (user.emailVerifiedAt === null)

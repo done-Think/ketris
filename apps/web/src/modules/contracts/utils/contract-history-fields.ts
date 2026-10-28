@@ -1,6 +1,7 @@
 import type { SchemaMessageTranslator } from '@shared/types'
+import type { TranslationKey } from '@/i18n/types/messages.types'
 
-const knownFields = new Set([
+const knownFields = [
   'type',
   'amount',
   'dueDay',
@@ -12,18 +13,23 @@ const knownFields = new Set([
   'parties',
   'status',
   'documents',
-])
+] as const
 
-export function contractHistoryFields(fields: string[], t: SchemaMessageTranslator) {
+const translationKeys = new Map<string, TranslationKey<'contracts.history'>>(
+  knownFields.map((field) => [field, `fields.${field}`]),
+)
+
+export function contractHistoryFields(
+  fields: string[],
+  t: SchemaMessageTranslator<TranslationKey<'contracts.history'>>,
+) {
   return [
     ...new Set(
       fields.map((field) => {
         const key = field.startsWith('parties.')
-          ? 'parties'
-          : knownFields.has(field)
-            ? field
-            : 'other'
-        return t('fields.' + key)
+          ? 'fields.parties'
+          : (translationKeys.get(field) ?? 'fields.other')
+        return t(key)
       }),
     ),
   ].join(', ')

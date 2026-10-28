@@ -22,7 +22,8 @@ vi.mock('@shared/lib/auth/clear-client-session', () => ({
   clearClientSession: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => routerMock,
@@ -32,6 +33,7 @@ vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
 
   return {
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
     usePathname: () => '/',
     useRouter: () => routerMock,
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
@@ -138,7 +140,7 @@ describe('MarketplaceHeader', () => {
 
     expect(screen.getByRole('link', { name: 'Tornar corretor' })).toHaveAttribute(
       'href',
-      '/register/details?profile=corretor',
+      '/register/details?profile=broker',
     )
   })
 
@@ -155,7 +157,7 @@ describe('MarketplaceHeader', () => {
 
     expect(screen.getByRole('link', { name: 'Criar imobiliária' })).toHaveAttribute(
       'href',
-      '/register/details?profile=imobiliaria',
+      '/register/details?profile=agency',
     )
   })
 

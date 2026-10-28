@@ -32,20 +32,20 @@ describe('Renter financial authorization (integration)', () => {
 
   async function createTenant() {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Financial access test', slug: `financial-access-${randomUUID()}` },
+      data: { name: 'Financial access test', slug: `financial-access-${randomUUID()}` },
     })
     tenantIds.push(tenant.id)
     return tenant.id
   }
 
-  async function createUser(tenantId: string, papel: 'OWNER' | 'AGENT' | 'RENTER') {
-    const user = await prisma.usuario.create({
+  async function createUser(tenantId: string, role: 'OWNER' | 'AGENT' | 'RENTER') {
+    const user = await prisma.user.create({
       data: {
         tenantId,
-        papel,
-        nome: papel,
+        role,
+        name: role,
         email: `${randomUUID()}@example.com`,
-        senhaHash: 'unused',
+        passwordHash: 'unused',
       },
     })
     return { ...user, token: await tokenService.sign(user) }
@@ -57,65 +57,65 @@ describe('Renter financial authorization (integration)', () => {
     email: string,
     userId: string | null,
   ) {
-    const property = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: responsibleId,
-        titulo: `Property ${randomUUID()}`,
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        valor: 1000,
+        responsibleId: responsibleId,
+        title: `Property ${randomUUID()}`,
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 1000,
       },
     })
-    const opportunity = await prisma.oportunidade.create({
+    const opportunity = await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId: property.id,
-        responsavelId: await propertyResponsibleId(prisma, property.id),
-        interessadoNome: 'Renter',
-        interessadoEmail: email,
-        valorProposto: 1000,
-        status: 'ACEITA',
+        propertyId: property.id,
+        responsibleId: await propertyResponsibleId(prisma, property.id),
+        interestedName: 'Renter',
+        interestedEmail: email,
+        proposedValue: 1000,
+        status: 'ACCEPTED',
       },
     })
-    const contract = await prisma.contrato.create({
+    const contract = await prisma.contract.create({
       data: {
         tenantId,
-        imovelId: property.id,
-        oportunidadeOrigemId: opportunity.id,
-        codigo: `CTR-${randomUUID()}`,
-        tipo: 'RESIDENCIAL',
-        valor: 1000,
-        diaVencimento: 5,
-        dataInicio: new Date('2026-10-01'),
-        dataFim: new Date('2027-10-01'),
-        indiceReajuste: 'IPCA',
-        tipoGarantia: 'CAUCAO',
-        status: 'ATIVO',
-        partes: {
+        propertyId: property.id,
+        sourceOpportunityId: opportunity.id,
+        code: `CTR-${randomUUID()}`,
+        type: 'RESIDENTIAL',
+        amount: 1000,
+        dueDay: 5,
+        startDate: new Date('2026-10-01'),
+        endDate: new Date('2027-10-01'),
+        adjustmentIndex: 'IPCA',
+        guaranteeType: 'DEPOSIT',
+        status: 'ACTIVE',
+        parties: {
           create: {
-            papel: 'LOCATARIO',
-            nome: 'Renter',
+            role: 'RENTER',
+            name: 'Renter',
             cpf: '11111111111',
             email,
-            usuarioId: userId,
+            userId: userId,
           },
         },
       },
-      include: { partes: true },
+      include: { parties: true },
     })
-    const charge = await prisma.cobranca.create({
+    const charge = await prisma.charge.create({
       data: {
         tenantId,
-        contratoId: contract.id,
-        codigo: `COB-${randomUUID()}`,
-        tipo: 'A_RECEBER',
-        valor: 1000,
-        vencimento: new Date('2026-11-05'),
-        status: 'PENDENTE',
+        contractId: contract.id,
+        code: `COB-${randomUUID()}`,
+        type: 'RECEIVABLE',
+        amount: 1000,
+        dueDate: new Date('2026-11-05'),
+        status: 'PENDING',
       },
     })
-    return { id: contract.id, partyId: contract.partes[0].id, chargeId: charge.id }
+    return { id: contract.id, partyId: contract.parties[0].id, chargeId: charge.id }
   }
 
   function request(path: string, token?: string, body?: unknown) {
@@ -161,37 +161,38 @@ describe('Renter financial authorization (integration)', () => {
     owned = await createContract(agencyId, admin.id, renter.email, renter.id)
     otherAgencyOwned = await createContract(otherAgencyId, otherAdmin.id, renter.email, renter.id)
     foreign = await createContract(agencyId, admin.id, otherRenter.email, otherRenter.id)
-    await prisma.parteContrato.create({
+    await prisma.contractParty.create({
       data: {
-        contratoId: foreign.id,
-        papel: 'LOCADOR',
-        nome: 'Owner party',
+        contractId: foreign.id,
+        tenantId: agencyId,
+        role: 'LANDLORD',
+        name: 'Owner party',
         cpf: '22222222222',
         email: renter.email,
-        usuarioId: renter.id,
+        userId: renter.id,
       },
     })
     unlinked = await createContract(agencyId, admin.id, renter.email, null)
-    const payable = await prisma.cobranca.create({
+    const payable = await prisma.charge.create({
       data: {
         tenantId: agencyId,
-        contratoId: owned.id,
-        codigo: `COB-${randomUUID()}`,
-        tipo: 'A_PAGAR',
-        valor: 200,
-        vencimento: new Date('2026-11-05'),
-        descricao: 'Internal expense',
+        contractId: owned.id,
+        code: `COB-${randomUUID()}`,
+        type: 'PAYABLE',
+        amount: 200,
+        dueDate: new Date('2026-11-05'),
+        description: 'Internal expense',
       },
     })
     payableId = payable.id
-    const standalone = await prisma.cobranca.create({
+    const standalone = await prisma.charge.create({
       data: {
         tenantId: agencyId,
-        codigo: `COB-${randomUUID()}`,
-        tipo: 'A_RECEBER',
-        valor: 300,
-        vencimento: new Date('2026-11-05'),
-        descricao: 'Standalone charge',
+        code: `COB-${randomUUID()}`,
+        type: 'RECEIVABLE',
+        amount: 300,
+        dueDate: new Date('2026-11-05'),
+        description: 'Standalone charge',
       },
     })
     standaloneId = standalone.id
@@ -200,10 +201,10 @@ describe('Renter financial authorization (integration)', () => {
   afterAll(async () => {
     if (tenantIds.length) {
       const where = { tenantId: { in: tenantIds } }
-      await prisma.cobranca.deleteMany({ where })
-      await prisma.contrato.deleteMany({ where })
-      await prisma.oportunidade.deleteMany({ where })
-      await prisma.imovel.deleteMany({ where })
+      await prisma.charge.deleteMany({ where })
+      await prisma.contract.deleteMany({ where })
+      await prisma.opportunity.deleteMany({ where })
+      await prisma.property.deleteMany({ where })
       await prisma.tenant.deleteMany({ where: { id: { in: tenantIds } } })
     }
     await prisma.$disconnect()
@@ -240,14 +241,14 @@ describe('Renter financial authorization (integration)', () => {
   })
 
   it('does not let filters or search bypass the user link', async () => {
-    const foreignCharge = await prisma.cobranca.findUniqueOrThrow({
+    const foreignCharge = await prisma.charge.findUniqueOrThrow({
       where: { id: foreign.chargeId },
     })
     const search = await listCharges(
-      request(`/financial/charges?search=${foreignCharge.codigo}`, renter.token),
+      request(`/financial/charges?search=${foreignCharge.code}`, renter.token),
     )
     expect(await search.json()).toMatchObject({ items: [], totalCount: 0 })
-    const payable = await listCharges(request('/financial/charges?type=A_PAGAR', renter.token))
+    const payable = await listCharges(request('/financial/charges?type=PAYABLE', renter.token))
     expect(await payable.json()).toMatchObject({ items: [], totalCount: 0 })
   })
 
@@ -273,7 +274,7 @@ describe('Renter financial authorization (integration)', () => {
   })
 
   it('does not create links when an account changes its email', async () => {
-    await prisma.usuario.update({
+    await prisma.user.update({
       where: { id: renter.id },
       data: { email: `${randomUUID()}@example.com` },
     })
@@ -281,19 +282,19 @@ describe('Renter financial authorization (integration)', () => {
       expect((await detail(owned.chargeId)).status).toBe(200)
       expect((await detail(unlinked.chargeId)).status).toBe(404)
     } finally {
-      await prisma.usuario.update({ where: { id: renter.id }, data: { email: renter.email } })
+      await prisma.user.update({ where: { id: renter.id }, data: { email: renter.email } })
     }
   })
 
   it('denies reads for an inactive linked renter even with an existing token', async () => {
-    await prisma.usuario.update({ where: { id: renter.id }, data: { ativo: false } })
+    await prisma.user.update({ where: { id: renter.id }, data: { active: false } })
     try {
       expect((await detail(owned.chargeId)).status).toBe(403)
       const response = await listCharges(request('/financial/charges', renter.token))
       expect(response.status).toBe(403)
       expect(await response.json()).toMatchObject({ error: { code: 'ACCOUNT_DEACTIVATED' } })
     } finally {
-      await prisma.usuario.update({ where: { id: renter.id }, data: { ativo: true } })
+      await prisma.user.update({ where: { id: renter.id }, data: { active: true } })
     }
   })
 
@@ -323,23 +324,23 @@ describe('Renter financial authorization (integration)', () => {
   })
 
   it('does not transfer an existing link to a new account that reuses the old email', async () => {
-    await prisma.usuario.update({
+    await prisma.user.update({
       where: { id: renter.id },
       data: { email: `${randomUUID()}@example.com` },
     })
     const replacement = await createUser(sharedTenantId, 'RENTER')
     try {
-      await prisma.usuario.update({ where: { id: replacement.id }, data: { email: renter.email } })
+      await prisma.user.update({ where: { id: replacement.id }, data: { email: renter.email } })
       expect((await confirmLink(admin.token)).status).toBe(409)
       expect((await detail(unlinked.chargeId, replacement.token)).status).toBe(404)
       expect((await detail(unlinked.chargeId)).status).toBe(200)
-      const party = await prisma.parteContrato.findUniqueOrThrow({
+      const party = await prisma.contractParty.findUniqueOrThrow({
         where: { id: unlinked.partyId },
       })
-      expect(party.usuarioId).toBe(renter.id)
+      expect(party.userId).toBe(renter.id)
     } finally {
-      await prisma.usuario.delete({ where: { id: replacement.id } })
-      await prisma.usuario.update({ where: { id: renter.id }, data: { email: renter.email } })
+      await prisma.user.delete({ where: { id: replacement.id } })
+      await prisma.user.update({ where: { id: renter.id }, data: { email: renter.email } })
     }
   })
 })

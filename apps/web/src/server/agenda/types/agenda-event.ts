@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 export type AgendaEventStatus = 'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED'
 
 export type AgendaEventAudience = 'SHARED_TEAM' | 'ALL_AGENTS' | 'ASSIGNED_AGENT'
@@ -8,52 +8,52 @@ export type AgendaEventKind =
 
 export interface AgendaEventLinkedUser {
   id: string
-  nome: string
+  name: string
   email: string
 }
 
 export interface NewAgendaEvent {
   tenantId: string
-  responsavelId: string
-  criadoPorId: string | null
-  imovelId?: string | null
-  referenciaImovelLivre?: string | null
-  titulo: string
-  tipo?: AgendaEventKind | null
-  destino?: AgendaEventAudience
-  interno?: boolean
-  inicio: Date
-  fim: Date
-  participanteNome: string
-  participanteTelefone: string
-  notas?: string | null
+  responsibleId: string
+  createdById: string | null
+  propertyId?: string | null
+  freeFormPropertyReference?: string | null
+  title: string
+  type?: AgendaEventKind | null
+  audience?: AgendaEventAudience
+  internal?: boolean
+  start: Date
+  end: Date
+  participantName: string
+  participantPhone: string
+  notes?: string | null
 }
 
 export interface AgendaEventChanges {
-  motivoCancelamento?: string
-  inicio?: Date
-  fim?: Date
-  destino?: AgendaEventAudience
-  interno?: boolean
-  responsavelId?: string
-  titulo?: string
-  tipo?: AgendaEventKind | null
+  cancellationReason?: string
+  start?: Date
+  end?: Date
+  audience?: AgendaEventAudience
+  internal?: boolean
+  responsibleId?: string
+  title?: string
+  type?: AgendaEventKind | null
   status?: AgendaEventStatus
-  imovelId?: string | null
-  referenciaImovelLivre?: string | null
-  participanteNome?: string
-  participanteTelefone?: string
-  notas?: string | null
+  propertyId?: string | null
+  freeFormPropertyReference?: string | null
+  participantName?: string
+  participantPhone?: string
+  notes?: string | null
 }
 
 export interface AgendaEventLinks {
-  donoEmail?: string | null
-  participanteEmails?: string[]
+  ownerEmail?: string | null
+  participantEmails?: string[]
 }
 
 export interface AgendaEventReschedule {
-  inicio: Date
-  fim: Date
+  start: Date
+  end: Date
 }
 
 export type AgendaReadScope =
@@ -66,10 +66,10 @@ export interface AgendaEventListFilters {
   scope: AgendaReadScope
   from: Date
   to: Date
-  responsavelId?: string
+  responsibleId?: string
 }
 
 export interface AgendaEventCreator {
-  nome: string
-  papel: Papel
+  name: string
+  role: UserRole
 }

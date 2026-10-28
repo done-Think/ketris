@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
-import { getLocalizedPathname } from '@/i18n/locale-prefix'
+import { getPathname } from '@/i18n/navigation'
+import { resolveLocale } from '@/i18n/routing'
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import {
   authRoutes,
@@ -31,7 +32,7 @@ export default async function RegisterDetailsPage({
     : resolvedSearchParams?.profile
 
   if (!isRegistrationProfileId(requestedProfile)) {
-    redirect(getLocalizedPathname(authRoutes.register, locale))
+    redirect(getPathname({ href: authRoutes.register, locale: resolveLocale(locale) }))
   }
 
   return (

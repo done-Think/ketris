@@ -5,7 +5,20 @@ import { createPhoneSchema } from '@shared/schemas/phone-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 import { createUpdateCurrentUserProfileSchema } from './update-current-user-profile-schema'
 
-export function createCurrentUserProfileSchema(t: SchemaMessageTranslator, isAgent = false) {
+export function createCurrentUserProfileSchema(
+  t: SchemaMessageTranslator<
+    | 'creciRequired'
+    | 'creciTooLong'
+    | 'emailInvalid'
+    | 'emailTooLong'
+    | 'nameRequired'
+    | 'nameTooLong'
+    | 'phoneInvalid'
+    | 'phoneRequired'
+    | 'phoneTooLong'
+  >,
+  isAgent = false,
+) {
   return createUpdateCurrentUserProfileSchema(t).extend({
     phone: createPhoneSchema(t).pipe(z.string().max(32, t('phoneTooLong'))),
     creci: isAgent
@@ -15,7 +28,15 @@ export function createCurrentUserProfileSchema(t: SchemaMessageTranslator, isAge
   })
 }
 
-export function createChangeOwnPasswordSchema(t: SchemaMessageTranslator) {
+export function createChangeOwnPasswordSchema(
+  t: SchemaMessageTranslator<
+    | 'currentPasswordRequired'
+    | 'passwordConfirmationRequired'
+    | 'passwordMismatch'
+    | 'passwordTooLong'
+    | 'passwordTooShort'
+  >,
+) {
   return z
     .object({
       currentPassword: z.string().min(1, t('currentPasswordRequired')),

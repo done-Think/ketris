@@ -8,12 +8,12 @@ import { UpdateUserUseCase } from '../../../application/use-cases/update-user.us
 const owner: User = {
   id: 'owner-1',
   tenantId: 'tenant-1',
-  nome: 'Proprietário',
+  name: 'Proprietário',
   email: 'owner@ketris.dev',
-  senhaHash: 'hash-fake',
-  papel: 'OWNER',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-fake',
+  role: 'OWNER',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 function createDeps(overrides?: {
@@ -28,7 +28,7 @@ function createDeps(overrides?: {
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
     create: vi.fn(),
-    update: overrides?.update ?? vi.fn().mockResolvedValue({ ...owner, nome: 'Atualizado' }),
+    update: overrides?.update ?? vi.fn().mockResolvedValue({ ...owner, name: 'Atualizado' }),
     deactivate: vi.fn(),
     approveMembership: vi.fn(),
   }
@@ -44,30 +44,30 @@ describe('UpdateUserUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'admin-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       userId: owner.id,
-      nome: 'Atualizado',
-      telefone: '(35) 98888-7777',
+      name: 'Atualizado',
+      phone: '(35) 98888-7777',
       creci: '12345',
     })
 
-    expect(result.nome).toBe('Atualizado')
+    expect(result.name).toBe('Atualizado')
     expect(deps.userRepository.update).toHaveBeenCalledWith(owner.id, {
       auditActor: { kind: 'USER', id: 'admin-1' },
-      nome: 'Atualizado',
+      name: 'Atualizado',
       tenantId: 'tenant-1',
-      telefone: '(35) 98888-7777',
+      phone: '(35) 98888-7777',
       creci: '12345',
       avatarUrl: undefined,
-      papel: undefined,
+      role: undefined,
     })
   })
 
   it('permite que um OWNER atualize o próprio perfil sem alterar o papel', async () => {
-    const admin: User = { ...owner, id: 'admin-1', papel: 'OWNER' }
+    const admin: User = { ...owner, id: 'admin-1', role: 'OWNER' }
     const deps = createDeps({
       findById: vi.fn().mockResolvedValue(admin),
-      update: vi.fn().mockResolvedValue({ ...admin, nome: 'Admin atualizado' }),
+      update: vi.fn().mockResolvedValue({ ...admin, name: 'Admin atualizado' }),
     })
     const useCase = new UpdateUserUseCase(deps.userRepository)
 
@@ -75,21 +75,21 @@ describe('UpdateUserUseCase', () => {
       useCase.execute({
         actorId: admin.id,
         actorTenantId: admin.tenantId,
-        actorPapel: admin.papel,
+        actorRole: admin.role,
         userId: admin.id,
-        nome: 'Admin atualizado',
+        name: 'Admin atualizado',
         avatarUrl: `/api/auth/media/avatars/${admin.tenantId}/${admin.id}/avatar.webp`,
       }),
-    ).resolves.toMatchObject({ nome: 'Admin atualizado' })
+    ).resolves.toMatchObject({ name: 'Admin atualizado' })
 
     expect(deps.userRepository.update).toHaveBeenCalledWith(admin.id, {
       auditActor: { kind: 'USER', id: 'admin-1' },
-      nome: 'Admin atualizado',
+      name: 'Admin atualizado',
       tenantId: 'tenant-1',
-      telefone: undefined,
+      phone: undefined,
       creci: undefined,
       avatarUrl: `/api/auth/media/avatars/${admin.tenantId}/${admin.id}/avatar.webp`,
-      papel: undefined,
+      role: undefined,
     })
   })
 
@@ -101,9 +101,9 @@ describe('UpdateUserUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         userId: owner.id,
-        nome: 'X',
+        name: 'X',
       }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
     expect(deps.userRepository.update).not.toHaveBeenCalled()
@@ -117,9 +117,9 @@ describe('UpdateUserUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'admin-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         userId: 'x',
-        nome: 'X',
+        name: 'X',
       }),
     ).rejects.toThrow(UserNotFoundError)
   })
@@ -134,7 +134,7 @@ describe('UpdateUserUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'admin-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         userId: owner.id,
         email: 'em-uso@ketris.dev',
       }),
@@ -149,7 +149,7 @@ describe('UpdateUserUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'admin-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       userId: owner.id,
       email: owner.email,
     })
@@ -157,21 +157,21 @@ describe('UpdateUserUseCase', () => {
     expect(deps.userRepository.findByEmail).not.toHaveBeenCalled()
   })
   it('permite atualizar telefone/CRECI próprios de um corretor sem mudar papel ou e-mail', async () => {
-    const agent: User = { ...owner, id: 'agent-1', papel: 'AGENT' }
+    const agent: User = { ...owner, id: 'agent-1', role: 'AGENT' }
     const deps = createDeps({ findById: vi.fn().mockResolvedValue(agent) })
     await new UpdateUserUseCase(deps.userRepository).execute({
       actorId: agent.id,
       actorTenantId: agent.tenantId,
-      actorPapel: agent.papel,
+      actorRole: agent.role,
       userId: agent.id,
-      telefone: '(35) 98888-7777',
+      phone: '(35) 98888-7777',
       creci: '12345',
     })
     expect(deps.userRepository.update).toHaveBeenCalledWith(
       agent.id,
       expect.objectContaining({
         tenantId: agent.tenantId,
-        telefone: '(35) 98888-7777',
+        phone: '(35) 98888-7777',
         creci: '12345',
       }),
     )
@@ -187,7 +187,7 @@ describe('UpdateUserUseCase', () => {
       new UpdateUserUseCase(deps.userRepository).execute({
         actorId: owner.id,
         actorTenantId: owner.tenantId,
-        actorPapel: owner.papel,
+        actorRole: owner.role,
         userId: owner.id,
         email: 'new@example.com',
       }),

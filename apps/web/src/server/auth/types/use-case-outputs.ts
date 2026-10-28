@@ -1,6 +1,6 @@
 import type { AuthenticatedUserListPage } from './user-list'
 import type { TenantLoginChoice } from './tenant-login'
-import type { AuthenticatedUser } from '../domain/user.entity'
+import type { AuthenticatedUser } from './authenticated-user'
 
 export type ApproveUserMembershipOutput = AuthenticatedUser
 

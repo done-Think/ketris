@@ -1,4 +1,3 @@
-import { contractOptionMessageKeys } from '../config/contract-labels'
 import { dashboardFilterSelectSx, styles } from '../styles/contracts-filters.styles'
 import { MenuItem, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
@@ -78,7 +77,13 @@ export function ContractsFilters({ control, filterCounts, setValue }: ContractsF
         {contractTypeFilterOptions.map((option) => (
           <MenuItem key={option} value={option}>
             {tType(
-              option === 'ALL' ? 'ALL' : contractOptionMessageKeys.contractTypeOptions[option],
+              option === 'ALL'
+                ? 'ALL'
+                : option === 'RESIDENTIAL'
+                  ? 'residential'
+                  : option === 'COMMERCIAL'
+                    ? 'commercial'
+                    : 'shortTerm',
             )}
           </MenuItem>
         ))}

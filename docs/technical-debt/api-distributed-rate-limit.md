@@ -1,12 +1,13 @@
 # Infraestrutura — limite distribuído da API
 
-Status: débito técnico registrado por decisão do produto em 25/10/2026, durante a revisão de Agenda (T23).
+Status: implementado em 27/10/2026 nesta refatoração; validação de staging pendente.
 
-O limite geral de 300 requisições por minuto ainda usa contadores em memória de cada processo.
-Instâncias diferentes não compartilham essa cota e reinícios descartam os contadores. Os limites
-sensíveis de Auth já usam PostgreSQL; essa proteção permanece ativa.
+O limite geral de 300 requisições por minuto usa `PostgresRateLimitStore`, compartilhando a tabela
+`auth_rate_limit_buckets` com políticas separadas para API, autenticação e propostas. Reinícios
+do processo não descartam contadores. Falhas no armazenamento retornam 503 e `Retry-After`.
 
-A correção do limite geral deve ter uma branch própria de infraestrutura, pois afeta todas as rotas
-da API. Deve definir o armazenamento compartilhado e o comportamento em indisponibilidade,
-preservar os cabeçalhos e as configurações públicas, e validar concorrência entre instâncias,
-expiração e identificação confiável do cliente. A decisão de escopo não encerra T23 globalmente.
+A autorização posterior para resolver as pendências incluiu essa infraestrutura compartilhada.
+Concorrência, expiração e indisponibilidade são verificadas nos testes do store e do proxy.
+Consulte [as políticas e configurações](../security-policies.md), incluindo a identificação confiável
+do IP fora da Vercel. A distribuição foi validada com PostgreSQL local; o ambiente publicado ainda
+precisa confirmar conexão, permissões, latência e configuração do proxy.

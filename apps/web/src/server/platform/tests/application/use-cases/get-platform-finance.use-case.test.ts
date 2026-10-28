@@ -13,7 +13,7 @@ describe('GetPlatformFinanceUseCase', () => {
       findMany: vi.fn().mockResolvedValue([
         {
           id: 'b',
-          nome: 'Corretor',
+          name: 'Corretor',
           slug: 'corretor',
           accountType: 'BROKER',
           status: 'ACTIVE',
@@ -22,7 +22,7 @@ describe('GetPlatformFinanceUseCase', () => {
         },
         {
           id: 'a',
-          nome: 'Imobiliária',
+          name: 'Imobiliária',
           slug: 'imobiliaria',
           accountType: 'AGENCY',
           status: 'ACTIVE',
@@ -31,7 +31,7 @@ describe('GetPlatformFinanceUseCase', () => {
         },
         {
           id: 'r',
-          nome: 'Locatários',
+          name: 'Locatários',
           slug: 'locatarios',
           accountType: 'AGENCY',
           status: 'ACTIVE',
@@ -86,7 +86,7 @@ describe('GetPlatformFinanceUseCase', () => {
       findMany: vi.fn().mockResolvedValue([
         {
           id: 'a',
-          nome: 'Imobiliária A',
+          name: 'Imobiliária A',
           slug: 'imobiliaria-a',
           accountType: 'AGENCY',
           status: 'ACTIVE',
@@ -95,7 +95,7 @@ describe('GetPlatformFinanceUseCase', () => {
         },
         {
           id: 'b',
-          nome: 'Imobiliária B',
+          name: 'Imobiliária B',
           slug: 'imobiliaria-b',
           accountType: 'AGENCY',
           status: 'ACTIVE',

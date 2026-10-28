@@ -13,7 +13,7 @@ export class GetContactUseCase {
   ) {}
 
   async execute(input: GetContactInput): Promise<GetContactOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     const contact = await this.contactRepository.findById(input.contactId)
 
     if (!contact || contact.tenantId !== input.actorTenantId) {
@@ -25,7 +25,7 @@ export class GetContactUseCase {
       input.actorTenantId,
       contact.id,
       input.actorId,
-      input.actorPapel,
+      input.actorRole,
       contact.createdById,
     )
 

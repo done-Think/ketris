@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client'
 
-export type PrismaUserRecord = Prisma.UsuarioGetPayload<{
-  include: { tenant: { select: { status: true; nome: true; slug: true } } }
+export type PrismaUserRecord = Prisma.UserGetPayload<{
+  include: { tenant: { select: { status: true; name: true; slug: true } } }
 }>

@@ -39,7 +39,7 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Financial'],
     summary: 'Lista cobranças autorizadas para o usuário autenticado',
     description:
-      'OWNER consulta o tenant. PROPERTY_OWNER vê as cobranças dos contratos dos imóveis dele. RENTER vê só A_RECEBER dos contratos em que é LOCATARIO. AGENT recebe 403. O filtro status=ATRASADA traz pendentes e agendadas vencidas; PENDENTE e AGENDADA trazem só as que ainda não venceram.',
+      'OWNER consulta o tenant. PROPERTY_OWNER vê as cobranças dos contratos dos imóveis dele. RENTER vê só RECEIVABLE dos contratos em que é RENTER. AGENT recebe 403. O filtro status=OVERDUE traz pendentes e agendadas vencidas; PENDING e SCHEDULED trazem só as que ainda não venceram.',
     security: [{ bearerAuth: [] }],
     request: { query: listChargesQuerySchema },
     responses: {
@@ -252,7 +252,7 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Financial'],
     summary: 'Resumo financeiro do tenant (só OWNER)',
     description:
-      'monthlyReceivable soma A_RECEBER não canceladas com vencimento no mês (month, padrão o atual) e monthlySeries os 6 meses que terminam nele. overdueTotal, defaultRatePercentage, occupancyRatePercentage e upcomingDues são a posição de hoje. Valores em BRL.',
+      'monthlyReceivable soma RECEIVABLE não canceladas com vencimento no mês (month, padrão o atual) e monthlySeries os 6 meses que terminam nele. overdueTotal, defaultRatePercentage, occupancyRatePercentage e upcomingDues são a posição de hoje. Valores em BRL.',
     security: [{ bearerAuth: [] }],
     request: { query: financialSummaryQuerySchema },
     responses: {

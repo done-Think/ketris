@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 
 export type TeamPaceStatus = 'AHEAD' | 'ON_TRACK' | 'ATTENTION' | 'NO_GOAL'
 
@@ -7,7 +7,7 @@ export type TeamInvitationStatus = 'PENDING' | 'EXPIRED'
 export interface TeamActor {
   actorId: string
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export interface TeamMemberMetrics {

@@ -12,12 +12,12 @@ describe('ListOpportunitiesUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'OWNER',
-      filters: { status: 'ENVIADA', includeArchived: true },
+      actorRole: 'OWNER',
+      filters: { status: 'SENT', includeArchived: true },
     })
 
     expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', {
-      status: 'ENVIADA',
+      status: 'SENT',
       includeArchived: true,
     })
   })
@@ -27,7 +27,7 @@ describe('ListOpportunitiesUseCase', () => {
     const repository = { findManyByTenant } as unknown as OpportunityRepository
     const useCase = new ListOpportunitiesUseCase(repository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'user-1', actorPapel: 'OWNER' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'user-1', actorRole: 'OWNER' })
 
     expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', {})
   })
@@ -40,13 +40,13 @@ describe('ListOpportunitiesUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'agent-1',
-      actorPapel: 'AGENT',
-      filters: { status: 'ENVIADA' },
+      actorRole: 'AGENT',
+      filters: { status: 'SENT' },
     })
 
     expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', {
-      status: 'ENVIADA',
-      responsavelId: 'agent-1',
+      status: 'SENT',
+      responsibleId: 'agent-1',
     })
   })
 })

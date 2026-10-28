@@ -1,11 +1,11 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { Lead } from '../domain/lead.entity'
 import type { CrmListFilters, CrmPage } from './pagination'
 
 export interface ListLeadsInput {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   filters?: CrmListFilters & { stage?: Lead['stage'] }
 }
 

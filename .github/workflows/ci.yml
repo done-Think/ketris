@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [dev, main]
+    branches: [dev, main, 'refactor/**']
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -50,8 +50,19 @@ jobs:
 
       - run: npm ci
 
+      - name: Verifica nomes em inglês e exceções de compatibilidade
+        run: npm run check:english-names
+
+      - name: Confere o contrato OpenAPI e os tipos gerados do frontend
+        run: npm run api:check
+
       - name: Aplica as migrations no Postgres efêmero
         run: npm run db:deploy -w @ketris/web
+
+      - name: Ensaia renome e recuperação em databases descartáveis
+        env:
+          RENAME_REHEARSAL_SERVER_URL: postgresql://ketris:ketris@127.0.0.1:55432/postgres
+        run: npm run db:rehearse-english-rename
 
       - name: Typecheck
         run: npm run typecheck -w @ketris/web
@@ -94,6 +105,8 @@ jobs:
       PASSWORD_RESET_TOKEN_SECRET: ci-password-reset-token-secret
       CONTRACTS_DATA_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
       AUTH_RATE_LIMIT_MAX: '1000'
+      API_RATE_LIMIT_MAX: '20000'
+      MARKETPLACE_INQUIRY_RATE_LIMIT_MAX: '1000'
       AUTH_E2E_MAILBOX_PORT: '3101'
       CONTRACTS_E2E_STORAGE_PORT: '3102'
       AWS_ENDPOINT_URL_S3: http://127.0.0.1:3102

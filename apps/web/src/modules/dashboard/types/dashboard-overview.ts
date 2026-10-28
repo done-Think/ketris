@@ -1,4 +1,4 @@
-import type { LeadSource } from '@server/crm/constants/lead-sources'
+import type { LeadSource } from '@shared/types/lead-source'
 import type { ReactNode } from 'react'
 
 import type { ApiDashboardMetrics } from './service'
@@ -24,7 +24,7 @@ export type DashboardMetricGridProps = {
 
 export type BuildDashboardMetricsParams = {
   metrics: ApiDashboardMetrics
-  t: (key: string, values?: Record<string, string | number>) => string
+  t: (key: TranslationKey<'dashboard.overview'>, values?: Record<string, string | number>) => string
 }
 
 export type DashboardActivityAccent = 'magenta' | 'info' | 'warning'
@@ -97,3 +97,4 @@ export type UpcomingActivitiesPanelProps = {
   activities: DashboardUpcomingActivity[]
   onActivitySelect: (activity: DashboardUpcomingActivity) => void
 }
+import type { TranslationKey } from '@/i18n/types/messages.types'

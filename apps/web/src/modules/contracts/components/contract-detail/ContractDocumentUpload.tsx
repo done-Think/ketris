@@ -10,19 +10,15 @@ import { createContractDocumentSchema } from '../../schemas/contract-document-sc
 import { contractError } from '../../utils/contract-error'
 import type { ContractDocumentForm, ContractDocumentUploadProps } from '../../types/workflow'
 
-export function ContractDocumentUpload({
-  contractId,
-  tenantId,
-  onBusyChange,
-}: ContractDocumentUploadProps) {
+export function ContractDocumentUpload({ contractId, onBusyChange }: ContractDocumentUploadProps) {
   const t = useTranslations('contracts.documents')
   const errors = useTranslations('contracts.errors')
   const [progress, setProgress] = useState(0)
-  const schema = useMemo(() => createContractDocumentSchema((key) => t('validation.' + key)), [t])
+  const schema = useMemo(() => createContractDocumentSchema((key) => t(`validation.${key}`)), [t])
   const { control, handleSubmit, reset } = useForm<ContractDocumentForm>({
     resolver: zodResolver(schema),
   })
-  const mutation = useUploadContractDocument(tenantId, contractId, setProgress)
+  const mutation = useUploadContractDocument(contractId, setProgress)
   async function submit({ file }: ContractDocumentForm) {
     onBusyChange(true)
     setProgress(0)

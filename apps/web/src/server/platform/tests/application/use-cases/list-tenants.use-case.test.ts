@@ -10,7 +10,7 @@ const createdAt = new Date('2026-09-01T00:00:00.000Z')
 const tenants: PlatformTenant[] = [
   {
     id: 't1',
-    nome: 'Imobiliária A',
+    name: 'Imobiliária A',
     slug: 'imobiliaria-a',
     accountType: 'AGENCY',
     status: 'ACTIVE',
@@ -19,7 +19,7 @@ const tenants: PlatformTenant[] = [
   },
   {
     id: 't2',
-    nome: 'Corretor B',
+    name: 'Corretor B',
     slug: 'corretor-b',
     accountType: 'BROKER',
     status: 'TRIAL',
@@ -28,7 +28,7 @@ const tenants: PlatformTenant[] = [
   },
   {
     id: 't3',
-    nome: 'Locatários',
+    name: 'Locatários',
     slug: 'locatarios',
     accountType: 'AGENCY',
     status: 'ACTIVE',

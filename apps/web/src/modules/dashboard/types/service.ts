@@ -1,58 +1,17 @@
-import type { LeadSource } from '@server/crm/constants/lead-sources'
-export interface ApiDashboardMetrics {
-  activeLeads: number
-  activeLeadsCreatedToday: number
-  visitsThisMonth: number
-  visitsToday: number
-  openProposals: number
-  proposalsAwaitingResponse: number
-}
+import type { components } from '@shared/types/generated/api'
 
-export type ApiDashboardLeadStage = 'NOVO' | 'EM_CONTATO' | 'VISITA_MARCADA' | 'PROPOSTA'
+export type ApiDashboardMetrics = components['schemas']['DashboardMetrics']
 
-export interface ApiDashboardRecentLead {
-  id: string
-  name: string
-  phone: string
-  interest: string
-  budget: string
-  source: LeadSource
-  stage: ApiDashboardLeadStage
-  notes: string | null
-  createdAt: string
-}
+export type ApiDashboardLeadStage = components['schemas']['DashboardRecentLead']['stage']
 
-export type ApiDashboardActivityKind =
-  'VISIT' | 'FOLLOW_UP' | 'MEETING' | 'INSPECTION' | 'SIGNATURE' | 'OTHER'
+export type ApiDashboardRecentLead = components['schemas']['DashboardRecentLead']
 
-export interface ApiDashboardActivityProperty {
-  id: string
-  title: string
-  price: number
-  address: {
-    street: string
-    number: string
-    neighborhood: string
-    city: string
-  } | null
-}
+export type ApiDashboardActivityKind = NonNullable<
+  components['schemas']['DashboardUpcomingActivity']['kind']
+>
 
-export interface ApiDashboardUpcomingActivity {
-  id: string
-  title: string
-  kind: ApiDashboardActivityKind | null
-  start: string
-  end: string
-  participantName: string
-  participantPhone: string
-  notes: string | null
-  propertyId: string | null
-  propertyReference: string | null
-  property: ApiDashboardActivityProperty | null
-}
+export type ApiDashboardActivityProperty = components['schemas']['DashboardActivityProperty']
 
-export interface ApiDashboardOverview {
-  metrics: ApiDashboardMetrics
-  recentLeads: ApiDashboardRecentLead[]
-  upcomingActivities: ApiDashboardUpcomingActivity[]
-}
+export type ApiDashboardUpcomingActivity = components['schemas']['DashboardUpcomingActivity']
+
+export type ApiDashboardOverview = components['schemas']['DashboardOverviewResponse']

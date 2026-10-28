@@ -1,10 +1,10 @@
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { Papel, TenantMemberPapel } from '../domain/user.entity'
+import type { UserRole, TenantMemberRole } from '../domain/user.entity'
 
 export interface ApproveUserMembershipInput {
   actorId: string
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
   userId: string
 }
 
@@ -17,24 +17,24 @@ export interface ChangeOwnPasswordInput {
 export interface CreateUserInput {
   actorId: string
   actorTenantId: string
-  actorPapel: Papel
-  nome: string
+  actorRole: UserRole
+  name: string
   email: string
   password: string
-  papel: TenantMemberPapel
+  role: TenantMemberRole
 }
 
 export interface DeactivateUserInput {
   actorId: string
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
   userId: string
 }
 
 export interface GetUserInput {
   actorId?: string
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
   userId: string
 }
 
@@ -43,7 +43,7 @@ export interface ListUsersInput {
   pageSize?: number
   pendingApproval?: boolean
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export interface LoginInput {
@@ -73,16 +73,16 @@ export interface ResetPasswordInput {
 }
 
 export interface UpdateUserInput {
-  telefone?: string | null
+  phone?: string | null
   creci?: string | null
   actorId: string
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
   userId: string
-  nome?: string
+  name?: string
   email?: string
   avatarUrl?: string | null
-  papel?: TenantMemberPapel
+  role?: TenantMemberRole
 }
 
 export interface VerifyPasswordResetCodeInput {

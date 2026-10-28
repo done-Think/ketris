@@ -1,7 +1,7 @@
-export type PropertyPurpose = 'ALUGUEL' | 'VENDA' | 'AMBOS'
+export type PropertyPurpose = 'RENT' | 'SALE' | 'BOTH'
 
 export type PublicPropertyType =
-  'APARTAMENTO' | 'CASA' | 'STUDIO' | 'COBERTURA' | 'COMERCIAL' | 'LOFT' | 'OUTRO'
+  'APARTMENT' | 'HOUSE' | 'STUDIO' | 'PENTHOUSE' | 'COMMERCIAL' | 'LOFT' | 'OTHER'
 
 export interface PropertyAddress {
   street: string
@@ -18,7 +18,7 @@ export interface PropertyAddress {
 export interface PropertyMedia {
   id: string
   url: string
-  type: string
+  type: 'photo' | 'video' | 'floorPlan'
   order: number
 }
 

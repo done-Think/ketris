@@ -99,7 +99,7 @@ export const maintenanceActionSchema = z.discriminatedUnion('action', [
   z
     .object({
       action: z.literal('reopen'),
-      status: z.enum(['ABERTO', 'EM_ANDAMENTO']),
+      status: z.enum(['OPEN', 'IN_PROGRESS']),
       reason: reason.optional(),
     })
     .strict(),

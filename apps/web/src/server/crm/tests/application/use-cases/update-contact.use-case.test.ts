@@ -12,7 +12,7 @@ const contact: Contact = {
   name: 'Carlos',
   email: 'carlos@exemplo.com',
   phone: null,
-  type: 'PROPRIETARIO',
+  type: 'OWNER',
   avatarUrl: null,
   notes: null,
   lastInteraction: null,
@@ -39,7 +39,7 @@ describe('UpdateContactUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       contactId: 'contato-1',
       changes: { name: 'Carlos Silva' },
     })
@@ -58,7 +58,7 @@ describe('UpdateContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         contactId: 'contato-1',
         changes: {},
       }),
@@ -76,7 +76,7 @@ describe('UpdateContactUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       contactId: 'contato-1',
       changes: { email: 'Novo@Exemplo.com' },
     })
@@ -96,7 +96,7 @@ describe('UpdateContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         contactId: 'contato-1',
         changes: { email: 'ocupado@exemplo.com' },
       }),
@@ -117,7 +117,7 @@ describe('UpdateContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         contactId: 'contato-1',
         changes: { name: 'Carlos Silva' },
       }),

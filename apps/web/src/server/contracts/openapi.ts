@@ -226,7 +226,7 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Contracts'],
     summary: 'Gestor confirma o vínculo de um locatário pelo e-mail da parte',
     description:
-      'Somente OWNER do tenant do contrato. Localiza uma conta RENTER ativa pelo e-mail da parte LOCATARIO e persiste seu ID. Não substitui vínculo com outro usuário. A conta pode pertencer ao tenant compartilhado de locatários.',
+      'Somente OWNER do tenant do contrato. Localiza uma conta RENTER ativa pelo e-mail da parte RENTER e persiste seu ID. Não substitui vínculo com outro usuário. A conta pode pertencer ao tenant compartilhado de locatários.',
     security: [{ bearerAuth: [] }],
     request: {
       params: contractPartyIdParamsSchema,
@@ -270,7 +270,7 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
     description:
       'OWNER veem todos os contratos do tenant. Quando o ator tem papel AGENT, a listagem é ' +
       'restrita aos contratos de imóveis dos quais ele é responsável. RENTER vê somente os contratos ' +
-      'em que é a parte LOCATARIO vinculada à sua conta, inclusive de imobiliárias fora do seu tenant ' +
+      'em que é a parte RENTER vinculada à sua conta, inclusive de imobiliárias fora do seu tenant ' +
       '(tenant compartilhado de locatários). Busca, contagem e paginação aplicam o mesmo escopo.',
     security: [{ bearerAuth: [] }],
     request: { query: listContractsQuerySchema },
@@ -334,7 +334,7 @@ export function registerContractsOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Consulta um contrato visível para o ator',
     description:
       'Um ator AGENT recebe 404 opaco para um contrato de imóvel do qual não é responsável. ' +
-      'RENTER consulta somente contratos em que é a parte LOCATARIO vinculada à sua conta, mesmo ' +
+      'RENTER consulta somente contratos em que é a parte RENTER vinculada à sua conta, mesmo ' +
       'fora do seu tenant, e recebe 404 opaco para os demais.',
     security: [{ bearerAuth: [] }],
     request: { params: contractIdParamsSchema },

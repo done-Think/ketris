@@ -25,9 +25,14 @@ describe('UnpublishAgencyProfileUseCase', () => {
     const deps = createDeps({ status: 'DRAFT' } as AgencyProfile)
     const useCase = new UnpublishAgencyProfileUseCase(deps.agencyProfileRepository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER', actorId: 'owner-1' })
 
-    expect(deps.agencyProfileRepository.setStatus).toHaveBeenCalledWith('tenant-1', 'DRAFT', null)
+    expect(deps.agencyProfileRepository.setStatus).toHaveBeenCalledWith(
+      'tenant-1',
+      'DRAFT',
+      null,
+      'owner-1',
+    )
   })
 
   it('lança AgencyProfileNotFoundError quando o perfil não existe', async () => {
@@ -35,7 +40,7 @@ describe('UnpublishAgencyProfileUseCase', () => {
     const useCase = new UnpublishAgencyProfileUseCase(deps.agencyProfileRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER', actorId: 'owner-1' }),
     ).rejects.toThrow(AgencyProfileNotFoundError)
   })
 
@@ -44,7 +49,7 @@ describe('UnpublishAgencyProfileUseCase', () => {
     const useCase = new UnpublishAgencyProfileUseCase(deps.agencyProfileRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'AGENT' }),
     ).rejects.toThrow(ForbiddenError)
   })
 })

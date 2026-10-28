@@ -5,6 +5,7 @@ import { meetsMinimumAdvanceNotice } from '../utils/scheduling-window'
 import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-scheduling'
 import type { BuildAgendaEventFormSchemaOptions } from '../types/agenda-event'
 import type { SchemaMessageTranslator } from '@shared/types'
+import type { TranslationKey } from '@/i18n/types/messages.types'
 
 export const agendaOtherPropertyValue = 'other'
 
@@ -18,7 +19,7 @@ export const agendaEventKindOptions = [
 ] as const
 
 export function buildAgendaEventFormSchema(
-  t: SchemaMessageTranslator,
+  t: SchemaMessageTranslator<TranslationKey<'agenda.eventForm.errors'>>,
   options: BuildAgendaEventFormSchemaOptions = {},
 ) {
   const agendaEventFormShape = {

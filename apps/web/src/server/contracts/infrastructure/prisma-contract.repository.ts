@@ -32,54 +32,54 @@ export class PrismaContractRepository implements ContractRepository {
     opportunityId: string,
     scope: ContractManageScope,
   ): Promise<EligibleOpportunity | null> {
-    const opportunity = await prisma.oportunidade.findFirst({
+    const opportunity = await prisma.opportunity.findFirst({
       where: { tenantId, id: opportunityId, ...opportunityScopeWhere(scope) },
-      select: { id: true, imovelId: true, status: true, contrato: { select: { id: true } } },
+      select: { id: true, propertyId: true, status: true, contract: { select: { id: true } } },
     })
 
     if (!opportunity) return null
 
     return {
       id: opportunity.id,
-      propertyId: opportunity.imovelId,
+      propertyId: opportunity.propertyId,
       status: opportunity.status,
-      hasContract: opportunity.contrato !== null,
+      hasContract: opportunity.contract !== null,
     }
   }
 
   async create(input: NewContract, scope: ContractManageScope): Promise<Contract> {
-    const contrato = await prisma.$transaction(async (tx) => {
+    const contract = await prisma.$transaction(async (tx) => {
       const opportunity = await lockContractOpportunity(tx, input, scope)
-      const created = await tx.contrato.create({
+      const created = await tx.contract.create({
         data: {
           tenantId: input.tenantId,
-          imovelId: opportunity.imovelId,
-          oportunidadeOrigemId: input.opportunityId,
-          codigo: await nextContractCode(tx, input.tenantId),
-          criadoPorId: input.actorId,
-          tipo: input.type,
-          valor: input.amount ?? opportunity.valorProposto,
-          diaVencimento: input.dueDay,
-          dataInicio: input.startDate,
-          dataFim: input.endDate,
-          indiceReajuste: input.adjustmentIndex,
-          tipoGarantia: input.guaranteeType,
-          observacoes: input.notes,
-          status: 'AGUARDANDO_ASSINATURA',
-          partes: {
+          propertyId: opportunity.propertyId,
+          sourceOpportunityId: input.opportunityId,
+          code: await nextContractCode(tx, input.tenantId),
+          createdById: input.actorId,
+          type: input.type,
+          amount: input.amount ?? opportunity.proposedValue,
+          dueDay: input.dueDay,
+          startDate: input.startDate,
+          endDate: input.endDate,
+          adjustmentIndex: input.adjustmentIndex,
+          guaranteeType: input.guaranteeType,
+          notes: input.notes,
+          status: 'AWAITING_SIGNATURE',
+          parties: {
             create: input.parties.map((party) => {
               const id = randomUUID()
               return {
                 id,
-                papel: party.role,
-                nome: party.name,
+                role: party.role,
+                name: party.name,
                 cpf: this.protector.encryptCpf(party.cpf, {
                   tenantId: input.tenantId,
                   partyId: id,
                 }),
                 email: party.email,
-                telefone: party.phone,
-                assinatura: { create: {} },
+                phone: party.phone,
+                signature: { create: {} },
               }
             }),
           },
@@ -96,7 +96,7 @@ export class PrismaContractRepository implements ContractRepository {
       return created
     })
 
-    return toDomainContract(contrato, this.protector)
+    return toDomainContract(contract, this.protector)
   }
 
   async findMany(
@@ -107,12 +107,12 @@ export class PrismaContractRepository implements ContractRepository {
   }
 
   async findById(contractId: string, scope: ContractReadScope): Promise<Contract | null> {
-    const contrato = await prisma.contrato.findFirst({
+    const contract = await prisma.contract.findFirst({
       where: { id: contractId, ...contractReadWhere(scope) },
       include: contractInclude,
     })
 
-    return contrato ? toDomainContract(contrato, this.protector) : null
+    return contract ? toDomainContract(contract, this.protector) : null
   }
 
   signParty(

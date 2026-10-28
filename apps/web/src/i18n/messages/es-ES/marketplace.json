@@ -186,6 +186,9 @@
     }
   },
   "propertyDetail": {
+    "mapUnavailable": "La ubicación en el mapa aún no está disponible para esta dirección.",
+    "searchAddressOnMaps": "Buscar dirección en Google Maps",
+    "mapApproximate": "Ubicación aproximada",
     "favorite": "Favorito",
     "share": "Compartir",
     "aboutProperty": "Sobre el inmueble",

@@ -31,7 +31,7 @@ export const GET = withErrorHandling(
 
 export const PATCH = withErrorHandling(
   async (request: NextRequest, context: PlatformIdRouteContext) => {
-    await requirePlatformAdminRole(
+    const actor = await requirePlatformAdminRole(
       request,
       platformContainer.tokenService,
       platformContainer.platformAdminRepository,
@@ -41,11 +41,12 @@ export const PATCH = withErrorHandling(
     const body = await parseJsonBody(request, updatePlatformAdminRequestSchema)
 
     const admin = await platformContainer.updatePlatformAdminUseCase.execute({
+      actorId: actor.id,
       platformAdminId: id,
-      nome: body.name,
+      name: body.name,
       email: body.email,
       role: body.role,
-      ativo: body.active,
+      active: body.active,
     })
 
     return NextResponse.json(

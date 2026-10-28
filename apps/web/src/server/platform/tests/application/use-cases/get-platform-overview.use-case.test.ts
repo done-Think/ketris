@@ -30,7 +30,7 @@ function createRepositories() {
     findMany: vi.fn().mockResolvedValue([
       {
         id: 'a',
-        nome: 'A',
+        name: 'A',
         slug: 'a',
         accountType: 'AGENCY',
         status: 'ACTIVE',
@@ -39,7 +39,7 @@ function createRepositories() {
       },
       {
         id: 'b',
-        nome: 'B',
+        name: 'B',
         slug: 'b',
         accountType: 'BROKER',
         status: 'TRIAL',
@@ -48,7 +48,7 @@ function createRepositories() {
       },
       {
         id: 'c',
-        nome: 'C',
+        name: 'C',
         slug: 'c',
         accountType: 'BROKER',
         status: 'CANCELED',

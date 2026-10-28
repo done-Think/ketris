@@ -3,14 +3,14 @@ import type { ListUsersInput } from '../../types/use-case-inputs'
 import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
-import { toAuthenticatedUser } from '../../domain/user.entity'
+import { toAuthenticatedUser } from '../authenticated-user'
 import type { UserListRepository } from '../ports/user-list-repository.port'
 
 export class ListUsersUseCase {
   constructor(private readonly userRepository: UserListRepository) {}
 
   async execute(input: ListUsersInput): Promise<ListUsersOutput> {
-    if (!isAgencyManager(input.actorPapel)) {
+    if (!isAgencyManager(input.actorRole)) {
       throw new ForbiddenError('Apenas a gestão da imobiliária pode listar usuários.')
     }
 

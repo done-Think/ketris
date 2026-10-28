@@ -55,7 +55,7 @@ describe('RegistrationProfileStep', () => {
     await user.click(screen.getByRole('radio', { name: 'Imobiliária' }))
     await user.click(screen.getByRole('button', { name: 'Continuar' }))
 
-    expect(continueMock).toHaveBeenCalledWith('imobiliaria')
+    expect(continueMock).toHaveBeenCalledWith('agency')
   })
 
   it('bloqueia cliques repetidos durante a transição', () => {

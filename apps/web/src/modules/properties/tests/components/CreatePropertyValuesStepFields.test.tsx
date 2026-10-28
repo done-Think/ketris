@@ -12,7 +12,7 @@ function Wrapper({ onValuesChange }: { onValuesChange: (mainValue: number) => vo
       mainValue: 0,
       rentalValue: 0,
       condominium: 0,
-      iptu: 0,
+      propertyTax: 0,
       negotiationTerm: '',
     } as CreateDashboardPropertyFormValues,
   })

@@ -20,27 +20,27 @@ describe('POST /auth/me/avatar', () => {
   const tokenService = new JoseTokenService()
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Avatar test', slug: `avatar-${randomUUID()}` },
+      data: { name: 'Avatar test', slug: `avatar-${randomUUID()}` },
     })
     tenantId = tenant.id
-    const user = await prisma.usuario.create({
+    const user = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Locatário',
+        name: 'Locatário',
         email: `avatar-${randomUUID()}@example.test`,
-        senhaHash: 'hash',
-        papel: 'RENTER',
+        passwordHash: 'hash',
+        role: 'RENTER',
       },
     })
     userId = user.id
     token = await tokenService.sign({
       id: user.id,
       tenantId,
-      nome: user.nome,
+      name: user.name,
       email: user.email,
-      papel: user.papel,
-      ativo: user.ativo,
-      vinculoAprovadoEm: user.vinculoAprovadoEm,
+      role: user.role,
+      active: user.active,
+      membershipApprovedAt: user.membershipApprovedAt,
     })
   })
   beforeEach(() => {
@@ -77,7 +77,7 @@ describe('POST /auth/me/avatar', () => {
     expect(upload).not.toHaveBeenCalled()
   })
   it('rejects an inactive user even if the bearer token is still valid', async () => {
-    await prisma.usuario.update({ where: { id: userId }, data: { ativo: false } })
+    await prisma.user.update({ where: { id: userId }, data: { active: false } })
     expect((await POST(request(token))).status).toBe(403)
     expect(upload).not.toHaveBeenCalled()
   })

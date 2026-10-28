@@ -18,7 +18,7 @@ export const POST = withErrorHandling(
     const link = await contractsContainer.linkContractPartyUserUseCase.execute({
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       contractId: id,
       partyId,
       email: body.email,

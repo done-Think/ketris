@@ -1,3 +1,3 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@shared/types/user-role'
 
-export type Role = Papel
+export type Role = UserRole

@@ -16,18 +16,18 @@ export class RegisterTenantOwnerUseCase {
 
   async execute(input: RegisterTenantOwnerInput): Promise<RegisterTenantOwnerOutput> {
     assertTermsAccepted(input.acceptTerms)
-    const senhaHash = await this.passwords.hash(input.password)
+    const passwordHash = await this.passwords.hash(input.password)
     const { user } = await this.accounts.createTenantWithAdmin({
       tenantName: input.companyName?.trim() || input.fullName,
       adminName: input.fullName,
       email: input.email,
-      senhaHash,
+      passwordHash,
       accountType: accountTypeForProfile(input.profile),
       status: SELF_REGISTERED_TENANT_STATUS,
-      telefone: input.phone,
+      phone: input.phone,
       creci: input.creci,
-      termosAceitosEm: new Date(),
-      createBrokerProfile: input.profile === 'corretor',
+      termsAcceptedAt: new Date(),
+      createBrokerProfile: input.profile === 'broker',
     })
     return { email: user.email, tenantId: user.tenantId, pendingApproval: false }
   }

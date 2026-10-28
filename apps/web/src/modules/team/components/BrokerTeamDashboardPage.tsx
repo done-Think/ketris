@@ -12,17 +12,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import dayjs from 'dayjs'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useMemo, useState } from 'react'
 
 import { useRouter } from '@/i18n/navigation'
-import { AgendaEventFormDialog } from '@modules/agenda/components/AgendaEventFormDialog'
-import { useCreateAgendaEvent } from '@modules/agenda/hooks/use-agenda-events'
-import { agendaOtherPropertyValue } from '@modules/agenda/schemas/agenda-event-form-schema'
-import type { AgendaEventFormValues } from '@modules/agenda/types/agenda-event'
 import {
   DashboardHeaderActionButton,
   DashboardNotificationsButton,
@@ -38,6 +33,7 @@ import type {
   BrokerTeamMenuAction,
   BrokerTeamMenuState,
   TeamMember,
+  BrokerTeamDashboardPageProps,
 } from '../types/team'
 import { matchesTeamSearch, transferDestinations } from '../utils/team-member'
 import { BrokerTeamCard } from './BrokerTeamCard'
@@ -51,7 +47,7 @@ import { CancelInvitationDialog } from './dialogs/CancelInvitationDialog'
 import { TeamKpis } from './TeamKpis'
 import { TeamMembershipRequests } from './TeamMembershipRequests'
 
-export function BrokerTeamDashboardPage() {
+export function BrokerTeamDashboardPage({ renderMeetingDialog }: BrokerTeamDashboardPageProps) {
   const router = useRouter()
   const t = useTranslations('dashboard.team')
   const { enqueueSnackbar } = useSnackbar()
@@ -60,7 +56,6 @@ export function BrokerTeamDashboardPage() {
   const overview = useTeamOverview()
   const activate = useActivateBroker()
   const resend = useResendInvitation()
-  const createAgendaEvent = useCreateAgendaEvent(session?.tenantId ?? '')
   const { filters, setFilter } = useListState<BrokerTeamListState>({ search: '' })
   const [menu, setMenu] = useState<BrokerTeamMenuState | null>(null)
   const [dialog, setDialog] = useState<BrokerTeamDialog | null>(null)
@@ -74,7 +69,6 @@ export function BrokerTeamDashboardPage() {
   const selfDestination = userId
     ? { id: userId, label: t('dialogs.selfDestination', { name: session?.user?.name ?? '' }) }
     : null
-  const today = dayjs().startOf('day')
   const closeDialog = () => setDialog(null)
 
   const openProfile = (member: TeamMember) => {
@@ -112,42 +106,6 @@ export function BrokerTeamDashboardPage() {
   }
 
   const oneOnOneMember = dialog?.type === 'scheduleOneOnOne' ? dialog.member : null
-  const agendaInitialValues = useMemo<Partial<AgendaEventFormValues> | undefined>(
-    () =>
-      oneOnOneMember
-        ? {
-            title: t('dialogs.oneOnOneTitle', { name: oneOnOneMember.name }),
-            participant: oneOnOneMember.name,
-            phone: oneOnOneMember.phone ?? '',
-            kind: 'MEETING',
-            propertyId: agendaOtherPropertyValue,
-            customProperty: t('dialogs.internalMeeting'),
-          }
-        : undefined,
-    [oneOnOneMember, t],
-  )
-
-  const scheduleOneOnOne = async (values: AgendaEventFormValues) => {
-    try {
-      await createAgendaEvent.mutateAsync({
-        title: values.title,
-        kind: values.kind || undefined,
-        ...(values.propertyId === agendaOtherPropertyValue
-          ? { propertyReference: values.customProperty.trim() }
-          : { propertyId: values.propertyId }),
-        start: dayjs(`${values.scheduledDate}T${values.scheduledTime}`).toISOString(),
-        durationMinutes: values.durationMinutes,
-        participantName: values.participant,
-        participantPhone: values.phone,
-        notes: values.notes.trim(),
-      })
-      closeDialog()
-      enqueueSnackbar(t('dialogs.scheduled'), { variant: 'success' })
-    } catch {
-      enqueueSnackbar(t('dialogs.scheduleError'), { variant: 'error' })
-    }
-  }
-
   const destinations =
     dialog && dialog.type !== 'invite'
       ? transferDestinations(members, dialog.member.id, selfDestination)
@@ -263,15 +221,9 @@ export function BrokerTeamDashboardPage() {
           {dialog?.type === 'cancelInvitation' ? (
             <CancelInvitationDialog member={dialog.member} onClose={closeDialog} />
           ) : null}
-          <AgendaEventFormDialog
-            open={Boolean(oneOnOneMember)}
-            onClose={closeDialog}
-            onCreate={scheduleOneOnOne}
-            initialValues={agendaInitialValues}
-            minDate={today.format('YYYY-MM-DD')}
-            maxDate={today.add(6, 'month').endOf('month').format('YYYY-MM-DD')}
-            propertyOptions={[]}
-          />
+          {oneOnOneMember
+            ? renderMeetingDialog({ member: oneOnOneMember, onClose: closeDialog })
+            : null}
         </Stack>
       </Stack>
     </Box>

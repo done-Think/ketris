@@ -39,6 +39,16 @@ export class PropertyMediaValidationError extends AppError {
   }
 }
 
+export class PropertyMediaStorageUnavailableError extends AppError {
+  constructor(cause: unknown) {
+    super('O serviço de imagens está indisponível. Tente novamente em instantes.', {
+      status: 503,
+      code: 'PROPERTY_MEDIA_STORAGE_UNAVAILABLE',
+    })
+    this.cause = cause
+  }
+}
+
 export class PropertyOwnerValidationError extends AppError {
   constructor() {
     super('Proprietário inválido para este tenant.', {

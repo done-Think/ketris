@@ -8,10 +8,10 @@ export class ListLeadsUseCase {
   constructor(private readonly leadRepository: LeadRepository) {}
 
   async execute(input: ListLeadsInput): Promise<ListLeadsOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     return this.leadRepository.findManyByTenant(input.actorTenantId, {
       ...input.filters,
-      responsavelId: input.actorPapel === 'AGENT' ? input.actorId : undefined,
+      responsibleId: input.actorRole === 'AGENT' ? input.actorId : undefined,
     })
   }
 }

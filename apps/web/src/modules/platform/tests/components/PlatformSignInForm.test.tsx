@@ -15,7 +15,10 @@ const { signIn, getSession, signOut, push, refresh } = vi.hoisted(() => ({
   refresh: vi.fn(),
 }))
 vi.mock('next-auth/react', () => ({ signIn, getSession, signOut }))
-vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ push, refresh }) }))
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+  useRouter: () => ({ push, refresh }),
+}))
 
 function renderForm() {
   return render(

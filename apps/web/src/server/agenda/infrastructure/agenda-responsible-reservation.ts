@@ -7,16 +7,16 @@ export async function assertResponsibleReservation(
   event: AgendaResponsibleReservation,
 ) {
   if (event.status === 'CANCELLED') return
-  const key = `agenda-responsible:${event.tenantId}:${event.responsavelId}`
+  const key = `agenda-responsible:${event.tenantId}:${event.responsibleId}`
   await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${key}, 0))::text`
-  const conflict = await transaction.eventoAgenda.findFirst({
+  const conflict = await transaction.agendaEvent.findFirst({
     where: {
       tenantId: event.tenantId,
-      responsavelId: event.responsavelId,
+      responsibleId: event.responsibleId,
       status: { not: 'CANCELLED' },
       id: event.id ? { not: event.id } : undefined,
-      inicio: { lt: event.fim },
-      fim: { gt: event.inicio },
+      start: { lt: event.end },
+      end: { gt: event.start },
     },
     select: { id: true },
   })

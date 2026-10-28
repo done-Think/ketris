@@ -2,6 +2,8 @@ import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
+import { getAgencyProfileHref, privateMetadata, publicMetadata } from '@/i18n/seo'
+
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { marketplaceContainer } from '@server/marketplace/container'
 import { AgencyProfileNotFoundError } from '@server/marketplace/domain/errors'
@@ -37,11 +39,13 @@ export async function generateMetadata({
 
   if (!agency) {
     return {
+      ...privateMetadata,
       title: t('agencyNotFound.metadataTitle'),
     }
   }
 
   return {
+    ...publicMetadata(locale, getAgencyProfileHref(agency.name, agency.legalCreci, agency.id)),
     title: `Ketris | ${agency.name}`,
     description: t('details.agencyDescription', {
       name: agency.name,

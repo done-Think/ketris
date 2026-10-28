@@ -3,11 +3,10 @@ import { contractDocumentsService } from '../services/contract-documents-service
 import { useInvalidateContracts } from './use-invalidate-contracts'
 
 export function useUploadContractDocument(
-  tenantId: string,
   contractId: string,
   onProgress: (percent: number) => void,
 ) {
-  const invalidate = useInvalidateContracts(tenantId)
+  const invalidate = useInvalidateContracts()
   return useMutation({
     mutationFn: (file: File) => contractDocumentsService.upload(contractId, file, onProgress),
     onSuccess: invalidate,

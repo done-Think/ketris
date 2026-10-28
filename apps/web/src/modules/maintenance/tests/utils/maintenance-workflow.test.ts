@@ -21,7 +21,7 @@ const emptyValues: MaintenanceWorkflowFormValues = {
   catalogProvider: null,
   responsibleId: '',
   contractId: '',
-  status: 'ABERTO',
+  status: 'OPEN',
   name: '',
   phone: '',
   email: '',
@@ -82,14 +82,14 @@ describe('buildMaintenanceWorkflowAction', () => {
         { action: 'reopen' },
         'RENTER',
       ),
-    ).toEqual({ action: 'reopen', status: 'ABERTO', reason: 'Voltou a vazar' })
+    ).toEqual({ action: 'reopen', status: 'OPEN', reason: 'Voltou a vazar' })
     expect(
       buildMaintenanceWorkflowAction(
-        { ...emptyValues, status: 'EM_ANDAMENTO' },
+        { ...emptyValues, status: 'IN_PROGRESS' },
         { action: 'reopen' },
         'OWNER',
       ),
-    ).toEqual({ action: 'reopen', status: 'EM_ANDAMENTO' })
+    ).toEqual({ action: 'reopen', status: 'IN_PROGRESS' })
   })
 
   it('maps assignment and contract linking', () => {

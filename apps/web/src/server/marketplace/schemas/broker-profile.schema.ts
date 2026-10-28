@@ -35,7 +35,7 @@ export const brokerListingSummarySchema = z
   .object({
     id: z.string(),
     title: z.string(),
-    purpose: z.enum(['ALUGUEL', 'VENDA', 'AMBOS']),
+    purpose: z.enum(['RENT', 'SALE', 'BOTH']),
     price: z.number(),
     neighborhood: z.string().nullable(),
     city: z.string().nullable(),

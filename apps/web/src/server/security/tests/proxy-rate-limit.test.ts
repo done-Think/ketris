@@ -24,7 +24,7 @@ vi.mock('../postgres-rate-limit-store', async () => {
 function postFrom(ip: string, pathname: string) {
   return new NextRequest(`http://localhost${pathname}`, {
     method: 'POST',
-    headers: { 'x-forwarded-for': ip },
+    headers: { 'x-forwarded-for': ip, 'X-Ketris-Api-Version': '2' },
   })
 }
 
@@ -128,7 +128,7 @@ describe('proxy rate limit', () => {
     vi.advanceTimersByTime(5000)
     expect((await proxy(request())).status).not.toBe(429)
   })
-  it('fails closed with 503 when the auth counter is unavailable, while regular APIs remain available', async () => {
+  it('fails closed with 503 when any shared counter is unavailable', async () => {
     unavailable.mockImplementation(() => {
       throw new Error('database unavailable')
     })
@@ -139,7 +139,10 @@ describe('proxy rate limit', () => {
     expect(response.status).toBe(503)
     expect(response.headers.get('Retry-After')).toBe('60')
     expect(await response.json()).toMatchObject({ error: { code: 'AUTH_RATE_LIMIT_UNAVAILABLE' } })
-    expect((await proxy(postFrom('203.0.113.10', '/api/crm/leads'))).status).toBe(200)
+    const general = await proxy(postFrom('203.0.113.10', '/api/crm/leads'))
+    expect(general.status).toBe(503)
+    expect(await general.json()).toMatchObject({ error: { code: 'API_RATE_LIMIT_UNAVAILABLE' } })
+    expect(general.headers.get('Cache-Control')).toBe('no-store')
   })
 
   it('does not let forged forwarding headers create fresh auth budgets outside Vercel', async () => {
@@ -150,5 +153,32 @@ describe('proxy rate limit', () => {
       )
     }
     expect((await proxy(postFrom('198.51.100.1', '/api/auth/login'))).status).toBe(429)
+  })
+
+  it.each(['GET', 'POST', 'PATCH', 'DELETE'])(
+    'stops an old %s client before forwarding the operation',
+    async (method) => {
+      const { proxy } = await import('../../../proxy')
+      const response = await proxy(
+        new NextRequest('http://localhost/api/properties/property-1', { method }),
+      )
+      expect(response.status).toBe(409)
+      expect(await response.json()).toMatchObject({ error: { code: 'CLIENT_UPDATE_REQUIRED' } })
+      expect(response.headers.get('x-middleware-next')).toBeNull()
+      expect(response.headers.get('X-Ketris-Api-Version')).toBe('2')
+    },
+  )
+
+  it.each([
+    '/api/auth/csrf',
+    '/api/auth/session',
+    '/api/auth/callback/credentials',
+    '/api/docs/openapi.json',
+    '/api/properties/media/photo.png',
+  ])('keeps the unchanged protocol of %s available', async (pathname) => {
+    const { proxy } = await import('../../../proxy')
+    const response = await proxy(new NextRequest(`http://localhost${pathname}`))
+    expect(response.status).toBe(200)
+    expect(response.headers.get('x-middleware-next')).toBe('1')
   })
 })

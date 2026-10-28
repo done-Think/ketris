@@ -16,7 +16,7 @@ export class ValidateAccessTokenUseCase {
     if (
       !user ||
       user.tenantId !== payload.tenantId ||
-      user.papel !== payload.papel ||
+      user.role !== payload.role ||
       (user.sessionVersion ?? 0) !== (payload.sessionVersion ?? 0)
     ) {
       throw new UnauthorizedError()

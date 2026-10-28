@@ -42,12 +42,12 @@ import {
 } from './cypress/support/team-fixtures'
 import type { TeamFixtureInput } from './cypress/types/team-fixtures'
 import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 import { defineConfig } from 'cypress'
 
 import { createAuthMailbox } from './cypress/support/auth-mailbox'
 import { getDatabaseUrl } from './src/server/db/database-url'
+import { createPostgresAdapter } from './src/server/db/postgres-adapter'
 
 export default defineConfig({
   e2e: {
@@ -95,7 +95,7 @@ export default defineConfig({
       config.env.CONTRACTS_STORAGE_ENABLED = Boolean(contractStorage)
       config.env.AUTH_MAILBOX_ENABLED = Boolean(mailbox)
       const prisma = new PrismaClient({
-        adapter: new PrismaPg({ connectionString: getDatabaseUrl() }),
+        adapter: createPostgresAdapter({ connectionString: getDatabaseUrl() }),
       })
 
       on('task', {
@@ -151,12 +151,12 @@ export default defineConfig({
           tenantSlug: string
         }) {
           const tenant = await prisma.tenant.create({
-            data: { nome: 'Tenant E2E', slug: tenantSlug },
+            data: { name: 'Tenant E2E', slug: tenantSlug },
           })
-          const senhaHash = await bcrypt.hash(password, 10)
+          const passwordHash = await bcrypt.hash(password, 10)
 
-          await prisma.usuario.create({
-            data: { tenantId: tenant.id, nome: 'Usuário E2E', email, senhaHash, papel: 'OWNER' },
+          await prisma.user.create({
+            data: { tenantId: tenant.id, name: 'Usuário E2E', email, passwordHash, role: 'OWNER' },
           })
 
           return tenant.id
@@ -169,17 +169,17 @@ export default defineConfig({
           tenantId,
           email,
           password,
-          papel,
+          role,
         }: {
           tenantId: string
           email: string
           password: string
-          papel: 'OWNER' | 'AGENT'
+          role: 'OWNER' | 'AGENT'
         }) {
-          const senhaHash = await bcrypt.hash(password, 10)
+          const passwordHash = await bcrypt.hash(password, 10)
 
-          await prisma.usuario.create({
-            data: { tenantId, nome: 'Usuário E2E', email, senhaHash, papel },
+          await prisma.user.create({
+            data: { tenantId, name: 'Usuário E2E', email, passwordHash, role },
           })
 
           return null
@@ -193,10 +193,10 @@ export default defineConfig({
           password: string
           role?: 'ADMIN' | 'ADMIN_AGENT' | 'AGENT'
         }) {
-          const senhaHash = await bcrypt.hash(password, 10)
+          const passwordHash = await bcrypt.hash(password, 10)
 
           const admin = await prisma.platformAdmin.create({
-            data: { nome: 'Admin Plataforma E2E', email, senhaHash, role },
+            data: { name: 'Admin Plataforma E2E', email, passwordHash, role },
           })
 
           return admin.id

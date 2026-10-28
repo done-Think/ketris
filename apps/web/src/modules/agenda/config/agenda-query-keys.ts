@@ -1,10 +1,11 @@
+import { dashboardAgendaQueryKeys } from '@shared/config/dashboard-agenda-query-keys'
+
 export const agendaQueryKeys = {
-  notificationAll: ['dashboard-agenda-notifications'] as const,
-  notifications: (tenantId?: string, userId?: string, role?: string, day?: string) =>
-    ['dashboard-agenda-notifications', tenantId, userId, role, day] as const,
+  notificationAll: dashboardAgendaQueryKeys.all,
+  notifications: dashboardAgendaQueryKeys.notifications,
   all: ['agenda'] as const,
   events: () => ['agenda', 'events'] as const,
-  tenant: (tenantId: string) => ['agenda', 'events', tenantId] as const,
+  tenant: (tenantId: string | undefined) => ['agenda', 'events', tenantId] as const,
   range: (tenantId: string, from: string, to: string, userId?: string, role?: string) =>
     ['agenda', 'events', tenantId, from, to, userId, role] as const,
   properties: (tenantId?: string, userId?: string, role?: string, search = '') =>

@@ -14,7 +14,7 @@ export const GET = withErrorHandling(
     const result = await contractsContainer.downloadContractDocumentUseCase.execute({
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       contractId: id,
       documentId,
     })

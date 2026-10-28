@@ -16,7 +16,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: Charg
 
   const charge = await financialContainer.getChargeUseCase.execute({
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     actorTenantId: actor.tenantId,
     chargeId: id,
   })
@@ -33,7 +33,7 @@ export const PATCH = withErrorHandling(
     const charge = await financialContainer.updateChargeUseCase.execute({
       actorId: actor.sub,
       actorTenantId: actor.tenantId,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       chargeId: id,
       ...body,
     })
@@ -50,7 +50,7 @@ export const DELETE = withErrorHandling(
     await financialContainer.deleteChargeUseCase.execute({
       actorId: actor.sub,
       actorTenantId: actor.tenantId,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       chargeId: id,
     })
 

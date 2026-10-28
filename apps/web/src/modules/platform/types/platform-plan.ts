@@ -1,45 +1,19 @@
+import type { components } from '@shared/types/generated/api'
 import type { z } from 'zod'
 
 import type { createPlatformPlanSchema } from '../schemas/platform-plan-schema'
-import type { TenantAccountType } from './tenant'
 
-export type PlanUsageUnit = 'PROPERTIES' | 'BROKERS'
+export type PlanUsageUnit = components['schemas']['PlatformPlan']['usageUnit']
 
-export interface ApiPlatformPlan {
-  accountType: TenantAccountType
-  usageUnit: PlanUsageUnit
-  monthlyPrice: number
-  includedUnits: number
-  extraUnitPrice: number
-  activeAccounts: number
-  createdAt: string
-  updatedAt: string
-  updatedBy: { id: string | null; name: string } | null
-}
+export type ApiPlatformPlan = components['schemas']['PlatformPlan']
 
-export interface ListPlatformPlansResponse {
-  plans: ApiPlatformPlan[]
-}
+export type ListPlatformPlansResponse = components['schemas']['ListPlatformPlansResponse']
 
-export interface UpdatePlatformPlanPayload {
-  monthlyPrice: number
-  includedUnits: number
-  extraUnitPrice: number
-}
+export type UpdatePlatformPlanPayload = components['schemas']['UpdatePlatformPlanRequest']
 
-export interface UpdatePlatformPlanResponse {
-  plan: Omit<ApiPlatformPlan, 'activeAccounts'>
-}
+export type UpdatePlatformPlanResponse = components['schemas']['UpdatePlatformPlanResponse']
 
-export interface MonthlyCharge {
-  usageUnit: PlanUsageUnit
-  usage: number
-  includedUnits: number
-  extraUnits: number
-  basePrice: number
-  extraAmount: number
-  total: number
-}
+export type MonthlyCharge = NonNullable<components['schemas']['MonthlyCharge']>
 
 export type PlatformPlanFormValues = z.infer<ReturnType<typeof createPlatformPlanSchema>>
 

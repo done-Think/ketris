@@ -30,7 +30,7 @@ describe('searchPropertiesQuerySchema', () => {
   })
 
   it('rejeita purpose fora do enum', () => {
-    const result = searchPropertiesQuerySchema.safeParse({ purpose: 'TEMPORADA' })
+    const result = searchPropertiesQuerySchema.safeParse({ purpose: 'SEASONAL' })
 
     expect(result.success).toBe(false)
   })

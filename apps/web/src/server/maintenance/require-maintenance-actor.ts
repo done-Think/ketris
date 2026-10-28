@@ -25,12 +25,12 @@ export async function requireMaintenanceActor(
   }
   if (!userId || !tenantId) throw new UnauthorizedError()
   const user = await authContainer.userRepository.findById(userId)
-  if (!user || !user.ativo || user.tenantId !== tenantId || !user.vinculoAprovadoEm)
+  if (!user || !user.active || user.tenantId !== tenantId || !user.membershipApprovedAt)
     throw new UnauthorizedError()
   return {
     actorId: user.id,
     actorTenantId: user.tenantId,
-    actorName: user.nome,
-    actorPapel: user.papel,
+    actorName: user.name,
+    actorRole: user.role,
   }
 }

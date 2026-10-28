@@ -41,32 +41,32 @@ const headers: Record<ChargeExportLocale, string[]> = {
 }
 
 const types: Record<ChargeExportLocale, Record<ChargeType, string>> = {
-  'pt-BR': { A_RECEBER: 'A receber', A_PAGAR: 'A pagar' },
-  'en-US': { A_RECEBER: 'Receivable', A_PAGAR: 'Payable' },
-  'es-ES': { A_RECEBER: 'A cobrar', A_PAGAR: 'A pagar' },
+  'pt-BR': { RECEIVABLE: 'A receber', PAYABLE: 'A pagar' },
+  'en-US': { RECEIVABLE: 'Receivable', PAYABLE: 'Payable' },
+  'es-ES': { RECEIVABLE: 'A cobrar', PAYABLE: 'A pagar' },
 }
 
 const statuses: Record<ChargeExportLocale, Record<ChargeStatus, string>> = {
   'pt-BR': {
-    PENDENTE: 'Pendente',
-    ATRASADA: 'Atrasada',
-    PAGA: 'Paga',
-    AGENDADA: 'Agendada',
-    CANCELADA: 'Cancelada',
+    PENDING: 'Pendente',
+    OVERDUE: 'Atrasada',
+    PAID: 'Paga',
+    SCHEDULED: 'Agendada',
+    CANCELED: 'Cancelada',
   },
   'en-US': {
-    PENDENTE: 'Pending',
-    ATRASADA: 'Overdue',
-    PAGA: 'Paid',
-    AGENDADA: 'Scheduled',
-    CANCELADA: 'Cancelled',
+    PENDING: 'Pending',
+    OVERDUE: 'Overdue',
+    PAID: 'Paid',
+    SCHEDULED: 'Scheduled',
+    CANCELED: 'Cancelled',
   },
   'es-ES': {
-    PENDENTE: 'Pendiente',
-    ATRASADA: 'Vencida',
-    PAGA: 'Pagada',
-    AGENDADA: 'Programada',
-    CANCELADA: 'Cancelada',
+    PENDING: 'Pendiente',
+    OVERDUE: 'Vencida',
+    PAID: 'Pagada',
+    SCHEDULED: 'Programada',
+    CANCELED: 'Cancelada',
   },
 }
 

@@ -13,7 +13,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const result = await teamContainer.inviteBrokerUseCase.execute({
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     name: body.name,
     email: body.email,
     locale: body.locale,

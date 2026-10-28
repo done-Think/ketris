@@ -1,5 +1,4 @@
-export type ProposalManagementStatus =
-  'EM_NEGOCIACAO' | 'ENVIADA' | 'ACEITA' | 'RECUSADA' | 'RASCUNHO'
+export type ProposalManagementStatus = 'IN_NEGOTIATION' | 'SENT' | 'ACCEPTED' | 'REJECTED' | 'DRAFT'
 
 export type ProposalManagementFilterId = 'all' | ProposalManagementStatus
 

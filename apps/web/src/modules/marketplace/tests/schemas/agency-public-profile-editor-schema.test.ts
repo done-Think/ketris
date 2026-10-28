@@ -19,7 +19,7 @@ const validDraft = {
   backgroundColor: '#FFFFFF',
   logoUrl: '',
   bannerUrl: '',
-  team: [{ usuarioId: 'usuario-1', name: 'Marina Costa' }],
+  team: [{ userId: 'usuario-1', name: 'Marina Costa' }],
 }
 
 describe('agencyPublicProfileEditorSchema', () => {
@@ -65,7 +65,7 @@ describe('agencyPublicProfileEditorSchema', () => {
     const result = agencyPublicProfileEditorSchema.safeParse({
       ...validDraft,
       team: Array.from({ length: 7 }, (_, index) => ({
-        usuarioId: `usuario-${index}`,
+        userId: `usuario-${index}`,
         name: `Corretor ${index}`,
       })),
     })

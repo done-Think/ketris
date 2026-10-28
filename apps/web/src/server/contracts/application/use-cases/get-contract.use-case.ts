@@ -8,7 +8,7 @@ export class GetContractUseCase {
   constructor(private readonly contractRepository: ContractRepository) {}
 
   async execute(input: GetContractInput): Promise<Contract> {
-    const scope = resolveContractReadScope(input.actorTenantId, input.actorId, input.actorPapel)
+    const scope = resolveContractReadScope(input.actorTenantId, input.actorId, input.actorRole)
     const contract = await this.contractRepository.findById(input.contractId, scope)
 
     if (!contract) {

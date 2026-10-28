@@ -1,13 +1,13 @@
 import type { PropertyType } from '../types/property'
 
 const typeTerms: Record<PropertyType, string[]> = {
-  APARTAMENTO: ['apartamento', 'apartment'],
-  CASA: ['casa', 'house'],
+  APARTMENT: ['apartamento', 'apartment'],
+  HOUSE: ['casa', 'house'],
   STUDIO: ['studio', 'estudio'],
-  COBERTURA: ['cobertura', 'penthouse', 'ático'],
-  COMERCIAL: ['comercial', 'commercial'],
+  PENTHOUSE: ['cobertura', 'penthouse', 'ático'],
+  COMMERCIAL: ['comercial', 'commercial'],
   LOFT: ['loft'],
-  OUTRO: ['outro', 'other', 'otro'],
+  OTHER: ['outro', 'other', 'otro'],
 }
 
 export function matchingPropertyTypes(search: string): PropertyType[] {

@@ -50,7 +50,6 @@ export function useMaintenanceDashboard() {
   const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
-  const tenantId = session?.tenantId
   const { filters, setFilter } = useListState(initialFilters)
   const { activeFilter, propertyFilter, categoryFilter, currentPage, rowsPerPage, archived } =
     filters
@@ -59,7 +58,7 @@ export function useMaintenanceDashboard() {
   const [menu, setMenu] = useState<MaintenanceDashboardMenu | null>(null)
   const editingTicketId = dialog?.kind === 'edit' ? dialog.ticketId : null
   const deletingTicketId = dialog?.kind === 'delete' ? dialog.ticketId : null
-  const ticketsQuery = useMaintenanceTickets(tenantId, {
+  const ticketsQuery = useMaintenanceTickets({
     archived,
     locale: locale === 'en-US' || locale === 'es-ES' ? locale : 'pt-BR',
     status:
@@ -74,10 +73,10 @@ export function useMaintenanceDashboard() {
     pageSize: rowsPerPage,
   })
   const optionsQuery = useMaintenanceOptions()
-  const editTicketQuery = useMaintenanceTicket(tenantId, editingTicketId)
-  const createMutation = useCreateMaintenanceTicket(tenantId)
-  const updateMutation = useUpdateMaintenanceTicket(tenantId)
-  const deleteMutation = useDeleteMaintenanceTicket(tenantId)
+  const editTicketQuery = useMaintenanceTicket(editingTicketId)
+  const createMutation = useCreateMaintenanceTicket()
+  const updateMutation = useUpdateMaintenanceTicket()
+  const deleteMutation = useDeleteMaintenanceTicket()
   const properties = [
     ...new Map(
       (optionsQuery.data?.contracts ?? []).map((contract) => [
@@ -93,7 +92,7 @@ export function useMaintenanceDashboard() {
   )
   const summary = ticketsQuery.data?.summary
   const metrics: MaintenanceMetric[] = [
-    { label: 'open', value: formatter.number(summary?.byStatus.ABERTO ?? 0) },
+    { label: 'open', value: formatter.number(summary?.byStatus.OPEN ?? 0) },
     { label: 'urgent', value: formatter.number(summary?.urgentCount ?? 0) },
   ]
   if (summary?.averageResolutionDays !== null && summary?.averageResolutionDays !== undefined)

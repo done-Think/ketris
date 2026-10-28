@@ -1,6 +1,6 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@shared/types/user-role'
 
 export interface AgendaActor {
-  role?: Papel
+  role?: UserRole
   userId?: string
 }

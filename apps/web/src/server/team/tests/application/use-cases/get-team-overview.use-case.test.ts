@@ -86,7 +86,7 @@ describe('GetTeamOverviewUseCase', () => {
 
   it('bloqueia quem não é OWNER', async () => {
     await expect(
-      new GetTeamOverviewUseCase(teamRepository()).execute({ ...owner, actorPapel: 'AGENT' }),
+      new GetTeamOverviewUseCase(teamRepository()).execute({ ...owner, actorRole: 'AGENT' }),
     ).rejects.toMatchObject({ status: 403 })
   })
 })

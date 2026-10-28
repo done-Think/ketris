@@ -10,93 +10,93 @@ import { GET } from '../../properties/route'
 
 describe('GET /api/marketplace/properties (integração)', () => {
   let tenantId: string
-  let responsavelId: string
+  let responsibleId: string
   let publishedId: string
   let draftId: string
   let noParkingId: string
-  const cidade = `Cidade-${randomUUID().slice(0, 8)}`
-  const bairro = `Bairro-${randomUUID().slice(0, 8)}`
+  const city = `Cidade-${randomUUID().slice(0, 8)}`
+  const neighborhood = `Bairro-${randomUUID().slice(0, 8)}`
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária Marketplace', slug: `mkt-${randomUUID()}` },
+      data: { name: 'Imobiliária Marketplace', slug: `mkt-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const responsavel = await prisma.usuario.create({
+    const responsible = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor',
+        name: 'Corretor',
         email: `corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
-    responsavelId = responsavel.id
+    responsibleId = responsible.id
 
-    const published = await prisma.imovel.create({
+    const published = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId,
-        titulo: 'Apartamento publicado',
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        quartos: 2,
-        vagas: 1,
-        areaM2: 90,
-        valor: 2500,
+        responsibleId,
+        title: 'Apartamento publicado',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        bedrooms: 2,
+        parkingSpots: 1,
+        areaSqm: 90,
+        price: 2500,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
-        endereco: {
+        publishedAt: new Date(),
+        address: {
           create: {
-            logradouro: 'Rua A',
-            numero: '10',
-            bairro,
-            cidade,
-            estado: 'PR',
-            cep: '80000-000',
+            street: 'Rua A',
+            number: '10',
+            neighborhood,
+            city,
+            state: 'PR',
+            zipCode: '80000-000',
           },
         },
-        midias: {
-          create: [{ url: 'https://cdn.ketris.dev/capa.jpg', tipo: 'foto', ordem: 0 }],
+        media: {
+          create: [{ url: 'https://cdn.ketris.dev/capa.jpg', type: 'PHOTO', position: 0 }],
         },
       },
     })
     publishedId = published.id
 
-    const draft = await prisma.imovel.create({
+    const draft = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId,
-        titulo: 'Apartamento em rascunho',
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        valor: 3000,
+        responsibleId,
+        title: 'Apartamento em rascunho',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 3000,
         status: 'DRAFT',
       },
     })
     draftId = draft.id
 
-    const noParking = await prisma.imovel.create({
+    const noParking = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId,
-        titulo: 'Apartamento sem vaga',
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        vagas: 0,
-        areaM2: 40,
-        valor: 1800,
+        responsibleId,
+        title: 'Apartamento sem vaga',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        parkingSpots: 0,
+        areaSqm: 40,
+        price: 1800,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
-        endereco: {
+        publishedAt: new Date(),
+        address: {
           create: {
-            logradouro: 'Rua B',
-            numero: '20',
-            bairro,
-            cidade: 'Outra Cidade',
-            estado: 'PR',
-            cep: '80000-001',
+            street: 'Rua B',
+            number: '20',
+            neighborhood,
+            city: 'Outra Cidade',
+            state: 'PR',
+            zipCode: '80000-001',
           },
         },
       },
@@ -116,7 +116,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
   // Searches are scoped to this file's neighbourhood: the result is paginated and the database
   // holds published properties from other tests.
   it('retorna 200 e lista apenas imóveis publicados (rascunho não aparece)', async () => {
-    const response = await GET(buildRequest(`?location=${bairro}`))
+    const response = await GET(buildRequest(`?location=${neighborhood}`))
     const json = await response.json()
 
     expect(response.status).toBe(200)
@@ -135,7 +135,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
   })
 
   it('filtra por city (case-insensitive, match exato)', async () => {
-    const response = await GET(buildRequest(`?city=${cidade.toLowerCase()}`))
+    const response = await GET(buildRequest(`?city=${city.toLowerCase()}`))
     const json = await response.json()
 
     expect(response.status).toBe(200)
@@ -145,7 +145,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
   })
 
   it('filtra por location (substring em bairro OU cidade)', async () => {
-    const response = await GET(buildRequest(`?location=${bairro}`))
+    const response = await GET(buildRequest(`?location=${neighborhood}`))
     const json = await response.json()
 
     const ids = json.properties.map((property: { id: string }) => property.id)
@@ -154,7 +154,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
   })
 
   it('filtra por faixa de preço (exclui imóveis fora do teto)', async () => {
-    const response = await GET(buildRequest(`?location=${bairro}&maxPrice=1000`))
+    const response = await GET(buildRequest(`?location=${neighborhood}&maxPrice=1000`))
     const json = await response.json()
 
     expect(json.properties.some((property: { id: string }) => property.id === publishedId)).toBe(
@@ -163,7 +163,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
   })
 
   it('filtra por minArea', async () => {
-    const response = await GET(buildRequest(`?location=${bairro}&minArea=80`))
+    const response = await GET(buildRequest(`?location=${neighborhood}&minArea=80`))
     const json = await response.json()
 
     const ids = json.properties.map((property: { id: string }) => property.id)
@@ -172,7 +172,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
   })
 
   it('filtra por hasParking=true', async () => {
-    const response = await GET(buildRequest(`?location=${bairro}&hasParking=true`))
+    const response = await GET(buildRequest(`?location=${neighborhood}&hasParking=true`))
     const json = await response.json()
 
     const ids = json.properties.map((property: { id: string }) => property.id)
@@ -181,7 +181,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
   })
 
   it('ordena por sortBy=priceAsc', async () => {
-    const response = await GET(buildRequest(`?location=${bairro}&sortBy=priceAsc`))
+    const response = await GET(buildRequest(`?location=${neighborhood}&sortBy=priceAsc`))
     const json = await response.json()
 
     const ids = json.properties.map((property: { id: string }) => property.id)
@@ -192,7 +192,9 @@ describe('GET /api/marketplace/properties (integração)', () => {
     const pages = await Promise.all(
       [1, 2, 3].map(async (page) =>
         (
-          await GET(buildRequest(`?location=${bairro}&sortBy=priceAsc&pageSize=1&page=${page}`))
+          await GET(
+            buildRequest(`?location=${neighborhood}&sortBy=priceAsc&pageSize=1&page=${page}`),
+          )
         ).json(),
       ),
     )
@@ -208,7 +210,7 @@ describe('GET /api/marketplace/properties (integração)', () => {
   })
 
   it('retorna 400 quando purpose é inválido', async () => {
-    const response = await GET(buildRequest('?purpose=TEMPORADA'))
+    const response = await GET(buildRequest('?purpose=SEASONAL'))
 
     expect(response.status).toBe(400)
   })

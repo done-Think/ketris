@@ -11,13 +11,13 @@ describe('/api/maintenance regularization (database integration)', () => {
   const env = setupMaintenanceIntegration()
   const { request, context, action, legacyTicket, anotherContract } = env
   it.each([
-    { status: 'ABERTO', archived: false },
-    { status: 'EM_ANDAMENTO', archived: false },
-    { status: 'RESOLVIDO', archived: false },
-    { status: 'CANCELADO', archived: false },
-    { status: 'FECHADO', archived: false },
-    { status: 'FECHADO', archived: true },
-    { status: 'RESOLVIDO', archived: true },
+    { status: 'OPEN', archived: false },
+    { status: 'IN_PROGRESS', archived: false },
+    { status: 'RESOLVED', archived: false },
+    { status: 'CANCELED', archived: false },
+    { status: 'CLOSED', archived: false },
+    { status: 'CLOSED', archived: true },
+    { status: 'RESOLVED', archived: true },
   ] as const)(
     'regularizes legacy $status (archived=$archived) preserving lifecycle and restoring scoped access',
     async ({ status, archived }) => {
@@ -40,22 +40,23 @@ describe('/api/maintenance regularization (database integration)', () => {
         contractId: env.fixture.contract.id,
       })
       expect(response.status).toBe(200)
-      const after = await prisma.chamadoManutencao.findUniqueOrThrow({
+      const after = await prisma.maintenanceTicket.findUniqueOrThrow({
         where: { id: before.id },
-        include: { atividades: true, anexos: true },
+        include: { activities: true, attachments: true },
       })
       expect(after).toEqual({
         ...before,
-        contratoId: env.fixture.contract.id,
+        updatedById: env.fixture.admin.id,
+        contractId: env.fixture.contract.id,
         updatedAt: expect.any(Date),
-        atividades: expect.arrayContaining(before.atividades),
+        activities: expect.arrayContaining(before.activities),
       })
       expect(after.updatedAt.getTime()).toBeGreaterThan(before.updatedAt.getTime())
-      expect(after.atividades).toHaveLength(before.atividades.length + 1)
-      expect(after.atividades.find((a) => a.tipo === 'EDICAO')).toMatchObject({
-        autorId: env.fixture.admin.id,
-        autorNome: env.fixture.admin.nome,
-        detalhes: {
+      expect(after.activities).toHaveLength(before.activities.length + 1)
+      expect(after.activities.find((a) => a.type === 'EDIT')).toMatchObject({
+        authorId: env.fixture.admin.id,
+        authorName: env.fixture.admin.name,
+        details: {
           before: { contractId: null, propertyId: env.fixture.property.id },
           after: { contractId: env.fixture.contract.id, propertyId: env.fixture.property.id },
         },
@@ -74,11 +75,11 @@ describe('/api/maintenance regularization (database integration)', () => {
         expect(
           (await action(before.id, env.fixture.admin.token, { action: 'restore' })).status,
         ).toBe(200)
-        const restored = await prisma.chamadoManutencao.findUniqueOrThrow({
+        const restored = await prisma.maintenanceTicket.findUniqueOrThrow({
           where: { id: before.id },
         })
         expect(restored.status).toBe(status)
-        expect(restored.resolvidoEm).toEqual(before.resolvidoEm)
+        expect(restored.resolvedAt).toEqual(before.resolvedAt)
       }
       for (const user of authorized) {
         expect(
@@ -121,14 +122,14 @@ describe('/api/maintenance regularization (database integration)', () => {
 
   it('regularization rejects unauthorized actors, missing/foreign contracts and another property without audit or mutation', async () => {
     const before = await legacyTicket()
-    const property = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId: env.fixture.tenant.id,
-        responsavelId: env.fixture.agent.id,
-        titulo: 'Another property',
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        valor: 2500,
+        responsibleId: env.fixture.agent.id,
+        title: 'Another property',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2500,
       },
     })
     const wrongProperty = await anotherContract(property.id)
@@ -153,9 +154,9 @@ describe('/api/maintenance regularization (database integration)', () => {
         ).status,
       ).toBe(404)
     }
-    const after = await prisma.chamadoManutencao.findUniqueOrThrow({
+    const after = await prisma.maintenanceTicket.findUniqueOrThrow({
       where: { id: before.id },
-      include: { atividades: true, anexos: true },
+      include: { activities: true, attachments: true },
     })
     expect(after).toEqual(before)
   })
@@ -175,7 +176,7 @@ describe('/api/maintenance regularization (database integration)', () => {
       ).status,
     ).toBe(400)
     expect(
-      (await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id: before.id } })).contratoId,
+      (await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id: before.id } })).contractId,
     ).toBeNull()
     // User membership regularization does not infer a contract for existing calls.
     expect(
@@ -189,7 +190,7 @@ describe('/api/maintenance regularization (database integration)', () => {
       ).status,
     ).toBe(204)
     expect(
-      (await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id: before.id } })).contratoId,
+      (await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id: before.id } })).contractId,
     ).toBeNull()
     expect(
       (
@@ -224,15 +225,15 @@ describe('/api/maintenance regularization (database integration)', () => {
         })
       ).status,
     ).toBe(200)
-    const corrected = await prisma.chamadoManutencao.findUniqueOrThrow({
+    const corrected = await prisma.maintenanceTicket.findUniqueOrThrow({
       where: { id: before.id },
-      include: { atividades: true },
+      include: { activities: true },
     })
     expect(corrected.status).toBe(before.status)
-    expect(corrected.resolvidoEm).toEqual(before.resolvidoEm)
+    expect(corrected.resolvedAt).toEqual(before.resolvedAt)
     expect(
-      corrected.atividades.some(
-        (a) => a.detalhes && JSON.stringify(a.detalhes).includes(selected.id),
+      corrected.activities.some(
+        (a) => a.details && JSON.stringify(a.details).includes(selected.id),
       ),
     ).toBe(true)
     expect(
@@ -256,7 +257,7 @@ describe('/api/maintenance regularization (database integration)', () => {
   it('allows only admin to regularize and rejects accounts with a different party email', async () => {
     const input = {
       contractId: env.fixture.contract.id,
-      partyId: env.fixture.contract.partes[0].id,
+      partyId: env.fixture.contract.parties[0].id,
       renterId: env.fixture.renter.id,
     }
     expect((await links(request('links', 'POST', env.fixture.owner.token, input))).status).toBe(403)

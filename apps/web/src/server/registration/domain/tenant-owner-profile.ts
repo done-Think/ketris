@@ -6,10 +6,10 @@ import type {
 export type { TenantOwnerProfile } from '../types/account'
 
 const ACCOUNT_TYPE_BY_PROFILE: Record<TenantOwnerProfile, RegistrationAccountType> = {
-  proprietario: 'INDIVIDUAL',
-  corretor: 'BROKER',
-  imobiliaria: 'AGENCY',
-  construtora: 'AGENCY',
+  owner: 'INDIVIDUAL',
+  broker: 'BROKER',
+  agency: 'AGENCY',
+  developer: 'AGENCY',
 }
 
 export const SELF_REGISTERED_TENANT_STATUS: RegistrationTenantStatus = 'TRIAL'

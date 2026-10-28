@@ -152,5 +152,6 @@
     "description": "No pudimos verificar tu sesión. Tu trabajo se ha conservado. Inténtalo de nuevo para continuar.",
     "retry": "Intentar de nuevo",
     "retrying": "Verificando sesión…"
-  }
+  },
+  "perMonth": "/mes"
 }

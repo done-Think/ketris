@@ -2,16 +2,16 @@ import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
 export const publicPropertyTypeSchema = z.enum([
-  'APARTAMENTO',
-  'CASA',
+  'APARTMENT',
+  'HOUSE',
   'STUDIO',
-  'COBERTURA',
-  'COMERCIAL',
+  'PENTHOUSE',
+  'COMMERCIAL',
   'LOFT',
-  'OUTRO',
+  'OTHER',
 ])
 
-export const propertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA', 'AMBOS'])
+export const propertyPurposeSchema = z.enum(['RENT', 'SALE', 'BOTH'])
 
 export const publicPropertySummarySchema = z
   .object({
@@ -55,7 +55,7 @@ export const propertyMediaSchema = z
   .object({
     id: z.string(),
     url: z.string(),
-    type: z.string(),
+    type: z.enum(['photo', 'video', 'floorPlan']),
     order: z.number().int(),
   })
   .openapi('PropertyMedia')

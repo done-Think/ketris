@@ -21,90 +21,90 @@ export async function seedMaintenanceFixtures(
   isolated()
   if (!/^[a-z0-9-]+$/.test(suffix)) throw new Error('Identificador inválido.')
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Maintenance E2E', slug: 'maintenance-e2e-' + suffix, accountType: 'AGENCY' },
+    data: { name: 'Maintenance E2E', slug: 'maintenance-e2e-' + suffix, accountType: 'AGENCY' },
   })
   const renters = await prisma.tenant.create({
-    data: { nome: 'Locatários Maintenance E2E', slug: 'maintenance-e2e-renters-' + suffix },
+    data: { name: 'Locatários Maintenance E2E', slug: 'maintenance-e2e-renters-' + suffix },
   })
-  const senhaHash = await bcrypt.hash(password, 10)
-  const owner = await prisma.usuario.create({
+  const passwordHash = await bcrypt.hash(password, 10)
+  const owner = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Gestora Maintenance E2E',
+      name: 'Gestora Maintenance E2E',
       email: 'owner-' + suffix + '@maintenance.example.test',
-      senhaHash,
-      papel: 'OWNER',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'OWNER',
+      emailVerifiedAt: new Date(),
     },
   })
-  const renter = await prisma.usuario.create({
+  const renter = await prisma.user.create({
     data: {
       tenantId: renters.id,
-      nome: 'Locatário Maintenance E2E',
+      name: 'Locatário Maintenance E2E',
       email: 'renter-' + suffix + '@maintenance.example.test',
-      senhaHash,
-      papel: 'RENTER',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'RENTER',
+      emailVerifiedAt: new Date(),
     },
   })
-  const property = await prisma.imovel.create({
+  const property = await prisma.property.create({
     data: {
       tenantId: tenant.id,
-      responsavelId: owner.id,
-      titulo: 'Apartamento Maintenance E2E',
-      finalidade: 'ALUGUEL',
-      tipo: 'APARTAMENTO',
-      valor: 2000,
+      responsibleId: owner.id,
+      title: 'Apartamento Maintenance E2E',
+      purpose: 'RENT',
+      type: 'APARTMENT',
+      price: 2000,
     },
   })
-  const opportunity = await prisma.oportunidade.create({
+  const opportunity = await prisma.opportunity.create({
     data: {
       tenantId: tenant.id,
-      imovelId: property.id,
-      responsavelId: await propertyResponsibleId(prisma, property.id),
-      interessadoNome: renter.nome,
-      interessadoEmail: renter.email,
-      valorProposto: 2000,
-      status: 'ACEITA',
+      propertyId: property.id,
+      responsibleId: await propertyResponsibleId(prisma, property.id),
+      interestedName: renter.name,
+      interestedEmail: renter.email,
+      proposedValue: 2000,
+      status: 'ACCEPTED',
     },
   })
-  const contract = await prisma.contrato.create({
+  const contract = await prisma.contract.create({
     data: {
       tenantId: tenant.id,
-      imovelId: property.id,
-      oportunidadeOrigemId: opportunity.id,
-      codigo: 'MNT-E2E-001',
-      valor: 2000,
-      diaVencimento: 5,
-      dataInicio: new Date('2026-01-01'),
-      dataFim: new Date('2030-01-01'),
-      indiceReajuste: 'IPCA',
-      tipoGarantia: 'CAUCAO',
-      status: 'ATIVO',
-      partes: {
+      propertyId: property.id,
+      sourceOpportunityId: opportunity.id,
+      code: 'MNT-E2E-001',
+      amount: 2000,
+      dueDay: 5,
+      startDate: new Date('2026-01-01'),
+      endDate: new Date('2030-01-01'),
+      adjustmentIndex: 'IPCA',
+      guaranteeType: 'DEPOSIT',
+      status: 'ACTIVE',
+      parties: {
         create: {
-          papel: 'LOCATARIO',
-          nome: renter.nome,
+          role: 'RENTER',
+          name: renter.name,
           email: renter.email,
           cpf: '00000000000',
-          usuarioId: renter.id,
+          userId: renter.id,
         },
       },
     },
   })
   let ticketId = ''
   for (let index = 0; index < 6; index++) {
-    const ticket = await prisma.chamadoManutencao.create({
+    const ticket = await prisma.maintenanceTicket.create({
       data: {
         tenantId: tenant.id,
-        contratoId: contract.id,
-        imovelId: property.id,
-        categoria: 'PLUMBING',
-        titulo: 'Chamado E2E ' + index,
-        descricao: 'Vazamento na cozinha',
-        abertoPorId: renter.id,
-        abertoPorNome: renter.nome,
-        prioridade: index === 0 ? 'URGENTE' : 'NORMAL',
+        contractId: contract.id,
+        propertyId: property.id,
+        category: 'PLUMBING',
+        title: 'Chamado E2E ' + index,
+        description: 'Vazamento na cozinha',
+        openedById: renter.id,
+        openedByName: renter.name,
+        priority: index === 0 ? 'URGENT' : 'NORMAL',
       },
     })
     if (index === 0) ticketId = ticket.id
@@ -114,8 +114,8 @@ export async function seedMaintenanceFixtures(
     ownerEmail: owner.email,
     renterEmail: renter.email,
     ticketId,
-    propertyTitle: property.titulo,
-    contractCode: contract.codigo,
+    propertyTitle: property.title,
+    contractCode: contract.code,
   }
 }
 export async function cleanupMaintenanceFixtures(prisma: PrismaClient, tenantIds: string[]) {
@@ -130,16 +130,16 @@ export async function readMaintenanceEvidence(
   id: string,
 ): Promise<MaintenanceEvidence> {
   isolated()
-  const ticket = await prisma.chamadoManutencao.findFirstOrThrow({
+  const ticket = await prisma.maintenanceTicket.findFirstOrThrow({
     where: { id, tenant: { slug: { startsWith: 'maintenance-e2e-' } } },
-    include: { anexos: true, atividades: true },
+    include: { attachments: true, activities: true },
   })
   return {
-    providerName: ticket.prestadorNome,
-    providerId: ticket.prestadorId,
-    attachmentCount: ticket.anexos.length,
-    uploadId: ticket.anexos[0]?.uploadId ?? null,
+    providerName: ticket.providerName,
+    providerId: ticket.providerId,
+    attachmentCount: ticket.attachments.length,
+    uploadId: ticket.attachments[0]?.uploadId ?? null,
     status: ticket.status,
-    actions: ticket.atividades.map((activity) => activity.systemAction),
+    actions: ticket.activities.map((activity) => activity.systemAction),
   }
 }

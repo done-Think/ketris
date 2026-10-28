@@ -2,7 +2,7 @@ import type {
   RequestSignupVerificationDTO,
   ConfirmSignupVerificationDTO,
   ConfirmSignupVerificationResponseDTO,
-} from '@server/auth/types/http'
+} from '@shared/types/generated/auth/http'
 
 import { BaseService } from '@shared/lib/api/base-service'
 

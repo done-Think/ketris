@@ -15,63 +15,63 @@ export function listContracts(filters: ContractListFilters, scope: ContractReadS
   const direction = filters.sortOrder === 'asc' ? Prisma.sql`ASC` : Prisma.sql`DESC`
   return prisma.$transaction(
     async (tx) => {
-      const totalCount = await tx.contrato.count({ where: query.where })
+      const totalCount = await tx.contract.count({ where: query.where })
       const ids = await tx.$queryRaw<ContractIdRow[]>(Prisma.sql`
-      SELECT c.id FROM contratos c JOIN imoveis i ON i.id = c."imovelId"
+      SELECT c.id FROM contracts c JOIN properties i ON i.id = c."propertyId"
       WHERE ${query.sql} ORDER BY ${order} ${direction} NULLS LAST, c.id ASC
       LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `)
-      const contracts = await tx.contrato.findMany({
+      const contracts = await tx.contract.findMany({
         where: { AND: [query.where, { id: { in: ids.map((row) => row.id) } }] },
         include: {
-          imovel: {
+          property: {
             select: {
-              titulo: true,
-              endereco: { select: { logradouro: true, bairro: true, cidade: true } },
+              title: true,
+              address: { select: { street: true, neighborhood: true, city: true } },
             },
           },
-          partes: { select: { papel: true, nome: true, assinatura: { select: { status: true } } } },
+          parties: { select: { role: true, name: true, signature: { select: { status: true } } } },
         },
       })
       const rowsById = new Map(contracts.map((contract) => [contract.id, contract]))
       const where = contractReadWhere(scope)
       const dates = contractPeriodDates()
       const summary = {
-        total: await tx.contrato.count({ where }),
-        active: await tx.contrato.count({ where: { AND: [where, { status: 'ATIVO' }] } }),
-        expiring30: await tx.contrato.count({
-          where: { AND: [where, { dataFim: { gte: dates.today, lt: dates.after30 } }] },
+        total: await tx.contract.count({ where }),
+        active: await tx.contract.count({ where: { AND: [where, { status: 'ACTIVE' }] } }),
+        expiring30: await tx.contract.count({
+          where: { AND: [where, { endDate: { gte: dates.today, lt: dates.after30 } }] },
         }),
-        expiring90: await tx.contrato.count({
-          where: { AND: [where, { dataFim: { gte: dates.today, lt: dates.after90 } }] },
+        expiring90: await tx.contract.count({
+          where: { AND: [where, { endDate: { gte: dates.today, lt: dates.after90 } }] },
         }),
-        closed: await tx.contrato.count({ where: { AND: [where, { status: 'ENCERRADO' }] } }),
+        closed: await tx.contract.count({ where: { AND: [where, { status: 'CLOSED' }] } }),
       }
       const items = ids.flatMap(({ id }) => {
         const contract = rowsById.get(id)
         if (!contract) return []
-        const address = contract.imovel.endereco
+        const address = contract.property.address
         return [
           {
             canEdit:
               scope.kind === 'tenant' &&
-              ['RASCUNHO', 'EM_REVISAO', 'AGUARDANDO_ASSINATURA'].includes(contract.status) &&
-              !contract.partes.some((party) => party.assinatura?.status === 'ASSINADA'),
+              ['DRAFT', 'IN_REVIEW', 'AWAITING_SIGNATURE'].includes(contract.status) &&
+              !contract.parties.some((party) => party.signature?.status === 'SIGNED'),
             id: contract.id,
-            code: contract.codigo,
-            opportunityId: contract.oportunidadeOrigemId,
-            propertyId: contract.imovelId,
-            propertyTitle: contract.imovel.titulo,
+            code: contract.code,
+            opportunityId: contract.sourceOpportunityId,
+            propertyId: contract.propertyId,
+            propertyTitle: contract.property.title,
             propertyAddress: address
-              ? [address.logradouro, address.bairro, address.cidade].filter(Boolean).join(', ')
+              ? [address.street, address.neighborhood, address.city].filter(Boolean).join(', ')
               : '',
-            ownerName: contract.partes.find((party) => party.papel === 'LOCADOR')?.nome ?? null,
-            tenantName: contract.partes.find((party) => party.papel === 'LOCATARIO')?.nome ?? null,
+            ownerName: contract.parties.find((party) => party.role === 'LANDLORD')?.name ?? null,
+            tenantName: contract.parties.find((party) => party.role === 'RENTER')?.name ?? null,
             status: contract.status,
-            type: contract.tipo,
-            amount: contract.valor.toNumber(),
-            startDate: contract.dataInicio,
-            endDate: contract.dataFim,
+            type: contract.type,
+            amount: contract.amount.toNumber(),
+            startDate: contract.startDate,
+            endDate: contract.endDate,
             updatedAt: contract.updatedAt,
           },
         ]

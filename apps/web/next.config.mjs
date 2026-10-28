@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { withSentryConfig } from '@sentry/nextjs'
 import createNextIntlPlugin from 'next-intl/plugin'
 
@@ -16,6 +17,11 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return JSON.parse(
+      readFileSync(new URL('./src/i18n/route-redirects.json', import.meta.url), 'utf8'),
+    )
+  },
   experimental: {
     ...(configuredBuildWorkers ? { cpus: configuredBuildWorkers } : {}),
     ...(process.env.KETRIS_BUILD_LOW_MEMORY === '1' ? { webpackMemoryOptimizations: true } : {}),

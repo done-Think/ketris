@@ -1,6 +1,6 @@
 import type { ChargeStatus, StoredChargeStatus } from '../types/charge'
 
-const openStatuses: readonly StoredChargeStatus[] = ['PENDENTE', 'AGENDADA']
+const openStatuses: readonly StoredChargeStatus[] = ['PENDING', 'SCHEDULED']
 
 export function isOpenChargeStatus(status: StoredChargeStatus): boolean {
   return openStatuses.includes(status)
@@ -11,7 +11,7 @@ export function effectiveChargeStatus(
   dueDate: Date,
   today: Date,
 ): ChargeStatus {
-  return isOpenChargeStatus(status) && dueDate.getTime() < today.getTime() ? 'ATRASADA' : status
+  return isOpenChargeStatus(status) && dueDate.getTime() < today.getTime() ? 'OVERDUE' : status
 }
 
 export function withEffectiveStatus<T extends { storedStatus: StoredChargeStatus; dueDate: Date }>(

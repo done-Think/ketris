@@ -1,10 +1,10 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { GuaranteeType, Opportunity } from '../domain/opportunity.entity'
 
 export interface CreateOpportunityInput {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   actorName?: string | null
   propertyId: string
   responsibleId?: string | null
@@ -18,7 +18,7 @@ export interface CreateOpportunityInput {
   guaranteeType?: GuaranteeType
   specialConditions?: string[]
   notes?: string | null
-  status?: 'RASCUNHO' | 'ENVIADA'
+  status?: 'DRAFT' | 'SENT'
 }
 
 export type CreateOpportunityOutput = Opportunity

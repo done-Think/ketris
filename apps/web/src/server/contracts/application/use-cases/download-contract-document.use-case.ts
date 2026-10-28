@@ -13,7 +13,7 @@ export class DownloadContractDocumentUseCase {
   ) {}
 
   async execute(input: DownloadContractDocumentInput) {
-    const scope = resolveContractReadScope(input.actorTenantId, input.actorId, input.actorPapel)
+    const scope = resolveContractReadScope(input.actorTenantId, input.actorId, input.actorRole)
     const document = await this.repository.find(input.contractId, input.documentId, scope)
     if (!document || !document.objectKey || !document.sha256)
       throw new ContractDocumentNotFoundError()

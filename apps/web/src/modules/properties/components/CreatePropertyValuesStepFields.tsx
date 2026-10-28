@@ -20,7 +20,7 @@ export function CreatePropertyValuesStepFields({
     ['mainValue', hasDualPurpose ? 'referenceValue' : mainValueLabel, true],
     ...(hasDualPurpose ? ([['rentalValue', 'rentValue', true]] as const) : []),
     ['condominium', 'condominium', true],
-    ['iptu', 'iptu', true],
+    ['propertyTax', 'propertyTax', true],
     ['negotiationTerm', negotiationTermLabel, false],
   ]
 

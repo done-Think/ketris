@@ -21,14 +21,14 @@ function request(body: unknown) {
 }
 
 async function createUser() {
-  return prisma.usuario.create({
+  return prisma.user.create({
     data: {
       tenantId,
-      nome: 'Verification',
+      name: 'Verification',
       email: `${randomUUID()}@verification.example.test`,
-      senhaHash: 'not-used-in-this-flow',
-      papel: 'OWNER',
-      emailVerificadoEm: null,
+      passwordHash: 'not-used-in-this-flow',
+      role: 'OWNER',
+      emailVerifiedAt: null,
     },
   })
 }
@@ -43,7 +43,7 @@ function latestCode(): string {
 describe('signup email verification API', () => {
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Email verification', slug: `verification-${randomUUID()}` },
+      data: { name: 'Email verification', slug: `verification-${randomUUID()}` },
     })
     tenantId = tenant.id
   })
@@ -74,8 +74,8 @@ describe('signup email verification API', () => {
       expect(body.outcome).toBe('REGISTERED')
       expect(typeof body.accessToken).toBe('string')
       expect(typeof body.refreshToken).toBe('string')
-      const verified = await prisma.usuario.findUniqueOrThrow({ where: { id: user.id } })
-      expect(verified.emailVerificadoEm).not.toBeNull()
+      const verified = await prisma.user.findUniqueOrThrow({ where: { id: user.id } })
+      expect(verified.emailVerifiedAt).not.toBeNull()
       expect(await prisma.refreshToken.count({ where: { userId: user.id } })).toBe(1)
     },
   )
@@ -137,9 +137,9 @@ describe('signup email verification API', () => {
 
   it('requires membership approval in addition to successful email verification', async () => {
     const user = await createUser()
-    await prisma.usuario.update({
+    await prisma.user.update({
       where: { id: user.id },
-      data: { papel: 'AGENT', vinculoAprovadoEm: null },
+      data: { role: 'AGENT', membershipApprovedAt: null },
     })
     await requestCode(request({ email: user.email, tenantId, locale: 'pt-BR' }))
     const response = await confirmCode(request({ email: user.email, tenantId, code: latestCode() }))
@@ -152,7 +152,7 @@ describe('signup email verification API', () => {
 
   it('does not reveal whether an unknown email exists and does not send mail for an already verified account', async () => {
     const user = await createUser()
-    await prisma.usuario.update({ where: { id: user.id }, data: { emailVerificadoEm: new Date() } })
+    await prisma.user.update({ where: { id: user.id }, data: { emailVerifiedAt: new Date() } })
     for (const email of [user.email, `${randomUUID()}@missing.example.test`]) {
       expect((await requestCode(request({ email, tenantId, locale: 'pt-BR' }))).status).toBe(204)
     }
@@ -166,7 +166,7 @@ describe('signup email verification API', () => {
       request({ email: user.email, tenantId: 'other-tenant', code: latestCode() }),
     )
     expect(result.status).toBe(400)
-    const unchanged = await prisma.usuario.findUniqueOrThrow({ where: { id: user.id } })
-    expect(unchanged.emailVerificadoEm).toBeNull()
+    const unchanged = await prisma.user.findUniqueOrThrow({ where: { id: user.id } })
+    expect(unchanged.emailVerifiedAt).toBeNull()
   })
 })

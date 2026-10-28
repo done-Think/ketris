@@ -9,7 +9,10 @@ import type { AuthLoginResponse } from '../../types/auth-api'
 import { AuthQueryTestProvider } from '../fixtures/auth-query-provider'
 
 const routerMock = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn() }))
-vi.mock('@/i18n/navigation', () => ({ useRouter: () => routerMock }))
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+  useRouter: () => routerMock,
+}))
 vi.mock('next-auth/react', () => ({ signIn: vi.fn() }))
 vi.mock('../../services/auth-service', () => ({ authService: { login: vi.fn() } }))
 

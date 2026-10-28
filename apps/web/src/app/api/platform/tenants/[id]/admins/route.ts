@@ -26,7 +26,7 @@ export const POST = withErrorHandling(
     const user = await platformContainer.createTenantAdminUseCase.execute({
       actorId: actor.id,
       tenantId: id,
-      nome: body.name,
+      name: body.name,
       email: body.email,
       password: body.password,
     })

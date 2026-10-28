@@ -19,10 +19,10 @@ const opportunity: Opportunity = {
   proposedValue: 2500,
   contractTermMonths: null,
   desiredStartDate: null,
-  guaranteeType: 'NENHUMA',
+  guaranteeType: 'NONE',
   specialConditions: [],
   notes: null,
-  status: 'ENVIADA',
+  status: 'SENT',
   archivedAt: null,
   createdAt: new Date('2026-08-10T00:00:00.000Z'),
   updatedAt: new Date('2026-08-10T00:00:00.000Z'),
@@ -61,27 +61,27 @@ describe('RespondToOpportunityUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       actorId: 'user-1',
       actorName: 'Ana',
       opportunityId: 'op-1',
       action: 'ACEITAR',
     })
 
-    expect(result.opportunity.status).toBe('ACEITA')
+    expect(result.opportunity.status).toBe('ACCEPTED')
     expect(deps.activityRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         opportunityId: 'op-1',
-        type: 'PROPOSTA_RESPONDIDA',
+        type: 'PROPOSAL_ANSWERED',
         description: '',
         systemAction: 'ACEITAR',
-        previousStatus: 'ENVIADA',
-        newStatus: 'ACEITA',
+        previousStatus: 'SENT',
+        newStatus: 'ACCEPTED',
         authorId: 'user-1',
         authorName: 'Ana',
       }),
     )
-    expect(result.activity.newStatus).toBe('ACEITA')
+    expect(result.activity.newStatus).toBe('ACCEPTED')
   })
 
   it('recusa a proposta com mensagem customizada como descrição da atividade', async () => {
@@ -93,17 +93,17 @@ describe('RespondToOpportunityUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       opportunityId: 'op-1',
       action: 'RECUSAR',
       message: 'Valor abaixo do mínimo aceito pelo proprietário.',
     })
 
-    expect(result.opportunity.status).toBe('RECUSADA')
+    expect(result.opportunity.status).toBe('REJECTED')
     expect(deps.activityRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         description: 'Valor abaixo do mínimo aceito pelo proprietário.',
-        newStatus: 'RECUSADA',
+        newStatus: 'REJECTED',
       }),
     )
   })
@@ -117,7 +117,7 @@ describe('RespondToOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       opportunityId: 'op-1',
       action: 'SOLICITAR_INFORMACOES',
       message: '   ',
@@ -137,12 +137,12 @@ describe('RespondToOpportunityUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       opportunityId: 'op-1',
       action: 'SOLICITAR_INFORMACOES',
     })
 
-    expect(result.opportunity.status).toBe('EM_NEGOCIACAO')
+    expect(result.opportunity.status).toBe('IN_NEGOTIATION')
   })
 
   it('lança OpportunityNotFoundError quando a oportunidade é de outro tenant', async () => {
@@ -157,7 +157,7 @@ describe('RespondToOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         opportunityId: 'op-1',
         action: 'ACEITAR',
       }),
@@ -166,7 +166,7 @@ describe('RespondToOpportunityUseCase', () => {
   })
 
   it('lança OpportunityNotAnswerableError para um rascunho — ainda não foi enviado', async () => {
-    const deps = createDeps({ status: 'RASCUNHO' })
+    const deps = createDeps({ status: 'DRAFT' })
     const useCase = new RespondToOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
@@ -175,7 +175,7 @@ describe('RespondToOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         opportunityId: 'op-1',
         action: 'ACEITAR',
       }),
@@ -184,7 +184,7 @@ describe('RespondToOpportunityUseCase', () => {
   })
 
   it('lança OpportunityNotAnswerableError para uma oportunidade já aceita', async () => {
-    const deps = createDeps({ status: 'ACEITA' })
+    const deps = createDeps({ status: 'ACCEPTED' })
     const useCase = new RespondToOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
@@ -193,7 +193,7 @@ describe('RespondToOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         opportunityId: 'op-1',
         action: 'RECUSAR',
       }),
@@ -201,7 +201,7 @@ describe('RespondToOpportunityUseCase', () => {
   })
 
   it('permite responder novamente uma oportunidade recusada (retomar negociação)', async () => {
-    const deps = createDeps({ status: 'RECUSADA' })
+    const deps = createDeps({ status: 'REJECTED' })
     const useCase = new RespondToOpportunityUseCase(
       deps.opportunityRepository,
       deps.activityRepository,
@@ -209,12 +209,12 @@ describe('RespondToOpportunityUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       opportunityId: 'op-1',
       action: 'SOLICITAR_INFORMACOES',
     })
 
-    expect(result.opportunity.status).toBe('EM_NEGOCIACAO')
+    expect(result.opportunity.status).toBe('IN_NEGOTIATION')
   })
 
   it('AGENT que não é responsável pela oportunidade recebe 404 opaco e não responde', async () => {
@@ -228,7 +228,7 @@ describe('RespondToOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-2',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         opportunityId: 'op-1',
         action: 'ACEITAR',
       }),

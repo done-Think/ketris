@@ -12,10 +12,10 @@ export function contractEditData(body: EditContractRequestDTO): ContractEditData
     guaranteeType: body.guaranteeType,
     notes: body.notes ?? null,
     parties: [
-      { ...body.owner, role: 'LOCADOR', phone: body.owner.phone ?? null },
-      { ...body.tenant, role: 'LOCATARIO', phone: body.tenant.phone ?? null },
+      { ...body.owner, role: 'LANDLORD', phone: body.owner.phone ?? null },
+      { ...body.tenant, role: 'RENTER', phone: body.tenant.phone ?? null },
       ...(body.guarantor
-        ? [{ ...body.guarantor, role: 'FIADOR' as const, phone: body.guarantor.phone ?? null }]
+        ? [{ ...body.guarantor, role: 'GUARANTOR' as const, phone: body.guarantor.phone ?? null }]
         : []),
     ],
   }

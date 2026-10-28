@@ -1,4 +1,4 @@
-import { Prisma, type PrestadorManutencao } from '@prisma/client'
+import { Prisma, type MaintenanceProvider as MaintenanceProviderRow } from '@prisma/client'
 import { prisma } from '@server/db/prisma'
 import { ConflictError } from '@server/shared/errors'
 import { createHash } from 'node:crypto'
@@ -29,14 +29,14 @@ export function maintenanceProviderFingerprint(provider: MaintenanceProvider) {
     .digest('hex')
 }
 
-export function toMaintenanceProvider(row: PrestadorManutencao): MaintenanceProviderRecord {
+export function toMaintenanceProvider(row: MaintenanceProviderRow): MaintenanceProviderRecord {
   return {
     id: row.id,
-    name: row.nome,
-    phone: row.telefone,
+    name: row.name,
+    phone: row.phone,
     email: row.email,
-    notes: row.observacoes,
-    active: row.ativo,
+    notes: row.notes,
+    active: row.active,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
@@ -49,30 +49,30 @@ export async function resolveMaintenanceProvider(
   provider: MaintenanceProvider,
 ): Promise<MaintenanceProviderRecord> {
   if (provider.id) {
-    await db.$queryRaw`SELECT id FROM prestadores_manutencao WHERE id = ${provider.id} AND "tenantId" = ${tenantId} FOR UPDATE`
-    const row = await db.prestadorManutencao.findFirst({ where: { id: provider.id, tenantId } })
+    await db.$queryRaw`SELECT id FROM maintenance_providers WHERE id = ${provider.id} AND "tenantId" = ${tenantId} FOR UPDATE`
+    const row = await db.maintenanceProvider.findFirst({ where: { id: provider.id, tenantId } })
     if (!row) throw new MaintenanceProviderNotFoundError()
-    if (!row.ativo) throw new MaintenanceProviderInactiveError()
+    if (!row.active) throw new MaintenanceProviderInactiveError()
     return toMaintenanceProvider(row)
   }
   const fingerprint = maintenanceProviderFingerprint(provider)
   await db.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`maintenance-provider:${tenantId}:${fingerprint}`}, 0))`
-  await db.$queryRaw`SELECT id FROM prestadores_manutencao WHERE "tenantId" = ${tenantId} AND fingerprint = ${fingerprint} FOR UPDATE`
-  const current = await db.prestadorManutencao.findUnique({
+  await db.$queryRaw`SELECT id FROM maintenance_providers WHERE "tenantId" = ${tenantId} AND fingerprint = ${fingerprint} FOR UPDATE`
+  const current = await db.maintenanceProvider.findUnique({
     where: { tenantId_fingerprint: { tenantId, fingerprint } },
   })
   if (current) {
-    if (!current.ativo) throw new MaintenanceProviderInactiveError()
+    if (!current.active) throw new MaintenanceProviderInactiveError()
     return toMaintenanceProvider(current)
   }
-  const row = await db.prestadorManutencao.create({
+  const row = await db.maintenanceProvider.create({
     data: {
       tenantId,
       fingerprint,
-      nome: provider.name,
-      telefone: provider.phone ?? null,
+      name: provider.name,
+      phone: provider.phone ?? null,
       email: provider.email ?? null,
-      observacoes: provider.notes ?? null,
+      notes: provider.notes ?? null,
       createdById: actor.actorId,
       updatedById: actor.actorId,
     },
@@ -83,12 +83,12 @@ export async function resolveMaintenanceProvider(
 
 export class PrismaMaintenanceProviderRepository implements MaintenanceProviderRepository {
   async list(tenantId: string, filters: MaintenanceProviderFilters) {
-    const where: Prisma.PrestadorManutencaoWhereInput = {
+    const where: Prisma.MaintenanceProviderWhereInput = {
       tenantId,
-      ...(filters.includeInactive ? {} : { ativo: true }),
+      ...(filters.includeInactive ? {} : { active: true }),
       ...(filters.search?.trim()
         ? {
-            OR: ['nome', 'telefone', 'email'].map((field) => ({
+            OR: ['name', 'phone', 'email'].map((field) => ({
               [field]: { contains: filters.search!.trim(), mode: 'insensitive' },
             })),
           }
@@ -97,13 +97,13 @@ export class PrismaMaintenanceProviderRepository implements MaintenanceProviderR
     const pageSize = filters.pageSize ?? 5
     return prisma.$transaction(
       async (tx) => {
-        const totalCount = await tx.prestadorManutencao.count({ where })
+        const totalCount = await tx.maintenanceProvider.count({ where })
         const page = Math.min(filters.page ?? 1, Math.max(1, Math.ceil(totalCount / pageSize)))
-        const rows = await tx.prestadorManutencao.findMany({
+        const rows = await tx.maintenanceProvider.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: [{ nome: 'asc' }, { id: 'asc' }],
+          orderBy: [{ name: 'asc' }, { id: 'asc' }],
         })
         return { items: rows.map(toMaintenanceProvider), totalCount, page, pageSize }
       },
@@ -118,24 +118,24 @@ export class PrismaMaintenanceProviderRepository implements MaintenanceProviderR
   async update(actor: MaintenanceActor, providerId: string, changes: MaintenanceProviderChanges) {
     try {
       return await prisma.$transaction(async (tx) => {
-        const current = await tx.prestadorManutencao.findFirst({
+        const current = await tx.maintenanceProvider.findFirst({
           where: { id: providerId, tenantId: actor.actorTenantId },
         })
         if (!current) throw new MaintenanceProviderNotFoundError()
         const value = {
-          name: changes.name ?? current.nome,
-          phone: changes.phone === undefined ? current.telefone : changes.phone,
+          name: changes.name ?? current.name,
+          phone: changes.phone === undefined ? current.phone : changes.phone,
           email: changes.email === undefined ? current.email : changes.email,
-          notes: changes.notes === undefined ? current.observacoes : changes.notes,
+          notes: changes.notes === undefined ? current.notes : changes.notes,
         }
-        const updated = await tx.prestadorManutencao.update({
+        const updated = await tx.maintenanceProvider.update({
           where: { id: providerId, tenantId: actor.actorTenantId, updatedAt: current.updatedAt },
           data: {
-            nome: value.name,
-            telefone: value.phone,
+            name: value.name,
+            phone: value.phone,
             email: value.email,
-            observacoes: value.notes,
-            ativo: changes.active,
+            notes: value.notes,
+            active: changes.active,
             fingerprint: maintenanceProviderFingerprint(value),
             updatedById: actor.actorId,
             updatedAt: new Date(Math.max(Date.now(), current.updatedAt.getTime() + 1)),
@@ -152,7 +152,7 @@ export class PrismaMaintenanceProviderRepository implements MaintenanceProviderR
           actor.actorTenantId,
           changes.active === false
             ? 'INACTIVATED'
-            : changes.active === true && !current.ativo
+            : changes.active === true && !current.active
               ? 'REACTIVATED'
               : 'UPDATED',
           changed,

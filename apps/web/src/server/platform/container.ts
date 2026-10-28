@@ -68,10 +68,7 @@ export const platformContainer = {
   listPlatformAdminsUseCase: new ListPlatformAdminsUseCase(platformAdminRepository),
   getPlatformAdminUseCase: new GetPlatformAdminUseCase(platformAdminRepository),
   updatePlatformAdminUseCase: new UpdatePlatformAdminUseCase(platformAdminRepository),
-  deactivatePlatformAdminUseCase: new DeactivatePlatformAdminUseCase(
-    platformAdminRepository,
-    refreshTokenRepository,
-  ),
+  deactivatePlatformAdminUseCase: new DeactivatePlatformAdminUseCase(platformAdminRepository),
   listTenantsUseCase: new ListTenantsUseCase(platformTenantRepository, platformPlanRepository),
   getPlatformTenantUseCase: new GetPlatformTenantUseCase(
     platformTenantRepository,

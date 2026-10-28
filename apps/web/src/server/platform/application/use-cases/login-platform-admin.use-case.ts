@@ -23,11 +23,11 @@ export class LoginPlatformAdminUseCase {
   async execute(input: LoginPlatformAdminInput): Promise<LoginPlatformAdminOutput> {
     const admin = await this.platformAdminRepository.findByEmail(input.email)
 
-    if (!admin || !admin.ativo) {
+    if (!admin || !admin.active) {
       throw new InvalidPlatformCredentialsError()
     }
 
-    const passwordMatches = await this.passwordHasher.compare(input.password, admin.senhaHash)
+    const passwordMatches = await this.passwordHasher.compare(input.password, admin.passwordHash)
 
     if (!passwordMatches) {
       throw new InvalidPlatformCredentialsError()
@@ -37,7 +37,7 @@ export class LoginPlatformAdminUseCase {
     await this.platformAdminRepository.recordAccess(admin.id, accessedAt)
     const authenticatedAdmin = toAuthenticatedPlatformAdmin({
       ...admin,
-      ultimoAcessoEm: accessedAt,
+      lastAccessAt: accessedAt,
     })
     const accessToken = await this.tokenService.sign(authenticatedAdmin)
 

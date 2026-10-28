@@ -46,7 +46,8 @@ vi.mock('notistack', () => ({
   useSnackbar: () => ({ enqueueSnackbar: mocks.enqueueSnackbar }),
 }))
 
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   useSearchParams: () => mocks.searchParams,
 }))
 
@@ -54,14 +55,14 @@ function makeLead(index: number, overrides: Partial<Lead> = {}): Lead {
   return {
     id: `lead-00${index}`,
     tenantId: 'tenant-1',
-    responsavelId: 'agent-1',
+    responsibleId: 'agent-1',
     name: `Lead ${index}`,
     phone: `(11) 9000${index}-000${index}`,
     email: `lead${index}@email.com`,
     interest: `Interesse ${index}`,
     budget: index === 2 ? 'R$ 850K' : `R$ ${index}M`,
     source: 'MARKETPLACE',
-    stage: 'NOVO',
+    stage: 'NEW',
     notes: null,
     opportunityId: null,
     createdAt: '2026-09-01T10:00:00.000Z',
@@ -74,22 +75,21 @@ const leadFixtures: Lead[] = [
   makeLead(1, {
     name: 'João Silva',
     email: 'joao.silva@email.com',
-    stage: 'NOVO',
+    stage: 'NEW',
     budget: 'R$ 1M',
   }),
-  makeLead(2, { name: 'Maria Fernandes', stage: 'EM_CONTATO', budget: 'R$ 300K' }),
-  makeLead(3, { name: 'Rafael Lima', stage: 'VISITA_MARCADA', budget: 'R$ 800K' }),
-  makeLead(4, { name: 'Carla Rocha', stage: 'PROPOSTA', budget: 'R$ 1.5M' }),
-  makeLead(5, { name: 'Guilherme Santos', stage: 'NOVO', budget: 'R$ 2M' }),
-  makeLead(6, { name: 'Patrícia Lima', stage: 'EM_CONTATO', budget: 'R$ 500K' }),
+  makeLead(2, { name: 'Maria Fernandes', stage: 'IN_CONTACT', budget: 'R$ 300K' }),
+  makeLead(3, { name: 'Rafael Lima', stage: 'VISIT_SCHEDULED', budget: 'R$ 800K' }),
+  makeLead(4, { name: 'Carla Rocha', stage: 'PROPOSAL', budget: 'R$ 1.5M' }),
+  makeLead(5, { name: 'Guilherme Santos', stage: 'NEW', budget: 'R$ 2M' }),
+  makeLead(6, { name: 'Patrícia Lima', stage: 'IN_CONTACT', budget: 'R$ 500K' }),
 ]
 
 function mockLeadsQuery(overrides: Record<string, unknown> = {}) {
   vi.mocked(useLead).mockImplementation(
-    (_tenant, id) =>
-      ({ data: leadFixtures.find((lead) => lead.id === id) }) as ReturnType<typeof useLead>,
+    (id) => ({ data: leadFixtures.find((lead) => lead.id === id) }) as ReturnType<typeof useLead>,
   )
-  vi.mocked(useLeads).mockImplementation((_tenant, filters = {}) => {
+  vi.mocked(useLeads).mockImplementation((filters = {}) => {
     let leads = [...leadFixtures]
     if (filters.q)
       leads = leads.filter((lead) => lead.name.toLowerCase().includes(filters.q!.toLowerCase()))
@@ -107,7 +107,7 @@ function mockLeadsQuery(overrides: Record<string, unknown> = {}) {
           pageCount: Math.ceil(leads.length / pageSize),
           totalCount: leads.length,
         },
-        groups: ['NOVO', 'EM_CONTATO', 'VISITA_MARCADA', 'PROPOSTA'].map((key) => ({
+        groups: ['NEW', 'IN_CONTACT', 'VISIT_SCHEDULED', 'PROPOSAL'].map((key) => ({
           key,
           count: leadFixtures.filter((lead) => lead.stage === key).length,
           amount: 0,
@@ -276,6 +276,6 @@ describe('LeadsDashboardPage', () => {
     await user.click(screen.getByLabelText('Estágio'))
     await user.click(await screen.findByRole('option', { name: 'Em contato' }))
 
-    expect(mutate).toHaveBeenCalledWith({ leadId: 'lead-001', stage: 'EM_CONTATO' })
+    expect(mutate).toHaveBeenCalledWith({ leadId: 'lead-001', stage: 'IN_CONTACT' })
   })
 })

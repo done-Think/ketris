@@ -12,7 +12,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close'
 import { useTranslations } from 'next-intl'
 
-import { leadSourceKey } from '@server/crm/constants/lead-sources'
+import { leadSourceKey } from '@shared/config/lead-sources'
 import type { LeadDetailsModalProps } from '../types/dashboard-overview'
 import { ContactInfoCard } from './ContactInfoCard'
 import { LeadBriefingItem } from './LeadBriefingItem'

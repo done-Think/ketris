@@ -20,7 +20,7 @@ function renderForm(profile: RegistrationProfileId, onSubmit?: (values: unknown)
 
 describe('RegistrationDetailsForm', () => {
   it('exibe os campos da segunda etapa e a regra de CRECI do corretor', () => {
-    renderForm('corretor')
+    renderForm('broker')
 
     expect(screen.getByLabelText(/Nome completo/)).toBeInTheDocument()
     expect(screen.getByLabelText(/E-mail/)).toBeInTheDocument()
@@ -32,7 +32,7 @@ describe('RegistrationDetailsForm', () => {
 
   it('botão de criar conta fica desabilitado até os termos serem aceitos', async () => {
     const user = userEvent.setup()
-    renderForm('corretor')
+    renderForm('broker')
 
     const submitButton = screen.getByRole('button', { name: 'Criar conta' })
     expect(submitButton).toBeDisabled()
@@ -47,7 +47,7 @@ describe('RegistrationDetailsForm', () => {
   it('valida os campos obrigatórios antes de continuar', async () => {
     const user = userEvent.setup()
     const submit = vi.fn()
-    renderForm('corretor', submit)
+    renderForm('broker', submit)
 
     await user.click(screen.getByRole('checkbox', { name: /Li e aceito/ }))
     await user.click(screen.getByRole('button', { name: 'Criar conta' }))
@@ -61,7 +61,7 @@ describe('RegistrationDetailsForm', () => {
 
   it('alterna a visibilidade de senha e confirmar senha de forma independente', async () => {
     const user = userEvent.setup()
-    renderForm('corretor')
+    renderForm('broker')
 
     const passwordInput = screen.getByLabelText(/^Senha/)
     const confirmationInput = screen.getByPlaceholderText('Confirme a senha')
@@ -85,7 +85,7 @@ describe('RegistrationDetailsForm', () => {
   it('envia dados válidos e normalizados para um proprietário', async () => {
     const user = userEvent.setup()
     const submit = vi.fn()
-    renderForm('proprietario', submit)
+    renderForm('owner', submit)
 
     await user.type(screen.getByLabelText(/Nome completo/), 'Maria da Silva')
     await user.type(screen.getByLabelText(/E-mail/), 'MARIA@EMAIL.COM')
@@ -96,7 +96,7 @@ describe('RegistrationDetailsForm', () => {
     await user.click(screen.getByRole('button', { name: 'Criar conta' }))
 
     expect(submit).toHaveBeenCalledWith({
-      profile: 'proprietario',
+      profile: 'owner',
       fullName: 'Maria da Silva',
       email: 'maria@email.com',
       phone: '(11) 99999-9999',
@@ -111,14 +111,14 @@ describe('RegistrationDetailsForm', () => {
   it('mostra o campo de nome da empresa para imobiliária, mas não para proprietário', () => {
     const { rerender } = render(
       <QueryClientProvider client={new QueryClient()}>
-        <RegistrationDetailsForm profile="imobiliaria" />
+        <RegistrationDetailsForm profile="agency" />
       </QueryClientProvider>,
     )
     expect(screen.getByLabelText(/Nome da empresa/)).toBeInTheDocument()
 
     rerender(
       <QueryClientProvider client={new QueryClient()}>
-        <RegistrationDetailsForm profile="proprietario" />
+        <RegistrationDetailsForm profile="owner" />
       </QueryClientProvider>,
     )
     expect(screen.queryByLabelText(/Nome da empresa/)).not.toBeInTheDocument()
@@ -127,14 +127,14 @@ describe('RegistrationDetailsForm', () => {
   it('mostra o campo de buscar imobiliária apenas para corretor', () => {
     const { rerender } = render(
       <QueryClientProvider client={new QueryClient()}>
-        <RegistrationDetailsForm profile="corretor" />
+        <RegistrationDetailsForm profile="broker" />
       </QueryClientProvider>,
     )
     expect(screen.getByLabelText(/Imobiliária/)).toBeInTheDocument()
 
     rerender(
       <QueryClientProvider client={new QueryClient()}>
-        <RegistrationDetailsForm profile="proprietario" />
+        <RegistrationDetailsForm profile="owner" />
       </QueryClientProvider>,
     )
     expect(screen.queryByLabelText(/Imobiliária/)).not.toBeInTheDocument()

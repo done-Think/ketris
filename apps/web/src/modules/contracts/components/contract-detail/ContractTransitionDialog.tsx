@@ -37,7 +37,7 @@ export function ContractTransitionDialog({
   })
   return (
     <Dialog open onClose={pending ? undefined : onClose} fullWidth maxWidth="sm">
-      <DialogTitle>{t(action + 'Title')}</DialogTitle>
+      <DialogTitle>{t(`${action}Title`)}</DialogTitle>
       <DialogContent>
         <Stack spacing={2}>
           <Alert severity="info">{t('notice')}</Alert>

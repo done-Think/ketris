@@ -22,7 +22,7 @@ import type { ContractEditDialogProps } from '../../types/workflow'
 import { PartiesStep } from '../contract-step-fields/PartiesStep'
 import { ConditionsStep } from '../contract-step-fields/ConditionsStep'
 
-export function ContractEditDialog({ contract, tenantId, onClose }: ContractEditDialogProps) {
+export function ContractEditDialog({ contract, onClose }: ContractEditDialogProps) {
   const t = useTranslations('contracts.edit')
   const validation = useTranslations('contracts.wizard.errors')
   const errors = useTranslations('contracts.errors')
@@ -32,7 +32,7 @@ export function ContractEditDialog({ contract, tenantId, onClose }: ContractEdit
     defaultValues: contractEditValues(contract),
     mode: 'onBlur',
   })
-  const mutation = useEditContract(tenantId, contract.id)
+  const mutation = useEditContract(contract.id)
   const submit = handleSubmit(async (values) => {
     try {
       await mutation.mutateAsync(buildEditContractPayload(values))

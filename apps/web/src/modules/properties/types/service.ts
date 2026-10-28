@@ -1,18 +1,7 @@
-import type { ApiProperty, PropertyPage } from './property'
+import type { components } from '@shared/types/generated/api'
 
-export interface PropertyResponse {
-  property: ApiProperty
-}
+export type PropertyResponse = components['schemas']['TenantPropertyResponse']
 
-export interface PropertiesResponse {
-  properties: ApiProperty[]
-  pagination: PropertyPage['pagination']
-  counts: PropertyPage['counts']
-}
+export type PropertiesResponse = components['schemas']['TenantPropertiesResponse']
 
-export interface UploadPropertyMediaResponse {
-  media: {
-    url: string
-    contentType: string
-  }
-}
+export type UploadPropertyMediaResponse = components['schemas']['UploadTenantPropertyMediaResponse']

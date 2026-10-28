@@ -18,7 +18,10 @@ vi.mock('next-auth/react', () => ({
   useSession: () => ({ data: mocks.session, status: 'authenticated' }),
 }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar: mocks.enqueueSnackbar }) }))
-vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ push: mocks.push }) }))
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+  useRouter: () => ({ push: mocks.push }),
+}))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
@@ -30,11 +33,11 @@ const rows = [
   apiListItem({
     id: 'charge-2',
     code: 'COB-2026-0002',
-    status: 'PAGA',
+    status: 'PAID',
     payerName: 'Bruno Oliveira',
     propertyTitle: 'Apt Jardins',
   }),
-  apiListItem({ id: 'charge-3', code: 'COB-2026-0003', status: 'ATRASADA', payerName: 'Carlos' }),
+  apiListItem({ id: 'charge-3', code: 'COB-2026-0003', status: 'OVERDUE', payerName: 'Carlos' }),
 ]
 
 beforeEach(() => {
@@ -42,7 +45,7 @@ beforeEach(() => {
   mocks.session.role = 'OWNER'
   service.listCharges.mockResolvedValue({
     ...listResponse(rows, 3),
-    statusCounts: { ALL: 3, PENDENTE: 1, ATRASADA: 1, PAGA: 1, AGENDADA: 0, CANCELADA: 0 },
+    statusCounts: { ALL: 3, PENDING: 1, OVERDUE: 1, PAID: 1, SCHEDULED: 0, CANCELED: 0 },
   })
   service.getSummary.mockResolvedValue(summary())
 })
@@ -65,7 +68,7 @@ describe('ChargesPage', () => {
     expect(await screen.findByText('A receber este mês')).toBeVisible()
     expect(service.getSummary).toHaveBeenCalledWith(undefined)
     expect(lastListCall()).toEqual({
-      type: 'A_RECEBER',
+      type: 'RECEIVABLE',
       status: undefined,
       search: undefined,
       page: 1,
@@ -78,11 +81,11 @@ describe('ChargesPage', () => {
     await screen.findByText('Mariana Souza')
 
     await userEvent.click(screen.getByRole('button', { name: /Atrasada/ }))
-    await waitFor(() => expect(lastListCall()).toMatchObject({ status: 'ATRASADA' }))
+    await waitFor(() => expect(lastListCall()).toMatchObject({ status: 'OVERDUE' }))
 
     await userEvent.click(screen.getByRole('tab', { name: 'A pagar' }))
     await waitFor(() =>
-      expect(lastListCall()).toMatchObject({ type: 'A_PAGAR', status: undefined }),
+      expect(lastListCall()).toMatchObject({ type: 'PAYABLE', status: undefined }),
     )
   })
 
@@ -120,10 +123,10 @@ describe('ChargesPage', () => {
     await waitFor(() =>
       expect(service.createCharge).toHaveBeenCalledWith({
         description: 'Taxa de condomínio',
-        type: 'A_RECEBER',
+        type: 'RECEIVABLE',
         amount: 450,
         dueDate: '2026-11-05',
-        status: 'AGENDADA',
+        status: 'SCHEDULED',
       }),
     )
     expect(mocks.enqueueSnackbar).toHaveBeenCalledWith('Cobrança criada', { variant: 'success' })
@@ -149,7 +152,7 @@ describe('ChargesPage', () => {
     await waitFor(() =>
       expect(service.updateCharge).toHaveBeenCalledWith('charge-1', {
         description: 'Aluguel outubro',
-        type: 'A_RECEBER',
+        type: 'RECEIVABLE',
         amount: 3000,
         dueDate: '2026-10-10',
       }),
@@ -157,7 +160,7 @@ describe('ChargesPage', () => {
   })
 
   it('only lets a paid charge change its description and hides cancel and delete', async () => {
-    service.updateCharge.mockResolvedValue(apiCharge({ status: 'PAGA' }))
+    service.updateCharge.mockResolvedValue(apiCharge({ status: 'PAID' }))
     renderWithProviders(<ChargesPage />)
     const menu = await openRowMenu('COB-2026-0002')
     expect(within(menu).queryByRole('menuitem', { name: 'Cancelar cobrança' })).toBeNull()
@@ -178,7 +181,7 @@ describe('ChargesPage', () => {
   })
 
   it('cancels a charge only with a reason', async () => {
-    service.cancelCharge.mockResolvedValue(apiCharge({ status: 'CANCELADA' }))
+    service.cancelCharge.mockResolvedValue(apiCharge({ status: 'CANCELED' }))
     renderWithProviders(<ChargesPage />)
     const menu = await openRowMenu('COB-2026-0003')
     await userEvent.click(within(menu).getByRole('menuitem', { name: 'Cancelar cobrança' }))
@@ -235,6 +238,6 @@ describe('ChargesPage', () => {
 
     expect(screen.queryByRole('tab', { name: 'A pagar' })).toBeNull()
     expect(screen.getByText('Consulte as cobranças dos seus contratos.')).toBeVisible()
-    expect(lastListCall()).toMatchObject({ type: 'A_RECEBER' })
+    expect(lastListCall()).toMatchObject({ type: 'RECEIVABLE' })
   })
 })

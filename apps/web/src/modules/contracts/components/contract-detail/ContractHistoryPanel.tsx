@@ -9,12 +9,12 @@ import type { ContractHistoryPanelProps } from '../../types/workflow'
 import { contractHistoryFields } from '../../utils/contract-history-fields'
 import { contractError } from '../../utils/contract-error'
 
-export function ContractHistoryPanel({ tenantId, contractId }: ContractHistoryPanelProps) {
+export function ContractHistoryPanel({ contractId }: ContractHistoryPanelProps) {
   const t = useTranslations('contracts.history')
   const errors = useTranslations('contracts.errors')
   const formatter = useFormatter()
   const [page, setPage] = useState(1)
-  const query = useContractHistory(tenantId, contractId, page, true)
+  const query = useContractHistory(contractId, page, true)
   return (
     <ContractDetailPanel title={t('title')}>
       <Stack spacing={2}>
@@ -29,7 +29,7 @@ export function ContractHistoryPanel({ tenantId, contractId }: ContractHistoryPa
         )}
         {query.data?.items.map((entry) => (
           <Stack key={entry.id} spacing={0.5}>
-            <Typography variant="subtitle2">{t('actions.' + entry.action)}</Typography>
+            <Typography variant="subtitle2">{t(`actions.${entry.action}`)}</Typography>
             <Typography variant="body2">
               {formatter.dateTime(new Date(entry.createdAt), {
                 dateStyle: 'short',
@@ -55,7 +55,17 @@ export function ContractHistoryPanel({ tenantId, contractId }: ContractHistoryPa
             onChange={(_event, value) => setPage(value)}
             aria-label={t('pagination')}
             getItemAriaLabel={(type, value) =>
-              type === 'page' ? t('page', { page: value ?? 1 }) : t('navigation.' + type)
+              type === 'page'
+                ? t('page', { page: value ?? 1 })
+                : t(
+                    type === 'first'
+                      ? 'navigation.first'
+                      : type === 'last'
+                        ? 'navigation.last'
+                        : type === 'previous'
+                          ? 'navigation.previous'
+                          : 'navigation.next',
+                  )
             }
           />
         )}

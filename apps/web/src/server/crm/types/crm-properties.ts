@@ -1,15 +1,15 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { CrmPropertyFilters } from './property'
 
 export interface ListCrmPropertiesInput {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   filters: CrmPropertyFilters
 }
 export interface GetCrmPropertyInput {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   propertyId: string
 }

@@ -9,7 +9,7 @@ import type { PlatformTenant } from '../../../types/platform-tenant'
 const createdAt = new Date('2026-09-01T00:00:00.000Z')
 const tenant: PlatformTenant = {
   id: 't1',
-  nome: 'Imobiliária A',
+  name: 'Imobiliária A',
   slug: 'imobiliaria-a',
   accountType: 'AGENCY',
   status: 'ACTIVE',

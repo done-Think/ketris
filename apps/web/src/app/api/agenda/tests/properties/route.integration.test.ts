@@ -21,103 +21,103 @@ beforeAll(async () => {
   const foreign = await createAgendaFixture()
   tenants.push(foreign.tenantId)
   const suffix = randomUUID()
-  const agent = await prisma.usuario.create({
+  const agent = await prisma.user.create({
     data: {
       tenantId,
-      nome: 'Corretor',
+      name: 'Corretor',
       email: `agent-${suffix}@example.test`,
-      senhaHash: 'test-only',
-      papel: 'AGENT',
+      passwordHash: 'test-only',
+      role: 'AGENT',
     },
   })
-  const propertyOwner = await prisma.usuario.create({
+  const propertyOwner = await prisma.user.create({
     data: {
       tenantId,
-      nome: 'Proprietário',
+      name: 'Proprietário',
       email: `owner-${suffix}@example.test`,
-      senhaHash: 'test-only',
-      papel: 'PROPERTY_OWNER',
+      passwordHash: 'test-only',
+      role: 'PROPERTY_OWNER',
     },
   })
-  const renter = await prisma.usuario.create({
+  const renter = await prisma.user.create({
     data: {
       tenantId: foreign.tenantId,
-      nome: 'Locatário',
+      name: 'Locatário',
       email: `renter-${suffix}@example.test`,
-      senhaHash: 'test-only',
-      papel: 'RENTER',
+      passwordHash: 'test-only',
+      role: 'RENTER',
     },
   })
-  const manager = await prisma.usuario.findUniqueOrThrow({ where: { id: fixture.userId } })
+  const manager = await prisma.user.findUniqueOrThrow({ where: { id: fixture.userId } })
   ownerToken = await tokens.sign(manager)
   agentToken = await tokens.sign(agent)
   propertyOwnerToken = await tokens.sign(propertyOwner)
   renterToken = await tokens.sign(renter)
-  const own = await prisma.imovel.create({
+  const own = await prisma.property.create({
     data: {
       tenantId,
-      responsavelId: agent.id,
-      proprietarioId: propertyOwner.id,
-      titulo: 'Imóvel autorizado',
-      tipo: 'APARTAMENTO',
-      finalidade: 'ALUGUEL',
-      valor: 1000,
+      responsibleId: agent.id,
+      ownerId: propertyOwner.id,
+      title: 'Imóvel autorizado',
+      type: 'APARTMENT',
+      purpose: 'RENT',
+      price: 1000,
     },
   })
   ownPropertyId = own.id
   for (let index = 0; index < 26; index++)
-    await prisma.imovel.create({
+    await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: fixture.userId,
-        titulo: `Opção ${String(index).padStart(2, '0')}`,
-        tipo: 'APARTAMENTO',
-        finalidade: 'VENDA',
-        valor: 100000,
+        responsibleId: fixture.userId,
+        title: `Opção ${String(index).padStart(2, '0')}`,
+        type: 'APARTMENT',
+        purpose: 'SALE',
+        price: 100000,
       },
     })
-  const other = await prisma.imovel.create({
+  const other = await prisma.property.create({
     data: {
       tenantId: foreign.tenantId,
-      responsavelId: foreign.userId,
-      titulo: 'Imóvel privado de outro tenant',
-      tipo: 'APARTAMENTO',
-      finalidade: 'VENDA',
-      valor: 100000,
+      responsibleId: foreign.userId,
+      title: 'Imóvel privado de outro tenant',
+      type: 'APARTMENT',
+      purpose: 'SALE',
+      price: 100000,
     },
   })
   foreignPropertyId = other.id
-  const opportunity = await prisma.oportunidade.create({
+  const opportunity = await prisma.opportunity.create({
     data: {
       tenantId,
-      imovelId: own.id,
-      responsavelId: await propertyResponsibleId(prisma, own.id),
-      interessadoNome: renter.nome,
-      interessadoEmail: renter.email,
-      valorProposto: 1000,
-      status: 'ACEITA',
+      propertyId: own.id,
+      responsibleId: await propertyResponsibleId(prisma, own.id),
+      interestedName: renter.name,
+      interestedEmail: renter.email,
+      proposedValue: 1000,
+      status: 'ACCEPTED',
     },
   })
-  await prisma.contrato.create({
+  await prisma.contract.create({
     data: {
       tenantId,
-      imovelId: own.id,
-      oportunidadeOrigemId: opportunity.id,
-      codigo: randomUUID(),
-      valor: 1000,
-      diaVencimento: 5,
-      dataInicio: new Date('2026-01-01'),
-      dataFim: new Date('2032-01-01'),
-      indiceReajuste: 'IPCA',
-      tipoGarantia: 'CAUCAO',
-      status: 'ATIVO',
-      partes: {
+      propertyId: own.id,
+      sourceOpportunityId: opportunity.id,
+      code: randomUUID(),
+      amount: 1000,
+      dueDay: 5,
+      startDate: new Date('2026-01-01'),
+      endDate: new Date('2032-01-01'),
+      adjustmentIndex: 'IPCA',
+      guaranteeType: 'DEPOSIT',
+      status: 'ACTIVE',
+      parties: {
         create: {
-          papel: 'LOCATARIO',
-          nome: renter.nome,
+          role: 'RENTER',
+          name: renter.name,
           cpf: '00000000000',
           email: renter.email,
-          usuarioId: renter.id,
+          userId: renter.id,
         },
       },
     },
@@ -168,26 +168,28 @@ describe('busca mínima e autorizada de imóveis de Agenda', () => {
 })
 
 it('não revela o resumo de um imóvel sem contrato na visão reduzida de um locatário vinculado ao evento', async () => {
-  const property = await prisma.imovel.findFirstOrThrow({ where: { tenantId, titulo: 'Opção 00' } })
-  const manager = await prisma.usuario.findFirstOrThrow({ where: { tenantId, papel: 'OWNER' } })
-  const renter = await prisma.usuario.findFirstOrThrow({
-    where: { papel: 'RENTER', tenantId: { in: tenants } },
+  const property = await prisma.property.findFirstOrThrow({
+    where: { tenantId, title: 'Opção 00' },
+  })
+  const manager = await prisma.user.findFirstOrThrow({ where: { tenantId, role: 'OWNER' } })
+  const renter = await prisma.user.findFirstOrThrow({
+    where: { role: 'RENTER', tenantId: { in: tenants } },
   })
   const event = await new PrismaAgendaEventRepository().create(
     {
       tenantId,
-      responsavelId: manager.id,
-      criadoPorId: manager.id,
-      imovelId: property.id,
-      titulo: 'Evento vinculado',
-      tipo: 'MEETING',
-      inicio: new Date('2031-03-01T15:00:00Z'),
-      fim: new Date('2031-03-01T16:00:00Z'),
-      participanteNome: 'Contato privado',
-      participanteTelefone: '11999999999',
-      notas: 'Nota privada',
+      responsibleId: manager.id,
+      createdById: manager.id,
+      propertyId: property.id,
+      title: 'Evento vinculado',
+      type: 'MEETING',
+      start: new Date('2031-03-01T15:00:00Z'),
+      end: new Date('2031-03-01T16:00:00Z'),
+      participantName: 'Contato privado',
+      participantPhone: '11999999999',
+      notes: 'Nota privada',
     },
-    { donoEmail: renter.email },
+    { ownerEmail: renter.email },
   )
   const response = await GET_EVENT(
     new NextRequest(`http://localhost/api/agenda/events/${event.id}`, {

@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { Client } from 'pg'
@@ -14,15 +15,34 @@ describe('Maintenance legacy migrations', () => {
       await client.query('BEGIN')
       await client.query(`CREATE SCHEMA "${schema}"`)
       await client.query(`SET LOCAL search_path TO "${schema}", public`)
-      for (const table of [
-        'tenants',
-        'chamados_manutencao',
-        'atividades_chamado_manutencao',
-        'anexos_chamado_manutencao',
-      ]) {
-        await client.query(`CREATE TABLE "${table}" (LIKE public."${table}" INCLUDING ALL)`)
+      const ddl = execFileSync(
+        process.execPath,
+        [
+          path.resolve('../../node_modules/prisma/build/index.js'),
+          'migrate',
+          'diff',
+          '--from-empty',
+          '--to-schema',
+          'prisma/english-rename/legacy-schema.prisma',
+          '--script',
+        ],
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+      )
+      const statements = ddl
+        .replace(/^--.*$/gm, '')
+        .split(';')
+        .map((statement) => statement.trim())
+      for (const statement of statements) {
+        if (
+          /^CREATE TYPE /.test(statement) ||
+          /^CREATE TABLE "(tenants|chamados_manutencao|atividades_chamado_manutencao|anexos_chamado_manutencao)"/.test(
+            statement,
+          )
+        )
+          await client.query(statement)
       }
       await client.query('ALTER TABLE chamados_manutencao ALTER COLUMN categoria TYPE text')
+      await client.query('DROP TYPE "CategoriaChamadoManutencao"')
       await client.query(
         'ALTER TABLE chamados_manutencao DROP COLUMN "prestadorId"; ALTER TABLE atividades_chamado_manutencao DROP COLUMN "systemAction"; ALTER TABLE anexos_chamado_manutencao DROP COLUMN "uploadId"',
       )

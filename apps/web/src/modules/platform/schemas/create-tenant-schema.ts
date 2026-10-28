@@ -6,7 +6,9 @@ import { TENANT_ACCOUNT_TYPES } from '../types/tenant'
 
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
-export function createTenantSchema(t: SchemaMessageTranslator) {
+export function createTenantSchema(
+  t: SchemaMessageTranslator<'nameRequired' | 'slugInvalid' | 'slugRequired'>,
+) {
   return z.object({
     name: z.string().min(1, t('nameRequired')),
     slug: z.string().min(1, t('slugRequired')).regex(SLUG_PATTERN, t('slugInvalid')),

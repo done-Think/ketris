@@ -1,9 +1,11 @@
 'use client'
 
+import { styles } from '@shared/styles/wizard-steps-nav.styles'
+import { combineSx } from '@shared/utils/combine-sx'
+
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import { Box, Stack, Typography } from '@mui/material'
 
-import { iconSize, motion, radius } from '@shared/theme/tokens'
 import type { WizardStepsNavProps, WizardStepsNavStep } from '@shared/types/wizard-steps-nav'
 
 export function WizardStepsNav<TStep extends WizardStepsNavStep>({
@@ -22,15 +24,7 @@ export function WizardStepsNav<TStep extends WizardStepsNavStep>({
   const stepsGrid = (
     <Box
       aria-label={ariaLabel}
-      sx={{
-        display: { xs: mobileProgressLabel ? 'none' : 'grid', md: 'grid' },
-        gridTemplateColumns,
-        alignItems: 'center',
-        columnGap: { xs: 1.4, md: 2.4 },
-        rowGap: 1.2,
-        mb: { xs: 2.4, md: 3 },
-        ...sx,
-      }}
+      sx={combineSx(styles.box(Boolean(mobileProgressLabel), gridTemplateColumns), sx)}
     >
       {steps.map((step, index) => {
         const active = index === activeStepIndex
@@ -54,48 +48,18 @@ export function WizardStepsNav<TStep extends WizardStepsNavStep>({
             onClick={() => {
               if (reachable) onStepSelect(index)
             }}
-            sx={{
-              minWidth: 0,
-              border: 0,
-              bgcolor: 'transparent',
-              color: filled || active ? 'primary.main' : 'text.secondary',
-              cursor: reachable ? 'pointer' : 'default',
-              opacity: reachable ? 1 : 0.78,
-              p: 0,
-              textAlign: 'left',
-              transition: motion.transition.interactive,
-              '&::after': {
-                content: index === steps.length - 1 ? 'none' : '""',
-                display: { xs: 'none', md: 'block' },
-                flex: 1,
-                height: 1,
-                bgcolor: connectorFilled ? 'primary.main' : 'divider',
-                ml: 1,
-              },
-              '&:hover': {
-                color: reachable ? 'primary.main' : 'text.secondary',
-              },
-            }}
+            sx={styles.stack(
+              index === steps.length - 1,
+              filled,
+              active,
+              reachable,
+              connectorFilled,
+            )}
           >
-            <Box
-              sx={{
-                width: 24,
-                height: 24,
-                borderRadius: radius.full,
-                border: '2px solid',
-                borderColor: filled || active ? 'primary.main' : 'text.disabled',
-                bgcolor: filled ? 'primary.main' : 'transparent',
-                color: filled ? 'primary.contrastText' : active ? 'primary.main' : 'text.secondary',
-                display: 'grid',
-                placeItems: 'center',
-                flexShrink: 0,
-                fontSize: 12,
-                fontWeight: 900,
-              }}
-            >
-              {showCheck ? <CheckRoundedIcon sx={{ fontSize: iconSize.xs }} /> : index + 1}
+            <Box sx={styles.box2(filled, active)}>
+              {showCheck ? <CheckRoundedIcon sx={styles.checkRoundedIcon} /> : index + 1}
             </Box>
-            <Typography noWrap sx={{ fontSize: 13, fontWeight: active ? 900 : 700 }}>
+            <Typography noWrap sx={styles.typography(active)}>
               {getStepLabel(step, index)}
             </Typography>
           </Stack>
@@ -114,10 +78,10 @@ export function WizardStepsNav<TStep extends WizardStepsNavStep>({
         alignItems="center"
         justifyContent="center"
         spacing={0.8}
-        sx={{ display: { xs: 'flex', md: 'none' }, mb: 0 }}
+        sx={styles.stack2}
       >
-        <Box sx={{ width: 18, height: 7, borderRadius: radius.full, bgcolor: 'primary.main' }} />
-        <Typography sx={{ color: 'primary.main', fontSize: 12, fontWeight: 800 }}>
+        <Box sx={styles.box3} />
+        <Typography sx={styles.typography2}>
           {mobileProgressLabel(activeStepIndex + 1, steps.length)}
         </Typography>
         {steps.map((step, index) => (
@@ -130,15 +94,7 @@ export function WizardStepsNav<TStep extends WizardStepsNavStep>({
             onClick={() => {
               if (index <= reachableUpToIndex) onStepSelect(index)
             }}
-            sx={{
-              width: 7,
-              height: 7,
-              border: 0,
-              borderRadius: radius.full,
-              bgcolor: index <= reachableUpToIndex ? 'primary.main' : 'text.disabled',
-              cursor: index <= reachableUpToIndex ? 'pointer' : 'default',
-              p: 0,
-            }}
+            sx={styles.box4(index <= reachableUpToIndex)}
           />
         ))}
       </Stack>

@@ -33,7 +33,7 @@ function buildLocation(summary: PublicPropertySummary): string {
 function buildPrice(summary: PublicPropertySummary, locale: AppLocale, t: PropertyText): string {
   const formatted = formatCompactCurrency(summary.price, locale)
 
-  return summary.purpose === 'ALUGUEL' ? t('monthly', { price: formatted }) : formatted
+  return summary.purpose === 'RENT' ? t('monthly', { price: formatted }) : formatted
 }
 
 export function mapSummaryToSearchResult(

@@ -9,9 +9,9 @@ import type {
 } from '../types/maintenance-ticket'
 
 export function canAccessContract(actor: MaintenanceActor, contract: MaintenanceContract): boolean {
-  if (actor.actorPapel !== 'RENTER' && contract.tenantId !== actor.actorTenantId) return false
-  if (isAgencyManager(actor.actorPapel)) return true
-  switch (actor.actorPapel) {
+  if (actor.actorRole !== 'RENTER' && contract.tenantId !== actor.actorTenantId) return false
+  if (isAgencyManager(actor.actorRole)) return true
+  switch (actor.actorRole) {
     case 'AGENT':
       return contract.agentId === actor.actorId
     case 'PROPERTY_OWNER':
@@ -24,10 +24,10 @@ export function canAccessContract(actor: MaintenanceActor, contract: Maintenance
 }
 
 export function canAccessTicket(actor: MaintenanceActor, ticket: MaintenanceTicket): boolean {
-  if (actor.actorPapel !== 'RENTER' && ticket.tenantId !== actor.actorTenantId) return false
-  if (isAgencyManager(actor.actorPapel)) return true
+  if (actor.actorRole !== 'RENTER' && ticket.tenantId !== actor.actorTenantId) return false
+  if (isAgencyManager(actor.actorRole)) return true
   if (ticket.deletedAt || !ticket.access.validContract) return false
-  switch (actor.actorPapel) {
+  switch (actor.actorRole) {
     case 'AGENT':
       return ticket.responsibleId === actor.actorId || ticket.access.agentId === actor.actorId
     case 'PROPERTY_OWNER':
@@ -47,11 +47,11 @@ export function assertTicketAccess(
 }
 
 export function assertAdmin(actor: MaintenanceActor) {
-  if (!isAgencyManager(actor.actorPapel)) throw new ForbiddenError()
+  if (!isAgencyManager(actor.actorRole)) throw new ForbiddenError()
 }
 
 export function isTerminal(ticket: MaintenanceTicket): boolean {
-  return ['RESOLVIDO', 'CANCELADO', 'FECHADO'].includes(ticket.status)
+  return ['RESOLVED', 'CANCELED', 'CLOSED'].includes(ticket.status)
 }
 
 export function permissionsFor(
@@ -59,44 +59,44 @@ export function permissionsFor(
   ticket: MaintenanceTicket,
 ): MaintenancePermissions {
   const access = canAccessTicket(actor, ticket)
-  const admin = access && isAgencyManager(actor.actorPapel)
+  const admin = access && isAgencyManager(actor.actorRole)
   const owner =
-    access && actor.actorPapel === 'PROPERTY_OWNER' && ticket.access.ownerId === actor.actorId
-  const renter = access && actor.actorPapel === 'RENTER'
-  const manager = admin || (access && ['AGENT', 'PROPERTY_OWNER'].includes(actor.actorPapel))
+    access && actor.actorRole === 'PROPERTY_OWNER' && ticket.access.ownerId === actor.actorId
+  const renter = access && actor.actorRole === 'RENTER'
+  const manager = admin || (access && ['AGENT', 'PROPERTY_OWNER'].includes(actor.actorRole))
   const responsible = manager && ticket.responsibleId === actor.actorId
   const active = access && !ticket.deletedAt && !isTerminal(ticket)
-  const pending = active && ticket.status === 'AGUARDANDO_CONFIRMACAO'
+  const pending = active && ticket.status === 'AWAITING_CONFIRMATION'
   return {
     linkContract: admin,
     schedule: active && Boolean(ticket.provider) && (renter || manager),
     edit: active && manager,
-    comment: active || (renter && !ticket.deletedAt && ticket.status === 'RESOLVIDO'),
+    comment: active || (renter && !ticket.deletedAt && ticket.status === 'RESOLVED'),
     collaborate: active,
     assume:
-      active && !ticket.responsibleId && ['AGENT', 'PROPERTY_OWNER'].includes(actor.actorPapel),
+      active && !ticket.responsibleId && ['AGENT', 'PROPERTY_OWNER'].includes(actor.actorRole),
     assign: active && admin,
-    provider: active && (admin || renter || (responsible && actor.actorPapel === 'AGENT')),
+    provider: active && (admin || renter || (responsible && actor.actorRole === 'AGENT')),
     requestReplacement:
       active &&
       owner &&
       Boolean(ticket.provider) &&
-      !ticket.replacementRequests.some((r) => r.status === 'PENDENTE'),
-    start: active && (admin || responsible) && ['ABERTO', 'CONTESTADO'].includes(ticket.status),
+      !ticket.replacementRequests.some((r) => r.status === 'PENDING'),
+    start: active && (admin || responsible) && ['OPEN', 'DISPUTED'].includes(ticket.status),
     finish: active && renter,
     complete:
       active &&
       ticket.access.validContract &&
       (admin || responsible) &&
-      ticket.status === 'EM_ANDAMENTO',
+      ticket.status === 'IN_PROGRESS',
     confirm: pending && (admin || (owner && ticket.completedByRole !== 'PROPERTY_OWNER')),
     contest: pending && (admin || owner || renter),
     cancel: active && admin,
     reopen:
       access &&
       !ticket.deletedAt &&
-      ((admin && isTerminal(ticket) && ticket.status !== 'FECHADO') ||
-        (renter && ticket.status === 'RESOLVIDO')),
+      ((admin && isTerminal(ticket) && ticket.status !== 'CLOSED') ||
+        (renter && ticket.status === 'RESOLVED')),
     delete: access && !ticket.deletedAt && admin,
     restore: access && Boolean(ticket.deletedAt) && admin,
   }
@@ -117,6 +117,6 @@ export function assertPermission(
 
 export function assertCanDefineProvider(actor: MaintenanceActor, ticket: MaintenanceTicket) {
   assertPermission(actor, ticket, 'provider')
-  if (ticket.replacementRequests.some((request) => request.status === 'PENDENTE'))
+  if (ticket.replacementRequests.some((request) => request.status === 'PENDING'))
     throw new ConflictError('Decida a solicitação pendente antes de trocar o prestador.')
 }

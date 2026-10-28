@@ -24,7 +24,7 @@ describeWithMailbox('Auth — cadastro, sessão e prova real de e-mail', () => {
 
   it('cadastra sem sessão antecipada, rejeita código incorreto e entra após comprovar o e-mail', () => {
     cy.intercept('POST', '**/api/register').as('register')
-    cy.visit('/pt/register/details?profile=proprietario')
+    cy.visit('/pt/register/details?profile=owner')
     cy.get('input[name="fullName"]').type('Proprietária E2E')
     cy.get('input[name="email"]').type(email)
     cy.get('input[name="phone"]').type('11999999999')

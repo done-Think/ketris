@@ -1,7 +1,10 @@
+import { useTenantSessionScope } from '@shared/hooks/use-tenant-session-scope'
 import { useQueryClient } from '@tanstack/react-query'
 import { contractsQueryKeys } from '../config/query-keys'
 
-export function useInvalidateContracts(tenantId: string) {
+export function useInvalidateContracts() {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const client = useQueryClient()
   return () =>
     Promise.all([

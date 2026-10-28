@@ -64,7 +64,9 @@ describe('SearchResultsFilterButton', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Concluir' }))
 
     await waitFor(() =>
-      expect(props.onApply).toHaveBeenCalledWith(expect.objectContaining({ propertyType: 'CASA' })),
+      expect(props.onApply).toHaveBeenCalledWith(
+        expect.objectContaining({ propertyType: 'HOUSE' }),
+      ),
     )
   })
 

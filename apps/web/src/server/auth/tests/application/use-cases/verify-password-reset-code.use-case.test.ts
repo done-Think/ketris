@@ -13,12 +13,12 @@ const user: User = {
   tenantId: 'tenant-1',
   tenantName: 'Account one',
   tenantSlug: 'one',
-  nome: 'Ana',
+  name: 'Ana',
   email: 'ana@example.com',
-  senhaHash: 'hash',
-  papel: 'AGENT',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash',
+  role: 'AGENT',
+  active: true,
+  membershipApprovedAt: new Date(),
   sessionVersion: 3,
 }
 const second: User = {

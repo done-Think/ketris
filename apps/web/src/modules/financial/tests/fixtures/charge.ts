@@ -10,8 +10,8 @@ export function apiCharge(overrides: Partial<ApiCharge> = {}): ApiCharge {
   return {
     id: 'charge-1',
     code: 'COB-2026-0001',
-    type: 'A_RECEBER',
-    status: 'PENDENTE',
+    type: 'RECEIVABLE',
+    status: 'PENDING',
     amount: 2800,
     dueDate: '2026-10-10T00:00:00.000Z',
     description: 'Aluguel outubro',
@@ -37,8 +37,8 @@ export function apiListItem(overrides: Partial<ApiChargeListItem> = {}): ApiChar
   return {
     id: 'charge-1',
     code: 'COB-2026-0001',
-    type: 'A_RECEBER',
-    status: 'PENDENTE',
+    type: 'RECEIVABLE',
+    status: 'PENDING',
     amount: 2800,
     dueDate: '2026-10-10T00:00:00.000Z',
     description: 'Aluguel outubro',
@@ -57,7 +57,7 @@ export function listResponse(
   return {
     items,
     totalCount,
-    statusCounts: { ALL: totalCount, PENDENTE: 0, ATRASADA: 0, PAGA: 0, AGENDADA: 0, CANCELADA: 0 },
+    statusCounts: { ALL: totalCount, PENDING: 0, OVERDUE: 0, PAID: 0, SCHEDULED: 0, CANCELED: 0 },
   }
 }
 
@@ -69,7 +69,7 @@ export function auditEvent(overrides: Partial<ApiChargeAuditEvent> = {}): ApiCha
     actorName: 'Ana Dona',
     changedFields: [],
     fromStatus: null,
-    toStatus: 'PENDENTE',
+    toStatus: 'PENDING',
     reason: null,
     receipt: null,
     createdAt: '2026-10-01T12:00:00.000Z',

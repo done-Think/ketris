@@ -19,27 +19,27 @@ describe('/api/financial/charges — sequência de códigos (integração)', () 
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Charge Codes', slug: `charge-codes-${randomUUID()}` },
+      data: { name: 'Tenant Charge Codes', slug: `charge-codes-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Administrador',
+        name: 'Administrador',
         email: `corretor-codes-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
   })
 
@@ -54,10 +54,10 @@ describe('/api/financial/charges — sequência de códigos (integração)', () 
         method: 'POST',
         body: JSON.stringify({
           description: 'Conta de água',
-          type: 'A_PAGAR',
+          type: 'PAYABLE',
           amount: 90,
           dueDate: '2026-11-10',
-          status: 'PENDENTE',
+          status: 'PENDING',
         }),
         headers: { 'Content-Type': 'application/json', authorization: `Bearer ${actorToken}` },
       }),

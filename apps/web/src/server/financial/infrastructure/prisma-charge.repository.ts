@@ -23,97 +23,90 @@ import type {
 import type { ChargeEditableField, ChargeStatus } from '../types/charge'
 import type { StoredChargeReceiptFile } from '../types/charge-receipt'
 import type { ChargeReadScope } from '../types/charge-read-scope'
-import type { CobrancaWithRelations } from '../types/prisma-charge-repository'
+import type { ChargeWithRelations } from '../types/prisma-charge-repository'
 import { insertCharge, recordChargeAudit } from './charge-writes'
 
-const openStatuses = ['PENDENTE', 'AGENDADA'] as const
-const countedStatuses = [
-  undefined,
-  'PENDENTE',
-  'ATRASADA',
-  'PAGA',
-  'AGENDADA',
-  'CANCELADA',
-] as const
+const openStatuses = ['PENDING', 'SCHEDULED'] as const
+const countedStatuses = [undefined, 'PENDING', 'OVERDUE', 'PAID', 'SCHEDULED', 'CANCELED'] as const
 
 const receiptSelect = {
   id: true,
-  nomeArquivo: true,
-  tipoConteudo: true,
-  tamanhoBytes: true,
+  fileName: true,
+  contentType: true,
+  sizeBytes: true,
   createdAt: true,
 } as const
 
 const chargeInclude = {
-  comprovanteAtual: { select: receiptSelect },
-  contrato: {
+  currentReceipt: { select: receiptSelect },
+  contract: {
     include: {
-      imovel: {
+      property: {
         select: {
           id: true,
-          titulo: true,
-          endereco: { select: { logradouro: true, bairro: true, cidade: true } },
+          title: true,
+          address: { select: { street: true, neighborhood: true, city: true } },
         },
       },
-      partes: { where: { papel: 'LOCATARIO' as const }, select: { nome: true, email: true } },
+      parties: { where: { role: 'RENTER' as const }, select: { name: true, email: true } },
     },
   },
 } as const
 
 const fieldColumns: Record<ChargeEditableField, string> = {
-  description: 'descricao',
-  type: 'tipo',
-  amount: 'valor',
-  dueDate: 'vencimento',
+  description: 'description',
+  type: 'type',
+  amount: 'amount',
+  dueDate: 'dueDate',
 }
 
 function buildPropertyAddress(
-  endereco: { logradouro: string; bairro: string; cidade: string } | null,
+  address: { street: string; neighborhood: string; city: string } | null,
 ): string | null {
-  if (!endereco) return null
+  if (!address) return null
 
-  const parts = [endereco.logradouro, endereco.bairro, endereco.cidade].filter(Boolean)
+  const parts = [address.street, address.neighborhood, address.city].filter(Boolean)
 
   return parts.length > 0 ? parts.join(', ') : null
 }
 
-function toStoredCharge(cobranca: CobrancaWithRelations): StoredCharge {
-  const payer = cobranca.contrato?.partes[0] ?? null
-  const receipt = cobranca.comprovanteAtual
+function toStoredCharge(charge: ChargeWithRelations): StoredCharge {
+  const payer = charge.contract?.parties[0] ?? null
+  const receipt = charge.currentReceipt
 
   return {
-    id: cobranca.id,
-    tenantId: cobranca.tenantId,
-    code: cobranca.codigo,
-    type: cobranca.tipo,
-    storedStatus: cobranca.status,
-    amount: cobranca.valor.toNumber(),
-    dueDate: cobranca.vencimento,
-    description: cobranca.descricao,
-    paymentMethod: cobranca.formaPagamento,
-    paidAt: cobranca.pagoEm,
-    paidById: cobranca.pagoPorId,
-    cancelledAt: cobranca.canceladoEm,
-    cancellationReason: cobranca.motivoCancelamento,
+    id: charge.id,
+    tenantId: charge.tenantId,
+    code: charge.code,
+    type: charge.type,
+    storedStatus: charge.status,
+    amount: charge.amount.toNumber(),
+    dueDate: charge.dueDate,
+    description: charge.description,
+    paymentMethod: charge.paymentMethod,
+    paidAt: charge.paidAt,
+    paidById: charge.paidById,
+    cancelledAt: charge.canceledAt,
+    cancellationReason: charge.cancellationReason,
     receipt: receipt
       ? {
           id: receipt.id,
-          name: receipt.nomeArquivo,
-          contentType: receipt.tipoConteudo,
-          size: receipt.tamanhoBytes,
+          name: receipt.fileName,
+          contentType: receipt.contentType,
+          size: receipt.sizeBytes,
           uploadedAt: receipt.createdAt,
         }
       : null,
-    createdAt: cobranca.createdAt,
-    updatedAt: cobranca.updatedAt,
-    contractId: cobranca.contratoId,
-    contractCode: cobranca.contrato?.codigo ?? null,
-    propertyId: cobranca.contrato?.imovel.id ?? null,
-    propertyTitle: cobranca.contrato?.imovel.titulo ?? null,
-    propertyAddress: cobranca.contrato
-      ? buildPropertyAddress(cobranca.contrato.imovel.endereco)
+    createdAt: charge.createdAt,
+    updatedAt: charge.updatedAt,
+    contractId: charge.contractId,
+    contractCode: charge.contract?.code ?? null,
+    propertyId: charge.contract?.property.id ?? null,
+    propertyTitle: charge.contract?.property.title ?? null,
+    propertyAddress: charge.contract
+      ? buildPropertyAddress(charge.contract.property.address)
       : null,
-    payerName: payer?.nome ?? null,
+    payerName: payer?.name ?? null,
     payerEmail: payer?.email ?? null,
   }
 }
@@ -125,16 +118,16 @@ function monthRange(month: CalendarMonth, monthsBack: number) {
   }
 }
 
-function chargeReadWhere(scope: ChargeReadScope): Prisma.CobrancaWhereInput {
+function chargeReadWhere(scope: ChargeReadScope): Prisma.ChargeWhereInput {
   if (scope.kind === 'renter') {
     return {
-      tipo: 'A_RECEBER',
-      contrato: {
-        partes: {
+      type: 'RECEIVABLE',
+      contract: {
+        parties: {
           some: {
-            papel: 'LOCATARIO',
-            usuarioId: scope.userId,
-            usuario: { ativo: true, papel: 'RENTER' },
+            role: 'RENTER',
+            userId: scope.userId,
+            user: { active: true, role: 'RENTER' },
           },
         },
       },
@@ -142,31 +135,31 @@ function chargeReadWhere(scope: ChargeReadScope): Prisma.CobrancaWhereInput {
   }
 
   if (scope.kind === 'propertyOwner') {
-    return { tenantId: scope.tenantId, contrato: { imovel: { proprietarioId: scope.ownerId } } }
+    return { tenantId: scope.tenantId, contract: { property: { ownerId: scope.ownerId } } }
   }
 
   return { tenantId: scope.tenantId }
 }
 
-function statusWhere(status: ChargeStatus | undefined, today: Date): Prisma.CobrancaWhereInput {
+function statusWhere(status: ChargeStatus | undefined, today: Date): Prisma.ChargeWhereInput {
   if (!status) return {}
-  if (status === 'ATRASADA') return { status: { in: [...openStatuses] }, vencimento: { lt: today } }
-  if (status === 'PENDENTE' || status === 'AGENDADA') return { status, vencimento: { gte: today } }
+  if (status === 'OVERDUE') return { status: { in: [...openStatuses] }, dueDate: { lt: today } }
+  if (status === 'PENDING' || status === 'SCHEDULED') return { status, dueDate: { gte: today } }
   return { status }
 }
 
-function searchWhere(search: string | undefined): Prisma.CobrancaWhereInput {
+function searchWhere(search: string | undefined): Prisma.ChargeWhereInput {
   if (!search) return {}
 
   return {
     OR: [
-      { codigo: { contains: search, mode: 'insensitive' } },
-      { descricao: { contains: search, mode: 'insensitive' } },
-      { contrato: { imovel: { titulo: { contains: search, mode: 'insensitive' } } } },
+      { code: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+      { contract: { property: { title: { contains: search, mode: 'insensitive' } } } },
       {
-        contrato: {
-          partes: {
-            some: { papel: 'LOCATARIO', nome: { contains: search, mode: 'insensitive' } },
+        contract: {
+          parties: {
+            some: { role: 'RENTER', name: { contains: search, mode: 'insensitive' } },
           },
         },
       },
@@ -189,9 +182,9 @@ function snapshotOf(charge: StoredCharge): Prisma.InputJsonValue {
 async function guardedUpdate(
   tx: Prisma.TransactionClient,
   current: StoredCharge,
-  data: Prisma.CobrancaUncheckedUpdateManyInput,
+  data: Prisma.ChargeUncheckedUpdateManyInput,
 ): Promise<void> {
-  const result = await tx.cobranca.updateMany({
+  const result = await tx.charge.updateMany({
     where: {
       id: current.id,
       tenantId: current.tenantId,
@@ -205,7 +198,7 @@ async function guardedUpdate(
 
 export class PrismaChargeRepository implements ChargeRepository {
   async findContractSummary(tenantId: string, contractId: string): Promise<{ id: string } | null> {
-    return prisma.contrato.findFirst({ where: { tenantId, id: contractId }, select: { id: true } })
+    return prisma.contract.findFirst({ where: { tenantId, id: contractId }, select: { id: true } })
   }
 
   async create(input: NewCharge, actor: ChargeMutationActor): Promise<StoredCharge> {
@@ -228,34 +221,34 @@ export class PrismaChargeRepository implements ChargeRepository {
   async findMany(filters: ChargeListFilters): Promise<ChargeListResult<StoredChargeListItem>> {
     const page = filters.page && filters.page > 0 ? Math.floor(filters.page) : 1
     const pageSize = filters.pageSize && filters.pageSize > 0 ? Math.floor(filters.pageSize) : 10
-    const base: Prisma.CobrancaWhereInput[] = [
+    const base: Prisma.ChargeWhereInput[] = [
       chargeReadWhere(filters.scope),
       searchWhere(filters.search?.trim()),
-      filters.type ? { tipo: filters.type } : {},
+      filters.type ? { type: filters.type } : {},
       filters.dueMonth
         ? {
-            vencimento: {
+            dueDate: {
               gte: calendarMonthDateRange(filters.dueMonth).start,
               lt: calendarMonthDateRange(filters.dueMonth).end,
             },
           }
         : {},
     ]
-    const where: Prisma.CobrancaWhereInput = {
+    const where: Prisma.ChargeWhereInput = {
       AND: [...base, statusWhere(filters.status, filters.today)],
     }
     const countFor = (status?: ChargeStatus) =>
-      prisma.cobranca.count({ where: { AND: [...base, statusWhere(status, filters.today)] } })
+      prisma.charge.count({ where: { AND: [...base, statusWhere(status, filters.today)] } })
 
-    const [cobrancas, totalCount, ...counts] = await Promise.all([
-      prisma.cobranca.findMany({
+    const [charges, totalCount, ...counts] = await Promise.all([
+      prisma.charge.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
         include: chargeInclude,
       }),
-      prisma.cobranca.count({ where }),
+      prisma.charge.count({ where }),
       ...countedStatuses.map((status) => countFor(status)),
     ])
     const statusCounts = Object.fromEntries(
@@ -263,8 +256,8 @@ export class PrismaChargeRepository implements ChargeRepository {
     ) as ChargeStatusCounts
 
     return {
-      items: cobrancas.map((cobranca) => {
-        const charge = toStoredCharge(cobranca)
+      items: charges.map((row) => {
+        const charge = toStoredCharge(row)
 
         return {
           id: charge.id,
@@ -287,9 +280,9 @@ export class PrismaChargeRepository implements ChargeRepository {
 
   async findForExport(tenantId: string, month: CalendarMonth): Promise<StoredCharge[]> {
     const range = calendarMonthDateRange(month)
-    const rows = await prisma.cobranca.findMany({
-      where: { tenantId, vencimento: { gte: range.start, lt: range.end } },
-      orderBy: [{ vencimento: 'asc' }, { codigo: 'asc' }],
+    const rows = await prisma.charge.findMany({
+      where: { tenantId, dueDate: { gte: range.start, lt: range.end } },
+      orderBy: [{ dueDate: 'asc' }, { code: 'asc' }],
       include: chargeInclude,
     })
 
@@ -301,12 +294,12 @@ export class PrismaChargeRepository implements ChargeRepository {
   }
 
   async findReadableById(scope: ChargeReadScope, chargeId: string): Promise<StoredCharge | null> {
-    const cobranca = await prisma.cobranca.findFirst({
+    const charge = await prisma.charge.findFirst({
       where: { ...chargeReadWhere(scope), id: chargeId },
       include: chargeInclude,
     })
 
-    return cobranca ? toStoredCharge(cobranca) : null
+    return charge ? toStoredCharge(charge) : null
   }
 
   async hasMovement(tenantId: string, chargeId: string): Promise<boolean> {
@@ -318,7 +311,7 @@ export class PrismaChargeRepository implements ChargeRepository {
           action: { in: ['PAYMENT_REGISTERED', 'PAYMENT_REVERSED', 'CANCELLED'] },
         },
       }),
-      prisma.comprovanteCobranca.count({ where: { tenantId, cobrancaId: chargeId } }),
+      prisma.chargeReceipt.count({ where: { tenantId, chargeId: chargeId } }),
     ])
 
     return events > 0 || receipts > 0
@@ -333,11 +326,11 @@ export class PrismaChargeRepository implements ChargeRepository {
     await prisma.$transaction(async (tx) => {
       await guardedUpdate(tx, current, {
         ...(changedFields.includes('description')
-          ? { descricao: changes.description ?? null }
+          ? { description: changes.description ?? null }
           : {}),
-        ...(changedFields.includes('type') ? { tipo: changes.type } : {}),
-        ...(changedFields.includes('amount') ? { valor: changes.amount } : {}),
-        ...(changedFields.includes('dueDate') ? { vencimento: changes.dueDate } : {}),
+        ...(changedFields.includes('type') ? { type: changes.type } : {}),
+        ...(changedFields.includes('amount') ? { amount: changes.amount } : {}),
+        ...(changedFields.includes('dueDate') ? { dueDate: changes.dueDate } : {}),
       })
       await recordChargeAudit(tx, {
         tenantId: current.tenantId,
@@ -360,27 +353,27 @@ export class PrismaChargeRepository implements ChargeRepository {
   ): Promise<StoredCharge> {
     await prisma.$transaction(async (tx) => {
       const receipt = payment.receipt
-        ? await tx.comprovanteCobranca.create({
+        ? await tx.chargeReceipt.create({
             data: {
               id: payment.receipt.id,
               tenantId: current.tenantId,
-              cobrancaId: current.id,
+              chargeId: current.id,
               objectKey: payment.receipt.objectKey,
-              nomeArquivo: payment.receipt.name,
-              tipoConteudo: payment.receipt.contentType,
-              tamanhoBytes: payment.receipt.size,
+              fileName: payment.receipt.name,
+              contentType: payment.receipt.contentType,
+              sizeBytes: payment.receipt.size,
               sha256: payment.receipt.sha256,
-              enviadoPorId: actor.actorId,
+              uploadedById: actor.actorId,
             },
             select: { id: true },
           })
         : null
       await guardedUpdate(tx, current, {
-        status: 'PAGA',
-        pagoEm: payment.paidAt,
-        pagoPorId: actor.actorId,
-        formaPagamento: payment.paymentMethod,
-        comprovanteAtualId: receipt?.id ?? null,
+        status: 'PAID',
+        paidAt: payment.paidAt,
+        paidById: actor.actorId,
+        paymentMethod: payment.paymentMethod,
+        currentReceiptId: receipt?.id ?? null,
       })
       await recordChargeAudit(tx, {
         tenantId: current.tenantId,
@@ -389,7 +382,7 @@ export class PrismaChargeRepository implements ChargeRepository {
         actorUserId: actor.actorId,
         action: 'PAYMENT_REGISTERED',
         fromStatus: current.storedStatus,
-        toStatus: 'PAGA',
+        toStatus: 'PAID',
         receiptId: receipt?.id ?? null,
         snapshot: {
           paidAt: payment.paidAt.toISOString(),
@@ -408,11 +401,11 @@ export class PrismaChargeRepository implements ChargeRepository {
   ): Promise<StoredCharge> {
     await prisma.$transaction(async (tx) => {
       await guardedUpdate(tx, current, {
-        status: 'PENDENTE',
-        pagoEm: null,
-        pagoPorId: null,
-        formaPagamento: null,
-        comprovanteAtualId: null,
+        status: 'PENDING',
+        paidAt: null,
+        paidById: null,
+        paymentMethod: null,
+        currentReceiptId: null,
       })
       await recordChargeAudit(tx, {
         tenantId: current.tenantId,
@@ -420,8 +413,8 @@ export class PrismaChargeRepository implements ChargeRepository {
         chargeCode: current.code,
         actorUserId: actor.actorId,
         action: 'PAYMENT_REVERSED',
-        fromStatus: 'PAGA',
-        toStatus: 'PENDENTE',
+        fromStatus: 'PAID',
+        toStatus: 'PENDING',
         reason,
         receiptId: current.receipt?.id ?? null,
         snapshot: {
@@ -441,10 +434,10 @@ export class PrismaChargeRepository implements ChargeRepository {
   ): Promise<StoredCharge> {
     await prisma.$transaction(async (tx) => {
       await guardedUpdate(tx, current, {
-        status: 'CANCELADA',
-        canceladoEm: new Date(),
-        canceladoPorId: actor.actorId,
-        motivoCancelamento: reason,
+        status: 'CANCELED',
+        canceledAt: new Date(),
+        canceledById: actor.actorId,
+        cancellationReason: reason,
       })
       await recordChargeAudit(tx, {
         tenantId: current.tenantId,
@@ -453,7 +446,7 @@ export class PrismaChargeRepository implements ChargeRepository {
         actorUserId: actor.actorId,
         action: 'CANCELLED',
         fromStatus: current.storedStatus,
-        toStatus: 'CANCELADA',
+        toStatus: 'CANCELED',
         reason,
       })
     })
@@ -472,7 +465,7 @@ export class PrismaChargeRepository implements ChargeRepository {
         fromStatus: current.storedStatus,
         snapshot: snapshotOf(current),
       })
-      const result = await tx.cobranca.deleteMany({
+      const result = await tx.charge.deleteMany({
         where: {
           id: current.id,
           tenantId: current.tenantId,
@@ -488,12 +481,12 @@ export class PrismaChargeRepository implements ChargeRepository {
     const rows = await prisma.chargeAuditEvent.findMany({
       where: { tenantId, chargeId },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      include: { actor: { select: { nome: true } } },
+      include: { actor: { select: { name: true } } },
     })
     const receiptIds = rows.flatMap((row) => (row.receiptId ? [row.receiptId] : []))
     const receipts = receiptIds.length
-      ? await prisma.comprovanteCobranca.findMany({
-          where: { tenantId, cobrancaId: chargeId, id: { in: receiptIds } },
+      ? await prisma.chargeReceipt.findMany({
+          where: { tenantId, chargeId: chargeId, id: { in: receiptIds } },
           select: receiptSelect,
         })
       : []
@@ -506,7 +499,7 @@ export class PrismaChargeRepository implements ChargeRepository {
         id: row.id,
         action: row.action,
         actorType: row.actorType,
-        actorName: row.actor?.nome ?? null,
+        actorName: row.actor?.name ?? null,
         changedFields: row.changedFields,
         fromStatus: row.fromStatus,
         toStatus: row.toStatus,
@@ -514,9 +507,9 @@ export class PrismaChargeRepository implements ChargeRepository {
         receipt: receipt
           ? {
               id: receipt.id,
-              name: receipt.nomeArquivo,
-              contentType: receipt.tipoConteudo,
-              size: receipt.tamanhoBytes,
+              name: receipt.fileName,
+              contentType: receipt.contentType,
+              size: receipt.sizeBytes,
               uploadedAt: receipt.createdAt,
             }
           : null,
@@ -531,13 +524,13 @@ export class PrismaChargeRepository implements ChargeRepository {
     receiptId: string,
     includeHistory: boolean,
   ): Promise<StoredChargeReceiptFile | null> {
-    const receipt = await prisma.comprovanteCobranca.findFirst({
+    const receipt = await prisma.chargeReceipt.findFirst({
       where: {
         id: receiptId,
-        cobrancaId: chargeId,
-        cobranca: {
+        chargeId: chargeId,
+        charge: {
           ...chargeReadWhere(scope),
-          ...(includeHistory ? {} : { comprovanteAtualId: receiptId }),
+          ...(includeHistory ? {} : { currentReceiptId: receiptId }),
         },
       },
     })
@@ -546,11 +539,11 @@ export class PrismaChargeRepository implements ChargeRepository {
       ? {
           id: receipt.id,
           tenantId: receipt.tenantId,
-          chargeId: receipt.cobrancaId,
+          chargeId: receipt.chargeId,
           objectKey: receipt.objectKey,
-          name: receipt.nomeArquivo,
-          contentType: receipt.tipoConteudo,
-          size: receipt.tamanhoBytes,
+          name: receipt.fileName,
+          contentType: receipt.contentType,
+          size: receipt.sizeBytes,
           sha256: receipt.sha256,
         }
       : null
@@ -564,8 +557,8 @@ export class PrismaChargeRepository implements ChargeRepository {
     const currentMonth = monthRange(month, 0)
     const receivable = {
       tenantId,
-      tipo: 'A_RECEBER' as const,
-      status: { not: 'CANCELADA' as const },
+      type: 'RECEIVABLE' as const,
+      status: { not: 'CANCELED' as const },
     }
 
     const [
@@ -577,48 +570,48 @@ export class PrismaChargeRepository implements ChargeRepository {
       rentedPropertiesCount,
       listedPropertiesCount,
     ] = await Promise.all([
-      prisma.cobranca.aggregate({
-        _sum: { valor: true },
-        where: { ...receivable, vencimento: { gte: currentMonth.start, lt: currentMonth.end } },
+      prisma.charge.aggregate({
+        _sum: { amount: true },
+        where: { ...receivable, dueDate: { gte: currentMonth.start, lt: currentMonth.end } },
       }),
-      prisma.cobranca.aggregate({
-        _sum: { valor: true },
+      prisma.charge.aggregate({
+        _sum: { amount: true },
         where: {
           tenantId,
-          tipo: 'A_RECEBER',
+          type: 'RECEIVABLE',
           status: { in: [...openStatuses] },
-          vencimento: { lt: today },
+          dueDate: { lt: today },
         },
       }),
-      prisma.cobranca.aggregate({ _sum: { valor: true }, where: receivable }),
-      prisma.cobranca.findMany({
+      prisma.charge.aggregate({ _sum: { amount: true }, where: receivable }),
+      prisma.charge.findMany({
         where: {
           ...receivable,
-          vencimento: { gte: monthRange(month, 5).start, lt: currentMonth.end },
+          dueDate: { gte: monthRange(month, 5).start, lt: currentMonth.end },
         },
-        select: { valor: true, vencimento: true },
+        select: { amount: true, dueDate: true },
       }),
-      prisma.cobranca.findMany({
-        where: { tenantId, tipo: 'A_RECEBER', status: 'PENDENTE' },
-        orderBy: [{ vencimento: 'asc' }, { id: 'asc' }],
+      prisma.charge.findMany({
+        where: { tenantId, type: 'RECEIVABLE', status: 'PENDING' },
+        orderBy: [{ dueDate: 'asc' }, { id: 'asc' }],
         take: 5,
         include: chargeInclude,
       }),
-      prisma.imovel.count({
-        where: { tenantId, finalidade: { in: ['ALUGUEL', 'AMBOS'] }, status: 'RENTED' },
+      prisma.property.count({
+        where: { tenantId, purpose: { in: ['RENT', 'BOTH'] }, status: 'RENTED' },
       }),
-      prisma.imovel.count({
+      prisma.property.count({
         where: {
           tenantId,
-          finalidade: { in: ['ALUGUEL', 'AMBOS'] },
+          purpose: { in: ['RENT', 'BOTH'] },
           status: { in: ['PUBLISHED', 'RENTED'] },
         },
       }),
     ])
 
-    const monthlyReceivable = monthlyReceivableAggregate._sum.valor?.toNumber() ?? 0
-    const overdueTotal = overdueAggregate._sum.valor?.toNumber() ?? 0
-    const totalReceivable = totalReceivableAggregate._sum.valor?.toNumber() ?? 0
+    const monthlyReceivable = monthlyReceivableAggregate._sum.amount?.toNumber() ?? 0
+    const overdueTotal = overdueAggregate._sum.amount?.toNumber() ?? 0
+    const totalReceivable = totalReceivableAggregate._sum.amount?.toNumber() ?? 0
     const defaultRatePercentage = totalReceivable > 0 ? (overdueTotal / totalReceivable) * 100 : 0
     const occupancyRatePercentage =
       listedPropertiesCount > 0 ? (rentedPropertiesCount / listedPropertiesCount) * 100 : 0
@@ -631,10 +624,10 @@ export class PrismaChargeRepository implements ChargeRepository {
     for (const row of seriesRows) {
       const bucket = monthlySeries.find(
         (entry) =>
-          entry.year === row.vencimento.getUTCFullYear() &&
-          entry.month === row.vencimento.getUTCMonth() + 1,
+          entry.year === row.dueDate.getUTCFullYear() &&
+          entry.month === row.dueDate.getUTCMonth() + 1,
       )
-      if (bucket) bucket.total += row.valor.toNumber()
+      if (bucket) bucket.total += row.amount.toNumber()
     }
 
     return {
@@ -643,8 +636,8 @@ export class PrismaChargeRepository implements ChargeRepository {
       defaultRatePercentage,
       occupancyRatePercentage,
       monthlySeries,
-      upcomingDues: upcomingRows.map((cobranca) => {
-        const charge = toStoredCharge(cobranca)
+      upcomingDues: upcomingRows.map((row) => {
+        const charge = toStoredCharge(row)
 
         return {
           id: charge.id,

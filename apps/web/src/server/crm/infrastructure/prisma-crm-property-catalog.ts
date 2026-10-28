@@ -9,27 +9,27 @@ export class PrismaCrmPropertyCatalog implements CrmPropertyCatalog {
     private readonly db: CrmDatabase,
     private readonly scope: CrmScope,
   ) {}
-  private where(): Prisma.ImovelWhereInput {
+  private where(): Prisma.PropertyWhereInput {
     return {
       tenantId: this.scope.actorTenantId,
-      ...(this.scope.actorPapel === 'AGENT' ? { responsavelId: this.scope.actorId ?? '' } : {}),
+      ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
     }
   }
   async list(filters: CrmPropertyFilters) {
     const where = this.where()
     if (filters.q)
       where.OR = [
-        { titulo: { contains: filters.q, mode: 'insensitive' } },
-        { endereco: { cidade: { contains: filters.q, mode: 'insensitive' } } },
-        { endereco: { bairro: { contains: filters.q, mode: 'insensitive' } } },
+        { title: { contains: filters.q, mode: 'insensitive' } },
+        { address: { city: { contains: filters.q, mode: 'insensitive' } } },
+        { address: { neighborhood: { contains: filters.q, mode: 'insensitive' } } },
       ]
-    const totalCount = await this.db.imovel.count({ where })
+    const totalCount = await this.db.property.count({ where })
     const pageCount = Math.max(1, Math.ceil(totalCount / filters.pageSize))
     const page = Math.min(filters.page, pageCount)
-    const rows = await this.db.imovel.findMany({
+    const rows = await this.db.property.findMany({
       where,
       include: crmPropertyInclude,
-      orderBy: [{ titulo: 'asc' }, { id: 'asc' }],
+      orderBy: [{ title: 'asc' }, { id: 'asc' }],
       skip: (page - 1) * filters.pageSize,
       take: filters.pageSize,
     })
@@ -39,7 +39,7 @@ export class PrismaCrmPropertyCatalog implements CrmPropertyCatalog {
     }
   }
   async get(id: string) {
-    const row = await this.db.imovel.findFirst({
+    const row = await this.db.property.findFirst({
       where: { ...this.where(), id },
       include: crmPropertyInclude,
     })

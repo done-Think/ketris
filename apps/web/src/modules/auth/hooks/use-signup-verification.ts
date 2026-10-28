@@ -3,7 +3,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { useLocale, useTranslations } from 'next-intl'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { ConfirmSignupVerificationResponseDTO } from '@server/auth/types/http'
+import type { ConfirmSignupVerificationResponseDTO } from '@shared/types/generated/auth/http'
 import { getApiErrorCode } from '@shared/utils/error-message'
 import { authService } from '../services/auth-service'
 import type { EmailVerificationStepProps } from '../types/registration'

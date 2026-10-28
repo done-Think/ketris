@@ -2,7 +2,7 @@
 
 import { Avatar, Box, Typography } from '@mui/material'
 
-import { useLogoOverflow } from '../hooks/use-logo-overflow'
+import { useElementOverflow } from '@shared/hooks/use-element-overflow'
 import {
   brandHeaderConfig,
   getBannerStyles,
@@ -25,7 +25,12 @@ export function AgencyAdaptiveBrandHeader({
 }: AgencyAdaptiveBrandHeaderProps) {
   const config = brandHeaderConfig[variant]
   const logoUrl = agency.brand.logoUrl
-  const { slotRef, imageRef, overflow, measure } = useLogoOverflow(logoUrl, variant)
+  const {
+    containerRef: slotRef,
+    elementRef: imageRef,
+    overflow,
+    measure,
+  } = useElementOverflow<HTMLImageElement>(logoUrl, variant)
 
   return (
     <Box

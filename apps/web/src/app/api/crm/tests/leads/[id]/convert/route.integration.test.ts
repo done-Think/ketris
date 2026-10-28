@@ -21,101 +21,101 @@ describe('/api/crm/leads/[id]/convert (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária CRM Lead Convert', slug: `crm-lead-convert-${randomUUID()}` },
+      data: { name: 'Imobiliária CRM Lead Convert', slug: `crm-lead-convert-${randomUUID()}` },
     })
     tenantId = tenant.id
 
     const otherTenant = await prisma.tenant.create({
-      data: { nome: 'Outra Imobiliária', slug: `crm-lead-convert-other-${randomUUID()}` },
+      data: { name: 'Outra Imobiliária', slug: `crm-lead-convert-other-${randomUUID()}` },
     })
     otherTenantId = otherTenant.id
 
-    const agent = await prisma.usuario.create({
+    const agent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor',
+        name: 'Corretor',
         email: `corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     agentId = agent.id
     agentToken = await tokenService.sign({
       id: agent.id,
       tenantId: agent.tenantId,
-      nome: agent.nome,
+      name: agent.name,
       email: agent.email,
-      papel: agent.papel,
-      ativo: agent.ativo,
-      vinculoAprovadoEm: agent.vinculoAprovadoEm,
+      role: agent.role,
+      active: agent.active,
+      membershipApprovedAt: agent.membershipApprovedAt,
     })
 
-    const otherAgent = await prisma.usuario.create({
+    const otherAgent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Outro Corretor',
+        name: 'Outro Corretor',
         email: `outro-corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     otherAgentToken = await tokenService.sign({
       id: otherAgent.id,
       tenantId: otherAgent.tenantId,
-      nome: otherAgent.nome,
+      name: otherAgent.name,
       email: otherAgent.email,
-      papel: otherAgent.papel,
-      ativo: otherAgent.ativo,
-      vinculoAprovadoEm: otherAgent.vinculoAprovadoEm,
+      role: otherAgent.role,
+      active: otherAgent.active,
+      membershipApprovedAt: otherAgent.membershipApprovedAt,
     })
 
-    const property = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: agent.id,
-        titulo: 'Apartamento do Corretor',
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        valor: 3000,
+        responsibleId: agent.id,
+        title: 'Apartamento do Corretor',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 3000,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        publishedAt: new Date(),
       },
     })
     propertyId = property.id
 
-    const otherTenantAgent = await prisma.usuario.create({
+    const otherTenantAgent = await prisma.user.create({
       data: {
         tenantId: otherTenant.id,
-        nome: 'Corretor de Outro Tenant',
+        name: 'Corretor de Outro Tenant',
         email: `outro-tenant-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
-    const otherTenantProperty = await prisma.imovel.create({
+    const otherTenantProperty = await prisma.property.create({
       data: {
         tenantId: otherTenant.id,
-        responsavelId: otherTenantAgent.id,
-        titulo: 'Imóvel de outro tenant',
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        valor: 1800,
+        responsibleId: otherTenantAgent.id,
+        title: 'Imóvel de outro tenant',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 1800,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        publishedAt: new Date(),
       },
     })
     otherTenantPropertyId = otherTenantProperty.id
 
-    const propertyOfOtherAgent = await prisma.imovel.create({
+    const propertyOfOtherAgent = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: otherAgent.id,
-        titulo: 'Imóvel do Outro Corretor',
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        valor: 2500,
+        responsibleId: otherAgent.id,
+        title: 'Imóvel do Outro Corretor',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2500,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        publishedAt: new Date(),
       },
     })
     propertyOfOtherAgentId = propertyOfOtherAgent.id
@@ -130,14 +130,14 @@ describe('/api/crm/leads/[id]/convert (integração)', () => {
     return prisma.lead.create({
       data: {
         tenantId,
-        responsavelId: agentId,
-        nome: 'Maria Souza',
-        telefone: '(11) 90000-0001',
+        responsibleId: agentId,
+        name: 'Maria Souza',
+        phone: '(11) 90000-0001',
         email: 'maria@exemplo.com',
-        interesse: 'Apartamento 2 quartos',
-        orcamento: 'Até R$ 3.000',
-        origem: 'WHATSAPP',
-        observacoes: 'Gostou muito da varanda.',
+        interest: 'Apartamento 2 quartos',
+        budget: 'Até R$ 3.000',
+        source: 'WHATSAPP',
+        notes: 'Gostou muito da varanda.',
       },
     })
   }
@@ -163,17 +163,17 @@ describe('/api/crm/leads/[id]/convert (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.lead.stage).toBe('PROPOSTA')
+    expect(json.lead.stage).toBe('PROPOSAL')
     expect(json.lead.opportunityId).toBe(json.opportunityId)
 
-    const opportunity = await prisma.oportunidade.findUniqueOrThrow({
+    const opportunity = await prisma.opportunity.findUniqueOrThrow({
       where: { id: json.opportunityId },
     })
-    expect(opportunity.status).toBe('RASCUNHO')
-    expect(opportunity.imovelId).toBe(propertyId)
-    expect(Number(opportunity.valorProposto)).toBe(3200)
-    expect(opportunity.interessadoNome).toBe('Maria Souza')
-    expect(opportunity.observacoes).toBe('Gostou muito da varanda.')
+    expect(opportunity.status).toBe('DRAFT')
+    expect(opportunity.propertyId).toBe(propertyId)
+    expect(Number(opportunity.proposedValue)).toBe(3200)
+    expect(opportunity.interestedName).toBe('Maria Souza')
+    expect(opportunity.notes).toBe('Gostou muito da varanda.')
   })
 
   it('retorna 409 ao tentar converter um lead já convertido', async () => {

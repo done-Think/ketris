@@ -8,7 +8,7 @@ export function findManageableAgendaEvent(
   actor: AgendaManageActor,
   id: string,
 ) {
-  if (actor.actorPapel === 'RENTER') {
+  if (actor.actorRole === 'RENTER') {
     return repository.findByScopeAndId({ kind: 'linkedUser', userId: actor.actorUserId ?? '' }, id)
   }
 
@@ -16,5 +16,5 @@ export function findManageableAgendaEvent(
 }
 
 export function manageableAgendaEventTenantId(actor: AgendaManageActor, event: AgendaEvent) {
-  return actor.actorPapel === 'RENTER' ? event.tenantId : actor.actorTenantId
+  return actor.actorRole === 'RENTER' ? event.tenantId : actor.actorTenantId
 }

@@ -16,7 +16,7 @@ import * as crmStyles from '../../styles/leads-table.styles'
 import type { LeadTableColumn, LeadsTableProps } from '../../types/lead'
 import { LeadAvatar } from './LeadAvatar'
 import { LeadStatusChip } from './LeadStatusChip'
-import { leadSourceKey } from '@server/crm/constants/lead-sources'
+import { leadSourceKey } from '@shared/config/lead-sources'
 
 const leadTableColumns: LeadTableColumn[] = [
   { key: 'name', sortField: 'name' },

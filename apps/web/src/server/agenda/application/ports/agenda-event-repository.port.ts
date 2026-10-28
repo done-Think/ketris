@@ -34,9 +34,9 @@ export interface AgendaEventRepository {
   ): Promise<AgendaEvent | null>
   hasOverlap(
     tenantId: string,
-    responsavelId: string,
-    inicio: Date,
-    fim: Date,
+    responsibleId: string,
+    start: Date,
+    end: Date,
     excludeEventId?: string,
   ): Promise<boolean>
 }

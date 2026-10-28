@@ -53,7 +53,7 @@ export function MaintenanceWorkflowForm({
       reason: '',
       responsibleId: ticket.responsibleId ?? '',
       contractId: '',
-      status: 'ABERTO',
+      status: 'OPEN',
       name: selection.action === 'approveReplacement' ? '' : (ticket.provider?.name ?? ''),
       phone: selection.action === 'approveReplacement' ? '' : (ticket.provider?.phone ?? ''),
       email: selection.action === 'approveReplacement' ? '' : (ticket.provider?.email ?? ''),
@@ -123,8 +123,8 @@ export function MaintenanceWorkflowForm({
             )}
             {selection.action === 'reopen' && role !== 'RENTER' && (
               <RhfTextField label={t('reopenStatus')} control={control} name="status" select>
-                <MenuItem value="ABERTO">{t('open')}</MenuItem>
-                <MenuItem value="EM_ANDAMENTO">{t('inProgress')}</MenuItem>
+                <MenuItem value="OPEN">{t('open')}</MenuItem>
+                <MenuItem value="IN_PROGRESS">{t('inProgress')}</MenuItem>
               </RhfTextField>
             )}
             {providerAction && <MaintenanceProviderPicker control={control} ticketId={ticket.id} />}

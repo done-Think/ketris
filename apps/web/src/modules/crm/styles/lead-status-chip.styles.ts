@@ -21,18 +21,18 @@ export const leadStagePresentation: Record<
   LeadStage,
   { labelKey: LeadFilterKey; color: string; backgroundColor: string }
 > = {
-  NOVO: { labelKey: 'new', color: brand.magenta[700], backgroundColor: alpha.magenta[10] },
-  EM_CONTATO: {
+  NEW: { labelKey: 'new', color: brand.magenta[700], backgroundColor: alpha.magenta[10] },
+  IN_CONTACT: {
     labelKey: 'contacted',
     color: brand.semantic.info,
     backgroundColor: supportColor.infoSoft,
   },
-  VISITA_MARCADA: {
+  VISIT_SCHEDULED: {
     labelKey: 'visitScheduled',
     color: brand.semantic.warning,
     backgroundColor: supportColor.warningSoft,
   },
-  PROPOSTA: {
+  PROPOSAL: {
     labelKey: 'proposal',
     color: brand.semantic.success,
     backgroundColor: supportColor.successSoft,

@@ -47,8 +47,8 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     propertyId: 'p1',
     propertyTitle: 'Apt Jardins 3q',
     category: 'PLUMBING',
-    priority: 'URGENTE',
-    status: 'EM_ANDAMENTO',
+    priority: 'URGENT',
+    status: 'IN_PROGRESS',
     title: 'Vazamento na cozinha',
     openedByName: 'Bruno Oliveira',
     resolvedAt: null,
@@ -60,8 +60,8 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     propertyId: 'p2',
     propertyTitle: 'Studio Pinheiros',
     category: 'ELECTRICAL',
-    priority: 'ALTA',
-    status: 'ABERTO',
+    priority: 'HIGH',
+    status: 'OPEN',
     title: 'Tomada com defeito',
     openedByName: 'Mariana Souza',
     resolvedAt: null,
@@ -73,8 +73,8 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     propertyId: 'p3',
     propertyTitle: 'Casa Vila Madalena',
     category: 'STRUCTURAL',
-    priority: 'ALTA',
-    status: 'EM_ANDAMENTO',
+    priority: 'HIGH',
+    status: 'IN_PROGRESS',
     title: 'Rachadura na parede',
     openedByName: 'Felipe Neto',
     resolvedAt: null,
@@ -87,7 +87,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     propertyTitle: 'Cobertura Moema',
     category: 'PAINTING',
     priority: 'NORMAL',
-    status: 'RESOLVIDO',
+    status: 'RESOLVED',
     title: 'Pintura descascando',
     openedByName: 'Aline Santos',
     resolvedAt: '2025-02-16T00:00:00.000Z',
@@ -109,8 +109,8 @@ const fullTicket: ApiMaintenanceTicket = {
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
   category: 'PLUMBING',
-  priority: 'URGENTE',
-  status: 'EM_ANDAMENTO',
+  priority: 'URGENT',
+  status: 'IN_PROGRESS',
   title: 'Vazamento na cozinha',
   description: 'Vazamento embaixo da pia da cozinha.',
   openedById: 'user-1',
@@ -129,7 +129,7 @@ function mockDefaults() {
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)
 
-  vi.mocked(useMaintenanceTickets).mockImplementation((_tenantId, filters = {}) => {
+  vi.mocked(useMaintenanceTickets).mockImplementation((filters = {}) => {
     const filtered = listItems.filter(
       (item) =>
         (!filters.status || item.status === filters.status) &&
@@ -153,7 +153,7 @@ function mockDefaults() {
         summary: {
           totalCount: 4,
           urgentCount: 1,
-          byStatus: { ABERTO: 1, EM_ANDAMENTO: 2, RESOLVIDO: 1 },
+          byStatus: { OPEN: 1, IN_PROGRESS: 2, RESOLVED: 1 },
           averageResolutionDays: 1,
         },
       },
@@ -162,7 +162,7 @@ function mockDefaults() {
   })
 
   vi.mocked(useMaintenanceTicket).mockImplementation(
-    (_tenantId, ticketId) =>
+    (ticketId) =>
       ({
         data: ticketId === fullTicket.id ? fullTicket : undefined,
         isLoading: false,
@@ -356,7 +356,6 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.getByText('MNT-0088')).toBeVisible()
     expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
     expect(useMaintenanceTickets).toHaveBeenLastCalledWith(
-      'tenant-1',
       expect.objectContaining({ category: 'ELECTRICAL', page: 1 }),
     )
     expect(screen.getByText('1,0 dias')).toBeVisible()

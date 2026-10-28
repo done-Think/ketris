@@ -4,7 +4,7 @@ import {
   hashRefreshToken,
   refreshTokenExpiryDate,
 } from '../domain/refresh-token'
-import { toAuthenticatedUser } from '../domain/user.entity'
+import { toAuthenticatedUser } from './authenticated-user'
 import type { User } from '../domain/user.entity'
 import type { LoginOutput } from '../types/use-case-outputs'
 import type { RefreshTokenRepository } from './ports/refresh-token-repository.port'

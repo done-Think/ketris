@@ -29,7 +29,7 @@ export class PublishAgencyProfileUseCase {
   constructor(private readonly agencyProfileRepository: AgencyProfileRepository) {}
 
   async execute(input: PublishAgencyProfileInput): Promise<AgencyProfile> {
-    assertAgencyProfileAccess(input.actorPapel)
+    assertAgencyProfileAccess(input.actorRole)
 
     const profile = await this.agencyProfileRepository.findByTenantId(input.actorTenantId)
 
@@ -47,6 +47,7 @@ export class PublishAgencyProfileUseCase {
       input.actorTenantId,
       'PUBLISHED',
       new Date(),
+      input.actorId,
     )
 
     if (!published) {

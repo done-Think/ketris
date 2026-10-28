@@ -184,7 +184,7 @@ describe('Maintenance access', () => {
     )
   })
 
-  it.each(['ABERTO', 'EM_ANDAMENTO', 'AGUARDANDO_CONFIRMACAO', 'CONTESTADO'] as const)(
+  it.each(['OPEN', 'IN_PROGRESS', 'AWAITING_CONFIRMATION', 'DISPUTED'] as const)(
     'never lets renters edit original fields in %s',
     async (status) => {
       const repo = repository({ status })
@@ -195,7 +195,7 @@ describe('Maintenance access', () => {
     },
   )
 
-  it.each(['RESOLVIDO', 'CANCELADO', 'FECHADO'] as const)(
+  it.each(['RESOLVED', 'CANCELED', 'CLOSED'] as const)(
     'locks field edits on %s and allows only renter notes on resolved tickets',
     async (status) => {
       for (const user of [admin, agent, owner, renter]) {
@@ -208,7 +208,7 @@ describe('Maintenance access', () => {
           ticketId: ticket.id,
           message: 'new',
         })
-        if (status === 'RESOLVIDO' && user.actorPapel === 'RENTER') {
+        if (status === 'RESOLVED' && user.actorRole === 'RENTER') {
           await note
           expect(repo.addNote).toHaveBeenCalledWith(
             expect.anything(),

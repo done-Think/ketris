@@ -64,7 +64,7 @@ export function OpportunityPropertyPanel({
             </Box>
             <Typography sx={crmStyles.typographySx4}>
               {format.money(property.price)}
-              {property.purpose === 'ALUGUEL' ? t('monthlySuffix') : ''}
+              {property.purpose === 'RENT' ? t('monthlySuffix') : ''}
             </Typography>
           </Stack>
         </Stack>

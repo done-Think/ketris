@@ -46,6 +46,32 @@ describe('HttpClient — refresh de token em respostas 401', () => {
     vi.mocked(axios.create).mock.results.at(-1)?.value?.mockReset()
   })
 
+  it('declares the English contract and never retries a mutation rejected for an old contract', async () => {
+    const client = new HttpClient()
+    expect(axios.create).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({ 'X-Ketris-Api-Version': '2' }),
+      }),
+    )
+    const { instance, onRejected } = getResponseErrorHandler()
+    const handler = vi.fn()
+    client.setUnauthorizedHandler(handler)
+    const error = {
+      config: { method: 'POST', url: '/properties' },
+      response: { status: 409, data: { error: { code: 'CLIENT_UPDATE_REQUIRED' } } },
+    }
+    await expect(onRejected(error)).rejects.toBe(error)
+    expect(instance).not.toHaveBeenCalled()
+    expect(handler).not.toHaveBeenCalled()
+  })
+
+  it('keeps the application contract header out of direct storage uploads', () => {
+    new HttpClient('')
+    expect(axios.create).toHaveBeenLastCalledWith(
+      expect.objectContaining({ baseURL: '', headers: { 'Content-Type': 'application/json' } }),
+    )
+  })
+
   it('rejeita a resposta original quando não há handler de 401 configurado', async () => {
     new HttpClient()
     const { onRejected } = getResponseErrorHandler()

@@ -12,7 +12,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const responsibles = await crmContainer.listOpportunityResponsiblesUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
   })
 
   return NextResponse.json({ responsibles }, { status: 200 })

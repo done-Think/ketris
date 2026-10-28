@@ -41,10 +41,9 @@ describe('Maintenance query isolation and paging', () => {
       ReturnType<typeof maintenanceService.get>
     >)
     const { wrapper, client } = setup()
-    const { result, rerender, unmount } = renderHook(
-      () => useMaintenanceTicket('tenant-1', 'ticket'),
-      { wrapper },
-    )
+    const { result, rerender, unmount } = renderHook(() => useMaintenanceTicket('ticket'), {
+      wrapper,
+    })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     auth.id = 'user-2'
     rerender()
@@ -61,7 +60,7 @@ describe('Maintenance query isolation and paging', () => {
     vi.mocked(maintenanceService.act).mockResolvedValue({ id: 'ticket' } as Awaited<
       ReturnType<typeof maintenanceService.act>
     >)
-    const { result, unmount } = renderHook(() => useMaintenanceAction('tenant-1', 'ticket'), {
+    const { result, unmount } = renderHook(() => useMaintenanceAction('ticket'), {
       wrapper,
     })
     await result.current.mutateAsync({ action: 'provider', provider: { name: 'New provider' } })
@@ -78,7 +77,7 @@ describe('Maintenance query isolation and paging', () => {
           propertyTitle: 'Property',
           category: 'PLUMBING',
           priority: 'NORMAL',
-          status: 'ABERTO',
+          status: 'OPEN',
           title: 'Leak',
           openedByName: 'Renter',
           resolvedAt: null,
@@ -91,7 +90,7 @@ describe('Maintenance query isolation and paging', () => {
       summary: {
         totalCount: 1,
         urgentCount: 0,
-        byStatus: { ABERTO: 1 },
+        byStatus: { OPEN: 1 },
         averageResolutionDays: null,
       },
     }
@@ -100,7 +99,7 @@ describe('Maintenance query isolation and paging', () => {
       .mockResolvedValueOnce({ ...plumbing, items: [], totalCount: 0 })
     const { wrapper, client } = setup()
     const { result, rerender, unmount } = renderHook(
-      ({ category }) => useMaintenanceTickets('tenant-1', { category }),
+      ({ category }) => useMaintenanceTickets({ category }),
       { wrapper, initialProps: { category: 'PLUMBING' as MaintenanceCategory } },
     )
     await waitFor(() => expect(result.current.data).toEqual(plumbing))

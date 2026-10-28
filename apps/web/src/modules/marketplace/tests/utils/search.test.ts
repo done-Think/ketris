@@ -28,7 +28,7 @@ describe('marketplace search utils', () => {
 
   it('builds a public property search URL from selected filters', () => {
     const href = buildSearchHref({
-      selectedSearch: { location: 'Jardins, São Paulo', propertyType: 'APARTAMENTO' },
+      selectedSearch: { location: 'Jardins, São Paulo', propertyType: 'APARTMENT' },
       searchDraft: { location: '', propertyType: '' },
       priceRange: [2000, 8000],
     })
@@ -38,7 +38,7 @@ describe('marketplace search utils', () => {
       query: {
         location: 'Jardins, São Paulo',
         priceRange: '2000-8000',
-        propertyType: 'APARTAMENTO',
+        propertyType: 'APARTMENT',
       },
     })
   })

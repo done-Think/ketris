@@ -1,10 +1,10 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { Contact, NewContact } from '../domain/contact.entity'
 
 export interface CreateContactInput extends Omit<NewContact, 'tenantId'> {
   actorId?: string
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export type CreateContactOutput = Contact

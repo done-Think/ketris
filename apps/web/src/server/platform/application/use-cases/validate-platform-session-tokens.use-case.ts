@@ -16,7 +16,7 @@ export class ValidatePlatformSessionTokensUseCase {
   async execute(accessToken: string, refreshToken: string): Promise<PlatformAccessTokenPayload> {
     const payload = await this.tokens.verify(accessToken)
     const admin = await this.admins.findById(payload.sub)
-    if (!admin?.ativo) throw new UnauthorizedError()
+    if (!admin?.active) throw new UnauthorizedError()
 
     const stored = await this.refreshTokens.findValidByTokenHash(
       hashPlatformRefreshToken(refreshToken),

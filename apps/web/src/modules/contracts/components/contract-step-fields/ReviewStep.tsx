@@ -1,5 +1,5 @@
 import { parseContractFormDate } from '../../utils/contract-date'
-import { contractOptionMessage } from '../../utils/contract-option-message'
+import { formatContractOption } from '../../utils/contract-option-message'
 import { styles } from '../../styles/review-step.styles'
 import { Box, Typography } from '@mui/material'
 import { useFormatter, useTranslations } from 'next-intl'
@@ -43,7 +43,7 @@ export function ReviewStep({ control }: ContractStepReviewProps) {
     const date = parseContractFormDate(value)
     return date ? formatter.dateTime(date, { dateStyle: 'short', timeZone: 'UTC' }) : value
   }
-  const hasActiveGuarantor = values.hasGuarantor || values.guaranteeType === 'FIADOR'
+  const hasActiveGuarantor = values.hasGuarantor || values.guaranteeType === 'GUARANTOR'
 
   const partiesItems = [
     { label: t('labels.owner'), value: values.ownerName },
@@ -70,7 +70,7 @@ export function ReviewStep({ control }: ContractStepReviewProps) {
           },
           {
             label: t('labels.contract'),
-            value: tConditions(contractOptionMessage('contractTypeOptions', values.contractType)),
+            value: formatContractOption('contractTypeOptions', values.contractType, tConditions),
           },
           {
             label: t('labels.dueDay'),
@@ -78,7 +78,7 @@ export function ReviewStep({ control }: ContractStepReviewProps) {
           },
           {
             label: t('labels.guarantee'),
-            value: tConditions(contractOptionMessage('guaranteeTypeOptions', values.guaranteeType)),
+            value: formatContractOption('guaranteeTypeOptions', values.guaranteeType, tConditions),
           },
         ]}
       />
@@ -89,8 +89,10 @@ export function ReviewStep({ control }: ContractStepReviewProps) {
           { label: t('labels.end'), value: dateLabel(values.endDate) },
           {
             label: t('labels.adjustment'),
-            value: tConditions(
-              contractOptionMessage('adjustmentIndexOptions', values.adjustmentIndex),
+            value: formatContractOption(
+              'adjustmentIndexOptions',
+              values.adjustmentIndex,
+              tConditions,
             ),
           },
           { label: t('labels.notes'), value: values.notes },

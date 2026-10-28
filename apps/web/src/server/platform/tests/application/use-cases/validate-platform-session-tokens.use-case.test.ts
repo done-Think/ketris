@@ -12,7 +12,7 @@ function setup() {
     verify: vi.fn().mockResolvedValue({ sub: 'p1', scope: 'platform' }),
   } as unknown as PlatformTokenService
   const admins = {
-    findById: vi.fn().mockResolvedValue({ id: 'p1', ativo: true }),
+    findById: vi.fn().mockResolvedValue({ id: 'p1', active: true }),
   } as unknown as PlatformAdminRepository
   const refreshTokens = {
     findValidByTokenHash: vi.fn().mockResolvedValue({ id: 'r1', platformAdminId: 'p1' }),

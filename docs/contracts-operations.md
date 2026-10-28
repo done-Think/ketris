@@ -44,7 +44,7 @@ O download exige acesso de leitura ao contrato e fornece URL válida por um minu
 
 O Terraform prepara CORS na variável `contract_document_allowed_origins`: informe apenas as origens exatas da aplicação, sem caminhos ou curingas. O ajuste permite PUT, GET e HEAD e os cabeçalhos necessários ao checksum. Revisar e aplicar essa configuração é uma operação de infraestrutura separada; o código da branch não a aplica automaticamente.
 
-A aplicação do CORS no bucket real está registrada como [pendência de implantação](technical-debt/contracts-s3-cors.md). Enquanto estiver pendente, novos uploads de PDF não funcionam no navegador e não é possível registrar novas assinaturas sem um comprovante válido já disponível.
+A configuração compartilhada de CORS foi aplicada em 26/10 e consta no estado local do Terraform, conforme o [registro de Contracts](technical-debt/contracts-s3-cors.md). O fluxo de PDF pela aplicação publicada ainda precisa de credenciais válidas e validação no navegador. Registrar assinatura continua exigindo comprovante válido da revisão atual.
 
 ## Assinaturas e histórico
 

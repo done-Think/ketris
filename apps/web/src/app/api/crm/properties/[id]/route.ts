@@ -12,7 +12,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: CrmId
   const property = await crmContainer.getCrmPropertyUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     propertyId: (await parseRouteParams(context.params, crmIdParamsSchema)).id,
   })
   return NextResponse.json({ property })

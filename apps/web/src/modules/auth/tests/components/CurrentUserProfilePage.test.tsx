@@ -26,7 +26,10 @@ vi.mock('next-auth/react', () => ({
   }),
   signOut,
 }))
-vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ replace }) }))
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+  useRouter: () => ({ replace }),
+}))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
 vi.mock('../../services/user-service', () => ({
   userService: {

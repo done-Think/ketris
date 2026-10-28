@@ -11,8 +11,35 @@ import type {
   CreatePropertyPurpose,
 } from '../types/dashboard-property'
 import type { SchemaMessageTranslator } from '@shared/types'
+import { normalizePostalCode } from '@shared/utils/postal-code'
 
-export function createDashboardPropertySchema(t: SchemaMessageTranslator) {
+export function createDashboardPropertySchema(
+  t: SchemaMessageTranslator<
+    | 'areaRequired'
+    | 'cityRequired'
+    | 'descriptionRequired'
+    | 'descriptionTooLong'
+    | 'integerRequired'
+    | 'latitudeInvalid'
+    | 'longitudeInvalid'
+    | 'mainValueRequired'
+    | 'negotiationTermRequired'
+    | 'negotiationTermTooLong'
+    | 'neighborhoodRequired'
+    | 'numberInvalid'
+    | 'numberRequired'
+    | 'propertyTypeRequired'
+    | 'purposeRequired'
+    | 'rentalValueInvalid'
+    | 'rentalValueRequired'
+    | 'stateRequired'
+    | 'streetRequired'
+    | 'titleRequired'
+    | 'titleTooLong'
+    | 'zipCodeRequired'
+    | 'zipCodeInvalid'
+  >,
+) {
   const numberField = z.coerce.number().nonnegative(t('numberInvalid'))
   const countField = numberField.int(t('integerRequired'))
 
@@ -53,7 +80,12 @@ export function createDashboardPropertySchema(t: SchemaMessageTranslator) {
       neighborhood: z.string().min(2, t('neighborhoodRequired')),
       city: z.string().min(2, t('cityRequired')),
       state: z.string().length(2, t('stateRequired')),
-      zipCode: z.string().min(8, t('zipCodeRequired')),
+      zipCode: z
+        .string()
+        .trim()
+        .min(1, t('zipCodeRequired'))
+        .refine((value) => normalizePostalCode(value) !== null, t('zipCodeInvalid'))
+        .transform((value) => normalizePostalCode(value)!),
       bedrooms: countField,
       bathrooms: countField,
       parkingSpaces: countField,
@@ -61,13 +93,17 @@ export function createDashboardPropertySchema(t: SchemaMessageTranslator) {
       features: z.array(z.enum(createPropertyFeatureOptions)).default([]),
       media: z
         .array(
-          z.object({ url: z.string(), type: z.string().optional(), order: z.number().optional() }),
+          z.object({
+            url: z.string(),
+            type: z.enum(['photo', 'floorPlan', 'video']).optional(),
+            order: z.number().optional(),
+          }),
         )
         .default([]),
       mainValue: z.coerce.number().positive(t('mainValueRequired')),
       rentalValue: z.coerce.number().nonnegative(t('rentalValueInvalid')).optional(),
       condominium: numberField,
-      iptu: numberField,
+      propertyTax: numberField,
       negotiationTerm: z
         .string()
         .min(1, t('negotiationTermRequired'))
@@ -113,7 +149,7 @@ export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormVa
   mainValue: 0,
   rentalValue: 0,
   condominium: 0,
-  iptu: 0,
+  propertyTax: 0,
   negotiationTerm: '',
   publishingOptions: [],
 }

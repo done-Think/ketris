@@ -11,7 +11,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   const profile = await marketplaceContainer.publishBrokerProfileUseCase.execute({
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
   })
 
   return NextResponse.json({ profile }, { status: 200 })

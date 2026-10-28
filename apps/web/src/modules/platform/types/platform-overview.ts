@@ -1,3 +1,4 @@
+import type { components } from '@shared/types/generated/api'
 export type PlatformMetricTone = 'success' | 'neutral'
 
 export interface PlatformMetric {
@@ -21,31 +22,10 @@ export interface RecentTenant {
   registeredAt: string
 }
 
-export interface ApiPlatformOverviewMetrics {
-  tenantsCount: number
-  brokersCount: number
-  propertiesCount: number
-  mrr: number
-  churnRate: number | null
-}
+export type ApiPlatformOverviewMetrics = components['schemas']['PlatformOverviewMetrics']
 
-export interface ApiPlatformGrowthMonth {
-  year: number
-  month: number
-  tenants: number
-  contracts: number
-}
+export type ApiPlatformGrowthMonth = components['schemas']['PlatformGrowthMonth']
 
-export interface ApiPlatformRecentTenant {
-  id: string
-  name: string
-  brokersCount: number
-  propertiesCount: number
-  createdAt: string
-}
+export type ApiPlatformRecentTenant = components['schemas']['PlatformRecentTenant']
 
-export interface ApiPlatformOverview {
-  metrics: ApiPlatformOverviewMetrics
-  growthTrend: ApiPlatformGrowthMonth[]
-  recentTenants: ApiPlatformRecentTenant[]
-}
+export type ApiPlatformOverview = components['schemas']['PlatformOverviewResponse']

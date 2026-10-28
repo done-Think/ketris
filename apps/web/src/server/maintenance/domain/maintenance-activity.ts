@@ -19,7 +19,7 @@ export function activity(
     details,
     authorId: actor.actorId,
     authorName: actor.actorName,
-    authorRole: actor.actorPapel,
+    authorRole: actor.actorRole,
   }
 }
 

@@ -19,38 +19,38 @@ describe('/api/auth/users/[id] (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Users Id', slug: tenantSlug },
+      data: { name: 'Tenant Users Id', slug: tenantSlug },
     })
     tenantId = tenant.id
 
-    const admin = await prisma.usuario.create({
+    const admin = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin Teste',
+        name: 'Admin Teste',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     adminId = admin.id
 
-    const agent = await prisma.usuario.create({
+    const agent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Agente Teste',
+        name: 'Agente Teste',
         email: `agent-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
 
-    const target = await prisma.usuario.create({
+    const target = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Alvo Teste',
+        name: 'Alvo Teste',
         email: `alvo-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     targetId = target.id
@@ -58,21 +58,21 @@ describe('/api/auth/users/[id] (integração)', () => {
     adminToken = await tokenService.sign({
       id: admin.id,
       tenantId: admin.tenantId,
-      nome: admin.nome,
+      name: admin.name,
       email: admin.email,
-      papel: admin.papel,
-      ativo: admin.ativo,
-      vinculoAprovadoEm: admin.vinculoAprovadoEm,
+      role: admin.role,
+      active: admin.active,
+      membershipApprovedAt: admin.membershipApprovedAt,
     })
 
     agentToken = await tokenService.sign({
       id: agent.id,
       tenantId: agent.tenantId,
-      nome: agent.nome,
+      name: agent.name,
       email: agent.email,
-      papel: agent.papel,
-      ativo: agent.ativo,
-      vinculoAprovadoEm: agent.vinculoAprovadoEm,
+      role: agent.role,
+      active: agent.active,
+      membershipApprovedAt: agent.membershipApprovedAt,
     })
   })
 
@@ -178,13 +178,13 @@ describe('/api/auth/users/[id] (integração)', () => {
 
   describe('DELETE', () => {
     it('desativa o usuário (soft delete) e retorna active: false', async () => {
-      const toDeactivate = await prisma.usuario.create({
+      const toDeactivate = await prisma.user.create({
         data: {
           tenantId,
-          nome: 'Para Desativar',
+          name: 'Para Desativar',
           email: `desativar-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
-          papel: 'AGENT',
+          passwordHash: 'hash-fake',
+          role: 'AGENT',
         },
       })
 
@@ -197,7 +197,7 @@ describe('/api/auth/users/[id] (integração)', () => {
       expect(response.status).toBe(200)
       expect(json.user.active).toBe(false)
 
-      const stillExists = await prisma.usuario.findUnique({ where: { id: toDeactivate.id } })
+      const stillExists = await prisma.user.findUnique({ where: { id: toDeactivate.id } })
       expect(stillExists).not.toBeNull()
     })
 

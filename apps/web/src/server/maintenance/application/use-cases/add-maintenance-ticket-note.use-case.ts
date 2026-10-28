@@ -11,7 +11,7 @@ export class AddMaintenanceTicketNoteUseCase {
     assertPermission(input, ticket, 'comment')
     if (!input.message.trim()) throw new ConflictError('Informe o comentario.')
     return this.repository.addNote(ticket, {
-      type: 'NOTA',
+      type: 'NOTE',
       message: input.message.trim(),
       authorId: input.actorId,
       authorName: input.actorName,

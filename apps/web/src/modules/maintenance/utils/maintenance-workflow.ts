@@ -32,7 +32,7 @@ export function buildMaintenanceWorkflowAction(
       return { action: 'requestReplacement', reason: values.reason }
     case 'reopen':
       return role === 'RENTER'
-        ? { action: 'reopen', status: 'ABERTO', reason: values.reason }
+        ? { action: 'reopen', status: 'OPEN', reason: values.reason }
         : { action: 'reopen', status: values.status }
     default:
       return { action: selection.action }

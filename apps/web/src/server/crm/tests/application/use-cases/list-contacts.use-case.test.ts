@@ -11,7 +11,7 @@ const contactA: Contact = {
   name: 'Carlos',
   email: 'carlos@exemplo.com',
   phone: null,
-  type: 'PROPRIETARIO',
+  type: 'OWNER',
   avatarUrl: null,
   notes: null,
   lastInteraction: null,
@@ -42,7 +42,7 @@ describe('ListContactsUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
     })
 
     expect(result.items).toEqual([])
@@ -63,7 +63,7 @@ describe('ListContactsUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
     })
 
     expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', {})
@@ -85,8 +85,8 @@ describe('ListContactsUseCase', () => {
     const opportunityRepository = { countByContact } as unknown as OpportunityRepository
     const useCase = new ListContactsUseCase(contactRepository, opportunityRepository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'agent-1', actorPapel: 'AGENT' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'agent-1', actorRole: 'AGENT' })
 
-    expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', { responsavelId: 'agent-1' })
+    expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', { responsibleId: 'agent-1' })
   })
 })

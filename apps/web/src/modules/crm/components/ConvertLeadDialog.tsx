@@ -16,7 +16,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useMemo } from 'react'
@@ -25,7 +24,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { useConvertLeadToOpportunity } from '../hooks/use-leads'
 import { createConvertLeadSchema } from '../schemas/convert-lead-schema'
 import type { ConvertLeadDialogProps, ConvertLeadFormValues } from '../types/lead'
-import { errorMessage } from '../utils/error-message'
+import { extractErrorMessage } from '@shared/utils/error-message'
 import { PropertyAutocomplete } from './opportunity-detail/PropertyAutocomplete'
 
 export function ConvertLeadDialog(props: ConvertLeadDialogProps) {
@@ -35,9 +34,7 @@ export function ConvertLeadDialog(props: ConvertLeadDialogProps) {
 function ConvertLeadForm({ lead, onClose, open }: ConvertLeadDialogProps) {
   const t = useTranslations('crm.leads.convert')
   const { enqueueSnackbar } = useSnackbar()
-  const { data: session } = useSession()
-  const tenantId = session?.tenantId ?? ''
-  const convertLead = useConvertLeadToOpportunity(tenantId)
+  const convertLead = useConvertLeadToOpportunity()
   const schema = useMemo(() => createConvertLeadSchema(t), [t])
   const {
     control,
@@ -75,7 +72,7 @@ function ConvertLeadForm({ lead, onClose, open }: ConvertLeadDialogProps) {
           onClose()
         },
         onError: (error) => {
-          enqueueSnackbar(errorMessage(error, t('error')), { variant: 'error' })
+          enqueueSnackbar(extractErrorMessage(error, t('error')), { variant: 'error' })
         },
       },
     )
@@ -102,7 +99,6 @@ function ConvertLeadForm({ lead, onClose, open }: ConvertLeadDialogProps) {
             name="property"
             render={({ field, fieldState }) => (
               <PropertyAutocomplete
-                tenantId={tenantId}
                 value={field.value}
                 onChange={field.onChange}
                 error={Boolean(fieldState.error)}

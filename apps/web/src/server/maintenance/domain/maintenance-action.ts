@@ -41,7 +41,7 @@ export function planMaintenanceAction(
       assertAdmin(actor)
       return plan(
         { contractId: action.contractId },
-        actionActivity('EDICAO', 'Contrato do chamado associado pelo administrador.', {
+        actionActivity('EDIT', 'Contrato do chamado associado pelo administrador.', {
           before: { contractId: ticket.contractId, propertyId: ticket.propertyId },
           after: { contractId: action.contractId, propertyId: ticket.propertyId },
         }),
@@ -54,7 +54,7 @@ export function planMaintenanceAction(
         throw new ConflictError('Informe uma data de atendimento valida.')
       return plan(
         { scheduledAt },
-        actionActivity('EDICAO', 'Atendimento agendado com o prestador.', {
+        actionActivity('EDIT', 'Atendimento agendado com o prestador.', {
           before: { scheduledAt: ticket.scheduledAt?.toISOString() ?? null },
           after: { scheduledAt: scheduledAt.toISOString() },
           provider: ticket.provider?.name,
@@ -66,14 +66,14 @@ export function planMaintenanceAction(
       const resolvedAt = new Date()
       return plan(
         {
-          status: 'RESOLVIDO',
+          status: 'RESOLVED',
           resolvedAt,
-          completedByRole: actor.actorPapel,
+          completedByRole: actor.actorRole,
           completedById: actor.actorId,
         },
-        actionActivity('MUDANCA_STATUS', 'Chamado finalizado pelo locatário.', {
+        actionActivity('STATUS_CHANGE', 'Chamado finalizado pelo locatário.', {
           before: ticket.status,
-          after: 'RESOLVIDO',
+          after: 'RESOLVED',
           resolvedAt: resolvedAt.toISOString(),
           previousCompletionRole: ticket.completedByRole,
         }),
@@ -81,38 +81,38 @@ export function planMaintenanceAction(
     }
     case 'start':
       assertPermission(actor, ticket, 'start')
-      changes = { status: 'EM_ANDAMENTO' }
+      changes = { status: 'IN_PROGRESS' }
       break
     case 'complete':
       assertPermission(actor, ticket, 'complete')
       if (!ticket.contractId)
         throw new ConflictError('Regularize o contrato antes de concluir o chamado.')
       changes = {
-        status: 'AGUARDANDO_CONFIRMACAO',
-        completedByRole: actor.actorPapel,
+        status: 'AWAITING_CONFIRMATION',
+        completedByRole: actor.actorRole,
         completedById: actor.actorId,
       }
       break
     case 'confirm':
       assertPermission(actor, ticket, 'confirm')
-      changes = { status: 'RESOLVIDO', resolvedAt: new Date() }
+      changes = { status: 'RESOLVED', resolvedAt: new Date() }
       break
     case 'contest':
       assertPermission(actor, ticket, 'contest')
-      changes = { status: 'CONTESTADO', resolvedAt: null }
+      changes = { status: 'DISPUTED', resolvedAt: null }
       break
     case 'cancel':
       assertPermission(actor, ticket, 'cancel')
-      changes = { status: 'CANCELADO', resolvedAt: null }
+      changes = { status: 'CANCELED', resolvedAt: null }
       break
     case 'reopen': {
       assertPermission(actor, ticket, 'reopen')
-      if (!['ABERTO', 'EM_ANDAMENTO'].includes(action.status))
+      if (!['OPEN', 'IN_PROGRESS'].includes(action.status))
         throw new ConflictError('Status de reabertura invalido.')
-      if (actor.actorPapel === 'RENTER' && action.status !== 'ABERTO')
+      if (actor.actorRole === 'RENTER' && action.status !== 'OPEN')
         throw new ForbiddenError('O locatario pode reabrir o chamado somente como aberto.')
       const reopenReason =
-        actor.actorPapel === 'RENTER' || action.reason !== undefined
+        actor.actorRole === 'RENTER' || action.reason !== undefined
           ? reason(action.reason ?? '')
           : null
       changes = {
@@ -123,7 +123,7 @@ export function planMaintenanceAction(
       }
       return plan(
         changes,
-        actionActivity('MUDANCA_STATUS', reopenReason ?? 'Chamado reaberto.', {
+        actionActivity('STATUS_CHANGE', reopenReason ?? 'Chamado reaberto.', {
           before: ticket.status,
           after: changes.status,
           reason: reopenReason,
@@ -139,7 +139,7 @@ export function planMaintenanceAction(
       assertPermission(actor, ticket, action.action)
       const responsibleId = action.action === 'assume' ? actor.actorId : action.responsibleId
       changes = { responsibleId }
-      event = actionActivity('RESPONSAVEL_ALTERADO', 'Responsavel interno atualizado.', {
+      event = actionActivity('RESPONSIBLE_CHANGED', 'Responsavel interno atualizado.', {
         before: ticket.responsibleId,
         after: responsibleId,
       })
@@ -149,14 +149,14 @@ export function planMaintenanceAction(
       assertPermission(actor, ticket, 'restore')
       return plan(
         { deletedAt: null, deletedById: null },
-        actionActivity('RESTAURACAO', 'Chamado restaurado.', { status: ticket.status }),
+        actionActivity('RESTORATION', 'Chamado restaurado.', { status: ticket.status }),
       )
     case 'provider':
       assertCanDefineProvider(actor, ticket)
       changes = { provider: provider(action.provider) }
       return plan(
         changes,
-        actionActivity('PRESTADOR_ALTERADO', 'Prestador atualizado.', {
+        actionActivity('PROVIDER_CHANGED', 'Prestador atualizado.', {
           before: ticket.provider,
           after: changes.provider,
         }),
@@ -164,13 +164,13 @@ export function planMaintenanceAction(
     case 'requestReplacement':
       assertPermission(actor, ticket, 'requestReplacement')
       request = { kind: 'request', actor, reason: reason(action.reason) }
-      return plan({}, actionActivity('TROCA_SOLICITADA', request.reason), request)
+      return plan({}, actionActivity('CHANGE_REQUESTED', request.reason), request)
     case 'approveReplacement':
     case 'rejectReplacement': {
       assertAdmin(actor)
       assertPermission(actor, ticket, 'collaborate')
       const pending = ticket.replacementRequests.find(
-        (r) => r.id === action.requestId && r.status === 'PENDENTE',
+        (r) => r.id === action.requestId && r.status === 'PENDING',
       )
       if (!pending) throw new ConflictError('Solicitacao inexistente ou ja decidida.')
       const approved = action.action === 'approveReplacement'
@@ -181,7 +181,7 @@ export function planMaintenanceAction(
       return plan(
         changes,
         actionActivity(
-          'TROCA_DECIDIDA',
+          'CHANGE_DECIDED',
           approved ? 'Troca de prestador aprovada.' : decisionReason!,
           {
             requestId: pending.id,
@@ -195,7 +195,7 @@ export function planMaintenanceAction(
     }
   }
   event = actionActivity(
-    'MUDANCA_STATUS',
+    'STATUS_CHANGE',
     action.action === 'contest' ? reason(action.reason) : `Status alterado para ${changes.status}.`,
     { before: ticket.status, after: changes.status },
   )

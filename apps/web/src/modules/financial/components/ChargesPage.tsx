@@ -1,5 +1,7 @@
 'use client'
 
+import type { TranslationKey } from '@/i18n/types/messages.types'
+
 import { Box, Stack, Tab, Tabs } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
@@ -48,7 +50,10 @@ export function ChargesPage() {
     ? mapStatusCountsFromApi(chargesQuery.data.statusCounts)
     : undefined
   const dialog = state.dialog
-  const feedback = (successKey: string, fallbackKey: string) => ({
+  const feedback = (
+    successKey: TranslationKey<'charges.feedback'>,
+    fallbackKey: TranslationKey<'charges.errors'>,
+  ) => ({
     onSuccess: () => {
       state.closeDialog()
       enqueueSnackbar(t(`feedback.${successKey}`), { variant: 'success' })

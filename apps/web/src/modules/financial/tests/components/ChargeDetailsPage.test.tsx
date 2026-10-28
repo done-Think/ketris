@@ -18,7 +18,10 @@ vi.mock('next-auth/react', () => ({
   useSession: () => ({ data: mocks.session, status: 'authenticated' }),
 }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar: mocks.enqueueSnackbar }) }))
-vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ push: mocks.push }) }))
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+  useRouter: () => ({ push: mocks.push }),
+}))
 
 const { financialServiceMock: service } = await import('../fixtures/mocks')
 
@@ -30,7 +33,7 @@ const receipt = {
   uploadedAt: '2026-10-08T15:00:00.000Z',
 }
 const paidCharge = apiCharge({
-  status: 'PAGA',
+  status: 'PAID',
   paidAt: '2026-10-08T00:00:00.000Z',
   paymentMethod: 'PIX',
   receipt,
@@ -48,6 +51,19 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('ChargeDetailsPage', () => {
+  it('renders mixed historical fields and unknown fields without changing the audit data', async () => {
+    const event = auditEvent({
+      action: 'UPDATED',
+      changedFields: ['description', 'amount', 'campo-desconhecido'],
+    })
+    const stored = JSON.stringify(event)
+    service.getHistory.mockResolvedValue({ events: [event] })
+    renderWithProviders(<ChargeDetailsPage chargeId="charge-1" />)
+
+    expect(await screen.findByText('Alterou: descrição, valor, campo-desconhecido')).toBeVisible()
+    expect(JSON.stringify(event)).toBe(stored)
+  })
+
   it('shows the charge details, links and history for the owner', async () => {
     renderWithProviders(<ChargeDetailsPage chargeId="charge-1" />)
 
@@ -155,7 +171,7 @@ describe('ChargeDetailsPage', () => {
   it('shows the cancellation data of a cancelled charge without actions', async () => {
     service.getCharge.mockResolvedValue(
       apiCharge({
-        status: 'CANCELADA',
+        status: 'CANCELED',
         cancelledAt: '2026-10-09T15:00:00.000Z',
         cancellationReason: 'Contrato rescindido',
       }),

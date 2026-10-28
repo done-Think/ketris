@@ -24,7 +24,7 @@ import type {
   RecoveryState,
   RecoveryTenantValues,
 } from '../types/password-recovery'
-import { AuthShell } from './AuthShell'
+import { AuthShell } from '@shared/components/layout/AuthShell'
 import { NewPasswordStep } from './NewPasswordStep'
 import { PasswordRecoveryConfirmation } from './PasswordRecoveryConfirmation'
 import { PasswordRecoveryForm } from './PasswordRecoveryForm'
@@ -33,6 +33,7 @@ import { VerificationCodeStep } from './VerificationCodeStep'
 
 export function PasswordRecoveryScreen() {
   const t = useTranslations('auth.passwordRecovery')
+  const validation = useTranslations('validation')
   const locale = useLocale() as AppLocale
   const [state, setState] = useState<RecoveryState>({
     step: 'request',
@@ -42,11 +43,11 @@ export function PasswordRecoveryScreen() {
   })
   const { requestCode, verifyCode, resetPassword, errorMessage } = usePasswordReset()
   const requestForm = useForm<PasswordRecoveryFormValues>({
-    resolver: zodResolver(createPasswordRecoverySchema((key) => t(`errors.${key}`))),
+    resolver: zodResolver(createPasswordRecoverySchema(validation)),
     defaultValues: { email: '' },
   })
   const resetForm = useForm<PasswordResetFormValues>({
-    resolver: zodResolver(createPasswordResetSchema((key) => t(`errors.${key}`))),
+    resolver: zodResolver(createPasswordResetSchema(validation)),
     defaultValues: { code: '', password: '', passwordConfirmation: '' },
   })
   const tenantForm = useForm<RecoveryTenantValues>({

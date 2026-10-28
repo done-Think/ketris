@@ -19,10 +19,10 @@ const opportunity: Opportunity = {
   proposedValue: 2500,
   contractTermMonths: null,
   desiredStartDate: null,
-  guaranteeType: 'NENHUMA',
+  guaranteeType: 'NONE',
   specialConditions: [],
   notes: null,
-  status: 'ENVIADA',
+  status: 'SENT',
   archivedAt: null,
   createdAt: new Date('2026-08-10T00:00:00.000Z'),
   updatedAt: new Date('2026-08-10T00:00:00.000Z'),
@@ -38,7 +38,7 @@ describe('AddOpportunityNoteUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       actorId: 'user-1',
       actorName: 'Ana',
       opportunityId: 'op-1',
@@ -47,7 +47,7 @@ describe('AddOpportunityNoteUseCase', () => {
 
     expect(create).toHaveBeenCalledWith({
       opportunityId: 'op-1',
-      type: 'NOTA',
+      type: 'NOTE',
       description: 'Ligou para confirmar a visita.',
       authorId: 'user-1',
       authorName: 'Ana',
@@ -65,13 +65,13 @@ describe('AddOpportunityNoteUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       opportunityId: 'op-1',
       description: 'Falou com o interessado por telefone.',
-      type: 'CONTATO_REALIZADO',
+      type: 'CONTACT_MADE',
     })
 
-    expect(create).toHaveBeenCalledWith(expect.objectContaining({ type: 'CONTATO_REALIZADO' }))
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ type: 'CONTACT_MADE' }))
   })
 
   it('lança OpportunityNotFoundError e não cria nota quando é de outro tenant', async () => {
@@ -84,7 +84,7 @@ describe('AddOpportunityNoteUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         opportunityId: 'op-1',
         description: 'x',
       }),
@@ -103,7 +103,7 @@ describe('AddOpportunityNoteUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-2',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         opportunityId: 'op-1',
         description: 'x',
       }),

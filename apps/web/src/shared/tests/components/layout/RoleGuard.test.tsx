@@ -6,7 +6,8 @@ import { RoleGuard } from '../../../components/layout/RoleGuard'
 
 const routerMock = { replace: vi.fn(), refresh: vi.fn() }
 
-vi.mock('@/i18n/navigation', () => ({
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
   useRouter: () => routerMock,
 }))
 

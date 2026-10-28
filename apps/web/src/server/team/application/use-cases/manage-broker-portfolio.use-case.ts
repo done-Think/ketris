@@ -23,7 +23,7 @@ async function assertTransferPeople(
     repository.findStaffUser(actor.actorTenantId, brokerId),
     repository.findStaffUser(actor.actorTenantId, destinationId),
   ])
-  if (!source || source.papel !== 'AGENT') throw new TeamMemberNotFoundError()
+  if (!source || source.role !== 'AGENT') throw new TeamMemberNotFoundError()
   if (
     !destination ||
     destination.id === source.id ||
@@ -84,7 +84,7 @@ export class DeactivateBrokerUseCase {
       destinationId: input.destinationId,
       items: { properties: true, leads: true, opportunities: true, futureEvents: true },
       opportunityScope: 'all',
-      reason: 'DESATIVACAO',
+      reason: 'DEACTIVATION',
       actor,
       now: this.now(),
     })
@@ -97,7 +97,7 @@ export class ActivateBrokerUseCase {
   async execute(input: BrokerInput): Promise<void> {
     assertTeamManager(input)
     const broker = await this.repository.findStaffUser(input.actorTenantId, input.brokerId)
-    if (!broker || broker.papel !== 'AGENT') throw new TeamMemberNotFoundError()
+    if (!broker || broker.role !== 'AGENT') throw new TeamMemberNotFoundError()
     await this.repository.activate(input.actorTenantId, input.brokerId, input.actorId)
   }
 }

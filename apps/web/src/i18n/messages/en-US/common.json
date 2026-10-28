@@ -152,5 +152,6 @@
     "description": "We could not verify your session. Your work has been preserved. Try again to continue.",
     "retry": "Try again",
     "retrying": "Checking session…"
-  }
+  },
+  "perMonth": "/month"
 }

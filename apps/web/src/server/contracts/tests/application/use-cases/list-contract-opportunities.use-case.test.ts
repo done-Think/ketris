@@ -9,7 +9,7 @@ describe('catálogo de oportunidades de Contracts', () => {
       await new ListContractOpportunitiesUseCase({ list }).execute({
         actorTenantId: 'agency',
         actorId: 'manager',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         search: 'Apartamento',
         page: 2,
         pageSize: 25,
@@ -28,7 +28,7 @@ describe('catálogo de oportunidades de Contracts', () => {
     await new ListContractOpportunitiesUseCase({ list }).execute({
       actorTenantId: 'agency',
       actorId: 'agent',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       page: 1,
       pageSize: 25,
     })
@@ -42,13 +42,13 @@ describe('catálogo de oportunidades de Contracts', () => {
 
   it.each(['PROPERTY_OWNER', 'RENTER'] as const)(
     'recusa o perfil %s antes de consultar dados',
-    (papel) => {
+    (role) => {
       const list = vi.fn()
       expect(() =>
         new ListContractOpportunitiesUseCase({ list }).execute({
           actorTenantId: 'agency',
           actorId: 'reader',
-          actorPapel: papel,
+          actorRole: role,
           page: 1,
           pageSize: 25,
         }),

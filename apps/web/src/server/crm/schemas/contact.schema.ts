@@ -1,12 +1,10 @@
+import { crmDateSchema } from './crm-date.schema'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
-import { crmDateSchema } from './crm-date.schema'
 import { crmEmailSchema, crmNameSchema, crmNotesSchema, crmPhoneSchema } from './crm-input.schema'
 import { crmGroupsSchema, crmListQuerySchema, crmPaginationSchema } from './pagination.schema'
 
-export const contactTypeSchema = z
-  .enum(['PROPRIETARIO', 'LOCATARIO', 'CORRETOR'])
-  .openapi('ContactType')
+export const contactTypeSchema = z.enum(['OWNER', 'RENTER', 'BROKER']).openapi('ContactType')
 
 export const contactSchema = z
   .object({
@@ -21,8 +19,8 @@ export const contactSchema = z
     notes: z.string().nullable(),
     lastInteraction: z.coerce.date().nullable(),
     archivedAt: z.coerce.date().nullable(),
-    createdAt: z.coerce.date(),
-    updatedAt: z.coerce.date(),
+    createdAt: crmDateSchema,
+    updatedAt: crmDateSchema,
   })
   .openapi('Contact')
 
@@ -62,7 +60,12 @@ export const contactResponseSchema = z.object({ contact: contactSchema }).openap
 const name = crmNameSchema
 const email = crmEmailSchema
 const phone = crmPhoneSchema.nullable()
-const avatarUrl = z.string().url('URL inválida.').nullable()
+const avatarUrl = z
+  .string()
+  .max(2048)
+  .url('URL inválida.')
+  .refine((value) => /^https?:\/\//i.test(value), 'URL inválida.')
+  .nullable()
 const notes = crmNotesSchema.nullable()
 
 export const createContactRequestSchema = z
@@ -85,7 +88,6 @@ export const patchContactRequestSchema = z
     type: contactTypeSchema.optional(),
     avatarUrl: avatarUrl.optional(),
     notes: notes.optional(),
-    lastInteraction: crmDateSchema.nullable().optional(),
   })
   .strict()
   .refine((data) => Object.values(data).some((value) => value !== undefined), {

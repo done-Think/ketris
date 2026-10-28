@@ -9,12 +9,12 @@ export async function recordMaintenanceProviderAudit(
   action: string,
   changedFields: string[],
 ) {
-  await db.atividadePrestadorManutencao.create({
+  await db.maintenanceProviderActivity.create({
     data: {
       tenantId,
-      prestadorId: providerId,
+      providerId: providerId,
       actorUserId: actor.actorId,
-      actorRole: actor.actorPapel,
+      actorRole: actor.actorRole,
       action,
       changedFields,
     },

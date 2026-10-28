@@ -13,3 +13,4 @@ cypress/screenshots
 .turbo
 .local
 apps/web/.local
+/Claude outputs/

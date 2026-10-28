@@ -14,60 +14,60 @@ describe('GET /api/marketplace/properties/[id] (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária Detalhe', slug: `mkt-detail-${randomUUID()}` },
+      data: { name: 'Imobiliária Detalhe', slug: `mkt-detail-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const responsavel = await prisma.usuario.create({
+    const responsible = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor',
+        name: 'Corretor',
         email: `corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
 
-    const published = await prisma.imovel.create({
+    const published = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: responsavel.id,
-        titulo: 'Casa publicada',
-        descricao: 'Casa ampla com quintal',
-        finalidade: 'VENDA',
-        tipo: 'CASA',
-        quartos: 3,
-        valor: 550000,
+        responsibleId: responsible.id,
+        title: 'Casa publicada',
+        description: 'Casa ampla com quintal',
+        purpose: 'SALE',
+        type: 'HOUSE',
+        bedrooms: 3,
+        price: 550000,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
-        endereco: {
+        publishedAt: new Date(),
+        address: {
           create: {
-            logradouro: 'Rua B',
-            numero: '20',
-            bairro: 'Jardim',
-            cidade: 'Curitiba',
-            estado: 'PR',
-            cep: '80010-000',
+            street: 'Rua B',
+            number: '20',
+            neighborhood: 'Jardim',
+            city: 'Curitiba',
+            state: 'PR',
+            zipCode: '80010-000',
           },
         },
-        midias: {
+        media: {
           create: [
-            { url: 'https://cdn.ketris.dev/2.jpg', tipo: 'foto', ordem: 1 },
-            { url: 'https://cdn.ketris.dev/1.jpg', tipo: 'foto', ordem: 0 },
+            { url: 'https://cdn.ketris.dev/2.jpg', type: 'PHOTO', position: 1 },
+            { url: 'https://cdn.ketris.dev/1.jpg', type: 'PHOTO', position: 0 },
           ],
         },
       },
     })
     publishedId = published.id
 
-    const draft = await prisma.imovel.create({
+    const draft = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: responsavel.id,
-        titulo: 'Casa em rascunho',
-        finalidade: 'VENDA',
-        tipo: 'CASA',
-        valor: 600000,
+        responsibleId: responsible.id,
+        title: 'Casa em rascunho',
+        purpose: 'SALE',
+        type: 'HOUSE',
+        price: 600000,
         status: 'DRAFT',
       },
     })

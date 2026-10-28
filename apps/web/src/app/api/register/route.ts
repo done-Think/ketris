@@ -17,19 +17,19 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     acceptTerms: body.acceptTerms,
   }
   const result =
-    body.profile === 'corretor' && body.agencyId
+    body.profile === 'broker' && body.agencyId
       ? await registrationContainer.registerTenantAgentUseCase.execute({
           ...details,
           agencyId: body.agencyId,
           creci: body.creci,
         })
-      : body.profile === 'locatario'
+      : body.profile === 'renter'
         ? await registrationContainer.registerRenterUseCase.execute(details)
         : await registrationContainer.registerTenantOwnerUseCase.execute({
             ...details,
             profile: body.profile,
             companyName: body.companyName,
-            ...(body.profile === 'corretor' ? { creci: body.creci } : {}),
+            ...(body.profile === 'broker' ? { creci: body.creci } : {}),
           })
 
   const response = await startEmailVerification(

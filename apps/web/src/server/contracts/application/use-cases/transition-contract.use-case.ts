@@ -7,7 +7,7 @@ export class TransitionContractUseCase {
   constructor(private readonly repository: ContractWorkflowRepository) {}
 
   execute(input: TransitionContractInput) {
-    const scope = resolveContractManageScope(input.actorId, input.actorPapel)
+    const scope = resolveContractManageScope(input.actorId, input.actorRole)
     const reason = input.reason.trim()
     if (!reason || reason.length > 10000)
       throw new AppError('Informe um motivo com até 10.000 caracteres.', {

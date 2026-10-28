@@ -27,12 +27,11 @@ export class UpdatePlatformAdminUseCase {
       }
     }
 
-    const updated = await this.platformAdminRepository.update(input.platformAdminId, {
-      nome: input.nome,
-      email: input.email,
-      role: input.role,
-      ativo: input.ativo,
-    })
+    const updated = await this.platformAdminRepository.update(
+      input.platformAdminId,
+      { name: input.name, email: input.email, role: input.role, active: input.active },
+      input.actorId,
+    )
 
     if (!updated) throw new PlatformAdminNotFoundError()
 

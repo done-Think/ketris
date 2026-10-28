@@ -1,20 +1,14 @@
 import type { MaintenanceCategory } from '@shared/lib/utils/maintenance-categories'
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 
 export type MaintenanceTicketStatus =
-  | 'ABERTO'
-  | 'EM_ANDAMENTO'
-  | 'AGUARDANDO_CONFIRMACAO'
-  | 'RESOLVIDO'
-  | 'CONTESTADO'
-  | 'CANCELADO'
-  | 'FECHADO'
+  'OPEN' | 'IN_PROGRESS' | 'AWAITING_CONFIRMATION' | 'RESOLVED' | 'DISPUTED' | 'CANCELED' | 'CLOSED'
 
 export interface MaintenanceActor {
   actorTenantId: string
   actorId: string
   actorName: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export interface MaintenanceProvider {
@@ -30,7 +24,7 @@ export interface MaintenanceReplacementRequest {
   reason: string
   requestedById: string | null
   requestedByName: string
-  status: 'PENDENTE' | 'APROVADA' | 'REJEITADA'
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
   decisionReason: string | null
   decidedByName: string | null
   decidedAt: Date | null
@@ -72,22 +66,22 @@ export interface MaintenanceContract {
 
 export interface MaintenanceOptions {
   contracts: MaintenanceContract[]
-  users: { id: string; name: string; role: Papel }[]
+  users: { id: string; name: string; role: UserRole }[]
 }
 
-export type MaintenanceTicketPriority = 'NORMAL' | 'ALTA' | 'URGENTE'
+export type MaintenanceTicketPriority = 'NORMAL' | 'HIGH' | 'URGENT'
 
 export type MaintenanceActivityType =
-  | 'NOTA'
-  | 'MUDANCA_STATUS'
-  | 'ANEXO_ADICIONADO'
-  | 'EDICAO'
-  | 'RESPONSAVEL_ALTERADO'
-  | 'PRESTADOR_ALTERADO'
-  | 'TROCA_SOLICITADA'
-  | 'TROCA_DECIDIDA'
-  | 'EXCLUSAO'
-  | 'RESTAURACAO'
+  | 'NOTE'
+  | 'STATUS_CHANGE'
+  | 'ATTACHMENT_ADDED'
+  | 'EDIT'
+  | 'RESPONSIBLE_CHANGED'
+  | 'PROVIDER_CHANGED'
+  | 'CHANGE_REQUESTED'
+  | 'CHANGE_DECIDED'
+  | 'DELETION'
+  | 'RESTORATION'
 
 export interface MaintenanceActivity {
   systemAction?: string | null
@@ -118,7 +112,7 @@ export interface MaintenanceTicket {
   responsibleId: string | null
   responsibleName: string | null
   provider: MaintenanceProvider | null
-  completedByRole: Papel | null
+  completedByRole: UserRole | null
   deletedAt: Date | null
   replacementRequests: MaintenanceReplacementRequest[]
   permissions?: MaintenancePermissions
@@ -204,7 +198,7 @@ export interface MaintenanceTicketUpdate {
 
 export interface NewMaintenanceActivity {
   systemAction?: string
-  authorRole?: Papel
+  authorRole?: UserRole
   type: MaintenanceActivityType
   message: string
   authorId: string | null
@@ -216,7 +210,7 @@ export interface MaintenanceMutation extends MaintenanceTicketUpdate {
   status?: MaintenanceTicketStatus
   responsibleId?: string
   provider?: MaintenanceProvider
-  completedByRole?: Papel | null
+  completedByRole?: UserRole | null
   completedById?: string | null
   resolvedAt?: Date | null
   deletedAt?: Date | null
@@ -242,7 +236,7 @@ export type MaintenanceAction =
     }['start' | 'complete' | 'finish' | 'confirm' | 'cancel' | 'assume' | 'restore']
   | { action: 'contest'; reason: string }
   | { action: 'linkContract'; contractId: string }
-  | { action: 'reopen'; status: 'ABERTO' | 'EM_ANDAMENTO'; reason?: string }
+  | { action: 'reopen'; status: 'OPEN' | 'IN_PROGRESS'; reason?: string }
   | { action: 'assign'; responsibleId: string }
   | { action: 'provider'; provider: MaintenanceProvider }
   | { action: 'requestReplacement'; reason: string }

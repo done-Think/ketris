@@ -1,3 +1,5 @@
+> Documento histórico. A política e a implementação atuais estão em [I18N_NEXT_INTL_DECISION.md](I18N_NEXT_INTL_DECISION.md), atualizadas em 27/10/2026. Exemplos antigos de prefixos e montagem manual de URLs não representam o código vigente.
+
 # Traduzindo o Ketris — guia de implementação
 
 Como escrever um módulo novo já traduzido: onde a frase mora, como nomear a chave, como
@@ -5,7 +7,7 @@ chamar `t()` no servidor e no cliente, e o que precisa ser registrado quando voc
 pasta dentro de `[locale]`.
 
 Este documento não cobre instalação nem configuração do next-intl — isso já está feito.
-Para o *porquê* da escolha da biblioteca, ver `I18N_NEXT_INTL_DECISION.md`.
+Para o _porquê_ da escolha da biblioteca, ver `I18N_NEXT_INTL_DECISION.md`.
 
 - **Idiomas:** pt-BR (padrão), en-US, es-ES
 - **Namespaces:** 8
@@ -37,19 +39,19 @@ Para o *porquê* da escolha da biblioteca, ver `I18N_NEXT_INTL_DECISION.md`.
 ## 1. O mapa
 
 Toda frase visível ao usuário vive em `src/i18n/messages/<locale>/<namespace>.json`.
-São 8 namespaces, e cada um existe três vezes — uma por idioma. O nome do arquivo *é* o
+São 8 namespaces, e cada um existe três vezes — uma por idioma. O nome do arquivo _é_ o
 namespace de primeiro nível.
 
-| Arquivo | Cobre | Exemplo de chave |
-| --- | --- | --- |
-| `common.json` | Metadata da aplicação, erros globais, ações compartilhadas | `common.errors.notFound` |
-| `auth.json` | Login, cadastro, recuperação de senha, backoffice auth | `auth.login.submit` |
-| `marketplace.json` | Home pública, busca, perfis públicos, detalhe de imóvel | `marketplace.searchResults.filters.title` |
-| `crm.json` | Pipeline, contatos, oportunidades, propostas | `crm.pipeline.emptyStage` |
-| `dashboard.json` | Área logada do corretor — agenda, financeiro, leads | `dashboard.finance.title` |
-| `properties.json` | Cadastro e gestão de imóveis | `properties.detail.summaryTitle` |
-| `platform.json` | Administração da plataforma — tenants, admins | `platform.forms.slugHelper` |
-| `validation.json` | Mensagens de validação — **ainda vazio**, ver [Pendências](#12-pendências-conhecidas) | — |
+| Arquivo            | Cobre                                                                                 | Exemplo de chave                          |
+| ------------------ | ------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `common.json`      | Metadata da aplicação, erros globais, ações compartilhadas                            | `common.errors.notFound`                  |
+| `auth.json`        | Login, cadastro, recuperação de senha, backoffice auth                                | `auth.login.submit`                       |
+| `marketplace.json` | Home pública, busca, perfis públicos, detalhe de imóvel                               | `marketplace.searchResults.filters.title` |
+| `crm.json`         | Pipeline, contatos, oportunidades, propostas                                          | `crm.pipeline.emptyStage`                 |
+| `dashboard.json`   | Área logada do corretor — agenda, financeiro, leads                                   | `dashboard.finance.title`                 |
+| `properties.json`  | Cadastro e gestão de imóveis                                                          | `properties.detail.summaryTitle`          |
+| `platform.json`    | Administração da plataforma — tenants, admins                                         | `platform.forms.slugHelper`               |
+| `validation.json`  | Mensagens de validação — **ainda vazio**, ver [Pendências](#12-pendências-conhecidas) | —                                         |
 
 A URL sempre carrega o prefixo do idioma: `/pt`, `/en`, `/es`. Não existe rota sem prefixo —
 `localePrefix` está em modo `always`, e o `proxy.ts` redireciona quem chegar sem ele.
@@ -66,11 +68,11 @@ permitir que alguém localize o texto na interface sem abrir o código.
 {
   "pipeline": {
     "emptyStage": "Sem oportunidades nesta etapa.",
-    "newOpportunity": "Nova Oportunidade"
+    "newOpportunity": "Nova Oportunidade",
   },
   "contacts": {
-    "propertyCount": "{count, plural, one {# imóvel} other {# imóveis}}"
-  }
+    "propertyCount": "{count, plural, one {# imóvel} other {# imóveis}}",
+  },
 }
 ```
 
@@ -114,9 +116,7 @@ código ao idioma de origem: mudar a redação em pt-BR quebra os outros dois.
 **Não faça:**
 
 ```ts
-export const priceFilterOptions = [
-  { label: 'Até R$ 6.000', max: 6000 },
-] as const
+export const priceFilterOptions = [{ label: 'Até R$ 6.000', max: 6000 }] as const
 
 // t(`options.${option.label}`) -> options.Até R$ 6.000  💥
 ```
@@ -124,14 +124,12 @@ export const priceFilterOptions = [
 **Faça:**
 
 ```ts
-export const priceFilterOptions = [
-  { label: 'upTo6000', max: 6000 },
-] as const
+export const priceFilterOptions = [{ label: 'upTo6000', max: 6000 }] as const
 
 // t(`options.${option.label}`) -> options.upTo6000  ✓
 ```
 
-Chaves em `camelCase`, em inglês, descrevendo o *papel* do texto — `emptyStage`, `upTo6000`,
+Chaves em `camelCase`, em inglês, descrevendo o _papel_ do texto — `emptyStage`, `upTo6000`,
 `withParking`. O texto exibido vive só nos arquivos de mensagem.
 
 ### Regra 3 — Chave de tradução não entra em estado visível ao usuário
@@ -151,11 +149,11 @@ Guarde o identificador no estado da seleção; renderize sempre passando por `t(
 São duas funções, escolhidas pelo tipo de componente. A diferença que importa: no servidor você
 precisa do `locale`, e ele vem de `params`, que no Next 16 é uma **Promise**.
 
-| Contexto | Função | Origem do locale |
-| --- | --- | --- |
-| Client Component (`'use client'`) | `useTranslations(ns)` | Contexto do provider |
-| Server Component / page / layout | `await getTranslations({ locale, namespace })` | `await params` |
-| `generateMetadata` | `await getTranslations({ locale, namespace })` | `await params` |
+| Contexto                          | Função                                         | Origem do locale     |
+| --------------------------------- | ---------------------------------------------- | -------------------- |
+| Client Component (`'use client'`) | `useTranslations(ns)`                          | Contexto do provider |
+| Server Component / page / layout  | `await getTranslations({ locale, namespace })` | `await params`       |
+| `generateMetadata`                | `await getTranslations({ locale, namespace })` | `await params`       |
 
 ### Client Component
 
@@ -238,13 +236,13 @@ t('propertyCount', { count: 1 }) // -> "1 imóvel"
 Toda rota da aplicação vive sob `src/app/[locale]/`, dentro de um grupo de rota que define o
 layout e o nível de acesso. O grupo entre parênteses não aparece na URL.
 
-| Grupo | Para | URL traduzida? |
-| --- | --- | --- |
-| `(public)` | Marketplace aberto — imóveis, corretores, imobiliárias | **Sim** |
-| `(auth)` | Login, cadastro, recuperação de senha | Não |
-| `(dashboard)` | Área do corretor autenticado — CRM, agenda, financeiro | Não |
-| `(admin)` | Backoffice do tenant | Não |
-| `(platform)` · `(platform-auth)` | Administração da plataforma | Não |
+| Grupo                            | Para                                                   | URL traduzida? |
+| -------------------------------- | ------------------------------------------------------ | -------------- |
+| `(public)`                       | Marketplace aberto — imóveis, corretores, imobiliárias | **Sim**        |
+| `(auth)`                         | Login, cadastro, recuperação de senha                  | Não            |
+| `(dashboard)`                    | Área do corretor autenticado — CRM, agenda, financeiro | Não            |
+| `(admin)`                        | Backoffice do tenant                                   | Não            |
+| `(platform)` · `(platform-auth)` | Administração da plataforma                            | Não            |
 
 A convenção que decide a última coluna: **rotas públicas têm o caminho traduzido porque são
 indexadas por buscadores; rotas autenticadas não.** Ninguém pesquisa no Google por
@@ -284,9 +282,7 @@ genéricos. Para rotas dinâmicas, passe o shape do param.
 ```tsx
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 
-export default async function DevelopmentPage({
-  params,
-}: LocaleRoutePageProps<{ id: string }>) {
+export default async function DevelopmentPage({ params }: LocaleRoutePageProps<{ id: string }>) {
   const { locale, id } = await params
   // ...
 }

@@ -12,7 +12,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const profile = await marketplaceContainer.getOwnBrokerProfileUseCase.execute({
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
   })
 
   return NextResponse.json({ profile }, { status: 200 })
@@ -24,7 +24,7 @@ export const PUT = withErrorHandling(async (request: NextRequest) => {
 
   const profile = await marketplaceContainer.saveBrokerProfileUseCase.execute({
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     displayName: body.displayName,
     headline: body.headline ?? null,
     bio: body.bio ?? null,

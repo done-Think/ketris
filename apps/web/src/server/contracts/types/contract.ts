@@ -1,18 +1,12 @@
 export type ContractStatus =
-  | 'RASCUNHO'
-  | 'EM_REVISAO'
-  | 'AGUARDANDO_ASSINATURA'
-  | 'ASSINADO'
-  | 'ATIVO'
-  | 'ENCERRADO'
-  | 'CANCELADO'
+  'DRAFT' | 'IN_REVIEW' | 'AWAITING_SIGNATURE' | 'SIGNED' | 'ACTIVE' | 'CLOSED' | 'CANCELED'
 
-export type ContractType = 'RESIDENCIAL' | 'COMERCIAL' | 'TEMPORADA'
+export type ContractType = 'RESIDENTIAL' | 'COMMERCIAL' | 'SEASONAL'
 
 export type AdjustmentIndex = 'IPCA' | 'IGPM' | 'INPC'
 
-export type ContractGuaranteeType = 'FIADOR' | 'CAUCAO' | 'SEGURO_FIANCA' | 'TITULO_CAPITALIZACAO'
+export type ContractGuaranteeType = 'GUARANTOR' | 'DEPOSIT' | 'SURETY_BOND' | 'CAPITALIZATION_BOND'
 
-export type ContractPartyRole = 'LOCADOR' | 'LOCATARIO' | 'FIADOR'
+export type ContractPartyRole = 'LANDLORD' | 'RENTER' | 'GUARANTOR'
 
-export type SignatureStatus = 'PENDENTE' | 'ASSINADA'
+export type SignatureStatus = 'PENDING' | 'SIGNED'

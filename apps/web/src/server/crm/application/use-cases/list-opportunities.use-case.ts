@@ -14,10 +14,10 @@ export class ListOpportunitiesUseCase {
   constructor(private readonly opportunityRepository: OpportunityRepository) {}
 
   execute(input: ListOpportunitiesInput): Promise<ListOpportunitiesOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     return this.opportunityRepository.findManyByTenant(input.actorTenantId, {
       ...input.filters,
-      responsavelId: input.actorPapel === 'AGENT' ? input.actorId : undefined,
+      responsibleId: input.actorRole === 'AGENT' ? input.actorId : undefined,
     })
   }
 }

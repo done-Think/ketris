@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@shared/types/user-role'
 
 import { DashboardOverviewPage } from '../../components/DashboardOverviewPage'
 import { dashboardService } from '../../services/dashboard-service'
@@ -10,7 +10,7 @@ import { apiAgencyOverview, apiDashboardOverview } from '../fixtures/dashboard'
 import { renderWithProviders } from '../fixtures/render'
 
 const { session } = vi.hoisted(() => ({
-  session: { tenantId: 'tenant-1', role: 'OWNER' as Papel, user: { id: 'user-1' } },
+  session: { tenantId: 'tenant-1', role: 'OWNER' as UserRole, user: { id: 'user-1' } },
 }))
 
 vi.mock('next-auth/react', () => ({
@@ -24,7 +24,7 @@ vi.mock('../../services/dashboard-service', () => ({
   dashboardService: { getOverview: vi.fn(), getAgencyOverview: vi.fn() },
 }))
 
-function renderPage(role: Papel) {
+function renderPage(role: UserRole) {
   session.role = role
   return renderWithProviders(<DashboardOverviewPage />)
 }

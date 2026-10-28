@@ -6,6 +6,10 @@ export async function recordChargeAudit(
   tx: Prisma.TransactionClient,
   record: ChargeAuditRecord,
 ): Promise<void> {
+  const authorId = record.actorType === 'SYSTEM' ? null : record.actorUserId
+  if (record.chargeId && record.action !== 'DELETED') {
+    await tx.$executeRaw`UPDATE charges SET "updatedById" = ${authorId} WHERE id = ${record.chargeId} AND "tenantId" = ${record.tenantId}`
+  }
   await tx.chargeAuditEvent.create({
     data: {
       tenantId: record.tenantId,
@@ -33,11 +37,11 @@ export async function nextChargeCode(
   await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lock}, 0))::text`
   const suffixStart = prefix.length + 1
   const rows = await tx.$queryRaw<{ max: number | bigint | null }[]>`
-    SELECT MAX(CAST(SUBSTRING("codigo" FROM ${suffixStart}::integer) AS BIGINT)) AS max
-    FROM "cobrancas"
+    SELECT MAX(CAST(SUBSTRING("code" FROM ${suffixStart}::integer) AS BIGINT)) AS max
+    FROM "charges"
     WHERE "tenantId" = ${tenantId}
-      AND "codigo" LIKE ${`${prefix}%`}
-      AND SUBSTRING("codigo" FROM ${suffixStart}::integer) ~ '^[0-9]+$'
+      AND "code" LIKE ${`${prefix}%`}
+      AND SUBSTRING("code" FROM ${suffixStart}::integer) ~ '^[0-9]+$'
   `
   const next = BigInt(rows[0]?.max ?? 0) + 1n
   return `${prefix}${String(next).padStart(4, '0')}`
@@ -47,25 +51,25 @@ export async function insertCharge(
   tx: Prisma.TransactionClient,
   data: InsertChargeData,
 ): Promise<{ id: string }> {
-  const codigo = await nextChargeCode(tx, data.tenantId)
-  const created = await tx.cobranca.create({
+  const code = await nextChargeCode(tx, data.tenantId)
+  const created = await tx.charge.create({
     data: {
       tenantId: data.tenantId,
-      contratoId: data.contractId,
-      codigo,
-      descricao: data.description,
-      tipo: data.type,
-      valor: data.amount,
-      vencimento: data.dueDate,
+      contractId: data.contractId,
+      code,
+      description: data.description,
+      type: data.type,
+      amount: data.amount,
+      dueDate: data.dueDate,
       status: data.status,
-      criadoPorId: data.createdById,
+      createdById: data.createdById,
     },
     select: { id: true },
   })
   await recordChargeAudit(tx, {
     tenantId: data.tenantId,
     chargeId: created.id,
-    chargeCode: codigo,
+    chargeCode: code,
     actorUserId: data.createdById,
     actorType: data.actorType,
     action: 'CREATED',

@@ -12,45 +12,45 @@ export function transitionContract(
   transition: ContractTransition,
 ) {
   return runManagedContractMutation(contractId, scope, async (tx, contract) => {
-    const target = transition.action === 'CANCEL' ? 'CANCELADO' : 'ENCERRADO'
+    const target = transition.action === 'CANCEL' ? 'CANCELED' : 'CLOSED'
     if (contract.status === target) return toDomainContract(contract, protector)
     assertContractTransition(contract.status, transition.action)
     const timestamp = new Date()
-    await tx.contrato.update({
+    await tx.contract.update({
       where: { id: contractId, tenantId: scope.tenantId },
       data: {
         status: target,
         ...(transition.action === 'CANCEL'
           ? {
-              canceladoEm: timestamp,
-              canceladoPorId: scope.actorId,
-              motivoCancelamento: transition.reason,
+              canceledAt: timestamp,
+              canceledById: scope.actorId,
+              cancellationReason: transition.reason,
             }
           : {
-              encerradoEm: timestamp,
-              encerradoPorId: scope.actorId,
-              motivoEncerramento: transition.reason,
+              closedAt: timestamp,
+              closedById: scope.actorId,
+              closureReason: transition.reason,
             }),
       },
     })
     if (transition.action === 'CLOSE') {
-      const others = await tx.contrato.count({
+      const others = await tx.contract.count({
         where: {
           tenantId: scope.tenantId,
-          imovelId: contract.imovelId,
+          propertyId: contract.propertyId,
           id: { not: contractId },
-          status: 'ATIVO',
+          status: 'ACTIVE',
         },
       })
       if (!others) {
-        const property = await tx.imovel.findFirst({
-          where: { id: contract.imovelId, tenantId: scope.tenantId },
-          select: { finalidade: true, status: true },
+        const property = await tx.property.findFirst({
+          where: { id: contract.propertyId, tenantId: scope.tenantId },
+          select: { purpose: true, status: true },
         })
-        if (property?.finalidade === 'ALUGUEL' && property.status !== 'SOLD')
-          await tx.imovel.update({
-            where: { id: contract.imovelId, tenantId: scope.tenantId },
-            data: { status: 'INACTIVE' },
+        if (property?.purpose === 'RENT' && property.status !== 'SOLD')
+          await tx.property.update({
+            where: { id: contract.propertyId, tenantId: scope.tenantId },
+            data: { status: 'INACTIVE', updatedById: scope.actorId },
           })
       }
     }

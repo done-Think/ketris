@@ -2,10 +2,10 @@ import type { DashboardRecentLead, DashboardRecentLeadStatus } from '../types/da
 import type { ApiDashboardLeadStage, ApiDashboardRecentLead } from '../types/service'
 
 const statusByStage: Record<ApiDashboardLeadStage, DashboardRecentLeadStatus> = {
-  NOVO: 'new',
-  EM_CONTATO: 'inProgress',
-  VISITA_MARCADA: 'qualified',
-  PROPOSTA: 'pending',
+  NEW: 'new',
+  IN_CONTACT: 'inProgress',
+  VISIT_SCHEDULED: 'qualified',
+  PROPOSAL: 'pending',
 }
 
 export function toDashboardRecentLead(lead: ApiDashboardRecentLead): DashboardRecentLead {

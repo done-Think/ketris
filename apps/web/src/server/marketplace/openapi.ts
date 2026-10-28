@@ -122,7 +122,7 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Envia uma proposta de interesse em um imóvel publicado',
     description:
       'Rota pública, sem autenticação (o interessado não precisa ter conta). Cria uma oportunidade ' +
-      '(lead) no CRM do tenant dono do imóvel, com status ENVIADA, vinculada ao imóvel e aos dados de ' +
+      '(lead) no CRM do tenant dono do imóvel, com status SENT, vinculada ao imóvel e aos dados de ' +
       'contato do interessado. Quando o valor proposto é omitido, assume o valor anunciado do imóvel.',
     request: {
       params: propertyIdParamsSchema,
@@ -137,6 +137,16 @@ export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
       },
       400: {
         description: 'Corpo da requisição inválido (falha de validação Zod).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      429: {
+        description:
+          'Limite por cliente ou por imóvel e e-mail excedido. Retry-After indica quando tentar novamente.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      503: {
+        description:
+          'Contador compartilhado temporariamente indisponível; nenhuma proposta é aceita sem a verificação.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {

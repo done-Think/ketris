@@ -6,7 +6,7 @@ export class ListContractHistoryUseCase {
   constructor(private readonly repository: ContractWorkflowRepository) {}
 
   execute(input: ListContractHistoryInput) {
-    const scope = resolveContractReadScope(input.actorTenantId, input.actorId, input.actorPapel)
+    const scope = resolveContractReadScope(input.actorTenantId, input.actorId, input.actorRole)
     return this.repository.history(input.contractId, scope, input.page, input.pageSize)
   }
 }

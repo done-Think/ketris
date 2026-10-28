@@ -42,10 +42,11 @@ export function EditPropertyForm({ property }: EditPropertyFormProps) {
     () => createDashboardPropertySchema((key) => stepsT(`errors.${key}`)),
     [stepsT],
   )
-  const { control, handleSubmit, trigger, setValue } = useForm<CreateDashboardPropertyFormValues>({
-    defaultValues: buildEditPropertyFormValues(property),
-    resolver: zodResolver(propertySchema),
-  })
+  const { control, handleSubmit, trigger, setValue, getValues } =
+    useForm<CreateDashboardPropertyFormValues>({
+      defaultValues: buildEditPropertyFormValues(property),
+      resolver: zodResolver(propertySchema),
+    })
   const wizard = usePropertyFormWizard({
     trigger,
     isUploading,
@@ -86,6 +87,8 @@ export function EditPropertyForm({ property }: EditPropertyFormProps) {
       onSubmit={handleSubmit(handleEditSubmit, wizard.showErrors)}
     >
       <CreatePropertyStepFields
+        getValues={getValues}
+        setValue={setValue}
         onAddressChange={() => {
           setValue('latitude', null, { shouldDirty: true })
           setValue('longitude', null, { shouldDirty: true })

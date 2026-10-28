@@ -19,7 +19,6 @@ import {
   Stepper,
   Typography,
 } from '@mui/material'
-import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { Fragment, useMemo } from 'react'
@@ -30,7 +29,7 @@ import { useLeadWizard } from '../hooks/use-lead-wizard'
 import { useCreateLead } from '../hooks/use-leads'
 import { createLeadDefaultValues, createLeadSchema } from '../schemas/create-lead-schema'
 import type { CreateLeadDialogProps, CreateLeadFormValues } from '../types/lead'
-import { errorMessage } from '../utils/error-message'
+import { extractErrorMessage } from '@shared/utils/error-message'
 import { CreateLeadContactStep } from './create-lead-dialog/CreateLeadContactStep'
 import { CreateLeadInterestStep } from './create-lead-dialog/CreateLeadInterestStep'
 import { CreateLeadReviewStep } from './create-lead-dialog/CreateLeadReviewStep'
@@ -46,9 +45,7 @@ export function CreateLeadDialog(props: CreateLeadDialogProps) {
 function CreateLeadForm({ onClose, open }: CreateLeadDialogProps) {
   const t = useTranslations('crm.leads')
   const { enqueueSnackbar } = useSnackbar()
-  const { data: session } = useSession()
-  const tenantId = session?.tenantId ?? ''
-  const createLead = useCreateLead(tenantId)
+  const createLead = useCreateLead()
   const leadSchema = useMemo(() => createLeadSchema((key) => t(`create.errors.${key}`)), [t])
   const { control, handleSubmit, trigger } = useForm<CreateLeadFormValues>({
     defaultValues: createLeadDefaultValues,
@@ -99,7 +96,7 @@ function CreateLeadForm({ onClose, open }: CreateLeadDialogProps) {
           handleClose()
         },
         onError: (error) => {
-          enqueueSnackbar(errorMessage(error, t('create.error')), { variant: 'error' })
+          enqueueSnackbar(extractErrorMessage(error, t('create.error')), { variant: 'error' })
         },
       },
     )

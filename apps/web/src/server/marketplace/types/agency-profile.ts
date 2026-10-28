@@ -3,7 +3,7 @@ export type AgencyProfileStatus = 'DRAFT' | 'PUBLISHED'
 export interface AgencyListingSummary {
   id: string
   title: string
-  purpose: 'ALUGUEL' | 'VENDA' | 'AMBOS'
+  purpose: 'RENT' | 'SALE' | 'BOTH'
   price: number
   neighborhood: string | null
   city: string | null
@@ -11,7 +11,7 @@ export interface AgencyListingSummary {
 }
 
 export interface AgencyTeamHighlight {
-  usuarioId: string
+  userId: string
   name: string
   avatarUrl: string | null
   order: number
@@ -49,7 +49,7 @@ export interface AgencyProfile {
 }
 
 export interface AgencyProfileTeamMemberInput {
-  usuarioId: string
+  userId: string
   order: number
 }
 

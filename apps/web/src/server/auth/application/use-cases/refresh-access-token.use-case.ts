@@ -6,7 +6,7 @@ import {
   hashRefreshToken,
   refreshTokenExpiryDate,
 } from '../../domain/refresh-token'
-import { toAuthenticatedUser } from '../../domain/user.entity'
+import { toAuthenticatedUser } from '../authenticated-user'
 import { assertUserCanAuthenticate } from '../../domain/user-access-policy'
 import type { RefreshTokenRepository } from '../ports/refresh-token-repository.port'
 import type { TokenService } from '../ports/token-service.port'

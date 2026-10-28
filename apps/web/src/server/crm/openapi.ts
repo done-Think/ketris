@@ -164,10 +164,10 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Cria uma oportunidade manualmente',
     description:
       'Requer autenticação (Bearer). Para leads que chegam fora do formulário público do marketplace ' +
-      '(ex.: telefone, WhatsApp). `imovelId` precisa pertencer ao tenant do ator (404 caso contrário); ' +
-      'se `contatoId` for informado, também precisa pertencer ao tenant. Nasce em RASCUNHO por padrão ' +
-      '(prospecção) — pode nascer em ENVIADA quando o corretor está registrando uma proposta já feita ' +
-      'fora do sistema. Não aceita ACEITA/EM_NEGOCIACAO/RECUSADA como estado inicial: essas transições ' +
+      '(ex.: telefone, WhatsApp). `propertyId` precisa pertencer ao tenant do ator (404 caso contrário); ' +
+      'se `contactId` for informado, também precisa pertencer ao tenant. Nasce em DRAFT por padrão ' +
+      '(prospecção) — pode nascer em SENT quando o corretor está registrando uma proposta já feita ' +
+      'fora do sistema. Não aceita ACCEPTED/IN_NEGOTIATION/REJECTED como estado inicial: essas transições ' +
       'só acontecem através da timeline (PATCH ou /respond). Um ator com papel AGENT só pode criar ' +
       'oportunidades em imóveis dos quais é responsável (403 caso contrário); gestores da imobiliária podem ' +
       'usar qualquer imóvel do tenant.',
@@ -300,9 +300,9 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
     summary: 'Responde a uma proposta: aceitar, recusar ou pedir mais informações',
     description:
       'Requer autenticação (Bearer). É a decisão do corretor sobre a proposta recebida — só uma ' +
-      'oportunidade em ENVIADA, EM_NEGOCIACAO ou RECUSADA pode ser respondida (RASCUNHO ainda não foi ' +
-      'enviada; ACEITA já teve desfecho e é pré-requisito para o Contrato). A resposta é registrada ' +
-      'na timeline da oportunidade como uma atividade PROPOSTA_RESPONDIDA.',
+      'oportunidade em SENT, IN_NEGOTIATION ou REJECTED pode ser respondida (DRAFT ainda não foi ' +
+      'enviada; ACCEPTED já teve desfecho e é pré-requisito para o Contrato). A resposta é registrada ' +
+      'na timeline da oportunidade como uma atividade PROPOSAL_ANSWERED.',
     security: [{ bearerAuth: [] }],
     request: {
       params: opportunityIdParamsSchema,
@@ -327,7 +327,7 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
       },
       409: {
         description:
-          'A oportunidade não está num status respondível (ex.: já ACEITA, ou ainda RASCUNHO).',
+          'A oportunidade não está num status respondível (ex.: já ACCEPTED, ou ainda DRAFT).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
@@ -569,7 +569,7 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
     request: { body: { content: { 'application/json': { schema: createLeadRequestSchema } } } },
     responses: {
       201: {
-        description: 'Lead criado, em estágio NOVO.',
+        description: 'Lead criado, em estágio NEW.',
         content: { 'application/json': { schema: leadResponseSchema } },
       },
       400: {
@@ -652,9 +652,9 @@ export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
     tags: ['CRM'],
     summary: 'Converte um lead numa Oportunidade formal',
     description:
-      'Requer autenticação (Bearer). Cria uma Oportunidade em RASCUNHO a partir do lead (nome/e-mail/' +
+      'Requer autenticação (Bearer). Cria uma Oportunidade em DRAFT a partir do lead (nome/e-mail/' +
       'telefone e observações são copiados), vinculando o imóvel e o valor informados — os dois dados ' +
-      'que um lead ainda não tem. O lead passa para o estágio PROPOSTA e fica vinculado à oportunidade ' +
+      'que um lead ainda não tem. O lead passa para o estágio PROPOSAL e fica vinculado à oportunidade ' +
       'criada; não pode ser convertido de novo (409). `propertyId` precisa pertencer ao tenant do ator ' +
       '(404 caso contrário); um AGENT só pode converter usando um imóvel do qual é responsável (403).',
     security: [{ bearerAuth: [] }],

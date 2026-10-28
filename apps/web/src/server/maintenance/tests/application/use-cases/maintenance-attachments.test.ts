@@ -20,7 +20,7 @@ describe('Maintenance attachments', () => {
     }
     await expect(
       new UploadMaintenanceTicketAttachmentUseCase(
-        repository({ status: 'RESOLVIDO' }),
+        repository({ status: 'RESOLVED' }),
         storage,
       ).execute(input),
     ).rejects.toBeInstanceOf(ConflictError)

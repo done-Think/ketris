@@ -1,10 +1,10 @@
-export type ChargeType = 'A_RECEBER' | 'A_PAGAR'
+export type ChargeType = 'RECEIVABLE' | 'PAYABLE'
 
-export type StoredChargeStatus = 'PENDENTE' | 'PAGA' | 'AGENDADA' | 'CANCELADA'
+export type StoredChargeStatus = 'PENDING' | 'PAID' | 'SCHEDULED' | 'CANCELED'
 
-export type ChargeStatus = StoredChargeStatus | 'ATRASADA'
+export type ChargeStatus = StoredChargeStatus | 'OVERDUE'
 
-export type NewChargeStatus = Extract<StoredChargeStatus, 'PENDENTE' | 'AGENDADA'>
+export type NewChargeStatus = Extract<StoredChargeStatus, 'PENDING' | 'SCHEDULED'>
 
 export type ChargeAuditAction =
   'CREATED' | 'UPDATED' | 'PAYMENT_REGISTERED' | 'PAYMENT_REVERSED' | 'CANCELLED' | 'DELETED'

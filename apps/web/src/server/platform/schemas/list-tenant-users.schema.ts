@@ -1,5 +1,5 @@
 import '@server/openapi/zod-extend'
-import { authenticatedUserSchema } from '@server/auth/schemas/user.schema'
+import { authenticatedUserResponseSchema } from '@server/auth/schemas/user.schema'
 import { z } from 'zod'
 
 import { platformPageFields, platformPageQueryFields } from './list-tenants.schema'
@@ -11,7 +11,7 @@ export const listTenantUsersQuerySchema = z
 
 export const listTenantUsersResponseSchema = z
   .object({
-    users: z.array(authenticatedUserSchema),
+    users: z.array(authenticatedUserResponseSchema),
     ...platformPageFields,
   })
   .openapi('ListTenantUsersResponse')

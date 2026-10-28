@@ -68,7 +68,7 @@ function createFinancialSummaryProvider(
 describe('GetAgencyOverviewUseCase', () => {
   it.each(['OWNER'] as const)(
     'combines the real financial summary use case for %s',
-    async (actorPapel) => {
+    async (actorRole) => {
       const getSummary = vi.fn().mockResolvedValue({
         monthlyReceivable: 8500,
         overdueTotal: 0,
@@ -99,7 +99,7 @@ describe('GetAgencyOverviewUseCase', () => {
         new GetFinancialSummaryUseCase(chargeRepository),
       )
 
-      const overview = await useCase.execute({ actorTenantId: 'tenant-1', actorPapel })
+      const overview = await useCase.execute({ actorTenantId: 'tenant-1', actorRole })
 
       expect(overview.kpis.monthlyReceivable).toBe(8500)
       expect(overview.revenueSeries).toEqual([{ year: 2026, month: 9, total: 8500 }])
@@ -114,7 +114,7 @@ describe('GetAgencyOverviewUseCase', () => {
     )
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'AGENT' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
   })
 
@@ -125,7 +125,7 @@ describe('GetAgencyOverviewUseCase', () => {
     )
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'RENTER' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'RENTER' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
   })
 
@@ -134,7 +134,7 @@ describe('GetAgencyOverviewUseCase', () => {
     const financialSummaryProvider = createFinancialSummaryProvider()
     const useCase = new GetAgencyOverviewUseCase(repository, financialSummaryProvider)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' })
+    const result = await useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER' })
 
     expect(result).toEqual({
       kpis: {
@@ -154,7 +154,7 @@ describe('GetAgencyOverviewUseCase', () => {
     })
     expect(financialSummaryProvider.execute).toHaveBeenCalledWith({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
     })
   })
 
@@ -163,7 +163,7 @@ describe('GetAgencyOverviewUseCase', () => {
     const financialSummaryProvider = createFinancialSummaryProvider()
     const useCase = new GetAgencyOverviewUseCase(repository, financialSummaryProvider)
 
-    await useCase.execute({ actorTenantId: 'tenant-2', actorPapel: 'OWNER' })
+    await useCase.execute({ actorTenantId: 'tenant-2', actorRole: 'OWNER' })
 
     expect(repository.getPortfolioCount).toHaveBeenCalledWith('tenant-2')
     expect(repository.getActiveBrokersCount).toHaveBeenCalledWith('tenant-2')
@@ -182,7 +182,7 @@ describe('GetAgencyOverviewUseCase', () => {
     expect(repository.getRecentActivities).toHaveBeenCalledWith('tenant-2')
     expect(financialSummaryProvider.execute).toHaveBeenCalledWith({
       actorTenantId: 'tenant-2',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
     })
   })
 
@@ -190,7 +190,7 @@ describe('GetAgencyOverviewUseCase', () => {
     const repository = createRepository()
     const useCase = new GetAgencyOverviewUseCase(repository, createFinancialSummaryProvider())
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER' })
 
     const referenceDate = vi.mocked(repository.getReceivedLeadsThisMonth).mock.calls[0][1]
     expect(vi.mocked(repository.getReceivedLeadsPreviousPeriod).mock.calls[0][1]).toBe(

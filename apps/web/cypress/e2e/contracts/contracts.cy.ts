@@ -113,17 +113,17 @@ describe('Contracts — fluxos reais com documentos privados', () => {
       upload('Atualizado.pdf')
       registerSignature().its('response.statusCode').should('eq', 200)
       cy.contains('button', 'Editar').should('not.exist')
-      registerSignature().its('response.body.contract.status').should('eq', 'ATIVO')
+      registerSignature().its('response.body.contract.status').should('eq', 'ACTIVE')
       cy.contains('Registro manual').should('be.visible')
       cy.contains('button', 'Encerrar contrato').click()
       cy.get('[role="dialog"]').find('textarea[name="reason"]').type('Locação concluída no teste')
       cy.get('[role="dialog"]').contains('button', 'Confirmar').click()
-      cy.wait('@closeContract').its('response.body.contract.status').should('eq', 'ENCERRADO')
+      cy.wait('@closeContract').its('response.body.contract.status').should('eq', 'CLOSED')
       cy.contains('Contrato encerrado').should('be.visible')
       cy.task<ContractEvidenceResult>('readContractEvidence', contractId, { log: false }).then(
         (result) => {
           expect(result).to.include({
-            status: 'ENCERRADO',
+            status: 'CLOSED',
             propertyStatus: 'INACTIVE',
             chargeCount: 1,
             protectedCpfs: true,
@@ -169,7 +169,7 @@ describe('Contracts — fluxos reais com documentos privados', () => {
       cy.get('[role="dialog"]').contains('button', 'Confirmar').click()
       cy.wait('@cancelContract').then(({ response }) => {
         expect(response?.statusCode).to.eq(200)
-        expect(response?.body.contract.status).to.eq('CANCELADO')
+        expect(response?.body.contract.status).to.eq('CANCELED')
         expect(response?.body.contract.cancellationReason).to.eq('Proposta cancelada')
       })
       cy.contains('Contrato cancelado').should('be.visible')

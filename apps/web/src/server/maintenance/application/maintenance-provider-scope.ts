@@ -11,10 +11,10 @@ export async function maintenanceProviderTenant(
   ticketId?: string,
 ) {
   if (!ticketId) {
-    if (!isAgencyManager(actor.actorPapel)) throw new ForbiddenError()
+    if (!isAgencyManager(actor.actorRole)) throw new ForbiddenError()
     return actor.actorTenantId
   }
   const ticket = await loadTicket(repository, actor, ticketId)
-  if (!isAgencyManager(actor.actorPapel)) assertCanDefineProvider(actor, ticket)
+  if (!isAgencyManager(actor.actorRole)) assertCanDefineProvider(actor, ticket)
   return ticket.tenantId
 }

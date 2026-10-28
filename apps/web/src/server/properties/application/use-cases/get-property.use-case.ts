@@ -12,18 +12,18 @@ export class GetPropertyUseCase {
     const property = await this.propertyRepository.findByTenantAndId(
       input.actorTenantId,
       input.id,
-      input.actorPapel === 'RENTER' ? input.actorId : undefined,
-      input.actorPapel === 'PROPERTY_OWNER' ? input.actorId : undefined,
+      input.actorRole === 'RENTER' ? input.actorId : undefined,
+      input.actorRole === 'PROPERTY_OWNER' ? input.actorId : undefined,
     )
 
     if (!property) {
       throw new PropertyNotFoundError()
     }
 
-    if (isAgencyStaff(input.actorPapel) || isPropertyOwner(input.actorPapel)) {
-      assertPropertyAccess(property, input.actorId, input.actorPapel)
+    if (isAgencyStaff(input.actorRole) || isPropertyOwner(input.actorRole)) {
+      assertPropertyAccess(property, input.actorId, input.actorRole)
     }
 
-    return input.actorPapel === 'RENTER' ? { ...property, activeContractId: null } : property
+    return input.actorRole === 'RENTER' ? { ...property, activeContractId: null } : property
   }
 }

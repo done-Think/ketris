@@ -1,3 +1,4 @@
+import type { TranslationKey } from '@/i18n/types/messages.types'
 import { brand, supportColor } from '@shared/theme/tokens'
 
 import type {
@@ -23,34 +24,34 @@ export const newChargeStatuses: NewChargeStatus[] = ['pending', 'scheduled']
 export const chargeDirections: ChargeDirection[] = ['receivable', 'payable']
 
 export const apiStatusToUi: Record<ApiChargeStatus, ChargeStatus> = {
-  PENDENTE: 'pending',
-  PAGA: 'paid',
-  ATRASADA: 'overdue',
-  AGENDADA: 'scheduled',
-  CANCELADA: 'cancelled',
+  PENDING: 'pending',
+  PAID: 'paid',
+  OVERDUE: 'overdue',
+  SCHEDULED: 'scheduled',
+  CANCELED: 'cancelled',
 }
 
 export const uiStatusToApi: Record<ChargeStatus, ApiChargeStatus> = {
-  pending: 'PENDENTE',
-  paid: 'PAGA',
-  overdue: 'ATRASADA',
-  scheduled: 'AGENDADA',
-  cancelled: 'CANCELADA',
+  pending: 'PENDING',
+  paid: 'PAID',
+  overdue: 'OVERDUE',
+  scheduled: 'SCHEDULED',
+  cancelled: 'CANCELED',
 }
 
 export const newStatusToApi: Record<NewChargeStatus, ApiNewChargeStatus> = {
-  pending: 'PENDENTE',
-  scheduled: 'AGENDADA',
+  pending: 'PENDING',
+  scheduled: 'SCHEDULED',
 }
 
 export const apiTypeToDirection: Record<ApiChargeType, ChargeDirection> = {
-  A_RECEBER: 'receivable',
-  A_PAGAR: 'payable',
+  RECEIVABLE: 'receivable',
+  PAYABLE: 'payable',
 }
 
 export const directionToApiType: Record<ChargeDirection, ApiChargeType> = {
-  receivable: 'A_RECEBER',
-  payable: 'A_PAGAR',
+  receivable: 'RECEIVABLE',
+  payable: 'PAYABLE',
 }
 
 export const chargeStatusStyles: Record<ChargeStatus, ChargeStatusStyle> = {
@@ -61,7 +62,7 @@ export const chargeStatusStyles: Record<ChargeStatus, ChargeStatusStyle> = {
   cancelled: { bgcolor: brand.neutral[100], color: brand.neutral[500] },
 }
 
-export const chargeErrorKeys: Record<string, string> = {
+export const chargeErrorKeys: Record<string, TranslationKey<'charges.errors'>> = {
   CHARGE_NOT_FOUND: 'notFound',
   CHARGE_CONTRACT_NOT_FOUND: 'contractNotFound',
   CHARGE_ALREADY_SETTLED: 'alreadySettled',

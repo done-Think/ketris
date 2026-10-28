@@ -4,7 +4,7 @@ import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { EmailAlreadyInUseError } from '../../domain/errors'
-import { toAuthenticatedUser } from '../../domain/user.entity'
+import { toAuthenticatedUser } from '../authenticated-user'
 import type { PasswordHasher } from '../ports/password-hasher.port'
 import type { UserRepository } from '../ports/user-repository.port'
 
@@ -15,7 +15,7 @@ export class CreateUserUseCase {
   ) {}
 
   async execute(input: CreateUserInput): Promise<CreateUserOutput> {
-    if (!isAgencyManager(input.actorPapel)) {
+    if (!isAgencyManager(input.actorRole)) {
       throw new ForbiddenError('Apenas a gestão da imobiliária pode criar usuários.')
     }
 
@@ -25,15 +25,15 @@ export class CreateUserUseCase {
       throw new EmailAlreadyInUseError()
     }
 
-    const senhaHash = await this.passwordHasher.hash(input.password)
+    const passwordHash = await this.passwordHasher.hash(input.password)
 
     const created = await this.userRepository.create({
       tenantId: input.actorTenantId,
       auditActor: { kind: 'USER', id: input.actorId },
-      nome: input.nome,
+      name: input.name,
       email: input.email,
-      senhaHash,
-      papel: input.papel,
+      passwordHash,
+      role: input.role,
     })
 
     return toAuthenticatedUser(created)

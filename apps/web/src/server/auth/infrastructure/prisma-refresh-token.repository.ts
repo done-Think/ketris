@@ -16,8 +16,8 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
 
     return prisma.$transaction(async (transaction) => {
       const [account] = await transaction.$queryRaw<RefreshTokenAccountState[]>`
-        SELECT "ativo" AS "active", "versaoSessao" AS "sessionVersion"
-        FROM "usuarios" WHERE "id" = ${previous.userId} AND "tenantId" = ${previous.tenantId}
+        SELECT "active" AS "active", "sessionVersion" AS "sessionVersion"
+        FROM "users" WHERE "id" = ${previous.userId} AND "tenantId" = ${previous.tenantId}
         FOR UPDATE
       `
       if (!account?.active || account.sessionVersion !== input.expectedSessionVersion) return false

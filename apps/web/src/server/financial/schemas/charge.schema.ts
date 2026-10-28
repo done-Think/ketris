@@ -1,16 +1,16 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-export const chargeTypeSchema = z.enum(['A_RECEBER', 'A_PAGAR'])
+export const chargeTypeSchema = z.enum(['RECEIVABLE', 'PAYABLE'])
 
 export const chargeStatusSchema = z
-  .enum(['PENDENTE', 'PAGA', 'ATRASADA', 'AGENDADA', 'CANCELADA'])
+  .enum(['PENDING', 'PAID', 'OVERDUE', 'SCHEDULED', 'CANCELED'])
   .openapi({
     description:
-      'ATRASADA não é gravada: é calculada para PENDENTE ou AGENDADA com vencimento antes de hoje (America/Sao_Paulo).',
+      'OVERDUE não é gravada: é calculada para PENDING ou SCHEDULED com vencimento antes de hoje (America/Sao_Paulo).',
   })
 
-export const storedChargeStatusSchema = z.enum(['PENDENTE', 'PAGA', 'AGENDADA', 'CANCELADA'])
+export const storedChargeStatusSchema = z.enum(['PENDING', 'PAID', 'SCHEDULED', 'CANCELED'])
 
 export const chargeReceiptSchema = z
   .object({
@@ -22,7 +22,7 @@ export const chargeReceiptSchema = z
   })
   .openapi('ChargeReceipt')
 
-export const newChargeStatusSchema = z.enum(['PENDENTE', 'AGENDADA'])
+export const newChargeStatusSchema = z.enum(['PENDING', 'SCHEDULED'])
 
 export const chargeSchema = z
   .object({
@@ -120,11 +120,11 @@ export const chargeResponseSchema = z.object({ charge: chargeSchema }).openapi('
 export const chargeStatusCountsSchema = z
   .object({
     ALL: z.number().int(),
-    PENDENTE: z.number().int(),
-    ATRASADA: z.number().int(),
-    PAGA: z.number().int(),
-    AGENDADA: z.number().int(),
-    CANCELADA: z.number().int(),
+    PENDING: z.number().int(),
+    OVERDUE: z.number().int(),
+    PAID: z.number().int(),
+    SCHEDULED: z.number().int(),
+    CANCELED: z.number().int(),
   })
   .openapi('ChargeStatusCounts', {
     description: 'Contagem por status com os mesmos filtros da lista, exceto o próprio status.',

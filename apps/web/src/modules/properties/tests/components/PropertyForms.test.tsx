@@ -53,10 +53,14 @@ function render(ui: ReactElement) {
     ),
   })
 }
-vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ push: state.push }) }))
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+  useRouter: () => ({ push: state.push }),
+}))
 vi.mock('next-auth/react', () => ({ useSession: () => ({ data: { role: 'OWNER' } }) }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar: state.notify }) }))
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   notFound: () => {
     throw new Error('NOT_FOUND')
   },
@@ -166,7 +170,7 @@ describe('property forms', () => {
     expect(screen.queryByLabelText('Valor do aluguel')).not.toBeInTheDocument()
     expect(state.create).not.toHaveBeenCalled()
     await act(async () =>
-      finishUpload({ url: '/api/properties/media/properties/tenant-1/slow.png', type: 'foto' }),
+      finishUpload({ url: '/api/properties/media/properties/tenant-1/slow.png', type: 'photo' }),
     )
     await waitFor(() => expect(screen.getByRole('button', { name: 'Próximo' })).toBeEnabled())
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
@@ -183,7 +187,7 @@ describe('property forms', () => {
         price: 2500.5,
         purpose: 'RENT',
         media: [
-          { url: '/api/properties/media/properties/tenant-1/slow.png', type: 'foto', order: 0 },
+          { url: '/api/properties/media/properties/tenant-1/slow.png', type: 'photo', order: 0 },
         ],
       }),
     )
@@ -251,7 +255,7 @@ describe('property forms', () => {
     expect(state.update).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: 'Próximo' })).toBeDisabled()
     await act(async () =>
-      finishUpload({ url: '/api/properties/media/properties/tenant-1/slow.png', type: 'foto' }),
+      finishUpload({ url: '/api/properties/media/properties/tenant-1/slow.png', type: 'photo' }),
     )
     await waitFor(() =>
       expect(screen.getAllByRole('button', { name: /Publicação/ })[0]).toBeEnabled(),

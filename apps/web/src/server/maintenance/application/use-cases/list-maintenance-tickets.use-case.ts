@@ -8,7 +8,7 @@ export class ListMaintenanceTicketsUseCase {
   async execute(filters: MaintenanceTicketListFilters) {
     if (
       filters.tenantId !== filters.actor.actorTenantId ||
-      (filters.archived && !isAgencyManager(filters.actor.actorPapel))
+      (filters.archived && !isAgencyManager(filters.actor.actorRole))
     )
       throw new ForbiddenError()
     return this.repository.findMany(filters)

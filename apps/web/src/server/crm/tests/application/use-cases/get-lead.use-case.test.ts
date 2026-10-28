@@ -10,14 +10,14 @@ import type { Lead } from '../../../domain/lead.entity'
 const lead: Lead = {
   id: 'lead-1',
   tenantId: 'tenant-1',
-  responsavelId: 'agent-1',
+  responsibleId: 'agent-1',
   name: 'Maria Souza',
   phone: '(11) 99999-0000',
   email: null,
   interest: 'Apartamento',
   budget: 'Até R$ 3.000',
   source: 'WHATSAPP',
-  stage: 'NOVO',
+  stage: 'NEW',
   notes: null,
   opportunityId: null,
   createdAt: new Date('2026-09-21T00:00:00.000Z'),
@@ -33,7 +33,7 @@ describe('GetLeadUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'agent-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       leadId: 'lead-1',
     })
 
@@ -49,7 +49,7 @@ describe('GetLeadUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         leadId: 'lead-1',
       }),
     ).rejects.toThrow(LeadNotFoundError)
@@ -64,7 +64,7 @@ describe('GetLeadUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-2',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         leadId: 'lead-1',
       }),
     ).rejects.toThrow(LeadNotFoundError)
@@ -78,14 +78,14 @@ describe('GetLeadUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'admin-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       leadId: 'lead-1',
     })
 
     expect(result).toEqual(lead)
   })
 
-  it.each(['RENTER', 'PROPERTY_OWNER'] as const)('%s não acessa o CRM', async (actorPapel) => {
+  it.each(['RENTER', 'PROPERTY_OWNER'] as const)('%s não acessa o CRM', async (actorRole) => {
     const findById = vi.fn().mockResolvedValue(lead)
     const repository = { findById } as unknown as LeadRepository
     const useCase = new GetLeadUseCase(repository)
@@ -94,7 +94,7 @@ describe('GetLeadUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'external-1',
-        actorPapel,
+        actorRole,
         leadId: 'lead-1',
       }),
     ).rejects.toThrow(ForbiddenError)

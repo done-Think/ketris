@@ -20,58 +20,58 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
     vi.setSystemTime(new Date('2031-10-01T09:00:00.000Z'))
 
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Agenda Reschedule', slug: `agenda-reschedule-${randomUUID()}` },
+      data: { name: 'Tenant Agenda Reschedule', slug: `agenda-reschedule-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor Agenda',
+        name: 'Corretor Agenda',
         email: `corretor-agenda-reschedule-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const event = await prisma.eventoAgenda.create({
+    const event = await prisma.agendaEvent.create({
       data: {
         tenantId,
-        responsavelId: actorId,
-        criadoPorId: actorId,
-        titulo: 'Visita para reagendar',
-        tipo: 'VISIT',
-        referenciaImovelLivre: 'Apto teste',
+        responsibleId: actorId,
+        createdById: actorId,
+        title: 'Visita para reagendar',
+        type: 'VISIT',
+        freeFormPropertyReference: 'Apto teste',
         status: 'PENDING',
-        inicio: new Date('2031-10-12T13:00:00.000Z'),
-        fim: new Date('2031-10-12T14:00:00.000Z'),
-        participanteNome: 'Ana',
-        participanteTelefone: '11999990000',
+        start: new Date('2031-10-12T13:00:00.000Z'),
+        end: new Date('2031-10-12T14:00:00.000Z'),
+        participantName: 'Ana',
+        participantPhone: '11999990000',
       },
     })
     eventId = event.id
 
-    await prisma.eventoAgenda.create({
+    await prisma.agendaEvent.create({
       data: {
         tenantId,
-        responsavelId: actorId,
-        criadoPorId: actorId,
-        titulo: 'Outro evento do mesmo responsável',
-        referenciaImovelLivre: 'Apto teste 2',
-        inicio: new Date('2031-10-13T13:00:00.000Z'),
-        fim: new Date('2031-10-13T13:30:00.000Z'),
-        participanteNome: 'Bruno',
-        participanteTelefone: '11988880000',
+        responsibleId: actorId,
+        createdById: actorId,
+        title: 'Outro evento do mesmo responsável',
+        freeFormPropertyReference: 'Apto teste 2',
+        start: new Date('2031-10-13T13:00:00.000Z'),
+        end: new Date('2031-10-13T13:30:00.000Z'),
+        participantName: 'Bruno',
+        participantPhone: '11988880000',
       },
     })
   })

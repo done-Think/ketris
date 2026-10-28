@@ -11,7 +11,7 @@ export class ListMaintenanceProvidersUseCase {
     private readonly tickets: MaintenanceTicketRepository,
   ) {}
   async execute(input: ListMaintenanceProvidersInput) {
-    if (input.includeInactive && !isAgencyManager(input.actorPapel)) throw new ForbiddenError()
+    if (input.includeInactive && !isAgencyManager(input.actorRole)) throw new ForbiddenError()
     const tenantId = await maintenanceProviderTenant(this.tickets, input, input.ticketId)
     return this.repository.list(tenantId, input)
   }

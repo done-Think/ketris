@@ -26,14 +26,14 @@ export class RescheduleAgendaEventUseCase {
     if (!existing) {
       throw new AgendaEventNotFoundError()
     }
-    assertCanManageAgendaEvent(input.actorPapel, input.actorUserId, existing)
+    assertCanManageAgendaEvent(input.actorRole, input.actorUserId, existing)
 
     const schedule = await validateAgendaSchedule(this.agendaEventRepository, existing, input)
 
     const propertySummary = await prepareAgendaPropertySummary(
       this.propertyCatalog,
       input,
-      existing.imovelId,
+      existing.propertyId,
     )
 
     const event = await this.agendaEventRepository.reschedule(

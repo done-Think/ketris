@@ -13,8 +13,8 @@ import {
 } from './format-property'
 
 const mediaKindByType: Record<string, DashboardProperty['media'][number]['kind']> = {
-  foto: 'photo',
-  planta: 'floorPlan',
+  photo: 'photo',
+  floorPlan: 'floorPlan',
   video: 'video',
 }
 
@@ -35,29 +35,6 @@ function formatValueOrPlaceholder(
   return value !== null
     ? `${formatPropertyCurrency(value, formatter)}${suffix}`
     : messages.notInformed
-}
-
-export function translatePropertyType(
-  type: string,
-  messages: DashboardPropertyMappingMessages,
-): string {
-  const normalizedType = type.trim().toLocaleLowerCase('pt-BR')
-  const propertyTypeByValue: Record<string, string> = {
-    apartamento: messages.propertyTypes.apartment,
-    apartment: messages.propertyTypes.apartment,
-    casa: messages.propertyTypes.house,
-    house: messages.propertyTypes.house,
-    studio: messages.propertyTypes.studio,
-    cobertura: messages.propertyTypes.penthouse,
-    penthouse: messages.propertyTypes.penthouse,
-    comercial: messages.propertyTypes.commercial,
-    commercial: messages.propertyTypes.commercial,
-    loft: messages.propertyTypes.loft,
-    outro: messages.propertyTypes.other,
-    other: messages.propertyTypes.other,
-  }
-
-  return propertyTypeByValue[normalizedType] ?? type
 }
 
 export function toDashboardProperty(
@@ -89,7 +66,7 @@ export function toDashboardProperty(
     listing: property.listing,
     address: addressLine,
     location: locationLine,
-    type: translatePropertyType(property.type, messages),
+    type: messages.propertyTypes[property.type],
     purpose: isDualPurpose
       ? messages.purposes.sale
       : isRent
@@ -112,9 +89,9 @@ export function toDashboardProperty(
       bedrooms: property.characteristics.bedrooms?.toString() ?? messages.notInformed,
       bathrooms: property.characteristics.bathrooms?.toString() ?? messages.notInformed,
       parkingSpaces: property.characteristics.parkingSpots?.toString() ?? messages.notInformed,
-      area: formatPropertyArea(property.characteristics.areaM2, messages.notInformed, formatter),
+      area: formatPropertyArea(property.characteristics.areaSqm, messages.notInformed, formatter),
       condominium: formatValueOrPlaceholder(property.values.condoFee, messages, formatter),
-      iptu: formatValueOrPlaceholder(
+      propertyTax: formatValueOrPlaceholder(
         property.values.propertyTax,
         messages,
         formatter,
@@ -129,7 +106,7 @@ export function toDashboardProperty(
           : messages.notAnnounced,
       sale: isRent ? messages.notAnnounced : formattedSalePrice,
       condominium: formatValueOrPlaceholder(property.values.condoFee, messages, formatter),
-      iptu: formatValueOrPlaceholder(
+      propertyTax: formatValueOrPlaceholder(
         property.values.propertyTax,
         messages,
         formatter,

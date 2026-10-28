@@ -12,7 +12,7 @@ import { CreateTenantAdminUseCase } from '../../../application/use-cases/create-
 
 const tenant: TenantSummary = {
   id: 't1',
-  nome: 'Imobiliária A',
+  name: 'Imobiliária A',
   slug: 'imobiliaria-a',
   createdAt: new Date(),
 }
@@ -20,12 +20,12 @@ const tenant: TenantSummary = {
 const createdAdmin: User = {
   id: 'u1',
   tenantId: 't1',
-  nome: 'Admin da Imobiliária',
+  name: 'Admin da Imobiliária',
   email: 'admin@imobiliaria-a.dev',
-  senhaHash: 'hash-novo',
-  papel: 'OWNER',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-novo',
+  role: 'OWNER',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 function createDeps(overrides?: {
@@ -68,19 +68,19 @@ describe('CreateTenantAdminUseCase', () => {
 
     const result = await useCase.execute({
       tenantId: tenant.id,
-      nome: 'Admin da Imobiliária',
+      name: 'Admin da Imobiliária',
       email: 'admin@imobiliaria-a.dev',
       password: 'senha-longa-123',
     })
 
-    expect(result.papel).toBe('OWNER')
+    expect(result.role).toBe('OWNER')
     expect(deps.userRepository.create).toHaveBeenCalledWith({
       auditActor: { kind: 'SYSTEM' },
       tenantId: tenant.id,
-      nome: 'Admin da Imobiliária',
+      name: 'Admin da Imobiliária',
       email: 'admin@imobiliaria-a.dev',
-      senhaHash: 'hash-novo',
-      papel: 'OWNER',
+      passwordHash: 'hash-novo',
+      role: 'OWNER',
     })
   })
 
@@ -95,7 +95,7 @@ describe('CreateTenantAdminUseCase', () => {
     await expect(
       useCase.execute({
         tenantId: 'inexistente',
-        nome: 'X',
+        name: 'X',
         email: 'x@x.dev',
         password: 'senha-longa-123',
       }),
@@ -114,7 +114,7 @@ describe('CreateTenantAdminUseCase', () => {
     await expect(
       useCase.execute({
         tenantId: tenant.id,
-        nome: 'X',
+        name: 'X',
         email: createdAdmin.email,
         password: 'senha-longa-123',
       }),
@@ -133,7 +133,7 @@ describe('CreateTenantAdminUseCase', () => {
     await expect(
       useCase.execute({
         tenantId: tenant.id,
-        nome: 'Segundo Admin',
+        name: 'Segundo Admin',
         email: 'segundo@imobiliaria-a.dev',
         password: 'senha-longa-123',
       }),

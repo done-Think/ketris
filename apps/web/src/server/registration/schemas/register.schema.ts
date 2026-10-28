@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { locales } from '@/i18n/routing'
 import { isSupportedNewPasswordLength } from '@shared/utils/password-length'
-import { pendingEmailVerificationResponseSchema } from '@server/auth/schemas/email-verification.schema'
+import { pendingEmailVerificationResponseSchema } from '@server/shared/schemas/email-verification.schema'
 
 const registerBaseFields = {
   fullName: z.string().trim().min(3, 'Informe o nome completo.').max(200),
@@ -36,20 +36,20 @@ export const registerRequestSchema = z
     z
       .object({
         ...registerBaseFields,
-        profile: z.enum(['proprietario', 'imobiliaria', 'construtora']),
+        profile: z.enum(['owner', 'agency', 'developer']),
         companyName: z.string().trim().min(1).optional(),
       })
       .strict(),
     z
       .object({
         ...registerBaseFields,
-        profile: z.literal('corretor'),
+        profile: z.literal('broker'),
         companyName: z.string().trim().min(1).optional(),
         agencyId: z.string().trim().min(1).optional(),
         creci: z.string().trim().min(1, 'CRECI é obrigatório.').max(32),
       })
       .strict(),
-    z.object({ ...registerBaseFields, profile: z.literal('locatario') }).strict(),
+    z.object({ ...registerBaseFields, profile: z.literal('renter') }).strict(),
   ])
   .openapi('RegisterRequest')
 

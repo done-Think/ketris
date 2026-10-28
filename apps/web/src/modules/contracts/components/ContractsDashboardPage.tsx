@@ -32,7 +32,6 @@ export function ContractsDashboardPage() {
   const locale = useLocale()
   const t = useTranslations('contracts.detail')
   const { data: session } = useSession()
-  const tenantId = session?.tenantId ?? ''
   const readOnly = session?.role !== 'OWNER' && session?.role !== 'AGENT'
   const presentation = useContractPresentation()
   const { control, setValue } = useForm<ContractsFiltersFormValues>({
@@ -49,7 +48,7 @@ export function ContractsDashboardPage() {
     locale,
   )
   const { model, filters } = table
-  const query = useContracts(tenantId, {
+  const query = useContracts({
     ...filters,
     page: model.page + 1,
     pageSize: model.pageSize,

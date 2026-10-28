@@ -2,6 +2,8 @@ import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
+import { privateMetadata, publicMetadata } from '@/i18n/seo'
+
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { marketplaceContainer } from '@server/marketplace/container'
 import { PropertyNotFoundError } from '@server/marketplace/domain/errors'
@@ -47,9 +49,10 @@ export async function generateMetadata({
   })
   const property = await getProperty(id, locale)
 
-  if (!property) return { title: t('notFoundTitle') }
+  if (!property) return { ...privateMetadata, title: t('notFoundTitle') }
 
   return {
+    ...publicMetadata(locale, { pathname: '/properties/[id]', params: { id } }),
     title: `Ketris | ${property.title}`,
     description: property.description,
   }

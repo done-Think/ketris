@@ -20,7 +20,7 @@ export class InitChargeReceiptUploadUseCase {
   ) {}
 
   async execute(input: InitChargeReceiptUploadInput) {
-    assertCanAccessFinance(input.actorPapel)
+    assertCanAccessFinance(input.actorRole)
 
     const charge = await this.chargeRepository.findById(input.actorTenantId, input.chargeId)
     if (!charge) throw new ChargeNotFoundError()

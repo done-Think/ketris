@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
+import { publicMetadata } from '@/i18n/seo'
+
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { SearchResultsPage } from '@modules/marketplace'
 import { isMarketplacePropertyType } from '@modules/marketplace/config/property-types'
@@ -33,6 +35,7 @@ export async function generateMetadata({
     getSelectedPurpose(resolvedSearchParams) === 'comprar' ? 'searchBuy' : 'searchRent'
 
   return {
+    ...publicMetadata(locale, '/properties'),
     title: t(`${metadataKey}.metadataTitle`),
     description: t(`${metadataKey}.metadataDescription`),
   }

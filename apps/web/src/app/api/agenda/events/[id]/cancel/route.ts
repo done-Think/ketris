@@ -20,7 +20,7 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Agen
   const event = await agendaContainer.cancelAgendaEventUseCase.execute({
     reason: body.reason,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     actorUserId: actor.sub,
     id: (await parseRouteParams(context.params, agendaEventIdParamsSchema)).id,
   })

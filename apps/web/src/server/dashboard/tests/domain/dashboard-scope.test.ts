@@ -8,20 +8,20 @@ const actor = { actorTenantId: 'tenant-1', actorId: 'user-1' }
 
 describe('resolveDashboardScope', () => {
   it('OWNER vê a imobiliária inteira', () => {
-    expect(resolveDashboardScope({ ...actor, actorPapel: 'OWNER' })).toEqual({
+    expect(resolveDashboardScope({ ...actor, actorRole: 'OWNER' })).toEqual({
       tenantId: 'tenant-1',
       agentId: null,
     })
   })
 
   it('AGENT vê só o próprio trabalho', () => {
-    expect(resolveDashboardScope({ ...actor, actorPapel: 'AGENT' })).toEqual({
+    expect(resolveDashboardScope({ ...actor, actorRole: 'AGENT' })).toEqual({
       tenantId: 'tenant-1',
       agentId: 'user-1',
     })
   })
 
-  it.each(['RENTER', 'PROPERTY_OWNER'] as const)('%s não acessa o dashboard', (actorPapel) => {
-    expect(() => resolveDashboardScope({ ...actor, actorPapel })).toThrow(ForbiddenError)
+  it.each(['RENTER', 'PROPERTY_OWNER'] as const)('%s não acessa o dashboard', (actorRole) => {
+    expect(() => resolveDashboardScope({ ...actor, actorRole })).toThrow(ForbiddenError)
   })
 })

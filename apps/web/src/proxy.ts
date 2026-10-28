@@ -3,13 +3,18 @@ import { NextResponse } from 'next/server'
 import createMiddleware from 'next-intl/middleware'
 
 import { routing } from './i18n/routing'
-import { createRateLimitPolicy, InMemoryRateLimitStore } from '@server/security/rate-limit'
+import { createRateLimitPolicy } from '@server/security/rate-limit'
 import type { RateLimitPolicy, RateLimitResult } from '@server/security/types/rate-limit.types'
-import { getAuthRateLimitKey, getTrustedClientAddress } from '@server/security/client-key'
+import { getAuthRateLimitKey } from '@server/security/client-key'
 import { PostgresRateLimitStore } from '@server/security/postgres-rate-limit-store'
+import { validateApiContract } from '@server/shared/http/api-contract'
+import {
+  API_CONTRACT_HEADER,
+  API_CONTRACT_VERSION,
+  requiresApiContract,
+} from '@shared/config/api-contract'
 
-const store = new InMemoryRateLimitStore()
-const authStore = new PostgresRateLimitStore()
+const store = new PostgresRateLimitStore()
 const handleI18nRouting = createMiddleware(routing)
 
 const apiPolicy = createRateLimitPolicy(
@@ -58,21 +63,25 @@ export async function proxy(request: NextRequest) {
   const policy = selectPolicy(request.nextUrl.pathname)
   let result: RateLimitResult
   try {
-    result =
-      policy === authPolicy
-        ? await authStore.consume({ key: getAuthRateLimitKey(request.headers), policy })
-        : policy === inquiryPolicy
-          ? await authStore.consume({ key: getTrustedClientAddress(request.headers), policy })
-          : store.consume({ key: getTrustedClientAddress(request.headers), policy })
+    result = await store.consume({ key: getAuthRateLimitKey(request.headers), policy })
   } catch {
     return NextResponse.json(
       {
         error: {
-          code: 'AUTH_RATE_LIMIT_UNAVAILABLE',
+          code:
+            policy === authPolicy ? 'AUTH_RATE_LIMIT_UNAVAILABLE' : 'API_RATE_LIMIT_UNAVAILABLE',
           message: 'Serviço temporariamente indisponível.',
         },
       },
-      { status: 503, headers: { 'Retry-After': '60' } },
+      {
+        status: 503,
+        headers: {
+          'Retry-After': '60',
+          'Cache-Control': 'no-store',
+          'RateLimit-Limit': String(policy.limit),
+          'RateLimit-Remaining': '0',
+        },
+      },
     )
   }
 
@@ -85,13 +94,19 @@ export async function proxy(request: NextRequest) {
             message: 'Muitas requisições. Tente novamente mais tarde.',
           },
         },
-        { status: 429 },
+        { status: 429, headers: { 'Cache-Control': 'no-store' } },
       ),
       result,
     )
   }
 
-  return withRateLimitHeaders(NextResponse.next(), result)
+  const contractError = validateApiContract(request)
+  const response = contractError ?? NextResponse.next()
+  if (!contractError && requiresApiContract(request.nextUrl.pathname)) {
+    response.headers.set(API_CONTRACT_HEADER, API_CONTRACT_VERSION)
+    response.headers.append('Vary', API_CONTRACT_HEADER)
+  }
+  return withRateLimitHeaders(response, result)
 }
 
 export const config = {

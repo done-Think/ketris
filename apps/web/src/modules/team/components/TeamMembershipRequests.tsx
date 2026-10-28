@@ -4,8 +4,7 @@ import { Alert, Box, Chip, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 
-import { useApproveUserMembership } from '@modules/auth/hooks/use-approve-user-membership'
-import { useUsers } from '@modules/auth/hooks/use-users'
+import { useApproveTeamMembership, useTeamMembershipRequests } from '../hooks/use-team-memberships'
 import { DashboardHeaderActionButton } from '@shared/components/layout'
 import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
 import { extractErrorMessage } from '@shared/utils/error-message'
@@ -17,8 +16,8 @@ export function TeamMembershipRequests({ enabled }: TeamMembershipRequestsProps)
   const t = useTranslations('dashboard.team.membershipRequests')
   const roleT = useTranslations('marketplace.profile.roles')
   const { enqueueSnackbar } = useSnackbar()
-  const usersQuery = useUsers(enabled)
-  const approveMembership = useApproveUserMembership()
+  const usersQuery = useTeamMembershipRequests(enabled)
+  const approveMembership = useApproveTeamMembership()
   const pendingUsers = (usersQuery.data ?? []).filter((user) => user.pendingApproval)
 
   if (!enabled) return null

@@ -125,13 +125,13 @@
       "parkingSpaces": "VAGAS",
       "area": "ÁREA",
       "condominium": "CONDOMÍNIO",
-      "iptu": "IPTU"
+      "propertyTax": "IPTU"
     },
     "pricing": {
       "rent": "ALUGUEL",
       "sale": "VENDA",
       "condominium": "CONDOMÍNIO",
-      "iptu": "IPTU",
+      "propertyTax": "IPTU",
       "administrationFee": "TAXA DE ADMINISTRAÇÃO",
       "securityDeposit": "GARANTIA",
       "lastAdjustment": "ÚLTIMO AJUSTE"
@@ -169,6 +169,13 @@
     "negotiationTerms": "Condições de negociação"
   },
   "create": {
+    "coordinatesHint": "Tentaremos localizar o imóvel pelo endereço ao salvar. Se necessário, informe as duas coordenadas.",
+    "postalCode": {
+      "idle": "Informe o CEP e saia do campo para preencher o endereço. Confira os dados antes de salvar.",
+      "loading": "Consultando CEP…",
+      "notFound": "CEP não encontrado. Confira o CEP ou preencha o endereço manualmente.",
+      "unavailable": "Consulta de CEP indisponível. Você pode preencher o endereço manualmente."
+    },
     "title": "Cadastrar imóvel",
     "mobileTitle": "Novo Imóvel",
     "back": "Voltar",
@@ -193,7 +200,7 @@
       "saleValue": "Valor de venda",
       "referenceValue": "Valor de referência do imóvel",
       "condominium": "Condomínio",
-      "iptu": "IPTU mensal",
+      "propertyTax": "IPTU mensal",
       "securityDeposit": "Garantia",
       "commission": "Comissão",
       "commercialTerms": "Condição comercial",
@@ -253,6 +260,7 @@
       "cityRequired": "Informe a cidade",
       "stateRequired": "Informe a UF",
       "zipCodeRequired": "Informe o CEP",
+      "zipCodeInvalid": "Informe um CEP com 8 dígitos, como 37502-330.",
       "numberInvalid": "Informe um valor válido",
       "areaRequired": "Informe a área útil",
       "mainValueRequired": "Informe o valor principal",
@@ -270,7 +278,8 @@
     "noOwner": "Sem proprietário vinculado",
     "ownerUnavailable": "Proprietário indisponível",
     "ownersLoadError": "Não foi possível carregar os proprietários.",
-    "mediaUploadFileError": "Não foi possível enviar \"{filename}\". Tente novamente."
+    "mediaUploadFileError": "Não foi possível enviar \"{filename}\". Tente novamente.",
+    "mediaStorageUnavailableFileError": "O serviço de imagens está indisponível. Não foi possível enviar \"{filename}\". Tente novamente mais tarde."
   },
   "edit": {
     "title": "Editar imóvel",

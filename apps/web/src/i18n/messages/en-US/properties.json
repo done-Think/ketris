@@ -125,13 +125,13 @@
       "parkingSpaces": "PARKING",
       "area": "AREA",
       "condominium": "CONDO FEE",
-      "iptu": "PROPERTY TAX"
+      "propertyTax": "PROPERTY TAX"
     },
     "pricing": {
       "rent": "RENT",
       "sale": "SALE",
       "condominium": "CONDO FEE",
-      "iptu": "PROPERTY TAX",
+      "propertyTax": "PROPERTY TAX",
       "administrationFee": "MANAGEMENT FEE",
       "securityDeposit": "GUARANTEE",
       "lastAdjustment": "LAST ADJUSTMENT"
@@ -169,6 +169,13 @@
     "negotiationTerms": "Negotiation terms"
   },
   "create": {
+    "coordinatesHint": "We will try to locate the property by its address when saving. If needed, enter both coordinates.",
+    "postalCode": {
+      "idle": "Enter the postal code and leave the field to fill in the address. Check the details before saving.",
+      "loading": "Looking up postal code…",
+      "notFound": "Postal code not found. Check the code or enter the address manually.",
+      "unavailable": "Postal code lookup is unavailable. You can enter the address manually."
+    },
     "title": "List property",
     "mobileTitle": "New Property",
     "back": "Back",
@@ -193,7 +200,7 @@
       "saleValue": "Sale value",
       "referenceValue": "Property reference value",
       "condominium": "Condo fee",
-      "iptu": "Monthly property tax",
+      "propertyTax": "Monthly property tax",
       "securityDeposit": "Guarantee",
       "commission": "Commission",
       "commercialTerms": "Commercial terms",
@@ -253,6 +260,7 @@
       "cityRequired": "Enter the city",
       "stateRequired": "Enter the state",
       "zipCodeRequired": "Enter the ZIP code",
+      "zipCodeInvalid": "Enter a Brazilian postal code with 8 digits, such as 37502-330.",
       "numberInvalid": "Enter a valid value",
       "areaRequired": "Enter the usable area",
       "mainValueRequired": "Enter the main value",
@@ -270,7 +278,8 @@
     "noOwner": "No linked owner",
     "ownerUnavailable": "Owner unavailable",
     "ownersLoadError": "Could not load owners.",
-    "mediaUploadFileError": "Could not upload \"{filename}\". Please try again."
+    "mediaUploadFileError": "Could not upload \"{filename}\". Please try again.",
+    "mediaStorageUnavailableFileError": "The image service is unavailable. Could not upload \"{filename}\". Please try again later."
   },
   "edit": {
     "title": "Edit property",

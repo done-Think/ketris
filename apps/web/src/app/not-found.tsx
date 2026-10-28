@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
 
-import { getLocalePathPrefix } from '@/i18n/locale-prefix'
+import { getPathname } from '@/i18n/navigation'
 import { defaultLocale } from '@/i18n/routing'
 
 export default function NotFound() {
-  redirect(getLocalePathPrefix(defaultLocale))
+  redirect(getPathname({ href: '/', locale: defaultLocale }))
 }

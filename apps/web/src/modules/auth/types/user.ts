@@ -7,7 +7,7 @@ import type {
   UpdateUserResponseDTO,
   UpdateUserRequestDTO,
   UploadAvatarResponseDTO,
-} from '@server/auth/types/http'
+} from '@shared/types/generated/auth/http'
 
 export type TenantUser = AuthenticatedUserResponseDTO
 export type CreateTenantUserPayload = CreateUserRequestInput

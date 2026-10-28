@@ -16,7 +16,7 @@ export class PrismaPlatformRefreshTokenRepository implements PlatformRefreshToke
     return prisma.$transaction(async (transaction) => {
       const [admin] = await transaction.$queryRaw<Pick<PlatformAdmin, 'id'>[]>`
         SELECT "id" FROM "platform_admins"
-        WHERE "id" = ${previous.platformAdminId} AND "ativo" = true
+        WHERE "id" = ${previous.platformAdminId} AND "active" = true
         FOR UPDATE
       `
       if (!admin) return false

@@ -16,7 +16,7 @@ export class ListAgendaEventsUseCase {
       scope: resolveAgendaReadScope(input),
       from: input.from,
       to: input.to,
-      responsavelId: input.responsavelId,
+      responsibleId: input.responsibleId,
     })
     return withAgendaPropertySummaries(this.propertyCatalog, input, events)
   }

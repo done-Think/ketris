@@ -23,59 +23,59 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
     vi.setSystemTime(new Date('2026-10-01T09:00:00.000Z'))
 
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Agenda Cancel', slug: `agenda-cancel-${randomUUID()}` },
+      data: { name: 'Tenant Agenda Cancel', slug: `agenda-cancel-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor Agenda',
+        name: 'Corretor Agenda',
         email: `corretor-agenda-cancel-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const renter = await prisma.usuario.create({
+    const renter = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Locatário Agenda',
+        name: 'Locatário Agenda',
         email: `locatario-agenda-cancel-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'RENTER',
+        passwordHash: 'hash-fake',
+        role: 'RENTER',
       },
     })
     renterToken = await tokenService.sign({
       id: renter.id,
       tenantId: renter.tenantId,
-      nome: renter.nome,
+      name: renter.name,
       email: renter.email,
-      papel: renter.papel,
-      ativo: renter.ativo,
-      vinculoAprovadoEm: renter.vinculoAprovadoEm,
+      role: renter.role,
+      active: renter.active,
+      membershipApprovedAt: renter.membershipApprovedAt,
     })
 
-    const event = await prisma.eventoAgenda.create({
+    const event = await prisma.agendaEvent.create({
       data: {
         tenantId,
-        responsavelId: actor.id,
-        criadoPorId: actor.id,
-        titulo: 'Evento para cancelar',
-        referenciaImovelLivre: 'Apto teste',
-        inicio: slotStart,
-        fim: new Date(slotStart.getTime() + 30 * 60_000),
-        participanteNome: 'Ana',
-        participanteTelefone: '11999990000',
+        responsibleId: actor.id,
+        createdById: actor.id,
+        title: 'Evento para cancelar',
+        freeFormPropertyReference: 'Apto teste',
+        start: slotStart,
+        end: new Date(slotStart.getTime() + 30 * 60_000),
+        participantName: 'Ana',
+        participantPhone: '11999990000',
       },
     })
     eventId = event.id
@@ -112,7 +112,7 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
     expect(response.status).toBe(200)
     expect(json.event.status).toBe('CANCELLED')
 
-    const persisted = await prisma.eventoAgenda.findUniqueOrThrow({ where: { id: eventId } })
+    const persisted = await prisma.agendaEvent.findUniqueOrThrow({ where: { id: eventId } })
     expect(persisted.status).toBe('CANCELLED')
   })
 

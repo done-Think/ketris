@@ -39,7 +39,7 @@ describe('financial-summary-adapter', () => {
           propertyTitle: null,
           dueDate: '2026-10-20T00:00:00.000Z',
           amount: 300,
-          status: 'AGENDADA',
+          status: 'SCHEDULED',
         },
       ]),
     ).toEqual([
@@ -55,7 +55,7 @@ describe('financial-summary-adapter', () => {
   })
 
   it('shows payable entries as negative amounts', () => {
-    expect(mapChargeListItemToFinancialEntry(apiListItem({ type: 'A_PAGAR' }))).toMatchObject({
+    expect(mapChargeListItemToFinancialEntry(apiListItem({ type: 'PAYABLE' }))).toMatchObject({
       amountValue: -2800,
       date: '2026-10-10',
       status: 'pending',

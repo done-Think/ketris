@@ -72,10 +72,33 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
         {t('location')}
       </Typography>
       <Typography sx={styles.typography7}>{property.address}</Typography>
-      <PropertyDetailMap
-        latitude={property.mapCenter.latitude}
-        longitude={property.mapCenter.longitude}
-      />
+      {property.mapCenter ? (
+        <>
+          <PropertyDetailMap
+            key={`${property.mapCenter.latitude}:${property.mapCenter.longitude}`}
+            latitude={property.mapCenter.latitude}
+            longitude={property.mapCenter.longitude}
+          />
+          <Typography variant="caption" color="text.secondary">
+            {t('mapApproximate')}
+          </Typography>
+        </>
+      ) : (
+        <Stack alignItems="flex-start" spacing={1}>
+          <Typography color="text.secondary">{t('mapUnavailable')}</Typography>
+          {property.address && (
+            <Button
+              component="a"
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.address}, Brasil`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="outlined"
+            >
+              {t('searchAddressOnMaps')}
+            </Button>
+          )}
+        </Stack>
+      )}
     </>
   )
 }

@@ -14,7 +14,7 @@ import type {
   MaintenanceTicketPriorityDTO,
   MaintenanceTicketStatusDTO,
   UpdateMaintenanceTicketRequestDTO,
-} from '@server/maintenance/types/dto'
+} from '@shared/types/generated/maintenance/dto'
 
 export type MaintenanceAction = MaintenanceActionDTO
 export type MaintenancePermissions = MaintenancePermissionsDTO
@@ -47,7 +47,10 @@ export type ApiMaintenanceTicketListItem = Omit<
 > &
   Partial<Pick<MaintenanceTicketListItemDTO, OptionalListItemFields>>
 
-export type MaintenanceTicketListFilters = Partial<ListMaintenanceTicketsQueryDTO>
+export type MaintenanceTicketListFilters = Omit<
+  Partial<ListMaintenanceTicketsQueryDTO>,
+  'archived'
+> & { archived?: boolean }
 export type CreateMaintenanceTicketPayload = CreateMaintenanceTicketRequestDTO
 export type UpdateMaintenanceTicketPayload = UpdateMaintenanceTicketRequestDTO
 export type ListMaintenanceTicketsResponse = Omit<MaintenanceTicketListResponseDTO, 'items'> & {

@@ -1,14 +1,30 @@
 import { NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
+import { ZodError } from 'zod'
 
 import { AppError } from '@server/shared/errors'
 
 import { RequestValidationError } from './parse-body'
+import { resolveRequestLocale } from './request-locale'
+import { validationMessage } from './validation-messages'
 
-export function handleRouteError(error: unknown): NextResponse {
+export function handleRouteError(error: unknown, request?: Request): NextResponse {
+  if (error instanceof ZodError) {
+    return handleRouteError(
+      RequestValidationError.fromZod(error.issues, resolveRequestLocale(request)),
+      request,
+    )
+  }
   if (error instanceof RequestValidationError) {
+    const locale = resolveRequestLocale(request, error.locale)
     return NextResponse.json(
-      { error: { code: error.code, message: error.message, issues: error.issues } },
+      {
+        error: {
+          code: error.code,
+          message: validationMessage(locale, 'invalidRequest'),
+          issues: error.localizedIssues(locale),
+        },
+      },
       { status: error.status },
     )
   }
@@ -24,7 +40,12 @@ export function handleRouteError(error: unknown): NextResponse {
   Sentry.captureException(error)
 
   return NextResponse.json(
-    { error: { code: 'INTERNAL_ERROR', message: 'Erro interno. Tente novamente.' } },
+    {
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: validationMessage(resolveRequestLocale(request), 'internalError'),
+      },
+    },
     { status: 500 },
   )
 }
@@ -36,7 +57,10 @@ export function withErrorHandling<Args extends unknown[]>(
     try {
       return await handler(...args)
     } catch (error) {
-      return handleRouteError(error)
+      const request = args.find(
+        (argument): argument is Args[number] & Request => argument instanceof Request,
+      )
+      return handleRouteError(error, request)
     }
   }
 }

@@ -6,7 +6,7 @@ export class ListContractOpportunitiesUseCase {
   constructor(private readonly catalog: ContractOpportunityCatalog) {}
 
   execute(input: ListContractOpportunitiesInput) {
-    const scope = resolveContractManageScope(input.actorId, input.actorPapel)
+    const scope = resolveContractManageScope(input.actorId, input.actorRole)
     return this.catalog.list({
       tenantId: input.actorTenantId,
       ...scope,

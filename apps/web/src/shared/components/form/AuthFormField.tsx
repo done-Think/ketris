@@ -1,3 +1,4 @@
+import { styles } from '@shared/styles/auth-form-field.styles'
 import { Box, Typography } from '@mui/material'
 
 import type { AuthFormFieldProps } from '@shared/types/auth-form-field'
@@ -22,7 +23,7 @@ export function AuthFormField({
       >
         {label}
         {required && (
-          <Box component="span" sx={{ ml: 0.5, color: 'primary.main' }}>
+          <Box component="span" sx={styles.box}>
             *
           </Box>
         )}

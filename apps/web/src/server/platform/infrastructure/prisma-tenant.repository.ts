@@ -6,13 +6,13 @@ import type { TenantSummary } from '../types/tenant-summary'
 
 function toDomainTenantSummary(tenant: {
   id: string
-  nome: string
+  name: string
   slug: string
   createdAt: Date
 }): TenantSummary {
   return {
     id: tenant.id,
-    nome: tenant.nome,
+    name: tenant.name,
     slug: tenant.slug,
     createdAt: tenant.createdAt,
   }
@@ -34,7 +34,7 @@ export class PrismaTenantRepository implements TenantRepository {
   async create(newTenant: NewTenant): Promise<TenantSummary> {
     const tenant = await prisma.tenant.create({
       data: {
-        nome: newTenant.nome,
+        name: newTenant.name,
         slug: newTenant.slug,
         accountType: newTenant.accountType,
         status: newTenant.status,
@@ -47,10 +47,10 @@ export class PrismaTenantRepository implements TenantRepository {
   async searchByName(query: string, excludeSlugs: string[]): Promise<TenantSummary[]> {
     const tenants = await prisma.tenant.findMany({
       where: {
-        nome: { contains: query, mode: 'insensitive' },
+        name: { contains: query, mode: 'insensitive' },
         slug: { notIn: excludeSlugs },
       },
-      orderBy: { nome: 'asc' },
+      orderBy: { name: 'asc' },
       take: 20,
     })
 

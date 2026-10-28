@@ -1,5 +1,5 @@
+import { useTenantSessionScope } from '@shared/hooks/use-tenant-session-scope'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
 import { contractsService } from '../services/contracts-service'
 import { contractsQueryKeys } from '../config/query-keys'
 import type { ContractListFilters, EditContractPayload } from '../types/service'
@@ -14,37 +14,35 @@ import { useInvalidateContracts } from './use-invalidate-contracts'
 
 export { contractsQueryKeys } from '../config/query-keys'
 
-export function useContracts(
-  tenantId: string | null | undefined,
-  filters: ContractListFilters = {},
-) {
-  const { data: session } = useSession()
+export function useContracts(filters: ContractListFilters = {}) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
+  const session = scope.session
   return useQuery({
-    queryKey: contractsQueryKeys.list(tenantId ?? '', session?.user?.id, session?.role, filters),
+    queryKey: contractsQueryKeys.list(tenantId, session?.user?.id, session?.role, filters),
     queryFn: () => contractsService.list(filters),
-    enabled: Boolean(tenantId && session?.user?.id && session?.role),
+    enabled: scope.enabled,
   })
 }
 
-export function useContract(
-  tenantId: string | null | undefined,
-  contractId: string | null | undefined,
-) {
-  const { data: session } = useSession()
+export function useContract(contractId: string | null | undefined) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
+  const session = scope.session
   return useQuery({
     queryKey: contractsQueryKeys.detail(
-      tenantId ?? '',
+      tenantId,
       session?.user?.id,
       session?.role,
       contractId ?? '',
     ),
     queryFn: () => contractsService.get(contractId ?? ''),
-    enabled: Boolean(tenantId && contractId && session?.user?.id && session?.role),
+    enabled: scope.enabled && Boolean(contractId),
   })
 }
 
-export function useCreateContract(tenantId: string | null | undefined) {
-  const invalidate = useInvalidateContracts(tenantId ?? '')
+export function useCreateContract() {
+  const invalidate = useInvalidateContracts()
   return useMutation({
     mutationFn: (values: CreateContractFormValues) =>
       contractsService.create(buildCreateContractPayload(values)),
@@ -52,8 +50,8 @@ export function useCreateContract(tenantId: string | null | undefined) {
   })
 }
 
-export function useSignContractParty(tenantId: string | null | undefined, contractId: string) {
-  const invalidate = useInvalidateContracts(tenantId ?? '')
+export function useSignContractParty(contractId: string) {
+  const invalidate = useInvalidateContracts()
   return useMutation({
     mutationFn: ({ partyId, documentId }: ContractSignMutationInput) =>
       contractsService.signParty(contractId, partyId, { documentId }),
@@ -61,16 +59,16 @@ export function useSignContractParty(tenantId: string | null | undefined, contra
   })
 }
 
-export function useEditContract(tenantId: string, contractId: string) {
-  const invalidate = useInvalidateContracts(tenantId)
+export function useEditContract(contractId: string) {
+  const invalidate = useInvalidateContracts()
   return useMutation({
     mutationFn: (payload: EditContractPayload) => contractsService.edit(contractId, payload),
     onSuccess: invalidate,
   })
 }
 
-export function useTransitionContract(tenantId: string, contractId: string) {
-  const invalidate = useInvalidateContracts(tenantId)
+export function useTransitionContract(contractId: string) {
+  const invalidate = useInvalidateContracts()
   return useMutation({
     mutationFn: ({ action, reason }: ContractTransitionMutationInput) =>
       contractsService.transition(contractId, action, reason),
@@ -78,8 +76,8 @@ export function useTransitionContract(tenantId: string, contractId: string) {
   })
 }
 
-export function useLinkContractParty(tenantId: string, contractId: string) {
-  const invalidate = useInvalidateContracts(tenantId)
+export function useLinkContractParty(contractId: string) {
+  const invalidate = useInvalidateContracts()
   return useMutation({
     mutationFn: ({ partyId, email }: ContractLinkMutationInput) =>
       contractsService.linkParty(contractId, partyId, email),
@@ -87,13 +85,10 @@ export function useLinkContractParty(tenantId: string, contractId: string) {
   })
 }
 
-export function useContractHistory(
-  tenantId: string,
-  contractId: string,
-  page: number,
-  enabled: boolean,
-) {
-  const { data: session } = useSession()
+export function useContractHistory(contractId: string, page: number, enabled: boolean) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
+  const session = scope.session
   return useQuery({
     queryKey: [
       ...contractsQueryKeys.actor(tenantId, session?.user?.id, session?.role),
@@ -102,6 +97,6 @@ export function useContractHistory(
       page,
     ],
     queryFn: () => contractsService.history(contractId, page),
-    enabled: enabled && Boolean(tenantId && contractId && session?.user?.id && session?.role),
+    enabled: enabled && scope.enabled && Boolean(contractId),
   })
 }

@@ -1,3 +1,4 @@
+import type { components } from '@shared/types/generated/api'
 import type { ReactNode } from 'react'
 
 import type { z } from 'zod'
@@ -5,7 +6,7 @@ import type { z } from 'zod'
 import type { createPlatformAdminSchema } from '../schemas/create-platform-admin-schema'
 import type { createUpdatePlatformAdminSchema } from '../schemas/update-platform-admin-schema'
 
-export type PlatformAdminRole = 'ADMIN' | 'ADMIN_AGENT' | 'AGENT'
+export type PlatformAdminRole = components['schemas']['AuthenticatedPlatformAdmin']['role']
 
 export type CreatePlatformAdminFormValues = z.infer<ReturnType<typeof createPlatformAdminSchema>>
 
@@ -13,43 +14,17 @@ export type UpdatePlatformAdminFormValues = z.infer<
   ReturnType<typeof createUpdatePlatformAdminSchema>
 >
 
-export interface PlatformAdminAccount {
-  id: string
-  name: string
-  email: string
-  role: PlatformAdminRole
-  active: boolean
-  createdAt: string
-  lastAccessAt: string | null
-}
+export type PlatformAdminAccount = components['schemas']['AuthenticatedPlatformAdmin']
 
-export interface CreatePlatformAdminPayload {
-  name: string
-  email: string
-  password: string
-  role: PlatformAdminRole
-}
+export type CreatePlatformAdminPayload = components['schemas']['CreatePlatformAdminRequest']
 
-export interface UpdatePlatformAdminPayload {
-  name: string
-  email: string
-  role: PlatformAdminRole
-}
+export type UpdatePlatformAdminPayload = components['schemas']['UpdatePlatformAdminRequest']
 
-export interface PlatformAdminResponse {
-  admin: PlatformAdminAccount
-}
+export type PlatformAdminResponse = components['schemas']['GetPlatformAdminResponse']
 
-export interface ListPlatformAdminsResponse {
-  admins: PlatformAdminAccount[]
-}
+export type ListPlatformAdminsResponse = components['schemas']['ListPlatformAdminsResponse']
 
-export interface CreatePlatformAdminInput {
-  name: string
-  email: string
-  password: string
-  role: PlatformAdminRole
-}
+export type CreatePlatformAdminInput = CreatePlatformAdminPayload
 
 export interface UpdatePlatformAdminInput {
   id: string

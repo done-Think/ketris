@@ -9,14 +9,14 @@ export class GetLeadUseCase {
   constructor(private readonly leadRepository: LeadRepository) {}
 
   async execute(input: GetLeadInput): Promise<GetLeadOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     const lead = await this.leadRepository.findById(input.leadId)
 
     if (!lead || lead.tenantId !== input.actorTenantId) {
       throw new LeadNotFoundError()
     }
 
-    assertLeadAccess(lead.responsavelId, input.actorId, input.actorPapel)
+    assertLeadAccess(lead.responsibleId, input.actorId, input.actorRole)
 
     return lead
   }

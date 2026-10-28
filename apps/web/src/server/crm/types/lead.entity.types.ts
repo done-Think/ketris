@@ -1,11 +1,11 @@
-import type { LeadSource } from '../constants/lead-sources'
-export type LeadStage = 'NOVO' | 'EM_CONTATO' | 'VISITA_MARCADA' | 'PROPOSTA'
+import type { LeadSource } from './lead-source'
+export type LeadStage = 'NEW' | 'IN_CONTACT' | 'VISIT_SCHEDULED' | 'PROPOSAL'
 
 export interface Lead {
   responsibleName?: string
   id: string
   tenantId: string
-  responsavelId: string
+  responsibleId: string
   name: string
   phone: string
   email: string | null
@@ -21,7 +21,7 @@ export interface Lead {
 
 export interface NewLead {
   tenantId: string
-  responsavelId: string
+  responsibleId: string
   name: string
   phone: string
   email: string | null

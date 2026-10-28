@@ -33,7 +33,7 @@ describe('RequestSignupVerificationUseCase', () => {
   it.each([
     null,
     account(),
-    account({ emailVerifiedAt: null, ativo: false }),
+    account({ emailVerifiedAt: null, active: false }),
     account({ emailVerifiedAt: null, tenantStatus: 'SUSPENDED' }),
     account({ emailVerifiedAt: null, tenantStatus: 'CANCELED' }),
   ])('não revela nem envia para conta inelegível', async (user) => {

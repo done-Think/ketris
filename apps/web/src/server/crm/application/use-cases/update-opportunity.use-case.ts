@@ -29,14 +29,14 @@ export class UpdateOpportunityUseCase {
   ) {}
 
   async execute(input: UpdateOpportunityInput): Promise<UpdateOpportunityOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     const current = await this.opportunityRepository.findById(input.opportunityId)
 
     if (!current || current.tenantId !== input.actorTenantId) {
       throw new OpportunityNotFoundError()
     }
 
-    assertOpportunityAccess(current, input.actorId ?? '', input.actorPapel)
+    assertOpportunityAccess(current, input.actorId ?? '', input.actorRole)
 
     const nextStatus = input.changes.status
 
@@ -96,7 +96,7 @@ export class UpdateOpportunityUseCase {
   ): Promise<OpportunityActivity> {
     return this.activityRepository.create({
       opportunityId: current.id,
-      type: 'MUDANCA_STATUS',
+      type: 'STATUS_CHANGE',
       description: '',
       systemAction: 'STATUS_CHANGED',
       authorId: input.actorId ?? null,

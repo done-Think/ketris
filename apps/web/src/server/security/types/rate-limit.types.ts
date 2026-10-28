@@ -1,3 +1,5 @@
+import type { Prisma } from '@prisma/client'
+
 export interface RateLimitPolicy {
   name: string
   limit: number
@@ -27,3 +29,5 @@ export interface StoredRateLimitBucket {
   resetAt: Date
   observedAt: Date
 }
+
+export type RateLimitDatabase = Pick<Prisma.TransactionClient, '$queryRaw' | '$executeRaw'>

@@ -8,7 +8,7 @@ const now = new Date('2026-10-15T12:00:00.000Z')
 
 const activeTenant: PlatformTenant = {
   id: 'tenant-1',
-  nome: 'Imobiliária A',
+  name: 'Imobiliária A',
   slug: 'imobiliaria-a',
   accountType: 'AGENCY',
   status: 'ACTIVE',

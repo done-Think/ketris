@@ -4,7 +4,9 @@ import { CRM_LIMITS } from '@server/crm/constants/validation'
 import type { SchemaMessageTranslator } from '@shared/types'
 import { createPropertySelectionSchema } from './property-schema'
 
-export function createConvertLeadSchema(t: SchemaMessageTranslator) {
+export function createConvertLeadSchema(
+  t: SchemaMessageTranslator<'emailInvalid' | 'propertyRequired' | 'proposedValueInvalid'>,
+) {
   return z.object({
     property: createPropertySelectionSchema(t),
     email: z.string().trim().max(CRM_LIMITS.email).email(t('emailInvalid')),

@@ -20,6 +20,7 @@ import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { useSnackbar } from 'notistack'
 import axios from 'axios'
+import { getApiErrorCode } from '@shared/utils/error-message'
 
 import { platformAdminRoles } from '../config/platform-admins'
 import { useUpdatePlatformAdmin } from '../hooks/use-platform-admins'
@@ -33,6 +34,7 @@ import { styles } from '../styles/edit-platform-admin-dialog.styles'
 export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDialogProps) {
   const t = useTranslations('platform.admins')
   const formErrorsT = useTranslations('platform.forms.errors')
+  const errorsT = useTranslations('platform.errors')
   const { enqueueSnackbar } = useSnackbar()
   const updateAdmin = useUpdatePlatformAdmin()
   const schema = useMemo(
@@ -61,9 +63,11 @@ export function EditPlatformAdminDialog({ admin, onClose }: EditPlatformAdminDia
       onClose()
     } catch (error) {
       const message =
-        axios.isAxiosError(error) && typeof error.response?.data?.error?.message === 'string'
-          ? error.response.data.error.message
-          : t('updateError')
+        getApiErrorCode(error) === 'LAST_PLATFORM_ADMIN'
+          ? errorsT('lastPlatformAdmin')
+          : axios.isAxiosError(error) && typeof error.response?.data?.error?.message === 'string'
+            ? error.response.data.error.message
+            : t('updateError')
       enqueueSnackbar(message, { variant: 'error' })
     }
   }

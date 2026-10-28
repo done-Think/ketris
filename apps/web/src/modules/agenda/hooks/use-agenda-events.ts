@@ -24,7 +24,7 @@ export function useAgendaEvents(tenantId: string | null | undefined, from: strin
   })
 }
 
-export function useCreateAgendaEvent(tenantId: string) {
+export function useCreateAgendaEvent(tenantId: string | undefined) {
   const queryClient = useQueryClient()
 
   return useMutation({

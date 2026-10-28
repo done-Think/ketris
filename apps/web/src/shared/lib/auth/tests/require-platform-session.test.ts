@@ -9,7 +9,8 @@ vi.mock('next-auth', () => ({
   getServerSession: getServerSessionMock,
 }))
 
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   redirect: redirectMock,
 }))
 

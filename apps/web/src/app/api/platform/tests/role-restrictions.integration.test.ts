@@ -21,28 +21,28 @@ describe('ações restritas ao papel ADMIN da plataforma (integração)', () => 
     for (const role of ['ADMIN_AGENT', 'AGENT'] as const) {
       const admin = await prisma.platformAdmin.create({
         data: {
-          nome: `Papel ${role}`,
+          name: `Papel ${role}`,
           email: `${role.toLowerCase()}-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
+          passwordHash: 'hash-fake',
           role,
         },
       })
       adminIds.push(admin.id)
       tokens[role] = await tokenService.sign({
         id: admin.id,
-        nome: admin.nome,
+        name: admin.name,
         email: admin.email,
         role,
-        ativo: true,
+        active: true,
       })
     }
     const target = await prisma.platformAdmin.create({
-      data: { nome: 'Alvo', email: `alvo-${randomUUID()}@ketris.dev`, senhaHash: 'hash-fake' },
+      data: { name: 'Alvo', email: `alvo-${randomUUID()}@ketris.dev`, passwordHash: 'hash-fake' },
     })
     targetId = target.id
     adminIds.push(target.id)
     tenantId = (
-      await prisma.tenant.create({ data: { nome: 'Tenant Papel', slug: `papel-${randomUUID()}` } })
+      await prisma.tenant.create({ data: { name: 'Tenant Papel', slug: `papel-${randomUUID()}` } })
     ).id
   })
 
@@ -92,10 +92,10 @@ describe('ações restritas ao papel ADMIN da plataforma (integração)', () => 
 
       expect(responses.map((response) => response.status)).toEqual([403, 403, 403, 403])
       expect(await prisma.platformAdmin.count({ where: { email } })).toBe(0)
-      expect(await prisma.usuario.count({ where: { email } })).toBe(0)
+      expect(await prisma.user.count({ where: { email } })).toBe(0)
       expect(await prisma.platformAdmin.findUnique({ where: { id: targetId } })).toMatchObject({
         role: 'ADMIN',
-        ativo: true,
+        active: true,
       })
     })
 })

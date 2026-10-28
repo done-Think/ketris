@@ -4,6 +4,7 @@ import {
   directionToApiType,
   newStatusToApi,
 } from '../config/charge-status'
+import { normalizeChargeHistoryFields } from './charge-history'
 import type {
   Charge,
   ChargeFormValues,
@@ -70,11 +71,11 @@ export function mapChargeFromApi(charge: ApiCharge): Charge {
 export function mapStatusCountsFromApi(counts: ApiChargeStatusCounts): ChargeStatusCounts {
   return {
     all: counts.ALL,
-    pending: counts.PENDENTE,
-    overdue: counts.ATRASADA,
-    paid: counts.PAGA,
-    scheduled: counts.AGENDADA,
-    cancelled: counts.CANCELADA,
+    pending: counts.PENDING,
+    overdue: counts.OVERDUE,
+    paid: counts.PAID,
+    scheduled: counts.SCHEDULED,
+    cancelled: counts.CANCELED,
   }
 }
 
@@ -85,7 +86,7 @@ export function mapHistoryEventFromApi(event: ApiChargeAuditEvent): ChargeHistor
     actorName: event.actorName,
     date: event.createdAt,
     reason: event.reason,
-    changedFields: event.changedFields,
+    changedFields: normalizeChargeHistoryFields(event.changedFields),
     receipt: event.receipt,
   }
 }

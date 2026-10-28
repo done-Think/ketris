@@ -1,7 +1,7 @@
-import type { AgendaEventResponseDTO } from '@server/agenda/types/http'
+import type { components } from '@shared/types/generated/api'
 
 export type AgendaEventNotificationSource = Pick<
-  AgendaEventResponseDTO,
+  components['schemas']['AgendaEvent'],
   | 'id'
   | 'title'
   | 'kind'

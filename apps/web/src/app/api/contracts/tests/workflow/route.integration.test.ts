@@ -47,13 +47,13 @@ async function signAll() {
 }
 
 it('preserva centavos, protege os CPFs e registra a autoria da criação', async () => {
-  const row = await prisma.contrato.findUniqueOrThrow({
+  const row = await prisma.contract.findUniqueOrThrow({
     where: { id: fixture.contractId },
-    include: { partes: true },
+    include: { parties: true },
   })
-  expect(row.valor.toNumber()).toBe(1750.75)
-  expect(row.criadoPorId).toBe(fixture.actorId)
-  expect(row.partes.every((party) => party.cpf.startsWith('enc:v1:'))).toBe(true)
+  expect(row.amount.toNumber()).toBe(1750.75)
+  expect(row.createdById).toBe(fixture.actorId)
+  expect(row.parties.every((party) => party.cpf.startsWith('enc:v1:'))).toBe(true)
   const response = await getContract(
     contractRequest(fixture.ownerToken, '/' + fixture.contractId),
     context(),
@@ -61,7 +61,7 @@ it('preserva centavos, protege os CPFs e registra a autoria da criação', async
   expect(response.status).toBe(200)
   const body = await response.json()
   expect(
-    body.contract.parties.find((party: { role: string }) => party.role === 'LOCADOR').cpf,
+    body.contract.parties.find((party: { role: string }) => party.role === 'LANDLORD').cpf,
   ).toBe('52998224725')
   const records = await prisma.contractAuditEvent.findMany({
     where: { contractId: fixture.contractId },
@@ -72,8 +72,8 @@ it('preserva centavos, protege os CPFs e registra a autoria da criação', async
 
 it('edita antes da primeira assinatura, preserva partes mantidas e exige PDF da nova revisão', async () => {
   const oldProof = await createVerifiedContractProof(fixture.contractId, fixture.actorId)
-  const before = await prisma.parteContrato.findMany({
-    where: { contratoId: fixture.contractId },
+  const before = await prisma.contractParty.findMany({
+    where: { contractId: fixture.contractId },
     orderBy: { id: 'asc' },
   })
   const response = await PATCH(
@@ -89,8 +89,8 @@ it('edita antes da primeira assinatura, preserva partes mantidas e exige PDF da 
   expect(result.contract.amount).toBe(1800.25)
   expect(result.contract.dataRevision).toBe(1)
   expect(
-    await prisma.parteContrato.findMany({
-      where: { contratoId: fixture.contractId },
+    await prisma.contractParty.findMany({
+      where: { contractId: fixture.contractId },
       orderBy: { id: 'asc' },
     }),
   ).toEqual(before)
@@ -110,9 +110,7 @@ it('edita antes da primeira assinatura, preserva partes mantidas e exige PDF da 
     partyContext(fixture.ownerPartyId),
   )
   expect(signed.status).toBe(200)
-  expect(await prisma.documentoContrato.count({ where: { contratoId: fixture.contractId } })).toBe(
-    2,
-  )
+  expect(await prisma.contractDocument.count({ where: { contractId: fixture.contractId } })).toBe(2)
   expect(
     (
       await PATCH(
@@ -152,8 +150,7 @@ it('não invalida o documento ao salvar sem mudanças e revoga o vínculo quando
   )
   expect(edited.status).toBe(200)
   expect(
-    (await prisma.parteContrato.findUniqueOrThrow({ where: { id: fixture.tenantPartyId } }))
-      .usuarioId,
+    (await prisma.contractParty.findUniqueOrThrow({ where: { id: fixture.tenantPartyId } })).userId,
   ).toBeNull()
   expect(
     (await getContract(contractRequest(fixture.renterToken, '/' + fixture.contractId), context()))
@@ -165,15 +162,15 @@ it('exige motivo, cancela sem apagar cobranças e impede reativação por regist
   expect(
     (await cancel(contractRequest(fixture.ownerToken, '/cancel', 'POST', {}), context())).status,
   ).toBe(400)
-  const charge = await prisma.cobranca.create({
+  const charge = await prisma.charge.create({
     data: {
       tenantId: fixture.tenantId,
-      contratoId: fixture.contractId,
-      codigo: 'WORKFLOW-' + randomUUID(),
-      tipo: 'A_RECEBER',
-      valor: 500,
-      vencimento: new Date('2031-01-01'),
-      status: 'PENDENTE',
+      contractId: fixture.contractId,
+      code: 'WORKFLOW-' + randomUUID(),
+      type: 'RECEIVABLE',
+      amount: 500,
+      dueDate: new Date('2031-01-01'),
+      status: 'PENDING',
     },
   })
   const response = await cancel(
@@ -183,12 +180,12 @@ it('exige motivo, cancela sem apagar cobranças e impede reativação por regist
   expect(response.status).toBe(200)
   const body = await response.json()
   expect(body.contract).toMatchObject({
-    status: 'CANCELADO',
+    status: 'CANCELED',
     cancellationReason: 'Negociação cancelada',
     cancelledBy: { id: fixture.actorId },
   })
   expect(body.contract.cancelledAt).toEqual(expect.any(String))
-  expect(await prisma.cobranca.findUnique({ where: { id: charge.id } })).toEqual(charge)
+  expect(await prisma.charge.findUnique({ where: { id: charge.id } })).toEqual(charge)
   const proof = await createVerifiedContractProof(fixture.contractId, fixture.actorId)
   expect(
     (
@@ -202,32 +199,32 @@ it('exige motivo, cancela sem apagar cobranças e impede reativação por regist
 
 it('registra a assinatura como manual com evidência, ativa ao final e encerra sem apagar o financeiro', async () => {
   const proof = await signAll()
-  const signatures = await prisma.assinatura.findMany({
-    where: { parteContrato: { contratoId: fixture.contractId } },
+  const signatures = await prisma.contractSignature.findMany({
+    where: { contractParty: { contractId: fixture.contractId } },
   })
   expect(
     signatures.every(
       (signature) =>
-        signature.metodo === 'MANUAL' &&
-        signature.documentoId === proof.id &&
-        signature.sha256Documento === proof.sha256 &&
-        signature.ipRegistro === null &&
-        signature.userAgentRegistro === 'Contracts integration',
+        signature.method === 'MANUAL' &&
+        signature.documentId === proof.id &&
+        signature.documentSha256 === proof.sha256 &&
+        signature.registeredIp === null &&
+        signature.registeredUserAgent === 'Contracts integration',
     ),
   ).toBe(true)
-  const charges = await prisma.cobranca.findMany({ where: { contratoId: fixture.contractId } })
+  const charges = await prisma.charge.findMany({ where: { contractId: fixture.contractId } })
   expect(charges).toHaveLength(1)
-  expect(charges[0].valor.toNumber()).toBe(1750.75)
+  expect(charges[0].amount.toNumber()).toBe(1750.75)
   const response = await close(
     contractRequest(fixture.ownerToken, '/close', 'POST', { reason: 'Locação encerrada' }),
     context(),
   )
   expect(response.status).toBe(200)
-  expect((await response.json()).contract.status).toBe('ENCERRADO')
-  const property = await prisma.imovel.findUniqueOrThrow({ where: { id: fixture.propertyId } })
+  expect((await response.json()).contract.status).toBe('CLOSED')
+  const property = await prisma.property.findUniqueOrThrow({ where: { id: fixture.propertyId } })
   expect(property.status).toBe('INACTIVE')
-  expect(property.publicadoEm).toEqual(new Date('2020-01-01'))
-  expect(await prisma.cobranca.findMany({ where: { contratoId: fixture.contractId } })).toEqual(
+  expect(property.publishedAt).toEqual(new Date('2020-01-01'))
+  expect(await prisma.charge.findMany({ where: { contractId: fixture.contractId } })).toEqual(
     charges,
   )
   const audits = await prisma.contractAuditEvent.findMany({
@@ -239,7 +236,7 @@ it('registra a assinatura como manual com evidência, ativa ao final e encerra s
 })
 
 it('preserva Vendido ao encerrar contratos de venda', async () => {
-  await prisma.imovel.update({ where: { id: fixture.propertyId }, data: { finalidade: 'VENDA' } })
+  await prisma.property.update({ where: { id: fixture.propertyId }, data: { purpose: 'SALE' } })
   await signAll()
   expect(
     (
@@ -250,7 +247,7 @@ it('preserva Vendido ao encerrar contratos de venda', async () => {
     ).status,
   ).toBe(200)
   expect(
-    (await prisma.imovel.findUniqueOrThrow({ where: { id: fixture.propertyId } })).status,
+    (await prisma.property.findUniqueOrThrow({ where: { id: fixture.propertyId } })).status,
   ).toBe('SOLD')
 })
 
@@ -284,7 +281,7 @@ it('aplica as permissões atuais em edição e histórico sem expor evidências 
   expect(body.items[0].actor).toMatchObject({ id: fixture.actorId, name: 'Gestora' })
   expect(JSON.stringify(body)).not.toContain('52998224725')
   expect(JSON.stringify(body)).not.toContain('98765432100')
-  expect(JSON.stringify(body)).not.toContain('ipRegistro')
+  expect(JSON.stringify(body)).not.toContain('registeredIp')
   expect(JSON.stringify(body)).not.toContain('objectKey')
   expect((await history(contractRequest(fixture.renterToken, '/history'), context())).status).toBe(
     404,
@@ -323,10 +320,10 @@ it('recusa registro manual sem PDF ou por locatário e guarda somente o IP confi
   expect((await sign(request, partyContext(fixture.ownerPartyId))).status).toBe(200)
   expect(
     (
-      await prisma.assinatura.findUniqueOrThrow({
-        where: { parteContratoId: fixture.ownerPartyId },
+      await prisma.contractSignature.findUniqueOrThrow({
+        where: { contractPartyId: fixture.ownerPartyId },
       })
-    ).ipRegistro,
+    ).registeredIp,
   ).toBe('203.0.113.27')
 })
 
@@ -346,11 +343,11 @@ it('serializa edição e primeira assinatura para impedir uso de PDF desatualiza
     ),
   ])
   expect(responses.map((response) => response.status).sort()).toEqual([200, 409])
-  const contract = await prisma.contrato.findUniqueOrThrow({ where: { id: fixture.contractId } })
-  const signed = await prisma.assinatura.count({
-    where: { parteContrato: { contratoId: fixture.contractId }, status: 'ASSINADA' },
+  const contract = await prisma.contract.findUniqueOrThrow({ where: { id: fixture.contractId } })
+  const signed = await prisma.contractSignature.count({
+    where: { contractParty: { contractId: fixture.contractId }, status: 'SIGNED' },
   })
-  expect(signed).toBe(contract.revisaoDados === 0 ? 1 : 0)
+  expect(signed).toBe(contract.dataRevision === 0 ? 1 : 0)
 })
 
 it('ativa e gera somente uma cobrança quando as duas últimas assinaturas chegam juntas', async () => {
@@ -365,7 +362,7 @@ it('ativa e gera somente uma cobrança quando as duas últimas assinaturas chega
   )
   expect(responses.map((response) => response.status)).toEqual([200, 200])
   expect(
-    (await prisma.contrato.findUniqueOrThrow({ where: { id: fixture.contractId } })).status,
-  ).toBe('ATIVO')
-  expect(await prisma.cobranca.count({ where: { contratoId: fixture.contractId } })).toBe(1)
+    (await prisma.contract.findUniqueOrThrow({ where: { id: fixture.contractId } })).status,
+  ).toBe('ACTIVE')
+  expect(await prisma.charge.count({ where: { contractId: fixture.contractId } })).toBe(1)
 })

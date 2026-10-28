@@ -43,11 +43,11 @@ export function OpportunityActionsFooter({
           >
             {t('moveStage')}
           </Button>
-          {opportunity.status !== 'RECUSADA' && (
+          {opportunity.status !== 'REJECTED' && (
             <Button
               color="error"
               variant="outlined"
-              disabled={isMutating || !canTransition(opportunity.status, 'RECUSADA')}
+              disabled={isMutating || !canTransition(opportunity.status, 'REJECTED')}
               onClick={onDiscardLead}
             >
               {t('discardLead')}

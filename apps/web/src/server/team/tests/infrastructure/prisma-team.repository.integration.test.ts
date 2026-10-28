@@ -29,169 +29,169 @@ describe('PrismaTeamRepository (integração)', () => {
   let futureEventId: string
   let pastEventId: string
 
-  async function user(name: string, papel: 'OWNER' | 'AGENT') {
-    return prisma.usuario.create({
+  async function user(name: string, role: 'OWNER' | 'AGENT') {
+    return prisma.user.create({
       data: {
         tenantId,
-        nome: name,
+        name: name,
         email: `${name.toLowerCase()}-${randomUUID()}@team.example.test`,
-        senhaHash: 'hash-fake',
-        papel,
+        passwordHash: 'hash-fake',
+        role,
       },
     })
   }
 
   beforeAll(async () => {
     tenantId = (
-      await prisma.tenant.create({ data: { nome: 'Equipe', slug: `team-${randomUUID()}` } })
+      await prisma.tenant.create({ data: { name: 'Equipe', slug: `team-${randomUUID()}` } })
     ).id
     ownerId = (await user('Dona', 'OWNER')).id
     sourceId = (await user('Marina', 'AGENT')).id
     destinationId = (await user('Thiago', 'AGENT')).id
-    await prisma.perfilPublicoCorretor.create({
+    await prisma.brokerPublicProfile.create({
       data: {
-        usuarioId: sourceId,
+        userId: sourceId,
         displayName: 'Marina',
         headline: 'Especialista em Jardins',
-        especialidades: ['Alto padrão'],
-        telefone: '11999990000',
+        specialties: ['Alto padrão'],
+        phone: '11999990000',
         status: 'PUBLISHED',
-        publicadoEm: now,
+        publishedAt: now,
       },
     })
-    const property = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: sourceId,
-        titulo: 'Casa da equipe',
-        finalidade: 'VENDA',
-        tipo: 'CASA',
-        valor: 500000,
+        responsibleId: sourceId,
+        title: 'Casa da equipe',
+        purpose: 'SALE',
+        type: 'HOUSE',
+        price: 500000,
         status: 'PUBLISHED',
       },
     })
     propertyId = property.id
-    await prisma.imovel.create({
+    await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: sourceId,
-        titulo: 'Inativo',
-        finalidade: 'VENDA',
-        tipo: 'CASA',
-        valor: 1,
+        responsibleId: sourceId,
+        title: 'Inativo',
+        purpose: 'SALE',
+        type: 'HOUSE',
+        price: 1,
         status: 'INACTIVE',
       },
     })
     await prisma.lead.create({
       data: {
         tenantId,
-        responsavelId: sourceId,
-        nome: 'Lead aberto',
-        telefone: '1',
-        interesse: 'Compra',
-        orcamento: '1',
-        origem: 'SITE',
+        responsibleId: sourceId,
+        name: 'Lead aberto',
+        phone: '1',
+        interest: 'Compra',
+        budget: '1',
+        source: 'WEBSITE',
         createdAt: minutesAgo(120),
-        primeiroContatoEm: minutesAgo(100),
+        firstContactAt: minutesAgo(100),
       },
     })
-    const opportunity = await prisma.oportunidade.create({
+    const opportunity = await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId: property.id,
-        responsavelId: await propertyResponsibleId(prisma, property.id),
-        interessadoNome: 'Comprador',
-        interessadoEmail: 'comprador@example.test',
-        valorProposto: 480000,
-        status: 'ACEITA',
+        propertyId: property.id,
+        responsibleId: await propertyResponsibleId(prisma, property.id),
+        interestedName: 'Comprador',
+        interestedEmail: 'comprador@example.test',
+        proposedValue: 480000,
+        status: 'ACCEPTED',
         createdAt: minutesAgo(60),
       },
     })
     await prisma.lead.create({
       data: {
         tenantId,
-        responsavelId: sourceId,
-        nome: 'Lead convertido',
-        telefone: '1',
-        interesse: 'Compra',
-        orcamento: '1',
-        origem: 'SITE',
-        oportunidadeId: opportunity.id,
+        responsibleId: sourceId,
+        name: 'Lead convertido',
+        phone: '1',
+        interest: 'Compra',
+        budget: '1',
+        source: 'WEBSITE',
+        opportunityId: opportunity.id,
       },
     })
-    await prisma.atividadeOportunidade.createMany({
+    await prisma.opportunityActivity.createMany({
       data: [
         {
-          oportunidadeId: opportunity.id,
-          tipo: 'CONTATO_REALIZADO',
-          descricao: '',
-          autorId: sourceId,
+          opportunityId: opportunity.id,
+          type: 'CONTACT_MADE',
+          description: '',
+          authorId: sourceId,
           createdAt: minutesAgo(20),
         },
         {
-          oportunidadeId: opportunity.id,
-          tipo: 'NOTA',
-          descricao: '',
-          autorId: sourceId,
+          opportunityId: opportunity.id,
+          type: 'NOTE',
+          description: '',
+          authorId: sourceId,
           createdAt: minutesAgo(10),
         },
       ],
     })
-    await prisma.contrato.create({
+    await prisma.contract.create({
       data: {
         tenantId,
-        imovelId: property.id,
-        oportunidadeOrigemId: opportunity.id,
-        codigo: `TEAM-${randomUUID()}`,
-        valor: 480000,
-        diaVencimento: 5,
-        dataInicio: now,
-        dataFim: new Date(now.getTime() + 365 * 24 * 3600_000),
-        indiceReajuste: 'IPCA',
-        tipoGarantia: 'CAUCAO',
-        status: 'ATIVO',
-        ativadoEm: now,
+        propertyId: property.id,
+        sourceOpportunityId: opportunity.id,
+        code: `TEAM-${randomUUID()}`,
+        amount: 480000,
+        dueDay: 5,
+        startDate: now,
+        endDate: new Date(now.getTime() + 365 * 24 * 3600_000),
+        adjustmentIndex: 'IPCA',
+        guaranteeType: 'DEPOSIT',
+        status: 'ACTIVE',
+        activatedAt: now,
       },
     })
     const event = (start: Date) =>
-      prisma.eventoAgenda.create({
+      prisma.agendaEvent.create({
         data: {
           tenantId,
-          responsavelId: sourceId,
-          donoUsuarioId: sourceId,
-          titulo: 'Visita',
-          inicio: start,
-          fim: new Date(start.getTime() + 3600_000),
-          participanteNome: 'Cliente',
-          participanteTelefone: '1',
+          responsibleId: sourceId,
+          ownerUserId: sourceId,
+          title: 'Visita',
+          start: start,
+          end: new Date(start.getTime() + 3600_000),
+          participantName: 'Cliente',
+          participantPhone: '1',
         },
       })
     futureEventId = (await event(new Date(now.getTime() + 24 * 3600_000))).id
     pastEventId = (await event(minutesAgo(24 * 60))).id
-    await prisma.metaCorretor.create({
+    await prisma.brokerGoal.create({
       data: {
         tenantId,
-        usuarioId: sourceId,
-        vendasMensais: 4,
-        definidoPorNome: 'Dona',
+        userId: sourceId,
+        monthlySales: 4,
+        definedByName: 'Dona',
         createdAt: minutesAgo(600),
       },
     })
-    await prisma.metaCorretor.create({
+    await prisma.brokerGoal.create({
       data: {
         tenantId,
-        usuarioId: sourceId,
-        vendasMensais: 8,
-        definidoPorId: ownerId,
-        definidoPorNome: 'Dona',
+        userId: sourceId,
+        monthlySales: 8,
+        definedById: ownerId,
+        definedByName: 'Dona',
       },
     })
   })
 
   afterAll(async () => {
-    await prisma.contrato.deleteMany({ where: { tenantId } })
+    await prisma.contract.deleteMany({ where: { tenantId } })
     await prisma.lead.deleteMany({ where: { tenantId } })
-    await prisma.oportunidade.deleteMany({ where: { tenantId } })
+    await prisma.opportunity.deleteMany({ where: { tenantId } })
     await prisma.tenant.delete({ where: { id: tenantId } })
     await prisma.$disconnect()
   })
@@ -222,22 +222,22 @@ describe('PrismaTeamRepository (integração)', () => {
   })
 
   it('a transferência manual leva só as oportunidades em aberto', async () => {
-    const opportunity = (status: 'ENVIADA' | 'RECUSADA', arquivadaEm: Date | null = null) =>
-      prisma.oportunidade.create({
+    const opportunity = (status: 'SENT' | 'REJECTED', archivedAt: Date | null = null) =>
+      prisma.opportunity.create({
         data: {
           tenantId,
-          imovelId: propertyId,
-          responsavelId: sourceId,
-          interessadoNome: 'Interessada',
-          interessadoEmail: `${randomUUID()}@team.example.test`,
-          valorProposto: 1000,
+          propertyId: propertyId,
+          responsibleId: sourceId,
+          interestedName: 'Interessada',
+          interestedEmail: `${randomUUID()}@team.example.test`,
+          proposedValue: 1000,
           status,
-          arquivadaEm,
+          archivedAt,
         },
       })
-    const open = await opportunity('ENVIADA')
-    const refused = await opportunity('RECUSADA')
-    const archived = await opportunity('ENVIADA', now)
+    const open = await opportunity('SENT')
+    const refused = await opportunity('REJECTED')
+    const archived = await opportunity('SENT', now)
 
     const result = await repository.transfer({
       tenantId,
@@ -251,19 +251,19 @@ describe('PrismaTeamRepository (integração)', () => {
     })
 
     expect(result.opportunityIds).toEqual([open.id])
-    const owners = await prisma.oportunidade.findMany({
+    const owners = await prisma.opportunity.findMany({
       where: { id: { in: [open.id, refused.id, archived.id] } },
-      select: { id: true, responsavelId: true },
+      select: { id: true, responsibleId: true },
     })
-    expect(Object.fromEntries(owners.map((row) => [row.id, row.responsavelId]))).toEqual({
+    expect(Object.fromEntries(owners.map((row) => [row.id, row.responsibleId]))).toEqual({
       [open.id]: destinationId,
       [refused.id]: sourceId,
       [archived.id]: sourceId,
     })
     expect(
-      (await prisma.imovel.findUniqueOrThrow({ where: { id: propertyId } })).responsavelId,
+      (await prisma.property.findUniqueOrThrow({ where: { id: propertyId } })).responsibleId,
     ).toBe(sourceId)
-    await prisma.transferenciaCarteira.deleteMany({ where: { tenantId } })
+    await prisma.portfolioTransfer.deleteMany({ where: { tenantId } })
   })
 
   it('desativa transferindo imóveis, leads e só os eventos futuros, com auditoria', async () => {
@@ -282,7 +282,7 @@ describe('PrismaTeamRepository (integração)', () => {
       destinationId,
       items: { properties: true, leads: true, opportunities: true, futureEvents: true },
       opportunityScope: 'all',
-      reason: 'DESATIVACAO',
+      reason: 'DEACTIVATION',
       actor: { id: ownerId, name: 'Dona' },
       now,
     })
@@ -291,31 +291,29 @@ describe('PrismaTeamRepository (integração)', () => {
     expect(result.leadIds).toHaveLength(2)
     expect(result.eventIds).toEqual([futureEventId])
     expect(result.opportunityIds.length).toBeGreaterThanOrEqual(2)
-    expect(await prisma.oportunidade.count({ where: { tenantId, responsavelId: sourceId } })).toBe(
-      0,
-    )
+    expect(await prisma.opportunity.count({ where: { tenantId, responsibleId: sourceId } })).toBe(0)
     expect(
-      (await prisma.imovel.findUniqueOrThrow({ where: { id: propertyId } })).responsavelId,
+      (await prisma.property.findUniqueOrThrow({ where: { id: propertyId } })).responsibleId,
     ).toBe(destinationId)
     expect(
-      await prisma.eventoAgenda.findUniqueOrThrow({ where: { id: futureEventId } }),
-    ).toMatchObject({ responsavelId: destinationId, donoUsuarioId: destinationId })
+      await prisma.agendaEvent.findUniqueOrThrow({ where: { id: futureEventId } }),
+    ).toMatchObject({ responsibleId: destinationId, ownerUserId: destinationId })
     expect(
-      (await prisma.eventoAgenda.findUniqueOrThrow({ where: { id: pastEventId } })).responsavelId,
+      (await prisma.agendaEvent.findUniqueOrThrow({ where: { id: pastEventId } })).responsibleId,
     ).toBe(sourceId)
-    expect(await prisma.usuario.findUniqueOrThrow({ where: { id: sourceId } })).toMatchObject({
-      ativo: false,
+    expect(await prisma.user.findUniqueOrThrow({ where: { id: sourceId } })).toMatchObject({
+      active: false,
     })
     expect(
       (await prisma.refreshToken.findUniqueOrThrow({ where: { id: token.id } })).revokedAt,
     ).not.toBeNull()
-    const [transfer] = await prisma.transferenciaCarteira.findMany({ where: { tenantId } })
+    const [transfer] = await prisma.portfolioTransfer.findMany({ where: { tenantId } })
     expect(transfer).toMatchObject({
-      motivo: 'DESATIVACAO',
-      origemNome: 'Marina',
-      destinoNome: 'Thiago',
-      autorNome: 'Dona',
-      eventoIds: [futureEventId],
+      reason: 'DEACTIVATION',
+      sourceName: 'Marina',
+      targetName: 'Thiago',
+      authorName: 'Dona',
+      eventIds: [futureEventId],
     })
     expect(
       await prisma.userAuditEvent.count({
@@ -327,7 +325,7 @@ describe('PrismaTeamRepository (integração)', () => {
   it('reativa e registra a mudança', async () => {
     expect(await repository.activate(tenantId, sourceId, ownerId)).toBe(true)
     expect(await repository.activate(tenantId, sourceId, ownerId)).toBe(false)
-    expect((await prisma.usuario.findUniqueOrThrow({ where: { id: sourceId } })).ativo).toBe(true)
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: sourceId } })).active).toBe(true)
   })
 
   it('convida, mostra o convite pendente e aceita uma única vez', async () => {
@@ -345,15 +343,16 @@ describe('PrismaTeamRepository (integração)', () => {
     expect(members.find((member) => member.id === created.userId)?.invitation?.status).toBe(
       'PENDING',
     )
-    expect(await prisma.usuario.findUniqueOrThrow({ where: { id: created.userId } })).toMatchObject(
-      { emailVerificadoEm: null, papel: 'AGENT' },
-    )
+    expect(await prisma.user.findUniqueOrThrow({ where: { id: created.userId } })).toMatchObject({
+      emailVerifiedAt: null,
+      role: 'AGENT',
+    })
 
     expect(await invitations.accept(tokenHash, 'hash-escolhido', new Date())).toBe(true)
     expect(await invitations.accept(tokenHash, 'outra', new Date())).toBe(false)
-    const accepted = await prisma.usuario.findUniqueOrThrow({ where: { id: created.userId } })
-    expect(accepted.senhaHash).toBe('hash-escolhido')
-    expect(accepted.emailVerificadoEm).not.toBeNull()
+    const accepted = await prisma.user.findUniqueOrThrow({ where: { id: created.userId } })
+    expect(accepted.passwordHash).toBe('hash-escolhido')
+    expect(accepted.emailVerifiedAt).not.toBeNull()
     expect(
       (await repository.listMembers(tenantId)).find((member) => member.id === created.userId)
         ?.invitation,
@@ -375,6 +374,6 @@ describe('PrismaTeamRepository (integração)', () => {
     expect(await invitations.accept(tokenHash, 'hash', new Date())).toBe(false)
     expect(await invitations.hasPortfolio(tenantId, created.userId)).toBe(false)
     expect(await invitations.deleteInvitedUser(tenantId, created.userId)).toBe(true)
-    expect(await prisma.usuario.count({ where: { id: created.userId } })).toBe(0)
+    expect(await prisma.user.count({ where: { id: created.userId } })).toBe(0)
   })
 })

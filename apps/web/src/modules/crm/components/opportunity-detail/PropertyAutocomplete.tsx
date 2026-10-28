@@ -8,7 +8,6 @@ import type { PropertyAutocompleteProps } from '../../types/opportunity-detail'
 import { CrmAutocomplete } from '../CrmAutocomplete'
 
 export function PropertyAutocomplete({
-  tenantId,
   value,
   onChange,
   error,
@@ -18,7 +17,7 @@ export function PropertyAutocomplete({
   const format = useCrmFormatter()
   const [input, setInput] = useState('')
   const q = useDebouncedValue(input)
-  const query = useCrmProperties(tenantId, q ? { q } : {})
+  const query = useCrmProperties(q ? { q } : {})
   return (
     <CrmAutocomplete
       value={value}
@@ -29,7 +28,7 @@ export function PropertyAutocomplete({
         [
           property.title,
           [property.neighborhood, property.city].filter(Boolean).join(', '),
-          format.money(property.price, property.purpose === 'ALUGUEL'),
+          format.money(property.price, property.purpose === 'RENT'),
         ]
           .filter(Boolean)
           .join(' — ')

@@ -1,6 +1,6 @@
 import type { OpportunityStatus } from '../domain/opportunity.entity'
 
-export type ActivityType = 'NOTA' | 'MUDANCA_STATUS' | 'CONTATO_REALIZADO' | 'PROPOSTA_RESPONDIDA'
+export type ActivityType = 'NOTE' | 'STATUS_CHANGE' | 'CONTACT_MADE' | 'PROPOSAL_ANSWERED'
 
 export interface OpportunityActivity {
   id: string

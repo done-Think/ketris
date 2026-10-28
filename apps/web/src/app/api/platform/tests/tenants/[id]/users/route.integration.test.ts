@@ -17,41 +17,41 @@ describe('GET /api/platform/tenants/[id]/users (integração)', () => {
   beforeAll(async () => {
     const actor = await prisma.platformAdmin.create({
       data: {
-        nome: 'Ator Teste',
+        name: 'Ator Teste',
         email: `ator-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
+        passwordHash: 'hash-fake',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
       role: 'ADMIN',
-      ativo: true,
+      active: true,
     })
 
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant com Usuários', slug: `tenant-users-${randomUUID()}` },
+      data: { name: 'Tenant com Usuários', slug: `tenant-users-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    await prisma.usuario.create({
+    await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin do Tenant',
+        name: 'Admin do Tenant',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
-    await prisma.usuario.create({
+    await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Agente do Tenant',
+        name: 'Agente do Tenant',
         email: `agente-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
   })

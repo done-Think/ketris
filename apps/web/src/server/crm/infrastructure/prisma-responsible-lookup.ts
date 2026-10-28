@@ -4,13 +4,13 @@ import type { ResponsibleLookupPort } from '../application/ports/responsible-loo
 import type { OpportunityResponsible } from '../types/opportunity-responsible'
 import type { CrmDatabase } from '../types/prisma'
 
-function activeStaffWhere(tenantId: string): Prisma.UsuarioWhereInput {
+function activeStaffWhere(tenantId: string): Prisma.UserWhereInput {
   return {
     tenantId,
-    ativo: true,
-    papel: { in: ['OWNER', 'AGENT'] },
-    vinculoAprovadoEm: { not: null },
-    OR: [{ conviteEquipe: null }, { conviteEquipe: { aceitoEm: { not: null } } }],
+    active: true,
+    role: { in: ['OWNER', 'AGENT'] },
+    membershipApprovedAt: { not: null },
+    OR: [{ teamInvitation: null }, { teamInvitation: { acceptedAt: { not: null } } }],
   }
 }
 
@@ -18,24 +18,24 @@ export class PrismaResponsibleLookup implements ResponsibleLookupPort {
   constructor(private readonly db: CrmDatabase) {}
 
   async findActiveStaffName(tenantId: string, userId: string): Promise<string | null> {
-    const user = await this.db.usuario.findFirst({
+    const user = await this.db.user.findFirst({
       where: { id: userId, ...activeStaffWhere(tenantId) },
-      select: { nome: true },
+      select: { name: true },
     })
 
-    return user?.nome ?? null
+    return user?.name ?? null
   }
 
   async listActiveStaff(tenantId: string): Promise<OpportunityResponsible[]> {
-    const users = await this.db.usuario.findMany({
+    const users = await this.db.user.findMany({
       where: activeStaffWhere(tenantId),
-      orderBy: [{ nome: 'asc' }, { id: 'asc' }],
-      select: { id: true, nome: true, papel: true },
+      orderBy: [{ name: 'asc' }, { id: 'asc' }],
+      select: { id: true, name: true, role: true },
     })
 
     return users.flatMap((user) =>
-      user.papel === 'OWNER' || user.papel === 'AGENT'
-        ? [{ id: user.id, name: user.nome, role: user.papel }]
+      user.role === 'OWNER' || user.role === 'AGENT'
+        ? [{ id: user.id, name: user.name, role: user.role }]
         : [],
     )
   }

@@ -1,11 +1,11 @@
-import type { LeadSource } from '../constants/lead-sources'
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { LeadSource } from './lead-source'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { Lead } from '../domain/lead.entity'
 
 export interface CreateLeadInput {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   name: string
   phone: string
   email?: string | null

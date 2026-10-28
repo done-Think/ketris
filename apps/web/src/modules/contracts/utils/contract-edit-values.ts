@@ -5,9 +5,9 @@ import { contractIsoDateToForm } from './contract-date'
 import { buildCreateContractPayload } from './contract-adapter'
 
 export function contractEditValues(contract: ApiContract): CreateContractFormValues {
-  const owner = contract.parties.find((party) => party.role === 'LOCADOR')
-  const tenant = contract.parties.find((party) => party.role === 'LOCATARIO')
-  const guarantor = contract.parties.find((party) => party.role === 'FIADOR')
+  const owner = contract.parties.find((party) => party.role === 'LANDLORD')
+  const tenant = contract.parties.find((party) => party.role === 'RENTER')
+  const guarantor = contract.parties.find((party) => party.role === 'GUARANTOR')
   return {
     ...createContractDefaultValues,
     opportunityId: contract.opportunityId,

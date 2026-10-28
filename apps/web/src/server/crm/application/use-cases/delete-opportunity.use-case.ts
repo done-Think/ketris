@@ -9,14 +9,14 @@ export class DeleteOpportunityUseCase {
   constructor(private readonly opportunityRepository: OpportunityRepository) {}
 
   async execute(input: DeleteOpportunityInput): Promise<void> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     const opportunity = await this.opportunityRepository.findById(input.opportunityId)
 
     if (!opportunity || opportunity.tenantId !== input.actorTenantId) {
       throw new OpportunityNotFoundError()
     }
 
-    assertOpportunityAccess(opportunity, input.actorId, input.actorPapel)
+    assertOpportunityAccess(opportunity, input.actorId, input.actorRole)
 
     await this.opportunityRepository.delete(opportunity.id)
   }

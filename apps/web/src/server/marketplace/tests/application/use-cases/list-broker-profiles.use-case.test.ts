@@ -33,7 +33,7 @@ function createRepository(listPublished: BrokerProfileRepository['listPublished'
   const brokerProfileRepository: BrokerProfileRepository = {
     findPublishedById: vi.fn(),
     listPublished,
-    findByUsuarioId: vi.fn(),
+    findByUserId: vi.fn(),
     save: vi.fn(),
     setStatus: vi.fn(),
   }

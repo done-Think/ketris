@@ -7,11 +7,11 @@ import type {
 import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket-repository'
 
 export function actor(
-  role: MaintenanceActor['actorPapel'],
+  role: MaintenanceActor['actorRole'],
   id = role === 'PROPERTY_OWNER' ? 'owner' : role.toLowerCase(),
   tenantId = 'tenant-1',
 ): MaintenanceActor {
-  return { actorId: id, actorPapel: role, actorTenantId: tenantId, actorName: id }
+  return { actorId: id, actorRole: role, actorTenantId: tenantId, actorName: id }
 }
 
 export const admin = actor('OWNER', 'admin')
@@ -47,8 +47,8 @@ export const ticket: MaintenanceTicket = {
   deletedAt: null,
   replacementRequests: [],
   category: 'PLUMBING',
-  priority: 'URGENTE',
-  status: 'ABERTO',
+  priority: 'URGENT',
+  status: 'OPEN',
   title: 'Leak',
   description: 'Kitchen leak',
   openedById: 'renter',

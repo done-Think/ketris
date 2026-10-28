@@ -12,124 +12,120 @@ import type {
 } from '../types/prisma-maintenance-ticket-repository'
 
 export const contractInclude = {
-  imovel: true,
-  partes: { include: { usuario: { select: { ativo: true, papel: true } } } },
+  property: true,
+  parties: { include: { user: { select: { active: true, role: true } } } },
 } as const
 
 export const ticketInclude = {
-  imovel: true,
-  contrato: { include: contractInclude },
-  responsavel: { select: { nome: true } },
-  atividades: { orderBy: { createdAt: 'asc' as const } },
-  anexos: true,
-  solicitacoesTroca: { orderBy: { createdAt: 'desc' as const } },
+  property: true,
+  contract: { include: contractInclude },
+  responsible: { select: { name: true } },
+  activities: { orderBy: { createdAt: 'asc' as const } },
+  attachments: true,
+  changeRequests: { orderBy: { createdAt: 'desc' as const } },
 }
 
 export function toContract(row: MaintenanceContractRow): MaintenanceContract {
   return {
     id: row.id,
     tenantId: row.tenantId,
-    code: row.codigo,
-    propertyId: row.imovelId,
-    propertyTitle: row.imovel.titulo,
-    agentId: row.imovel.responsavelId,
-    ownerId: row.imovel.proprietarioId,
-    renterIds: row.partes
-      .filter(
-        (p) =>
-          p.papel === 'LOCATARIO' &&
-          p.usuarioId &&
-          p.usuario?.ativo &&
-          p.usuario.papel === 'RENTER',
-      )
-      .map((p) => p.usuarioId!),
-    parties: row.partes.map((p) => ({
+    code: row.code,
+    propertyId: row.propertyId,
+    propertyTitle: row.property.title,
+    agentId: row.property.responsibleId,
+    ownerId: row.property.ownerId,
+    renterIds: row.parties
+      .filter((p) => p.role === 'RENTER' && p.userId && p.user?.active && p.user.role === 'RENTER')
+      .map((p) => p.userId!),
+    parties: row.parties.map((p) => ({
       id: p.id,
-      name: p.nome,
-      role: p.papel,
-      userId: p.usuarioId,
+      name: p.name,
+      role: p.role,
+      userId: p.userId,
     })),
   }
 }
 
-export function toActivity(row: MaintenanceTicketRow['atividades'][number]): MaintenanceActivity {
+export function toActivity(row: MaintenanceTicketRow['activities'][number]): MaintenanceActivity {
   return {
     id: row.id,
-    ticketId: row.chamadoId,
-    type: row.tipo,
-    message: row.mensagem,
+    ticketId: row.ticketId,
+    type: row.type,
+    message: row.message,
     systemAction: row.systemAction,
-    authorId: row.autorId,
-    authorName: row.autorNome,
+    authorId: row.authorId,
+    authorName: row.authorName,
     createdAt: row.createdAt,
-    details: row.detalhes as Record<string, unknown> | null,
+    details: row.details as Record<string, unknown> | null,
   }
 }
 
-export function toAttachment(row: MaintenanceTicketRow['anexos'][number]): MaintenanceAttachment {
+export function toAttachment(
+  row: MaintenanceTicketRow['attachments'][number],
+): MaintenanceAttachment {
   return {
     id: row.id,
-    ticketId: row.chamadoId,
-    name: row.nome,
+    ticketId: row.ticketId,
+    name: row.name,
     url: row.url,
     createdAt: row.createdAt,
   }
 }
 
 export function toTicket(row: MaintenanceTicketRow): MaintenanceTicket {
-  const contract = row.contrato ? toContract(row.contrato) : null
+  const contract = row.contract ? toContract(row.contract) : null
   return {
     id: row.id,
     tenantId: row.tenantId,
-    propertyId: row.imovelId,
-    propertyTitle: row.imovel.titulo,
-    contractId: row.contratoId,
-    responsibleId: row.responsavelId,
-    responsibleName: row.responsavel?.nome ?? null,
-    provider: row.prestadorNome
+    propertyId: row.propertyId,
+    propertyTitle: row.property.title,
+    contractId: row.contractId,
+    responsibleId: row.responsibleId,
+    responsibleName: row.responsible?.name ?? null,
+    provider: row.providerName
       ? {
-          ...(row.prestadorId ? { id: row.prestadorId } : {}),
-          name: row.prestadorNome,
-          phone: row.prestadorTelefone,
-          email: row.prestadorEmail,
-          notes: row.prestadorObservacoes,
+          ...(row.providerId ? { id: row.providerId } : {}),
+          name: row.providerName,
+          phone: row.providerPhone,
+          email: row.providerEmail,
+          notes: row.providerNotes,
         }
       : null,
-    completedByRole: row.concluidoPorPapel,
-    deletedAt: row.excluidoEm,
-    category: row.categoria,
-    priority: row.prioridade,
+    completedByRole: row.completedByRole,
+    deletedAt: row.deletedAt,
+    category: row.category,
+    priority: row.priority,
     status: row.status,
-    title: row.titulo,
-    description: row.descricao,
-    openedById: row.abertoPorId,
-    openedByName: row.abertoPorNome,
-    resolvedAt: row.resolvidoEm,
-    scheduledAt: row.atendimentoEm,
+    title: row.title,
+    description: row.description,
+    openedById: row.openedById,
+    openedByName: row.openedByName,
+    resolvedAt: row.resolvedAt,
+    scheduledAt: row.serviceAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    activities: row.atividades.map(toActivity),
-    attachments: row.anexos.map(toAttachment),
-    replacementRequests: row.solicitacoesTroca.map((r) => ({
+    activities: row.activities.map(toActivity),
+    attachments: row.attachments.map(toAttachment),
+    replacementRequests: row.changeRequests.map((r) => ({
       id: r.id,
-      reason: r.justificativa,
-      requestedById: r.solicitanteId,
-      requestedByName: r.solicitanteNome,
+      reason: r.justification,
+      requestedById: r.requesterId,
+      requestedByName: r.requesterName,
       status: r.status,
-      decisionReason: r.decisaoJustificativa,
-      decidedByName: r.decididoPorNome,
-      decidedAt: r.decididoEm,
+      decisionReason: r.decisionJustification,
+      decidedByName: r.decidedByName,
+      decidedAt: r.decidedAt,
       createdAt: r.createdAt,
     })),
     access: {
-      agentId: row.imovel.responsavelId,
-      ownerId: row.imovel.proprietarioId,
+      agentId: row.property.responsibleId,
+      ownerId: row.property.ownerId,
       renterIds: contract?.renterIds ?? [],
       validContract: Boolean(
         contract &&
-        contract.propertyId === row.imovelId &&
-        row.contrato?.tenantId === row.tenantId &&
-        row.imovel.tenantId === row.tenantId,
+        contract.propertyId === row.propertyId &&
+        row.contract?.tenantId === row.tenantId &&
+        row.property.tenantId === row.tenantId,
       ),
     },
   }
@@ -138,16 +134,17 @@ export function toTicket(row: MaintenanceTicketRow): MaintenanceTicket {
 export function activityData(
   ticketId: string,
   activity: NewMaintenanceActivity,
-): Prisma.AtividadeChamadoManutencaoUncheckedCreateInput {
+): Prisma.MaintenanceTicketActivityUncheckedCreateInput {
   return {
-    chamadoId: ticketId,
-    tipo: activity.type,
-    mensagem: activity.message,
-    systemAction: activity.systemAction,
-    autorId: activity.authorId,
-    autorNome: activity.authorName,
+    ticketId: ticketId,
+    type: activity.type,
+    message: activity.message,
+    systemAction:
+      activity.systemAction ?? (activity.authorId ? undefined : `SYSTEM_${activity.type}`),
+    authorId: activity.authorId,
+    authorName: activity.authorName,
     ...(activity.details
-      ? { detalhes: JSON.parse(JSON.stringify(activity.details)) as Prisma.InputJsonObject }
+      ? { details: JSON.parse(JSON.stringify(activity.details)) as Prisma.InputJsonObject }
       : {}),
   }
 }

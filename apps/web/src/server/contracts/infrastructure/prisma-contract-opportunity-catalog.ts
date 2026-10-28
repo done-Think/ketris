@@ -6,72 +6,72 @@ import type { ContractOpportunitiesQuery } from '../types/contract-opportunity'
 export class PrismaContractOpportunityCatalog implements ContractOpportunityCatalog {
   list(query: ContractOpportunitiesQuery) {
     const search = query.search?.trim()
-    const where: Prisma.OportunidadeWhereInput = {
+    const where: Prisma.OpportunityWhereInput = {
       tenantId: query.tenantId,
-      status: 'ACEITA',
-      arquivadaEm: null,
-      contrato: { is: null },
-      ...(query.responsibleId ? { responsavelId: query.responsibleId } : {}),
+      status: 'ACCEPTED',
+      archivedAt: null,
+      contract: { is: null },
+      ...(query.responsibleId ? { responsibleId: query.responsibleId } : {}),
       ...(search
         ? {
             OR: [
-              { interessadoNome: { contains: search, mode: 'insensitive' } },
-              { interessadoEmail: { contains: search, mode: 'insensitive' } },
-              { imovel: { titulo: { contains: search, mode: 'insensitive' } } },
+              { interestedName: { contains: search, mode: 'insensitive' } },
+              { interestedEmail: { contains: search, mode: 'insensitive' } },
+              { property: { title: { contains: search, mode: 'insensitive' } } },
             ],
           }
         : {}),
     }
     return prisma.$transaction(
       async (tx) => {
-        const rows = await tx.oportunidade.findMany({
+        const rows = await tx.opportunity.findMany({
           where,
           orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
           skip: (query.page - 1) * query.pageSize,
           take: query.pageSize,
           select: {
             id: true,
-            interessadoNome: true,
-            interessadoEmail: true,
-            interessadoTelefone: true,
-            valorProposto: true,
-            imovelId: true,
-            imovel: {
+            interestedName: true,
+            interestedEmail: true,
+            interestedPhone: true,
+            proposedValue: true,
+            propertyId: true,
+            property: {
               select: {
-                titulo: true,
-                endereco: { select: { logradouro: true, bairro: true, cidade: true } },
-                proprietario: {
-                  select: { id: true, nome: true, email: true, telefone: true },
+                title: true,
+                address: { select: { street: true, neighborhood: true, city: true } },
+                owner: {
+                  select: { id: true, name: true, email: true, phone: true },
                 },
               },
             },
           },
         })
-        const totalCount = await tx.oportunidade.count({ where })
+        const totalCount = await tx.opportunity.count({ where })
         return {
           items: rows.map((row) => ({
             id: row.id,
-            leadName: row.interessadoNome,
-            leadEmail: row.interessadoEmail,
-            leadPhone: row.interessadoTelefone,
-            proposedValue: row.valorProposto.toNumber(),
-            propertyId: row.imovelId,
-            propertyTitle: row.imovel.titulo,
-            propertyAddress: row.imovel.endereco
+            leadName: row.interestedName,
+            leadEmail: row.interestedEmail,
+            leadPhone: row.interestedPhone,
+            proposedValue: row.proposedValue.toNumber(),
+            propertyId: row.propertyId,
+            propertyTitle: row.property.title,
+            propertyAddress: row.property.address
               ? [
-                  row.imovel.endereco.logradouro,
-                  row.imovel.endereco.bairro,
-                  row.imovel.endereco.cidade,
+                  row.property.address.street,
+                  row.property.address.neighborhood,
+                  row.property.address.city,
                 ]
                   .filter(Boolean)
                   .join(', ')
               : '',
-            owner: row.imovel.proprietario
+            owner: row.property.owner
               ? {
-                  id: row.imovel.proprietario.id,
-                  name: row.imovel.proprietario.nome,
-                  email: row.imovel.proprietario.email,
-                  phone: row.imovel.proprietario.telefone,
+                  id: row.property.owner.id,
+                  name: row.property.owner.name,
+                  email: row.property.owner.email,
+                  phone: row.property.owner.phone,
                 }
               : null,
           })),

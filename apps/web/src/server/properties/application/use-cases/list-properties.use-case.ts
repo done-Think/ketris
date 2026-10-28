@@ -15,12 +15,12 @@ export class ListPropertiesUseCase {
       sortBy: input.sortBy ?? 'updatedAt',
       sortOrder: input.sortOrder ?? 'desc',
       status: input.status,
-      finalidade: input.finalidade,
-      responsavelId: input.actorPapel === 'AGENT' ? input.actorId : undefined,
-      ...(input.actorPapel === 'RENTER' ? { renterId: input.actorId } : {}),
-      ...(input.actorPapel === 'PROPERTY_OWNER' ? { proprietarioId: input.actorId } : {}),
+      purpose: input.purpose,
+      responsibleId: input.actorRole === 'AGENT' ? input.actorId : undefined,
+      ...(input.actorRole === 'RENTER' ? { renterId: input.actorId } : {}),
+      ...(input.actorRole === 'PROPERTY_OWNER' ? { ownerId: input.actorId } : {}),
     })
-    return input.actorPapel === 'RENTER'
+    return input.actorRole === 'RENTER'
       ? {
           ...result,
           properties: result.properties.map((property) => ({

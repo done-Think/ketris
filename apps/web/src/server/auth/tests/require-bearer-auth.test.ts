@@ -39,7 +39,7 @@ describe('requireBearerAuth', () => {
   })
 
   it('retorna o payload quando o token é válido', async () => {
-    const payload = { sub: 'user-1', tenantId: 'tenant-1', papel: 'OWNER' }
+    const payload = { sub: 'user-1', tenantId: 'tenant-1', role: 'OWNER' }
     const tokenService: TokenService = {
       sign: vi.fn(),
       verify: vi.fn().mockResolvedValue(payload),

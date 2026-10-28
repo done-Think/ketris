@@ -21,46 +21,46 @@ describe('/api/financial/summary — virada de mês (integração)', () => {
     vi.setSystemTime(lateOnOctober31InSaoPaulo)
 
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Financial Month', slug: `financial-month-${randomUUID()}` },
+      data: { name: 'Tenant Financial Month', slug: `financial-month-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const owner = await prisma.usuario.create({
+    const owner = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Dona',
+        name: 'Dona',
         email: `financial-month-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     ownerToken = await tokenService.sign({
       id: owner.id,
       tenantId: owner.tenantId,
-      nome: owner.nome,
+      name: owner.name,
       email: owner.email,
-      papel: owner.papel,
-      ativo: owner.ativo,
-      vinculoAprovadoEm: owner.vinculoAprovadoEm,
+      role: owner.role,
+      active: owner.active,
+      membershipApprovedAt: owner.membershipApprovedAt,
     })
 
     // Vencimentos são datas de calendário (YYYY-MM-DD), gravadas às 00:00 UTC.
-    for (const [valor, vencimento] of [
+    for (const [amount, dueDate] of [
       [100, '2026-10-01'],
       [200, '2026-10-31'],
       [400, '2026-11-01'],
       [800, '2026-05-01'],
       [1600, '2026-04-30'],
     ] as const) {
-      await prisma.cobranca.create({
+      await prisma.charge.create({
         data: {
           tenantId,
-          codigo: `COB-${randomUUID()}`,
-          descricao: 'Aluguel',
-          tipo: 'A_RECEBER',
-          valor,
-          vencimento: new Date(`${vencimento}T00:00:00.000Z`),
-          status: 'PENDENTE',
+          code: `COB-${randomUUID()}`,
+          description: 'Aluguel',
+          type: 'RECEIVABLE',
+          amount,
+          dueDate: new Date(`${dueDate}T00:00:00.000Z`),
+          status: 'PENDING',
         },
       })
     }

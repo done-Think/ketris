@@ -1,65 +1,12 @@
-export interface PublicBrokerListingSummary {
-  id: string
-  title: string
-  purpose: 'ALUGUEL' | 'VENDA' | 'AMBOS'
-  price: number
-  neighborhood: string | null
-  city: string | null
-  coverUrl: string | null
-}
+import type { components } from '@shared/types/generated/api'
+export type PublicBrokerListingSummary = components['schemas']['BrokerListingSummary']
 
-export interface PublicBrokerProfile {
-  id: string
-  agencyName: string
-  email: string
-  displayName: string
-  headline: string | null
-  bio: string | null
-  creci: string | null
-  phone: string | null
-  region: string | null
-  neighborhoods: string[]
-  specialties: string[]
-  availability: string | null
-  primaryColor: string | null
-  secondaryColor: string | null
-  backgroundColor: string | null
-  avatarUrl: string | null
-  bannerUrl: string | null
-  status: 'DRAFT' | 'PUBLISHED'
-  publishedAt: string | null
-  stats: { activeListings: number; dealsClosed: number }
-  recentListings: PublicBrokerListingSummary[]
-}
+export type PublicBrokerProfile = components['schemas']['PublicBrokerProfile']
 
-export interface ListBrokerProfilesResponse {
-  brokers: PublicBrokerProfile[]
-  totalCount: number
-  page: number
-  pageSize: number
-}
+export type ListBrokerProfilesResponse = components['schemas']['ListBrokersResponse']
 
-export interface BrokerProfileResponse {
-  broker: PublicBrokerProfile
-}
+export type BrokerProfileResponse = components['schemas']['GetBrokerProfileResponse']
 
-export interface OwnBrokerProfileResponse {
-  profile: PublicBrokerProfile | null
-}
+export type OwnBrokerProfileResponse = components['schemas']['OwnBrokerProfileResponse']
 
-export interface SaveBrokerProfileRequest {
-  displayName: string
-  headline: string | null
-  bio: string | null
-  creci: string | null
-  phone: string | null
-  region: string | null
-  neighborhoods: string[]
-  specialties: string[]
-  availability: string | null
-  primaryColor: string | null
-  secondaryColor: string | null
-  backgroundColor: string | null
-  avatarUrl: string | null
-  bannerUrl: string | null
-}
+export type SaveBrokerProfileRequest = components['schemas']['SaveBrokerProfileRequest']

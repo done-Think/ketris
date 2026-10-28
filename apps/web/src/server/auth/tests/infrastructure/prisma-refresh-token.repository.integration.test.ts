@@ -15,20 +15,20 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Refresh Token', slug: tenantSlug },
+      data: { name: 'Tenant Refresh Token', slug: tenantSlug },
     })
     tenantId = tenant.id
 
-    const usuario = await prisma.usuario.create({
+    const user = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Usuário Refresh Token',
+        name: 'Usuário Refresh Token',
         email: `usuario-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
-    userId = usuario.id
+    userId = user.id
   })
 
   afterAll(async () => {
@@ -165,7 +165,7 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
 
   it('checks the current account version and active state while holding its lock', async () => {
     const tokenHash = `version-guard-${randomUUID()}`
-    const user = await prisma.usuario.findUniqueOrThrow({ where: { id: userId } })
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
     await repository.create({
       userId,
       tenantId,
@@ -181,31 +181,31 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
     }
 
     try {
-      await prisma.usuario.update({
+      await prisma.user.update({
         where: { id: userId },
-        data: { versaoSessao: user.versaoSessao + 1 },
+        data: { sessionVersion: user.sessionVersion + 1 },
       })
       expect(
         await repository.rotate({
           previous,
           replacement,
-          expectedSessionVersion: user.versaoSessao,
+          expectedSessionVersion: user.sessionVersion,
         }),
       ).toBe(false)
       expect(await repository.findValidByTokenHash(tokenHash)).toEqual(previous)
-      await prisma.usuario.update({ where: { id: userId }, data: { ativo: false } })
+      await prisma.user.update({ where: { id: userId }, data: { active: false } })
       expect(
         await repository.rotate({
           previous,
           replacement,
-          expectedSessionVersion: user.versaoSessao + 1,
+          expectedSessionVersion: user.sessionVersion + 1,
         }),
       ).toBe(false)
       expect(await repository.findValidByTokenHash(replacement.tokenHash)).toBeNull()
     } finally {
-      await prisma.usuario.update({
+      await prisma.user.update({
         where: { id: userId },
-        data: { ativo: user.ativo, versaoSessao: user.versaoSessao },
+        data: { active: user.active, sessionVersion: user.sessionVersion },
       })
     }
   })
@@ -219,7 +219,7 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
       expiresAt: new Date(Date.now() + 60_000),
     })
     const previous = (await repository.findValidByTokenHash(tokenHash))!
-    const user = await prisma.usuario.findUniqueOrThrow({ where: { id: userId } })
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
     let signalLocked = () => {}
     let releaseLock = () => {}
     const locked = new Promise<void>((resolve) => {
@@ -229,7 +229,7 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
       releaseLock = resolve
     })
     const blocker = prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT "id" FROM "usuarios" WHERE "id" = ${userId} FOR UPDATE`
+      await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${userId} FOR UPDATE`
       signalLocked()
       await release
     })
@@ -238,7 +238,7 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
       await locked
       const rotation = repository.rotate({
         previous,
-        expectedSessionVersion: user.versaoSessao,
+        expectedSessionVersion: user.sessionVersion,
         replacement: {
           userId,
           tenantId,
@@ -250,7 +250,7 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
         userId,
         tenantId,
         email: user.email,
-        sessionVersion: user.versaoSessao,
+        sessionVersion: user.sessionVersion,
         passwordHash: 'new-test-hash',
       })
       releaseLock()
@@ -261,7 +261,7 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
       expect(
         await repository.rotate({
           previous,
-          expectedSessionVersion: user.versaoSessao,
+          expectedSessionVersion: user.sessionVersion,
           replacement: {
             userId,
             tenantId,

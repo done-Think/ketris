@@ -18,8 +18,8 @@ function summary(id: string): PublicPropertySummary {
   return {
     id,
     title: `Imóvel ${id}`,
-    purpose: 'ALUGUEL',
-    propertyType: 'APARTAMENTO',
+    purpose: 'RENT',
+    propertyType: 'APARTMENT',
     price: 2500,
     condoFee: null,
     propertyTax: null,
@@ -58,7 +58,7 @@ it('pede ao servidor só a página atual e calcula as páginas pelo total', asyn
   expect(result.current.resultCount).toBe(23)
   expect(result.current.totalPages).toBe(3)
   expect(marketplaceService.searchProperties).toHaveBeenCalledWith(
-    expect.objectContaining({ page: 1, pageSize: 10, purpose: 'ALUGUEL' }),
+    expect.objectContaining({ page: 1, pageSize: 10, purpose: 'RENT' }),
   )
 
   act(() => result.current.setCurrentPage(2))
@@ -85,7 +85,7 @@ it('envia os filtros iniciais da URL usando o código do tipo de imóvel', async
       useSearchResults({
         purpose: 'comprar',
         initialLocation: 'Moema',
-        initialPropertyType: 'CASA',
+        initialPropertyType: 'HOUSE',
         initialPriceRange: { min: 2000, max: 8000 },
       }),
     { wrapper },
@@ -94,9 +94,9 @@ it('envia os filtros iniciais da URL usando o código do tipo de imóvel', async
   await waitFor(() => expect(result.current.resultCount).toBe(23))
   expect(marketplaceService.searchProperties).toHaveBeenCalledWith(
     expect.objectContaining({
-      purpose: 'VENDA',
+      purpose: 'SALE',
       location: 'Moema',
-      propertyType: 'CASA',
+      propertyType: 'HOUSE',
       minPrice: 2000,
       maxPrice: 8000,
     }),

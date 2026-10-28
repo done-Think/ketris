@@ -75,7 +75,7 @@ export class PrismaEmailVerificationRepository implements EmailVerificationRepos
     try {
       return await prisma.$transaction(async (tx) => {
         const now = new Date()
-        const user = await tx.usuario.findFirst({
+        const user = await tx.user.findFirst({
           where: { id: input.userId, tenantId: input.tenantId, email: input.currentEmail },
         })
         if (!user) return false
@@ -94,15 +94,15 @@ export class PrismaEmailVerificationRepository implements EmailVerificationRepos
           data: { consumedAt: now },
         })
         if (claimed.count !== 1) return false
-        await tx.usuario.update({
+        await tx.user.update({
           where: { id: input.userId, tenantId: input.tenantId, email: input.currentEmail },
           data:
             input.purpose === 'SIGNUP'
-              ? { emailVerificadoEm: now }
+              ? { emailVerifiedAt: now }
               : {
                   email: input.targetEmail,
-                  emailVerificadoEm: now,
-                  versaoSessao: { increment: 1 },
+                  emailVerifiedAt: now,
+                  sessionVersion: { increment: 1 },
                 },
         })
         if (input.purpose === 'EMAIL_CHANGE') {

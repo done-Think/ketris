@@ -98,7 +98,7 @@ export class S3ContractDocumentStorage implements ContractDocumentStorage {
           Bucket: bucket,
           Key: key,
           ResponseContentDisposition:
-            'attachment; filename="' + (sanitizeUploadFilename(name) || 'contrato.pdf') + '"',
+            'attachment; filename="' + (sanitizeUploadFilename(name) || 'contract.pdf') + '"',
           ResponseCacheControl: 'private, no-store',
           ResponseContentType: CONTRACT_DOCUMENT_CONTENT_TYPE,
         }),

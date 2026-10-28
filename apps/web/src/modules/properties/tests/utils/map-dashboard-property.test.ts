@@ -44,13 +44,13 @@ const baseProperty: Property = {
     {
       id: 'media-1',
       url: 'https://cdn.ketris.dev/foto.jpg',
-      type: 'foto',
+      type: 'photo',
       order: 0,
       createdAt: '2026-08-01T10:00:00.000Z',
     },
   ],
   values: { price: 6500, rentalPrice: null, condoFee: 1200, propertyTax: 380 },
-  characteristics: { bedrooms: 3, bathrooms: 2, parkingSpots: 2, areaM2: 95 },
+  characteristics: { bedrooms: 3, bathrooms: 2, parkingSpots: 2, areaSqm: 95 },
 }
 
 const ptMappingOptions: DashboardPropertyMappingOptions = {
@@ -175,7 +175,7 @@ describe('toDashboardProperty', () => {
       {
         ...baseProperty,
         values: { price: 6500, rentalPrice: null, condoFee: null, propertyTax: null },
-        characteristics: { bedrooms: null, bathrooms: null, parkingSpots: null, areaM2: null },
+        characteristics: { bedrooms: null, bathrooms: null, parkingSpots: null, areaSqm: null },
       },
       ptMappingOptions,
     )
@@ -183,7 +183,7 @@ describe('toDashboardProperty', () => {
     expect(result.summary.bedrooms).toBe('Não informado')
     expect(result.summary.area).toBe('Não informado')
     expect(result.summary.condominium).toBe('Não informado')
-    expect(result.summary.iptu).toBe('Não informado')
+    expect(result.summary.propertyTax).toBe('Não informado')
   })
 
   it('falls back to a generic address label when there is no structured address', () => {
@@ -199,7 +199,7 @@ describe('toDashboardProperty', () => {
         ...baseProperty,
         address: null,
         values: { price: 6500, rentalPrice: null, condoFee: null, propertyTax: null },
-        characteristics: { bedrooms: null, bathrooms: null, parkingSpots: null, areaM2: null },
+        characteristics: { bedrooms: null, bathrooms: null, parkingSpots: null, areaSqm: null },
       },
       enMappingOptions,
     )

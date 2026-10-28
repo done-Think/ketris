@@ -30,13 +30,13 @@ export function buildEditPropertyFormValues(property: Property): CreateDashboard
     bedrooms: property.characteristics.bedrooms ?? 0,
     bathrooms: property.characteristics.bathrooms ?? 0,
     parkingSpaces: property.characteristics.parkingSpots ?? 0,
-    area: property.characteristics.areaM2 ?? 0,
+    area: property.characteristics.areaSqm ?? 0,
     features: property.listing.amenities,
     media: property.media.map((item) => ({ url: item.url, type: item.type, order: item.order })),
     mainValue: property.values.price,
     rentalValue: property.values.rentalPrice ?? 0,
     condominium: property.values.condoFee ?? 0,
-    iptu: property.values.propertyTax ?? 0,
+    propertyTax: property.values.propertyTax ?? 0,
     negotiationTerm: property.listing.negotiationTerms ?? '',
     publishingOptions: createPropertyPublishingOptions.filter(
       (_, index) =>

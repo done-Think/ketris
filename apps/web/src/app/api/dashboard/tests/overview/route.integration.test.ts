@@ -10,7 +10,7 @@ import { dayBoundsInTimeZone } from '@server/shared/time-zone-calendar'
 import { GET } from '../../overview/route'
 import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
-type Papel = 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER'
+type UserRole = 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER'
 
 describe('/api/dashboard/overview (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -20,28 +20,28 @@ describe('/api/dashboard/overview (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Dashboard', slug: `dashboard-${randomUUID()}` },
+      data: { name: 'Tenant Dashboard', slug: `dashboard-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    async function createUser(papel: Papel) {
-      const user = await prisma.usuario.create({
+    async function createUser(role: UserRole) {
+      const user = await prisma.user.create({
         data: {
           tenantId,
-          nome: `Usuário ${papel}`,
-          email: `dashboard-${papel.toLowerCase()}-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
-          papel,
+          name: `Usuário ${role}`,
+          email: `dashboard-${role.toLowerCase()}-${randomUUID()}@ketris.dev`,
+          passwordHash: 'hash-fake',
+          role,
         },
       })
       const token = await tokenService.sign({
         id: user.id,
         tenantId: user.tenantId,
-        nome: user.nome,
+        name: user.name,
         email: user.email,
-        papel: user.papel,
-        ativo: user.ativo,
-        vinculoAprovadoEm: user.vinculoAprovadoEm,
+        role: user.role,
+        active: user.active,
+        membershipApprovedAt: user.membershipApprovedAt,
       })
 
       return { user, token }
@@ -56,15 +56,15 @@ describe('/api/dashboard/overview (integração)', () => {
     tokens.renter = (await createUser('RENTER')).token
     tokens.propertyOwner = (await createUser('PROPERTY_OWNER')).token
 
-    const createProperty = (responsavelId: string) =>
-      prisma.imovel.create({
+    const createProperty = (responsibleId: string) =>
+      prisma.property.create({
         data: {
           tenantId,
-          responsavelId,
-          titulo: 'Apartamento Dashboard',
-          finalidade: 'ALUGUEL',
-          tipo: 'APARTAMENTO',
-          valor: 2500,
+          responsibleId,
+          title: 'Apartamento Dashboard',
+          purpose: 'RENT',
+          type: 'APARTMENT',
+          price: 2500,
           status: 'PUBLISHED',
         },
       })
@@ -72,38 +72,38 @@ describe('/api/dashboard/overview (integração)', () => {
     const propertyB = await createProperty(agentB.user.id)
 
     const createOpportunity = async (
-      imovelId: string,
-      status: 'ENVIADA' | 'EM_NEGOCIACAO' | 'ACEITA',
-      arquivadaEm: Date | null = null,
+      propertyId: string,
+      status: 'SENT' | 'IN_NEGOTIATION' | 'ACCEPTED',
+      archivedAt: Date | null = null,
     ) =>
-      prisma.oportunidade.create({
+      prisma.opportunity.create({
         data: {
           tenantId,
-          imovelId,
-          responsavelId: await propertyResponsibleId(prisma, imovelId),
-          interessadoNome: 'Interessado',
-          interessadoEmail: `interessado-${randomUUID()}@example.com`,
-          valorProposto: 2500,
+          propertyId,
+          responsibleId: await propertyResponsibleId(prisma, propertyId),
+          interestedName: 'Interessado',
+          interestedEmail: `interessado-${randomUUID()}@example.com`,
+          proposedValue: 2500,
           status,
-          arquivadaEm,
+          archivedAt,
         },
       })
-    await createOpportunity(propertyA.id, 'ENVIADA')
-    await createOpportunity(propertyB.id, 'EM_NEGOCIACAO')
-    await createOpportunity(propertyA.id, 'ENVIADA', new Date())
-    const accepted = await createOpportunity(propertyA.id, 'ACEITA')
+    await createOpportunity(propertyA.id, 'SENT')
+    await createOpportunity(propertyB.id, 'IN_NEGOTIATION')
+    await createOpportunity(propertyA.id, 'SENT', new Date())
+    const accepted = await createOpportunity(propertyA.id, 'ACCEPTED')
 
-    const createLead = (responsavelId: string, nome: string, oportunidadeId: string | null) =>
+    const createLead = (responsibleId: string, name: string, opportunityId: string | null) =>
       prisma.lead.create({
         data: {
           tenantId,
-          responsavelId,
-          nome,
-          telefone: '(11) 90000-0000',
-          interesse: 'Apartamento',
-          orcamento: 'Até R$ 3.000',
-          origem: 'SITE',
-          oportunidadeId,
+          responsibleId,
+          name,
+          phone: '(11) 90000-0000',
+          interest: 'Apartamento',
+          budget: 'Até R$ 3.000',
+          source: 'WEBSITE',
+          opportunityId,
         },
       })
     await createLead(agentA.user.id, 'Lead ativo do A', null)
@@ -116,93 +116,93 @@ describe('/api/dashboard/overview (integração)', () => {
     const createEvent = async (
       key: string,
       data: {
-        responsavelId: string
-        inicio: Date
-        tipo?: 'VISIT' | 'MEETING'
-        destino?: 'SHARED_TEAM' | 'ALL_AGENTS' | 'ASSIGNED_AGENT'
-        interno?: boolean
+        responsibleId: string
+        start: Date
+        type?: 'VISIT' | 'MEETING'
+        audience?: 'SHARED_TEAM' | 'ALL_AGENTS' | 'ASSIGNED_AGENT'
+        internal?: boolean
         status?: 'CONFIRMED' | 'CANCELLED'
       },
     ) => {
-      const event = await prisma.eventoAgenda.create({
+      const event = await prisma.agendaEvent.create({
         data: {
           tenantId,
-          titulo: key,
-          tipo: data.tipo ?? 'VISIT',
-          destino: data.destino ?? 'SHARED_TEAM',
-          interno: data.interno ?? false,
+          title: key,
+          type: data.type ?? 'VISIT',
+          audience: data.audience ?? 'SHARED_TEAM',
+          internal: data.internal ?? false,
           status: data.status ?? 'CONFIRMED',
-          responsavelId: data.responsavelId,
-          inicio: data.inicio,
-          fim: new Date(data.inicio.getTime() + 30 * 60_000),
-          participanteNome: 'Cliente',
-          participanteTelefone: '(11) 98888-0000',
-          referenciaImovelLivre: 'Imóvel de teste',
+          responsibleId: data.responsibleId,
+          start: data.start,
+          end: new Date(data.start.getTime() + 30 * 60_000),
+          participantName: 'Cliente',
+          participantPhone: '(11) 98888-0000',
+          freeFormPropertyReference: 'Imóvel de teste',
         },
       })
       eventIds[key] = event.id
     }
 
     // Visitas de hoje (sempre dentro do dia e do mês, qualquer que seja a hora do teste).
-    await createEvent('visita-A-hoje', { responsavelId: agentA.user.id, inicio: today.start })
+    await createEvent('visita-A-hoje', { responsibleId: agentA.user.id, start: today.start })
     await createEvent('visita-B-hoje', {
-      responsavelId: agentB.user.id,
-      inicio: new Date(today.start.getTime() + 1 * hour),
-      destino: 'ASSIGNED_AGENT',
+      responsibleId: agentB.user.id,
+      start: new Date(today.start.getTime() + 1 * hour),
+      audience: 'ASSIGNED_AGENT',
     })
     await createEvent('visita-todos-hoje', {
-      responsavelId: agentA.user.id,
-      inicio: new Date(today.start.getTime() + 2 * hour),
-      destino: 'ALL_AGENTS',
+      responsibleId: agentA.user.id,
+      start: new Date(today.start.getTime() + 2 * hour),
+      audience: 'ALL_AGENTS',
     })
     await createEvent('visita-interna-A-hoje', {
-      responsavelId: agentA.user.id,
-      inicio: new Date(today.start.getTime() + 3 * hour),
-      interno: true,
+      responsibleId: agentA.user.id,
+      start: new Date(today.start.getTime() + 3 * hour),
+      internal: true,
     })
     await createEvent('visita-cancelada-A-hoje', {
-      responsavelId: agentA.user.id,
-      inicio: new Date(today.start.getTime() + 4 * hour),
+      responsibleId: agentA.user.id,
+      start: new Date(today.start.getTime() + 4 * hour),
       status: 'CANCELLED',
     })
 
     // Próximas atividades (a partir de amanhã, sem corte no fim do mês).
     await createEvent('reuniao-A-futura', {
-      responsavelId: agentA.user.id,
-      inicio: new Date(today.end.getTime() + 1 * day + 10 * hour),
-      tipo: 'MEETING',
+      responsibleId: agentA.user.id,
+      start: new Date(today.end.getTime() + 1 * day + 10 * hour),
+      type: 'MEETING',
     })
     await createEvent('reuniao-todos-futura', {
-      responsavelId: agentB.user.id,
-      inicio: new Date(today.end.getTime() + 2 * day + 10 * hour),
-      tipo: 'MEETING',
-      destino: 'ALL_AGENTS',
+      responsibleId: agentB.user.id,
+      start: new Date(today.end.getTime() + 2 * day + 10 * hour),
+      type: 'MEETING',
+      audience: 'ALL_AGENTS',
     })
     await createEvent('reuniao-B-futura', {
-      responsavelId: agentB.user.id,
-      inicio: new Date(today.end.getTime() + 3 * day + 10 * hour),
-      tipo: 'MEETING',
-      destino: 'ASSIGNED_AGENT',
+      responsibleId: agentB.user.id,
+      start: new Date(today.end.getTime() + 3 * day + 10 * hour),
+      type: 'MEETING',
+      audience: 'ASSIGNED_AGENT',
     })
     await createEvent('reuniao-cancelada-A-futura', {
-      responsavelId: agentA.user.id,
-      inicio: new Date(today.end.getTime() + 4 * day + 10 * hour),
-      tipo: 'MEETING',
+      responsibleId: agentA.user.id,
+      start: new Date(today.end.getTime() + 4 * day + 10 * hour),
+      type: 'MEETING',
       status: 'CANCELLED',
     })
     await createEvent('reuniao-A-passada', {
-      responsavelId: agentA.user.id,
-      inicio: new Date(today.start.getTime() - 2 * day),
-      tipo: 'MEETING',
+      responsibleId: agentA.user.id,
+      start: new Date(today.start.getTime() - 2 * day),
+      type: 'MEETING',
     })
   })
 
   afterAll(async () => {
     if (tenantId) {
-      await prisma.eventoAgenda.deleteMany({ where: { tenantId } })
+      await prisma.agendaEvent.deleteMany({ where: { tenantId } })
       await prisma.lead.deleteMany({ where: { tenantId } })
-      await prisma.oportunidade.deleteMany({ where: { tenantId } })
-      await prisma.imovel.deleteMany({ where: { tenantId } })
+      await prisma.opportunity.deleteMany({ where: { tenantId } })
+      await prisma.property.deleteMany({ where: { tenantId } })
       await prisma.tenant.delete({ where: { id: tenantId } })
     }
     await prisma.$disconnect()
@@ -293,7 +293,7 @@ describe('/api/dashboard/overview (integração)', () => {
   it.each([
     ['RENTER', 'renter'],
     ['PROPERTY_OWNER', 'propertyOwner'],
-  ] as const)('%s recebe 403', async (_papel, key) => {
+  ] as const)('%s recebe 403', async (_role, key) => {
     const { status, body } = await getOverview(tokens[key])
 
     expect(status).toBe(403)

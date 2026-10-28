@@ -115,12 +115,13 @@
         "email": "Correo electrónico",
         "phone": "Teléfono",
         "type": "Tipo",
-        "notes": "Notas"
+        "notes": "Notas",
+        "avatarUrl": "URL del avatar"
       },
       "types": {
-        "PROPRIETARIO": "Propietario",
-        "LOCATARIO": "Inquilino",
-        "CORRETOR": "Corredor"
+        "OWNER": "Propietario",
+        "RENTER": "Inquilino",
+        "BROKER": "Corredor"
       },
       "actions": {
         "cancel": "Cancelar",
@@ -129,7 +130,8 @@
       "errors": {
         "nameRequired": "El nombre es obligatorio.",
         "emailInvalid": "Correo electrónico inválido.",
-        "textTooLong": "El texto supera el límite permitido."
+        "textTooLong": "El texto supera el límite permitido.",
+        "avatarUrlInvalid": "Introduce una URL HTTP(S) válida"
       },
       "createSuccess": "Contacto creado.",
       "updateSuccess": "Contacto actualizado.",
@@ -451,6 +453,16 @@
       "changed": "Ahora {name} es el responsable.",
       "changeError": "No se pudo cambiar el responsable.",
       "invalid": "Elige a alguien activo del equipo."
+    },
+    "activityComposer": {
+      "type": "Tipo de actividad",
+      "note": "Nota",
+      "contact": "Contacto realizado",
+      "description": "Descripción",
+      "save": "Registrar actividad",
+      "required": "Describe la actividad.",
+      "success": "Actividad registrada.",
+      "error": "No se pudo registrar la actividad."
     }
   },
   "proposalManagement": {

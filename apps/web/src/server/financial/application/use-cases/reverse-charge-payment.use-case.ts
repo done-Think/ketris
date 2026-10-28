@@ -15,7 +15,7 @@ export class ReverseChargePaymentUseCase {
   ) {}
 
   async execute(input: ChargeReasonInput): Promise<Charge> {
-    assertCanAccessFinance(input.actorPapel)
+    assertCanAccessFinance(input.actorRole)
 
     const current = await this.chargeRepository.findById(input.actorTenantId, input.chargeId)
     if (!current) throw new ChargeNotFoundError()

@@ -4,14 +4,14 @@ import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { UserNotFoundError } from '../../domain/errors'
-import { toAuthenticatedUser } from '../../domain/user.entity'
+import { toAuthenticatedUser } from '../authenticated-user'
 import type { UserRepository } from '../ports/user-repository.port'
 
 export class ApproveUserMembershipUseCase {
   constructor(private readonly userRepository: UserRepository) {}
 
   async execute(input: ApproveUserMembershipInput): Promise<ApproveUserMembershipOutput> {
-    if (!isAgencyManager(input.actorPapel)) {
+    if (!isAgencyManager(input.actorRole)) {
       throw new ForbiddenError('Apenas a gestão da imobiliária pode aprovar vínculos.')
     }
 
@@ -21,7 +21,7 @@ export class ApproveUserMembershipUseCase {
       throw new UserNotFoundError()
     }
 
-    if (target.vinculoAprovadoEm !== null) {
+    if (target.membershipApprovedAt !== null) {
       return toAuthenticatedUser(target)
     }
 

@@ -19,20 +19,20 @@ describe('POST /api/auth/password-reset-codes/verify (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Verify Code', slug: tenantSlug },
+      data: { name: 'Tenant Verify Code', slug: tenantSlug },
     })
     tenantId = tenant.id
 
-    const usuario = await prisma.usuario.create({
+    const user = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Verifica Código',
+        name: 'Verifica Código',
         email,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
-    userId = usuario.id
+    userId = user.id
   })
 
   afterAll(async () => {
@@ -144,16 +144,16 @@ describe('POST /api/auth/password-reset-codes/verify (integração)', () => {
   })
   it('proves mailbox ownership before listing duplicate accounts and resets only the selected account', async () => {
     const other = await prisma.tenant.create({
-      data: { nome: 'Other verified account', slug: `other-${randomUUID()}` },
+      data: { name: 'Other verified account', slug: `other-${randomUUID()}` },
     })
-    const second = await prisma.usuario.create({
+    const second = await prisma.user.create({
       data: {
         tenantId: other.id,
-        nome: 'Same mailbox',
+        name: 'Same mailbox',
         email,
-        senhaHash: 'original-second-hash',
-        papel: 'OWNER',
-        emailVerificadoEm: null,
+        passwordHash: 'original-second-hash',
+        role: 'OWNER',
+        emailVerifiedAt: null,
       },
     })
     try {
@@ -168,7 +168,7 @@ describe('POST /api/auth/password-reset-codes/verify (integração)', () => {
       expect(options).not.toHaveProperty('resetToken')
       const active = await prisma.emailOwnershipCode.count({ where: { email, consumedAt: null } })
       expect(active).toBe(1)
-      const original = await prisma.usuario.findUniqueOrThrow({ where: { id: userId } })
+      const original = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
       const response = await verifyCode(
         buildRequest({ email, code: validCode, tenantId: other.id }),
       )
@@ -186,12 +186,12 @@ describe('POST /api/auth/password-reset-codes/verify (integração)', () => {
         }),
       )
       expect(reset.status).toBe(204)
-      expect((await prisma.usuario.findUniqueOrThrow({ where: { id: userId } })).senhaHash).toBe(
-        original.senhaHash,
+      expect((await prisma.user.findUniqueOrThrow({ where: { id: userId } })).passwordHash).toBe(
+        original.passwordHash,
       )
-      const updated = await prisma.usuario.findUniqueOrThrow({ where: { id: second.id } })
-      expect(updated.senhaHash).not.toBe('original-second-hash')
-      expect(updated.emailVerificadoEm).toBeNull()
+      const updated = await prisma.user.findUniqueOrThrow({ where: { id: second.id } })
+      expect(updated.passwordHash).not.toBe('original-second-hash')
+      expect(updated.emailVerifiedAt).toBeNull()
       const replay = await verifyCode(buildRequest({ email, code: validCode, tenantId: other.id }))
       expect(replay.status).toBe(401)
     } finally {

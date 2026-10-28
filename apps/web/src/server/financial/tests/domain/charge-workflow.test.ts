@@ -23,7 +23,7 @@ describe('changedChargeFields', () => {
         description: charge.description,
         amount: 3000,
         dueDate: new Date(charge.dueDate),
-        type: 'A_PAGAR',
+        type: 'PAYABLE',
       }),
     ).toEqual(['type', 'amount'])
   })
@@ -34,7 +34,7 @@ describe('assertCanEditCharge', () => {
     expect(() => assertCanEditCharge(storedCharge(), ['amount', 'dueDate'])).not.toThrow()
   })
 
-  it.each(['PAGA', 'CANCELADA'] as const)('%s só aceita mudar a descrição', (storedStatus) => {
+  it.each(['PAID', 'CANCELED'] as const)('%s só aceita mudar a descrição', (storedStatus) => {
     const charge = storedCharge({ storedStatus })
     expect(() => assertCanEditCharge(charge, ['description'])).not.toThrow()
     expect(() => assertCanEditCharge(charge, ['description', 'amount'])).toThrow(ChargeLockedError)
@@ -42,19 +42,16 @@ describe('assertCanEditCharge', () => {
 })
 
 describe('assertCanSettleCharge', () => {
-  it.each(['PAGA', 'CANCELADA'] as const)(
-    'bloqueia pagar ou cancelar quando %s',
-    (storedStatus) => {
-      expect(() => assertCanSettleCharge(storedCharge({ storedStatus }))).toThrow(
-        ChargeAlreadySettledError,
-      )
-    },
-  )
+  it.each(['PAID', 'CANCELED'] as const)('bloqueia pagar ou cancelar quando %s', (storedStatus) => {
+    expect(() => assertCanSettleCharge(storedCharge({ storedStatus }))).toThrow(
+      ChargeAlreadySettledError,
+    )
+  })
 })
 
 describe('assertCanReversePayment', () => {
   it('só estorna cobrança paga', () => {
-    expect(() => assertCanReversePayment(storedCharge({ storedStatus: 'PAGA' }))).not.toThrow()
+    expect(() => assertCanReversePayment(storedCharge({ storedStatus: 'PAID' }))).not.toThrow()
     expect(() => assertCanReversePayment(storedCharge())).toThrow(ChargeNotPaidError)
   })
 })
@@ -63,7 +60,7 @@ describe('assertCanDeleteCharge', () => {
   it('exclui só em aberto e sem movimento', () => {
     expect(() => assertCanDeleteCharge(storedCharge(), false)).not.toThrow()
     expect(() => assertCanDeleteCharge(storedCharge(), true)).toThrow(ChargeHasMovementError)
-    expect(() => assertCanDeleteCharge(storedCharge({ storedStatus: 'PAGA' }), false)).toThrow(
+    expect(() => assertCanDeleteCharge(storedCharge({ storedStatus: 'PAID' }), false)).toThrow(
       ChargeHasMovementError,
     )
   })

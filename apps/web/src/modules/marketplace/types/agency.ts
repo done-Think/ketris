@@ -4,7 +4,7 @@ import type { ViewMode } from './search'
 export type AgencyProfileStatus = 'DRAFT' | 'PUBLISHED'
 
 export type AgencyTeamHighlight = {
-  usuarioId: string
+  userId: string
   name: string
   avatarUrl: string | null
 }

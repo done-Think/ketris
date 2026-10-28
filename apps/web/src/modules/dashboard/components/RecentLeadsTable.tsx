@@ -1,4 +1,4 @@
-import { leadSourceKey } from '@server/crm/constants/lead-sources'
+import { leadSourceKey } from '@shared/config/lead-sources'
 import {
   Box,
   Chip,

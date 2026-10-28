@@ -3,7 +3,7 @@ import type { CrmListFilters, CrmPage } from '../../types/pagination'
 
 export interface LeadListFilters extends CrmListFilters {
   stage?: Lead['stage']
-  responsavelId?: string
+  responsibleId?: string
 }
 
 export interface LeadRepository {

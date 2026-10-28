@@ -17,7 +17,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const result = await contractsContainer.listContractsUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     ...query,
   })
 
@@ -31,7 +31,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const contract = await contractsContainer.createContractFromOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     opportunityId: body.opportunityId,
     amount: body.amount,
     type: body.type,

@@ -12,7 +12,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const result = await contractsContainer.listContractOpportunitiesUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     ...query,
   })
   return NextResponse.json(result)

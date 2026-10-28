@@ -38,8 +38,8 @@ const viewModeScopeByPurpose: Record<
 }
 
 const apiPurposeByPurpose: Record<SearchResultsPageProps['purpose'], PublicPropertyPurpose> = {
-  alugar: 'ALUGUEL',
-  comprar: 'VENDA',
+  alugar: 'RENT',
+  comprar: 'SALE',
 }
 
 const sortByOption: Record<SortOption, PropertySortOption | undefined> = {

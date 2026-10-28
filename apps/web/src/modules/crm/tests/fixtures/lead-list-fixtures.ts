@@ -1,3 +1,6 @@
+import ptCommon from '@/i18n/messages/pt-BR/common.json'
+import enCommon from '@/i18n/messages/en-US/common.json'
+import esCommon from '@/i18n/messages/es-ES/common.json'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { DashboardLead } from '../../types/lead'
 import { formatLeadRelativeDate } from '../../utils/format-lead'
@@ -17,7 +20,7 @@ export const leadListFixtures: readonly FixtureLead[] = [
     interest: 'Apartamento 3 quartos',
     source: 'MARKETPLACE',
     broker: 'Amanda Keller',
-    stage: 'NOVO',
+    stage: 'NEW',
     opportunityId: null,
   },
   {
@@ -31,7 +34,7 @@ export const leadListFixtures: readonly FixtureLead[] = [
     interest: 'Casa em condominio',
     source: 'INSTAGRAM',
     broker: 'Rafael Prado',
-    stage: 'EM_CONTATO',
+    stage: 'IN_CONTACT',
     opportunityId: null,
   },
   {
@@ -45,7 +48,7 @@ export const leadListFixtures: readonly FixtureLead[] = [
     interest: 'Studio mobiliado',
     source: 'WHATSAPP',
     broker: 'Camila Nogueira',
-    stage: 'VISITA_MARCADA',
+    stage: 'VISIT_SCHEDULED',
     opportunityId: null,
   },
   {
@@ -57,9 +60,9 @@ export const leadListFixtures: readonly FixtureLead[] = [
     email: 'carla.rocha@email.com',
     minutesAgo: 7_200,
     interest: 'Cobertura duplex',
-    source: 'SITE',
+    source: 'WEBSITE',
     broker: 'Bruno Martins',
-    stage: 'PROPOSTA',
+    stage: 'PROPOSAL',
     opportunityId: 'opportunity-fixture-carla',
   },
   {
@@ -71,9 +74,9 @@ export const leadListFixtures: readonly FixtureLead[] = [
     email: 'guilherme.santos@email.com',
     minutesAgo: 10_080,
     interest: 'Apartamento compacto',
-    source: 'INDICACAO',
+    source: 'REFERRAL',
     broker: 'Livia Torres',
-    stage: 'NOVO',
+    stage: 'NEW',
     opportunityId: null,
   },
   {
@@ -87,7 +90,7 @@ export const leadListFixtures: readonly FixtureLead[] = [
     interest: 'Casa comercial',
     source: 'MARKETPLACE',
     broker: 'Henrique Duarte',
-    stage: 'EM_CONTATO',
+    stage: 'IN_CONTACT',
     opportunityId: null,
   },
 ]
@@ -99,7 +102,11 @@ export function getLeadListFixtures(locale: AppLocale, now = new Date()): Dashbo
       ...lead,
       budget:
         budgetKind === 'rent'
-          ? formatMonthlyCurrency(budgetAmount, locale)
+          ? formatMonthlyCurrency(
+              budgetAmount,
+              { 'pt-BR': ptCommon, 'en-US': enCommon, 'es-ES': esCommon }[locale].perMonth,
+              locale,
+            )
           : new Intl.NumberFormat(locale, {
               style: 'currency',
               currency: 'BRL',

@@ -8,7 +8,7 @@ export class ListChargeHistoryUseCase {
   constructor(private readonly chargeRepository: ChargeRepository) {}
 
   async execute(input: GetChargeInput): Promise<ChargeAuditEvent[]> {
-    assertCanAccessFinance(input.actorPapel)
+    assertCanAccessFinance(input.actorRole)
 
     const charge = await this.chargeRepository.findById(input.actorTenantId, input.chargeId)
     if (!charge) throw new ChargeNotFoundError()

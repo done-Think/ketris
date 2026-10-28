@@ -29,10 +29,10 @@ const created: Opportunity = {
   proposedValue: 2500,
   contractTermMonths: null,
   desiredStartDate: null,
-  guaranteeType: 'NENHUMA',
+  guaranteeType: 'NONE',
   specialConditions: [],
   notes: null,
-  status: 'RASCUNHO',
+  status: 'DRAFT',
   archivedAt: null,
   createdAt: new Date('2026-08-10T00:00:00.000Z'),
   updatedAt: new Date('2026-08-10T00:00:00.000Z'),
@@ -44,7 +44,7 @@ const contact: Contact = {
   name: 'Carlos',
   email: 'carlos@exemplo.com',
   phone: null,
-  type: 'PROPRIETARIO',
+  type: 'OWNER',
   avatarUrl: null,
   notes: null,
   lastInteraction: null,
@@ -55,7 +55,7 @@ const contact: Contact = {
 
 function createDeps(overrides?: {
   existsForTenant?: PropertyLookupPort['existsForTenant']
-  findResponsavelId?: PropertyLookupPort['findResponsavelId']
+  findResponsibleId?: PropertyLookupPort['findResponsibleId']
   findById?: ContactRepository['findById']
   create?: OpportunityRepository['create']
   findActiveStaffName?: ResponsibleLookupPort['findActiveStaffName']
@@ -70,7 +70,7 @@ function createDeps(overrides?: {
 
   const propertyLookup = {
     existsForTenant: overrides?.existsForTenant ?? vi.fn().mockResolvedValue(true),
-    findResponsavelId: overrides?.findResponsavelId ?? vi.fn().mockResolvedValue('agent-1'),
+    findResponsibleId: overrides?.findResponsibleId ?? vi.fn().mockResolvedValue('agent-1'),
   } as unknown as PropertyLookupPort
 
   const activityRepository = {
@@ -105,7 +105,7 @@ describe('CreateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       actorId: 'user-1',
       actorName: 'Ana',
       propertyId: 'imovel-1',
@@ -119,7 +119,7 @@ describe('CreateOpportunityUseCase', () => {
         tenantId: 'tenant-1',
         propertyId: 'imovel-1',
         contactId: null,
-        status: 'RASCUNHO',
+        status: 'DRAFT',
       }),
     )
   })
@@ -137,7 +137,7 @@ describe('CreateOpportunityUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       propertyId: 'imovel-1',
       leadName: 'Maria',
       leadEmail: 'maria@exemplo.com',
@@ -146,7 +146,7 @@ describe('CreateOpportunityUseCase', () => {
 
     expect(deps.activityRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: 'NOTA',
+        type: 'NOTE',
         description: '',
         systemAction: 'OPPORTUNITY_CREATED',
       }),
@@ -154,7 +154,7 @@ describe('CreateOpportunityUseCase', () => {
   })
 
   it('respeita um status inicial explícito (ENVIADA)', async () => {
-    const create = vi.fn().mockResolvedValue({ ...created, status: 'ENVIADA' })
+    const create = vi.fn().mockResolvedValue({ ...created, status: 'SENT' })
     const deps = createDeps({ create })
     const useCase = new CreateOpportunityUseCase(
       deps.opportunityRepository,
@@ -167,15 +167,15 @@ describe('CreateOpportunityUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       propertyId: 'imovel-1',
       leadName: 'Maria',
       leadEmail: 'maria@exemplo.com',
       proposedValue: 2500,
-      status: 'ENVIADA',
+      status: 'SENT',
     })
 
-    expect(create).toHaveBeenCalledWith(expect.objectContaining({ status: 'ENVIADA' }))
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ status: 'SENT' }))
   })
 
   it('lança OpportunityPropertyNotFoundError quando o imóvel não pertence ao tenant do ator', async () => {
@@ -193,7 +193,7 @@ describe('CreateOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         propertyId: 'imovel-de-outro-tenant',
         leadName: 'Maria',
         leadEmail: 'maria@exemplo.com',
@@ -222,7 +222,7 @@ describe('CreateOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         propertyId: 'imovel-1',
         contactId: 'contato-de-outro-tenant',
         leadName: 'Maria',
@@ -247,7 +247,7 @@ describe('CreateOpportunityUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       propertyId: 'imovel-1',
       leadName: 'Maria',
       leadEmail: 'maria@exemplo.com',
@@ -259,7 +259,7 @@ describe('CreateOpportunityUseCase', () => {
 
   it('AGENT cria oportunidade no próprio imóvel normalmente', async () => {
     const create = vi.fn().mockResolvedValue(created)
-    const deps = createDeps({ create, findResponsavelId: vi.fn().mockResolvedValue('agent-1') })
+    const deps = createDeps({ create, findResponsibleId: vi.fn().mockResolvedValue('agent-1') })
     const useCase = new CreateOpportunityUseCase(
       deps.opportunityRepository,
       deps.contactRepository,
@@ -271,7 +271,7 @@ describe('CreateOpportunityUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'agent-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       propertyId: 'imovel-1',
       leadName: 'Maria',
       leadEmail: 'maria@exemplo.com',
@@ -285,7 +285,7 @@ describe('CreateOpportunityUseCase', () => {
     const create = vi.fn()
     const deps = createDeps({
       create,
-      findResponsavelId: vi.fn().mockResolvedValue('outro-agente'),
+      findResponsibleId: vi.fn().mockResolvedValue('outro-agente'),
     })
     const useCase = new CreateOpportunityUseCase(
       deps.opportunityRepository,
@@ -299,7 +299,7 @@ describe('CreateOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         propertyId: 'imovel-1',
         leadName: 'Maria',
         leadEmail: 'maria@exemplo.com',
@@ -331,7 +331,7 @@ describe('CreateOpportunityUseCase', () => {
     await build(createDeps({ create })).execute({
       ...base,
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
     })
 
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ responsibleId: 'user-1' }))
@@ -343,7 +343,7 @@ describe('CreateOpportunityUseCase', () => {
     await build(createDeps({ create, findActiveStaffName })).execute({
       ...base,
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       responsibleId: 'agent-2',
     })
 
@@ -357,7 +357,7 @@ describe('CreateOpportunityUseCase', () => {
       build(createDeps({ create, findActiveStaffName: vi.fn().mockResolvedValue(null) })).execute({
         ...base,
         actorId: 'user-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         responsibleId: 'inativo',
       }),
     ).rejects.toThrow(InvalidOpportunityResponsibleError)
@@ -369,7 +369,7 @@ describe('CreateOpportunityUseCase', () => {
       build(createDeps()).execute({
         ...base,
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         responsibleId: 'agent-2',
       }),
     ).rejects.toThrow(ForbiddenError)

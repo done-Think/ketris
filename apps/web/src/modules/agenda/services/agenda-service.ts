@@ -1,5 +1,5 @@
-import type { AgendaPropertyOptionsResponseDTO } from '@server/agenda/types/http'
-import type { ListUsersResponseDTO } from '@server/auth/types/http'
+import type { AgendaPropertyOptionsResponseDTO } from '@shared/types/generated/agenda/http'
+import type { ListUsersResponseDTO } from '@shared/types/generated/auth/http'
 import { BaseService } from '@shared/lib/api/base-service'
 import type {
   AgendaChargeApi,

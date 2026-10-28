@@ -17,7 +17,7 @@ export function ConditionsStep({ control }: ContractStepControlProps) {
         <FieldGrid
           control={control}
           fields={[
-            ...conditionsStepFieldsMeta.map((field) => toFieldConfig(field, t)),
+            ...conditionsStepFieldsMeta.map((field) => toFieldConfig(field, t, false, t)),
             toFieldConfig({ name: 'notes', labelKey: 'notes' }, t, true),
           ]}
         />

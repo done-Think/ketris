@@ -5,7 +5,7 @@ import type { TokenService } from '../../../application/ports/token-service.port
 import { ValidateSessionTokensUseCase } from '../../../application/use-cases/validate-session-tokens.use-case'
 import { hashRefreshToken } from '../../../domain/refresh-token'
 
-const claims = { sub: 'u1', tenantId: 't1', papel: 'AGENT' as const, sessionVersion: 2 }
+const claims = { sub: 'u1', tenantId: 't1', role: 'AGENT' as const, sessionVersion: 2 }
 
 function setup(stored: unknown = { id: 'r1', userId: 'u1', tenantId: 't1' }) {
   const tokens = { verify: vi.fn().mockResolvedValue(claims) } as unknown as TokenService

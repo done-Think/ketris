@@ -10,55 +10,55 @@ const cpf = '529.982.247-25'
 
 beforeAll(async () => {
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Proteção Contracts teste', slug: `contracts-cpf-${randomUUID()}` },
+    data: { name: 'Proteção Contracts teste', slug: `contracts-cpf-${randomUUID()}` },
   })
   tenantId = tenant.id
-  const user = await prisma.usuario.create({
+  const user = await prisma.user.create({
     data: {
       tenantId,
-      nome: 'Gestora',
+      name: 'Gestora',
       email: `${randomUUID()}@example.test`,
-      senhaHash: 'test-only',
-      papel: 'OWNER',
+      passwordHash: 'test-only',
+      role: 'OWNER',
     },
   })
-  const property = await prisma.imovel.create({
+  const property = await prisma.property.create({
     data: {
       tenantId,
-      responsavelId: user.id,
-      titulo: 'Imóvel',
-      tipo: 'CASA',
-      finalidade: 'ALUGUEL',
-      valor: 1000,
+      responsibleId: user.id,
+      title: 'Imóvel',
+      type: 'HOUSE',
+      purpose: 'RENT',
+      price: 1000,
     },
   })
-  const opportunity = await prisma.oportunidade.create({
+  const opportunity = await prisma.opportunity.create({
     data: {
       tenantId,
-      imovelId: property.id,
-      responsavelId: await propertyResponsibleId(prisma, property.id),
-      interessadoNome: 'Pessoa',
-      interessadoEmail: 'person@example.test',
-      status: 'ACEITA',
-      valorProposto: 1000,
+      propertyId: property.id,
+      responsibleId: await propertyResponsibleId(prisma, property.id),
+      interestedName: 'Pessoa',
+      interestedEmail: 'person@example.test',
+      status: 'ACCEPTED',
+      proposedValue: 1000,
     },
   })
-  const contract = await prisma.contrato.create({
+  const contract = await prisma.contract.create({
     data: {
       tenantId,
-      imovelId: property.id,
-      oportunidadeOrigemId: opportunity.id,
-      codigo: `CPF-${randomUUID()}`,
-      valor: 1000,
-      diaVencimento: 5,
-      dataInicio: new Date('2031-01-01'),
-      dataFim: new Date('2032-01-01'),
-      indiceReajuste: 'IPCA',
-      tipoGarantia: 'CAUCAO',
-      partes: {
+      propertyId: property.id,
+      sourceOpportunityId: opportunity.id,
+      code: `CPF-${randomUUID()}`,
+      amount: 1000,
+      dueDay: 5,
+      startDate: new Date('2031-01-01'),
+      endDate: new Date('2032-01-01'),
+      adjustmentIndex: 'IPCA',
+      guaranteeType: 'DEPOSIT',
+      parties: {
         create: [
-          { papel: 'LOCADOR', nome: 'Pessoa A', email: 'owner@example.test', cpf },
-          { papel: 'LOCATARIO', nome: 'Pessoa B', email: 'renter@example.test', cpf },
+          { role: 'LANDLORD', name: 'Pessoa A', email: 'owner@example.test', cpf },
+          { role: 'RENTER', name: 'Pessoa B', email: 'renter@example.test', cpf },
         ],
       },
     },
@@ -68,7 +68,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   vi.unstubAllEnvs()
-  if (contractId) await prisma.contrato.delete({ where: { id: contractId } })
+  if (contractId) await prisma.contract.delete({ where: { id: contractId } })
   if (tenantId) await prisma.tenant.delete({ where: { id: tenantId } })
 })
 
@@ -78,7 +78,7 @@ it('recusa chave inválida antes de alterar qualquer CPF ou histórico', async (
     await expect(protectLegacyContractCpfs(prisma, { tenantId })).rejects.toMatchObject({
       code: 'CONTRACT_DATA_PROTECTION_UNAVAILABLE',
     })
-    const parties = await prisma.parteContrato.findMany({ where: { contratoId: contractId } })
+    const parties = await prisma.contractParty.findMany({ where: { contractId: contractId } })
     expect(parties.every((party) => party.cpf === cpf)).toBe(true)
     expect(await prisma.contractAuditEvent.count({ where: { contractId } })).toBe(0)
   } finally {
@@ -89,7 +89,7 @@ it('recusa chave inválida antes de alterar qualquer CPF ou histórico', async (
 it('protege os legados de forma idempotente, preserva leitura e registra somente manutenção do sistema', async () => {
   expect(await protectLegacyContractCpfs(prisma, { tenantId })).toBe(2)
   expect(await protectLegacyContractCpfs(prisma, { tenantId })).toBe(0)
-  const parties = await prisma.parteContrato.findMany({ where: { contratoId: contractId } })
+  const parties = await prisma.contractParty.findMany({ where: { contractId: contractId } })
   expect(parties.every((party) => party.cpf.startsWith('enc:v1:'))).toBe(true)
   expect(parties.every((party) => !party.cpf.includes(cpf))).toBe(true)
   const result = await new PrismaContractRepository().findById(contractId, {

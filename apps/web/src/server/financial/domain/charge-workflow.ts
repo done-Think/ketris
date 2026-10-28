@@ -34,7 +34,7 @@ export function assertCanSettleCharge(charge: StoredCharge): void {
 }
 
 export function assertCanReversePayment(charge: StoredCharge): void {
-  if (charge.storedStatus !== 'PAGA') throw new ChargeNotPaidError()
+  if (charge.storedStatus !== 'PAID') throw new ChargeNotPaidError()
 }
 
 export function assertCanDeleteCharge(charge: StoredCharge, hasMovement: boolean): void {

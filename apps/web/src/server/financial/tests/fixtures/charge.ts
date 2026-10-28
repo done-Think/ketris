@@ -15,8 +15,8 @@ export function storedCharge(overrides: Partial<StoredCharge> = {}): StoredCharg
     id: 'charge-1',
     tenantId: 'tenant-1',
     code: 'COB-2026-0001',
-    type: 'A_RECEBER',
-    storedStatus: 'PENDENTE',
+    type: 'RECEIVABLE',
+    storedStatus: 'PENDING',
     amount: 2500,
     dueDate: new Date('2026-11-05T00:00:00.000Z'),
     description: 'Aluguel avulso',
@@ -48,15 +48,15 @@ export function createRepository(overrides: Partial<ChargeRepository> = {}): Cha
     findMany: vi.fn().mockResolvedValue({
       items: [],
       totalCount: 0,
-      statusCounts: { ALL: 0, PENDENTE: 0, ATRASADA: 0, PAGA: 0, AGENDADA: 0, CANCELADA: 0 },
+      statusCounts: { ALL: 0, PENDING: 0, OVERDUE: 0, PAID: 0, SCHEDULED: 0, CANCELED: 0 },
     }),
     findById: vi.fn().mockResolvedValue(charge),
     findReadableById: vi.fn().mockResolvedValue(charge),
     hasMovement: vi.fn().mockResolvedValue(false),
     update: vi.fn().mockResolvedValue(charge),
-    registerPayment: vi.fn().mockResolvedValue(storedCharge({ storedStatus: 'PAGA' })),
+    registerPayment: vi.fn().mockResolvedValue(storedCharge({ storedStatus: 'PAID' })),
     reversePayment: vi.fn().mockResolvedValue(charge),
-    cancel: vi.fn().mockResolvedValue(storedCharge({ storedStatus: 'CANCELADA' })),
+    cancel: vi.fn().mockResolvedValue(storedCharge({ storedStatus: 'CANCELED' })),
     delete: vi.fn().mockResolvedValue(undefined),
     listHistory: vi.fn().mockResolvedValue([]),
     findReceipt: vi.fn().mockResolvedValue(null),
@@ -73,7 +73,7 @@ export function createRepository(overrides: Partial<ChargeRepository> = {}): Cha
   }
 }
 
-export const owner = { actorId: 'owner-1', actorTenantId: 'tenant-1', actorPapel: 'OWNER' } as const
+export const owner = { actorId: 'owner-1', actorTenantId: 'tenant-1', actorRole: 'OWNER' } as const
 
 export const receiptDescriptor: ChargeReceiptDescriptor = {
   id: 'receipt-1',

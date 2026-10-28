@@ -25,7 +25,7 @@ export async function updateTicket(
     if (!changes.contractId && !ticket.contractId)
       throw new ConflictError('Selecione o contrato do chamado.')
     if (
-      actor.actorPapel === 'RENTER' &&
+      actor.actorRole === 'RENTER' &&
       ((changes.contractId && changes.contractId !== ticket.contractId) ||
         (changes.propertyId && changes.propertyId !== ticket.propertyId))
     )
@@ -46,7 +46,7 @@ export async function updateTicket(
     changes,
     activity(
       actor,
-      'EDICAO',
+      'EDIT',
       'Dados do chamado atualizados.',
       {
         before: Object.fromEntries(

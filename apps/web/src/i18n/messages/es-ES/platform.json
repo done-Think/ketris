@@ -443,5 +443,8 @@
     "createSuccess": "Cuenta {name} creada.",
     "createError": "No se pudo crear la cuenta. Inténtalo de nuevo.",
     "forbidden": "Solo los administradores con el rol Admin pueden crear cuentas."
+  },
+  "errors": {
+    "lastPlatformAdmin": "Mantén al menos un administrador activo en la plataforma."
   }
 }

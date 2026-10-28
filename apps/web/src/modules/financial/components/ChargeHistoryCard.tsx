@@ -10,6 +10,12 @@ import { ChargeSectionCard } from './ChargeSectionCard'
 
 export function ChargeHistoryCard({ chargeId }: ChargeHistoryCardProps) {
   const t = useTranslations('charges.details')
+  const fieldLabels = new Map<string, string>(
+    (['description', 'type', 'amount', 'dueDate'] as const).map((field) => [
+      field,
+      t(`history.fields.${field}`),
+    ]),
+  )
   const format = useFinancialFormat()
   const history = useChargeHistory(chargeId)
 
@@ -35,7 +41,7 @@ export function ChargeHistoryCard({ chargeId }: ChargeHistoryCardProps) {
                   <Typography sx={styles.historyMeta}>
                     {t('history.changed', {
                       fields: event.changedFields
-                        .map((field) => t(`history.fields.${field}`))
+                        .map((field) => fieldLabels.get(field) ?? field)
                         .join(', '),
                     })}
                   </Typography>

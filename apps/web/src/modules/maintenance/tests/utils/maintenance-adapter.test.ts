@@ -29,7 +29,7 @@ describe('Maintenance adapters and locale presentation', () => {
       title: 'Title',
       description: 'Description',
       category: 'OTHER',
-      priority: 'URGENTE',
+      priority: 'URGENT',
     })
   })
   it('uses the injected locale formatter for list dates', () => {
@@ -40,8 +40,8 @@ describe('Maintenance adapters and locale presentation', () => {
         propertyId: 'property',
         propertyTitle: 'Property',
         category: 'PLUMBING',
-        priority: 'URGENTE',
-        status: 'ABERTO',
+        priority: 'URGENT',
+        status: 'OPEN',
         openedByName: 'Renter',
         resolvedAt: null,
         createdAt: '2026-10-26T12:00:00Z',
@@ -76,7 +76,7 @@ describe('Maintenance adapters and locale presentation', () => {
       const event: ApiMaintenanceActivity = {
         id: 'event',
         ticketId: 'ticket',
-        type: 'NOTA',
+        type: 'NOTE',
         authorId: null,
         authorName: null,
         createdAt: '2026-10-26T12:00:00Z',

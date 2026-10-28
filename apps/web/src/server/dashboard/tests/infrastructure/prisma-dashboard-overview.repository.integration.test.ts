@@ -13,37 +13,37 @@ describe('PrismaDashboardOverviewRepository.findUpcomingActivities (integração
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Dashboard Imóvel', slug: `dashboard-imovel-${randomUUID()}` },
+      data: { name: 'Tenant Dashboard Imóvel', slug: `dashboard-imovel-${randomUUID()}` },
     })
     tenantId = tenant.id
-    const owner = await prisma.usuario.create({
+    const owner = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Dona',
+        name: 'Dona',
         email: `dashboard-imovel-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
 
-    const createProperty = (status: 'PUBLISHED' | 'DRAFT', titulo: string) =>
-      prisma.imovel.create({
+    const createProperty = (status: 'PUBLISHED' | 'DRAFT', title: string) =>
+      prisma.property.create({
         data: {
           tenantId,
-          responsavelId: owner.id,
-          titulo,
-          finalidade: 'ALUGUEL',
-          tipo: 'APARTAMENTO',
-          valor: 3200,
+          responsibleId: owner.id,
+          title,
+          purpose: 'RENT',
+          type: 'APARTMENT',
+          price: 3200,
           status,
-          endereco: {
+          address: {
             create: {
-              logradouro: 'Rua das Flores',
-              numero: '120',
-              bairro: 'Centro',
-              cidade: 'Campinas',
-              estado: 'SP',
-              cep: '13010000',
+              street: 'Rua das Flores',
+              number: '120',
+              neighborhood: 'Centro',
+              city: 'Campinas',
+              state: 'SP',
+              zipCode: '13010000',
             },
           },
         },
@@ -53,18 +53,18 @@ describe('PrismaDashboardOverviewRepository.findUpcomingActivities (integração
     publishedPropertyId = published.id
 
     const start = new Date(Date.now() + 24 * 60 * 60_000)
-    const createEvent = (titulo: string, imovelId: string | null, offsetHours: number) =>
-      prisma.eventoAgenda.create({
+    const createEvent = (title: string, propertyId: string | null, offsetHours: number) =>
+      prisma.agendaEvent.create({
         data: {
           tenantId,
-          titulo,
-          tipo: 'VISIT',
-          responsavelId: owner.id,
-          imovelId,
-          inicio: new Date(start.getTime() + offsetHours * 60 * 60_000),
-          fim: new Date(start.getTime() + (offsetHours + 1) * 60 * 60_000),
-          participanteNome: 'Cliente',
-          participanteTelefone: '(11) 98888-0000',
+          title,
+          type: 'VISIT',
+          responsibleId: owner.id,
+          propertyId,
+          start: new Date(start.getTime() + offsetHours * 60 * 60_000),
+          end: new Date(start.getTime() + (offsetHours + 1) * 60 * 60_000),
+          participantName: 'Cliente',
+          participantPhone: '(11) 98888-0000',
         },
       })
     await createEvent('com-imovel-publicado', published.id, 0)
@@ -74,9 +74,9 @@ describe('PrismaDashboardOverviewRepository.findUpcomingActivities (integração
 
   afterAll(async () => {
     if (tenantId) {
-      await prisma.eventoAgenda.deleteMany({ where: { tenantId } })
-      await prisma.imovel.deleteMany({ where: { tenantId } })
-      await prisma.usuario.deleteMany({ where: { tenantId } })
+      await prisma.agendaEvent.deleteMany({ where: { tenantId } })
+      await prisma.property.deleteMany({ where: { tenantId } })
+      await prisma.user.deleteMany({ where: { tenantId } })
       await prisma.tenant.delete({ where: { id: tenantId } })
     }
     await prisma.$disconnect()

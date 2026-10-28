@@ -14,6 +14,6 @@ export async function deleteTicket(
   return repository.mutate(
     ticket,
     { deletedAt: new Date(), deletedById: actor.actorId },
-    activity(actor, 'EXCLUSAO', 'Chamado arquivado.', { status: ticket.status }, 'TICKET_ARCHIVED'),
+    activity(actor, 'DELETION', 'Chamado arquivado.', { status: ticket.status }, 'TICKET_ARCHIVED'),
   )
 }

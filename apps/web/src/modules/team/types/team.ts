@@ -1,80 +1,38 @@
-import type { AppLocale } from '@/i18n/types/locale.types'
+import type { components, paths } from '@shared/types/generated/api'
 
-export type TeamPaceStatus = 'AHEAD' | 'ON_TRACK' | 'ATTENTION' | 'NO_GOAL'
+import type { ReactNode } from 'react'
 
-export interface TeamMember {
-  id: string
-  name: string
-  email: string
-  phone: string | null
-  avatarUrl: string | null
-  headline: string | null
-  specialties: string[]
-  hasPublicProfile: boolean
-  active: boolean
-  invitation: { status: 'PENDING' | 'EXPIRED'; sentAt: string; expiresAt: string } | null
-  metrics: {
-    properties: number
-    openLeads: number
-    openOpportunities: number
-    monthlySales: number
-    returns: number
-    responseTimeMinutes: number | null
-  }
-  goal: { monthlySales: number; setAt: string; setByName: string } | null
-  pace: { status: TeamPaceStatus; expectedSales: number | null; goalProgress: number | null }
+export type TeamMembershipRequest = Pick<
+  components['schemas']['AuthenticatedUserResponse'],
+  'id' | 'name' | 'email' | 'role' | 'pendingApproval'
+>
+
+export interface TeamMeetingDialogProps {
+  member: TeamMember
+  onClose: () => void
 }
 
-export interface TeamOverview {
-  month: string
-  members: TeamMember[]
-  summary: {
-    activeBrokers: number
-    properties: number
-    monthlySales: number
-    averageGoalProgress: number | null
-  }
+export interface BrokerTeamDashboardPageProps {
+  renderMeetingDialog: (props: TeamMeetingDialogProps) => ReactNode
 }
 
-export interface TeamGoalChange {
-  id: string
-  monthlySales: number
-  setAt: string
-  setByName: string
-}
+export type TeamPaceStatus = components['schemas']['TeamMember']['pace']['status']
 
-export interface TeamTransferCounts {
-  properties: number
-  leads: number
-  opportunities: number
-  futureEvents: number
-}
+export type TeamMember = components['schemas']['TeamMember']
 
-export interface TransferPortfolioPayload {
-  destinationId: string
-  properties: boolean
-  leads: boolean
-  opportunities: boolean
-  futureEvents: boolean
-}
+export type TeamOverview = components['schemas']['TeamOverviewResponse']
 
-export interface InviteBrokerPayload {
-  name: string
-  email: string
-  locale: AppLocale
-}
+export type TeamGoalChange = components['schemas']['TeamGoalChange']
 
-export interface InviteBrokerResult {
-  brokerId: string
-  emailDelivered: boolean
-}
+export type TeamTransferCounts = components['schemas']['TeamTransferResponse']
 
-export interface TeamInvitationPreview {
-  name: string
-  email: string
-  agencyName: string
-  status: 'VALID' | 'EXPIRED' | 'ACCEPTED'
-}
+export type TransferPortfolioPayload = components['schemas']['TransferBrokerPortfolioRequest']
+
+export type InviteBrokerPayload = components['schemas']['InviteBrokerRequest']
+
+export type InviteBrokerResult = components['schemas']['InviteBrokerResponse']
+
+export type TeamInvitationPreview = components['schemas']['TeamInvitationPreview']
 
 export type TeamMemberState = 'active' | 'inactive' | 'invited'
 
@@ -103,3 +61,18 @@ export interface BrokerTeamMenuState {
 export interface BrokerTeamListState {
   search: string
 }
+
+export type TeamMembershipRequestsResponse = components['schemas']['ListUsersResponse']
+export type ApproveTeamMembershipResponse = components['schemas']['GetUserResponse']
+export type TeamGoalHistoryResponse =
+  paths['/team/members/{id}/goal']['get']['responses'][200]['content']['application/json']
+export type TeamGoalResponse =
+  paths['/team/members/{id}/goal']['put']['responses'][200]['content']['application/json']
+export type TeamPortfolioTransferResponse =
+  paths['/team/members/{id}/transfer']['post']['responses'][200]['content']['application/json']
+export type TeamInvitationPreviewResponse =
+  paths['/team/invitations/accept']['get']['responses'][200]['content']['application/json']
+export type AcceptTeamInvitationResponse =
+  paths['/team/invitations/accept']['post']['responses'][200]['content']['application/json']
+export type ResendTeamInvitationResponse =
+  paths['/team/invitations/{id}/resend']['post']['responses'][200]['content']['application/json']

@@ -25,7 +25,7 @@ export function ContractPartiesPanel({
     <ContractDetailPanel title={t('parties')} sx={styles.contractDetailPanel}>
       <Stack spacing={1.6}>
         {parties.map((party) => {
-          const isSigned = party.signatureStatus === 'ASSINADA'
+          const isSigned = party.signatureStatus === 'SIGNED'
           return (
             <Stack key={party.id} spacing={1}>
               <Stack direction="row" alignItems="center" spacing={1.3} sx={styles.stack}>
@@ -71,7 +71,7 @@ export function ContractPartiesPanel({
                   {party.signedBy ? ' · ' + party.signedBy.name : ''}
                 </Typography>
               )}
-              {party.role === 'LOCATARIO' &&
+              {party.role === 'RENTER' &&
                 (party.userId ? (
                   <Typography variant="body2">{t('linked')}</Typography>
                 ) : (

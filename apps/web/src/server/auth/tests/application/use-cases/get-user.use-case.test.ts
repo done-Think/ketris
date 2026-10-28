@@ -8,12 +8,12 @@ import { GetUserUseCase } from '../../../application/use-cases/get-user.use-case
 const owner: User = {
   id: 'owner-1',
   tenantId: 'tenant-1',
-  nome: 'Proprietário',
+  name: 'Proprietário',
   email: 'owner@ketris.dev',
-  senhaHash: 'hash-fake',
-  papel: 'OWNER',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-fake',
+  role: 'OWNER',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 function createDeps(findById?: UserRepository['findById']) {
@@ -34,10 +34,10 @@ function createDeps(findById?: UserRepository['findById']) {
 
 describe('GetUserUseCase', () => {
   it('permite consultar o próprio perfil sem acesso de gestão', async () => {
-    const deps = createDeps(vi.fn().mockResolvedValue({ ...owner, papel: 'AGENT' }))
+    const deps = createDeps(vi.fn().mockResolvedValue({ ...owner, role: 'AGENT' }))
     const result = await new GetUserUseCase(deps.userRepository).execute({
       actorId: owner.id,
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       actorTenantId: owner.tenantId,
       userId: owner.id,
     })
@@ -49,7 +49,7 @@ describe('GetUserUseCase', () => {
     await expect(
       new GetUserUseCase(deps.userRepository).execute({
         actorId: owner.id,
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         actorTenantId: 'other',
         userId: owner.id,
       }),
@@ -62,12 +62,12 @@ describe('GetUserUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       userId: owner.id,
     })
 
     expect(result.id).toBe(owner.id)
-    expect(result).not.toHaveProperty('senhaHash')
+    expect(result).not.toHaveProperty('passwordHash')
   })
 
   it('lança ForbiddenError quando o ator não é o dono da imobiliária', async () => {
@@ -75,7 +75,7 @@ describe('GetUserUseCase', () => {
     const useCase = new GetUserUseCase(deps.userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT', userId: owner.id }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'AGENT', userId: owner.id }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
   })
 
@@ -84,7 +84,7 @@ describe('GetUserUseCase', () => {
     const useCase = new GetUserUseCase(deps.userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER', userId: 'inexistente' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER', userId: 'inexistente' }),
     ).rejects.toThrow(UserNotFoundError)
   })
 
@@ -93,7 +93,7 @@ describe('GetUserUseCase', () => {
     const useCase = new GetUserUseCase(deps.userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER', userId: owner.id }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER', userId: owner.id }),
     ).rejects.toThrow(UserNotFoundError)
   })
 })

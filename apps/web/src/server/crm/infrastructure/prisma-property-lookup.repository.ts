@@ -5,17 +5,17 @@ import type { PropertyLookupPort } from '../application/ports/property-lookup.po
 export class PrismaPropertyLookupRepository implements PropertyLookupPort {
   constructor(private readonly db: CrmDatabase) {}
   async existsForTenant(tenantId: string, propertyId: string): Promise<boolean> {
-    const count = await this.db.imovel.count({ where: { tenantId, id: propertyId } })
+    const count = await this.db.property.count({ where: { tenantId, id: propertyId } })
 
     return count > 0
   }
 
-  async findResponsavelId(tenantId: string, propertyId: string): Promise<string | null> {
-    const imovel = await this.db.imovel.findFirst({
+  async findResponsibleId(tenantId: string, propertyId: string): Promise<string | null> {
+    const property = await this.db.property.findFirst({
       where: { tenantId, id: propertyId },
-      select: { responsavelId: true },
+      select: { responsibleId: true },
     })
 
-    return imovel?.responsavelId ?? null
+    return property?.responsibleId ?? null
   }
 }

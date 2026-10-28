@@ -5,16 +5,20 @@ import type { SchemaMessageTranslator } from '@shared/types'
 
 const searchFilterKeySchema = z.enum(['location', 'propertyType', 'priceRange'])
 
-const createTextSearchDraftSchema = (t: SchemaMessageTranslator) =>
+const createTextSearchDraftSchema = (t: SchemaMessageTranslator<'textTooLong'>) =>
   z.object({
     location: z.string().trim().max(80, t('textTooLong')),
     propertyType: z.string().trim().max(80, t('textTooLong')),
   })
 
-const createNumericTextSchema = (t: SchemaMessageTranslator, maxLength: number) =>
-  z.string().trim().max(maxLength, t('numberTooLong')).regex(/^\d*$/, t('numbersOnly'))
+const createNumericTextSchema = (
+  t: SchemaMessageTranslator<'numberTooLong' | 'numbersOnly'>,
+  maxLength: number,
+) => z.string().trim().max(maxLength, t('numberTooLong')).regex(/^\d*$/, t('numbersOnly'))
 
-export function createMarketplaceSearchFormSchema(t: SchemaMessageTranslator) {
+export function createMarketplaceSearchFormSchema(
+  t: SchemaMessageTranslator<'optionRequired' | 'priceInvalid' | 'textTooLong'>,
+) {
   return z.object({
     activeSearchMenu: searchFilterKeySchema.nullable(),
     selectedSearch: z.object({
@@ -30,7 +34,9 @@ export function createMarketplaceSearchFormSchema(t: SchemaMessageTranslator) {
   })
 }
 
-export function createSearchResultsFiltersFormSchema(t: SchemaMessageTranslator) {
+export function createSearchResultsFiltersFormSchema(
+  t: SchemaMessageTranslator<'numberTooLong' | 'numbersOnly' | 'optionInvalid'>,
+) {
   return z.object({
     propertyType: z.enum(marketplacePropertyTypes).nullable(),
     priceOption: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),

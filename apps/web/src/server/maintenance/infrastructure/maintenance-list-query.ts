@@ -24,28 +24,28 @@ function normalizedSql(value: Prisma.Sql) {
 export function maintenanceListQuery(filters: MaintenanceTicketListFilters) {
   const actor = filters.actor
   const conditions: Prisma.Sql[] = [
-    filters.archived ? Prisma.sql`c."excluidoEm" IS NOT NULL` : Prisma.sql`c."excluidoEm" IS NULL`,
+    filters.archived ? Prisma.sql`c."deletedAt" IS NOT NULL` : Prisma.sql`c."deletedAt" IS NULL`,
   ]
-  if (isAgencyManager(actor.actorPapel))
+  if (isAgencyManager(actor.actorRole))
     conditions.push(Prisma.sql`c."tenantId" = ${actor.actorTenantId}`)
   else {
     conditions.push(
-      Prisma.sql`c."excluidoEm" IS NULL`,
-      Prisma.sql`ct."tenantId" = c."tenantId" AND ct."imovelId" = c."imovelId" AND i."tenantId" = c."tenantId"`,
+      Prisma.sql`c."deletedAt" IS NULL`,
+      Prisma.sql`ct."tenantId" = c."tenantId" AND ct."propertyId" = c."propertyId" AND i."tenantId" = c."tenantId"`,
     )
-    if (actor.actorPapel === 'RENTER')
+    if (actor.actorRole === 'RENTER')
       conditions.push(
-        Prisma.sql`EXISTS (SELECT 1 FROM partes_contrato p JOIN usuarios u ON u.id = p."usuarioId" WHERE p."contratoId" = ct.id AND p.papel = 'LOCATARIO' AND p."usuarioId" = ${actor.actorId} AND u.ativo = true AND u.papel = 'RENTER')`,
+        Prisma.sql`EXISTS (SELECT 1 FROM contract_parties p JOIN users u ON u.id = p."userId" WHERE p."contractId" = ct.id AND p.role = 'RENTER' AND p."userId" = ${actor.actorId} AND u.active = true AND u.role = 'RENTER')`,
       )
     else {
       conditions.push(Prisma.sql`c."tenantId" = ${actor.actorTenantId}`)
-      if (actor.actorPapel === 'AGENT')
+      if (actor.actorRole === 'AGENT')
         conditions.push(
-          Prisma.sql`(c."responsavelId" = ${actor.actorId} OR i."responsavelId" = ${actor.actorId})`,
+          Prisma.sql`(c."responsibleId" = ${actor.actorId} OR i."responsibleId" = ${actor.actorId})`,
         )
-      else if (actor.actorPapel === 'PROPERTY_OWNER')
+      else if (actor.actorRole === 'PROPERTY_OWNER')
         conditions.push(
-          Prisma.sql`(c."responsavelId" = ${actor.actorId} OR i."proprietarioId" = ${actor.actorId})`,
+          Prisma.sql`(c."responsibleId" = ${actor.actorId} OR i."ownerId" = ${actor.actorId})`,
         )
       else conditions.push(Prisma.sql`false`)
     }
@@ -53,9 +53,9 @@ export function maintenanceListQuery(filters: MaintenanceTicketListFilters) {
   const base = Prisma.join(conditions, ' AND ')
   const filtered = [...conditions]
   if (filters.status) filtered.push(Prisma.sql`c.status::text = ${filters.status}`)
-  if (filters.priority) filtered.push(Prisma.sql`c.prioridade::text = ${filters.priority}`)
-  if (filters.category) filtered.push(Prisma.sql`c.categoria::text = ${filters.category}`)
-  if (filters.propertyId) filtered.push(Prisma.sql`c."imovelId" = ${filters.propertyId}`)
+  if (filters.priority) filtered.push(Prisma.sql`c.priority::text = ${filters.priority}`)
+  if (filters.category) filtered.push(Prisma.sql`c.category::text = ${filters.category}`)
+  if (filters.propertyId) filtered.push(Prisma.sql`c."propertyId" = ${filters.propertyId}`)
   if (filters.search?.trim()) {
     const term = '%' + normalized(filters.search.trim()).replace(/[\\%_]/g, '\\$&') + '%'
     const labels = dictionaries[filters.locale ?? 'pt-BR']
@@ -63,15 +63,15 @@ export function maintenanceListQuery(filters: MaintenanceTicketListFilters) {
       .filter(([, key]) => normalized(labels[key]).includes(normalized(filters.search!.trim())))
       .map(([code]) => code)
     const matches = [
-      Prisma.sql`${normalizedSql(Prisma.sql`c.titulo`)} LIKE ${term}`,
-      Prisma.sql`${normalizedSql(Prisma.sql`i.titulo`)} LIKE ${term}`,
+      Prisma.sql`${normalizedSql(Prisma.sql`c.title`)} LIKE ${term}`,
+      Prisma.sql`${normalizedSql(Prisma.sql`i.title`)} LIKE ${term}`,
     ]
     if (matchingCategories.length)
-      matches.push(Prisma.sql`c.categoria::text IN (${Prisma.join(matchingCategories)})`)
+      matches.push(Prisma.sql`c.category::text IN (${Prisma.join(matchingCategories)})`)
     filtered.push(Prisma.sql`(${Prisma.join(matches, ' OR ')})`)
   }
   return {
-    from: Prisma.sql`chamados_manutencao c JOIN imoveis i ON i.id = c."imovelId" LEFT JOIN contratos ct ON ct.id = c."contratoId"`,
+    from: Prisma.sql`maintenance_tickets c JOIN properties i ON i.id = c."propertyId" LEFT JOIN contracts ct ON ct.id = c."contractId"`,
     base,
     filter: Prisma.join(filtered, ' AND '),
   }

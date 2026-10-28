@@ -1,5 +1,6 @@
 import type { CreateDashboardPropertyFormValues } from '../types/dashboard-property'
 import type { PropertyFormValues, PropertyPurpose, PropertyPayloadOptions } from '../types/property'
+import { normalizePostalCode } from '@shared/utils/postal-code'
 
 export function toPropertyPayload(
   values: CreateDashboardPropertyFormValues,
@@ -11,6 +12,7 @@ export function toPropertyPayload(
     hasRentPurpose && hasSalePurpose ? 'BOTH' : hasSalePurpose ? 'SALE' : 'RENT'
 
   const existingAddress = options.existingAddress
+  const zipCode = normalizePostalCode(values.zipCode) ?? values.zipCode
   const addressChanged = Boolean(
     existingAddress &&
     (values.street !== existingAddress.street ||
@@ -19,7 +21,7 @@ export function toPropertyPayload(
       values.neighborhood !== existingAddress.neighborhood ||
       values.city !== existingAddress.city ||
       values.state !== existingAddress.state ||
-      values.zipCode !== existingAddress.zipCode),
+      normalizePostalCode(values.zipCode) !== normalizePostalCode(existingAddress.zipCode)),
   )
   const hasNewCoordinates =
     values.latitude !== existingAddress?.latitude || values.longitude !== existingAddress?.longitude
@@ -40,11 +42,11 @@ export function toPropertyPayload(
     bedrooms: values.bedrooms,
     bathrooms: values.bathrooms,
     parkingSpots: values.parkingSpaces,
-    areaM2: values.area,
+    areaSqm: values.area,
     price: values.mainValue,
     rentalPrice: purpose === 'BOTH' ? values.rentalValue : null,
     condoFee: values.condominium,
-    propertyTax: values.iptu,
+    propertyTax: values.propertyTax,
     address: {
       street: values.street,
       number: values.number,
@@ -52,7 +54,7 @@ export function toPropertyPayload(
       neighborhood: values.neighborhood,
       city: values.city,
       state: values.state,
-      zipCode: values.zipCode,
+      zipCode,
       latitude: addressChanged && !hasNewCoordinates ? null : values.latitude,
       longitude: addressChanged && !hasNewCoordinates ? null : values.longitude,
     },

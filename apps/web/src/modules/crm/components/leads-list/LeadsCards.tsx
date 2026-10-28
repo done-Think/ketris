@@ -5,7 +5,7 @@ import * as crmStyles from '../../styles/leads-cards.styles'
 import type { LeadsCardsProps } from '../../types/lead'
 import { LeadAvatar } from './LeadAvatar'
 import { LeadStatusChip } from './LeadStatusChip'
-import { leadSourceKey } from '@server/crm/constants/lead-sources'
+import { leadSourceKey } from '@shared/config/lead-sources'
 
 export function LeadsCards({ leads, onContactLead }: LeadsCardsProps) {
   const t = useTranslations('crm.leads')

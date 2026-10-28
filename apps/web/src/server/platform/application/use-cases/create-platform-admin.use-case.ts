@@ -21,14 +21,12 @@ export class CreatePlatformAdminUseCase {
       throw new PlatformAdminEmailAlreadyInUseError()
     }
 
-    const senhaHash = await this.passwordHasher.hash(input.password)
+    const passwordHash = await this.passwordHasher.hash(input.password)
 
-    const created = await this.platformAdminRepository.create({
-      nome: input.nome,
-      email: input.email,
-      senhaHash,
-      role: input.role,
-    })
+    const created = await this.platformAdminRepository.create(
+      { name: input.name, email: input.email, passwordHash, role: input.role },
+      input.actorId,
+    )
 
     return toAuthenticatedPlatformAdmin(created)
   }

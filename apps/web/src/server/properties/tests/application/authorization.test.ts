@@ -5,9 +5,9 @@ import { ForbiddenError } from '@server/shared/errors'
 import { assertCanEditProperties, assertPropertyAccess } from '../../application/authorization'
 import { PropertyNotFoundError } from '../../domain/errors'
 
-const property = (responsavelId: string, proprietarioId: string | null = null) => ({
-  responsavelId,
-  proprietarioId,
+const property = (responsibleId: string, ownerId: string | null = null) => ({
+  responsibleId,
+  ownerId,
 })
 
 describe('assertPropertyAccess', () => {
@@ -44,8 +44,8 @@ describe('assertPropertyAccess', () => {
 describe('permissões de escrita em imóveis', () => {
   it.each(['OWNER', 'AGENT', 'PROPERTY_OWNER'] as const)(
     '%s cria, edita, publica e exclui',
-    (papel) => {
-      expect(() => assertCanEditProperties(papel)).not.toThrow()
+    (role) => {
+      expect(() => assertCanEditProperties(role)).not.toThrow()
     },
   )
 

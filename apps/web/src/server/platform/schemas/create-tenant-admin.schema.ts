@@ -1,5 +1,5 @@
 import '@server/openapi/zod-extend'
-import { authenticatedUserSchema } from '@server/auth/schemas/user.schema'
+import { authenticatedUserResponseSchema } from '@server/auth/schemas/user.schema'
 import { z } from 'zod'
 
 export const createTenantAdminRequestSchema = z
@@ -27,6 +27,6 @@ export const createTenantAdminRequestSchema = z
 
 export const createTenantAdminResponseSchema = z
   .object({
-    user: authenticatedUserSchema,
+    user: authenticatedUserResponseSchema,
   })
   .openapi('CreateTenantAdminResponse')

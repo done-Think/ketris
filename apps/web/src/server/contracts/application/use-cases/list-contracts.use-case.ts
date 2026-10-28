@@ -9,10 +9,10 @@ export class ListContractsUseCase {
   async execute({
     actorTenantId,
     actorId,
-    actorPapel,
+    actorRole,
     ...filters
   }: ListContractsInput): Promise<ContractListResult> {
-    const scope = resolveContractReadScope(actorTenantId, actorId, actorPapel)
+    const scope = resolveContractReadScope(actorTenantId, actorId, actorRole)
 
     return this.contractRepository.findMany(filters, scope)
   }

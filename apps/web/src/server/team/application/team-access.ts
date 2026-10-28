@@ -5,7 +5,7 @@ import type { TeamActor } from '../types/team'
 import type { TeamRepository } from './ports/team-repository.port'
 
 export function assertTeamManager(actor: TeamActor): void {
-  if (!isAgencyManager(actor.actorPapel))
+  if (!isAgencyManager(actor.actorRole))
     throw new ForbiddenError('Apenas a gestão da imobiliária gerencia a equipe.')
 }
 

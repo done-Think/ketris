@@ -14,7 +14,7 @@ export class CreateChargeUseCase {
   ) {}
 
   async execute(input: CreateChargeInput): Promise<Charge> {
-    assertCanAccessFinance(input.actorPapel)
+    assertCanAccessFinance(input.actorRole)
 
     if (input.contractId) {
       const contract = await this.chargeRepository.findContractSummary(

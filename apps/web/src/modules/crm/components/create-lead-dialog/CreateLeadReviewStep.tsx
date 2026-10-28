@@ -5,7 +5,7 @@ import * as crmStyles from '../../styles/create-lead-review-step.styles'
 import { RhfTextField } from '@shared/components/form'
 
 import type { CreateLeadFieldName, CreateLeadReviewStepProps } from '../../types/lead'
-import { leadSourceKey } from '@server/crm/constants/lead-sources'
+import { leadSourceKey } from '@shared/config/lead-sources'
 
 const reviewFieldKeys: readonly CreateLeadFieldName[] = [
   'name',

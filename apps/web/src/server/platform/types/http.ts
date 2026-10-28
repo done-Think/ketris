@@ -1,7 +1,13 @@
 import type { z } from 'zod'
 
-import type { createPlatformAdminRequestSchema } from '../schemas/create-platform-admin.schema'
-import type { createTenantAdminRequestSchema } from '../schemas/create-tenant-admin.schema'
+import type {
+  createPlatformAdminRequestSchema,
+  createPlatformAdminResponseSchema,
+} from '../schemas/create-platform-admin.schema'
+import type {
+  createTenantAdminRequestSchema,
+  createTenantAdminResponseSchema,
+} from '../schemas/create-tenant-admin.schema'
 import type { createTenantRequestSchema } from '../schemas/create-tenant.schema'
 import type { loginPlatformRequestSchema } from '../schemas/login-platform.schema'
 import type { refreshPlatformTokenRequestSchema } from '../schemas/refresh-platform-token.schema'
@@ -12,6 +18,9 @@ import type { updateTenantAccountRequestSchema } from '../schemas/update-tenant-
 export type CreatePlatformAdminRequestDTO = z.infer<typeof createPlatformAdminRequestSchema>
 
 export type CreateTenantAdminRequestDTO = z.infer<typeof createTenantAdminRequestSchema>
+
+export type CreateTenantAdminResponseDTO = z.infer<typeof createTenantAdminResponseSchema>
+export type CreatePlatformAdminResponseDTO = z.infer<typeof createPlatformAdminResponseSchema>
 
 export type CreateTenantRequestDTO = z.infer<typeof createTenantRequestSchema>
 

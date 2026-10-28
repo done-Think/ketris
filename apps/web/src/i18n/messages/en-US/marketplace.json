@@ -186,6 +186,9 @@
     }
   },
   "propertyDetail": {
+    "mapUnavailable": "Map location is not yet available for this address.",
+    "searchAddressOnMaps": "Search address on Google Maps",
+    "mapApproximate": "Approximate location",
     "favorite": "Favorite",
     "share": "Share",
     "aboutProperty": "About this property",

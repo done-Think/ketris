@@ -17,7 +17,7 @@ const cases = [
     { name: 'Ana', email: 'ana@example.test', password: 'senha-somente-teste', role: 'AGENT' },
   ],
   [
-    'perfil',
+    'profile',
     updateUserRequestSchema,
     { name: 'Ana', phone: '(11) 99999-9999', creci: '12345-F', avatarUrl: null },
   ],

@@ -2,18 +2,18 @@ export type PlatformAdminRole = 'ADMIN' | 'ADMIN_AGENT' | 'AGENT'
 
 export interface PlatformAdmin {
   id: string
-  nome: string
+  name: string
   email: string
-  senhaHash: string
+  passwordHash: string
   role: PlatformAdminRole
-  ativo: boolean
+  active: boolean
   createdAt: Date
-  ultimoAcessoEm: Date | null
+  lastAccessAt: Date | null
 }
 
-export type AuthenticatedPlatformAdmin = Omit<PlatformAdmin, 'senhaHash'>
+export type AuthenticatedPlatformAdmin = Omit<PlatformAdmin, 'passwordHash'>
 
-export type PlatformAdminIdentity = Pick<PlatformAdmin, 'id' | 'nome' | 'email' | 'role' | 'ativo'>
+export type PlatformAdminIdentity = Pick<PlatformAdmin, 'id' | 'name' | 'email' | 'role' | 'active'>
 
 export interface AuthenticatedPlatformAdminResponse {
   id: string

@@ -1,4 +1,5 @@
 import type { SchemaMessageTranslator } from '@shared/types'
+import type { TranslationKey } from '@/i18n/types/messages.types'
 import { z } from 'zod'
 import type { MaintenanceWorkflowSelection } from '../types/maintenance'
 import type { MaintenanceProviderOption } from '../types/maintenance-provider'
@@ -6,7 +7,7 @@ import type { MaintenanceProviderOption } from '../types/maintenance-provider'
 export function createMaintenanceWorkflowSchema(
   action: MaintenanceWorkflowSelection['action'],
   role: string | undefined,
-  t: SchemaMessageTranslator,
+  t: SchemaMessageTranslator<TranslationKey<'dashboard.maintenance.workflow.validation'>>,
 ) {
   return z
     .object({
@@ -24,7 +25,7 @@ export function createMaintenanceWorkflowSchema(
         .nullable(),
       responsibleId: z.string(),
       contractId: z.string(),
-      status: z.enum(['ABERTO', 'EM_ANDAMENTO']),
+      status: z.enum(['OPEN', 'IN_PROGRESS']),
       name: z.string().trim(),
       phone: z.string().trim(),
       email: z.string().trim(),

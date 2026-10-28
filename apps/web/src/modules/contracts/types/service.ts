@@ -1,4 +1,4 @@
-import type { CreateContractPayloadDTO } from '@server/contracts/types/dto'
+import type { CreateContractPayloadDTO } from '@shared/types/generated/contracts/dto'
 
 export type {
   AdjustmentIndexDTO as ApiAdjustmentIndex,
@@ -26,6 +26,6 @@ export type {
   ContractDocumentUploadResponseDTO as ContractDocumentUploadAuthorization,
   ContractDocumentResponseDTO as ContractDocumentResponse,
   ContractDocumentDownloadResponseDTO as ContractDocumentDownload,
-} from '@server/contracts/types/dto'
+} from '@shared/types/generated/contracts/dto'
 
 export type ContractPartyInput = CreateContractPayloadDTO['owner']

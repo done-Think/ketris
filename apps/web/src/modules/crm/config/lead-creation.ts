@@ -1,4 +1,4 @@
-import { LEAD_SOURCES, leadSourceKey } from '@server/crm/constants/lead-sources'
+import { LEAD_SOURCES, leadSourceKey } from '@shared/config/lead-sources'
 import type { CreateLeadStep, LeadSourceOption, LeadStageOption } from '../types/lead'
 
 export const createLeadSteps: CreateLeadStep[] = [
@@ -25,8 +25,8 @@ export const leadSourceOptions: LeadSourceOption[] = LEAD_SOURCES.map((value) =>
 }))
 
 export const leadStageOptions: LeadStageOption[] = [
-  { value: 'NOVO', labelKey: 'new' },
-  { value: 'EM_CONTATO', labelKey: 'contacted' },
-  { value: 'VISITA_MARCADA', labelKey: 'visitScheduled' },
-  { value: 'PROPOSTA', labelKey: 'proposal' },
+  { value: 'NEW', labelKey: 'new' },
+  { value: 'IN_CONTACT', labelKey: 'contacted' },
+  { value: 'VISIT_SCHEDULED', labelKey: 'visitScheduled' },
+  { value: 'PROPOSAL', labelKey: 'proposal' },
 ]

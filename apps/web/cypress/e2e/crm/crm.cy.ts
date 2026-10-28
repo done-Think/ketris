@@ -58,7 +58,7 @@ describe('CRM real workflows', () => {
       expect(response?.body.leads).to.have.length(5)
       expect(response?.body.pagination.totalCount).to.eq(6)
     })
-    cy.get('button[aria-label="Go to next page"]').filter(':visible').click()
+    cy.get('button[aria-label="Ir para a próxima página"]').filter(':visible').click()
     cy.wait('@leads').its('request.url').should('include', 'page=2')
     cy.get('table').contains('Lead CRM Último').should('be.visible')
     cy.get('input[aria-label="Buscar leads"]').type('Último')

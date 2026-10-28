@@ -15,5 +15,5 @@ export const documentActor = {
   contractId: 'contract',
   actorId: 'manager',
   actorTenantId: 'agency',
-  actorPapel: 'OWNER',
+  actorRole: 'OWNER',
 } as const

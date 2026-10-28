@@ -86,9 +86,7 @@ it('envia diretamente ao storage privado, confirma uma vez e baixa após autoriz
     uploadedBy: { id: fixture.actorId },
   })
   expect(body.document).not.toHaveProperty('objectKey')
-  expect(await prisma.documentoContrato.count({ where: { contratoId: fixture.contractId } })).toBe(
-    1,
-  )
+  expect(await prisma.contractDocument.count({ where: { contractId: fixture.contractId } })).toBe(1)
   expect(
     await prisma.contractAuditEvent.count({
       where: { contractId: fixture.contractId, action: 'DOCUMENT_UPLOADED' },
@@ -157,9 +155,7 @@ it('recusa falta de envio, metadados falsos, arquivo não PDF e campos arbitrár
       .status,
   ).toBe(200)
   expect((await finalize(second.uploadToken)).status).toBe(400)
-  expect(await prisma.documentoContrato.count({ where: { contratoId: fixture.contractId } })).toBe(
-    0,
-  )
+  expect(await prisma.contractDocument.count({ where: { contractId: fixture.contractId } })).toBe(0)
 })
 
 it('revalida revisão após upload sem atribuir arquivo antigo aos dados editados', async () => {
@@ -170,9 +166,7 @@ it('revalida revisão após upload sem atribuir arquivo antigo aos dados editado
   )
   expect(edited.status).toBe(200)
   expect((await finalize(authorization.uploadToken)).status).toBe(409)
-  expect(await prisma.documentoContrato.count({ where: { contratoId: fixture.contractId } })).toBe(
-    0,
-  )
+  expect(await prisma.contractDocument.count({ where: { contractId: fixture.contractId } })).toBe(0)
 })
 
 it('recusa outro responsável e permite download ao locatário somente após vínculo explícito', async () => {

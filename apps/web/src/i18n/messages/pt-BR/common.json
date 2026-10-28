@@ -152,5 +152,6 @@
     "description": "Não foi possível confirmar sua sessão. Seu trabalho foi preservado. Tente novamente para continuar.",
     "retry": "Tentar novamente",
     "retrying": "Verificando sessão…"
-  }
+  },
+  "perMonth": "/mês"
 }

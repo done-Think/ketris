@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import type { z } from 'zod'
-import type { ConfirmSignupVerificationResponseDTO } from '@server/auth/types/http'
-import type { PendingEmailVerificationOutput } from '@server/auth/types/pending-email-verification'
-import type { RegisterResponseDTO } from '@server/registration/types/http'
+import type { ConfirmSignupVerificationResponseDTO } from '@shared/types/generated/auth/http'
+type PendingEmailVerificationOutput = RegisterResponseDTO
+import type { RegisterResponseDTO } from '@shared/types/generated/registration/http'
 
 import type { createRegistrationDetailsSchema } from '../schemas/registration-details-schema'
 
@@ -10,8 +10,7 @@ export type RegistrationDetailsFormValues = z.infer<
   ReturnType<typeof createRegistrationDetailsSchema>
 >
 
-export type RegistrationProfileId =
-  'proprietario' | 'corretor' | 'imobiliaria' | 'construtora' | 'locatario'
+export type RegistrationProfileId = 'owner' | 'broker' | 'agency' | 'developer' | 'renter'
 
 export type RegistrationProfileIcon = 'owner' | 'broker' | 'agency' | 'developer' | 'tenant'
 

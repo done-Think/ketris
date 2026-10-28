@@ -9,8 +9,8 @@ const detail: PublishedPropertyDetail = {
   id: 'imovel-1',
   tenantId: 'tenant-1',
   title: 'Apartamento no centro',
-  purpose: 'ALUGUEL',
-  propertyType: 'APARTAMENTO',
+  purpose: 'RENT',
+  propertyType: 'APARTMENT',
   price: 2500,
   condoFee: 400,
   propertyTax: 100,
@@ -39,7 +39,7 @@ const detail: PublishedPropertyDetail = {
     longitude: null,
   },
   media: [
-    { id: 'midia-1', url: 'https://cdn.ketris.dev/imovel-1/capa.jpg', type: 'foto', order: 0 },
+    { id: 'midia-1', url: 'https://cdn.ketris.dev/imovel-1/capa.jpg', type: 'photo', order: 0 },
   ],
 }
 
@@ -53,6 +53,23 @@ function createDeps(findPublishedById?: PublicPropertyRepository['findPublishedB
 }
 
 describe('GetPropertyUseCase', () => {
+  it('resolves the address for an existing published property without coordinates', async () => {
+    const deps = createDeps(
+      vi.fn().mockResolvedValue({ ...detail, latitude: null, longitude: null }),
+    )
+    const geocoder = { locate: vi.fn().mockResolvedValue({ latitude: -25.42, longitude: -49.27 }) }
+    const result = await new GetPropertyUseCase(deps.propertyRepository, geocoder).execute({
+      propertyId: detail.id,
+    })
+    expect(geocoder.locate).toHaveBeenCalledWith(detail.address)
+    expect(result).toMatchObject({
+      latitude: -25.42,
+      longitude: -49.27,
+      address: { latitude: -25.42, longitude: -49.27 },
+    })
+    expect(result).not.toHaveProperty('tenantId')
+  })
+
   it('retorna o detalhe público do imóvel sem expor o tenantId', async () => {
     const deps = createDeps()
     const useCase = new GetPropertyUseCase(deps.propertyRepository)

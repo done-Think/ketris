@@ -1,5 +1,5 @@
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { Papel } from '../domain/user.entity'
+import type { UserRole } from '../domain/user.entity'
 import type { LoginOutput } from './use-case-outputs'
 
 export type AuthCodeEmailNamespace = 'passwordResetEmail' | 'signupEmail' | 'emailChangeEmail'
@@ -54,7 +54,7 @@ export interface ConfirmSignupVerificationInput {
 
 export interface RequestEmailChangeInput {
   targetUserId?: string
-  actorPapel?: Papel
+  actorRole?: UserRole
   actorId: string
   actorTenantId: string
   email: string

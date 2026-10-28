@@ -55,7 +55,7 @@ export function mapChargeListItemToFinancialEntry(item: ApiChargeListItem): Fina
     description: item.description ?? item.code,
     property: item.propertyTitle ?? '—',
     client: item.payerName ?? '—',
-    amountValue: item.type === 'A_PAGAR' ? -item.amount : item.amount,
+    amountValue: item.type === 'PAYABLE' ? -item.amount : item.amount,
     status: apiStatusToUi[item.status],
   }
 }

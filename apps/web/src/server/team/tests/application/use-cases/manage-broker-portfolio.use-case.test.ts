@@ -14,7 +14,7 @@ import { owner, staff, teamRepository } from './team-fixtures'
 
 const now = new Date('2026-10-20T12:00:00.000Z')
 const people = [
-  staff({ id: 'owner-1', name: 'Dona', papel: 'OWNER' }),
+  staff({ id: 'owner-1', name: 'Dona', role: 'OWNER' }),
   staff({ id: 'agent-1', name: 'Marina' }),
   staff({ id: 'agent-2', name: 'Thiago' }),
   staff({ id: 'agent-3', name: 'Inativo', active: false }),
@@ -85,7 +85,7 @@ describe('TransferBrokerPortfolioUseCase', () => {
     await expect(
       new TransferBrokerPortfolioUseCase(teamRepository(people)).execute({
         ...owner,
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         brokerId: 'agent-1',
         destinationId: 'agent-2',
         items: allItems,
@@ -111,7 +111,7 @@ describe('DeactivateBrokerUseCase', () => {
         destinationId: 'owner-1',
         items: allItems,
         opportunityScope: 'all',
-        reason: 'DESATIVACAO',
+        reason: 'DEACTIVATION',
       }),
     )
   })

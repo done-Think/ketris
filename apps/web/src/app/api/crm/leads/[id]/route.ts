@@ -16,7 +16,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: CrmId
   const lead = await crmContainer.getLeadUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     leadId: (await parseRouteParams(context.params, crmIdParamsSchema)).id,
   })
 
@@ -30,7 +30,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Crm
   const lead = await crmContainer.updateLeadUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     leadId: (await parseRouteParams(context.params, crmIdParamsSchema)).id,
     changes: body,
   })

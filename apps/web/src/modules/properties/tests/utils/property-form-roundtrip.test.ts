@@ -12,14 +12,37 @@ import {
 } from '@server/properties/schemas/property-input.schema'
 
 describe('property form roundtrip', () => {
+  it('sends a CEP with only digits without clearing coordinates when only its presentation changes', () => {
+    const values = { ...buildEditPropertyFormValues(property), zipCode: '80.000-000' }
+    const payload = toPropertyPayload(values, { existingAddress: property.address })
+    expect(payload.address).toMatchObject({
+      zipCode: '80000000',
+      latitude: -25.4,
+      longitude: -49.2,
+    })
+    const parsed = createDashboardPropertySchema((key) => key).parse(values)
+    expect(parsed.zipCode).toBe('80000000')
+  })
+
+  it.each(['1234567', '123456789', 'ABCDEFGH', '37502A330'])(
+    'rejects an invalid CEP %s in the form',
+    (zipCode) => {
+      const result = createDashboardPropertySchema((key) => key).safeParse({
+        ...buildEditPropertyFormValues(property),
+        zipCode,
+      })
+      expect(result.success).toBe(false)
+    },
+  )
+
   it('sends only supported API fields without silently discarding current form data', () => {
     const payload = toPropertyPayload(buildEditPropertyFormValues(property), {
       canChooseOwner: true,
     })
     const strictContract = createPropertyRequestSchema
       .extend({
-        endereco: propertyAddressInputSchema.strict().optional(),
-        midias: propertyMediaInputSchema.strict().array().optional(),
+        address: propertyAddressInputSchema.strict().optional(),
+        media: propertyMediaInputSchema.strict().array().optional(),
       })
       .strict()
     for (const body of [toCreatePayload(payload), toUpdatePayload(payload)]) {

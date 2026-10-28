@@ -7,10 +7,10 @@ const row = {
   description: 'Aluguel; outubro',
   propertyTitle: 'Casa "Azul"',
   payerName: '=HYPERLINK("x")',
-  type: 'A_PAGAR' as const,
+  type: 'PAYABLE' as const,
   dueDate: new Date('2026-10-05T00:00:00.000Z'),
   amount: 1234.5,
-  status: 'PAGA' as const,
+  status: 'PAID' as const,
   paidAt: new Date('2026-10-04T00:00:00.000Z'),
   paymentMethod: 'PIX',
 }
@@ -30,7 +30,7 @@ describe('chargesToCsv', () => {
   })
 
   it('traduz cabeçalho e rótulos, mantendo o formato numérico', () => {
-    const csv = chargesToCsv([{ ...row, status: 'ATRASADA', paidAt: null }], 'en-US')
+    const csv = chargesToCsv([{ ...row, status: 'OVERDUE', paidAt: null }], 'en-US')
 
     expect(csv).toContain('Code;Description;Property')
     expect(csv).toContain(';Payable;05/10/2026;1234,50;Overdue;;PIX')

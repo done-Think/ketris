@@ -17,7 +17,8 @@ import {
 import type { Property } from '../../types/property'
 
 vi.mock('next-auth/react', () => ({ useSession: vi.fn() }))
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   notFound: vi.fn(() => {
     throw new Error('NOT_FOUND')
   }),
@@ -70,13 +71,13 @@ const property: Property = {
     {
       id: 'photo-1',
       url: '/test-rental.png',
-      type: 'foto',
+      type: 'photo',
       order: 0,
       createdAt: '2026-01-01T00:00:00Z',
     },
   ],
   values: { price: 1000, rentalPrice: null, condoFee: 200, propertyTax: 50 },
-  characteristics: { bedrooms: 2, bathrooms: 1, parkingSpots: 1, areaM2: 60 },
+  characteristics: { bedrooms: 2, bathrooms: 1, parkingSpots: 1, areaSqm: 60 },
 }
 
 beforeEach(() => {

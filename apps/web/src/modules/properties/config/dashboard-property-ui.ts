@@ -73,6 +73,6 @@ export const propertyFormStepFields: Record<
   ],
   features: ['bedrooms', 'bathrooms', 'parkingSpaces', 'area', 'features'],
   media: ['media'],
-  values: ['mainValue', 'rentalValue', 'condominium', 'iptu', 'negotiationTerm'],
+  values: ['mainValue', 'rentalValue', 'condominium', 'propertyTax', 'negotiationTerm'],
   publishing: ['publishingOptions'],
 }

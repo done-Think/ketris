@@ -5,8 +5,8 @@ export interface PlatformAdminRepository {
   findById(id: string): Promise<PlatformAdmin | null>
   findByEmail(email: string): Promise<PlatformAdmin | null>
   findMany(): Promise<PlatformAdmin[]>
-  create(admin: NewPlatformAdmin): Promise<PlatformAdmin>
-  update(id: string, changes: PlatformAdminUpdate): Promise<PlatformAdmin | null>
-  deactivate(id: string): Promise<PlatformAdmin | null>
+  create(admin: NewPlatformAdmin, actorId: string): Promise<PlatformAdmin>
+  update(id: string, changes: PlatformAdminUpdate, actorId: string): Promise<PlatformAdmin | null>
+  deactivate(id: string, actorId: string): Promise<PlatformAdmin | null>
   recordAccess(id: string, at: Date): Promise<void>
 }

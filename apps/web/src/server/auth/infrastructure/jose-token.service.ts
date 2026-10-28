@@ -1,6 +1,6 @@
 import { jwtVerify, SignJWT } from 'jose'
 
-import type { AuthenticatedUser } from '../domain/user.entity'
+import type { AuthenticatedUser } from '../types/authenticated-user'
 import type { AccessTokenPayload, TokenService } from '../application/ports/token-service.port'
 import { accessTokenClaimsSchema } from '../schemas/access-token.schema'
 
@@ -22,7 +22,7 @@ export class JoseTokenService implements TokenService {
   async sign(user: AuthenticatedUser): Promise<string> {
     return new SignJWT({
       tenantId: user.tenantId,
-      papel: user.papel,
+      role: user.role,
       sessionVersion: user.sessionVersion ?? 0,
     })
       .setProtectedHeader({ alg: 'HS256' })
@@ -39,7 +39,7 @@ export class JoseTokenService implements TokenService {
     return {
       sub: claims.sub,
       tenantId: claims.tenantId,
-      papel: claims.papel,
+      role: claims.role,
       sessionVersion: claims.sessionVersion,
     }
   }

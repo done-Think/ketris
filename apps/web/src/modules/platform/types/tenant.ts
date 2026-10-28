@@ -1,121 +1,64 @@
+import type { components, paths } from '@shared/types/generated/api'
 import type { z } from 'zod'
 
 import type { createTenantAdminSchema } from '../schemas/create-tenant-admin-schema'
 import type { createTenantSchema } from '../schemas/create-tenant-schema'
 import type { createTenantAccountSchema } from '../schemas/tenant-account-schema'
-import type { ApiPlatformPlan, MonthlyCharge } from './platform-plan'
+import type { ApiPlatformPlan } from './platform-plan'
 
 export type CreateTenantFormValues = z.infer<ReturnType<typeof createTenantSchema>>
 
 export type CreateTenantAdminFormValues = z.infer<ReturnType<typeof createTenantAdminSchema>>
 
-export interface TenantSummary {
-  id: string
-  name: string
-  slug: string
-  createdAt: string
-}
+export type TenantSummary = components['schemas']['TenantSummary']
 
 export const TENANT_ACCOUNT_TYPES = ['INDIVIDUAL', 'BROKER', 'AGENCY'] as const
-export type TenantAccountType = (typeof TENANT_ACCOUNT_TYPES)[number]
+export type TenantAccountType = components['schemas']['PlatformTenant']['accountType']
 
 export const TENANT_STATUSES = ['TRIAL', 'ACTIVE', 'SUSPENDED', 'CANCELED'] as const
-export type TenantStatus = (typeof TENANT_STATUSES)[number]
+export type TenantStatus = components['schemas']['PlatformTenant']['status']
 
-export interface PlatformTenant extends TenantSummary {
-  accountType: TenantAccountType
-  status: TenantStatus
-  canceledAt: string | null
-  monthlyCharge?: MonthlyCharge | null
-}
+export type PlatformTenant = components['schemas']['PlatformTenant']
 
 export type TenantAccountFormValues = z.infer<ReturnType<typeof createTenantAccountSchema>>
 
-export interface UpdateTenantAccountPayload {
-  accountType: TenantAccountType
-  status: TenantStatus
-}
+export type UpdateTenantAccountPayload = components['schemas']['UpdateTenantAccountRequest']
 
-export interface UpdateTenantAccountResponse {
-  tenant: PlatformTenant
-}
+export type UpdateTenantAccountResponse = components['schemas']['UpdateTenantAccountResponse']
 
 export interface EditTenantAccountDialogProps {
   tenant: PlatformTenant
   onClose: () => void
 }
 
-export type TenantUserRole = 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER'
+export type TenantUserRole =
+  components['schemas']['ListTenantUsersResponse']['users'][number]['role']
 
-export interface TenantUser {
-  id: string
-  tenantId: string
-  name: string
-  email: string
-  avatarUrl: string | null
-  role: TenantUserRole
-  active: boolean
-  pendingApproval: boolean
-}
+export type TenantUser = components['schemas']['ListTenantUsersResponse']['users'][number]
 
-export interface CreateTenantPayload {
-  name: string
-  slug: string
-  accountType?: TenantAccountType
-  status?: 'TRIAL' | 'ACTIVE'
-}
+export type CreateTenantPayload = components['schemas']['CreateTenantRequest']
 
-export interface CreateTenantAdminPayload {
-  name: string
-  email: string
-  password: string
-}
+export type CreateTenantAdminPayload = components['schemas']['CreateTenantAdminRequest']
 
-export type TenantStatusCounts = Record<TenantStatus, number>
+export type TenantStatusCounts = components['schemas']['ListTenantsResponse']['statusCounts']
 
-export interface TenantListQuery {
-  q?: string
-  status?: TenantStatus
-  accountType?: TenantAccountType
-  page: number
-  pageSize: number
-}
+export type TenantListQuery = NonNullable<paths['/platform/tenants']['get']['parameters']['query']>
 
-export interface PageMeta {
-  totalCount: number
-  page: number
-  pageSize: number
-}
+export type PageMeta = Pick<ListTenantsResponse, 'totalCount' | 'page' | 'pageSize'>
 
-export interface ListTenantsResponse extends PageMeta {
-  tenants: PlatformTenant[]
-  statusCounts: TenantStatusCounts
-}
+export type ListTenantsResponse = components['schemas']['ListTenantsResponse']
 
-export interface TenantPage extends PageMeta {
-  tenants: PlatformTenant[]
-  statusCounts: TenantStatusCounts
-}
+export type TenantPage = ListTenantsResponse
 
-export interface GetTenantResponse {
-  tenant: PlatformTenant
-}
+export type GetTenantResponse = components['schemas']['GetPlatformTenantResponse']
 
-export interface TenantUsersPage extends PageMeta {
-  users: TenantUser[]
-}
+export type TenantUsersPage = components['schemas']['ListTenantUsersResponse']
 
-export interface CreateTenantResponse {
-  tenant: TenantSummary
-}
+export type CreateTenantResponse = components['schemas']['CreateTenantResponse']
 
-export interface ListTenantUsersResponse extends PageMeta {
-  users: TenantUser[]
-}
+export type ListTenantUsersResponse = components['schemas']['ListTenantUsersResponse']
 
-export interface CreateTenantAdminResponse {
-  user: TenantUser
-}
+export type CreateTenantAdminResponse = components['schemas']['CreateTenantAdminResponse']
 
 export type TenantUsersListProps = {
   tenantId: string

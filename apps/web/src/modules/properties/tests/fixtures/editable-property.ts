@@ -28,7 +28,7 @@ export const editableProperty: Property = {
   },
   media: [],
   values: { price: 500000, rentalPrice: 2000, condoFee: 0, propertyTax: 100 },
-  characteristics: { bedrooms: 2, bathrooms: 1, parkingSpots: 1, areaM2: 80 },
+  characteristics: { bedrooms: 2, bathrooms: 1, parkingSpots: 1, areaSqm: 80 },
   listing: {
     amenities: ['furnished', 'petFriendly'],
     negotiationTerms: 'Caução de dois aluguéis',

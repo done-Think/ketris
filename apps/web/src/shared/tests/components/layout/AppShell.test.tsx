@@ -23,6 +23,7 @@ vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
 
   return {
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
     usePathname: vi.fn(),
     useRouter: vi.fn(() => routerMock),
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
@@ -32,10 +33,6 @@ vi.mock('@/i18n/navigation', async () => {
     ),
   }
 })
-
-vi.mock('next/navigation', () => ({
-  useRouter: vi.fn(() => routerMock),
-}))
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -148,7 +145,7 @@ describe('AppShell navigation per papel', () => {
     vi.mocked(usePathname).mockReturnValue(pathname)
     renderShell()
     expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()
-    expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard/finance/charges')
+    expect(routerMock.replace).toHaveBeenCalledWith('/dashboard/finance/charges')
   })
   beforeEach(() => {
     vi.clearAllMocks()
@@ -401,7 +398,7 @@ describe('AppShell collapsible desktop navigation', () => {
 
     await userEvent.setup().click(screen.getAllByRole('button', { name: 'Editar perfil' })[0])
 
-    expect(routerMock.push).toHaveBeenCalledWith('/pt/dashboard/profile')
+    expect(routerMock.push).toHaveBeenCalledWith('/dashboard/profile')
   })
 
   it('opens the same profile from the collapsed sidebar', async () => {
@@ -410,7 +407,7 @@ describe('AppShell collapsible desktop navigation', () => {
 
     await userEvent.setup().click(screen.getAllByRole('button', { name: 'Editar perfil' })[0])
 
-    expect(routerMock.push).toHaveBeenCalledWith('/pt/dashboard/profile')
+    expect(routerMock.push).toHaveBeenCalledWith('/dashboard/profile')
     expect(useSidebarPreferencesStore.getState().isCollapsed).toBe(true)
   })
 })
@@ -430,7 +427,7 @@ describe('AppShell marketplace logout shortcut', () => {
     await user.click(screen.getAllByRole('button', { name: /sair e voltar/i })[0])
 
     expect(clearClientSession).toHaveBeenCalledOnce()
-    expect(routerMock.replace).toHaveBeenCalledWith('/pt')
+    expect(routerMock.replace).toHaveBeenCalledWith('/')
     expect(routerMock.refresh).toHaveBeenCalledOnce()
   })
 })

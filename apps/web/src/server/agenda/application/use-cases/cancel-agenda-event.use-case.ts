@@ -25,14 +25,14 @@ export class CancelAgendaEventUseCase {
   async execute(input: CancelAgendaEventInput) {
     const existing = await findManageableAgendaEvent(this.agendaEventRepository, input, input.id)
     if (!existing) throw new AgendaEventNotFoundError()
-    assertCanManageAgendaEvent(input.actorPapel, input.actorUserId, existing)
+    assertCanManageAgendaEvent(input.actorRole, input.actorUserId, existing)
 
     if (!input.reason?.trim()) throw new AgendaCancellationReasonRequiredError()
 
     const propertySummary = await prepareAgendaPropertySummary(
       this.propertyCatalog,
       input,
-      existing.imovelId,
+      existing.propertyId,
     )
 
     const event = await this.agendaEventRepository.cancel(

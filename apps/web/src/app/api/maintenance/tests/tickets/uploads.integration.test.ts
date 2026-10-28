@@ -62,10 +62,10 @@ describe('/api/maintenance direct private uploads', () => {
     expect(response.status).toBe(201)
     const { attachment } = await response.json()
     expect((await (await finish(id, token)).json()).attachment.id).toBe(attachment.id)
-    expect(await prisma.anexoChamadoManutencao.count({ where: { chamadoId: id } })).toBe(1)
+    expect(await prisma.maintenanceTicketAttachment.count({ where: { ticketId: id } })).toBe(1)
     expect(
-      await prisma.atividadeChamadoManutencao.count({
-        where: { chamadoId: id, tipo: 'ANEXO_ADICIONADO' },
+      await prisma.maintenanceTicketActivity.count({
+        where: { ticketId: id, type: 'ATTACHMENT_ADDED' },
       }),
     ).toBe(1)
     const key = attachment.url.slice('/api/maintenance/media/'.length).split('/')
@@ -136,13 +136,13 @@ describe('/api/maintenance direct private uploads', () => {
         [field]: field === 'size' ? 1 : 'different',
       })
       expect((await finish(id, token)).status).toBe(400)
-      expect(await prisma.anexoChamadoManutencao.count({ where: { chamadoId: id } })).toBe(0)
+      expect(await prisma.maintenanceTicketAttachment.count({ where: { ticketId: id } })).toBe(0)
     },
   )
   it('revalidates collaboration before completion after the ticket closes', async () => {
     const id = await create()
     const { token } = await grant(id)
-    await prisma.chamadoManutencao.update({ where: { id }, data: { status: 'CANCELADO' } })
+    await prisma.maintenanceTicket.update({ where: { id }, data: { status: 'CANCELED' } })
     expect((await finish(id, token)).status).toBe(409)
     expect(inspectStorageUpload).not.toHaveBeenCalled()
   })

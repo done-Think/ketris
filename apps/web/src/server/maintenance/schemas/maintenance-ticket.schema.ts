@@ -4,30 +4,30 @@ import { z } from 'zod'
 import { maintenanceCategories } from '@shared/lib/utils/maintenance-categories'
 
 export const maintenanceTicketStatusSchema = z.enum([
-  'ABERTO',
-  'EM_ANDAMENTO',
-  'RESOLVIDO',
-  'FECHADO',
-  'AGUARDANDO_CONFIRMACAO',
-  'CONTESTADO',
-  'CANCELADO',
+  'OPEN',
+  'IN_PROGRESS',
+  'RESOLVED',
+  'CLOSED',
+  'AWAITING_CONFIRMATION',
+  'DISPUTED',
+  'CANCELED',
 ])
 
-export const maintenanceTicketPrioritySchema = z.enum(['NORMAL', 'ALTA', 'URGENTE'])
+export const maintenanceTicketPrioritySchema = z.enum(['NORMAL', 'HIGH', 'URGENT'])
 
 export const maintenanceCategorySchema = z.enum(maintenanceCategories)
 
 export const maintenanceActivityTypeSchema = z.enum([
-  'NOTA',
-  'MUDANCA_STATUS',
-  'ANEXO_ADICIONADO',
-  'EDICAO',
-  'RESPONSAVEL_ALTERADO',
-  'PRESTADOR_ALTERADO',
-  'TROCA_SOLICITADA',
-  'TROCA_DECIDIDA',
-  'EXCLUSAO',
-  'RESTAURACAO',
+  'NOTE',
+  'STATUS_CHANGE',
+  'ATTACHMENT_ADDED',
+  'EDIT',
+  'RESPONSIBLE_CHANGED',
+  'PROVIDER_CHANGED',
+  'CHANGE_REQUESTED',
+  'CHANGE_DECIDED',
+  'DELETION',
+  'RESTORATION',
 ])
 
 export const maintenancePermissionsSchema = z.object({
@@ -63,7 +63,7 @@ const replacementSchema = z.object({
   reason: z.string(),
   requestedById: z.string().nullable(),
   requestedByName: z.string(),
-  status: z.enum(['PENDENTE', 'APROVADA', 'REJEITADA']),
+  status: z.enum(['PENDING', 'APPROVED', 'REJECTED']),
   decisionReason: z.string().nullable(),
   decidedByName: z.string().nullable(),
   decidedAt: z.string().nullable(),

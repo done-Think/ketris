@@ -350,9 +350,9 @@
       "success": "Action completed.",
       "error": "Could not complete the action.",
       "requestStatuses": {
-        "PENDENTE": "Pending",
-        "APROVADA": "Approved",
-        "REJEITADA": "Rejected"
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
       },
       "finish": "Finish ticket",
       "finishConfirmation": "Do you confirm that the problem is resolved? The ticket will be marked as resolved and its history will be preserved.",

@@ -4,7 +4,16 @@ import type { SchemaMessageTranslator } from '@shared/types'
 
 import { createChargeDateSchema } from './charge-date-schema'
 
-export function createChargeFormSchema(t: SchemaMessageTranslator, descriptionRequired = true) {
+export function createChargeFormSchema(
+  t: SchemaMessageTranslator<
+    | 'amountPositive'
+    | 'amountTooHigh'
+    | 'dateInvalid'
+    | 'descriptionRequired'
+    | 'descriptionTooLong'
+  >,
+  descriptionRequired = true,
+) {
   const description = z.string().trim().max(500, t('descriptionTooLong'))
 
   return z.object({

@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { ContractManageScope } from './contract-entity'
 
 export interface ContractOpportunityOwner {
@@ -37,7 +37,7 @@ export interface ContractOpportunitiesQuery extends ContractManageScope {
 export interface ListContractOpportunitiesInput {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   search?: string
   page: number
   pageSize: number

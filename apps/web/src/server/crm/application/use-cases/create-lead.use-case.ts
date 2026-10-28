@@ -8,10 +8,10 @@ export class CreateLeadUseCase {
   constructor(private readonly leadRepository: LeadRepository) {}
 
   async execute(input: CreateLeadInput): Promise<CreateLeadOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     return this.leadRepository.create({
       tenantId: input.actorTenantId,
-      responsavelId: input.actorId,
+      responsibleId: input.actorId,
       name: input.name,
       phone: input.phone,
       email: input.email ?? null,

@@ -8,14 +8,17 @@ import type { RegistrationDetailsFormValues } from '../../types/registration'
 import { AuthQueryTestProvider } from '../fixtures/auth-query-provider'
 
 const router = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn() }))
-vi.mock('@/i18n/navigation', () => ({ useRouter: () => router }))
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+  useRouter: () => router,
+}))
 vi.mock('next-auth/react', () => ({ signIn: vi.fn() }))
 vi.mock('../../services/registration-service', () => ({
   registrationService: { register: vi.fn() },
 }))
 
 const values: RegistrationDetailsFormValues = {
-  profile: 'proprietario',
+  profile: 'owner',
   fullName: 'Ana Proprietária',
   email: 'ana@ketris.dev',
   phone: '(11) 99999-9999',
@@ -63,7 +66,7 @@ describe('useRegister', () => {
     await act(async () => {
       await result.current.register({
         ...values,
-        profile: 'corretor',
+        profile: 'broker',
         agencyId: 'agency-1',
         creci: '12345-F',
       })

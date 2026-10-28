@@ -1,5 +1,5 @@
 import { agendaEventInclude } from './agenda-event-query'
-import type { EventoAgendaWithLinks } from '../types/prisma-agenda-event'
+import type { AgendaEventWithLinks } from '../types/prisma-agenda-event'
 import { assertResponsibleReservation } from './agenda-responsible-reservation'
 import { recordAgendaAudit } from './agenda-audit'
 import type { AgendaCancellation } from '../types/audit'
@@ -27,31 +27,31 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
       await assertResponsibleReservation(transaction, event)
       await assertVisitReservation(transaction, {
         ...event,
-        imovelId: event.imovelId ?? null,
-        tipo: event.tipo ?? null,
+        propertyId: event.propertyId ?? null,
+        type: event.type ?? null,
       })
       const linkedUserIds = await resolveLinkedUserIds(transaction, event.tenantId, links)
       const participantUserIds = toParticipantUserIds(links, linkedUserIds)
 
-      const created = await transaction.eventoAgenda.create({
+      const created = await transaction.agendaEvent.create({
         data: {
           tenantId: event.tenantId,
-          responsavelId: event.responsavelId,
-          criadoPorId: event.criadoPorId,
-          donoUsuarioId: links?.donoEmail ? linkedUserIds.get(links.donoEmail) : null,
-          imovelId: event.imovelId ?? null,
-          referenciaImovelLivre: event.referenciaImovelLivre ?? null,
-          titulo: event.titulo,
-          tipo: event.tipo ?? null,
-          destino: event.destino,
-          interno: event.interno,
-          inicio: event.inicio,
-          fim: event.fim,
-          participanteNome: event.participanteNome,
-          participanteTelefone: event.participanteTelefone,
-          notas: event.notas ?? null,
-          participantes: participantUserIds.length
-            ? { create: participantUserIds.map((usuarioId) => ({ usuarioId })) }
+          responsibleId: event.responsibleId,
+          createdById: event.createdById,
+          ownerUserId: links?.ownerEmail ? linkedUserIds.get(links.ownerEmail) : null,
+          propertyId: event.propertyId ?? null,
+          freeFormPropertyReference: event.freeFormPropertyReference ?? null,
+          title: event.title,
+          type: event.type ?? null,
+          audience: event.audience,
+          internal: event.internal,
+          start: event.start,
+          end: event.end,
+          participantName: event.participantName,
+          participantPhone: event.participantPhone,
+          notes: event.notes ?? null,
+          participants: participantUserIds.length
+            ? { create: participantUserIds.map((userId) => ({ userId })) }
             : undefined,
         },
         include: agendaEventInclude,
@@ -60,7 +60,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
       await recordAgendaAudit(transaction, {
         tenantId: created.tenantId,
         eventId: created.id,
-        actorUserId: event.criadoPorId,
+        actorUserId: event.createdById,
         action: 'CREATED',
       })
       return mapAgendaEvent(created)
@@ -68,32 +68,32 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
   }
 
   list(filters: AgendaEventListFilters): Promise<AgendaEvent[]> {
-    return prisma.eventoAgenda
+    return prisma.agendaEvent
       .findMany({
         where: {
           AND: [
             readScopeWhere(filters.scope),
             {
-              responsavelId: filters.responsavelId,
-              inicio: { lt: filters.to },
-              fim: { gt: filters.from },
+              responsibleId: filters.responsibleId,
+              start: { lt: filters.to },
+              end: { gt: filters.from },
             },
           ],
         },
         include: agendaEventInclude,
-        orderBy: { inicio: 'asc' },
+        orderBy: { start: 'asc' },
       })
       .then((events) => events.map(mapAgendaEvent))
   }
 
   findByScopeAndId(scope: AgendaReadScope, id: string): Promise<AgendaEvent | null> {
-    return prisma.eventoAgenda
+    return prisma.agendaEvent
       .findFirst({ where: { AND: [readScopeWhere(scope), { id }] }, include: agendaEventInclude })
       .then((event) => (event ? mapAgendaEvent(event) : null))
   }
 
   findByTenantAndId(tenantId: string, id: string): Promise<AgendaEvent | null> {
-    return prisma.eventoAgenda
+    return prisma.agendaEvent
       .findFirst({ where: { tenantId, id }, include: agendaEventInclude })
       .then((event) => (event ? mapAgendaEvent(event) : null))
   }
@@ -107,17 +107,17 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
   ): Promise<AgendaEvent | null> {
     return prisma.$transaction(async (transaction) => {
       await lockAgendaEvent(transaction, tenantId, id)
-      const existing = await transaction.eventoAgenda.findFirst({
+      const existing = await transaction.agendaEvent.findFirst({
         where: { tenantId, id },
         select: {
           id: true,
           tenantId: true,
-          responsavelId: true,
-          imovelId: true,
-          tipo: true,
+          responsibleId: true,
+          propertyId: true,
+          type: true,
           status: true,
-          inicio: true,
-          fim: true,
+          start: true,
+          end: true,
         },
       })
 
@@ -126,72 +126,72 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
       }
 
       if (
-        changes.inicio !== undefined ||
-        changes.fim !== undefined ||
-        changes.responsavelId !== undefined ||
+        changes.start !== undefined ||
+        changes.end !== undefined ||
+        changes.responsibleId !== undefined ||
         (existing.status === 'CANCELLED' && changes.status && changes.status !== 'CANCELLED')
       ) {
         await assertResponsibleReservation(transaction, {
           ...existing,
-          responsavelId: changes.responsavelId ?? existing.responsavelId,
-          inicio: changes.inicio ?? existing.inicio,
-          fim: changes.fim ?? existing.fim,
+          responsibleId: changes.responsibleId ?? existing.responsibleId,
+          start: changes.start ?? existing.start,
+          end: changes.end ?? existing.end,
           status: changes.status ?? existing.status,
         })
       }
 
       await assertVisitReservation(transaction, {
         ...existing,
-        imovelId: changes.imovelId === undefined ? existing.imovelId : changes.imovelId,
-        tipo: changes.tipo === undefined ? existing.tipo : changes.tipo,
+        propertyId: changes.propertyId === undefined ? existing.propertyId : changes.propertyId,
+        type: changes.type === undefined ? existing.type : changes.type,
         status: changes.status ?? existing.status,
-        inicio: changes.inicio ?? existing.inicio,
-        fim: changes.fim ?? existing.fim,
+        start: changes.start ?? existing.start,
+        end: changes.end ?? existing.end,
       })
 
       const linkedUserIds = await resolveLinkedUserIds(transaction, tenantId, links)
 
-      if (links?.participanteEmails !== undefined) {
-        await transaction.eventoAgendaParticipante.deleteMany({ where: { eventoId: id } })
+      if (links?.participantEmails !== undefined) {
+        await transaction.agendaEventParticipant.deleteMany({ where: { eventId: id } })
 
         const participantUserIds = toParticipantUserIds(links, linkedUserIds)
 
         if (participantUserIds.length) {
-          await transaction.eventoAgendaParticipante.createMany({
-            data: participantUserIds.map((usuarioId) => ({ eventoId: id, usuarioId })),
+          await transaction.agendaEventParticipant.createMany({
+            data: participantUserIds.map((userId) => ({ eventId: id, userId })),
           })
         }
       }
 
-      const updated = await transaction.eventoAgenda.update({
+      const updated = await transaction.agendaEvent.update({
         where: { id, tenantId },
         data: {
-          titulo: changes.titulo,
-          inicio: changes.inicio,
-          fim: changes.fim,
-          tipo: changes.tipo,
-          destino: changes.destino,
-          interno: changes.interno,
-          responsavelId: changes.responsavelId,
+          title: changes.title,
+          start: changes.start,
+          end: changes.end,
+          type: changes.type,
+          audience: changes.audience,
+          internal: changes.internal,
+          responsibleId: changes.responsibleId,
           status: changes.status,
           ...(changes.status === 'CANCELLED'
             ? {
-                canceladoEm: new Date(),
-                canceladoPorId: actorUserId ?? null,
-                motivoCancelamento: changes.motivoCancelamento,
+                canceledAt: new Date(),
+                canceledById: actorUserId ?? null,
+                cancellationReason: changes.cancellationReason,
               }
             : {}),
-          imovelId: changes.imovelId,
-          referenciaImovelLivre: changes.referenciaImovelLivre,
-          participanteNome: changes.participanteNome,
-          participanteTelefone: changes.participanteTelefone,
-          notas: changes.notas,
-          donoUsuarioId:
-            links?.donoEmail === undefined
+          propertyId: changes.propertyId,
+          freeFormPropertyReference: changes.freeFormPropertyReference,
+          participantName: changes.participantName,
+          participantPhone: changes.participantPhone,
+          notes: changes.notes,
+          ownerUserId:
+            links?.ownerEmail === undefined
               ? undefined
-              : links.donoEmail === null
+              : links.ownerEmail === null
                 ? null
-                : linkedUserIds.get(links.donoEmail),
+                : linkedUserIds.get(links.ownerEmail),
         },
         include: agendaEventInclude,
       })
@@ -200,8 +200,8 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
         ...Object.entries(changes)
           .filter(([, value]) => value !== undefined)
           .map(([field]) => agendaChangeFieldNames[field] ?? field),
-        ...(links?.donoEmail !== undefined ? ['ownerEmail'] : []),
-        ...(links?.participanteEmails !== undefined ? ['participantEmails'] : []),
+        ...(links?.ownerEmail !== undefined ? ['ownerEmail'] : []),
+        ...(links?.participantEmails !== undefined ? ['participantEmails'] : []),
       ]
       await recordAgendaAudit(transaction, {
         tenantId,
@@ -209,7 +209,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
         actorUserId,
         action: changes.status === 'CANCELLED' ? 'CANCELLED' : 'UPDATED',
         changedFields,
-        cancellationReason: changes.status === 'CANCELLED' ? changes.motivoCancelamento : null,
+        cancellationReason: changes.status === 'CANCELLED' ? changes.cancellationReason : null,
       })
       return mapAgendaEvent(updated)
     })
@@ -223,17 +223,17 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
   ): Promise<AgendaEvent | null> {
     return prisma.$transaction(async (transaction) => {
       await lockAgendaEvent(transaction, tenantId, id)
-      const existing = await transaction.eventoAgenda.findFirst({
+      const existing = await transaction.agendaEvent.findFirst({
         where: { tenantId, id },
         select: {
           id: true,
           tenantId: true,
-          responsavelId: true,
-          imovelId: true,
-          tipo: true,
+          responsibleId: true,
+          propertyId: true,
+          type: true,
           status: true,
-          inicio: true,
-          fim: true,
+          start: true,
+          end: true,
         },
       })
 
@@ -248,11 +248,11 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
       })
       await assertVisitReservation(transaction, { ...existing, ...reschedule, status: 'CONFIRMED' })
 
-      const updated = await transaction.eventoAgenda.update({
-        where: { id },
+      const updated = await transaction.agendaEvent.update({
+        where: { id, tenantId },
         data: {
-          inicio: reschedule.inicio,
-          fim: reschedule.fim,
+          start: reschedule.start,
+          end: reschedule.end,
           status: 'CONFIRMED',
         },
         include: agendaEventInclude,
@@ -276,7 +276,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
   ): Promise<AgendaEvent | null> {
     return prisma.$transaction(async (transaction) => {
       await lockAgendaEvent(transaction, tenantId, id)
-      const existing = await transaction.eventoAgenda.findFirst({
+      const existing = await transaction.agendaEvent.findFirst({
         where: { tenantId, id },
         select: { id: true },
       })
@@ -285,13 +285,13 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
         return null
       }
 
-      const updated = await transaction.eventoAgenda.update({
-        where: { id },
+      const updated = await transaction.agendaEvent.update({
+        where: { id, tenantId },
         data: {
           status: 'CANCELLED',
-          canceladoEm: new Date(),
-          canceladoPorId: cancellation.actorUserId ?? null,
-          motivoCancelamento: cancellation.reason,
+          canceledAt: new Date(),
+          canceledById: cancellation.actorUserId ?? null,
+          cancellationReason: cancellation.reason,
         },
         include: agendaEventInclude,
       })
@@ -310,19 +310,19 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
 
   async hasOverlap(
     tenantId: string,
-    responsavelId: string,
-    inicio: Date,
-    fim: Date,
+    responsibleId: string,
+    start: Date,
+    end: Date,
     excludeEventId?: string,
   ): Promise<boolean> {
-    const conflict = await prisma.eventoAgenda.findFirst({
+    const conflict = await prisma.agendaEvent.findFirst({
       where: {
         tenantId,
-        responsavelId,
+        responsibleId,
         status: { not: 'CANCELLED' },
         id: excludeEventId ? { not: excludeEventId } : undefined,
-        inicio: { lt: fim },
-        fim: { gt: inicio },
+        start: { lt: end },
+        end: { gt: start },
       },
       select: { id: true },
     })
@@ -331,7 +331,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
   }
 }
 
-function readScopeWhere(scope: AgendaReadScope): Prisma.EventoAgendaWhereInput {
+function readScopeWhere(scope: AgendaReadScope): Prisma.AgendaEventWhereInput {
   if (scope.kind === 'tenant') {
     return { tenantId: scope.tenantId }
   }
@@ -340,32 +340,32 @@ function readScopeWhere(scope: AgendaReadScope): Prisma.EventoAgendaWhereInput {
     return {
       tenantId: scope.tenantId,
       OR: [
-        { destino: 'SHARED_TEAM', interno: false },
-        { destino: 'ALL_AGENTS' },
-        { destino: 'ASSIGNED_AGENT', responsavelId: scope.userId },
+        { audience: 'SHARED_TEAM', internal: false },
+        { audience: 'ALL_AGENTS' },
+        { audience: 'ASSIGNED_AGENT', responsibleId: scope.userId },
       ],
     }
   }
   if (scope.kind === 'owner') {
     return {
       tenantId: scope.tenantId,
-      interno: false,
+      internal: false,
       OR: [
-        { responsavelId: scope.userId },
-        { criadoPorId: scope.userId },
-        { imovel: { proprietarioId: scope.userId, tenantId: scope.tenantId } },
-        { donoUsuarioId: scope.userId },
-        { participantes: { some: { usuarioId: scope.userId } } },
+        { responsibleId: scope.userId },
+        { createdById: scope.userId },
+        { property: { ownerId: scope.userId, tenantId: scope.tenantId } },
+        { ownerUserId: scope.userId },
+        { participants: { some: { userId: scope.userId } } },
       ],
     }
   }
 
   return {
-    interno: false,
+    internal: false,
     OR: [
-      { criadoPorId: scope.userId },
-      { donoUsuarioId: scope.userId },
-      { participantes: { some: { usuarioId: scope.userId } } },
+      { createdById: scope.userId },
+      { ownerUserId: scope.userId },
+      { participants: { some: { userId: scope.userId } } },
     ],
   }
 }
@@ -377,14 +377,14 @@ async function resolveLinkedUserIds(
 ): Promise<Map<string, string>> {
   const emails = new Set<string>()
 
-  if (links?.donoEmail) emails.add(links.donoEmail)
-  links?.participanteEmails?.forEach((email) => emails.add(email))
+  if (links?.ownerEmail) emails.add(links.ownerEmail)
+  links?.participantEmails?.forEach((email) => emails.add(email))
 
   if (emails.size === 0) {
     return new Map()
   }
 
-  const users = await transaction.usuario.findMany({
+  const users = await transaction.user.findMany({
     where: {
       OR: [...emails].map((email) => ({ email: { equals: email, mode: 'insensitive' as const } })),
     },
@@ -392,9 +392,9 @@ async function resolveLinkedUserIds(
       id: true,
       email: true,
       tenantId: true,
-      papel: true,
-      ativo: true,
-      vinculoAprovadoEm: true,
+      role: true,
+      active: true,
+      membershipApprovedAt: true,
     },
   })
   const linkedUserIds = new Map<string, string>()
@@ -416,55 +416,55 @@ function toParticipantUserIds(
   links: AgendaEventLinks | undefined,
   linkedUserIds: Map<string, string>,
 ): string[] {
-  const userIds = (links?.participanteEmails ?? []).map((email) => linkedUserIds.get(email))
+  const userIds = (links?.participantEmails ?? []).map((email) => linkedUserIds.get(email))
 
   return [...new Set(userIds.filter((userId): userId is string => Boolean(userId)))]
 }
 
-function mapAgendaEvent(event: EventoAgendaWithLinks): AgendaEvent {
+function mapAgendaEvent(event: AgendaEventWithLinks): AgendaEvent {
   return {
     id: event.id,
     tenantId: event.tenantId,
-    responsavelId: event.responsavelId,
-    responsavelNome: event.responsavel.nome,
-    criadoPorId: event.criadoPorId,
-    criadoPor: event.criadoPor,
-    donoUsuarioId: event.donoUsuarioId,
-    dono: event.donoUsuario,
-    participantes: event.participantes.map((participante) => participante.usuario),
-    imovelId: event.imovelId,
-    referenciaImovelLivre: event.referenciaImovelLivre,
-    titulo: event.titulo,
-    tipo: event.tipo,
-    destino: event.destino,
-    interno: event.interno,
+    responsibleId: event.responsibleId,
+    responsibleName: event.responsible.name,
+    createdById: event.createdById,
+    createdBy: event.createdBy,
+    ownerUserId: event.ownerUserId,
+    dono: event.ownerUser,
+    participants: event.participants.map((participante) => participante.user),
+    propertyId: event.propertyId,
+    freeFormPropertyReference: event.freeFormPropertyReference,
+    title: event.title,
+    type: event.type,
+    audience: event.audience,
+    internal: event.internal,
     status: event.status,
-    inicio: event.inicio,
-    fim: event.fim,
-    participanteNome: event.participanteNome,
-    participanteTelefone: event.participanteTelefone,
-    notas: event.notas,
-    canceladoEm: event.canceladoEm,
-    canceladoPorId: event.canceladoPorId,
-    motivoCancelamento: event.motivoCancelamento,
+    start: event.start,
+    end: event.end,
+    participantName: event.participantName,
+    participantPhone: event.participantPhone,
+    notes: event.notes,
+    canceledAt: event.canceledAt,
+    canceledById: event.canceledById,
+    cancellationReason: event.cancellationReason,
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
   }
 }
 
 const agendaChangeFieldNames: Record<string, string> = {
-  inicio: 'start',
-  fim: 'end',
-  destino: 'audience',
-  interno: 'internal',
-  responsavelId: 'responsibleId',
-  titulo: 'title',
-  tipo: 'kind',
+  start: 'start',
+  end: 'end',
+  audience: 'audience',
+  internal: 'internal',
+  responsibleId: 'responsibleId',
+  title: 'title',
+  type: 'kind',
   status: 'status',
-  imovelId: 'propertyId',
-  referenciaImovelLivre: 'propertyReference',
-  participanteNome: 'participantName',
-  participanteTelefone: 'participantPhone',
-  notas: 'notes',
-  motivoCancelamento: 'cancellationReason',
+  propertyId: 'propertyId',
+  freeFormPropertyReference: 'propertyReference',
+  participantName: 'participantName',
+  participantPhone: 'participantPhone',
+  notes: 'notes',
+  cancellationReason: 'cancellationReason',
 }

@@ -9,21 +9,21 @@ let actorId: string
 let platformId: string
 beforeAll(async () => {
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Auditoria Auth', slug: `audit-${randomUUID()}` },
+    data: { name: 'Auditoria Auth', slug: `audit-${randomUUID()}` },
   })
   tenantId = tenant.id
-  const actor = await prisma.usuario.create({
+  const actor = await prisma.user.create({
     data: {
       tenantId,
-      nome: 'Gestão',
+      name: 'Gestão',
       email: `${randomUUID()}@example.test`,
-      senhaHash: 'historical-test-only',
-      papel: 'OWNER',
+      passwordHash: 'historical-test-only',
+      role: 'OWNER',
     },
   })
   actorId = actor.id
   const admin = await prisma.platformAdmin.create({
-    data: { nome: 'Plataforma', email: `${randomUUID()}@example.test`, senhaHash: 'test-only' },
+    data: { name: 'Plataforma', email: `${randomUUID()}@example.test`, passwordHash: 'test-only' },
   })
   platformId = admin.id
 })
@@ -35,11 +35,11 @@ const email = () => `${randomUUID()}@audit.example.test`
 function input() {
   return {
     tenantId,
-    nome: 'Usuário',
+    name: 'Usuário',
     email: email(),
-    senhaHash: 'original-password-hash',
-    papel: 'AGENT' as const,
-    vinculoAprovadoEm: null,
+    passwordHash: 'original-password-hash',
+    role: 'AGENT' as const,
+    membershipApprovedAt: null,
   }
 }
 
@@ -49,8 +49,8 @@ describe('histórico transacional dos usuários de Auth', () => {
     const user = await repository.create({ ...input(), auditActor: actor })
     await repository.update(user.id, {
       tenantId,
-      nome: 'Novo nome',
-      telefone: '(11) 99999-9999',
+      name: 'Novo nome',
+      phone: '(11) 99999-9999',
       auditActor: actor,
     })
     await repository.approveMembership(user.id, tenantId, actor)
@@ -74,7 +74,7 @@ describe('histórico transacional dos usuários de Auth', () => {
       ),
     ).toBe(true)
     expect(history[1].changedFields).toEqual(['name', 'phone'])
-    expect((await repository.findById(user.id))?.ativo).toBe(false)
+    expect((await repository.findById(user.id))?.active).toBe(false)
   })
   it('distingue plataforma, autocadastro e sistema e não inventa autoria para contas antigas', async () => {
     const created = await repository.create({
@@ -111,13 +111,13 @@ describe('histórico transacional dos usuários de Auth', () => {
     await expect(
       repository.update(user.id, {
         tenantId,
-        senhaHash: 'changed-password-hash',
+        passwordHash: 'changed-password-hash',
         auditActor: { kind: 'USER', id: 'missing-author' },
       }),
     ).rejects.toMatchObject({ code: 'P2003' })
-    const unchanged = await prisma.usuario.findUniqueOrThrow({ where: { id: user.id } })
-    expect(unchanged.senhaHash).toBe('original-password-hash')
-    expect(unchanged.versaoSessao).toBe(0)
+    const unchanged = await prisma.user.findUniqueOrThrow({ where: { id: user.id } })
+    expect(unchanged.passwordHash).toBe('original-password-hash')
+    expect(unchanged.sessionVersion).toBe(0)
     expect(
       (await prisma.refreshToken.findUniqueOrThrow({ where: { id: token.id } })).revokedAt,
     ).toBeNull()
@@ -128,11 +128,11 @@ describe('histórico transacional dos usuários de Auth', () => {
     await expect(
       repository.create({ ...data, auditActor: { kind: 'PLATFORM_ADMIN', id: 'missing-admin' } }),
     ).rejects.toMatchObject({ code: 'P2003' })
-    expect(await prisma.usuario.count({ where: { tenantId, email: data.email } })).toBe(0)
+    expect(await prisma.user.count({ where: { tenantId, email: data.email } })).toBe(0)
     const user = await repository.create(input())
     await repository.update(user.id, {
       tenantId,
-      senhaHash: 'new-password-hash',
+      passwordHash: 'new-password-hash',
       auditActor: { kind: 'USER', id: actorId },
     })
     const history = await prisma.userAuditEvent.findMany({ where: { userId: user.id } })

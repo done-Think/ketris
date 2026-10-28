@@ -1,10 +1,20 @@
-import { LEAD_SOURCES } from '@server/crm/constants/lead-sources'
+import { LEAD_SOURCES } from '@shared/config/lead-sources'
 import { z } from 'zod'
 
 import { CRM_LIMITS } from '@server/crm/constants/validation'
 import type { SchemaMessageTranslator } from '@shared/types'
 
-export function createLeadSchema(t: SchemaMessageTranslator) {
+export function createLeadSchema(
+  t: SchemaMessageTranslator<
+    | 'budgetRequired'
+    | 'emailInvalid'
+    | 'interestRequired'
+    | 'nameRequired'
+    | 'phoneInvalid'
+    | 'sourceRequired'
+    | 'textTooLong'
+  >,
+) {
   return z.object({
     name: z.string().trim().min(2, t('nameRequired')).max(CRM_LIMITS.name, t('textTooLong')),
     phone: z.string().trim().min(14, t('phoneInvalid')).max(CRM_LIMITS.phone, t('textTooLong')),

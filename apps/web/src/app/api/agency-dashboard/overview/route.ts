@@ -11,7 +11,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
 
   const overview = await agencyDashboardContainer.getAgencyOverviewUseCase.execute({
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
   })
 
   return NextResponse.json(overview, { status: 200 })

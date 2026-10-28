@@ -1,8 +1,9 @@
 import { createTheme, type Theme } from '@mui/material/styles'
+import type {} from '@shared/types/mui-paper'
 
 import type { TenantThemeOverride } from '@shared/types'
 
-import { brand, radius, surface } from './tokens'
+import { alpha, brand, radius, shadows, surface } from './tokens'
 
 export function buildTheme(override: TenantThemeOverride = {}): Theme {
   const mode = override.mode ?? 'light'
@@ -143,6 +144,33 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
         defaultProps: {
           disableScrollLock: true,
         },
+      },
+      MuiDialog: {
+        styleOverrides: { paper: { borderRadius: radius.sm } },
+      },
+      MuiCard: {
+        styleOverrides: { root: { borderRadius: radius.sm } },
+      },
+      MuiTablePagination: {
+        styleOverrides: {
+          toolbar: { minHeight: 58, paddingLeft: 16, paddingRight: 16 },
+          spacer: { flex: 1 },
+          selectLabel: { margin: 0, fontSize: 13, fontWeight: 500 },
+          displayedRows: { margin: 0, fontSize: 13, fontWeight: 500 },
+        },
+      },
+      MuiPaper: {
+        variants: [
+          {
+            props: { variant: 'dashboard' },
+            style: {
+              backgroundColor: surface.paper,
+              border: `1px solid ${alpha.graphite[6]}`,
+              borderRadius: radius.sm,
+              boxShadow: shadows.propertyCard,
+            },
+          },
+        ],
       },
     },
   })

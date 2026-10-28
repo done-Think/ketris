@@ -39,7 +39,7 @@ export class ConfirmSignupVerificationUseCase {
     if (!confirmed) throw new InvalidEmailVerificationCodeError()
     const verified = await this.users.findById(user.id)
     if (!verified) throw new InvalidEmailVerificationCodeError()
-    if (verified.papel === 'AGENT' && verified.vinculoAprovadoEm === null)
+    if (verified.role === 'AGENT' && verified.membershipApprovedAt === null)
       return { outcome: 'PENDING_APPROVAL', email: verified.email }
     return {
       outcome: 'REGISTERED',

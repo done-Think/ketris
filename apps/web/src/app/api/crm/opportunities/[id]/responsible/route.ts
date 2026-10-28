@@ -17,7 +17,7 @@ export const PUT = withErrorHandling(async (request: NextRequest, context: CrmId
   const opportunity = await crmContainer.assignOpportunityResponsibleUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     opportunityId: id,
     responsibleId: body.responsibleId,
   })

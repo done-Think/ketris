@@ -1,4 +1,4 @@
-export type ContactType = 'PROPRIETARIO' | 'LOCATARIO' | 'CORRETOR'
+export type ContactType = 'OWNER' | 'RENTER' | 'BROKER'
 
 export interface Contact {
   createdById?: string | null

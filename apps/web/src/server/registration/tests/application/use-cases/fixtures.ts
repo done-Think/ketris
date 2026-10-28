@@ -6,7 +6,7 @@ import type { RegistrationTenant } from '../../../types/account'
 
 export const tenant: RegistrationTenant = {
   id: 'tenant-1',
-  nome: 'Imobiliária Nova',
+  name: 'Imobiliária Nova',
   slug: 'imobiliaria-nova',
   accountType: 'AGENCY',
   status: 'ACTIVE',

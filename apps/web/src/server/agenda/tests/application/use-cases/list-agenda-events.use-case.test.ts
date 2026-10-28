@@ -31,30 +31,30 @@ describe('ListAgendaEventsUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorUserId: 'agent-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       from,
       to,
-      responsavelId: 'agent-1',
+      responsibleId: 'agent-1',
     })
 
     expect(deps.agendaEventRepository.list).toHaveBeenCalledWith({
       scope: { kind: 'agent', tenantId: 'tenant-1', userId: 'agent-1' },
       from,
       to,
-      responsavelId: 'agent-1',
+      responsibleId: 'agent-1',
     })
   })
 
   it.each(['OWNER', 'AGENT', 'PROPERTY_OWNER'] as const)(
     'repassa o escopo de leitura do perfil %s',
-    async (papel) => {
+    async (role) => {
       const deps = createDeps()
       const useCase = new ListAgendaEventsUseCase(deps.agendaEventRepository)
 
       const result = await useCase.execute({
         actorTenantId: 'tenant-1',
         actorUserId: 'user-1',
-        actorPapel: papel,
+        actorRole: role,
         from,
         to,
       })
@@ -63,10 +63,10 @@ describe('ListAgendaEventsUseCase', () => {
       expect(deps.agendaEventRepository.list).toHaveBeenCalledWith(
         expect.objectContaining({
           scope:
-            papel === 'OWNER'
+            role === 'OWNER'
               ? { kind: 'tenant', tenantId: 'tenant-1' }
               : {
-                  kind: papel === 'AGENT' ? 'agent' : 'owner',
+                  kind: role === 'AGENT' ? 'agent' : 'owner',
                   tenantId: 'tenant-1',
                   userId: 'user-1',
                 },
@@ -82,10 +82,10 @@ describe('ListAgendaEventsUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'renters-tenant',
       actorUserId: 'renter-1',
-      actorPapel: 'RENTER',
+      actorRole: 'RENTER',
       from,
       to,
-      responsavelId: 'agent-1',
+      responsibleId: 'agent-1',
     })
 
     expect(result).toBe(events)
@@ -93,7 +93,7 @@ describe('ListAgendaEventsUseCase', () => {
       scope: { kind: 'linkedUser', userId: 'renter-1' },
       from,
       to,
-      responsavelId: 'agent-1',
+      responsibleId: 'agent-1',
     })
   })
 })

@@ -24,9 +24,9 @@ export class UploadProfileMediaUseCase {
 
   async execute(input: UploadProfileMediaUseCaseInput) {
     if (input.target === 'broker-avatar' || input.target === 'broker-banner') {
-      assertBrokerProfileAccess(input.actorPapel)
+      assertBrokerProfileAccess(input.actorRole)
     } else {
-      assertAgencyProfileAccess(input.actorPapel)
+      assertAgencyProfileAccess(input.actorRole)
     }
 
     if (input.body.byteLength === 0) {

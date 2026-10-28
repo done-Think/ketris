@@ -1,3 +1,4 @@
+import { crmDateSchema } from './crm-date.schema'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 import {
@@ -12,7 +13,7 @@ import { LEAD_SOURCES } from '../constants/lead-sources'
 import { crmGroupsSchema, crmListQuerySchema, crmPaginationSchema } from './pagination.schema'
 
 export const leadStageSchema = z
-  .enum(['NOVO', 'EM_CONTATO', 'VISITA_MARCADA', 'PROPOSTA'])
+  .enum(['NEW', 'IN_CONTACT', 'VISIT_SCHEDULED', 'PROPOSAL'])
   .openapi('LeadStage')
 
 export const leadSourceSchema = z.enum(LEAD_SOURCES).openapi('LeadSource')
@@ -21,7 +22,7 @@ export const leadSchema = z
   .object({
     id: z.string(),
     tenantId: z.string(),
-    responsavelId: z.string(),
+    responsibleId: z.string(),
     responsibleName: z.string().optional(),
     name: z.string(),
     phone: z.string(),
@@ -32,8 +33,8 @@ export const leadSchema = z
     stage: leadStageSchema,
     notes: z.string().nullable(),
     opportunityId: z.string().nullable(),
-    createdAt: z.coerce.date(),
-    updatedAt: z.coerce.date(),
+    createdAt: crmDateSchema,
+    updatedAt: crmDateSchema,
   })
   .openapi('Lead')
 

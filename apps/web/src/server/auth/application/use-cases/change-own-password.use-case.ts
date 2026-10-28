@@ -18,17 +18,17 @@ export class ChangeOwnPasswordUseCase {
 
     const currentPasswordMatches = await this.passwordHasher.compare(
       input.currentPassword,
-      user.senhaHash,
+      user.passwordHash,
     )
 
     if (!currentPasswordMatches) {
       throw new InvalidCurrentPasswordError()
     }
 
-    const senhaHash = await this.passwordHasher.hash(input.password)
+    const passwordHash = await this.passwordHasher.hash(input.password)
 
     await this.userRepository.update(input.userId, {
-      senhaHash,
+      passwordHash,
       tenantId: user.tenantId,
       auditActor: { kind: 'USER', id: input.userId },
     })

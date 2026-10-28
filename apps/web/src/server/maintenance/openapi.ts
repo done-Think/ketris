@@ -70,7 +70,7 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Maintenance'],
     summary: 'Admin regulariza vinculos explicitos de proprietario e locatario',
     description:
-      'O ADMIN do tenant do contrato confirma o vínculo. A parte deve ser LOCATARIO e o usuário RENTER ativo deve ter o mesmo e-mail normalizado, inclusive no tenant compartilhado. O mesmo vínculo é idempotente; outro usuário não pode substituí-lo. O vínculo do chamado ao contrato é uma operação separada. Registros antigos não são vinculados automaticamente.',
+      'O ADMIN do tenant do contrato confirma o vínculo. A parte deve ser RENTER e o usuário RENTER ativo deve ter o mesmo e-mail normalizado, inclusive no tenant compartilhado. O mesmo vínculo é idempotente; outro usuário não pode substituí-lo. O vínculo do chamado ao contrato é uma operação separada. Registros antigos não são vinculados automaticamente.',
     security: [{ bearerAuth: [] }],
     request: { body: { content: { 'application/json': { schema: maintenanceLinksSchema } } } },
     responses: {
@@ -89,7 +89,7 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Maintenance'],
     summary: 'Executa transicoes, atribuicoes, troca de prestador e restauracao autorizadas',
     description:
-      'linkContract: somente ADMIN do tenant associa explicitamente o chamado a um contrato do mesmo imovel, inclusive encerrados e arquivados, preservando seu ciclo de vida e registrando a alteracao no historico. RENTER vinculado ao contrato pode finalizar chamados ativos e nao arquivados com action=finish, marcando RESOLVIDO diretamente e registrando autor e data. Pode reabrir chamados RESOLVIDO com status ABERTO e reason obrigatorio. A acao schedule exige prestador definido e scheduledAt com data, hora e fuso; permite agendar ou reagendar sem editar os demais campos e registra as datas e o prestador no historico. As permissoes existentes da equipe permanecem.',
+      'linkContract: somente ADMIN do tenant associa explicitamente o chamado a um contrato do mesmo imovel, inclusive encerrados e arquivados, preservando seu ciclo de vida e registrando a alteracao no historico. RENTER vinculado ao contrato pode finalizar chamados ativos e nao arquivados com action=finish, marcando RESOLVED diretamente e registrando autor e data. Pode reabrir chamados RESOLVED com status OPEN e reason obrigatorio. A acao schedule exige prestador definido e scheduledAt com data, hora e fuso; permite agendar ou reagendar sem editar os demais campos e registra as datas e o prestador no historico. As permissoes existentes da equipe permanecem.',
     security: [{ bearerAuth: [] }],
     request: {
       params: maintenanceTicketIdParamsSchema,
@@ -251,7 +251,7 @@ export function registerMaintenanceOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Maintenance'],
     summary: 'Adiciona uma mensagem/nota à linha do tempo do chamado',
     description:
-      'Requer a permissao comment. RENTER vinculado pode acrescentar notas em chamados RESOLVIDO sem alterar os dados originais ou a resolucao. Isso nao libera anexos, que dependem de collaborate.',
+      'Requer a permissao comment. RENTER vinculado pode acrescentar notas em chamados RESOLVED sem alterar os dados originais ou a resolucao. Isso nao libera anexos, que dependem de collaborate.',
     security: [{ bearerAuth: [] }],
     request: {
       params: maintenanceTicketIdParamsSchema,

@@ -11,7 +11,7 @@ const existing: Contact = {
   name: 'Carlos',
   email: 'carlos@exemplo.com',
   phone: null,
-  type: 'PROPRIETARIO',
+  type: 'OWNER',
   avatarUrl: null,
   notes: null,
   lastInteraction: null,
@@ -29,11 +29,11 @@ describe('CreateContactUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       name: 'Novo Contato',
       email: 'Novo@Exemplo.com',
       phone: null,
-      type: 'LOCATARIO',
+      type: 'RENTER',
       avatarUrl: null,
       notes: null,
     })
@@ -53,11 +53,11 @@ describe('CreateContactUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         name: 'Duplicado',
         email: 'carlos@exemplo.com',
         phone: null,
-        type: 'LOCATARIO',
+        type: 'RENTER',
         avatarUrl: null,
         notes: null,
       }),

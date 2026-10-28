@@ -14,7 +14,7 @@ export class GetMaintenanceAttachmentUseCase {
     const { key, ...actor } = input
     if (
       key[0] !== 'maintenance' ||
-      (input.actorPapel !== 'RENTER' && key[1] !== input.actorTenantId) ||
+      (input.actorRole !== 'RENTER' && key[1] !== input.actorTenantId) ||
       key.some((part) => part === '..' || part === '.')
     )
       throw new MaintenanceTicketNotFoundError()

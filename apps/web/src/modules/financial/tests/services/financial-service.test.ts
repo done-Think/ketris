@@ -23,9 +23,9 @@ beforeEach(() => {
 describe('FinancialService', () => {
   it('lists charges sending only the filled filters', async () => {
     api.get.mockResolvedValue({ items: [], totalCount: 0 })
-    await service.listCharges({ type: 'A_RECEBER', search: '', page: 2, dueMonth: '2026-10' })
+    await service.listCharges({ type: 'RECEIVABLE', search: '', page: 2, dueMonth: '2026-10' })
     expect(api.get).toHaveBeenCalledWith('/financial/charges', {
-      params: { type: 'A_RECEBER', page: '2', dueMonth: '2026-10' },
+      params: { type: 'RECEIVABLE', page: '2', dueMonth: '2026-10' },
     })
   })
 
@@ -69,6 +69,7 @@ describe('FinancialService', () => {
     expect(storage.put).toHaveBeenCalledWith('https://s3.example.com/receipt', file, {
       headers: { 'Content-Type': 'application/pdf' },
       timeout: 120000,
+      withCredentials: false,
       skipUnauthorizedHandling: true,
     })
   })

@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest'
 
 import { isAgencyManager, isAgencyStaff, isPropertyOwner } from '../../domain/roles'
-import type { Papel } from '../../domain/user.entity'
+import type { UserRole } from '../../domain/user.entity'
 
-const roles: Papel[] = ['OWNER', 'AGENT', 'RENTER', 'PROPERTY_OWNER']
+const roles: UserRole[] = ['OWNER', 'AGENT', 'RENTER', 'PROPERTY_OWNER']
 
 describe('papéis de usuário', () => {
-  it.each(roles)('classifica %s como gestor da imobiliária só quando é OWNER', (papel) => {
-    expect(isAgencyManager(papel)).toBe(papel === 'OWNER')
+  it.each(roles)('classifica %s como gestor da imobiliária só quando é OWNER', (role) => {
+    expect(isAgencyManager(role)).toBe(role === 'OWNER')
   })
 
-  it.each(roles)('classifica %s como equipe da imobiliária só quando é OWNER ou AGENT', (papel) => {
-    expect(isAgencyStaff(papel)).toBe(['OWNER', 'AGENT'].includes(papel))
+  it.each(roles)('classifica %s como equipe da imobiliária só quando é OWNER ou AGENT', (role) => {
+    expect(isAgencyStaff(role)).toBe(['OWNER', 'AGENT'].includes(role))
   })
 
   it('não confunde o dono da imobiliária com o proprietário do imóvel', () => {

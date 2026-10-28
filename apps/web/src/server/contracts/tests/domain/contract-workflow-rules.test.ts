@@ -7,30 +7,30 @@ import {
 import { contractFixture } from '../fixtures/contract'
 import type { ContractEditData } from '../../types/workflow'
 
-it.each(['RASCUNHO', 'EM_REVISAO', 'AGUARDANDO_ASSINATURA'] as const)(
+it.each(['DRAFT', 'IN_REVIEW', 'AWAITING_SIGNATURE'] as const)(
   'permite editar %s somente sem assinaturas',
   (status) => {
     expect(() =>
-      assertContractEditable({ status, parties: [{ signatureStatus: 'PENDENTE' }] }),
+      assertContractEditable({ status, parties: [{ signatureStatus: 'PENDING' }] }),
     ).not.toThrow()
     expect(() =>
-      assertContractEditable({ status, parties: [{ signatureStatus: 'ASSINADA' }] }),
+      assertContractEditable({ status, parties: [{ signatureStatus: 'SIGNED' }] }),
     ).toThrow()
   },
 )
-it.each(['ASSINADO', 'ATIVO', 'ENCERRADO', 'CANCELADO'] as const)(
+it.each(['SIGNED', 'ACTIVE', 'CLOSED', 'CANCELED'] as const)(
   'bloqueia edição no estado %s',
   (status) => {
     expect(() => assertContractEditable({ status, parties: [] })).toThrow()
   },
 )
 it('separa cancelamento de contratos não ativos e encerramento dos ativos', () => {
-  expect(() => assertContractTransition('AGUARDANDO_ASSINATURA', 'CANCEL')).not.toThrow()
-  expect(() => assertContractTransition('ATIVO', 'CLOSE')).not.toThrow()
-  expect(() => assertContractTransition('ATIVO', 'CANCEL')).toThrow()
-  expect(() => assertContractTransition('AGUARDANDO_ASSINATURA', 'CLOSE')).toThrow()
-  expect(() => assertContractTransition('CANCELADO', 'CANCEL')).toThrow()
-  expect(() => assertContractTransition('ENCERRADO', 'CLOSE')).toThrow()
+  expect(() => assertContractTransition('AWAITING_SIGNATURE', 'CANCEL')).not.toThrow()
+  expect(() => assertContractTransition('ACTIVE', 'CLOSE')).not.toThrow()
+  expect(() => assertContractTransition('ACTIVE', 'CANCEL')).toThrow()
+  expect(() => assertContractTransition('AWAITING_SIGNATURE', 'CLOSE')).toThrow()
+  expect(() => assertContractTransition('CANCELED', 'CANCEL')).toThrow()
+  expect(() => assertContractTransition('CLOSED', 'CLOSE')).toThrow()
 })
 it('não invalida o PDF quando só muda a formatação do CPF, telefone ou e-mail', () => {
   const contract = contractFixture()

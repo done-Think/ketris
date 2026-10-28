@@ -17,7 +17,7 @@ export const POST = withErrorHandling(async (request: NextRequest, context: CrmI
   const { opportunity, activity } = await crmContainer.respondToOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     opportunityId: (await parseRouteParams(context.params, crmIdParamsSchema)).id,
     action: body.action,
     message: body.message,

@@ -1,8 +1,9 @@
 import type { CrmPage } from '../types/pagination'
 import { crmChangedFields } from './crm-changed-fields'
+import { crmMutationAuthor } from './crm-mutation-author'
 import { readCrmPage } from './read-crm-page'
 
-import type { ContatoRow, CrmDatabase, CrmScope } from '../types/prisma'
+import type { ContactRow, CrmDatabase, CrmScope } from '../types/prisma'
 import { recordCrmAudit } from './record-crm-audit'
 
 import type {
@@ -11,19 +12,19 @@ import type {
 } from '../application/ports/contact-repository.port'
 import type { Contact, ContactUpdate, NewContact } from '../domain/contact.entity'
 
-function toDomain(row: ContatoRow): Contact {
+function toDomain(row: ContactRow): Contact {
   return {
     id: row.id,
     tenantId: row.tenantId,
     createdById: row.createdById,
-    name: row.nome,
+    name: row.name,
     email: row.email,
-    phone: row.telefone,
-    type: row.tipo,
+    phone: row.phone,
+    type: row.type,
     avatarUrl: row.avatarUrl,
-    notes: row.observacoes,
-    lastInteraction: row.ultimaInteracao,
-    archivedAt: row.arquivadoEm,
+    notes: row.notes,
+    lastInteraction: row.lastInteraction,
+    archivedAt: row.archivedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
@@ -36,16 +37,18 @@ export class PrismaContactRepository implements ContactRepository {
   ) {}
 
   async create(contact: NewContact): Promise<Contact> {
-    const row = await this.db.contato.create({
+    const authorId = await crmMutationAuthor(this.db, this.scope)
+    const row = await this.db.contact.create({
       data: {
         tenantId: this.scope.actorTenantId,
-        createdById: this.scope.actorId ?? null,
-        nome: contact.name,
+        createdById: authorId,
+        updatedById: authorId,
+        name: contact.name,
         email: contact.email,
-        telefone: contact.phone,
-        tipo: contact.type,
+        phone: contact.phone,
+        type: contact.type,
         avatarUrl: contact.avatarUrl,
-        observacoes: contact.notes,
+        notes: contact.notes,
       },
     })
 
@@ -58,7 +61,7 @@ export class PrismaContactRepository implements ContactRepository {
     filters?: ContactListFilters,
   ): Promise<CrmPage<Contact>> {
     const page = await readCrmPage(this.db, this.scope, 'contact', filters)
-    const rows = await this.db.contato.findMany({
+    const rows = await this.db.contact.findMany({
       where: { id: { in: page.ids }, tenantId: this.scope.actorTenantId },
     })
     const byId = new Map(rows.map((row) => [row.id, toDomain(row)]))
@@ -73,19 +76,19 @@ export class PrismaContactRepository implements ContactRepository {
   }
 
   async findById(id: string): Promise<Contact | null> {
-    const row = await this.db.contato.findFirst({
+    const row = await this.db.contact.findFirst({
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorPapel === 'AGENT'
+        ...(this.scope.actorRole === 'AGENT'
           ? {
               OR: [
                 { createdById: this.scope.actorId ?? '' },
                 {
-                  oportunidades: {
+                  opportunities: {
                     some: {
                       tenantId: this.scope.actorTenantId,
-                      responsavelId: this.scope.actorId ?? '',
+                      responsibleId: this.scope.actorId ?? '',
                     },
                   },
                 },
@@ -99,7 +102,7 @@ export class PrismaContactRepository implements ContactRepository {
   }
 
   async findByEmail(tenantId: string, email: string): Promise<Contact | null> {
-    const row = await this.db.contato.findUnique({
+    const row = await this.db.contact.findUnique({
       where: { tenantId_email: { tenantId, email } },
     })
 
@@ -107,21 +110,22 @@ export class PrismaContactRepository implements ContactRepository {
   }
 
   async update(id: string, changes: ContactUpdate): Promise<Contact> {
+    const authorId = await crmMutationAuthor(this.db, this.scope)
     const current = await this.findById(id)
     const changedFields = current ? crmChangedFields(current, changes) : []
-    const row = await this.db.contato.update({
+    const row = await this.db.contact.update({
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorPapel === 'AGENT'
+        ...(this.scope.actorRole === 'AGENT'
           ? {
               OR: [
                 { createdById: this.scope.actorId ?? '' },
                 {
-                  oportunidades: {
+                  opportunities: {
                     some: {
                       tenantId: this.scope.actorTenantId,
-                      responsavelId: this.scope.actorId ?? '',
+                      responsibleId: this.scope.actorId ?? '',
                     },
                   },
                 },
@@ -130,13 +134,14 @@ export class PrismaContactRepository implements ContactRepository {
           : {}),
       },
       data: {
-        nome: changes.name,
+        updatedById: authorId,
+        name: changes.name,
         email: changes.email,
-        telefone: changes.phone,
-        tipo: changes.type,
+        phone: changes.phone,
+        type: changes.type,
         avatarUrl: changes.avatarUrl,
-        observacoes: changes.notes,
-        ultimaInteracao: changes.lastInteraction,
+        notes: changes.notes,
+        lastInteraction: changes.lastInteraction,
       },
     })
 
@@ -145,19 +150,22 @@ export class PrismaContactRepository implements ContactRepository {
   }
 
   async archive(id: string): Promise<Contact> {
-    const row = await this.db.contato.update({
+    const authorId = await crmMutationAuthor(this.db, this.scope)
+    const current = await this.findById(id)
+    if (current?.archivedAt) return current
+    const row = await this.db.contact.update({
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorPapel === 'AGENT'
+        ...(this.scope.actorRole === 'AGENT'
           ? {
               OR: [
                 { createdById: this.scope.actorId ?? '' },
                 {
-                  oportunidades: {
+                  opportunities: {
                     some: {
                       tenantId: this.scope.actorTenantId,
-                      responsavelId: this.scope.actorId ?? '',
+                      responsibleId: this.scope.actorId ?? '',
                     },
                   },
                 },
@@ -165,7 +173,7 @@ export class PrismaContactRepository implements ContactRepository {
             }
           : {}),
       },
-      data: { arquivadoEm: new Date() },
+      data: { archivedAt: new Date(), archivedById: authorId, updatedById: authorId },
     })
 
     await recordCrmAudit(this.db, this.scope, 'CONTACT', row.id, 'ARCHIVED', ['archivedAt'])

@@ -1,13 +1,13 @@
 import type { Prisma } from '@prisma/client'
 
 export async function propertyResponsibleId(
-  db: Pick<Prisma.TransactionClient, 'imovel'>,
-  imovelId: string,
+  db: Pick<Prisma.TransactionClient, 'property'>,
+  propertyId: string,
 ): Promise<string> {
-  const property = await db.imovel.findUniqueOrThrow({
-    where: { id: imovelId },
-    select: { responsavelId: true },
+  const property = await db.property.findUniqueOrThrow({
+    where: { id: propertyId },
+    select: { responsibleId: true },
   })
 
-  return property.responsavelId
+  return property.responsibleId
 }

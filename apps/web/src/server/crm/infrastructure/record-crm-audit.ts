@@ -14,8 +14,8 @@ export async function recordCrmAudit(
       entityType,
       entityId,
       actorUserId: scope.actorId ?? null,
-      actorRole: scope.actorPapel,
-      action,
+      actorRole: scope.actorRole,
+      action: scope.actorId ? action : `SYSTEM_${action}`,
       changedFields,
     },
   })

@@ -1,7 +1,9 @@
 import type { SchemaMessageTranslator } from '@shared/types'
 import { z } from 'zod'
 
-export function createMaintenanceLinksSchema(t: SchemaMessageTranslator) {
+export function createMaintenanceLinksSchema(
+  t: SchemaMessageTranslator<'linkRequired' | 'required'>,
+) {
   return z
     .object({
       contractId: z.string().min(1, t('required')),

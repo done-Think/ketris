@@ -1,5 +1,5 @@
 import { isAgencyManager, isAgencyStaff } from '@server/auth/domain/roles'
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { ContactNotFoundError, LeadNotFoundError, OpportunityNotFoundError } from '../domain/errors'
@@ -9,10 +9,10 @@ import type { OpportunityRepository } from './ports/opportunity-repository.port'
 export function assertOpportunityAccess(
   opportunity: Pick<Opportunity, 'responsibleId'>,
   actorId: string,
-  actorPapel: Papel,
+  actorRole: UserRole,
 ): void {
-  if (isAgencyManager(actorPapel)) return
-  if (actorPapel === 'AGENT' && opportunity.responsibleId === actorId) return
+  if (isAgencyManager(actorRole)) return
+  if (actorRole === 'AGENT' && opportunity.responsibleId === actorId) return
 
   throw new OpportunityNotFoundError()
 }
@@ -22,11 +22,11 @@ export async function assertAgentOwnsContact(
   tenantId: string,
   contactId: string,
   actorId: string,
-  actorPapel: Papel,
+  actorRole: UserRole,
   createdById?: string | null,
 ): Promise<void> {
-  if (isAgencyManager(actorPapel)) return
-  if (actorPapel !== 'AGENT') throw new ContactNotFoundError()
+  if (isAgencyManager(actorRole)) return
+  if (actorRole !== 'AGENT') throw new ContactNotFoundError()
   if (createdById === actorId) return
 
   const hasAccess = await opportunityRepository.existsForAgent(tenantId, contactId, actorId)
@@ -34,15 +34,19 @@ export async function assertAgentOwnsContact(
   if (!hasAccess) throw new ContactNotFoundError()
 }
 
-export function assertLeadAccess(responsavelId: string, actorId: string, actorPapel: Papel): void {
-  if (isAgencyManager(actorPapel)) return
-  if (actorPapel === 'AGENT' && responsavelId === actorId) return
+export function assertLeadAccess(
+  responsibleId: string,
+  actorId: string,
+  actorRole: UserRole,
+): void {
+  if (isAgencyManager(actorRole)) return
+  if (actorRole === 'AGENT' && responsibleId === actorId) return
 
   throw new LeadNotFoundError()
 }
 
-export function assertCrmAccess(actorPapel: Papel): void {
-  if (!isAgencyStaff(actorPapel)) {
+export function assertCrmAccess(actorRole: UserRole): void {
+  if (!isAgencyStaff(actorRole)) {
     throw new ForbiddenError('Só a equipe da imobiliária acessa o CRM.')
   }
 }

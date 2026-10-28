@@ -20,56 +20,56 @@ import { UpdatePropertyUseCase } from '../../../application/use-cases/update-pro
 const property: Property = {
   id: 'property-1',
   tenantId: 'tenant-1',
-  responsavelId: 'user-1',
-  responsavelNome: 'Corretor responsável',
+  responsibleId: 'user-1',
+  responsibleName: 'Corretor responsável',
   activeContractId: null,
-  proprietarioId: null,
-  anuncio: {
-    comodidades: [],
-    condicoesNegociacao: null,
-    publicarAposRevisao: false,
-    permiteContatoWhatsapp: false,
-    destaque: false,
+  ownerId: null,
+  listing: {
+    amenities: [],
+    negotiationTerms: null,
+    publishAfterReview: false,
+    allowWhatsappContact: false,
+    featured: false,
   },
-  titulo: 'Apartamento no centro',
-  descricao: 'Imóvel pronto para locação',
-  finalidade: 'ALUGUEL',
-  tipo: 'APARTAMENTO',
+  title: 'Apartamento no centro',
+  description: 'Imóvel pronto para locação',
+  purpose: 'RENT',
+  type: 'APARTMENT',
   status: 'DRAFT',
-  publicadoEm: null,
+  publishedAt: null,
   createdAt: new Date('2026-08-01T00:00:00.000Z'),
   updatedAt: new Date('2026-08-01T00:00:00.000Z'),
-  endereco: {
-    logradouro: 'Rua XV de Novembro',
-    numero: '100',
-    complemento: null,
-    bairro: 'Centro',
-    cidade: 'Curitiba',
-    estado: 'PR',
-    cep: '80020000',
+  address: {
+    street: 'Rua XV de Novembro',
+    number: '100',
+    complement: null,
+    neighborhood: 'Centro',
+    city: 'Curitiba',
+    state: 'PR',
+    zipCode: '80020000',
     latitude: null,
     longitude: null,
   },
-  midias: [
+  media: [
     {
       id: 'media-1',
       url: 'https://cdn.ketris.dev/property-1/photo.jpg',
-      tipo: 'foto',
-      ordem: 0,
+      type: 'photo',
+      position: 0,
       createdAt: new Date('2026-08-01T00:00:00.000Z'),
     },
   ],
-  valores: {
-    valor: 2500,
-    valorAluguel: null,
-    condominio: 400,
-    iptu: 100,
+  values: {
+    price: 2500,
+    rentalPrice: null,
+    condoFee: 400,
+    propertyTax: 100,
   },
-  caracteristicas: {
-    quartos: 2,
-    banheiros: 1,
-    vagas: 1,
-    areaM2: 60,
+  characteristics: {
+    bedrooms: 2,
+    bathrooms: 1,
+    parkingSpots: 1,
+    areaSqm: 60,
   },
 }
 
@@ -88,14 +88,60 @@ function createRepository(overrides?: Partial<PropertyRepository>): PropertyRepo
     findContractProperty: vi.fn().mockResolvedValue({
       contractId: 'contract-1',
       propertyId: property.id,
-      contractStatus: 'ATIVO',
-      finalidade: 'ALUGUEL',
+      contractStatus: 'ACTIVE',
+      purpose: 'RENT',
     }),
     ...overrides,
   }
 }
 
 describe('properties use cases', () => {
+  it('resolves and persists the address coordinates when creating without manual coordinates', async () => {
+    const repository = createRepository()
+    const geocoder = { locate: vi.fn().mockResolvedValue({ latitude: -25.42, longitude: -49.27 }) }
+    await new CreatePropertyUseCase(repository, createOwnerDirectory(), geocoder).execute({
+      actorTenantId: 'tenant-1',
+      actorUserId: 'user-1',
+      actorRole: 'AGENT',
+      title: property.title,
+      purpose: property.purpose,
+      type: property.type,
+      price: property.values.price,
+      address: property.address!,
+    })
+    expect(geocoder.locate).toHaveBeenCalledWith(property.address)
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        address: expect.objectContaining({ latitude: -25.42, longitude: -49.27 }),
+      }),
+      'user-1',
+    )
+  })
+
+  it('geocodes a changed address instead of retaining its old coordinates', async () => {
+    const oldAddress = { ...property.address!, latitude: -23.55, longitude: -46.63 }
+    const repository = createRepository({
+      findByTenantAndId: vi.fn().mockResolvedValue({ ...property, address: oldAddress }),
+    })
+    const geocoder = { locate: vi.fn().mockResolvedValue({ latitude: -22.43, longitude: -45.45 }) }
+    await new UpdatePropertyUseCase(repository, createOwnerDirectory(), geocoder).execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'user-1',
+      actorRole: 'AGENT',
+      id: property.id,
+      address: { ...oldAddress, city: 'Itajubá', state: 'MG' },
+    })
+    expect(geocoder.locate).toHaveBeenCalled()
+    expect(repository.update).toHaveBeenCalledWith(
+      'tenant-1',
+      property.id,
+      expect.objectContaining({
+        address: expect.objectContaining({ city: 'Itajubá', latitude: -22.43, longitude: -45.45 }),
+      }),
+      'user-1',
+    )
+  })
+
   it('cria imóvel sempre no tenant e responsável do ator autenticado', async () => {
     const repository = createRepository()
     const useCase = new CreatePropertyUseCase(repository, createOwnerDirectory())
@@ -103,19 +149,20 @@ describe('properties use cases', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorUserId: 'user-1',
-      actorPapel: 'OWNER',
-      titulo: property.titulo,
-      finalidade: property.finalidade,
-      tipo: property.tipo,
-      valor: property.valores.valor,
+      actorRole: 'OWNER',
+      title: property.title,
+      purpose: property.purpose,
+      type: property.type,
+      price: property.values.price,
     })
 
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: 'tenant-1',
-        responsavelId: 'user-1',
-        titulo: property.titulo,
+        responsibleId: 'user-1',
+        title: property.title,
       }),
+      'user-1',
     )
   })
 
@@ -127,11 +174,11 @@ describe('properties use cases', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorUserId: 'user-1',
-        actorPapel: 'RENTER',
-        titulo: property.titulo,
-        finalidade: property.finalidade,
-        tipo: property.tipo,
-        valor: property.valores.valor,
+        actorRole: 'RENTER',
+        title: property.title,
+        purpose: property.purpose,
+        type: property.type,
+        price: property.values.price,
       }),
     ).toThrow('Só a equipe da imobiliária e o proprietário gerenciam imóveis.')
     expect(repository.create).not.toHaveBeenCalled()
@@ -144,7 +191,7 @@ describe('properties use cases', () => {
         new GetPropertyUseCase(repository).execute({
           actorTenantId: 'tenant-1',
           actorId: 'renter-1',
-          actorPapel: 'RENTER',
+          actorRole: 'RENTER',
           id: 'property-1',
         }),
       ).resolves.toEqual(property)
@@ -162,7 +209,7 @@ describe('properties use cases', () => {
         new GetPropertyUseCase(repository).execute({
           actorTenantId: 'tenant-1',
           actorId: 'renter-1',
-          actorPapel: 'RENTER',
+          actorRole: 'RENTER',
           id: 'foreign',
         }),
       ).rejects.toThrow(PropertyNotFoundError)
@@ -175,7 +222,7 @@ describe('properties use cases', () => {
         useCase.execute({
           actorTenantId: 'tenant-1',
           actorId: 'user-1',
-          actorPapel: 'AGENT',
+          actorRole: 'AGENT',
           id: 'property-1',
         }),
       ).resolves.toEqual(property)
@@ -189,7 +236,7 @@ describe('properties use cases', () => {
         useCase.execute({
           actorTenantId: 'tenant-1',
           actorId: 'admin-1',
-          actorPapel: 'OWNER',
+          actorRole: 'OWNER',
           id: 'property-1',
         }),
       ).resolves.toEqual(property)
@@ -203,7 +250,7 @@ describe('properties use cases', () => {
         useCase.execute({
           actorTenantId: 'tenant-1',
           actorId: 'outro-agente',
-          actorPapel: 'AGENT',
+          actorRole: 'AGENT',
           id: 'property-1',
         }),
       ).rejects.toThrow(PropertyNotFoundError)
@@ -218,9 +265,9 @@ describe('properties use cases', () => {
       await useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'admin-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         status: 'DRAFT',
-        finalidade: 'ALUGUEL',
+        purpose: 'RENT',
       })
 
       expect(repository.listPage).toHaveBeenCalledWith({
@@ -231,8 +278,8 @@ describe('properties use cases', () => {
         sortBy: 'updatedAt',
         sortOrder: 'desc',
         status: 'DRAFT',
-        finalidade: 'ALUGUEL',
-        responsavelId: undefined,
+        purpose: 'RENT',
+        responsibleId: undefined,
       })
     })
 
@@ -243,11 +290,11 @@ describe('properties use cases', () => {
       await useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
       })
 
       expect(repository.listPage).toHaveBeenCalledWith(
-        expect.objectContaining({ tenantId: 'tenant-1', responsavelId: 'user-1' }),
+        expect.objectContaining({ tenantId: 'tenant-1', responsibleId: 'user-1' }),
       )
     })
 
@@ -256,7 +303,7 @@ describe('properties use cases', () => {
       const useCase = new ListPropertiesUseCase(repository)
 
       await expect(
-        useCase.execute({ actorTenantId: 'tenant-1', actorId: 'renter-1', actorPapel: 'RENTER' }),
+        useCase.execute({ actorTenantId: 'tenant-1', actorId: 'renter-1', actorRole: 'RENTER' }),
       ).resolves.toMatchObject({ properties: [property] })
       expect(repository.listPage).toHaveBeenCalledWith(
         expect.objectContaining({ tenantId: 'tenant-1', renterId: 'renter-1' }),
@@ -272,14 +319,15 @@ describe('properties use cases', () => {
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
       id: 'property-1',
-      actorPapel: 'OWNER',
-      titulo: 'Novo título',
+      actorRole: 'OWNER',
+      title: 'Novo título',
     })
 
     expect(repository.update).toHaveBeenCalledWith(
       'tenant-1',
       'property-1',
-      expect.objectContaining({ titulo: 'Novo título' }),
+      expect.objectContaining({ title: 'Novo título' }),
+      'user-1',
     )
   })
 
@@ -292,8 +340,8 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-2',
         actorId: 'user-1',
         id: 'property-1',
-        actorPapel: 'OWNER',
-        titulo: 'Novo título',
+        actorRole: 'OWNER',
+        title: 'Novo título',
       }),
     ).rejects.toThrow(PropertyNotFoundError)
   })
@@ -307,8 +355,8 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
         id: 'property-1',
-        actorPapel: 'RENTER',
-        titulo: 'Novo título',
+        actorRole: 'RENTER',
+        title: 'Novo título',
       }),
     ).rejects.toThrow('Só a equipe da imobiliária e o proprietário gerenciam imóveis.')
     expect(repository.update).not.toHaveBeenCalled()
@@ -323,8 +371,8 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'outro-agente',
         id: 'property-1',
-        actorPapel: 'AGENT',
-        titulo: 'Novo título',
+        actorRole: 'AGENT',
+        title: 'Novo título',
       }),
     ).rejects.toThrow(PropertyNotFoundError)
     expect(repository.update).not.toHaveBeenCalled()
@@ -338,8 +386,8 @@ describe('properties use cases', () => {
       actorTenantId: 'tenant-1',
       actorId: 'admin-1',
       id: 'property-1',
-      actorPapel: 'OWNER',
-      titulo: 'Novo título',
+      actorRole: 'OWNER',
+      title: 'Novo título',
     })
 
     expect(repository.update).toHaveBeenCalled()
@@ -354,7 +402,7 @@ describe('properties use cases', () => {
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
       id: 'property-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       publishedAt,
     })
 
@@ -363,11 +411,12 @@ describe('properties use cases', () => {
       'property-1',
       'PUBLISHED',
       publishedAt,
+      'user-1',
     )
   })
 
   it('bloqueia publicação sem endereço e mídia', async () => {
-    const incompleteProperty: Property = { ...property, endereco: null, midias: [] }
+    const incompleteProperty: Property = { ...property, address: null, media: [] }
     const repository = createRepository({
       findByTenantAndId: vi.fn().mockResolvedValue(incompleteProperty),
     })
@@ -378,7 +427,7 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
         id: 'property-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
       }),
     ).rejects.toThrow(PropertyPublishValidationError)
     expect(repository.setStatus).not.toHaveBeenCalled()
@@ -393,7 +442,7 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'renter-1',
         id: 'property-1',
-        actorPapel: 'RENTER',
+        actorRole: 'RENTER',
       }),
     ).rejects.toThrow('Só a equipe da imobiliária e o proprietário gerenciam imóveis.')
     expect(repository.findByTenantAndId).not.toHaveBeenCalled()
@@ -408,7 +457,7 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'outro-agente',
         id: 'property-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
       }),
     ).rejects.toThrow(PropertyNotFoundError)
     expect(repository.setStatus).not.toHaveBeenCalled()
@@ -422,10 +471,16 @@ describe('properties use cases', () => {
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
       id: 'property-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
     })
 
-    expect(repository.setStatus).toHaveBeenCalledWith('tenant-1', 'property-1', 'INACTIVE', null)
+    expect(repository.setStatus).toHaveBeenCalledWith(
+      'tenant-1',
+      'property-1',
+      'INACTIVE',
+      null,
+      'user-1',
+    )
   })
 
   it('bloqueia RENTER ao tentar despublicar imóvel', async () => {
@@ -437,7 +492,7 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'renter-1',
         id: 'property-1',
-        actorPapel: 'RENTER',
+        actorRole: 'RENTER',
       }),
     ).rejects.toThrow('Só a equipe da imobiliária e o proprietário gerenciam imóveis.')
     expect(repository.setStatus).not.toHaveBeenCalled()
@@ -452,7 +507,7 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'outro-agente',
         id: 'property-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
       }),
     ).rejects.toThrow(PropertyNotFoundError)
     expect(repository.setStatus).not.toHaveBeenCalled()
@@ -468,7 +523,7 @@ describe('properties use cases', () => {
           actorTenantId: 'tenant-1',
           actorId: 'renter-1',
           id: 'property-1',
-          actorPapel: 'RENTER',
+          actorRole: 'RENTER',
         }),
       ).rejects.toThrow('Só a equipe da imobiliária e o proprietário gerenciam imóveis.')
       expect(repository.setStatus).not.toHaveBeenCalled()
@@ -483,7 +538,7 @@ describe('properties use cases', () => {
           actorTenantId: 'tenant-1',
           actorId: 'outro-agente',
           id: 'property-1',
-          actorPapel: 'AGENT',
+          actorRole: 'AGENT',
         }),
       ).rejects.toThrow(PropertyNotFoundError)
       expect(repository.setStatus).not.toHaveBeenCalled()
@@ -497,10 +552,16 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
         id: 'property-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
       })
 
-      expect(repository.setStatus).toHaveBeenCalledWith('tenant-1', 'property-1', 'INACTIVE', null)
+      expect(repository.setStatus).toHaveBeenCalledWith(
+        'tenant-1',
+        'property-1',
+        'INACTIVE',
+        null,
+        'user-1',
+      )
     })
 
     it('permite que o admin da imobiliária exclua um imóvel de outro corretor', async () => {
@@ -511,10 +572,16 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'admin-1',
         id: 'property-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
       })
 
-      expect(repository.setStatus).toHaveBeenCalledWith('tenant-1', 'property-1', 'INACTIVE', null)
+      expect(repository.setStatus).toHaveBeenCalledWith(
+        'tenant-1',
+        'property-1',
+        'INACTIVE',
+        null,
+        'admin-1',
+      )
     })
 
     it('inativa o imóvel mesmo com propostas ou contratos vinculados', async () => {
@@ -525,9 +592,15 @@ describe('properties use cases', () => {
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
         id: 'property-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
       })
-      expect(repository.setStatus).toHaveBeenCalledWith('tenant-1', 'property-1', 'INACTIVE', null)
+      expect(repository.setStatus).toHaveBeenCalledWith(
+        'tenant-1',
+        'property-1',
+        'INACTIVE',
+        null,
+        'user-1',
+      )
     })
 
     it('lança erro opaco quando o imóvel não existe no tenant do ator', async () => {
@@ -539,7 +612,7 @@ describe('properties use cases', () => {
           actorTenantId: 'tenant-2',
           actorId: 'user-1',
           id: 'property-1',
-          actorPapel: 'OWNER',
+          actorRole: 'OWNER',
         }),
       ).rejects.toThrow(PropertyNotFoundError)
     })
@@ -560,8 +633,8 @@ describe('properties use cases', () => {
       findContractProperty: vi.fn().mockResolvedValue({
         contractId: 'contract-2',
         propertyId: 'property-2',
-        contractStatus: 'ATIVO',
-        finalidade: 'VENDA',
+        contractStatus: 'ACTIVE',
+        purpose: 'SALE',
       }),
     })
     const useCase = new TransitionPropertyFromActiveContractUseCase(repository)
@@ -576,8 +649,8 @@ describe('properties use cases', () => {
       findContractProperty: vi.fn().mockResolvedValue({
         contractId: 'contract-1',
         propertyId: 'property-1',
-        contractStatus: 'AGUARDANDO_ASSINATURA',
-        finalidade: 'ALUGUEL',
+        contractStatus: 'AWAITING_SIGNATURE',
+        purpose: 'RENT',
       }),
     })
     const useCase = new TransitionPropertyFromActiveContractUseCase(repository)

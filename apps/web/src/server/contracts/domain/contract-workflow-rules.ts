@@ -6,16 +6,14 @@ import { ContractEditingLockedError, ContractTransitionNotAllowedError } from '.
 
 export function assertContractEditable(contract: ContractEditableState) {
   if (
-    !['RASCUNHO', 'EM_REVISAO', 'AGUARDANDO_ASSINATURA'].includes(contract.status) ||
-    contract.parties.some((party) => party.signatureStatus === 'ASSINADA')
+    !['DRAFT', 'IN_REVIEW', 'AWAITING_SIGNATURE'].includes(contract.status) ||
+    contract.parties.some((party) => party.signatureStatus === 'SIGNED')
   )
     throw new ContractEditingLockedError()
 }
 
 export function assertContractTransition(status: Contract['status'], action: 'CANCEL' | 'CLOSE') {
-  if (
-    action === 'CLOSE' ? status !== 'ATIVO' : ['ATIVO', 'CANCELADO', 'ENCERRADO'].includes(status)
-  )
+  if (action === 'CLOSE' ? status !== 'ACTIVE' : ['ACTIVE', 'CANCELED', 'CLOSED'].includes(status))
     throw new ContractTransitionNotAllowedError()
 }
 

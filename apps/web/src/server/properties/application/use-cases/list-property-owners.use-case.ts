@@ -8,7 +8,7 @@ export class ListPropertyOwnersUseCase {
   constructor(private readonly directory: PropertyOwnerDirectory) {}
 
   execute(input: ListPropertyOwnersInput) {
-    if (!isAgencyStaff(input.actorPapel))
+    if (!isAgencyStaff(input.actorRole))
       throw new ForbiddenError('Somente a equipe da imobiliária consulta proprietários.')
     return this.directory.listActiveOwners(
       input.actorTenantId,
