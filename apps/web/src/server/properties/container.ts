@@ -11,10 +11,14 @@ import { UpdatePropertyUseCase } from './application/use-cases/update-property.u
 import { UploadPropertyMediaUseCase } from './application/use-cases/upload-property-media.use-case'
 import { PrismaPropertyRepository } from './infrastructure/prisma-property.repository'
 import { S3PropertyMediaStorage } from './infrastructure/s3-property-media-storage'
+import { LocalPropertyMediaStorage } from './infrastructure/local-property-media-storage'
+import { shouldUseLocalUploadsStorage } from '@server/shared/storage/s3-client'
 
 const propertyRepository = new PrismaPropertyRepository()
 const propertyOwnerDirectory = new PrismaPropertyOwnerDirectory()
-const propertyMediaStorage = new S3PropertyMediaStorage()
+const propertyMediaStorage = shouldUseLocalUploadsStorage()
+  ? new LocalPropertyMediaStorage()
+  : new S3PropertyMediaStorage()
 
 export const propertiesContainer = {
   listPropertyOwnersUseCase: new ListPropertyOwnersUseCase(propertyOwnerDirectory),

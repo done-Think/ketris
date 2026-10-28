@@ -82,7 +82,9 @@ O seed cria 11 perfis de corretores elegíveis e 3 imobiliárias de demonstraç�
 existentes conservam conteúdo, status de rascunho e equipe selecionada. As contas do dataset
 continuam usando a senha de desenvolvimento indicada no seed; não rodar esse dataset em produção.
 
-Sem credenciais AWS em desenvolvimento, os uploads usam o storage local. S3/SES também aceitam
+Sem credenciais AWS em desenvolvimento, imagens de imóveis e perfis públicos usam o storage
+local em `apps/web/.local/uploads`, fora do Git. Avatares, documentos e comprovantes que usam S3
+exigem configuração desse serviço. S3/SES também aceitam
 credenciais temporárias, profile local e role em produção pela cadeia padrão do SDK. O envio real
 de e-mails exige SES configurado. As [políticas de segurança](docs/security-policies.md), o
 [ensaio de migrations](apps/web/prisma/english-rename/README.md) e a

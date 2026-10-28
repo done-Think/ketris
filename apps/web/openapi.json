@@ -8545,6 +8545,12 @@
           },
           "409": {
             "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          },
+          "503": {
+            "description": "Serviço de imagens indisponível (PROPERTY_MEDIA_STORAGE_UNAVAILABLE).",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
           }
         },
         "parameters": [
@@ -8586,7 +8592,13 @@
               "application/octet-stream": { "schema": { "type": "string", "format": "binary" } }
             }
           },
-          "404": { "description": "Imagem inexistente ou chave fora do escopo permitido." }
+          "404": { "description": "Imagem inexistente ou chave fora do escopo permitido." },
+          "503": {
+            "description": "Serviço de imagens indisponível (PROPERTY_MEDIA_STORAGE_UNAVAILABLE).",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
         }
       }
     },

@@ -224,6 +224,10 @@ export function registerPropertiesOpenApi(registry: OpenAPIRegistry): void {
         description: 'Papel sem permissão para gerenciar imóveis.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
+      503: {
+        description: 'Serviço de imagens indisponível (PROPERTY_MEDIA_STORAGE_UNAVAILABLE).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
     },
   })
   registry.registerPath({
@@ -246,6 +250,10 @@ export function registerPropertiesOpenApi(registry: OpenAPIRegistry): void {
         },
       },
       404: { description: 'Imagem inexistente ou chave fora do escopo permitido.' },
+      503: {
+        description: 'Serviço de imagens indisponível (PROPERTY_MEDIA_STORAGE_UNAVAILABLE).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
     },
   })
 }

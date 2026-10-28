@@ -10003,6 +10003,15 @@ export interface paths {
           }
           content?: never
         }
+        /** @description Serviço de imagens indisponível (PROPERTY_MEDIA_STORAGE_UNAVAILABLE). */
+        503: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
       }
     }
     delete?: never
@@ -10051,6 +10060,15 @@ export interface paths {
             [name: string]: unknown
           }
           content?: never
+        }
+        /** @description Serviço de imagens indisponível (PROPERTY_MEDIA_STORAGE_UNAVAILABLE). */
+        503: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
         }
       }
     }

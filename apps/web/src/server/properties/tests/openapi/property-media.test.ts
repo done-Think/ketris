@@ -19,8 +19,9 @@ describe('property media OpenAPI contract', () => {
       content: { 'multipart/form-data': expect.anything() },
     })
     expect(Object.keys(upload?.responses ?? {})).toEqual(
-      expect.arrayContaining(['201', '400', '401', '403']),
+      expect.arrayContaining(['201', '400', '401', '403', '503']),
     )
+    expect(upload?.responses['503'].description).toContain('PROPERTY_MEDIA_STORAGE_UNAVAILABLE')
     expect(document.components?.schemas?.UploadTenantPropertyMediaResponse).toMatchObject({
       properties: {
         media: {
@@ -39,5 +40,6 @@ describe('property media OpenAPI contract', () => {
     expect(read?.description).toContain('properties/')
     expect(read?.responses['200']).toMatchObject({ content: { 'image/jpeg': expect.anything() } })
     expect(read?.responses['404']).toBeDefined()
+    expect(read?.responses['503']).toBeDefined()
   })
 })

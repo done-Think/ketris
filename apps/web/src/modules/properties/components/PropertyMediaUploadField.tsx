@@ -9,6 +9,7 @@ import { useSnackbar } from 'notistack'
 import { useTranslations } from 'next-intl'
 
 import { iconSize } from '@shared/theme/tokens'
+import { getApiErrorCode } from '@shared/utils/error-message'
 
 import { useUploadPropertyMediaBatch } from '../hooks/use-properties'
 import type {
@@ -44,9 +45,17 @@ export function PropertyMediaUploadField({ control }: PropertyMediaUploadFieldPr
 
               results.forEach((result, index) => {
                 if (result.status === 'rejected')
-                  enqueueSnackbar(t('mediaUploadFileError', { filename: files[index].name }), {
-                    variant: 'error',
-                  })
+                  enqueueSnackbar(
+                    t(
+                      getApiErrorCode(result.reason) === 'PROPERTY_MEDIA_STORAGE_UNAVAILABLE'
+                        ? 'mediaStorageUnavailableFileError'
+                        : 'mediaUploadFileError',
+                      { filename: files[index].name },
+                    ),
+                    {
+                      variant: 'error',
+                    },
+                  )
               })
 
               if (uploaded.length > 0) {

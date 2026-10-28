@@ -10,19 +10,24 @@ import type {
   UploadedPropertyMedia,
   UploadPropertyMediaInput,
 } from '../application/ports/property-media-storage.port'
+import { propertyMediaStorageError } from './property-media-storage-error'
 
 export class S3PropertyMediaStorage implements PropertyMediaStoragePort {
   async upload(input: UploadPropertyMediaInput): Promise<UploadedPropertyMedia> {
     const key = `properties/${input.tenantId}/${randomUUID()}-${sanitizeUploadFilename(input.filename)}`
 
-    await getS3Client().send(
-      new PutObjectCommand({
-        Bucket: getUploadsBucketName(),
-        Key: key,
-        Body: input.body,
-        ContentType: input.contentType,
-      }),
-    )
+    try {
+      await getS3Client().send(
+        new PutObjectCommand({
+          Bucket: getUploadsBucketName(),
+          Key: key,
+          Body: input.body,
+          ContentType: input.contentType,
+        }),
+      )
+    } catch (error) {
+      throw propertyMediaStorageError(error)
+    }
 
     return { url: `/api/properties/media/${key}`, contentType: input.contentType }
   }

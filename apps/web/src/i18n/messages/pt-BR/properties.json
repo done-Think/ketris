@@ -270,7 +270,8 @@
     "noOwner": "Sem proprietário vinculado",
     "ownerUnavailable": "Proprietário indisponível",
     "ownersLoadError": "Não foi possível carregar os proprietários.",
-    "mediaUploadFileError": "Não foi possível enviar \"{filename}\". Tente novamente."
+    "mediaUploadFileError": "Não foi possível enviar \"{filename}\". Tente novamente.",
+    "mediaStorageUnavailableFileError": "O serviço de imagens está indisponível. Não foi possível enviar \"{filename}\". Tente novamente mais tarde."
   },
   "edit": {
     "title": "Editar imóvel",

@@ -270,7 +270,8 @@
     "noOwner": "No linked owner",
     "ownerUnavailable": "Owner unavailable",
     "ownersLoadError": "Could not load owners.",
-    "mediaUploadFileError": "Could not upload \"{filename}\". Please try again."
+    "mediaUploadFileError": "Could not upload \"{filename}\". Please try again.",
+    "mediaStorageUnavailableFileError": "The image service is unavailable. Could not upload \"{filename}\". Please try again later."
   },
   "edit": {
     "title": "Edit property",

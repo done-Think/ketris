@@ -270,7 +270,8 @@
     "noOwner": "Sin propietario vinculado",
     "ownerUnavailable": "Propietario no disponible",
     "ownersLoadError": "No se pudieron cargar los propietarios.",
-    "mediaUploadFileError": "No se pudo subir \"{filename}\". Inténtelo de nuevo."
+    "mediaUploadFileError": "No se pudo subir \"{filename}\". Inténtelo de nuevo.",
+    "mediaStorageUnavailableFileError": "El servicio de imágenes no está disponible. No se pudo subir \"{filename}\". Inténtelo más tarde."
   },
   "edit": {
     "title": "Editar inmueble",
