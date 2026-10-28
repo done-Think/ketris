@@ -41,21 +41,21 @@ describe('CRM consistency, pagination and authorization', () => {
   beforeAll(async () => {
     for (const name of ['CRM regressions', 'Foreign CRM']) {
       const tenant = await prisma.tenant.create({
-        data: { nome: name, slug: 'crm-regressions-' + randomUUID() },
+        data: { name: name, slug: 'crm-regressions-' + randomUUID() },
       })
       tenants.push(tenant.id)
     }
     ;[tenantId, otherTenantId] = tenants
-    const user = (name: string, papel: 'OWNER' | 'AGENT', tenant = tenantId) =>
-      prisma.usuario.create({
+    const user = (name: string, role: 'OWNER' | 'AGENT', tenant = tenantId) =>
+      prisma.user.create({
         data: {
           tenantId: tenant,
-          nome: name,
-          papel,
+          name: name,
+          role,
           email: randomUUID() + '@crm.test',
-          senhaHash: 'not-used',
-          emailVerificadoEm: new Date(),
-          vinculoAprovadoEm: new Date(),
+          passwordHash: 'not-used',
+          emailVerifiedAt: new Date(),
+          membershipApprovedAt: new Date(),
         },
       })
     const owner = await user('Gestora', 'OWNER'),
@@ -68,15 +68,15 @@ describe('CRM consistency, pagination and authorization', () => {
     ownerToken = await tokenService.sign(owner)
     agentToken = await tokenService.sign(agent)
     otherAgentToken = await tokenService.sign(otherAgent)
-    const property = (responsavelId: string, titulo: string, tenant = tenantId) =>
-      prisma.imovel.create({
+    const property = (responsibleId: string, title: string, tenant = tenantId) =>
+      prisma.property.create({
         data: {
           tenantId: tenant,
-          responsavelId,
-          titulo,
-          finalidade: 'ALUGUEL',
-          tipo: 'APARTAMENTO',
-          valor: 1800.45,
+          responsibleId,
+          title,
+          purpose: 'RENT',
+          type: 'APARTMENT',
+          price: 1800.45,
           status: 'DRAFT',
         },
       })
@@ -86,9 +86,9 @@ describe('CRM consistency, pagination and authorization', () => {
   })
   afterEach(() => vi.restoreAllMocks())
   afterAll(async () => {
-    await prisma.contrato.deleteMany({ where: { tenantId: { in: tenants } } })
-    await prisma.oportunidade.deleteMany({ where: { tenantId: { in: tenants } } })
-    await prisma.imovel.deleteMany({ where: { tenantId: { in: tenants } } })
+    await prisma.contract.deleteMany({ where: { tenantId: { in: tenants } } })
+    await prisma.opportunity.deleteMany({ where: { tenantId: { in: tenants } } })
+    await prisma.property.deleteMany({ where: { tenantId: { in: tenants } } })
     await prisma.tenant.deleteMany({ where: { id: { in: tenants } } })
     await prisma.$disconnect()
   })
@@ -140,8 +140,8 @@ describe('CRM consistency, pagination and authorization', () => {
   })
 
   it('synchronizes contact details both ways, including across linked opportunities, without crossing tenants', async () => {
-    const contact = await prisma.contato.create({
-      data: { tenantId, nome: 'Original', email: randomUUID() + '@crm.test', tipo: 'LOCATARIO' },
+    const contact = await prisma.contact.create({
+      data: { tenantId, name: 'Original', email: randomUUID() + '@crm.test', type: 'RENTER' },
     })
     const first = await (
       await createOpportunity(
@@ -172,8 +172,8 @@ describe('CRM consistency, pagination and authorization', () => {
       context(contact.id),
     )
     expect(
-      (await prisma.oportunidade.findUniqueOrThrow({ where: { id: first.opportunity.id } }))
-        .interessadoNome,
+      (await prisma.opportunity.findUniqueOrThrow({ where: { id: first.opportunity.id } }))
+        .interestedName,
     ).toBe('Atualizado no contato')
     const email = randomUUID() + '@crm.test'
     const response = await editOpportunity(
@@ -184,19 +184,19 @@ describe('CRM consistency, pagination and authorization', () => {
       context(first.opportunity.id),
     )
     expect(response.status).toBe(200)
-    expect(await prisma.contato.findUniqueOrThrow({ where: { id: contact.id } })).toMatchObject({
+    expect(await prisma.contact.findUniqueOrThrow({ where: { id: contact.id } })).toMatchObject({
       email,
-      telefone: null,
+      phone: null,
     })
     expect(
-      await prisma.oportunidade.findUniqueOrThrow({ where: { id: second.opportunity.id } }),
-    ).toMatchObject({ interessadoEmail: email, interessadoTelefone: null })
-    const foreign = await prisma.contato.create({
+      await prisma.opportunity.findUniqueOrThrow({ where: { id: second.opportunity.id } }),
+    ).toMatchObject({ interestedEmail: email, interestedPhone: null })
+    const foreign = await prisma.contact.create({
       data: {
         tenantId: otherTenantId,
-        nome: 'Foreign',
+        name: 'Foreign',
         email: randomUUID() + '@crm.test',
-        tipo: 'LOCATARIO',
+        type: 'RENTER',
       },
     })
     expect(
@@ -210,15 +210,15 @@ describe('CRM consistency, pagination and authorization', () => {
       ).status,
     ).toBe(404)
     expect(
-      (await prisma.oportunidade.findUniqueOrThrow({ where: { id: first.opportunity.id } }))
-        .contatoId,
+      (await prisma.opportunity.findUniqueOrThrow({ where: { id: first.opportunity.id } }))
+        .contactId,
     ).toBe(contact.id)
   })
 
   it('rolls back the write and audit if activity insertion fails', async () => {
     const created = await (
       await createOpportunity(
-        request(ownerToken, 'POST', 'opportunities', payload({ status: 'ENVIADA' })),
+        request(ownerToken, 'POST', 'opportunities', payload({ status: 'SENT' })),
       )
     ).json()
     const id = created.opportunity.id
@@ -227,11 +227,11 @@ describe('CRM consistency, pagination and authorization', () => {
       new Error('Forced audit failure'),
     )
     const response = await editOpportunity(
-      request(ownerToken, 'PATCH', 'opportunities/' + id, { status: 'ACEITA' }),
+      request(ownerToken, 'PATCH', 'opportunities/' + id, { status: 'ACCEPTED' }),
       context(id),
     )
     expect(response.status).toBe(500)
-    expect((await prisma.oportunidade.findUniqueOrThrow({ where: { id } })).status).toBe('ENVIADA')
+    expect((await prisma.opportunity.findUniqueOrThrow({ where: { id } })).status).toBe('SENT')
     expect(await prisma.crmAuditEvent.count({ where: { entityId: id } })).toBe(audits)
   })
 
@@ -239,12 +239,12 @@ describe('CRM consistency, pagination and authorization', () => {
     const lead = await prisma.lead.create({
       data: {
         tenantId,
-        responsavelId: agentId,
-        nome: 'Sem e-mail',
-        telefone: '11999999999',
-        interesse: 'Apartamento',
-        orcamento: 'A combinar',
-        origem: 'SITE',
+        responsibleId: agentId,
+        name: 'Sem e-mail',
+        phone: '11999999999',
+        interest: 'Apartamento',
+        budget: 'A combinar',
+        source: 'WEBSITE',
       },
     })
     const body = { propertyId, proposedValue: 1800.45 }
@@ -268,12 +268,12 @@ describe('CRM consistency, pagination and authorization', () => {
     expect(responses.map((response) => response.status).sort()).toEqual([200, 409])
     const saved = await prisma.lead.findUniqueOrThrow({
       where: { id: lead.id },
-      include: { oportunidade: true },
+      include: { opportunity: true },
     })
     expect(
       (
         await editLead(
-          request(agentToken, 'PATCH', 'leads/' + lead.id, { stage: 'NOVO' }),
+          request(agentToken, 'PATCH', 'leads/' + lead.id, { stage: 'NEW' }),
           context(lead.id),
         )
       ).status,
@@ -287,20 +287,20 @@ describe('CRM consistency, pagination and authorization', () => {
       ).status,
     ).toBe(200)
     expect(saved.email).toBe(email)
-    expect(saved.oportunidade?.interessadoEmail).toBe(email)
-    expect(saved.oportunidade?.valorProposto.toNumber()).toBe(1800.45)
+    expect(saved.opportunity?.interestedEmail).toBe(email)
+    expect(saved.opportunity?.proposedValue.toNumber()).toBe(1800.45)
     expect(
       await prisma.crmAuditEvent.count({ where: { entityId: lead.id, action: 'CONVERTED' } }),
     ).toBe(1)
   })
 
   it('paginates all authorized results and computes distinct property counts instead of opportunity counts', async () => {
-    const contact = await prisma.contato.create({
+    const contact = await prisma.contact.create({
       data: {
         tenantId,
-        nome: 'José paginação',
+        name: 'José paginação',
         email: randomUUID() + '@crm.test',
-        tipo: 'LOCATARIO',
+        type: 'RENTER',
       },
     })
     for (let index = 0; index < 7; index++)
@@ -356,12 +356,12 @@ describe('CRM consistency, pagination and authorization', () => {
       await prisma.lead.create({
         data: {
           tenantId,
-          responsavelId: agentId,
-          nome: 'Busca ' + suffix + ' ' + index,
-          telefone: '11999999999',
-          interesse: 'Apartamento',
-          orcamento: index === 5 ? 'Sob consulta' : 'R$ 1.2M',
-          origem: 'SITE',
+          responsibleId: agentId,
+          name: 'Busca ' + suffix + ' ' + index,
+          phone: '11999999999',
+          interest: 'Apartamento',
+          budget: index === 5 ? 'Sob consulta' : 'R$ 1.2M',
+          source: 'WEBSITE',
         },
       })
     const response = await (
@@ -411,7 +411,7 @@ describe('CRM consistency, pagination and authorization', () => {
           payload({
             contractTermMonths: 30,
             desiredStartDate: '2030-01-01',
-            guaranteeType: 'CAUCAO',
+            guaranteeType: 'DEPOSIT',
             specialConditions: conditions,
           }),
         ),
@@ -425,18 +425,18 @@ describe('CRM consistency, pagination and authorization', () => {
       }),
     ).toMatchObject({ actorUserId: ownerId })
     expect(opportunity.contractTermMonths).toBe(30)
-    await prisma.contrato.create({
+    await prisma.contract.create({
       data: {
         tenantId,
-        imovelId: propertyId,
-        oportunidadeOrigemId: opportunity.id,
-        codigo: 'CRM-' + randomUUID(),
-        valor: 1800.45,
-        diaVencimento: 5,
-        dataInicio: new Date('2030-01-01'),
-        dataFim: new Date('2031-01-01'),
-        indiceReajuste: 'IPCA',
-        tipoGarantia: 'CAUCAO',
+        propertyId: propertyId,
+        sourceOpportunityId: opportunity.id,
+        code: 'CRM-' + randomUUID(),
+        amount: 1800.45,
+        dueDay: 5,
+        startDate: new Date('2030-01-01'),
+        endDate: new Date('2031-01-01'),
+        adjustmentIndex: 'IPCA',
+        guaranteeType: 'DEPOSIT',
       },
     })
     const deletion = await deleteOpportunity(
@@ -444,7 +444,7 @@ describe('CRM consistency, pagination and authorization', () => {
       context(opportunity.id),
     )
     expect(deletion.status).toBe(409)
-    expect(await prisma.oportunidade.findUnique({ where: { id: opportunity.id } })).not.toBeNull()
+    expect(await prisma.opportunity.findUnique({ where: { id: opportunity.id } })).not.toBeNull()
     expect(
       (
         await deleteOpportunity(

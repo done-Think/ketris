@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { ContractManualSignatureEvidence } from './workflow'
 import type { ContractListFilters, NewContractParty } from './contract-entity'
 import type { AdjustmentIndex, ContractGuaranteeType, ContractType } from './contract'
@@ -6,7 +6,7 @@ import type { AdjustmentIndex, ContractGuaranteeType, ContractType } from './con
 export interface CreateContractFromOpportunityInput {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   opportunityId: string
   amount?: number
   type: ContractType
@@ -24,20 +24,20 @@ export interface CreateContractFromOpportunityInput {
 export interface GetContractInput {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   contractId: string
 }
 
 export interface ListContractsInput extends ContractListFilters {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export interface SignContractPartyInput extends ContractManualSignatureEvidence {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   contractId: string
   partyId: string
 }

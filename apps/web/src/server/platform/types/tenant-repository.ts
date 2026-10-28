@@ -1,7 +1,7 @@
 import type { TenantAccountType } from './tenant-account'
 
 export interface NewTenant {
-  nome: string
+  name: string
   slug: string
   accountType?: TenantAccountType
   status?: 'TRIAL' | 'ACTIVE'

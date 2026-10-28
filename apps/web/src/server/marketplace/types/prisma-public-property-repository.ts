@@ -2,46 +2,46 @@ import type { PropertyPurpose, PublicPropertyType } from './property'
 
 export type DecimalLike = { toNumber(): number }
 
-export type EnderecoRow = {
-  logradouro: string
-  numero: string
-  complemento: string | null
-  bairro: string
-  cidade: string
-  estado: string
-  cep: string
+export type PropertyAddressRow = {
+  street: string
+  number: string
+  complement: string | null
+  neighborhood: string
+  city: string
+  state: string
+  zipCode: string
   latitude: DecimalLike | null
   longitude: DecimalLike | null
 }
 
-export type MidiaRow = { id: string; url: string; tipo: string; ordem: number }
+export type PropertyMediaRow = { id: string; url: string; type: string; position: number }
 
-export type ImovelSummaryRow = {
+export type PropertySummaryRow = {
   id: string
-  titulo: string
-  finalidade: PropertyPurpose
-  tipo: PublicPropertyType
-  valor: DecimalLike
-  condominio: DecimalLike | null
-  iptu: DecimalLike | null
-  quartos: number | null
-  banheiros: number | null
-  vagas: number | null
-  areaM2: DecimalLike | null
-  publicadoEm: Date | null
-  endereco: {
-    cidade: string
-    bairro: string
+  title: string
+  purpose: PropertyPurpose
+  type: PublicPropertyType
+  price: DecimalLike
+  condoFee: DecimalLike | null
+  propertyTax: DecimalLike | null
+  bedrooms: number | null
+  bathrooms: number | null
+  parkingSpots: number | null
+  areaSqm: DecimalLike | null
+  publishedAt: Date | null
+  address: {
+    city: string
+    neighborhood: string
     latitude: DecimalLike | null
     longitude: DecimalLike | null
   } | null
-  responsavel: { nome: string; avatarUrl: string | null } | null
-  midias: { url: string }[]
+  responsible: { name: string; avatarUrl: string | null } | null
+  media: { url: string }[]
 }
 
-export type ImovelDetailRow = ImovelSummaryRow & {
+export type PropertyDetailRow = PropertySummaryRow & {
   tenantId: string
-  descricao: string | null
-  endereco: EnderecoRow | null
-  midias: MidiaRow[]
+  description: string | null
+  address: PropertyAddressRow | null
+  media: PropertyMediaRow[]
 }

@@ -1,13 +1,15 @@
 import type { ContractFieldMeta, CreateContractFieldName } from '../types/contract'
 import { makePartyFieldsMeta } from '../utils/contract-fields'
 
-export const contractTypeOptions = ['RESIDENCIAL', 'COMERCIAL', 'TEMPORADA']
+export const contractTypeOptions = ['RESIDENTIAL', 'COMMERCIAL', 'SEASONAL']
 
-export const guaranteeTypeOptions = ['FIADOR', 'CAUCAO', 'SEGURO_FIANCA', 'TITULO_CAPITALIZACAO']
+export const guaranteeTypeOptions = ['GUARANTOR', 'DEPOSIT', 'SURETY_BOND', 'CAPITALIZATION_BOND']
 
 export const adjustmentIndexOptions = ['IPCA', 'IGPM', 'INPC']
 
-export const conditionsStepFieldsMeta: ContractFieldMeta[] = [
+export const conditionsStepFieldsMeta: ContractFieldMeta<
+  TranslationKey<'contracts.wizard.conditions.fields'>
+>[] = [
   {
     name: 'contractType',
     labelKey: 'contractType',
@@ -52,3 +54,4 @@ export const stepValidationFields: Record<number, CreateContractFieldName[]> = {
   2: conditionsStepFieldNames,
   3: [],
 }
+import type { TranslationKey } from '@/i18n/types/messages.types'

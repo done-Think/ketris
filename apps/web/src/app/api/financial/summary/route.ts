@@ -13,7 +13,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const query = parseQuery(request, financialSummaryQuerySchema)
 
   const summary = await financialContainer.getFinancialSummaryUseCase.execute({
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     actorTenantId: actor.tenantId,
     month: query.month,
   })

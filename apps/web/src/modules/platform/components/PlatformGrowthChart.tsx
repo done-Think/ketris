@@ -12,6 +12,23 @@ import { styles, getLineChartStyles } from '../styles/platform-growth-chart.styl
 
 export function PlatformGrowthChart({ trend }: { trend: readonly GrowthTrendPoint[] }) {
   const t = useTranslations('platform.overview')
+  const monthKeys = [
+    'jan',
+    'feb',
+    'mar',
+    'apr',
+    'may',
+    'jun',
+    'jul',
+    'aug',
+    'sep',
+    'oct',
+    'nov',
+    'dec',
+  ] as const
+  const monthLabels = new Map<string, string>(
+    monthKeys.map((month) => [month, t(`months.${month}`)]),
+  )
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'))
   const chartHeight = isMobile ? 270 : 300
 
@@ -28,7 +45,7 @@ export function PlatformGrowthChart({ trend }: { trend: readonly GrowthTrendPoin
               dataKey: 'month',
               scaleType: 'point',
               tickLabelInterval: (_, index) => !isMobile || index % 2 === 0,
-              valueFormatter: (value) => t(`months.${value}`),
+              valueFormatter: (value) => monthLabels.get(String(value)) ?? String(value),
             },
           ]}
           yAxis={[{ disableLine: true, disableTicks: true }]}

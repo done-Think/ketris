@@ -1,5 +1,5 @@
+import { useTenantSessionScope } from '@shared/hooks/use-tenant-session-scope'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useCrmCacheScope } from './use-crm-cache-scope'
 import { crmQueryKeys } from './use-opportunities'
 
 import { crmService } from '../services/crm-service'
@@ -16,42 +16,45 @@ function normalizeFilters(filters: ContactFilters) {
 
 export const crmContactQueryKeys = {
   all: ['crm', 'contacts'] as const,
-  tenant: (tenantId: string) => [...crmContactQueryKeys.all, tenantId] as const,
-  lists: (tenantId: string) => [...crmContactQueryKeys.tenant(tenantId), 'list'] as const,
-  list: (tenantId: string, filters: ContactFilters = {}, actorKey: readonly string[] = []) =>
-    [...crmContactQueryKeys.lists(tenantId), actorKey, normalizeFilters(filters)] as const,
-  details: (tenantId: string) => [...crmContactQueryKeys.tenant(tenantId), 'detail'] as const,
-  detail: (tenantId: string, contactId: string, actorKey: readonly string[] = []) =>
+  tenant: (tenantId: string | undefined) => [...crmContactQueryKeys.all, tenantId] as const,
+  lists: (tenantId: string | undefined) =>
+    [...crmContactQueryKeys.tenant(tenantId), 'list'] as const,
+  list: (
+    tenantId: string | undefined,
+    filters: ContactFilters = {},
+    actorKey: readonly string[] = [],
+  ) => [...crmContactQueryKeys.lists(tenantId), actorKey, normalizeFilters(filters)] as const,
+  details: (tenantId: string | undefined) =>
+    [...crmContactQueryKeys.tenant(tenantId), 'detail'] as const,
+  detail: (tenantId: string | undefined, contactId: string, actorKey: readonly string[] = []) =>
     [...crmContactQueryKeys.details(tenantId), contactId, actorKey] as const,
 }
 
-export function useContacts(tenantId: string | null | undefined, filters: ContactFilters = {}) {
-  const scope = useCrmCacheScope(tenantId)
-  const scopedTenantId = tenantId ?? ''
-
+export function useContacts(filters: ContactFilters = {}) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   return useQuery({
-    queryKey: crmContactQueryKeys.list(scopedTenantId, filters, scope.actorKey),
+    queryKey: crmContactQueryKeys.list(tenantId, filters, scope.actorKey),
     queryFn: () => crmService.listContacts(filters),
     enabled: scope.enabled,
   })
 }
 
-export function useContact(
-  tenantId: string | null | undefined,
-  contactId: string | null | undefined,
-) {
-  const scope = useCrmCacheScope(tenantId)
-  const scopedTenantId = tenantId ?? ''
+export function useContact(contactId: string | null | undefined) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const scopedContactId = contactId ?? ''
 
   return useQuery({
-    queryKey: crmContactQueryKeys.detail(scopedTenantId, scopedContactId, scope.actorKey),
+    queryKey: crmContactQueryKeys.detail(tenantId, scopedContactId, scope.actorKey),
     queryFn: () => crmService.getContact(scopedContactId),
     enabled: scope.enabled && Boolean(contactId),
   })
 }
 
-export function useCreateContact(tenantId: string) {
+export function useCreateContact() {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -64,17 +67,18 @@ export function useCreateContact(tenantId: string) {
   })
 }
 
-export function useUpdateContact(tenantId: string) {
-  const scope = useCrmCacheScope(tenantId)
+export function useUpdateContact() {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ id, changes }: UpdateContactInput) => crmService.updateContact(id, changes),
-    onSuccess: (contact) => {
-      queryClient.setQueryData(
-        crmContactQueryKeys.detail(tenantId, contact.id, scope.actorKey),
-        contact,
-      )
+    onMutate: () => ({ tenantId, actorKey: scope.actorKey }),
+    onSuccess: (contact, _input, originalScope) => {
+      if (!originalScope) return
+      const { tenantId, actorKey } = originalScope
+      queryClient.setQueryData(crmContactQueryKeys.detail(tenantId, contact.id, actorKey), contact)
       queryClient.invalidateQueries({ queryKey: crmContactQueryKeys.lists(tenantId) })
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.tenant(tenantId) })
       queryClient.invalidateQueries({ queryKey: ['contracts'] })
@@ -82,17 +86,18 @@ export function useUpdateContact(tenantId: string) {
   })
 }
 
-export function useArchiveContact(tenantId: string) {
-  const scope = useCrmCacheScope(tenantId)
+export function useArchiveContact() {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (contactId: string) => crmService.archiveContact(contactId),
-    onSuccess: (contact) => {
-      queryClient.setQueryData(
-        crmContactQueryKeys.detail(tenantId, contact.id, scope.actorKey),
-        contact,
-      )
+    onMutate: () => ({ tenantId, actorKey: scope.actorKey }),
+    onSuccess: (contact, _input, originalScope) => {
+      if (!originalScope) return
+      const { tenantId, actorKey } = originalScope
+      queryClient.setQueryData(crmContactQueryKeys.detail(tenantId, contact.id, actorKey), contact)
       queryClient.invalidateQueries({ queryKey: crmContactQueryKeys.lists(tenantId) })
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.tenant(tenantId) })
       queryClient.invalidateQueries({ queryKey: ['contracts'] })
@@ -100,8 +105,9 @@ export function useArchiveContact(tenantId: string) {
   })
 }
 
-export function useCrmContactOptions(tenantId: string, q: string) {
-  const scope = useCrmCacheScope(tenantId)
+export function useCrmContactOptions(q: string) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   return useInfiniteQuery({
     queryKey: [...crmContactQueryKeys.list(tenantId, { q }, scope.actorKey), 'options'],
     initialPageParam: 1,

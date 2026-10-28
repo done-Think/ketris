@@ -265,7 +265,16 @@ export function ContractsTable({
           footerTotalRows: t('totalRows'),
           MuiTablePagination: {
             labelRowsPerPage: t('rowsPerPage'),
-            getItemAriaLabel: (type) => t('paginationAria.' + type),
+            getItemAriaLabel: (type) =>
+              t(
+                type === 'first'
+                  ? 'paginationAria.first'
+                  : type === 'last'
+                    ? 'paginationAria.last'
+                    : type === 'next'
+                      ? 'paginationAria.next'
+                      : 'paginationAria.previous',
+              ),
             labelDisplayedRows: ({ from, to }) =>
               t('displayedRows', { from, to, total: totalCount }),
           },

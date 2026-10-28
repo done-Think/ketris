@@ -17,10 +17,10 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Agen
 
   const event = await agendaContainer.rescheduleAgendaEventUseCase.execute({
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     actorUserId: actor.sub,
     id: (await parseRouteParams(context.params, agendaEventIdParamsSchema)).id,
-    inicio: body.start,
+    start: body.start,
     outsideBusinessHoursConfirmed: body.outsideBusinessHoursConfirmed,
     durationMinutes: body.durationMinutes,
   })

@@ -1,13 +1,13 @@
 export type AgencyOverviewKpiTone = 'success' | 'neutral' | 'warning'
 
 export type AgencyOverviewKpiHelper = {
-  key: string
+  key: TranslationKey<'dashboard.agencyOverview.kpis.helpers'>
   values?: Record<string, number>
 }
 
 export type AgencyOverviewKpi = {
   id: string
-  labelKey: string
+  labelKey: TranslationKey<'dashboard.agencyOverview.kpis'>
   value: string
   helper?: AgencyOverviewKpiHelper
   tone: AgencyOverviewKpiTone
@@ -93,3 +93,4 @@ export type ChartLegendDotProps = {
   color: string
   label: string
 }
+import type { TranslationKey } from '@/i18n/types/messages.types'

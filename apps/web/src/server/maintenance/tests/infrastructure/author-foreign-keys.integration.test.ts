@@ -13,65 +13,65 @@ describe('maintenance author foreign keys', () => {
   })
 
   it('keeps the ticket and the author name when the author is removed', async () => {
-    const tenant = await prisma.tenant.create({ data: { nome: 'Author FK', slug } })
+    const tenant = await prisma.tenant.create({ data: { name: 'Author FK', slug } })
     tenantId = tenant.id
-    const author = await prisma.usuario.create({
+    const author = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Autora removida',
+        name: 'Autora removida',
         email: slug + '@example.test',
-        senhaHash: 'x',
-        papel: 'OWNER',
+        passwordHash: 'x',
+        role: 'OWNER',
       },
     })
-    const manager = await prisma.usuario.create({
+    const manager = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Gestora',
+        name: 'Gestora',
         email: 'manager-' + slug + '@example.test',
-        senhaHash: 'x',
-        papel: 'OWNER',
+        passwordHash: 'x',
+        role: 'OWNER',
       },
     })
-    const property = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: manager.id,
-        titulo: 'Imóvel FK',
-        finalidade: 'ALUGUEL',
-        tipo: 'CASA',
-        valor: 1,
+        responsibleId: manager.id,
+        title: 'Imóvel FK',
+        purpose: 'RENT',
+        type: 'HOUSE',
+        price: 1,
       },
     })
-    const ticket = await prisma.chamadoManutencao.create({
+    const ticket = await prisma.maintenanceTicket.create({
       data: {
         tenantId,
-        imovelId: property.id,
-        categoria: 'OTHER',
-        titulo: 'Chamado',
-        descricao: 'Descrição',
-        abertoPorId: author.id,
-        abertoPorNome: author.nome,
-        atividades: {
-          create: { tipo: 'NOTA', mensagem: 'Nota', autorId: author.id, autorNome: author.nome },
+        propertyId: property.id,
+        category: 'OTHER',
+        title: 'Chamado',
+        description: 'Descrição',
+        openedById: author.id,
+        openedByName: author.name,
+        activities: {
+          create: { type: 'NOTE', message: 'Nota', authorId: author.id, authorName: author.name },
         },
       },
     })
 
     await expect(
-      prisma.chamadoManutencao.update({
+      prisma.maintenanceTicket.update({
         where: { id: ticket.id },
-        data: { concluidoPorId: 'missing-user' },
+        data: { completedById: 'missing-user' },
       }),
     ).rejects.toThrow()
 
-    await prisma.usuario.delete({ where: { id: author.id } })
+    await prisma.user.delete({ where: { id: author.id } })
 
-    const stored = await prisma.chamadoManutencao.findUniqueOrThrow({
+    const stored = await prisma.maintenanceTicket.findUniqueOrThrow({
       where: { id: ticket.id },
-      include: { atividades: true },
+      include: { activities: true },
     })
-    expect(stored).toMatchObject({ abertoPorId: null, abertoPorNome: 'Autora removida' })
-    expect(stored.atividades[0]).toMatchObject({ autorId: null, autorNome: 'Autora removida' })
+    expect(stored).toMatchObject({ openedById: null, openedByName: 'Autora removida' })
+    expect(stored.activities[0]).toMatchObject({ authorId: null, authorName: 'Autora removida' })
   })
 })

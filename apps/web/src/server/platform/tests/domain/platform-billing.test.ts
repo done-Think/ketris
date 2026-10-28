@@ -34,7 +34,7 @@ function tenant(
 
   return {
     id,
-    nome: `Tenant ${id}`,
+    name: `Tenant ${id}`,
     slug: `tenant-${id}`,
     accountType: options.accountType ?? 'AGENCY',
     status,

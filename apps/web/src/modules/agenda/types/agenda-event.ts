@@ -5,7 +5,7 @@ import type {
   CreateAgendaEventRequestInput,
   RescheduleAgendaEventRequestInput,
   UpdateAgendaEventRequestInput,
-} from '@server/agenda/types/http'
+} from '@shared/types/generated/agenda/http'
 import type { LocalizedHref } from '@shared/types/localized-href'
 import type { Dayjs } from 'dayjs'
 import type { Control } from 'react-hook-form'
@@ -180,7 +180,7 @@ export type AgendaWeekCalendarProps = {
 export type AgendaBuildNotificationsOptions = {
   currentUserId?: string
   events: AgendaEvent[]
-  t: (key: string, values?: Record<string, string | number>) => string
+  t: (key: TranslationKey<'agenda.dashboard'>, values?: Record<string, string | number>) => string
   today: Dayjs
 }
 
@@ -205,7 +205,7 @@ export type CancelAgendaEventValues = z.infer<
   ReturnType<typeof import('../schemas/cancel-agenda-event-schema').buildCancelAgendaEventSchema>
 >
 export type CancelAgendaEventPayload =
-  import('@server/agenda/types/http').CancelAgendaEventRequestDTO
+  import('@shared/types/generated/agenda/http').CancelAgendaEventRequestDTO
 export interface CancelAgendaEventMutationInput {
   id: string
   payload: CancelAgendaEventPayload
@@ -230,3 +230,4 @@ export interface AgendaEventMutationInput<TPayload> {
   id: string
   payload: TPayload
 }
+import type { TranslationKey } from '@/i18n/types/messages.types'

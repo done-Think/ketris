@@ -25,7 +25,7 @@ export class LoginUseCase {
     const matches = await Promise.all(
       candidates.map(async (user) => ({
         user,
-        matches: await this.passwordHasher.compare(input.password, user.senhaHash),
+        matches: await this.passwordHasher.compare(input.password, user.passwordHash),
       })),
     )
     const matchingUsers = matches.filter((entry) => entry.matches).map((entry) => entry.user)

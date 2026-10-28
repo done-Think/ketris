@@ -1,12 +1,12 @@
 import type { Prisma } from '@prisma/client'
-const linkedUserSelect = { id: true, nome: true, email: true } as const
+const linkedUserSelect = { id: true, name: true, email: true } as const
 
 export const agendaEventInclude = {
-  criadoPor: { select: { nome: true, papel: true } },
-  responsavel: { select: { nome: true } },
-  donoUsuario: { select: linkedUserSelect },
-  participantes: {
-    select: { usuario: { select: linkedUserSelect } },
+  createdBy: { select: { name: true, role: true } },
+  responsible: { select: { name: true } },
+  ownerUser: { select: linkedUserSelect },
+  participants: {
+    select: { user: { select: linkedUserSelect } },
     orderBy: { createdAt: 'asc' },
   },
-} satisfies Prisma.EventoAgendaInclude
+} satisfies Prisma.AgendaEventInclude

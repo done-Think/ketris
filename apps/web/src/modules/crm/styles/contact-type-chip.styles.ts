@@ -18,21 +18,21 @@ export function getChipSx(presentation: CrmChipColors): SxProps<Theme> {
 }
 
 export const typePresentation: Record<ContactType, CrmChipColors> = {
-  LOCATARIO: {
+  RENTER: {
     color: brand.semantic.success,
     backgroundColor: muiAlpha(brand.semantic.success, 0.1),
   },
-  PROPRIETARIO: {
+  OWNER: {
     color: brand.semantic.info,
     backgroundColor: muiAlpha(brand.semantic.info, 0.1),
   },
-  CORRETOR: {
+  BROKER: {
     color: brand.magenta[500],
     backgroundColor: brand.magenta[50],
   },
 }
 export const contactTypeLabelKeys: Record<ContactType, 'tenant' | 'owner' | 'broker'> = {
-  LOCATARIO: 'tenant',
-  PROPRIETARIO: 'owner',
-  CORRETOR: 'broker',
+  RENTER: 'tenant',
+  OWNER: 'owner',
+  BROKER: 'broker',
 }

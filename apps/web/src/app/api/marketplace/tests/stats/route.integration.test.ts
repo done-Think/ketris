@@ -11,44 +11,44 @@ describe('GET /api/marketplace/stats (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária Estatísticas', slug: `stats-${randomUUID()}` },
+      data: { name: 'Imobiliária Estatísticas', slug: `stats-${randomUUID()}` },
     })
     tenantId = tenant.id
-    const agent = await prisma.usuario.create({
+    const agent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor Estatísticas',
+        name: 'Corretor Estatísticas',
         email: `stats-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
-    await prisma.perfilPublicoCorretor.create({
+    await prisma.brokerPublicProfile.create({
       data: {
-        usuarioId: agent.id,
+        userId: agent.id,
         displayName: 'Corretor Estatísticas',
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        publishedAt: new Date(),
       },
     })
-    await prisma.imovel.create({
+    await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: agent.id,
-        titulo: 'Casa estatísticas',
-        finalidade: 'VENDA',
-        tipo: 'CASA',
-        valor: 450000,
+        responsibleId: agent.id,
+        title: 'Casa estatísticas',
+        purpose: 'SALE',
+        type: 'HOUSE',
+        price: 450000,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
-        endereco: {
+        publishedAt: new Date(),
+        address: {
           create: {
-            logradouro: 'Rua Estatística',
-            numero: '1',
-            bairro: 'Centro',
-            cidade: `Cidade ${randomUUID().slice(0, 8)}`,
-            estado: 'PR',
-            cep: '80010-000',
+            street: 'Rua Estatística',
+            number: '1',
+            neighborhood: 'Centro',
+            city: `Cidade ${randomUUID().slice(0, 8)}`,
+            state: 'PR',
+            zipCode: '80010-000',
           },
         },
       },
@@ -60,12 +60,12 @@ describe('GET /api/marketplace/stats (integração)', () => {
     await prisma.$disconnect()
   })
 
-  it('conta perfis, imóveis e cidades publicados e responde com cache público', async () => {
+  it('conta perfis, imóveis e cidades publicados sem manter cache de elegibilidade', async () => {
     const response = await GET()
     const stats = await response.json()
 
     expect(response.status).toBe(200)
-    expect(response.headers.get('Cache-Control')).toContain('s-maxage=300')
+    expect(response.headers.get('Cache-Control')).toBe('no-store')
     expect(Object.keys(stats).sort()).toEqual([
       'publishedBrokers',
       'publishedProperties',
@@ -74,7 +74,7 @@ describe('GET /api/marketplace/stats (integração)', () => {
     expect(stats.publishedBrokers).toBeGreaterThanOrEqual(1)
     expect(stats.publishedProperties).toBeGreaterThanOrEqual(1)
     expect(stats.servedCities).toBeGreaterThanOrEqual(1)
-    const published = await prisma.imovel.count({ where: { status: 'PUBLISHED' } })
+    const published = await prisma.property.count({ where: { status: 'PUBLISHED' } })
     expect(stats.publishedProperties).toBeLessThanOrEqual(published)
   })
 })

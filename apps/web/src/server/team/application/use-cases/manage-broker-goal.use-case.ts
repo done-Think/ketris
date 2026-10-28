@@ -8,7 +8,7 @@ const GOAL_HISTORY_LIMIT = 10
 
 async function assertBroker(repository: TeamRepository, actor: TeamActor, brokerId: string) {
   const broker = await repository.findStaffUser(actor.actorTenantId, brokerId)
-  if (!broker || broker.papel !== 'AGENT') throw new TeamMemberNotFoundError()
+  if (!broker || broker.role !== 'AGENT') throw new TeamMemberNotFoundError()
 }
 
 export class SetBrokerGoalUseCase {

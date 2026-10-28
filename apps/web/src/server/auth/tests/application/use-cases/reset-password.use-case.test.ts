@@ -11,12 +11,12 @@ import type { User } from '../../../domain/user.entity'
 const user: User = {
   id: 'user-2',
   tenantId: 'tenant-2',
-  nome: 'Ana',
+  name: 'Ana',
   email: 'ana@example.com',
-  senhaHash: 'hash',
-  papel: 'AGENT',
-  ativo: false,
-  vinculoAprovadoEm: null,
+  passwordHash: 'hash',
+  role: 'AGENT',
+  active: false,
+  membershipApprovedAt: null,
   emailVerifiedAt: null,
   tenantStatus: 'SUSPENDED',
   sessionVersion: 3,
@@ -64,7 +64,7 @@ describe('ResetPasswordUseCase', () => {
     })
     expect(deps.users.update).not.toHaveBeenCalled()
     expect(user.emailVerifiedAt).toBeNull()
-    expect(user.ativo).toBe(false)
+    expect(user.active).toBe(false)
   })
   it.each([{ email: 'other@example.com' }, { tenantId: 'foreign' }])(
     'rejects mismatched email or tenant: %j',

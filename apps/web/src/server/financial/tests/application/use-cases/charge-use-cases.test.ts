@@ -40,18 +40,18 @@ const overdue = storedCharge({ dueDate: new Date('2026-10-20T00:00:00.000Z') })
 describe('acesso ao financeiro', () => {
   it.each(['AGENT', 'RENTER', 'PROPERTY_OWNER'] as const)(
     '%s não escreve no financeiro',
-    async (actorPapel) => {
+    async (actorRole) => {
       const repository = createRepository()
-      const actor = { ...owner, actorPapel }
+      const actor = { ...owner, actorRole }
       const calls = [
         new CreateChargeUseCase(repository).execute({
           ...actor,
           contractId: null,
           description: 'x',
-          type: 'A_RECEBER',
+          type: 'RECEIVABLE',
           amount: 1,
           dueDate: today,
-          status: 'PENDENTE',
+          status: 'PENDING',
         }),
         new UpdateChargeUseCase(repository).execute({ ...actor, chargeId: 'charge-1', amount: 2 }),
         new CancelChargeUseCase(repository).execute({
@@ -76,10 +76,10 @@ describe('CreateChargeUseCase', () => {
     ...owner,
     contractId: null,
     description: 'Aluguel avulso',
-    type: 'A_RECEBER' as const,
+    type: 'RECEIVABLE' as const,
     amount: 2500,
     dueDate: today,
-    status: 'PENDENTE' as const,
+    status: 'PENDING' as const,
   }
 
   it('cria com o autor e devolve o status efetivo', async () => {
@@ -91,7 +91,7 @@ describe('CreateChargeUseCase', () => {
       expect.objectContaining({ tenantId: 'tenant-1', amount: 2500 }),
       { tenantId: 'tenant-1', actorId: 'owner-1' },
     )
-    expect(charge.status).toBe('ATRASADA')
+    expect(charge.status).toBe('OVERDUE')
   })
 
   it('valida o contrato no tenant', async () => {
@@ -109,23 +109,23 @@ describe('ListChargesUseCase e GetChargeUseCase', () => {
       findMany: vi.fn().mockResolvedValue({
         items: [overdue],
         totalCount: 1,
-        statusCounts: { ALL: 1, PENDENTE: 0, ATRASADA: 1, PAGA: 0, AGENDADA: 0, CANCELADA: 0 },
+        statusCounts: { ALL: 1, PENDING: 0, OVERDUE: 1, PAID: 0, SCHEDULED: 0, CANCELED: 0 },
       }),
     })
 
     const result = await new ListChargesUseCase(repository, clock).execute({
       ...owner,
-      status: 'ATRASADA',
+      status: 'OVERDUE',
     })
 
     expect(repository.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         today,
-        status: 'ATRASADA',
+        status: 'OVERDUE',
         scope: { kind: 'tenant', tenantId: 'tenant-1' },
       }),
     )
-    expect(result.items[0].status).toBe('ATRASADA')
+    expect(result.items[0].status).toBe('OVERDUE')
   })
 
   it('não mostra contas a pagar para o locatário', async () => {
@@ -134,8 +134,8 @@ describe('ListChargesUseCase e GetChargeUseCase', () => {
     const result = await new ListChargesUseCase(repository).execute({
       actorId: 'renter-1',
       actorTenantId: 'renters',
-      actorPapel: 'RENTER',
-      type: 'A_PAGAR',
+      actorRole: 'RENTER',
+      type: 'PAYABLE',
     })
 
     expect(result).toMatchObject({ items: [], totalCount: 0 })
@@ -184,7 +184,7 @@ describe('UpdateChargeUseCase', () => {
 
   it('trava valor, vencimento e tipo de uma cobrança paga', async () => {
     const repository = createRepository({
-      findById: vi.fn().mockResolvedValue(storedCharge({ storedStatus: 'PAGA' })),
+      findById: vi.fn().mockResolvedValue(storedCharge({ storedStatus: 'PAID' })),
     })
 
     await expect(
@@ -250,8 +250,8 @@ describe('RegisterChargePaymentUseCase', () => {
   it.each([
     ['tamanho', { size: 1 }],
     ['hash', { sha256: 'b'.repeat(64) }],
-    ['tipo', { contentType: 'image/png' }],
-    ['assinatura', { signature: new Uint8Array([0x3c, 0x68]) }],
+    ['type', { contentType: 'image/png' }],
+    ['signature', { signature: new Uint8Array([0x3c, 0x68]) }],
   ])('recusa comprovante com %s diferente do informado', async (_label, change) => {
     const storage = createStorage({
       inspect: vi.fn().mockResolvedValue({
@@ -286,7 +286,7 @@ describe('RegisterChargePaymentUseCase', () => {
     ).rejects.toMatchObject({ status: 403 })
   })
 
-  it.each(['PAGA', 'CANCELADA'] as const)('não paga cobrança %s', async (storedStatus) => {
+  it.each(['PAID', 'CANCELED'] as const)('não paga cobrança %s', async (storedStatus) => {
     const repository = createRepository({
       findById: vi.fn().mockResolvedValue(storedCharge({ storedStatus })),
     })
@@ -300,7 +300,7 @@ describe('RegisterChargePaymentUseCase', () => {
 describe('ReverseChargePaymentUseCase e CancelChargeUseCase', () => {
   it('estorna só cobrança paga, com o motivo', async () => {
     const repository = createRepository({
-      findById: vi.fn().mockResolvedValue(storedCharge({ storedStatus: 'PAGA' })),
+      findById: vi.fn().mockResolvedValue(storedCharge({ storedStatus: 'PAID' })),
     })
 
     await new ReverseChargePaymentUseCase(repository).execute({
@@ -310,7 +310,7 @@ describe('ReverseChargePaymentUseCase e CancelChargeUseCase', () => {
     })
 
     expect(repository.reversePayment).toHaveBeenCalledWith(
-      expect.objectContaining({ storedStatus: 'PAGA' }),
+      expect.objectContaining({ storedStatus: 'PAID' }),
       'Pix devolvido',
       { tenantId: 'tenant-1', actorId: 'owner-1' },
     )
@@ -338,7 +338,7 @@ describe('ReverseChargePaymentUseCase e CancelChargeUseCase', () => {
     )
 
     const cancelled = createRepository({
-      findById: vi.fn().mockResolvedValue(storedCharge({ storedStatus: 'CANCELADA' })),
+      findById: vi.fn().mockResolvedValue(storedCharge({ storedStatus: 'CANCELED' })),
     })
     await expect(
       new CancelChargeUseCase(cancelled).execute({ ...owner, chargeId: 'charge-1', reason: 'x' }),
@@ -413,7 +413,7 @@ describe('DownloadChargeReceiptUseCase', () => {
     await useCase.execute({
       actorId: 'renter-1',
       actorTenantId: 'renters',
-      actorPapel: 'RENTER',
+      actorRole: 'RENTER',
       chargeId: 'charge-1',
       receiptId: 'receipt-1',
     })
@@ -474,7 +474,7 @@ describe('GetFinancialSummaryUseCase', () => {
             propertyTitle: null,
             dueDate: new Date('2026-10-01T00:00:00.000Z'),
             amount: 5,
-            storedStatus: 'PENDENTE',
+            storedStatus: 'PENDING',
           },
         ],
       }),
@@ -483,7 +483,7 @@ describe('GetFinancialSummaryUseCase', () => {
     const summary = await new GetFinancialSummaryUseCase(repository, clock).execute(owner)
 
     expect(repository.getSummary).toHaveBeenCalledWith('tenant-1', { year: 2026, month: 9 }, today)
-    expect(summary.upcomingDues[0].status).toBe('ATRASADA')
+    expect(summary.upcomingDues[0].status).toBe('OVERDUE')
   })
 })
 
@@ -506,7 +506,7 @@ describe('ExportChargesUseCase', () => {
     await expect(
       useCase.execute({
         ...owner,
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         month: { year: 2026, month: 9 },
         locale: 'pt-BR',
       }),

@@ -23,9 +23,9 @@ export async function readCrmPage(
   const groups = await db.$queryRaw<
     CrmSqlGroup[]
   >(Prisma.sql`SELECT ${query.group} AS key, count(*) AS count, coalesce(sum(${query.amount}), 0) AS amount,
-    coalesce(sum(${query.amount}) FILTER (WHERE ${query.purpose} = 'ALUGUEL'), 0) AS rental,
-    coalesce(sum(${query.amount}) FILTER (WHERE ${query.purpose} = 'VENDA'), 0) AS sale,
-    coalesce(sum(${query.amount}) FILTER (WHERE ${query.purpose} NOT IN ('ALUGUEL', 'VENDA')), 0) AS unclassified
+    coalesce(sum(${query.amount}) FILTER (WHERE ${query.purpose} = 'RENT'), 0) AS rental,
+    coalesce(sum(${query.amount}) FILTER (WHERE ${query.purpose} = 'SALE'), 0) AS sale,
+    coalesce(sum(${query.amount}) FILTER (WHERE ${query.purpose} NOT IN ('RENT', 'SALE')), 0) AS unclassified
     FROM ${query.from} WHERE ${filters.summaryScope === 'results' ? query.filter : query.base} GROUP BY ${query.group}`)
   return {
     ids: rows.map((row) => row.id),

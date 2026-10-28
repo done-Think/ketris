@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import type { SchemaMessageTranslator } from '@shared/types'
 
-export function createEmailSchema(t: SchemaMessageTranslator) {
+export function createEmailSchema(t: SchemaMessageTranslator<'emailRequired' | 'emailInvalid'>) {
   return z
     .string()
     .trim()

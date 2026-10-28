@@ -10,20 +10,20 @@
       "ticketScheduled": "Scheduled service"
     },
     "chargeStatuses": {
-      "PENDENTE": "Pending",
-      "PAGA": "Paid",
-      "ATRASADA": "Overdue",
-      "AGENDADA": "Scheduled",
-      "CANCELADA": "Cancelled"
+      "PENDING": "Pending",
+      "PAID": "Paid",
+      "OVERDUE": "Overdue",
+      "SCHEDULED": "Scheduled",
+      "CANCELED": "Cancelled"
     },
     "ticketStatuses": {
-      "ABERTO": "Open",
-      "EM_ANDAMENTO": "In progress",
-      "RESOLVIDO": "Resolved",
-      "FECHADO": "Closed",
-      "AGUARDANDO_CONFIRMACAO": "Awaiting confirmation",
-      "CONTESTADO": "Contested",
-      "CANCELADO": "Cancelled"
+      "OPEN": "Open",
+      "IN_PROGRESS": "In progress",
+      "RESOLVED": "Resolved",
+      "CLOSED": "Closed",
+      "AWAITING_CONFIRMATION": "Awaiting confirmation",
+      "DISPUTED": "Contested",
+      "CANCELED": "Cancelled"
     }
   },
   "dashboard": {

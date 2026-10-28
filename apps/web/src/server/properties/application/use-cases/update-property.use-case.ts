@@ -15,7 +15,7 @@ export class UpdatePropertyUseCase {
   ) {}
 
   async execute(input: UpdatePropertyInput) {
-    assertCanEditProperties(input.actorPapel)
+    assertCanEditProperties(input.actorRole)
 
     const existing = await this.propertyRepository.findByTenantAndId(input.actorTenantId, input.id)
 
@@ -23,40 +23,45 @@ export class UpdatePropertyUseCase {
       throw new PropertyNotFoundError()
     }
 
-    assertPropertyAccess(existing, input.actorId, input.actorPapel)
+    assertPropertyAccess(existing, input.actorId, input.actorRole)
 
     assertPropertyMediaScope(
       input.actorTenantId,
-      input.midias,
-      existing.midias.map((media) => media.url),
+      input.media,
+      existing.media.map((media) => media.url),
     )
-    const ownerId = isPropertyOwner(input.actorPapel) ? input.actorId : input.proprietarioId
+    const ownerId = isPropertyOwner(input.actorRole) ? input.actorId : input.ownerId
     if (
       ownerId &&
-      ownerId !== existing.proprietarioId &&
+      ownerId !== existing.ownerId &&
       !(await this.ownerDirectory.findActiveOwner(input.actorTenantId, ownerId))
     ) {
       throw new PropertyOwnerValidationError()
     }
 
-    const property = await this.propertyRepository.update(input.actorTenantId, input.id, {
-      proprietarioId: ownerId,
-      titulo: input.titulo,
-      descricao: input.descricao,
-      finalidade: input.finalidade,
-      tipo: input.tipo,
-      anuncio: input.anuncio,
-      quartos: input.quartos,
-      banheiros: input.banheiros,
-      vagas: input.vagas,
-      areaM2: input.areaM2,
-      valor: input.valor,
-      valorAluguel: input.valorAluguel,
-      condominio: input.condominio,
-      iptu: input.iptu,
-      endereco: input.endereco,
-      midias: input.midias,
-    })
+    const property = await this.propertyRepository.update(
+      input.actorTenantId,
+      input.id,
+      {
+        ownerId: ownerId,
+        title: input.title,
+        description: input.description,
+        purpose: input.purpose,
+        type: input.type,
+        listing: input.listing,
+        bedrooms: input.bedrooms,
+        bathrooms: input.bathrooms,
+        parkingSpots: input.parkingSpots,
+        areaSqm: input.areaSqm,
+        price: input.price,
+        rentalPrice: input.rentalPrice,
+        condoFee: input.condoFee,
+        propertyTax: input.propertyTax,
+        address: input.address,
+        media: input.media,
+      },
+      input.actorId,
+    )
 
     if (!property) {
       throw new PropertyNotFoundError()

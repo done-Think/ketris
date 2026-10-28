@@ -1,12 +1,6 @@
 import { defaultLocale } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'
 
-const monthlySuffixByLocale: Record<AppLocale, string> = {
-  'pt-BR': '/mês',
-  'en-US': '/month',
-  'es-ES': '/mes',
-}
-
 export function formatCurrency(value: number, locale: AppLocale = defaultLocale): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
@@ -16,8 +10,12 @@ export function formatCurrency(value: number, locale: AppLocale = defaultLocale)
   }).format(value)
 }
 
-export function formatMonthlyCurrency(value: number, locale: AppLocale = defaultLocale): string {
-  return `${formatCurrency(value, locale)}${monthlySuffixByLocale[locale]}`
+export function formatMonthlyCurrency(
+  value: number,
+  monthlySuffix: string,
+  locale: AppLocale = defaultLocale,
+): string {
+  return `${formatCurrency(value, locale)}${monthlySuffix}`
 }
 
 export function formatDate(value: string | Date, locale: AppLocale = defaultLocale): string {

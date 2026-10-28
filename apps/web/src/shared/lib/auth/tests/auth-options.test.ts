@@ -66,7 +66,7 @@ describe('authOptions — CredentialsProvider.authorize', () => {
 
   it('chama o LoginUseCase e mapeia o resultado para o formato de usuário do NextAuth', async () => {
     executeMock.mockResolvedValueOnce({
-      user: { id: 'u1', tenantId: 't1', nome: 'Ana', email: 'ana@ketris.dev', papel: 'AGENT' },
+      user: { id: 'u1', tenantId: 't1', name: 'Ana', email: 'ana@ketris.dev', role: 'AGENT' },
       accessToken: 'jwt-fake',
       refreshToken: 'refresh-fake',
     })
@@ -127,14 +127,14 @@ describe('authOptions — token-session.authorize', () => {
   })
 
   it('verifica o access token e monta a sessão sem checar senha', async () => {
-    verifyTokenMock.mockResolvedValueOnce({ sub: 'u1', tenantId: 't1', papel: 'AGENT' })
+    verifyTokenMock.mockResolvedValueOnce({ sub: 'u1', tenantId: 't1', role: 'AGENT' })
     findByIdMock.mockResolvedValueOnce({
       id: 'u1',
       tenantId: 't1',
-      nome: 'Ana',
+      name: 'Ana',
       email: 'ana@ketris.dev',
-      papel: 'AGENT',
-      ativo: true,
+      role: 'AGENT',
+      active: true,
     })
 
     const authorize = await getTokenSessionAuthorize()
@@ -164,7 +164,7 @@ describe('authOptions — token-session.authorize', () => {
   })
 
   it('retorna null quando o usuário do token não existe mais', async () => {
-    verifyTokenMock.mockResolvedValueOnce({ sub: 'u1', tenantId: 't1', papel: 'AGENT' })
+    verifyTokenMock.mockResolvedValueOnce({ sub: 'u1', tenantId: 't1', role: 'AGENT' })
     findByIdMock.mockResolvedValueOnce(null)
 
     const authorize = await getTokenSessionAuthorize()
@@ -174,14 +174,14 @@ describe('authOptions — token-session.authorize', () => {
   })
 
   it('retorna null quando o usuário do token foi desativado', async () => {
-    verifyTokenMock.mockResolvedValueOnce({ sub: 'u1', tenantId: 't1', papel: 'AGENT' })
+    verifyTokenMock.mockResolvedValueOnce({ sub: 'u1', tenantId: 't1', role: 'AGENT' })
     findByIdMock.mockResolvedValueOnce({
       id: 'u1',
       tenantId: 't1',
-      nome: 'Ana',
+      name: 'Ana',
       email: 'ana@ketris.dev',
-      papel: 'AGENT',
-      ativo: false,
+      role: 'AGENT',
+      active: false,
     })
 
     const authorize = await getTokenSessionAuthorize()
@@ -202,7 +202,7 @@ describe('authOptions — platform-credentials.authorize', () => {
 
   it('chama o LoginPlatformAdminUseCase e mapeia o resultado, sem tenantId/role', async () => {
     platformExecuteMock.mockResolvedValueOnce({
-      admin: { id: 'p1', nome: 'Dono', email: 'dono@ketris.dev', ativo: true },
+      admin: { id: 'p1', name: 'Dono', email: 'dono@ketris.dev', active: true },
       accessToken: 'jwt-platform-fake',
       refreshToken: 'refresh-platform-fake',
     })
@@ -239,12 +239,12 @@ describe('authOptions — platform-credentials.authorize', () => {
 const currentUser = {
   id: 'u1',
   tenantId: 't1',
-  papel: 'AGENT',
-  ativo: true,
-  nome: 'Ana',
+  role: 'AGENT',
+  active: true,
+  name: 'Ana',
   email: 'ana@ketris.dev',
   avatarUrl: null,
-  vinculoAprovadoEm: new Date(),
+  membershipApprovedAt: new Date(),
   emailVerifiedAt: new Date(),
   tenantStatus: 'ACTIVE',
   sessionVersion: 2,
@@ -265,8 +265,8 @@ describe('authOptions — callbacks.jwt', () => {
     findByIdMock.mockResolvedValue(currentUser)
     platformFindByIdMock.mockResolvedValue({
       id: 'p1',
-      ativo: true,
-      nome: 'Platform',
+      active: true,
+      name: 'Platform',
       email: 'platform@example.test',
     })
     platformValidatePairMock.mockRejectedValue(new UnauthorizedError())
@@ -290,12 +290,12 @@ describe('authOptions — callbacks.jwt', () => {
 
   it.each([
     null,
-    { ...currentUser, ativo: false },
+    { ...currentUser, active: false },
     { ...currentUser, tenantId: 't2' },
-    { ...currentUser, papel: 'OWNER' },
+    { ...currentUser, role: 'OWNER' },
     { ...currentUser, sessionVersion: 3 },
     { ...currentUser, emailVerifiedAt: null },
-    { ...currentUser, vinculoAprovadoEm: null },
+    { ...currentUser, membershipApprovedAt: null },
     { ...currentUser, tenantStatus: 'SUSPENDED' },
     { ...currentUser, tenantStatus: 'CANCELED' },
   ])('clears all credentials when the current account loses access: %j', async (user) => {
@@ -322,7 +322,7 @@ describe('authOptions — callbacks.jwt', () => {
     verifyTokenMock.mockResolvedValueOnce({
       sub: 'u1',
       tenantId: 't1',
-      papel: 'AGENT',
+      role: 'AGENT',
       sessionVersion: 2,
     })
     const token = await run(currentToken, {
@@ -336,8 +336,8 @@ describe('authOptions — callbacks.jwt', () => {
   it.each([
     { sub: 'other-user', tenantId: 't1' },
     { sub: 'u1', tenantId: 'other-tenant' },
-    { sub: 'u1', tenantId: 't1', papel: 'OWNER', sessionVersion: 2 },
-    { sub: 'u1', tenantId: 't1', papel: 'AGENT', sessionVersion: 3 },
+    { sub: 'u1', tenantId: 't1', role: 'OWNER', sessionVersion: 2 },
+    { sub: 'u1', tenantId: 't1', role: 'AGENT', sessionVersion: 3 },
   ])('rejects another identity in a session update: %j', async (payload) => {
     verifyTokenMock.mockResolvedValueOnce(payload)
     expect(
@@ -361,7 +361,7 @@ describe('authOptions — callbacks.jwt', () => {
       }),
     ).toMatchObject({
       ...currentToken,
-      name: currentUser.nome,
+      name: currentUser.name,
       email: currentUser.email,
       picture: null,
     })
@@ -369,7 +369,7 @@ describe('authOptions — callbacks.jwt', () => {
 
   it('reloads profile data from the database on a token-free update', async () => {
     expect(await run(currentToken, { trigger: 'update', session: {} })).toMatchObject({
-      name: currentUser.nome,
+      name: currentUser.name,
       email: currentUser.email,
       picture: null,
     })
@@ -401,7 +401,7 @@ describe('authOptions — callbacks.jwt', () => {
     verifyTokenMock.mockResolvedValueOnce({
       sub: 'u1',
       tenantId: 't1',
-      papel: 'AGENT',
+      role: 'AGENT',
       sessionVersion: 2,
     })
     const recovered = await run(blocked as typeof currentToken)
@@ -460,7 +460,7 @@ describe('authOptions — callbacks.jwt', () => {
     verifyTokenMock.mockResolvedValueOnce({
       sub: 'foreign-user',
       tenantId: 't1',
-      papel: 'OWNER',
+      role: 'OWNER',
       sessionVersion: 2,
     })
     const recovered = await run(blocked as typeof currentToken)
@@ -550,7 +550,7 @@ describe('authOptions — callbacks.jwt', () => {
   })
 
   it('clears a deactivated platform session before accepting an update', async () => {
-    platformFindByIdMock.mockResolvedValueOnce({ id: 'p1', ativo: false })
+    platformFindByIdMock.mockResolvedValueOnce({ id: 'p1', active: false })
     const platformToken = {
       sub: 'p1',
       scope: 'platform',

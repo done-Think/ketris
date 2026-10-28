@@ -23,24 +23,24 @@ describe('/api/team (integração)', () => {
   let agentId: string
   let otherAgentId: string
 
-  async function seedUser(name: string, papel: 'OWNER' | 'AGENT') {
-    const user = await prisma.usuario.create({
+  async function seedUser(name: string, role: 'OWNER' | 'AGENT') {
+    const user = await prisma.user.create({
       data: {
         tenantId,
-        nome: name,
+        name: name,
         email: `${name.toLowerCase()}-${randomUUID()}@team.example.test`,
-        senhaHash: 'hash-fake',
-        papel,
+        passwordHash: 'hash-fake',
+        role,
       },
     })
     const token = await tokenService.sign({
       id: user.id,
       tenantId: user.tenantId,
-      nome: user.nome,
+      name: user.name,
       email: user.email,
-      papel: user.papel,
-      ativo: user.ativo,
-      vinculoAprovadoEm: user.vinculoAprovadoEm,
+      role: user.role,
+      active: user.active,
+      membershipApprovedAt: user.membershipApprovedAt,
     })
     return { user, token }
   }
@@ -61,7 +61,7 @@ describe('/api/team (integração)', () => {
   beforeAll(async () => {
     tenantId = (
       await prisma.tenant.create({
-        data: { nome: 'Equipe Rotas', slug: `team-routes-${randomUUID()}` },
+        data: { name: 'Equipe Rotas', slug: `team-routes-${randomUUID()}` },
       })
     ).id
     ownerToken = (await seedUser('Dona', 'OWNER')).token
@@ -138,23 +138,23 @@ describe('/api/team (integração)', () => {
 
   it('aceita o convite pelo link público uma única vez', async () => {
     const token = generateTeamInvitationToken()
-    const invited = await prisma.usuario.create({
+    const invited = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Bruna',
+        name: 'Bruna',
         email: `bruna-${randomUUID()}@team.example.test`,
-        senhaHash: 'hash-inutil',
-        papel: 'AGENT',
-        emailVerificadoEm: null,
+        passwordHash: 'hash-inutil',
+        role: 'AGENT',
+        emailVerifiedAt: null,
       },
     })
-    await prisma.conviteEquipe.create({
+    await prisma.teamInvitation.create({
       data: {
         tenantId,
-        usuarioId: invited.id,
+        userId: invited.id,
         tokenHash: hashTeamInvitationToken(token),
-        expiraEm: new Date(Date.now() + 3600_000),
-        criadoPorNome: 'Dona',
+        expiresAt: new Date(Date.now() + 3600_000),
+        createdByName: 'Dona',
       },
     })
 
@@ -176,7 +176,7 @@ describe('/api/team (integração)', () => {
     expect((await accept()).status).toBe(200)
     expect((await accept()).status).toBe(409)
     expect(
-      (await prisma.usuario.findUniqueOrThrow({ where: { id: invited.id } })).emailVerificadoEm,
+      (await prisma.user.findUniqueOrThrow({ where: { id: invited.id } })).emailVerifiedAt,
     ).not.toBeNull()
     expect(
       (await previewInvitation(request('/team/invitations/accept?token=desconhecido-123456789')))

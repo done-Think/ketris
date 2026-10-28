@@ -10,13 +10,12 @@ import type { OpportunityResponsiblePanelProps } from '../../types/opportunity-d
 
 export function OpportunityResponsiblePanel({
   opportunity,
-  tenantId,
   canManage,
 }: OpportunityResponsiblePanelProps) {
   const t = useTranslations('crm.opportunityDetail.responsible')
   const { enqueueSnackbar } = useSnackbar()
   const responsibles = useCrmResponsibles(canManage)
-  const assign = useAssignOpportunityResponsible(tenantId)
+  const assign = useAssignOpportunityResponsible()
   const options = responsibles.data ?? []
   const hasCurrent = options.some((option) => option.id === opportunity.responsibleId)
 

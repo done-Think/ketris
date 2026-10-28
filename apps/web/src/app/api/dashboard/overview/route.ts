@@ -13,7 +13,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const overview = await dashboardContainer.getDashboardOverviewUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
   })
 
   return NextResponse.json(toDashboardOverviewResponse(overview), { status: 200 })

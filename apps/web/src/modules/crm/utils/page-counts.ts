@@ -1,4 +1,5 @@
-import type { CrmPageGroup } from '@server/crm/types/pagination'
+import type { ListOpportunitiesResponseDTO } from '@shared/types/generated/crm/dto'
+type CrmPageGroup = ListOpportunitiesResponseDTO['groups'][number]
 
 export function crmPageCounts(groups: readonly CrmPageGroup[] = []) {
   return Object.fromEntries([

@@ -40,14 +40,14 @@ it('reserva o responsável atomicamente em duas criações simultâneas', async 
   const input = {
     actorTenantId: data.tenantId,
     actorUserId: data.userId,
-    actorPapel: 'OWNER' as const,
-    titulo: 'Reunião simultânea',
-    tipo: 'MEETING' as const,
-    referenciaImovelLivre: 'Referência do imóvel',
-    inicio: new Date('2031-03-01T15:00:00Z'),
+    actorRole: 'OWNER' as const,
+    title: 'Reunião simultânea',
+    type: 'MEETING' as const,
+    freeFormPropertyReference: 'Referência do imóvel',
+    start: new Date('2031-03-01T15:00:00Z'),
     durationMinutes: 60,
-    participanteNome: 'Cliente',
-    participanteTelefone: '11999999999',
+    participantName: 'Cliente',
+    participantPhone: '11999999999',
   }
   const results = await Promise.allSettled([useCase.execute(input), useCase.execute(input)])
   expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
@@ -57,7 +57,7 @@ it('reserva o responsável atomicamente em duas criações simultâneas', async 
     status: 409,
     code: 'CONFLICT',
   })
-  expect(await prisma.eventoAgenda.count({ where: { tenantId } })).toBe(1)
+  expect(await prisma.agendaEvent.count({ where: { tenantId } })).toBe(1)
 })
 
 it('impede duas edições simultâneas de mover eventos distintos para o mesmo horário', async () => {
@@ -66,26 +66,26 @@ it('impede duas edições simultâneas de mover eventos distintos para o mesmo h
   const repository = new PrismaAgendaEventRepository()
   const base = {
     tenantId: data.tenantId,
-    responsavelId: data.userId,
-    criadoPorId: data.userId,
-    titulo: 'Reunião',
-    tipo: 'MEETING' as const,
-    participanteNome: 'Cliente',
-    participanteTelefone: '11999999999',
+    responsibleId: data.userId,
+    createdById: data.userId,
+    title: 'Reunião',
+    type: 'MEETING' as const,
+    participantName: 'Cliente',
+    participantPhone: '11999999999',
   }
   const first = await repository.create({
     ...base,
-    inicio: new Date('2031-03-01T15:00:00Z'),
-    fim: new Date('2031-03-01T16:00:00Z'),
+    start: new Date('2031-03-01T15:00:00Z'),
+    end: new Date('2031-03-01T16:00:00Z'),
   })
   const second = await repository.create({
     ...base,
-    inicio: new Date('2031-03-01T17:00:00Z'),
-    fim: new Date('2031-03-01T18:00:00Z'),
+    start: new Date('2031-03-01T17:00:00Z'),
+    end: new Date('2031-03-01T18:00:00Z'),
   })
   const changes = {
-    inicio: new Date('2031-03-02T15:00:00Z'),
-    fim: new Date('2031-03-02T16:00:00Z'),
+    start: new Date('2031-03-02T15:00:00Z'),
+    end: new Date('2031-03-02T16:00:00Z'),
   }
   const results = await Promise.allSettled([
     repository.update(tenantId, first.id, changes, undefined, data.userId),
@@ -97,5 +97,5 @@ it('impede duas edições simultâneas de mover eventos distintos para o mesmo h
     status: 409,
     code: 'CONFLICT',
   })
-  expect(await prisma.eventoAgenda.count({ where: { tenantId, inicio: changes.inicio } })).toBe(1)
+  expect(await prisma.agendaEvent.count({ where: { tenantId, start: changes.start } })).toBe(1)
 })

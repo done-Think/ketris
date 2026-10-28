@@ -10,12 +10,12 @@ import type { User } from '../../../domain/user.entity'
 const user: User = {
   id: 'user-1',
   tenantId: 'tenant-1',
-  nome: 'Ana',
+  name: 'Ana',
   email: 'ana@example.com',
-  senhaHash: 'hash',
-  papel: 'AGENT',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash',
+  role: 'AGENT',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 function createDeps() {
   const users = {

@@ -108,12 +108,14 @@ it('preenche dados reais, preserva a edição no refetch e limpa dados ausentes 
 })
 
 it('carrega mais páginas de propostas sem depender da listagem de CRM ou de contratos', async () => {
-  const list = vi.spyOn(contractsService, 'opportunities').mockImplementation(async ({ page }) => ({
-    items: page === 1 ? [first] : [second],
-    totalCount: 26,
-    page,
-    pageSize: 25,
-  }))
+  const list = vi
+    .spyOn(contractsService, 'opportunities')
+    .mockImplementation(async ({ page = 1 }) => ({
+      items: page === 1 ? [first] : [second],
+      totalCount: 26,
+      page,
+      pageSize: 25,
+    }))
   setup()
   fireEvent.click(await screen.findByRole('button', { name: 'Carregar mais propostas' }))
   await waitFor(() => expect(list).toHaveBeenLastCalledWith({ search: '', page: 2, pageSize: 25 }))

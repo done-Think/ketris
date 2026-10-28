@@ -350,9 +350,9 @@
       "success": "Ação realizada com sucesso.",
       "error": "Não foi possível realizar a ação.",
       "requestStatuses": {
-        "PENDENTE": "Pendente",
-        "APROVADA": "Aprovada",
-        "REJEITADA": "Rejeitada"
+        "PENDING": "Pendente",
+        "APPROVED": "Aprovada",
+        "REJECTED": "Rejeitada"
       },
       "finish": "Finalizar chamado",
       "finishConfirmation": "Você confirma que o problema foi resolvido? O chamado será marcado como resolvido e o histórico será preservado.",

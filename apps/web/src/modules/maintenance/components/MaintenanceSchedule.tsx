@@ -4,7 +4,6 @@ import * as maintenanceStyles from '../styles/maintenance-schedule.styles'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Box, Button, Typography } from '@mui/material'
-import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useMemo } from 'react'
@@ -23,9 +22,8 @@ import {
 export function MaintenanceSchedule({ ticket }: MaintenanceScheduleProps) {
   const errorMessage = useMaintenanceErrorMessage()
   const t = useTranslations('dashboard.maintenance.schedule')
-  const { data: session } = useSession()
   const { enqueueSnackbar } = useSnackbar()
-  const mutation = useMaintenanceAction(session?.tenantId, ticket.id)
+  const mutation = useMaintenanceAction(ticket.id)
   const schema = useMemo(() => createMaintenanceScheduleSchema((key) => t(key)), [t])
   const { control, handleSubmit, reset } = useForm<MaintenanceScheduleFormValues>({
     values: mapMaintenanceScheduleToFormValues(ticket),

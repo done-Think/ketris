@@ -2,8 +2,7 @@ import type { OpportunityStatus } from './opportunity'
 
 export type OpportunityStage = {
   status: OpportunityStatus
-  label: string
-  labelKey: string
+  labelKey: 'draft' | 'sent' | 'negotiation' | 'accepted' | 'rejected'
   color: string
   softColor: string
 }

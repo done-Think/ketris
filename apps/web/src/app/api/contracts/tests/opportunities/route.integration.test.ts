@@ -12,20 +12,20 @@ let eligibleId: string, ownerId: string
 
 beforeAll(async () => {
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Catálogo Contracts', slug: `contracts-catalog-${randomUUID()}` },
+    data: { name: 'Catálogo Contracts', slug: `contracts-catalog-${randomUUID()}` },
   })
   const foreign = await prisma.tenant.create({
-    data: { nome: 'Outro tenant', slug: `contracts-catalog-${randomUUID()}` },
+    data: { name: 'Outro tenant', slug: `contracts-catalog-${randomUUID()}` },
   })
   tenants.push(tenant.id, foreign.id)
-  const createUser = (papel: 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER') =>
-    prisma.usuario.create({
+  const createUser = (role: 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER') =>
+    prisma.user.create({
       data: {
         tenantId: tenant.id,
-        nome: 'Pessoa do catálogo',
+        name: 'Pessoa do catálogo',
         email: `${randomUUID()}@example.test`,
-        senhaHash: 'test-only',
-        papel,
+        passwordHash: 'test-only',
+        role,
       },
     })
   const [owner, agent, renter, propertyOwner] = await Promise.all([
@@ -39,97 +39,97 @@ beforeAll(async () => {
   agentToken = await tokens.sign(agent)
   renterToken = await tokens.sign(renter)
   ownerId = propertyOwner.id
-  const property = await prisma.imovel.create({
+  const property = await prisma.property.create({
     data: {
       tenantId: tenant.id,
-      responsavelId: agent.id,
-      proprietarioId: propertyOwner.id,
-      titulo: 'Apartamento elegível',
-      finalidade: 'ALUGUEL',
-      tipo: 'APARTAMENTO',
-      valor: 2500,
+      responsibleId: agent.id,
+      ownerId: propertyOwner.id,
+      title: 'Apartamento elegível',
+      purpose: 'RENT',
+      type: 'APARTMENT',
+      price: 2500,
     },
   })
-  const otherProperty = await prisma.imovel.create({
+  const otherProperty = await prisma.property.create({
     data: {
       tenantId: tenant.id,
-      responsavelId: owner.id,
-      titulo: 'Outra responsabilidade',
-      finalidade: 'ALUGUEL',
-      tipo: 'CASA',
-      valor: 2000,
+      responsibleId: owner.id,
+      title: 'Outra responsabilidade',
+      purpose: 'RENT',
+      type: 'HOUSE',
+      price: 2000,
     },
   })
   const createOpportunity = async (
-    imovelId: string,
-    status: 'ACEITA' | 'ENVIADA',
+    propertyId: string,
+    status: 'ACCEPTED' | 'SENT',
     archived = false,
   ) =>
-    prisma.oportunidade.create({
+    prisma.opportunity.create({
       data: {
         tenantId: tenant.id,
-        imovelId,
-        responsavelId: await propertyResponsibleId(prisma, imovelId),
+        propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
         status,
-        interessadoNome: 'Interessado do catálogo',
-        interessadoEmail: `${randomUUID()}@example.test`,
-        valorProposto: 2450.75,
-        arquivadaEm: archived ? new Date() : null,
+        interestedName: 'Interessado do catálogo',
+        interestedEmail: `${randomUUID()}@example.test`,
+        proposedValue: 2450.75,
+        archivedAt: archived ? new Date() : null,
       },
     })
-  eligibleId = (await createOpportunity(property.id, 'ACEITA')).id
-  await createOpportunity(property.id, 'ENVIADA')
-  await createOpportunity(property.id, 'ACEITA', true)
-  await createOpportunity(otherProperty.id, 'ACEITA')
-  const linked = await createOpportunity(property.id, 'ACEITA')
-  await prisma.contrato.create({
+  eligibleId = (await createOpportunity(property.id, 'ACCEPTED')).id
+  await createOpportunity(property.id, 'SENT')
+  await createOpportunity(property.id, 'ACCEPTED', true)
+  await createOpportunity(otherProperty.id, 'ACCEPTED')
+  const linked = await createOpportunity(property.id, 'ACCEPTED')
+  await prisma.contract.create({
     data: {
       tenantId: tenant.id,
-      imovelId: property.id,
-      oportunidadeOrigemId: linked.id,
-      codigo: `CAT-${randomUUID()}`,
-      valor: 2450.75,
-      diaVencimento: 5,
-      dataInicio: new Date('2031-01-01'),
-      dataFim: new Date('2032-01-01'),
-      indiceReajuste: 'IPCA',
-      tipoGarantia: 'CAUCAO',
+      propertyId: property.id,
+      sourceOpportunityId: linked.id,
+      code: `CAT-${randomUUID()}`,
+      amount: 2450.75,
+      dueDay: 5,
+      startDate: new Date('2031-01-01'),
+      endDate: new Date('2032-01-01'),
+      adjustmentIndex: 'IPCA',
+      guaranteeType: 'DEPOSIT',
     },
   })
-  const foreignUser = await prisma.usuario.create({
+  const foreignUser = await prisma.user.create({
     data: {
       tenantId: foreign.id,
-      nome: 'Outra gestão',
+      name: 'Outra gestão',
       email: `${randomUUID()}@example.test`,
-      senhaHash: 'test-only',
-      papel: 'OWNER',
+      passwordHash: 'test-only',
+      role: 'OWNER',
     },
   })
-  const foreignProperty = await prisma.imovel.create({
+  const foreignProperty = await prisma.property.create({
     data: {
       tenantId: foreign.id,
-      responsavelId: foreignUser.id,
-      titulo: 'Privado',
-      finalidade: 'ALUGUEL',
-      tipo: 'CASA',
-      valor: 1000,
+      responsibleId: foreignUser.id,
+      title: 'Privado',
+      purpose: 'RENT',
+      type: 'HOUSE',
+      price: 1000,
     },
   })
-  await prisma.oportunidade.create({
+  await prisma.opportunity.create({
     data: {
       tenantId: foreign.id,
-      imovelId: foreignProperty.id,
-      responsavelId: await propertyResponsibleId(prisma, foreignProperty.id),
-      interessadoNome: 'Pessoa privada',
-      interessadoEmail: 'private@example.test',
-      valorProposto: 1000,
-      status: 'ACEITA',
+      propertyId: foreignProperty.id,
+      responsibleId: await propertyResponsibleId(prisma, foreignProperty.id),
+      interestedName: 'Pessoa privada',
+      interestedEmail: 'private@example.test',
+      proposedValue: 1000,
+      status: 'ACCEPTED',
     },
   })
 })
 afterAll(async () => {
   for (const id of tenants) {
-    await prisma.contrato.deleteMany({ where: { tenantId: id } })
+    await prisma.contract.deleteMany({ where: { tenantId: id } })
     await prisma.tenant.delete({ where: { id } })
   }
 })
@@ -155,7 +155,7 @@ it('pagina e busca somente propostas aceitas, não arquivadas e sem contrato no 
     proposedValue: 2450.75,
     owner: { id: ownerId, name: 'Pessoa do catálogo' },
   })
-  expect(filtered.items[0]).not.toHaveProperty('senhaHash')
+  expect(filtered.items[0]).not.toHaveProperty('passwordHash')
   expect(filtered.items[0]).not.toHaveProperty('tenantId')
 })
 it('restringe o corretor aos imóveis sob sua responsabilidade', async () => {

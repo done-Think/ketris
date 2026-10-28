@@ -7,7 +7,7 @@ import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { Link } from '@/i18n/navigation'
-import { AuthShell } from '@modules/auth/components/AuthShell'
+import { AuthShell } from '@shared/components/layout/AuthShell'
 import { RhfPasswordField } from '@shared/components/form'
 
 import { useAcceptTeamInvitation, useTeamInvitation } from '../hooks/use-team'

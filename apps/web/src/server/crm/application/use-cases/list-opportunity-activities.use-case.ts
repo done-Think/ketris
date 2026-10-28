@@ -19,14 +19,14 @@ export class ListOpportunityActivitiesUseCase {
   ) {}
 
   async execute(input: ListOpportunityActivitiesInput): Promise<ListOpportunityActivitiesOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     const opportunity = await this.opportunityRepository.findById(input.opportunityId)
 
     if (!opportunity || opportunity.tenantId !== input.actorTenantId) {
       throw new OpportunityNotFoundError()
     }
 
-    assertOpportunityAccess(opportunity, input.actorId, input.actorPapel)
+    assertOpportunityAccess(opportunity, input.actorId, input.actorRole)
 
     return this.activityRepository.findManyByOpportunity(opportunity.id)
   }

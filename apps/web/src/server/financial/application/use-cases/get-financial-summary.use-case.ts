@@ -13,7 +13,7 @@ export class GetFinancialSummaryUseCase {
   ) {}
 
   async execute(input: GetFinancialSummaryInput): Promise<FinancialSummary> {
-    assertCanAccessFinance(input.actorPapel)
+    assertCanAccessFinance(input.actorRole)
 
     const now = this.now()
     const today = calendarDateInTimeZone(now)

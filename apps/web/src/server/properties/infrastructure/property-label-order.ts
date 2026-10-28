@@ -6,13 +6,13 @@ import type { PropertyListFilters, PropertyStatus, PropertyType } from '../types
 
 const dictionaries = { 'pt-BR': pt, 'en-US': en, 'es-ES': es }
 const typeKeys: Record<PropertyType, keyof typeof pt.dashboard.mapping.propertyTypes> = {
-  APARTAMENTO: 'apartment',
-  CASA: 'house',
+  APARTMENT: 'apartment',
+  HOUSE: 'house',
   STUDIO: 'studio',
-  COBERTURA: 'penthouse',
-  COMERCIAL: 'commercial',
+  PENTHOUSE: 'penthouse',
+  COMMERCIAL: 'commercial',
   LOFT: 'loft',
-  OUTRO: 'other',
+  OTHER: 'other',
 }
 const statusKeys: Record<PropertyStatus, keyof typeof pt.dashboard.filters> = {
   DRAFT: 'inReview',
@@ -22,11 +22,11 @@ const statusKeys: Record<PropertyStatus, keyof typeof pt.dashboard.filters> = {
   INACTIVE: 'inactive',
 }
 export const propertyDatabaseStatus: Record<PropertyStatus, string> = {
-  DRAFT: 'RASCUNHO',
-  PUBLISHED: 'PUBLICADO',
-  RENTED: 'ALUGADO',
-  SOLD: 'VENDIDO',
-  INACTIVE: 'INATIVO',
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  RENTED: 'RENTED',
+  SOLD: 'SOLD',
+  INACTIVE: 'INACTIVE',
 }
 
 export function getPropertyLabelOrder(

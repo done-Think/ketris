@@ -1,4 +1,5 @@
-import type { AuthenticatedUser, User } from '../domain/user.entity'
+import type { User } from '../domain/user.entity'
+import type { AuthenticatedUser } from './authenticated-user'
 
 export interface UserListQuery {
   page: number

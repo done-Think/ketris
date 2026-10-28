@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type {
   AgendaEventKind,
   AgendaEventAudience,
@@ -9,7 +9,7 @@ import type {
 export interface CancelAgendaEventInput {
   reason: string
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
   actorUserId?: string
   id: string
 }
@@ -18,46 +18,46 @@ export interface CreateAgendaEventInput {
   outsideBusinessHoursConfirmed?: boolean
   actorTenantId: string
   actorUserId: string
-  actorPapel: Papel
-  responsavelId?: string
-  destino?: AgendaEventAudience
-  interno?: boolean
-  imovelId?: string | null
-  referenciaImovelLivre?: string | null
-  titulo: string
-  tipo?: AgendaEventKind | null
-  inicio: Date
+  actorRole: UserRole
+  responsibleId?: string
+  audience?: AgendaEventAudience
+  internal?: boolean
+  propertyId?: string | null
+  freeFormPropertyReference?: string | null
+  title: string
+  type?: AgendaEventKind | null
+  start: Date
   durationMinutes: number
-  participanteNome: string
-  participanteTelefone: string
-  notas?: string | null
-  donoEmail?: string
-  participanteEmails?: string[]
+  participantName: string
+  participantPhone: string
+  notes?: string | null
+  ownerEmail?: string
+  participantEmails?: string[]
 }
 
 export interface GetAgendaEventInput {
   actorTenantId: string
   actorUserId: string
-  actorPapel: Papel
+  actorRole: UserRole
   id: string
 }
 
 export interface ListAgendaEventsInput {
   actorTenantId: string
   actorUserId: string
-  actorPapel: Papel
+  actorRole: UserRole
   from: Date
   to: Date
-  responsavelId?: string
+  responsibleId?: string
 }
 
 export interface RescheduleAgendaEventInput {
   outsideBusinessHoursConfirmed?: boolean
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
   actorUserId?: string
   id: string
-  inicio: Date
+  start: Date
   durationMinutes?: number
 }
 
@@ -65,7 +65,7 @@ export interface UpdateAgendaEventInput extends AgendaEventChanges, AgendaEventL
   outsideBusinessHoursConfirmed?: boolean
   durationMinutes?: number
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
   actorUserId?: string
   id: string
 }

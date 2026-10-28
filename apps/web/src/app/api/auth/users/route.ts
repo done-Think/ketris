@@ -15,11 +15,11 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const user = await authContainer.createUserUseCase.execute({
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
-    nome: body.name,
+    actorRole: actor.role,
+    name: body.name,
     email: body.email,
     password: body.password,
-    papel: body.role,
+    role: body.role,
   })
 
   return NextResponse.json({ user: toAuthenticatedUserResponse(user) }, { status: 201 })
@@ -32,7 +32,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const result = await authContainer.listUsersUseCase.execute({
     ...query,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
   })
 
   return NextResponse.json(

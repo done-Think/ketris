@@ -5,16 +5,16 @@ export const contractsFiltersSchema = z.object({
   status: z
     .enum([
       'ALL',
-      'RASCUNHO',
-      'EM_REVISAO',
-      'AGUARDANDO_ASSINATURA',
-      'ASSINADO',
-      'ATIVO',
-      'ENCERRADO',
-      'CANCELADO',
+      'DRAFT',
+      'IN_REVIEW',
+      'AWAITING_SIGNATURE',
+      'SIGNED',
+      'ACTIVE',
+      'CLOSED',
+      'CANCELED',
     ])
     .default('ALL'),
-  type: z.enum(['ALL', 'RESIDENCIAL', 'COMERCIAL', 'TEMPORADA']).default('ALL'),
+  type: z.enum(['ALL', 'RESIDENTIAL', 'COMMERCIAL', 'SEASONAL']).default('ALL'),
   period: z.enum(['ALL', 'THIS_MONTH', 'NEXT_90_DAYS']).default('ALL'),
 })
 

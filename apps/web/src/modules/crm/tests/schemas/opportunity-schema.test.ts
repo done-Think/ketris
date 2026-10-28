@@ -14,7 +14,7 @@ const opportunityFormSchema = createOpportunityFormSchema((key) => key)
 const editOpportunityFormSchema = createEditOpportunityFormSchema((key) => key)
 
 describe('opportunity schemas', () => {
-  it.each(['RASCUNHO', 'ENVIADA', 'EM_NEGOCIACAO', 'ACEITA', 'RECUSADA'])(
+  it.each(['DRAFT', 'SENT', 'IN_NEGOTIATION', 'ACCEPTED', 'REJECTED'])(
     'accepts the supported status %s',
     (status) => {
       expect(opportunityStatusSchema.parse(status)).toBe(status)
@@ -27,12 +27,12 @@ describe('opportunity schemas', () => {
 
   it('validates list filters', () => {
     expect(
-      opportunityFiltersSchema.parse({ status: 'EM_NEGOCIACAO', includeArchived: true }),
-    ).toEqual({ status: 'EM_NEGOCIACAO', includeArchived: true })
+      opportunityFiltersSchema.parse({ status: 'IN_NEGOTIATION', includeArchived: true }),
+    ).toEqual({ status: 'IN_NEGOTIATION', includeArchived: true })
   })
 
   it('accepts a partial update and rejects an empty update', () => {
-    expect(updateOpportunitySchema.safeParse({ status: 'ACEITA' }).success).toBe(true)
+    expect(updateOpportunitySchema.safeParse({ status: 'ACCEPTED' }).success).toBe(true)
     expect(updateOpportunitySchema.safeParse({}).success).toBe(false)
   })
 
@@ -42,7 +42,7 @@ describe('opportunity schemas', () => {
         property,
         contractTermMonths: '',
         desiredStartDate: '',
-        guaranteeType: 'NENHUMA',
+        guaranteeType: 'NONE',
         specialConditions: [],
         contact: null,
         leadName: 'Maria Silva',
@@ -50,7 +50,7 @@ describe('opportunity schemas', () => {
         leadPhone: '',
         proposedValue: '2500',
         notes: '',
-        status: 'RASCUNHO',
+        status: 'DRAFT',
         responsibleId: '',
       }).success,
     ).toBe(true)
@@ -62,7 +62,7 @@ describe('opportunity schemas', () => {
         property: null,
         contractTermMonths: '',
         desiredStartDate: '',
-        guaranteeType: 'NENHUMA',
+        guaranteeType: 'NONE',
         specialConditions: [],
         contact: null,
         leadName: 'Maria Silva',
@@ -70,7 +70,7 @@ describe('opportunity schemas', () => {
         leadPhone: '',
         proposedValue: '2500',
         notes: '',
-        status: 'RASCUNHO',
+        status: 'DRAFT',
         responsibleId: '',
       }).success,
     ).toBe(false)
@@ -82,7 +82,7 @@ describe('opportunity schemas', () => {
         property,
         contractTermMonths: '',
         desiredStartDate: '',
-        guaranteeType: 'NENHUMA',
+        guaranteeType: 'NONE',
         specialConditions: [],
         contact: null,
         leadName: 'Maria Silva',
@@ -90,7 +90,7 @@ describe('opportunity schemas', () => {
         leadPhone: '',
         proposedValue: '0',
         notes: '',
-        status: 'RASCUNHO',
+        status: 'DRAFT',
         responsibleId: '',
       }).success,
     ).toBe(false)
@@ -106,7 +106,7 @@ describe('opportunity schemas', () => {
         proposedValue: '2500',
         contractTermMonths: '',
         desiredStartDate: '',
-        guaranteeType: 'NENHUMA',
+        guaranteeType: 'NONE',
         specialConditions: [],
         notes: '',
       }).success,
@@ -123,7 +123,7 @@ describe('opportunity schemas', () => {
         proposedValue: '2500',
         contractTermMonths: '-3',
         desiredStartDate: '',
-        guaranteeType: 'NENHUMA',
+        guaranteeType: 'NONE',
         specialConditions: [],
         notes: '',
       }).success,
@@ -140,7 +140,7 @@ describe('opportunity schemas', () => {
       leadPhone: '',
       proposedValue: '2500',
       notes: '',
-      status: 'RASCUNHO',
+      status: 'DRAFT',
     })
 
     expect(result.success).toBe(false)

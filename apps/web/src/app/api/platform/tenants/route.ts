@@ -35,7 +35,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const body = await parseJsonBody(request, createTenantRequestSchema)
 
   const tenant = await platformContainer.createTenantUseCase.execute({
-    nome: body.name,
+    name: body.name,
     slug: body.slug,
     accountType: body.accountType,
     status: body.status,

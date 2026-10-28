@@ -1,10 +1,13 @@
 import { z } from 'zod'
 
 import type { SchemaMessageTranslator } from '@shared/types'
+import type { TranslationKey } from '@/i18n/types/messages.types'
+
+type ProfileValidationKey = TranslationKey<'marketplace.profileEditor.errors'>
 
 const createRequiredTextSchema = (
-  t: SchemaMessageTranslator,
-  requiredKey: string,
+  t: SchemaMessageTranslator<ProfileValidationKey>,
+  requiredKey: ProfileValidationKey,
   requirePublishFields: boolean,
 ) => (requirePublishFields ? z.string().min(1, t(requiredKey)) : z.string())
 
@@ -12,8 +15,8 @@ const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
 const INTERNAL_MARKETPLACE_MEDIA_PATH = /^\/api\/marketplace\/media\/.+/
 
 const createHexColorSchema = (
-  t: SchemaMessageTranslator,
-  requiredKey: string,
+  t: SchemaMessageTranslator<ProfileValidationKey>,
+  requiredKey: ProfileValidationKey,
   requirePublishFields: boolean,
 ) => {
   if (!requirePublishFields) {
@@ -33,8 +36,8 @@ const createHexColorSchema = (
 }
 
 const createUrlSchema = (
-  t: SchemaMessageTranslator,
-  requiredKey: string,
+  t: SchemaMessageTranslator<ProfileValidationKey>,
+  requiredKey: ProfileValidationKey,
   requirePublishFields: boolean,
 ) => {
   const isValidMediaUrl = (value: string) =>
@@ -57,7 +60,7 @@ const createUrlSchema = (
 }
 
 export function createPublicProfileEditorSchema(
-  t: SchemaMessageTranslator,
+  t: SchemaMessageTranslator<ProfileValidationKey>,
   options?: { requirePublishFields?: boolean },
 ) {
   const requirePublishFields = options?.requirePublishFields ?? false

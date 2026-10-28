@@ -7,10 +7,10 @@ export class EditContractUseCase {
   constructor(private readonly repository: ContractWorkflowRepository) {}
 
   execute(input: EditContractInput) {
-    const scope = resolveContractManageScope(input.actorId, input.actorPapel)
+    const scope = resolveContractManageScope(input.actorId, input.actorRole)
     if (
-      input.data.guaranteeType === 'FIADOR' &&
-      !input.data.parties.some((party) => party.role === 'FIADOR')
+      input.data.guaranteeType === 'GUARANTOR' &&
+      !input.data.parties.some((party) => party.role === 'GUARANTOR')
     )
       throw new GuarantorPartyRequiredError()
     return this.repository.edit(

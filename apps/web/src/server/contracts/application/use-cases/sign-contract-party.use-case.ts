@@ -12,7 +12,7 @@ export class SignContractPartyUseCase {
   constructor(private readonly contractRepository: ContractRepository) {}
 
   async execute(input: SignContractPartyInput): Promise<Contract> {
-    const scope = resolveContractManageScope(input.actorId, input.actorPapel)
+    const scope = resolveContractManageScope(input.actorId, input.actorRole)
     const contract = await this.contractRepository.findById(input.contractId, {
       kind: 'tenant',
       tenantId: input.actorTenantId,
@@ -29,7 +29,7 @@ export class SignContractPartyUseCase {
       throw new ContractPartyNotFoundError()
     }
 
-    if (party.signatureStatus === 'ASSINADA') {
+    if (party.signatureStatus === 'SIGNED') {
       throw new ContractPartyAlreadySignedError()
     }
 

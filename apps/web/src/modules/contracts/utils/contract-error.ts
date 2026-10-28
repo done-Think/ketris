@@ -1,7 +1,8 @@
 import axios from 'axios'
 import type { SchemaMessageTranslator } from '@shared/types'
+import type { TranslationKey } from '@/i18n/types/messages.types'
 
-const codes = new Set([
+const codes = [
   'CONFLICT',
   'CONTRACT_EDITING_LOCKED',
   'CONTRACT_TRANSITION_NOT_ALLOWED',
@@ -21,11 +22,17 @@ const codes = new Set([
   'CONTRACT_OPPORTUNITY_NOT_ACCEPTED',
   'FORBIDDEN',
   'UNAUTHORIZED',
-])
+] as const satisfies readonly TranslationKey<'contracts.errors'>[]
 
-export function contractError(error: unknown, t: SchemaMessageTranslator) {
+const translationKeys = new Map<string, (typeof codes)[number]>(codes.map((code) => [code, code]))
+
+export function contractError(
+  error: unknown,
+  t: SchemaMessageTranslator<TranslationKey<'contracts.errors'>>,
+) {
   const code = axios.isAxiosError(error) ? error.response?.data?.error?.code : null
-  return t(typeof code === 'string' && codes.has(code) ? code : 'generic')
+  const key = typeof code === 'string' ? translationKeys.get(code) : undefined
+  return t(key ?? 'generic')
 }
 
 export function isContractNotFound(error: unknown) {

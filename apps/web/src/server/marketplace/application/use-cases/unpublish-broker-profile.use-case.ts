@@ -8,7 +8,7 @@ export class UnpublishBrokerProfileUseCase {
   constructor(private readonly brokerProfileRepository: BrokerProfileRepository) {}
 
   async execute(input: UnpublishBrokerProfileInput): Promise<BrokerProfile> {
-    assertBrokerProfileAccess(input.actorPapel)
+    assertBrokerProfileAccess(input.actorRole)
 
     const unpublished = await this.brokerProfileRepository.setStatus(input.actorId, 'DRAFT', null)
 

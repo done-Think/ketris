@@ -168,4 +168,34 @@ describe('PlatformAdminsPage', () => {
 
     expect(screen.getByText('Não foi possível carregar os administradores.')).toBeVisible()
   })
+  it.each(['deactivate', 'edit'] as const)(
+    'explains LAST_PLATFORM_ADMIN and keeps the %s dialog open',
+    async (mode) => {
+      const user = userEvent.setup()
+      const error = {
+        isAxiosError: true,
+        response: { data: { error: { code: 'LAST_PLATFORM_ADMIN' } } },
+      }
+      if (mode === 'deactivate') deactivate.mockRejectedValueOnce(error)
+      else update.mockRejectedValueOnce(error)
+      renderPage()
+      await user.click(within(desktopTable()).getByRole('button', { name: 'Ações para Ana Admin' }))
+      await user.click(
+        await screen.findByRole('menuitem', {
+          name: mode === 'deactivate' ? 'Desativar' : 'Alterar cadastro',
+        }),
+      )
+      const dialog = await screen.findByRole('dialog')
+      await user.click(
+        within(dialog).getByRole('button', {
+          name: mode === 'deactivate' ? 'Desativar' : 'Salvar',
+        }),
+      )
+      expect(enqueueSnackbar).toHaveBeenCalledWith(
+        'Mantenha pelo menos um administrador ativo na plataforma.',
+        { variant: 'error' },
+      )
+      expect(dialog).toBeVisible()
+    },
+  )
 })

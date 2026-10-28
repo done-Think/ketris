@@ -57,8 +57,8 @@ const mockTicket: ApiMaintenanceTicket = {
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
   category: 'PLUMBING',
-  priority: 'URGENTE',
-  status: 'EM_ANDAMENTO',
+  priority: 'URGENT',
+  status: 'IN_PROGRESS',
   title: 'Vazamento na cozinha',
   description: 'Vazamento embaixo da pia da cozinha.',
   openedById: 'user-1',
@@ -70,7 +70,7 @@ const mockTicket: ApiMaintenanceTicket = {
     {
       id: 'a1',
       ticketId: 'MNT-0089',
-      type: 'NOTA',
+      type: 'NOTE',
       message: 'Abri o chamado.',
       authorId: 'user-1',
       authorName: 'Bruno Oliveira',
@@ -79,7 +79,7 @@ const mockTicket: ApiMaintenanceTicket = {
     {
       id: 'a2',
       ticketId: 'MNT-0089',
-      type: 'NOTA',
+      type: 'NOTE',
       message: 'Já aprovei a solicitação.',
       authorId: 'user-2',
       authorName: 'Marina Costa',
@@ -241,7 +241,7 @@ describe('MaintenanceTicketDetailPage', () => {
     ).toHaveBeenCalledWith('The leak is still visible.')
   })
 
-  it.each(['CANCELADO', 'FECHADO'] as const)(
+  it.each(['CANCELED', 'CLOSED'] as const)(
     'keeps %s tickets readable and blocks renter collaboration',
     (status) => {
       mockSession('RENTER')
@@ -280,7 +280,7 @@ describe('MaintenanceTicketDetailPage', () => {
     mockTicketQuery({
       data: {
         ...mockTicket,
-        status: 'RESOLVIDO',
+        status: 'RESOLVED',
         permissions: {
           ...mockTicket.permissions!,
           edit: false,
@@ -312,7 +312,7 @@ describe('MaintenanceTicketDetailPage', () => {
     mockTicketQuery({
       data: {
         ...mockTicket,
-        status: 'RESOLVIDO',
+        status: 'RESOLVED',
         permissions: {
           ...mockTicket.permissions!,
           edit: false,
@@ -337,7 +337,7 @@ describe('MaintenanceTicketDetailPage', () => {
     await waitFor(() =>
       expect(
         vi.mocked(useMaintenanceAction).mock.results[0].value.mutateAsync,
-      ).toHaveBeenCalledWith({ action: 'reopen', status: 'ABERTO', reason: 'Leak returned' }),
+      ).toHaveBeenCalledWith({ action: 'reopen', status: 'OPEN', reason: 'Leak returned' }),
     )
   })
   it('lets a linked renter contest with a mandatory reason while confirmation stays unavailable', async () => {
@@ -345,7 +345,7 @@ describe('MaintenanceTicketDetailPage', () => {
     mockTicketQuery({
       data: {
         ...mockTicket,
-        status: 'AGUARDANDO_CONFIRMACAO',
+        status: 'AWAITING_CONFIRMATION',
         permissions: {
           ...mockTicket.permissions!,
           edit: false,
@@ -389,7 +389,7 @@ describe('MaintenanceTicketDetailPage', () => {
     expect(screen.getByText('Ainda não agendado')).toBeVisible()
   })
 
-  it.each(['RESOLVIDO', 'FECHADO'] as const)(
+  it.each(['RESOLVED', 'CLOSED'] as const)(
     'requires explicit contract selection for archived %s tickets and filters other properties',
     async (status) => {
       mockTicketQuery({
@@ -460,7 +460,7 @@ describe('MaintenanceTicketDetailPage', () => {
     expect(screen.getByText('Marina Costa')).toBeVisible()
   })
 
-  it.each(['ABERTO', 'EM_ANDAMENTO', 'AGUARDANDO_CONFIRMACAO', 'CONTESTADO'] as const)(
+  it.each(['OPEN', 'IN_PROGRESS', 'AWAITING_CONFIRMATION', 'DISPUTED'] as const)(
     'lets a renter finish a %s ticket after confirming the problem is resolved',
     async (status) => {
       mockSession('RENTER')
@@ -493,7 +493,7 @@ describe('MaintenanceTicketDetailPage', () => {
     mockTicketQuery({
       data: {
         ...mockTicket,
-        status: 'ABERTO',
+        status: 'OPEN',
         permissions: {
           ...mockTicket.permissions!,
           finish: true,

@@ -18,10 +18,10 @@ const opportunity: Opportunity = {
   proposedValue: 2500,
   contractTermMonths: null,
   desiredStartDate: null,
-  guaranteeType: 'NENHUMA',
+  guaranteeType: 'NONE',
   specialConditions: [],
   notes: null,
-  status: 'ENVIADA',
+  status: 'SENT',
   archivedAt: null,
   createdAt: new Date('2026-08-10T00:00:00.000Z'),
   updatedAt: new Date('2026-08-10T00:00:00.000Z'),
@@ -42,7 +42,7 @@ describe('GetOpportunityUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       opportunityId: 'op-1',
     })
 
@@ -55,7 +55,7 @@ describe('GetOpportunityUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       opportunityId: 'op-1',
     })
 
@@ -72,7 +72,7 @@ describe('GetOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         opportunityId: 'inexistente',
       }),
     ).rejects.toThrow(OpportunityNotFoundError)
@@ -88,7 +88,7 @@ describe('GetOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         opportunityId: 'op-1',
       }),
     ).rejects.toThrow(OpportunityNotFoundError)
@@ -100,7 +100,7 @@ describe('GetOpportunityUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'agent-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       opportunityId: 'op-1',
     })
 
@@ -114,7 +114,7 @@ describe('GetOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         opportunityId: 'op-1',
       }),
     ).rejects.toThrow(OpportunityNotFoundError)

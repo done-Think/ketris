@@ -20,7 +20,7 @@ const lead: DashboardLead = {
   interest: 'Apartamento 3 quartos nos Jardins',
   source: 'MARKETPLACE',
   broker: 'Roberto Souza',
-  stage: 'NOVO',
+  stage: 'NEW',
   opportunityId: null,
 }
 

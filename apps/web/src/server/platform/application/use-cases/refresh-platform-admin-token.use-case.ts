@@ -30,7 +30,7 @@ export class RefreshPlatformAdminTokenUseCase {
 
     const admin = await this.platformAdminRepository.findById(stored.platformAdminId)
 
-    if (!admin || !admin.ativo) {
+    if (!admin || !admin.active) {
       throw new InvalidPlatformRefreshTokenError()
     }
 

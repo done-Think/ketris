@@ -1,3 +1,4 @@
+import type { TranslationKey } from '@/i18n/types/messages.types'
 import { useTranslations } from 'next-intl'
 import { useCallback } from 'react'
 
@@ -9,7 +10,7 @@ export function useFinancialError() {
   const t = useTranslations('charges.errors')
 
   return useCallback(
-    (error: unknown, fallbackKey: string) => {
+    (error: unknown, fallbackKey: TranslationKey<'charges.errors'>) => {
       const code = getApiErrorCode(error)
       const key = code ? chargeErrorKeys[code] : undefined
       return t(key ?? fallbackKey)

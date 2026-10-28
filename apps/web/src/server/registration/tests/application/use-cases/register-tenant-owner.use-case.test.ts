@@ -9,7 +9,7 @@ describe('RegisterTenantOwnerUseCase', () => {
     const { accounts, passwords } = createDeps()
     const result = await new RegisterTenantOwnerUseCase(accounts, passwords).execute({
       ...details,
-      profile: 'imobiliaria',
+      profile: 'agency',
       companyName: '  Imobiliária Nova  ',
     })
     expect(passwords.hash).toHaveBeenCalledWith(details.password)
@@ -17,12 +17,12 @@ describe('RegisterTenantOwnerUseCase', () => {
       tenantName: 'Imobiliária Nova',
       adminName: details.fullName,
       email: details.email,
-      senhaHash: 'test-hash',
+      passwordHash: 'test-hash',
       accountType: 'AGENCY',
       status: 'TRIAL',
-      telefone: details.phone,
+      phone: details.phone,
       creci: undefined,
-      termosAceitosEm: expect.any(Date),
+      termsAcceptedAt: expect.any(Date),
       createBrokerProfile: false,
     })
     expect(result).toEqual({
@@ -33,10 +33,10 @@ describe('RegisterTenantOwnerUseCase', () => {
   })
 
   it.each([
-    ['proprietario', 'INDIVIDUAL'],
-    ['corretor', 'BROKER'],
-    ['imobiliaria', 'AGENCY'],
-    ['construtora', 'AGENCY'],
+    ['owner', 'INDIVIDUAL'],
+    ['broker', 'BROKER'],
+    ['agency', 'AGENCY'],
+    ['developer', 'AGENCY'],
   ] as const)('creates profile %s as %s in trial', async (profile, accountType) => {
     const { accounts, passwords } = createDeps()
     await new RegisterTenantOwnerUseCase(accounts, passwords).execute({
@@ -49,7 +49,7 @@ describe('RegisterTenantOwnerUseCase', () => {
         accountType,
         status: 'TRIAL',
         creci: 'CRECI-123',
-        createBrokerProfile: profile === 'corretor',
+        createBrokerProfile: profile === 'broker',
       }),
     )
   })
@@ -60,7 +60,7 @@ describe('RegisterTenantOwnerUseCase', () => {
       const { accounts, passwords } = createDeps()
       await new RegisterTenantOwnerUseCase(accounts, passwords).execute({
         ...details,
-        profile: 'corretor',
+        profile: 'broker',
         companyName,
       })
       expect(accounts.createTenantWithAdmin).toHaveBeenCalledWith(
@@ -74,7 +74,7 @@ describe('RegisterTenantOwnerUseCase', () => {
     await expect(
       new RegisterTenantOwnerUseCase(accounts, passwords).execute({
         ...details,
-        profile: 'proprietario',
+        profile: 'owner',
       }),
     ).resolves.toMatchObject({ email: account.email })
     expect(accounts.findAccountByEmail).not.toHaveBeenCalled()
@@ -85,7 +85,7 @@ describe('RegisterTenantOwnerUseCase', () => {
     await expect(
       new RegisterTenantOwnerUseCase(accounts, passwords).execute({
         ...details,
-        profile: 'proprietario',
+        profile: 'owner',
         acceptTerms: false,
       }),
     ).rejects.toThrow(TermsAcceptanceRequiredError)

@@ -6,6 +6,7 @@ import axios, {
 } from 'axios'
 
 import { env } from '@config/env'
+import { API_CONTRACT_HEADER, API_CONTRACT_VERSION } from '@shared/config/api-contract'
 import type { AppRequestConfig, UnauthorizedHandler } from '@shared/types'
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & {
@@ -23,7 +24,10 @@ export class HttpClient {
     this.instance = axios.create({
       baseURL,
       timeout: 30000,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(baseURL ? { [API_CONTRACT_HEADER]: API_CONTRACT_VERSION } : {}),
+      },
     })
 
     this.setupInterceptors()

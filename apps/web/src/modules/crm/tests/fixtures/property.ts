@@ -3,7 +3,7 @@ import type { CrmPropertySummary } from '../../types/property'
 export const property: CrmPropertySummary = {
   id: 'property-1',
   title: 'Apartamento Jardins',
-  purpose: 'ALUGUEL',
+  purpose: 'RENT',
   propertyType: 'Apartamento',
   price: 3500,
   condoFee: null,

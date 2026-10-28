@@ -16,13 +16,13 @@ import {
 
 const valid = {
   opportunityId: 'opportunity',
-  type: 'RESIDENCIAL',
+  type: 'RESIDENTIAL',
   amount: 2450.75,
   dueDay: 5,
   startDate: '2031-01-01',
   endDate: '2032-01-01',
   adjustmentIndex: 'IPCA',
-  guaranteeType: 'CAUCAO',
+  guaranteeType: 'DEPOSIT',
   notes: null,
   owner: {
     name: 'Proprietária',

@@ -11,14 +11,13 @@ import { useInfiniteOpportunities } from '../../hooks/use-opportunities'
 import type { CrmPipelineColumnProps } from '../../types/sales-pipeline'
 import { PipelineStageColumn } from './PipelineStageColumn'
 
-export function CrmPipelineColumn({ tenantId, search, stage, visible }: CrmPipelineColumnProps) {
+export function CrmPipelineColumn({ search, stage, visible }: CrmPipelineColumnProps) {
   const format = useCrmFormatter()
   const { status: sessionStatus } = useSession()
   const locale = useLocale() as AppLocale
   const t = useTranslations('crm.pipeline')
   const q = useDebouncedValue(search)
   const query = useInfiniteOpportunities(
-    tenantId,
     {
       q: q || undefined,
       statuses: [...stage.statuses],
@@ -33,7 +32,7 @@ export function CrmPipelineColumn({ tenantId, search, stage, visible }: CrmPipel
     : []
   const groups = query.data?.pages[0]?.groups ?? []
   const totals = groups
-    .filter((group) => group.key !== 'RECUSADA')
+    .filter((group) => group.key !== 'REJECTED')
     .reduce(
       (sum, group) => ({
         rental: sum.rental + group.rental,

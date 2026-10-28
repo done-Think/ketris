@@ -12,5 +12,8 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const { items, totalCount, page, pageSize } =
     await marketplaceContainer.listAgencyProfilesUseCase.execute(query)
 
-  return NextResponse.json({ agencies: items, totalCount, page, pageSize }, { status: 200 })
+  return NextResponse.json(
+    { agencies: items, totalCount, page, pageSize },
+    { status: 200, headers: { 'Cache-Control': 'no-store' } },
+  )
 })

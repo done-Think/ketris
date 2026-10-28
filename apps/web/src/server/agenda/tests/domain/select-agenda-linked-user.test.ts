@@ -5,15 +5,15 @@ import type { AgendaLinkedUserCandidate } from '../../types/linked-user'
 function candidate(
   id: string,
   tenantId: string,
-  papel: AgendaLinkedUserCandidate['papel'] = 'AGENT',
+  role: AgendaLinkedUserCandidate['role'] = 'AGENT',
 ): AgendaLinkedUserCandidate {
   return {
     id,
     tenantId,
-    papel,
+    role,
     email: 'ana@example.test',
-    ativo: true,
-    vinculoAprovadoEm: new Date(),
+    active: true,
+    membershipApprovedAt: new Date(),
   }
 }
 it.each([false, true])(
@@ -49,8 +49,8 @@ it('recusa ambiguidade e ignora contas inativas ou ainda não aprovadas', () => 
   expect(
     selectAgendaLinkedUser(
       [
-        { ...candidate('local', 'agency'), ativo: false },
-        { ...candidate('pending', 'agency'), vinculoAprovadoEm: null },
+        { ...candidate('local', 'agency'), active: false },
+        { ...candidate('pending', 'agency'), membershipApprovedAt: null },
       ],
       'ana@example.test',
       'agency',

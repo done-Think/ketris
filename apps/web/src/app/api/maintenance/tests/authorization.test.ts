@@ -60,7 +60,7 @@ const actor: MaintenanceActor = {
   actorId: 'renter',
   actorTenantId: 'tenant',
   actorName: 'Renter',
-  actorPapel: 'RENTER',
+  actorRole: 'RENTER',
 }
 const ticket: MaintenanceTicket = {
   id: 'ticket',
@@ -78,7 +78,7 @@ const ticket: MaintenanceTicket = {
   description: 'Leak',
   category: 'PLUMBING',
   priority: 'NORMAL',
-  status: 'ABERTO',
+  status: 'OPEN',
   openedById: 'renter',
   openedByName: 'Renter',
   resolvedAt: null,
@@ -131,7 +131,7 @@ describe('Maintenance API authorization and private media', () => {
     const response = await performAction(
       request('tickets/ticket/actions', {
         action: 'cancel',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         actorId: 'admin',
       }),
       context,
@@ -205,7 +205,7 @@ describe('Maintenance API authorization and private media', () => {
     vi.mocked(requireMaintenanceActor).mockResolvedValue({
       ...actor,
       actorTenantId: 'shared',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
     })
     expect(
       (await readMedia(request('media/maintenance/tenant/file.png'), mediaContext)).status,
@@ -221,7 +221,7 @@ describe('Maintenance API authorization and private media', () => {
     expect(
       (await readMedia(request('media/maintenance/tenant/file.png'), mediaContext)).status,
     ).toBe(404)
-    vi.mocked(requireMaintenanceActor).mockResolvedValue({ ...actor, actorPapel: 'OWNER' })
+    vi.mocked(requireMaintenanceActor).mockResolvedValue({ ...actor, actorRole: 'OWNER' })
     expect(
       (await readMedia(request('media/maintenance/tenant/file.png'), mediaContext)).status,
     ).toBe(302)

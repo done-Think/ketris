@@ -4,9 +4,9 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { useContract, useContracts, useSignContractParty } from '../../hooks/use-contracts'
 import { contractsService } from '../../services/contracts-service'
 import { apiContractFixture } from '../fixtures/contract'
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@shared/types/user-role'
 
-const identity = vi.hoisted(() => ({ id: 'manager', role: 'OWNER' as Papel }))
+const identity = vi.hoisted(() => ({ id: 'manager', role: 'OWNER' as UserRole }))
 vi.mock('next-auth/react', () => ({
   useSession: () => ({
     data: { tenantId: 'agency', user: { id: identity.id }, role: identity.role },
@@ -43,10 +43,9 @@ it('não reaproveita lista ou detalhe de outro usuário ou papel da mesma imobil
     },
   }))
   const { wrapper } = setup()
-  const hook = renderHook(
-    () => ({ detail: useContract('agency', 'contract'), list: useContracts('agency') }),
-    { wrapper },
-  )
+  const hook = renderHook(() => ({ detail: useContract('contract'), list: useContracts() }), {
+    wrapper,
+  })
   await waitFor(() => expect(hook.result.current.detail.data?.code).toBe('manager:OWNER'))
   expect(hook.result.current.list.data?.totalCount).toBe(9)
   identity.id = 'agent'
@@ -65,7 +64,7 @@ it('envia a evidência selecionada e invalida os dados relacionados após o regi
   const sign = vi.spyOn(contractsService, 'signParty').mockResolvedValue(apiContractFixture())
   const { client, wrapper } = setup()
   const invalidate = vi.spyOn(client, 'invalidateQueries')
-  const hook = renderHook(() => useSignContractParty('agency', 'contract'), { wrapper })
+  const hook = renderHook(() => useSignContractParty('contract'), { wrapper })
   await act(async () => {
     await hook.result.current.mutateAsync({ partyId: 'party', documentId: 'document' })
   })

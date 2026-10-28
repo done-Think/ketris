@@ -8,7 +8,7 @@ export class DeleteChargeUseCase {
   constructor(private readonly chargeRepository: ChargeRepository) {}
 
   async execute(input: GetChargeInput): Promise<void> {
-    assertCanAccessFinance(input.actorPapel)
+    assertCanAccessFinance(input.actorRole)
 
     const current = await this.chargeRepository.findById(input.actorTenantId, input.chargeId)
     if (!current) throw new ChargeNotFoundError()

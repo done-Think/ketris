@@ -143,7 +143,7 @@ it('does not reuse agency owner tickets between tenants, users or roles', async 
       propertyTitle: 'Apartment',
       createdAt: '2026-10-20T09:00:00Z',
       scheduledAt: '2026-10-21T14:00:00Z',
-      status: 'ABERTO' as const,
+      status: 'OPEN' as const,
     },
   ]
   vi.mocked(agendaService.listMaintenance).mockResolvedValueOnce(tickets).mockResolvedValue([])

@@ -3,6 +3,7 @@ import { parseContractFormDate } from '../utils/contract-date'
 import { createCpfSchema, isValidCpf } from '@shared/schemas/cpf-schema'
 import { createPhoneSchema } from '@shared/schemas/phone-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
+import type { TranslationKey } from '@/i18n/types/messages.types'
 
 function addGuarantorTextIssue(
   context: z.RefinementCtx,
@@ -15,7 +16,11 @@ function addGuarantorTextIssue(
   context.addIssue({ code: z.ZodIssueCode.custom, message, path: [path] })
 }
 
-function addGuarantorCpfIssue(context: z.RefinementCtx, value: string, t: SchemaMessageTranslator) {
+function addGuarantorCpfIssue(
+  context: z.RefinementCtx,
+  value: string,
+  t: SchemaMessageTranslator<'guarantorCpfInvalid' | 'guarantorCpfRequired'>,
+) {
   if (isValidCpf(value)) return
 
   context.addIssue({
@@ -28,7 +33,9 @@ function addGuarantorCpfIssue(context: z.RefinementCtx, value: string, t: Schema
 function addGuarantorPhoneIssue(
   context: z.RefinementCtx,
   value: string,
-  t: SchemaMessageTranslator,
+  t: SchemaMessageTranslator<
+    'guarantorPhoneInvalid' | 'guarantorPhoneRequired' | 'phoneInvalid' | 'phoneRequired'
+  >,
 ) {
   if (createPhoneSchema(t).safeParse(value).success) return
 
@@ -39,8 +46,11 @@ function addGuarantorPhoneIssue(
   })
 }
 
-export function createContractSchema(t: SchemaMessageTranslator) {
-  const requiredText = (key: string) => z.string().trim().min(1, t(key))
+export function createContractSchema(
+  t: SchemaMessageTranslator<TranslationKey<'contracts.wizard.errors'>>,
+) {
+  const requiredText = (key: TranslationKey<'contracts.wizard.errors'>) =>
+    z.string().trim().min(1, t(key))
 
   return z
     .object({
@@ -64,7 +74,7 @@ export function createContractSchema(t: SchemaMessageTranslator) {
       guarantorEmail: z.string().trim().max(254, t('emailTooLong')).default(''),
       guarantorPhone: z.string().max(32, t('phoneTooLong')).default(''),
       contractType: requiredText('contractTypeRequired').refine(
-        (value) => ['RESIDENCIAL', 'COMERCIAL', 'TEMPORADA'].includes(value),
+        (value) => ['RESIDENTIAL', 'COMMERCIAL', 'SEASONAL'].includes(value),
         t('contractTypeRequired'),
       ),
       dueDay: requiredText('dueDayRequired').refine(
@@ -80,7 +90,7 @@ export function createContractSchema(t: SchemaMessageTranslator) {
         t('dateInvalid'),
       ),
       guaranteeType: requiredText('guaranteeTypeRequired').refine(
-        (value) => ['FIADOR', 'CAUCAO', 'SEGURO_FIANCA', 'TITULO_CAPITALIZACAO'].includes(value),
+        (value) => ['GUARANTOR', 'DEPOSIT', 'SURETY_BOND', 'CAPITALIZATION_BOND'].includes(value),
         t('guaranteeTypeRequired'),
       ),
       adjustmentIndex: requiredText('adjustmentIndexRequired').refine(
@@ -98,7 +108,7 @@ export function createContractSchema(t: SchemaMessageTranslator) {
           message: t('endAfterStart'),
           path: ['endDate'],
         })
-      if (!values.hasGuarantor && values.guaranteeType !== 'FIADOR') return
+      if (!values.hasGuarantor && values.guaranteeType !== 'GUARANTOR') return
 
       addGuarantorTextIssue(
         context,
@@ -144,7 +154,7 @@ export const createContractDefaultValues = {
   guarantorCpf: '',
   guarantorEmail: '',
   guarantorPhone: '',
-  contractType: 'RESIDENCIAL',
+  contractType: 'RESIDENTIAL',
   dueDay: '',
   startDate: '',
   endDate: '',

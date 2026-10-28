@@ -19,7 +19,7 @@ export function useRecentProperties(page: number, pageSize = featuredPropertiesC
   const properties = (query.data?.properties ?? []).map((summary) =>
     mapSummaryToSearchResult(
       summary,
-      summary.purpose === 'ALUGUEL' ? 'alugar' : 'comprar',
+      summary.purpose === 'RENT' ? 'alugar' : 'comprar',
       locale,
       tFeatures,
     ),

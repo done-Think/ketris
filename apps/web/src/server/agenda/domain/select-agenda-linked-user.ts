@@ -13,6 +13,6 @@ export function selectAgendaLinkedUser(
       canLinkUserToAgendaEvent(user, tenantId),
   )
   const local = eligible.filter((user) => user.tenantId === tenantId)
-  const candidates = local.length ? local : eligible.filter((user) => user.papel === 'RENTER')
+  const candidates = local.length ? local : eligible.filter((user) => user.role === 'RENTER')
   return candidates.length === 1 ? candidates[0] : null
 }

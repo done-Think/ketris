@@ -1,17 +1,17 @@
-import type { Papel } from './user.entity'
+import type { UserRole } from './user.entity'
 
-export const agencyManagerRoles = ['OWNER'] as const satisfies readonly Papel[]
+export const agencyManagerRoles = ['OWNER'] as const satisfies readonly UserRole[]
 
-export const agencyStaffRoles = ['OWNER', 'AGENT'] as const satisfies readonly Papel[]
+export const agencyStaffRoles = ['OWNER', 'AGENT'] as const satisfies readonly UserRole[]
 
-export function isAgencyManager(papel: Papel): boolean {
-  return (agencyManagerRoles as readonly Papel[]).includes(papel)
+export function isAgencyManager(role: UserRole): boolean {
+  return (agencyManagerRoles as readonly UserRole[]).includes(role)
 }
 
-export function isAgencyStaff(papel: Papel): boolean {
-  return (agencyStaffRoles as readonly Papel[]).includes(papel)
+export function isAgencyStaff(role: UserRole): boolean {
+  return (agencyStaffRoles as readonly UserRole[]).includes(role)
 }
 
-export function isPropertyOwner(papel: Papel): boolean {
-  return papel === 'PROPERTY_OWNER'
+export function isPropertyOwner(role: UserRole): boolean {
+  return role === 'PROPERTY_OWNER'
 }

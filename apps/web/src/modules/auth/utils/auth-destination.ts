@@ -1,3 +1,4 @@
+import routeRedirects from '@/i18n/route-redirects.json'
 import { routing } from '@/i18n/routing'
 import type { AuthNavigationHref } from '../types/navigation'
 
@@ -9,7 +10,9 @@ export function getAuthDestination(
   try {
     const url = new URL(callbackUrl, base)
     if (url.origin !== base) return '/dashboard'
-    let pathname = url.pathname
+    let pathname =
+      routeRedirects.find((redirect) => redirect.source === url.pathname)?.destination ??
+      url.pathname
     const prefixes =
       typeof routing.localePrefix === 'object' && 'prefixes' in routing.localePrefix
         ? Object.values(routing.localePrefix.prefixes ?? {})

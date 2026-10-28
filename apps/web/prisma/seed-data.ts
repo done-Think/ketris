@@ -17,8 +17,8 @@ export interface SeedTenant {
   name: string
   // Defaults to AGENCY (agencies, builders and the renters' system tenant).
   accountType?: 'INDIVIDUAL' | 'BROKER' | 'AGENCY'
-  corPrimaria?: string
-  corSecundaria?: string
+  primaryColor?: string
+  secondaryColor?: string
   members: SeedTenantMember[]
 }
 
@@ -28,8 +28,8 @@ export const seedTenants: SeedTenant[] = [
   {
     slug: 'ketris-demo',
     name: 'Imobiliária Horizonte',
-    corPrimaria: '#F30274',
-    corSecundaria: '#212631',
+    primaryColor: '#F30274',
+    secondaryColor: '#212631',
     members: [
       {
         name: 'Imobiliária Horizonte',
@@ -222,14 +222,14 @@ export interface SeedProperty {
   id: string
   title: string
   description: string
-  category: 'APARTAMENTO' | 'CASA' | 'STUDIO' | 'COBERTURA' | 'COMERCIAL' | 'LOFT' | 'OUTRO'
-  purpose: 'ALUGUEL' | 'VENDA'
+  category: 'APARTMENT' | 'HOUSE' | 'STUDIO' | 'PENTHOUSE' | 'COMMERCIAL' | 'LOFT' | 'OTHER'
+  purpose: 'RENT' | 'SALE'
   status?: 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
   price: number
   bedrooms: number
   bathrooms: number
   parking: number
-  areaM2: number
+  areaSqm: number
   neighborhood: string
   city: string
   latitude: number
@@ -237,8 +237,8 @@ export interface SeedProperty {
   images: string[]
   // E-mail do usuário responsável (responsavelId) — corretor, ou o próprio ADMIN quando o
   // responsável é um proprietário/construtora sem corretor dedicado.
-  responsavelEmail: string
-  proprietarioEmail?: string
+  responsibleEmail: string
+  ownerEmail?: string
 }
 
 const apartmentGallery = [
@@ -256,20 +256,20 @@ export const seedProperties: SeedProperty[] = [
     title: 'Apartamento espaçoso com vista para o parque',
     description:
       'Excelente imóvel reformado com acabamento de alto padrão, living amplo integrado à varanda e vista definitiva para a copa das árvores. Suíte master com closet, espaços bem iluminados e planta eficiente para quem busca conforto e praticidade nos Jardins.',
-    category: 'APARTAMENTO',
-    purpose: 'ALUGUEL',
+    category: 'APARTMENT',
+    purpose: 'RENT',
     price: 4800,
     bedrooms: 3,
     bathrooms: 2,
     parking: 1,
-    areaM2: 95,
+    areaSqm: 95,
     neighborhood: 'Jardins',
     city: 'São Paulo',
     latitude: -23.5617,
     longitude: -46.6559,
     images: apartmentGallery,
-    responsavelEmail: 'marina@ketris.com.br',
-    proprietarioEmail: 'ricardo.lima@proprietario.ketris.com.br',
+    responsibleEmail: 'marina@ketris.com.br',
+    ownerEmail: 'ricardo.lima@proprietario.ketris.com.br',
   },
   {
     id: 'studio-vila-madalena',
@@ -277,13 +277,13 @@ export const seedProperties: SeedProperty[] = [
     description:
       'Studio mobiliado, com marcenaria planejada, cozinha integrada e ótima entrada de luz natural. Localização próxima a restaurantes, metrô e serviços essenciais.',
     category: 'STUDIO',
-    purpose: 'ALUGUEL',
+    purpose: 'RENT',
     status: 'RENTED',
     price: 2900,
     bedrooms: 1,
     bathrooms: 1,
     parking: 1,
-    areaM2: 42,
+    areaSqm: 42,
     neighborhood: 'Vila Madalena',
     city: 'São Paulo',
     latitude: -23.5505,
@@ -295,21 +295,21 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
     ],
-    responsavelEmail: 'thiago@ketris.com.br',
+    responsibleEmail: 'thiago@ketris.com.br',
   },
   {
     id: 'cobertura-itaim-bibi',
     title: 'Cobertura tríplex com piscina privativa',
     description:
       'Cobertura tríplex com área externa privativa, piscina, espaço gourmet e vista aberta. Planta generosa para receber com conforto em uma das regiões mais desejadas da cidade.',
-    category: 'COBERTURA',
-    purpose: 'ALUGUEL',
+    category: 'PENTHOUSE',
+    purpose: 'RENT',
     status: 'DRAFT',
     price: 12500,
     bedrooms: 4,
     bathrooms: 5,
     parking: 3,
-    areaM2: 240,
+    areaSqm: 240,
     neighborhood: 'Itaim Bibi',
     city: 'São Paulo',
     latitude: -23.5847,
@@ -321,27 +321,27 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
     ],
-    responsavelEmail: 'juliana@ketris.com.br',
+    responsibleEmail: 'juliana@ketris.com.br',
   },
   {
     id: 'apartamento-garden-remodelado',
     title: 'Apartamento Garden Remodelado',
     description:
       'Apartamento garden com área externa privativa, ambientes integrados e reforma recente. Uma opção equilibrada para quem quer morar perto de serviços, restaurantes e áreas verdes.',
-    category: 'APARTAMENTO',
-    purpose: 'ALUGUEL',
+    category: 'APARTMENT',
+    purpose: 'RENT',
     status: 'INACTIVE',
     price: 6200,
     bedrooms: 2,
     bathrooms: 2,
     parking: 1,
-    areaM2: 110,
+    areaSqm: 110,
     neighborhood: 'Jardins',
     city: 'São Paulo',
     latitude: -23.5686,
     longitude: -46.6625,
     images: apartmentGallery,
-    responsavelEmail: 'ana@ketris.com.br',
+    responsibleEmail: 'ana@ketris.com.br',
   },
   {
     id: 'loft-industrial-mobiliado',
@@ -349,89 +349,89 @@ export const seedProperties: SeedProperty[] = [
     description:
       'Loft com pé-direito generoso, mobiliário sob medida e linguagem industrial elegante. Ideal para quem procura uma planta aberta e pronta para morar.',
     category: 'LOFT',
-    purpose: 'ALUGUEL',
+    purpose: 'RENT',
     price: 5500,
     bedrooms: 1,
     bathrooms: 1,
     parking: 1,
-    areaM2: 78,
+    areaSqm: 78,
     neighborhood: 'Jardins',
     city: 'São Paulo',
     latitude: -23.5632,
     longitude: -46.6712,
     images: apartmentGallery,
-    responsavelEmail: 'carlos@ketris.com.br',
+    responsibleEmail: 'carlos@ketris.com.br',
   },
   {
     id: 'casa-alto-da-boa-vista',
     title: 'Casa térrea com jardim privativo',
     description:
       'Casa térrea com jardim privativo, área social integrada e excelente distribuição dos ambientes. Boa opção para famílias que buscam conforto e privacidade.',
-    category: 'CASA',
-    purpose: 'ALUGUEL',
+    category: 'HOUSE',
+    purpose: 'RENT',
     price: 7200,
     bedrooms: 3,
     bathrooms: 3,
     parking: 2,
-    areaM2: 180,
+    areaSqm: 180,
     neighborhood: 'Alto da Boa Vista',
     city: 'São Paulo',
     latitude: -23.6346,
     longitude: -46.6993,
     images: apartmentGallery,
-    responsavelEmail: 'renato@ketris.com.br',
+    responsibleEmail: 'renato@ketris.com.br',
   },
   {
     id: 'sala-comercial-paulista',
     title: 'Sala comercial pronta para operação',
     description:
       'Conjunto comercial pronto para operação, com recepção, salas privativas e infraestrutura para equipes enxutas em endereço estratégico.',
-    category: 'COMERCIAL',
-    purpose: 'ALUGUEL',
+    category: 'COMMERCIAL',
+    purpose: 'RENT',
     price: 6600,
     bedrooms: 4,
     bathrooms: 2,
     parking: 2,
-    areaM2: 110,
+    areaSqm: 110,
     neighborhood: 'Paulista',
     city: 'São Paulo',
     latitude: -23.563,
     longitude: -46.6543,
     images: apartmentGallery,
-    responsavelEmail: 'camila@ketris.com.br',
+    responsibleEmail: 'camila@ketris.com.br',
   },
   {
     id: 'apartamento-moema',
     title: 'Apartamento mobiliado perto do parque',
     description:
       'Apartamento mobiliado próximo ao parque, com ambientes claros, cozinha equipada e excelente acesso a serviços do bairro.',
-    category: 'APARTAMENTO',
-    purpose: 'ALUGUEL',
+    category: 'APARTMENT',
+    purpose: 'RENT',
     price: 5400,
     bedrooms: 2,
     bathrooms: 2,
     parking: 1,
-    areaM2: 78,
+    areaSqm: 78,
     neighborhood: 'Moema',
     city: 'São Paulo',
     latitude: -23.6032,
     longitude: -46.6654,
     images: apartmentGallery,
-    responsavelEmail: 'bruna@ketris.com.br',
+    responsibleEmail: 'bruna@ketris.com.br',
   },
   {
     id: 'apartamento-jardins-venda',
     title: 'Apartamento pronto para morar perto da Oscar Freire',
     description:
       'Apartamento reformado para venda, com marcenaria planejada, varanda integrada e planta bem distribuída em endereço valorizado dos Jardins.',
-    category: 'APARTAMENTO',
-    purpose: 'VENDA',
+    category: 'APARTMENT',
+    purpose: 'SALE',
     status: 'SOLD',
     price: 1420000,
     bedrooms: 3,
     bathrooms: 3,
     parking: 2,
-    areaM2: 118,
+    areaSqm: 118,
     neighborhood: 'Jardins',
     city: 'São Paulo',
     latitude: -23.5638,
@@ -443,20 +443,20 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=700&q=80',
     ],
-    responsavelEmail: 'laura@ketris.com.br',
+    responsibleEmail: 'laura@ketris.com.br',
   },
   {
     id: 'apartamento-jardim-paulista-venda',
     title: 'Apartamento ensolarado no Jardim Paulista',
     description:
       'Unidade clara e silenciosa, com sala ampla, cozinha funcional e ótimo potencial de personalização em uma das alamedas mais procuradas da região.',
-    category: 'APARTAMENTO',
-    purpose: 'VENDA',
+    category: 'APARTMENT',
+    purpose: 'SALE',
     price: 1180000,
     bedrooms: 2,
     bathrooms: 2,
     parking: 1,
-    areaM2: 92,
+    areaSqm: 92,
     neighborhood: 'Jardim Paulista',
     city: 'São Paulo',
     latitude: -23.5691,
@@ -468,20 +468,20 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
     ],
-    responsavelEmail: 'patricia@ketris.com.br',
+    responsibleEmail: 'patricia@ketris.com.br',
   },
   {
     id: 'cobertura-pinheiros-venda',
     title: 'Cobertura duplex com área gourmet',
     description:
       'Cobertura duplex à venda com terraço gourmet, suíte master reservada e vista aberta para a zona oeste.',
-    category: 'COBERTURA',
-    purpose: 'VENDA',
+    category: 'PENTHOUSE',
+    purpose: 'SALE',
     price: 2350000,
     bedrooms: 3,
     bathrooms: 4,
     parking: 3,
-    areaM2: 186,
+    areaSqm: 186,
     neighborhood: 'Pinheiros',
     city: 'São Paulo',
     latitude: -23.5662,
@@ -493,21 +493,21 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=700&q=80',
     ],
-    responsavelEmail: 'roberto@ketris.com.br',
+    responsibleEmail: 'roberto@ketris.com.br',
   },
   {
     id: 'casa-alto-da-lapa-venda',
     title: 'Casa com quintal e escritório independente',
     description:
       'Casa térrea com ambientes integrados, quintal arborizado e edícula preparada para escritório, ideal para famílias que procuram espaço sem sair da cidade.',
-    category: 'CASA',
-    purpose: 'VENDA',
+    category: 'HOUSE',
+    purpose: 'SALE',
     status: 'DRAFT',
     price: 1980000,
     bedrooms: 4,
     bathrooms: 4,
     parking: 3,
-    areaM2: 260,
+    areaSqm: 260,
     neighborhood: 'Alto da Lapa',
     city: 'São Paulo',
     latitude: -23.5326,
@@ -519,7 +519,7 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1600210491369-e753d80a41f3?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
     ],
-    responsavelEmail: 'fernando@ketris.com.br',
+    responsibleEmail: 'fernando@ketris.com.br',
   },
   {
     id: 'loft-vila-madalena-venda',
@@ -527,12 +527,12 @@ export const seedProperties: SeedProperty[] = [
     description:
       'Loft à venda com pé-direito alto, acabamentos contemporâneos e varanda voltada para uma rua calma da Vila Madalena.',
     category: 'LOFT',
-    purpose: 'VENDA',
+    purpose: 'SALE',
     price: 890000,
     bedrooms: 1,
     bathrooms: 1,
     parking: 1,
-    areaM2: 68,
+    areaSqm: 68,
     neighborhood: 'Vila Madalena',
     city: 'São Paulo',
     latitude: -23.5536,
@@ -544,7 +544,7 @@ export const seedProperties: SeedProperty[] = [
       'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=700&q=80',
       'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=700&q=80',
     ],
-    responsavelEmail: 'bianca@ketris.com.br',
+    responsibleEmail: 'bianca@ketris.com.br',
   },
   // Imóveis de proprietários independentes — sem corretor, o próprio ADMIN do tenant é o
   // responsável.
@@ -553,38 +553,38 @@ export const seedProperties: SeedProperty[] = [
     title: 'Apartamento com vista panorâmica na Vila Olímpia',
     description:
       'Apartamento de proprietário direto, sem intermediação de imobiliária, com vista panorâmica, varanda gourmet e infraestrutura completa de lazer no condomínio.',
-    category: 'APARTAMENTO',
-    purpose: 'ALUGUEL',
+    category: 'APARTMENT',
+    purpose: 'RENT',
     price: 5800,
     bedrooms: 2,
     bathrooms: 2,
     parking: 2,
-    areaM2: 88,
+    areaSqm: 88,
     neighborhood: 'Vila Olímpia',
     city: 'São Paulo',
     latitude: -23.5955,
     longitude: -46.6869,
     images: apartmentGallery,
-    responsavelEmail: 'joao.mendes@proprietario.ketris.dev',
+    responsibleEmail: 'joao.mendes@proprietario.ketris.dev',
   },
   {
     id: 'casa-perdizes-proprietario',
     title: 'Casa térrea reformada em Perdizes',
     description:
       'Casa térrea de proprietário direto, recém-reformada, com quintal e garagem coberta, em rua tranquila e bem localizada de Perdizes.',
-    category: 'CASA',
-    purpose: 'ALUGUEL',
+    category: 'HOUSE',
+    purpose: 'RENT',
     price: 6400,
     bedrooms: 3,
     bathrooms: 2,
     parking: 2,
-    areaM2: 150,
+    areaSqm: 150,
     neighborhood: 'Perdizes',
     city: 'São Paulo',
     latitude: -23.5378,
     longitude: -46.6789,
     images: apartmentGallery,
-    responsavelEmail: 'joao.mendes@proprietario.ketris.dev',
+    responsibleEmail: 'joao.mendes@proprietario.ketris.dev',
   },
   {
     id: 'studio-itaim-proprietario',
@@ -592,37 +592,37 @@ export const seedProperties: SeedProperty[] = [
     description:
       'Studio de proprietário direto, ideal para quem busca praticidade, com armários planejados e localização estratégica no Itaim Bibi.',
     category: 'STUDIO',
-    purpose: 'ALUGUEL',
+    purpose: 'RENT',
     price: 3200,
     bedrooms: 1,
     bathrooms: 1,
     parking: 1,
-    areaM2: 38,
+    areaSqm: 38,
     neighborhood: 'Itaim Bibi',
     city: 'São Paulo',
     latitude: -23.5836,
     longitude: -46.6746,
     images: apartmentGallery,
-    responsavelEmail: 'fernanda.cavalcanti@proprietario.ketris.dev',
+    responsibleEmail: 'fernanda.cavalcanti@proprietario.ketris.dev',
   },
   {
     id: 'cobertura-moema-proprietario',
     title: 'Cobertura duplex em Moema',
     description:
       'Cobertura duplex de proprietário direto, com terraço amplo, churrasqueira e vista livre para o Parque Ibirapuera.',
-    category: 'COBERTURA',
-    purpose: 'VENDA',
+    category: 'PENTHOUSE',
+    purpose: 'SALE',
     price: 1850000,
     bedrooms: 3,
     bathrooms: 3,
     parking: 2,
-    areaM2: 175,
+    areaSqm: 175,
     neighborhood: 'Moema',
     city: 'São Paulo',
     latitude: -23.6012,
     longitude: -46.6621,
     images: apartmentGallery,
-    responsavelEmail: 'fernanda.cavalcanti@proprietario.ketris.dev',
+    responsibleEmail: 'fernanda.cavalcanti@proprietario.ketris.dev',
   },
   // Unidades de lançamento das construtoras.
   {
@@ -630,122 +630,122 @@ export const seedProperties: SeedProperty[] = [
     title: 'Unidade 501 — Edifício Pedra Azul',
     description:
       'Unidade de lançamento no Edifício Pedra Azul, com planta otimizada, acabamento de entrega premium e vista aberta para a região.',
-    category: 'APARTAMENTO',
-    purpose: 'VENDA',
+    category: 'APARTMENT',
+    purpose: 'SALE',
     price: 980000,
     bedrooms: 2,
     bathrooms: 2,
     parking: 2,
-    areaM2: 82,
+    areaSqm: 82,
     neighborhood: 'Brooklin',
     city: 'São Paulo',
     latitude: -23.6157,
     longitude: -46.6947,
     images: apartmentGallery,
-    responsavelEmail: 'contato@pedraazul.ketris.dev',
+    responsibleEmail: 'contato@pedraazul.ketris.dev',
   },
   {
     id: 'pedra-azul-unidade-802',
     title: 'Unidade 802 — Edifício Pedra Azul',
     description:
       'Unidade de alto andar do Edifício Pedra Azul, com suíte master, varanda gourmet integrada e vista privilegiada.',
-    category: 'APARTAMENTO',
-    purpose: 'VENDA',
+    category: 'APARTMENT',
+    purpose: 'SALE',
     price: 1120000,
     bedrooms: 3,
     bathrooms: 3,
     parking: 2,
-    areaM2: 98,
+    areaSqm: 98,
     neighborhood: 'Brooklin',
     city: 'São Paulo',
     latitude: -23.6157,
     longitude: -46.6947,
     images: apartmentGallery,
-    responsavelEmail: 'contato@pedraazul.ketris.dev',
+    responsibleEmail: 'contato@pedraazul.ketris.dev',
   },
   {
     id: 'pedra-azul-unidade-1203',
     title: 'Unidade 1203 — Edifício Pedra Azul',
     description:
       'Cobertura linear do Edifício Pedra Azul, ainda na planta, com terraço privativo e acabamento personalizável.',
-    category: 'COBERTURA',
-    purpose: 'VENDA',
+    category: 'PENTHOUSE',
+    purpose: 'SALE',
     status: 'DRAFT',
     price: 1850000,
     bedrooms: 4,
     bathrooms: 4,
     parking: 3,
-    areaM2: 165,
+    areaSqm: 165,
     neighborhood: 'Brooklin',
     city: 'São Paulo',
     latitude: -23.6157,
     longitude: -46.6947,
     images: apartmentGallery,
-    responsavelEmail: 'contato@pedraazul.ketris.dev',
+    responsibleEmail: 'contato@pedraazul.ketris.dev',
   },
   {
     id: 'nova-aurora-casa-12',
     title: 'Casa 12 — Condomínio Nova Aurora',
     description:
       'Casa em condomínio fechado de lançamento, com quintal privativo, área de lazer completa e segurança 24h.',
-    category: 'CASA',
-    purpose: 'VENDA',
+    category: 'HOUSE',
+    purpose: 'SALE',
     price: 890000,
     bedrooms: 3,
     bathrooms: 3,
     parking: 2,
-    areaM2: 140,
+    areaSqm: 140,
     neighborhood: 'Granja Viana',
     city: 'Cotia',
     latitude: -23.6013,
     longitude: -46.8836,
     images: apartmentGallery,
-    responsavelEmail: 'contato@novaaurora.ketris.dev',
+    responsibleEmail: 'contato@novaaurora.ketris.dev',
   },
   {
     id: 'nova-aurora-casa-24',
     title: 'Casa 24 — Condomínio Nova Aurora',
     description:
       'Casa de esquina no Condomínio Nova Aurora, com quintal amplo, edícula e vaga dupla coberta.',
-    category: 'CASA',
-    purpose: 'VENDA',
+    category: 'HOUSE',
+    purpose: 'SALE',
     price: 950000,
     bedrooms: 4,
     bathrooms: 3,
     parking: 2,
-    areaM2: 160,
+    areaSqm: 160,
     neighborhood: 'Granja Viana',
     city: 'Cotia',
     latitude: -23.6013,
     longitude: -46.8836,
     images: apartmentGallery,
-    responsavelEmail: 'contato@novaaurora.ketris.dev',
+    responsibleEmail: 'contato@novaaurora.ketris.dev',
   },
   {
     id: 'nova-aurora-penthouse',
     title: 'Cobertura Penthouse — Nova Aurora',
     description:
       'Unidade penthouse do Condomínio Nova Aurora, com terraço panorâmico, piscina privativa e acabamento premium de entrega.',
-    category: 'COBERTURA',
-    purpose: 'VENDA',
+    category: 'PENTHOUSE',
+    purpose: 'SALE',
     price: 1650000,
     bedrooms: 4,
     bathrooms: 5,
     parking: 3,
-    areaM2: 220,
+    areaSqm: 220,
     neighborhood: 'Granja Viana',
     city: 'Cotia',
     latitude: -23.6013,
     longitude: -46.8836,
     images: apartmentGallery,
-    responsavelEmail: 'contato@novaaurora.ketris.dev',
+    responsibleEmail: 'contato@novaaurora.ketris.dev',
   },
 ]
 
 export interface SeedContact {
   id: string
   name: string
-  type: 'PROPRIETARIO' | 'LOCATARIO' | 'CORRETOR'
+  type: 'OWNER' | 'RENTER' | 'BROKER'
   phone: string
   email: string
   avatarUrl: string
@@ -758,7 +758,7 @@ export const seedContacts: SeedContact[] = [
   {
     id: 'ricardo-mendes',
     name: 'Ricardo Mendes',
-    type: 'LOCATARIO',
+    type: 'RENTER',
     phone: '(11) 98722-1200',
     email: 'ricardo.mendes@email.com',
     avatarUrl:
@@ -768,7 +768,7 @@ export const seedContacts: SeedContact[] = [
   {
     id: 'sandra-vasconcellos',
     name: 'Sandra Vasconcellos',
-    type: 'PROPRIETARIO',
+    type: 'OWNER',
     phone: '(11) 99100-4491',
     email: 'sandra.vasc@corpprop.br',
     avatarUrl:
@@ -778,7 +778,7 @@ export const seedContacts: SeedContact[] = [
   {
     id: 'heitor-prado',
     name: 'Heitor Prado',
-    type: 'CORRETOR',
+    type: 'BROKER',
     phone: '(11) 98112-9900',
     email: 'heitor.prado@ketrisrealty.com',
     avatarUrl:
@@ -788,7 +788,7 @@ export const seedContacts: SeedContact[] = [
   {
     id: 'leticia-ramos',
     name: 'Letícia Ramos',
-    type: 'LOCATARIO',
+    type: 'RENTER',
     phone: '(11) 97711-2004',
     email: 'leticia_ramos@outlook.com',
     avatarUrl:
@@ -798,7 +798,7 @@ export const seedContacts: SeedContact[] = [
   {
     id: 'carlos-eduardo',
     name: 'Carlos Eduardo',
-    type: 'LOCATARIO',
+    type: 'RENTER',
     phone: '(11) 98221-1250',
     email: 'carlos.edu@tecblue.com',
     avatarUrl:
@@ -808,7 +808,7 @@ export const seedContacts: SeedContact[] = [
   {
     id: 'ana-beatriz-ramos',
     name: 'Ana Beatriz Ramos',
-    type: 'PROPRIETARIO',
+    type: 'OWNER',
     phone: '(11) 99882-1011',
     email: 'anabeatriz@grupojardins.com',
     avatarUrl:
@@ -824,7 +824,7 @@ export interface SeedOpportunity {
   leadName: string
   leadEmail: string
   proposedValue: number
-  status: 'RASCUNHO' | 'ENVIADA' | 'EM_NEGOCIACAO' | 'ACEITA' | 'RECUSADA'
+  status: 'DRAFT' | 'SENT' | 'IN_NEGOTIATION' | 'ACCEPTED' | 'REJECTED'
 }
 
 // Liga contatos e imóveis já semeados acima, cobrindo os cinco status do pipeline do crm.
@@ -840,7 +840,7 @@ export const seedOpportunities: SeedOpportunity[] = [
     leadName: 'Ricardo Mendes',
     leadEmail: 'ricardo.mendes@email.com',
     proposedValue: 4800,
-    status: 'ENVIADA',
+    status: 'SENT',
   },
   {
     id: 'seed-op-jardins-leticia',
@@ -849,7 +849,7 @@ export const seedOpportunities: SeedOpportunity[] = [
     leadName: 'Letícia Ramos',
     leadEmail: 'leticia_ramos@outlook.com',
     proposedValue: 4700,
-    status: 'RASCUNHO',
+    status: 'DRAFT',
   },
   {
     id: 'seed-op-moema-carlos',
@@ -858,7 +858,7 @@ export const seedOpportunities: SeedOpportunity[] = [
     leadName: 'Carlos Eduardo',
     leadEmail: 'carlos.edu@tecblue.com',
     proposedValue: 5200,
-    status: 'EM_NEGOCIACAO',
+    status: 'IN_NEGOTIATION',
   },
   {
     id: 'seed-op-moema-marcelo',
@@ -867,7 +867,7 @@ export const seedOpportunities: SeedOpportunity[] = [
     leadName: 'Marcelo Tavares',
     leadEmail: 'marcelo.tavares@example.com',
     proposedValue: 5300,
-    status: 'ACEITA',
+    status: 'ACCEPTED',
   },
   {
     id: 'seed-op-sala-paulista-heitor',
@@ -876,7 +876,7 @@ export const seedOpportunities: SeedOpportunity[] = [
     leadName: 'Heitor Prado',
     leadEmail: 'heitor.prado@ketrisrealty.com',
     proposedValue: 6600,
-    status: 'ENVIADA',
+    status: 'SENT',
   },
   {
     id: 'seed-op-sala-paulista-diego',
@@ -885,6 +885,6 @@ export const seedOpportunities: SeedOpportunity[] = [
     leadName: 'Diego Fontes',
     leadEmail: 'diego.fontes@example.com',
     proposedValue: 6300,
-    status: 'RECUSADA',
+    status: 'REJECTED',
   },
 ]

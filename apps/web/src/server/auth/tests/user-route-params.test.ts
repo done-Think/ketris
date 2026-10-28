@@ -29,7 +29,7 @@ import { POST as REQUEST_EMAIL_CHANGE } from '@/app/api/auth/users/[id]/email-ch
 describe('Validação de parâmetros HTTP dos usuários Auth', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    verifyToken.mockResolvedValue({ sub: 'owner', tenantId: 'tenant', papel: 'OWNER' })
+    verifyToken.mockResolvedValue({ sub: 'owner', tenantId: 'tenant', role: 'OWNER' })
   })
 
   it.each([

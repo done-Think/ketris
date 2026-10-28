@@ -4,15 +4,15 @@ import { prisma } from '@server/db/prisma'
 export async function createAgendaFixture() {
   const suffix = randomUUID()
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Agenda teste', slug: `agenda-${suffix}` },
+    data: { name: 'Agenda teste', slug: `agenda-${suffix}` },
   })
-  const user = await prisma.usuario.create({
+  const user = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Responsável Agenda',
+      name: 'Responsável Agenda',
       email: `${suffix}@agenda.example.test`,
-      senhaHash: 'test-only',
-      papel: 'OWNER',
+      passwordHash: 'test-only',
+      role: 'OWNER',
     },
   })
   return { tenantId: tenant.id, userId: user.id }
@@ -21,16 +21,16 @@ export async function createAgendaFixture() {
 export function agendaFixtureEvent(tenantId: string, userId: string) {
   return {
     tenantId,
-    responsavelId: userId,
-    criadoPorId: userId,
-    titulo: 'Reunião de teste',
-    destino: 'SHARED_TEAM' as const,
-    interno: false,
-    tipo: 'MEETING' as const,
-    inicio: new Date('2031-03-01T15:00:00Z'),
-    fim: new Date('2031-03-01T16:00:00Z'),
-    participanteNome: 'Cliente teste',
-    participanteTelefone: '11999999999',
-    referenciaImovelLivre: 'Imóvel de teste',
+    responsibleId: userId,
+    createdById: userId,
+    title: 'Reunião de teste',
+    audience: 'SHARED_TEAM' as const,
+    internal: false,
+    type: 'MEETING' as const,
+    start: new Date('2031-03-01T15:00:00Z'),
+    end: new Date('2031-03-01T16:00:00Z'),
+    participantName: 'Cliente teste',
+    participantPhone: '11999999999',
+    freeFormPropertyReference: 'Imóvel de teste',
   }
 }

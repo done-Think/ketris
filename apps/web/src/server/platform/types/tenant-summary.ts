@@ -1,6 +1,6 @@
 export interface TenantSummary {
   id: string
-  nome: string
+  name: string
   slug: string
   createdAt: Date
 }

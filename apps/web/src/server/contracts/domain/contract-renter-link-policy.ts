@@ -14,8 +14,8 @@ export function selectContractRenterAccount(
 ): ContractRenterCandidate | null {
   const candidates = users.filter(
     (user) =>
-      user.ativo &&
-      user.papel === 'RENTER' &&
+      user.active &&
+      user.role === 'RENTER' &&
       normalizeEmail(user.email) === normalizeEmail(party.email),
   )
   const linked = party.userId ? candidates.find((user) => user.id === party.userId) : null
@@ -31,7 +31,7 @@ export function assertRenterParty(
   party: RenterParty | undefined,
   email?: string,
 ): asserts party is RenterParty {
-  if (!party || party.role !== 'LOCATARIO') throw new ContractPartyNotFoundError()
+  if (!party || party.role !== 'RENTER') throw new ContractPartyNotFoundError()
   if (email !== undefined && normalizeEmail(party.email) !== normalizeEmail(email)) {
     throw new ConflictError('O e-mail deve corresponder à parte locatária do contrato.')
   }
@@ -42,7 +42,7 @@ export function assertContractRenterLink(
   user: RenterAccount | null,
 ): asserts user is RenterAccount {
   assertRenterParty(party)
-  if (!user || !user.ativo || user.papel !== 'RENTER') {
+  if (!user || !user.active || user.role !== 'RENTER') {
     throw new ContractRenterUserNotFoundError()
   }
   assertRenterParty(party, user.email)

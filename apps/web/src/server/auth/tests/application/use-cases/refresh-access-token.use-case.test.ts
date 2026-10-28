@@ -14,12 +14,12 @@ import { RefreshAccessTokenUseCase } from '../../../application/use-cases/refres
 const user: User = {
   id: 'user-1',
   tenantId: 'tenant-1',
-  nome: 'Ana Agente',
+  name: 'Ana Agente',
   email: 'ana@ketris.dev',
-  senhaHash: 'hash-fake',
-  papel: 'AGENT',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-fake',
+  role: 'AGENT',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 const stored: StoredRefreshToken = { id: 'rt-1', userId: user.id, tenantId: user.tenantId }
@@ -126,7 +126,7 @@ describe('RefreshAccessTokenUseCase', () => {
   })
 
   it('lança InvalidRefreshTokenError quando o usuário do token está desativado', async () => {
-    const deps = createDeps({ findById: vi.fn().mockResolvedValue({ ...user, ativo: false }) })
+    const deps = createDeps({ findById: vi.fn().mockResolvedValue({ ...user, active: false }) })
     const useCase = new RefreshAccessTokenUseCase(
       deps.userRepository,
       deps.tokenService,

@@ -1,8 +1,8 @@
 import type { CrmPropertySummary } from './property'
 
-export type OpportunityStatus = 'RASCUNHO' | 'ENVIADA' | 'EM_NEGOCIACAO' | 'ACEITA' | 'RECUSADA'
+export type OpportunityStatus = 'DRAFT' | 'SENT' | 'IN_NEGOTIATION' | 'ACCEPTED' | 'REJECTED'
 
-export type GuaranteeType = 'FIADOR' | 'CAUCAO' | 'SEGURO_FIANCA' | 'NENHUMA'
+export type GuaranteeType = 'GUARANTOR' | 'DEPOSIT' | 'SURETY_BOND' | 'NONE'
 
 export interface Opportunity {
   property?: CrmPropertySummary
@@ -41,7 +41,7 @@ export interface NewOpportunity {
   desiredStartDate?: Date | null
   guaranteeType?: GuaranteeType
   specialConditions?: string[]
-  status?: Extract<OpportunityStatus, 'RASCUNHO' | 'ENVIADA'>
+  status?: Extract<OpportunityStatus, 'DRAFT' | 'SENT'>
 }
 
 export interface OpportunityUpdate {

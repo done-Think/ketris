@@ -7,8 +7,8 @@ import { SearchPropertiesUseCase } from '../../../application/use-cases/search-p
 const summary: PublishedPropertySummary = {
   id: 'imovel-1',
   title: 'Apartamento no centro',
-  purpose: 'ALUGUEL',
-  propertyType: 'APARTAMENTO',
+  purpose: 'RENT',
+  propertyType: 'APARTMENT',
   price: 2500,
   condoFee: 400,
   propertyTax: 100,
@@ -42,7 +42,7 @@ describe('SearchPropertiesUseCase', () => {
     const useCase = new SearchPropertiesUseCase(deps.propertyRepository)
 
     const result = await useCase.execute({
-      purpose: 'ALUGUEL',
+      purpose: 'RENT',
       city: 'Curitiba',
       maxPrice: 3000,
       page: 3,
@@ -50,7 +50,7 @@ describe('SearchPropertiesUseCase', () => {
     })
 
     expect(search).toHaveBeenCalledWith(
-      { purpose: 'ALUGUEL', city: 'Curitiba', maxPrice: 3000 },
+      { purpose: 'RENT', city: 'Curitiba', maxPrice: 3000 },
       { page: 3, pageSize: 12 },
     )
     expect(result).toEqual({ items: [summary], totalCount: 31, page: 3, pageSize: 12 })

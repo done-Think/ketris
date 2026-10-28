@@ -19,7 +19,7 @@ export const GET = withErrorHandling(
     const contract = await contractsContainer.getContractUseCase.execute({
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       contractId: id,
     })
 
@@ -35,7 +35,7 @@ export const PATCH = withErrorHandling(
     const contract = await contractsContainer.editContractUseCase.execute({
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       contractId: id,
       data: contractEditData(body),
     })

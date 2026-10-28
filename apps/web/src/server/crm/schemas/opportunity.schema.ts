@@ -13,11 +13,11 @@ import { crmGroupsSchema, crmListQuerySchema, crmPaginationSchema } from './pagi
 import { crmPropertySummarySchema } from './property.schema'
 
 export const opportunityStatusSchema = z
-  .enum(['RASCUNHO', 'ENVIADA', 'EM_NEGOCIACAO', 'ACEITA', 'RECUSADA'])
+  .enum(['DRAFT', 'SENT', 'IN_NEGOTIATION', 'ACCEPTED', 'REJECTED'])
   .openapi('OpportunityStatus')
 
 export const guaranteeTypeSchema = z
-  .enum(['FIADOR', 'CAUCAO', 'SEGURO_FIANCA', 'NENHUMA'])
+  .enum(['GUARANTOR', 'DEPOSIT', 'SURETY_BOND', 'NONE'])
   .openapi('GuaranteeType')
 
 export const opportunitySchema = z
@@ -40,8 +40,8 @@ export const opportunitySchema = z
     notes: z.string().nullable(),
     status: opportunityStatusSchema,
     archivedAt: z.coerce.date().nullable(),
-    createdAt: z.coerce.date(),
-    updatedAt: z.coerce.date(),
+    createdAt: crmDateSchema,
+    updatedAt: crmDateSchema,
   })
   .openapi('Opportunity')
 
@@ -103,7 +103,7 @@ export const createOpportunityRequestSchema = z
     guaranteeType: guaranteeTypeSchema.optional(),
     specialConditions: specialConditions.optional(),
     notes: notes.optional(),
-    status: z.enum(['RASCUNHO', 'ENVIADA']).optional(),
+    status: z.enum(['DRAFT', 'SENT']).optional(),
   })
   .strict()
   .openapi('CreateOpportunityRequest')

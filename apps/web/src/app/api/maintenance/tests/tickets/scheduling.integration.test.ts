@@ -70,7 +70,7 @@ describe('/api/maintenance scheduling (database integration)', () => {
     expect((await detail.json()).ticket.activities).toContainEqual(
       expect.objectContaining({
         authorId: env.fixture.renter.id,
-        type: 'EDICAO',
+        type: 'EDIT',
         details: {
           before: { scheduledAt: null },
           after: { scheduledAt },

@@ -10,7 +10,7 @@ import { AcceptInvitationScreen } from '../../components/AcceptInvitationScreen'
 const service = vi.hoisted(() => ({ previewInvitation: vi.fn(), acceptInvitation: vi.fn() }))
 
 vi.mock('../../services/team-service', () => ({ teamService: service }))
-vi.mock('@modules/auth/components/AuthShell', () => ({
+vi.mock('@shared/components/layout/AuthShell', () => ({
   AuthShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
 }))
 

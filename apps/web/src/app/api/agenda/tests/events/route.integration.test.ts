@@ -20,84 +20,84 @@ describe('/api/agenda/events (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Agenda', slug: `agenda-${randomUUID()}` },
+      data: { name: 'Tenant Agenda', slug: `agenda-${randomUUID()}` },
     })
     tenantId = tenant.id
 
     const otherTenant = await prisma.tenant.create({
-      data: { nome: 'Other Agenda', slug: `other-agenda-${randomUUID()}` },
+      data: { name: 'Other Agenda', slug: `other-agenda-${randomUUID()}` },
     })
     otherTenantId = otherTenant.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor Agenda',
+        name: 'Corretor Agenda',
         email: `corretor-agenda-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const renter = await prisma.usuario.create({
+    const renter = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Locatário Agenda',
+        name: 'Locatário Agenda',
         email: `locatario-agenda-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'RENTER',
+        passwordHash: 'hash-fake',
+        role: 'RENTER',
       },
     })
     renterToken = await tokenService.sign({
       id: renter.id,
       tenantId: renter.tenantId,
-      nome: renter.nome,
+      name: renter.name,
       email: renter.email,
-      papel: renter.papel,
-      ativo: renter.ativo,
-      vinculoAprovadoEm: renter.vinculoAprovadoEm,
+      role: renter.role,
+      active: renter.active,
+      membershipApprovedAt: renter.membershipApprovedAt,
     })
 
-    const property = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: actor.id,
-        titulo: 'Imóvel da agenda',
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        valor: 2500,
+        responsibleId: actor.id,
+        title: 'Imóvel da agenda',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2500,
         status: 'DRAFT',
       },
     })
     propertyId = property.id
 
-    const otherTenantActor = await prisma.usuario.create({
+    const otherTenantActor = await prisma.user.create({
       data: {
         tenantId: otherTenantId,
-        nome: 'Outro Corretor',
+        name: 'Outro Corretor',
         email: `outro-agenda-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
-    const otherProperty = await prisma.imovel.create({
+    const otherProperty = await prisma.property.create({
       data: {
         tenantId: otherTenantId,
-        responsavelId: otherTenantActor.id,
-        titulo: 'Imóvel de outro tenant',
-        finalidade: 'ALUGUEL',
-        tipo: 'APARTAMENTO',
-        valor: 1800,
+        responsibleId: otherTenantActor.id,
+        title: 'Imóvel de outro tenant',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 1800,
         status: 'DRAFT',
       },
     })

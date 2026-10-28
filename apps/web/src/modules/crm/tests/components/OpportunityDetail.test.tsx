@@ -44,6 +44,7 @@ vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
 
   return {
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
     useRouter: () => ({ replace: mocks.replace }),
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
       function MockLocalizedLink({ href = '', ...props }, ref) {
@@ -63,6 +64,12 @@ vi.mock('../../hooks/use-opportunities', () => ({
   useCrmAuthorizedProperty: mocks.useCrmAuthorizedProperty,
   useUpdateOpportunity: mocks.useUpdateOpportunity,
   useArchiveOpportunity: mocks.useArchiveOpportunity,
+  useRecordOpportunityActivity: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+    isSuccess: false,
+    isError: false,
+  }),
   useCrmResponsibles: (enabled: boolean) => ({
     data: enabled
       ? [
@@ -87,10 +94,10 @@ const opportunity: Opportunity = {
   proposedValue: 4800,
   contractTermMonths: 30,
   desiredStartDate: '2026-09-01T00:00:00.000Z',
-  guaranteeType: 'FIADOR',
+  guaranteeType: 'GUARANTOR',
   specialConditions: ['Aceita pets'],
   notes: 'Prefere visitas pela manhã.',
-  status: 'ENVIADA',
+  status: 'SENT',
   archivedAt: null,
   createdAt: '2026-08-10T10:00:00.000Z',
   updatedAt: '2026-08-12T10:00:00.000Z',
@@ -99,7 +106,7 @@ const opportunity: Opportunity = {
 const property: CrmPropertyDetail = {
   id: 'property-1',
   title: 'Apartamento Jardins',
-  purpose: 'ALUGUEL',
+  purpose: 'RENT',
   propertyType: 'apartamento',
   price: 4500,
   condoFee: 800,
@@ -191,7 +198,7 @@ describe('OpportunityDetail', () => {
     await waitFor(() =>
       expect(mocks.update).toHaveBeenCalledWith({
         id: opportunity.id,
-        changes: { status: 'EM_NEGOCIACAO' },
+        changes: { status: 'IN_NEGOTIATION' },
       }),
     )
     expect(mocks.enqueueSnackbar).toHaveBeenCalledWith('Oportunidade movida para Negociação.', {
@@ -324,10 +331,10 @@ describe('OpportunityDetail', () => {
       data: [
         {
           id: 'real-activity',
-          type: 'MUDANCA_STATUS',
+          type: 'STATUS_CHANGE',
           systemAction: 'STATUS_CHANGED',
-          previousStatus: 'ENVIADA',
-          newStatus: 'ACEITA',
+          previousStatus: 'SENT',
+          newStatus: 'ACCEPTED',
           description: '',
           createdAt: '2026-10-25T12:00:00.000Z',
         },
@@ -343,7 +350,7 @@ describe('OpportunityDetail', () => {
 
   it('disables transitions forbidden by the same backend state machine', () => {
     mocks.useOpportunity.mockReturnValue({
-      data: { ...opportunity, status: 'ACEITA' },
+      data: { ...opportunity, status: 'ACCEPTED' },
       isError: false,
       isLoading: false,
     })

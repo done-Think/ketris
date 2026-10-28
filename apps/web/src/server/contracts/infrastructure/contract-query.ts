@@ -1,53 +1,53 @@
-export const usuarioRefSelect = { select: { id: true, nome: true } } as const
+export const userReferenceSelect = { select: { id: true, name: true } } as const
 
 export const contractInclude = {
-  imovel: {
+  property: {
     select: {
-      titulo: true,
-      endereco: { select: { logradouro: true, bairro: true, cidade: true } },
+      title: true,
+      address: { select: { street: true, neighborhood: true, city: true } },
     },
   },
-  ativadoPor: usuarioRefSelect,
-  criadoPor: usuarioRefSelect,
-  canceladoPor: usuarioRefSelect,
-  encerradoPor: usuarioRefSelect,
-  partes: { include: { assinatura: { include: { assinadaPor: usuarioRefSelect } } } },
-  documentos: { include: { enviadoPor: usuarioRefSelect } },
+  activatedBy: userReferenceSelect,
+  createdBy: userReferenceSelect,
+  canceledBy: userReferenceSelect,
+  closedBy: userReferenceSelect,
+  parties: { include: { signature: { include: { signedBy: userReferenceSelect } } } },
+  documents: { include: { uploadedBy: userReferenceSelect } },
 } as const
 
 import type { Prisma } from '@prisma/client'
 import type { ContractManageScope, ContractReadScope } from '../types/contract-entity'
 
 export function opportunityScopeWhere(scope: ContractManageScope) {
-  return scope.responsibleId ? { responsavelId: scope.responsibleId } : {}
+  return scope.responsibleId ? { responsibleId: scope.responsibleId } : {}
 }
 
-function contractScopeWhere(scope: ContractManageScope): Prisma.ContratoWhereInput {
+function contractScopeWhere(scope: ContractManageScope): Prisma.ContractWhereInput {
   return scope.responsibleId
     ? {
         OR: [
-          { imovel: { responsavelId: scope.responsibleId } },
-          { oportunidadeOrigem: { responsavelId: scope.responsibleId } },
+          { property: { responsibleId: scope.responsibleId } },
+          { sourceOpportunity: { responsibleId: scope.responsibleId } },
         ],
       }
     : {}
 }
 
-export function contractReadWhere(scope: ContractReadScope): Prisma.ContratoWhereInput {
+export function contractReadWhere(scope: ContractReadScope): Prisma.ContractWhereInput {
   if (scope.kind === 'party') {
     return {
-      partes: {
+      parties: {
         some: {
-          papel: 'LOCATARIO',
-          usuarioId: scope.userId,
-          usuario: { ativo: true, papel: 'RENTER' },
+          role: 'RENTER',
+          userId: scope.userId,
+          user: { active: true, role: 'RENTER' },
         },
       },
     }
   }
 
   if (scope.kind === 'propertyOwner') {
-    return { tenantId: scope.tenantId, imovel: { proprietarioId: scope.ownerId } }
+    return { tenantId: scope.tenantId, property: { ownerId: scope.ownerId } }
   }
 
   return { tenantId: scope.tenantId, ...contractScopeWhere(scope) }

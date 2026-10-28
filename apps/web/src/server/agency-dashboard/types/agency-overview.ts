@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 
 export interface AgencyOverviewKpis {
   portfolioCount: number
@@ -56,5 +56,5 @@ export interface AgencyOverview {
 
 export interface GetAgencyOverviewInput {
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }

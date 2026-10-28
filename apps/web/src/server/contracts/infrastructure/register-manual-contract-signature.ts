@@ -22,76 +22,79 @@ export function registerManualContractSignature(
   evidence: ContractManualSignatureEvidence,
 ) {
   return runManagedContractMutation(contractId, scope, async (tx, contract) => {
-    if (['ATIVO', 'ENCERRADO', 'CANCELADO'].includes(contract.status))
+    if (['ACTIVE', 'CLOSED', 'CANCELED'].includes(contract.status))
       throw new ContractTransitionNotAllowedError()
-    const party = contract.partes.find((candidate) => candidate.id === partyId)
+    const party = contract.parties.find((candidate) => candidate.id === partyId)
     if (!party) throw new ContractPartyNotFoundError()
-    if (party.assinatura?.status === 'ASSINADA') throw new ContractPartyAlreadySignedError()
+    if (party.signature?.status === 'SIGNED') throw new ContractPartyAlreadySignedError()
     if (
-      !contract.partes.some((candidate) => candidate.papel === 'LOCADOR') ||
-      !contract.partes.some((candidate) => candidate.papel === 'LOCATARIO')
+      !contract.parties.some((candidate) => candidate.role === 'LANDLORD') ||
+      !contract.parties.some((candidate) => candidate.role === 'RENTER')
     )
       throw new ContractTransitionNotAllowedError()
-    const document = contract.documentos.find((candidate) => candidate.id === evidence.documentId)
+    const document = contract.documents.find((candidate) => candidate.id === evidence.documentId)
     if (!document) throw new ContractDocumentNotFoundError()
     if (
       !document.objectKey ||
       !document.sha256 ||
       !/^[a-f0-9]{64}$/.test(document.sha256) ||
-      !document.tamanhoBytes ||
-      document.tamanhoBytes > CONTRACT_DOCUMENT_MAX_BYTES
+      !document.sizeBytes ||
+      document.sizeBytes > CONTRACT_DOCUMENT_MAX_BYTES
     )
       throw new ContractEvidenceRequiredError()
-    if (document.revisaoContrato !== contract.revisaoDados)
+    if (document.contractRevision !== contract.dataRevision)
       throw new ContractDocumentOutdatedError()
     const signature = {
-      status: 'ASSINADA' as const,
-      assinadaEm: new Date(),
-      assinadaPorId: scope.actorId,
-      metodo: 'MANUAL' as const,
-      documentoId: document.id,
-      sha256Documento: document.sha256,
-      ipRegistro: evidence.clientIp,
-      userAgentRegistro: evidence.userAgent?.slice(0, 512) ?? null,
+      status: 'SIGNED' as const,
+      signedAt: new Date(),
+      signedById: scope.actorId,
+      method: 'MANUAL' as const,
+      documentId: document.id,
+      documentSha256: document.sha256,
+      registeredIp: evidence.clientIp,
+      registeredUserAgent: evidence.userAgent?.slice(0, 512) ?? null,
     }
-    if (party.assinatura) {
-      const changed = await tx.assinatura.updateMany({
+    if (party.signature) {
+      const changed = await tx.contractSignature.updateMany({
         where: {
-          id: party.assinatura.id,
-          parteContratoId: partyId,
-          status: 'PENDENTE',
-          parteContrato: { contratoId: contractId, contrato: { tenantId: scope.tenantId } },
+          id: party.signature.id,
+          contractPartyId: partyId,
+          status: 'PENDING',
+          contractParty: { contractId: contractId, contract: { tenantId: scope.tenantId } },
         },
         data: signature,
       })
       if (!changed.count) throw new ContractPartyAlreadySignedError()
-    } else await tx.assinatura.create({ data: { parteContratoId: partyId, ...signature } })
-    const parties = await tx.parteContrato.findMany({
-      where: { contratoId: contractId, contrato: { tenantId: scope.tenantId } },
-      select: { assinatura: { select: { status: true } } },
+    } else await tx.contractSignature.create({ data: { contractPartyId: partyId, ...signature } })
+    const parties = await tx.contractParty.findMany({
+      where: { contractId: contractId, contract: { tenantId: scope.tenantId } },
+      select: { signature: { select: { status: true } } },
     })
-    const activate = parties.every((candidate) => candidate.assinatura?.status === 'ASSINADA')
+    const activate = parties.every((candidate) => candidate.signature?.status === 'SIGNED')
     if (activate) {
-      const property = await tx.imovel.findFirstOrThrow({
-        where: { id: contract.imovelId, tenantId: scope.tenantId },
-        select: { finalidade: true },
+      const property = await tx.property.findFirstOrThrow({
+        where: { id: contract.propertyId, tenantId: scope.tenantId },
+        select: { purpose: true },
       })
-      await tx.contrato.update({
+      await tx.contract.update({
         where: { id: contractId, tenantId: scope.tenantId },
-        data: { status: 'ATIVO', ativadoEm: new Date(), ativadoPorId: scope.actorId },
+        data: { status: 'ACTIVE', activatedAt: new Date(), activatedById: scope.actorId },
       })
-      await tx.imovel.update({
-        where: { id: contract.imovelId, tenantId: scope.tenantId },
-        data: { status: property.finalidade === 'ALUGUEL' ? 'RENTED' : 'SOLD' },
+      await tx.property.update({
+        where: { id: contract.propertyId, tenantId: scope.tenantId },
+        data: {
+          status: property.purpose === 'RENT' ? 'RENTED' : 'SOLD',
+          updatedById: scope.actorId,
+        },
       })
       await insertCharge(tx, {
         tenantId: scope.tenantId,
         contractId,
         description: null,
-        type: 'A_RECEBER',
-        amount: contract.valor,
-        dueDate: computeNextDueDate(contract.diaVencimento, new Date()),
-        status: 'PENDENTE',
+        type: 'RECEIVABLE',
+        amount: contract.amount,
+        dueDate: computeNextDueDate(contract.dueDay, new Date()),
+        status: 'PENDING',
         createdById: scope.actorId,
         actorType: 'SYSTEM',
       })
@@ -103,7 +106,7 @@ export function registerManualContractSignature(
       action: 'MANUAL_SIGNATURE_REGISTERED',
       changedFields: activate ? ['parties.signature', 'status'] : ['parties.signature'],
       fromStatus: contract.status,
-      toStatus: activate ? 'ATIVO' : contract.status,
+      toStatus: activate ? 'ACTIVE' : contract.status,
       documentId: document.id,
     })
     return readContractAfterWrite(tx, contractId, scope.tenantId, protector)

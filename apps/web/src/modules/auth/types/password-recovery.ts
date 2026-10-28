@@ -1,5 +1,5 @@
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { verifyPasswordResetCodeResponseSchema } from '@server/auth/schemas/password-reset-code.schema'
+import type { VerifyPasswordResetCodeResponseDTO } from '@shared/types/generated/auth/http'
 
 import type { FormEventHandler } from 'react'
 import type { Control } from 'react-hook-form'
@@ -59,7 +59,7 @@ export interface ResetPasswordInput {
 
 export type RecoveryStep = 'request' | 'code' | 'tenant' | 'newPassword' | 'done'
 
-export type VerifyRecoveryResponse = z.infer<typeof verifyPasswordResetCodeResponseSchema>
+export type VerifyRecoveryResponse = VerifyPasswordResetCodeResponseDTO
 export type RecoveryTenant = Extract<
   VerifyRecoveryResponse,
   { outcome: 'SELECT_TENANT' }

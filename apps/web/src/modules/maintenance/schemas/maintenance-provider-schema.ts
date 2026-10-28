@@ -1,7 +1,11 @@
 import type { SchemaMessageTranslator } from '@shared/types'
 import { z } from 'zod'
 
-export function createMaintenanceProviderSchema(t: SchemaMessageTranslator) {
+export function createMaintenanceProviderSchema(
+  t: SchemaMessageTranslator<
+    'emailInvalid' | 'emailTooLong' | 'nameTooLong' | 'notesTooLong' | 'phoneTooLong' | 'required'
+  >,
+) {
   return z.object({
     name: z.string().trim().min(1, t('required')).max(200, t('nameTooLong')),
     phone: z.string().trim().max(50, t('phoneTooLong')),

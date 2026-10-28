@@ -41,7 +41,7 @@ describe('GetDashboardOverviewUseCase', () => {
     const overview = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'agent-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
     })
 
     expect(overview.metrics).toEqual({
@@ -70,7 +70,7 @@ describe('GetDashboardOverviewUseCase', () => {
     const useCase = new GetDashboardOverviewUseCase(repository, () => now)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorId: 'renter-1', actorPapel: 'RENTER' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorId: 'renter-1', actorRole: 'RENTER' }),
     ).rejects.toBeInstanceOf(ForbiddenError)
     expect(repository.countActiveLeads).not.toHaveBeenCalled()
   })

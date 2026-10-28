@@ -15,7 +15,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   const media = await propertiesContainer.uploadPropertyMediaUseCase.execute({
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     filename: file.name,
     contentType: file.type,
     body,

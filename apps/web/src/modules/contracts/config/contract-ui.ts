@@ -16,16 +16,16 @@ export const createContractSteps: CreateContractStep[] = [
 ]
 
 export const contractStatusOptions: ContractStatus[] = [
-  'RASCUNHO',
-  'EM_REVISAO',
-  'AGUARDANDO_ASSINATURA',
-  'ASSINADO',
-  'ATIVO',
-  'ENCERRADO',
-  'CANCELADO',
+  'DRAFT',
+  'IN_REVIEW',
+  'AWAITING_SIGNATURE',
+  'SIGNED',
+  'ACTIVE',
+  'CLOSED',
+  'CANCELED',
 ]
 
-export const contractTypeOptions: ContractType[] = ['RESIDENCIAL', 'COMERCIAL', 'TEMPORADA']
+export const contractTypeOptions: ContractType[] = ['RESIDENTIAL', 'COMMERCIAL', 'SEASONAL']
 
 export const contractTypeFilterOptions: Array<ContractsFiltersFormValues['type']> = [
   'ALL',
@@ -36,9 +36,9 @@ export const contractPeriodOptions = ['ALL', 'THIS_MONTH', 'NEXT_90_DAYS'] as co
 
 export const contractFilterTabs: ContractFilterTab[] = [
   { label: 'ALL', status: 'ALL', period: 'ALL' },
-  { label: 'active', status: 'ATIVO', period: 'ALL' },
+  { label: 'active', status: 'ACTIVE', period: 'ALL' },
   { label: 'expiring90', status: 'ALL', period: 'NEXT_90_DAYS' },
-  { label: 'closed', status: 'ENCERRADO', period: 'ALL' },
+  { label: 'closed', status: 'CLOSED', period: 'ALL' },
 ]
 
 export const contractActionMenuOptions: Record<ContractActionMenuKey, ContractActionMenuOption[]> =

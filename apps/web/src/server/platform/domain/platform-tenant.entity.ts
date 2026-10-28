@@ -28,7 +28,7 @@ export function toPlatformTenantResponse(
 ): PlatformTenantResponse {
   return {
     id: tenant.id,
-    name: tenant.nome,
+    name: tenant.name,
     slug: tenant.slug,
     accountType: tenant.accountType,
     status: tenant.status,

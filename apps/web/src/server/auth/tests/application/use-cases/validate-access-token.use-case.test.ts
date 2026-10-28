@@ -8,17 +8,17 @@ import type { User } from '../../../domain/user.entity'
 const user: User = {
   id: 'user-1',
   tenantId: 'tenant-1',
-  nome: 'Ana',
+  name: 'Ana',
   email: 'ana@example.test',
-  senhaHash: 'hash',
-  papel: 'AGENT',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash',
+  role: 'AGENT',
+  active: true,
+  membershipApprovedAt: new Date(),
   tenantStatus: 'ACTIVE',
   emailVerifiedAt: new Date(),
   sessionVersion: 2,
 }
-const payload = { sub: user.id, tenantId: user.tenantId, papel: user.papel, sessionVersion: 2 }
+const payload = { sub: user.id, tenantId: user.tenantId, role: user.role, sessionVersion: 2 }
 
 function buildUseCase(currentUser: User | null, claims = payload) {
   const users = { findById: vi.fn().mockResolvedValue(currentUser) } as unknown as UserRepository
@@ -38,13 +38,13 @@ describe('ValidateAccessTokenUseCase', () => {
 
   it.each([
     null,
-    { ...user, ativo: false },
+    { ...user, active: false },
     { ...user, tenantStatus: 'SUSPENDED' as const },
     { ...user, tenantStatus: 'CANCELED' as const },
-    { ...user, vinculoAprovadoEm: null },
+    { ...user, membershipApprovedAt: null },
     { ...user, emailVerifiedAt: null },
     { ...user, tenantId: 'other-tenant' },
-    { ...user, papel: 'RENTER' as const },
+    { ...user, role: 'RENTER' as const },
     { ...user, sessionVersion: 3 },
   ])(
     'rejects a session when the current account no longer permits access: %j',

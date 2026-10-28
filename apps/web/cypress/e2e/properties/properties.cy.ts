@@ -85,7 +85,7 @@ describe(
       cy.wait('@createProperty').then(({ response }) => {
         expect(response?.statusCode).to.eq(201)
         expect(response?.body.property.status).to.eq('DRAFT')
-        expect(response?.body.property.valores.valor).to.eq(2500.5)
+        expect(response?.body.property.values.price).to.eq(2500.5)
         cy.location('pathname').should(
           'include',
           `/dashboard/properties/${response?.body.property.id}`,

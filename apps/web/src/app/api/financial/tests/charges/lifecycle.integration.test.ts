@@ -19,7 +19,7 @@ import { GET as listCharges, POST as createCharge } from '../../charges/route'
 import { GET as getSummary } from '../../summary/route'
 import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
-type Papel = 'OWNER' | 'RENTER' | 'PROPERTY_OWNER'
+type UserRole = 'OWNER' | 'RENTER' | 'PROPERTY_OWNER'
 
 const tokenService = new JoseTokenService()
 const pdf = Buffer.from('%PDF-1.7\ncomprovante de pagamento\n%%EOF')
@@ -31,24 +31,24 @@ let tenantId: string
 let contractId: string
 const tokens = {} as Record<'owner' | 'renter' | 'propertyOwner' | 'otherOwner', string>
 
-async function user(tenant: string, papel: Papel) {
-  const created = await prisma.usuario.create({
+async function user(tenant: string, role: UserRole) {
+  const created = await prisma.user.create({
     data: {
       tenantId: tenant,
-      nome: `Usuário ${papel}`,
-      email: `financial-${papel.toLowerCase()}-${randomUUID()}@ketris.dev`,
-      senhaHash: 'hash-fake',
-      papel,
+      name: `Usuário ${role}`,
+      email: `financial-${role.toLowerCase()}-${randomUUID()}@ketris.dev`,
+      passwordHash: 'hash-fake',
+      role,
     },
   })
   const token = await tokenService.sign({
     id: created.id,
     tenantId: created.tenantId,
-    nome: created.nome,
+    name: created.name,
     email: created.email,
-    papel: created.papel,
-    ativo: created.ativo,
-    vinculoAprovadoEm: created.vinculoAprovadoEm,
+    role: created.role,
+    active: created.active,
+    membershipApprovedAt: created.membershipApprovedAt,
   })
   return { user: created, token }
 }
@@ -67,10 +67,10 @@ async function newCharge(body: Record<string, unknown> = {}) {
   const response = await createCharge(
     request(tokens.owner, 'charges', 'POST', {
       contractId,
-      type: 'A_RECEBER',
+      type: 'RECEIVABLE',
       amount: 1500,
       dueDate: '2099-11-05',
-      status: 'PENDENTE',
+      status: 'PENDING',
       ...body,
     }),
   )
@@ -110,10 +110,10 @@ beforeAll(async () => {
   vi.stubEnv('S3_BUCKET_NAME', 'financial-private-integration')
 
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Tenant Ciclo Financeiro', slug: `financial-cycle-${randomUUID()}` },
+    data: { name: 'Tenant Ciclo Financeiro', slug: `financial-cycle-${randomUUID()}` },
   })
   const other = await prisma.tenant.create({
-    data: { nome: 'Outro Tenant', slug: `financial-other-${randomUUID()}` },
+    data: { name: 'Outro Tenant', slug: `financial-other-${randomUUID()}` },
   })
   tenantId = tenant.id
   tenantIds.push(tenant.id, other.id)
@@ -126,51 +126,51 @@ beforeAll(async () => {
   tokens.propertyOwner = propertyOwner.token
   tokens.otherOwner = (await user(other.id, 'OWNER')).token
 
-  const property = await prisma.imovel.create({
+  const property = await prisma.property.create({
     data: {
       tenantId,
-      responsavelId: owner.user.id,
-      proprietarioId: propertyOwner.user.id,
-      titulo: 'Casa do ciclo',
-      finalidade: 'ALUGUEL',
-      tipo: 'CASA',
-      valor: 1500,
+      responsibleId: owner.user.id,
+      ownerId: propertyOwner.user.id,
+      title: 'Casa do ciclo',
+      purpose: 'RENT',
+      type: 'HOUSE',
+      price: 1500,
       status: 'RENTED',
     },
   })
-  const opportunity = await prisma.oportunidade.create({
+  const opportunity = await prisma.opportunity.create({
     data: {
       tenantId,
-      imovelId: property.id,
-      responsavelId: await propertyResponsibleId(prisma, property.id),
-      interessadoNome: 'Locatário',
-      interessadoEmail: 'locatario@example.com',
-      valorProposto: 1500,
-      status: 'ACEITA',
+      propertyId: property.id,
+      responsibleId: await propertyResponsibleId(prisma, property.id),
+      interestedName: 'Locatário',
+      interestedEmail: 'locatario@example.com',
+      proposedValue: 1500,
+      status: 'ACCEPTED',
     },
   })
-  const contract = await prisma.contrato.create({
+  const contract = await prisma.contract.create({
     data: {
       tenantId,
-      imovelId: property.id,
-      oportunidadeOrigemId: opportunity.id,
-      codigo: `CTR-${randomUUID()}`,
-      tipo: 'RESIDENCIAL',
-      valor: 1500,
-      diaVencimento: 5,
-      dataInicio: new Date('2026-10-01'),
-      dataFim: new Date('2027-10-01'),
-      indiceReajuste: 'IGPM',
-      tipoGarantia: 'CAUCAO',
-      status: 'ATIVO',
-      partes: {
+      propertyId: property.id,
+      sourceOpportunityId: opportunity.id,
+      code: `CTR-${randomUUID()}`,
+      type: 'RESIDENTIAL',
+      amount: 1500,
+      dueDay: 5,
+      startDate: new Date('2026-10-01'),
+      endDate: new Date('2027-10-01'),
+      adjustmentIndex: 'IGPM',
+      guaranteeType: 'DEPOSIT',
+      status: 'ACTIVE',
+      parties: {
         create: [
           {
-            papel: 'LOCATARIO',
-            nome: 'Locatário',
+            role: 'RENTER',
+            name: 'Locatário',
             cpf: '22222222222',
             email: 'locatario@example.com',
-            usuarioId: renter.user.id,
+            userId: renter.user.id,
           },
         ],
       },
@@ -202,7 +202,7 @@ describe('ciclo de vida da cobrança (integração)', () => {
     expect(paid.status).toBe(200)
     const paidCharge = (await paid.json()).charge
     expect(paidCharge).toMatchObject({
-      status: 'PAGA',
+      status: 'PAID',
       receipt: { name: 'pix.pdf', contentType: 'application/pdf', size: pdf.length },
     })
     const receiptId = paidCharge.receipt.id as string
@@ -230,7 +230,7 @@ describe('ciclo de vida da cobrança (integração)', () => {
     )
     expect(reversed.status).toBe(200)
     expect((await reversed.json()).charge).toMatchObject({
-      status: 'PENDENTE',
+      status: 'PENDING',
       paidAt: null,
       paymentMethod: null,
       receipt: null,
@@ -259,8 +259,8 @@ describe('ciclo de vida da cobrança (integração)', () => {
     ])
     expect(events[0]).toMatchObject({
       reason: 'Pix devolvido pelo banco',
-      fromStatus: 'PAGA',
-      toStatus: 'PENDENTE',
+      fromStatus: 'PAID',
+      toStatus: 'PENDING',
       receipt: { id: receiptId },
       actorName: 'Usuário OWNER',
     })
@@ -294,9 +294,9 @@ describe('ciclo de vida da cobrança (integração)', () => {
 
     expect(response.status).toBe(422)
     expect((await response.json()).error.code).toBe('CHARGE_RECEIPT_INVALID')
-    expect(await prisma.cobranca.findUniqueOrThrow({ where: { id: charge.id } })).toMatchObject({
-      status: 'PENDENTE',
-      comprovanteAtualId: null,
+    expect(await prisma.charge.findUniqueOrThrow({ where: { id: charge.id } })).toMatchObject({
+      status: 'PENDING',
+      currentReceiptId: null,
     })
   })
 
@@ -318,7 +318,7 @@ describe('ciclo de vida da cobrança (integração)', () => {
   })
 
   it('cancela com motivo obrigatório e não reabre', async () => {
-    const charge = await newCharge({ status: 'AGENDADA' })
+    const charge = await newCharge({ status: 'SCHEDULED' })
 
     const withoutReason = await cancelCharge(
       request(tokens.owner, `charges/${charge.id}/cancel`, 'POST', { reason: '' }),
@@ -334,7 +334,7 @@ describe('ciclo de vida da cobrança (integração)', () => {
     )
     expect(cancelled.status).toBe(200)
     expect((await cancelled.json()).charge).toMatchObject({
-      status: 'CANCELADA',
+      status: 'CANCELED',
       cancellationReason: 'Contrato renegociado',
     })
 
@@ -360,20 +360,20 @@ describe('ciclo de vida da cobrança (integração)', () => {
 
   it('marca como atrasada pela data, no filtro e nos KPIs', async () => {
     const late = await newCharge({ dueDate: '2020-01-05', amount: 700 })
-    await newCharge({ dueDate: '2020-01-06', amount: 300, status: 'AGENDADA' })
+    await newCharge({ dueDate: '2020-01-06', amount: 300, status: 'SCHEDULED' })
 
     const detail = await getCharge(request(tokens.owner, `charges/${late.id}`), params(late.id))
-    expect((await detail.json()).charge.status).toBe('ATRASADA')
+    expect((await detail.json()).charge.status).toBe('OVERDUE')
 
     const overdue = await (
-      await listCharges(request(tokens.owner, 'charges?status=ATRASADA'))
+      await listCharges(request(tokens.owner, 'charges?status=OVERDUE'))
     ).json()
     expect(overdue.items.map((item: { status: string }) => item.status)).toEqual([
-      'ATRASADA',
-      'ATRASADA',
+      'OVERDUE',
+      'OVERDUE',
     ])
     const pending = await (
-      await listCharges(request(tokens.owner, 'charges?status=PENDENTE&pageSize=100'))
+      await listCharges(request(tokens.owner, 'charges?status=PENDING&pageSize=100'))
     ).json()
     expect(pending.items.map((item: { id: string }) => item.id)).not.toContain(late.id)
 
@@ -382,7 +382,7 @@ describe('ciclo de vida da cobrança (integração)', () => {
   })
 
   it('o banco recusa apagar um contrato que tenha cobranças', async () => {
-    await expect(prisma.contrato.delete({ where: { id: contractId } })).rejects.toThrow()
+    await expect(prisma.contract.delete({ where: { id: contractId } })).rejects.toThrow()
   })
 
   it('numera as cobranças por tenant', async () => {
@@ -390,10 +390,10 @@ describe('ciclo de vida da cobrança (integração)', () => {
     const response = await createCharge(
       request(tokens.otherOwner, 'charges', 'POST', {
         description: 'Primeira do outro tenant',
-        type: 'A_PAGAR',
+        type: 'PAYABLE',
         amount: 10,
         dueDate: '2099-01-01',
-        status: 'PENDENTE',
+        status: 'PENDING',
       }),
     )
     const foreign = (await response.json()).charge
@@ -404,14 +404,14 @@ describe('ciclo de vida da cobrança (integração)', () => {
 
   it('filtra por mês de vencimento, conta por status e exporta o mês em CSV', async () => {
     await newCharge({ dueDate: '2091-03-10', amount: 100 })
-    await newCharge({ dueDate: '2091-03-20', amount: 200.5, status: 'AGENDADA' })
+    await newCharge({ dueDate: '2091-03-20', amount: 200.5, status: 'SCHEDULED' })
     const april = await newCharge({ dueDate: '2091-04-01', amount: 999 })
 
     const list = await (
-      await listCharges(request(tokens.owner, 'charges?dueMonth=2091-03&status=AGENDADA'))
+      await listCharges(request(tokens.owner, 'charges?dueMonth=2091-03&status=SCHEDULED'))
     ).json()
     expect(list.totalCount).toBe(1)
-    expect(list.statusCounts).toMatchObject({ ALL: 2, PENDENTE: 1, AGENDADA: 1, ATRASADA: 0 })
+    expect(list.statusCounts).toMatchObject({ ALL: 2, PENDING: 1, SCHEDULED: 1, OVERDUE: 0 })
 
     const summary = await (await getSummary(request(tokens.owner, 'summary?month=2091-03'))).json()
     expect(summary.monthlyReceivable).toBe(300.5)

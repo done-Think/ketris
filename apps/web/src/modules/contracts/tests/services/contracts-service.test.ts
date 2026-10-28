@@ -10,8 +10,8 @@ describe('ContractsService', () => {
     expect(
       await service.list({
         search: 'Apartamento',
-        status: 'ATIVO',
-        type: 'RESIDENCIAL',
+        status: 'ACTIVE',
+        type: 'RESIDENTIAL',
         page: 2,
         pageSize: 10,
       }),
@@ -19,8 +19,8 @@ describe('ContractsService', () => {
     expect(get).toHaveBeenCalledWith('/contracts', {
       params: {
         search: 'Apartamento',
-        status: 'ATIVO',
-        type: 'RESIDENCIAL',
+        status: 'ACTIVE',
+        type: 'RESIDENTIAL',
         page: '2',
         pageSize: '10',
       },

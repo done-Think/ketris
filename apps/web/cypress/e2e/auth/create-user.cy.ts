@@ -16,7 +16,7 @@ describe('Criar usuário (API)', () => {
           tenantId,
           email: agentEmail,
           password: agentPassword,
-          papel: 'AGENT',
+          role: 'AGENT',
         })
       })
       .then(() =>
@@ -51,7 +51,7 @@ describe('Criar usuário (API)', () => {
       expect(response.body.user.email).to.eq(email)
       expect(response.body.user.tenantId).to.eq(tenantId)
       expect(response.body.user.role).to.eq('AGENT')
-      expect(response.body.user).to.not.have.property('senhaHash')
+      expect(response.body.user).to.not.have.property('passwordHash')
     })
   })
 

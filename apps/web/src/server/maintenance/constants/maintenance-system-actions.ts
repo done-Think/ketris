@@ -18,7 +18,7 @@ export const maintenanceActionActivityCodes: Record<MaintenanceAction['action'],
   approveReplacement: 'PROVIDER_REPLACEMENT_APPROVED',
   rejectReplacement: 'PROVIDER_REPLACEMENT_REJECTED',
 }
-export const maintenanceSystemActionKeys: Record<string, string> = {
+const systemActionKeys = {
   TICKET_CREATED: 'created',
   TICKET_UPDATED: 'updated',
   TICKET_ARCHIVED: 'archived',
@@ -36,4 +36,9 @@ export const maintenanceSystemActionKeys: Record<string, string> = {
   PROVIDER_REPLACEMENT_REJECTED: 'replacementRejected',
   LINKS_REGULARIZED: 'linksRegularized',
   ATTACHMENT_ADDED: 'attachmentAdded',
-}
+} as const
+
+export const maintenanceSystemActionKeys: Record<
+  string,
+  (typeof systemActionKeys)[keyof typeof systemActionKeys]
+> = systemActionKeys

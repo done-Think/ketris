@@ -13,7 +13,7 @@ export class ExportChargesUseCase {
   ) {}
 
   async execute(input: ExportChargesInput): Promise<{ fileName: string; content: string }> {
-    assertCanAccessFinance(input.actorPapel)
+    assertCanAccessFinance(input.actorRole)
 
     const today = calendarDateInTimeZone(this.now())
     const charges = await this.chargeRepository.findForExport(input.actorTenantId, input.month)

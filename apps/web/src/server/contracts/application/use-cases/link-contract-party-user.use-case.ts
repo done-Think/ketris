@@ -17,7 +17,7 @@ export class LinkContractPartyUserUseCase {
   constructor(private readonly transaction: ContractPartyLinkTransaction) {}
 
   async execute(input: LinkContractPartyUserInput): Promise<ContractPartyUserLink> {
-    if (!isAgencyManager(input.actorPapel))
+    if (!isAgencyManager(input.actorRole))
       throw new ForbiddenError(
         'Apenas a gestão da imobiliária pode vincular locatários a contratos.',
       )

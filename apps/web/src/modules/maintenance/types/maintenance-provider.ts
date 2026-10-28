@@ -4,13 +4,15 @@ import type {
   MaintenanceProvidersFiltersDTO,
   MaintenanceProvidersResponseDTO,
   UpdateMaintenanceProviderRequestDTO,
-} from '@server/maintenance/types/dto'
+} from '@shared/types/generated/maintenance/dto'
 import type { z } from 'zod'
 import type { createMaintenanceProviderSchema } from '../schemas/maintenance-provider-schema'
 
 export type MaintenanceProviderOption = MaintenanceProviderDTO
 export type MaintenanceProvidersResponse = MaintenanceProvidersResponseDTO
-export type MaintenanceProviderFilters = MaintenanceProvidersFiltersDTO
+export type MaintenanceProviderFilters = Omit<MaintenanceProvidersFiltersDTO, 'includeInactive'> & {
+  includeInactive?: boolean
+}
 export type CreateMaintenanceProviderPayload = CreateMaintenanceProviderRequestDTO
 export type UpdateMaintenanceProviderPayload = UpdateMaintenanceProviderRequestDTO
 export type MaintenanceProviderFormValues = z.infer<

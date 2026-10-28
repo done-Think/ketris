@@ -15,7 +15,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Use
   const user = await authContainer.approveUserMembershipUseCase.execute({
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     userId: id,
   })
 

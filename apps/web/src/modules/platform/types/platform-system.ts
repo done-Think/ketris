@@ -1,20 +1,9 @@
-export interface ApiErrorTrackingIssue {
-  id: string
-  title: string
-  level: string
-  eventsCount: number
-  lastSeen: string
-  permalink: string
-}
+import type { components } from '@shared/types/generated/api'
+export type ApiErrorTrackingIssue = Extract<
+  components['schemas']['SystemHealthResponse']['errorTracking'],
+  { configured: true; available: true }
+>['issues'][number]
 
-export type ApiErrorTrackingHealth =
-  | { configured: false }
-  | { configured: true; available: false }
-  | { configured: true; available: true; issues: ApiErrorTrackingIssue[] }
+export type ApiErrorTrackingHealth = components['schemas']['SystemHealthResponse']['errorTracking']
 
-export interface ApiSystemHealth {
-  checkedAt: string
-  database: { status: 'up' | 'down'; latencyMs: number | null }
-  serverUptimeSeconds: number
-  errorTracking: ApiErrorTrackingHealth
-}
+export type ApiSystemHealth = components['schemas']['SystemHealthResponse']

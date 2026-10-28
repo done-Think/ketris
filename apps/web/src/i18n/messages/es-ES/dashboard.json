@@ -350,9 +350,9 @@
       "success": "Acción completada.",
       "error": "No se pudo completar la acción.",
       "requestStatuses": {
-        "PENDENTE": "Pendiente",
-        "APROVADA": "Aprobada",
-        "REJEITADA": "Rechazada"
+        "PENDING": "Pendiente",
+        "APPROVED": "Aprobada",
+        "REJECTED": "Rechazada"
       },
       "finish": "Finalizar solicitud",
       "finishConfirmation": "¿Confirma que el problema está resuelto? La solicitud se marcará como resuelta y se conservará su historial.",

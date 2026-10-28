@@ -8,7 +8,7 @@ import {
   PortfolioTransferRequiredError,
   UserNotFoundError,
 } from '../../domain/errors'
-import { toAuthenticatedUser } from '../../domain/user.entity'
+import { toAuthenticatedUser } from '../authenticated-user'
 import type { UserPortfolioReader } from '../ports/user-portfolio-reader.port'
 import type { UserRepository } from '../ports/user-repository.port'
 
@@ -19,7 +19,7 @@ export class DeactivateUserUseCase {
   ) {}
 
   async execute(input: DeactivateUserInput): Promise<DeactivateUserOutput> {
-    if (!isAgencyManager(input.actorPapel)) {
+    if (!isAgencyManager(input.actorRole)) {
       throw new ForbiddenError('Apenas a gestão da imobiliária pode desativar usuários.')
     }
 

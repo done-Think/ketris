@@ -5,36 +5,31 @@ import type { OpportunityStage } from '../types/opportunity-stage'
 
 export const opportunityStages: readonly OpportunityStage[] = [
   {
-    status: 'RASCUNHO',
-    label: 'Prospecção',
+    status: 'DRAFT',
     labelKey: 'draft',
     color: brand.magenta[500],
     softColor: brand.magenta[50],
   },
   {
-    status: 'ENVIADA',
-    label: 'Proposta enviada',
+    status: 'SENT',
     labelKey: 'sent',
     color: brand.semantic.info,
     softColor: supportColor.infoSoft,
   },
   {
-    status: 'EM_NEGOCIACAO',
-    label: 'Negociação',
+    status: 'IN_NEGOTIATION',
     labelKey: 'negotiation',
     color: brand.semantic.warning,
     softColor: supportColor.warningSoft,
   },
   {
-    status: 'ACEITA',
-    label: 'Fechado',
+    status: 'ACCEPTED',
     labelKey: 'accepted',
     color: brand.semantic.success,
     softColor: supportColor.successSoft,
   },
   {
-    status: 'RECUSADA',
-    label: 'Perdido',
+    status: 'REJECTED',
     labelKey: 'rejected',
     color: brand.semantic.error,
     softColor: supportColor.errorSoft,

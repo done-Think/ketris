@@ -11,57 +11,57 @@ import { EmailAlreadyInUseError } from '../domain/errors'
 import { normalizeEmail } from '@server/shared/normalize-email'
 import type { PrismaUserRecord } from '../types/prisma-user'
 
-function toDomainUser(usuario: PrismaUserRecord): User {
+function toDomainUser(user: PrismaUserRecord): User {
   return {
-    id: usuario.id,
-    tenantId: usuario.tenantId,
-    nome: usuario.nome,
-    email: usuario.email,
-    telefone: usuario.telefone,
-    creci: usuario.creci,
-    emailVerifiedAt: usuario.emailVerificadoEm ?? null,
-    sessionVersion: usuario.versaoSessao,
-    senhaHash: usuario.senhaHash,
-    avatarUrl: usuario.avatarUrl,
-    papel: usuario.papel,
-    ativo: usuario.ativo,
-    vinculoAprovadoEm: usuario.vinculoAprovadoEm,
-    tenantStatus: usuario.tenant.status,
-    tenantName: usuario.tenant.nome,
-    tenantSlug: usuario.tenant.slug,
+    id: user.id,
+    tenantId: user.tenantId,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    creci: user.creci,
+    emailVerifiedAt: user.emailVerifiedAt ?? null,
+    sessionVersion: user.sessionVersion,
+    passwordHash: user.passwordHash,
+    avatarUrl: user.avatarUrl,
+    role: user.role,
+    active: user.active,
+    membershipApprovedAt: user.membershipApprovedAt,
+    tenantStatus: user.tenant.status,
+    tenantName: user.tenant.name,
+    tenantSlug: user.tenant.slug,
   }
 }
 
 export class PrismaUserRepository implements UserRepository, UserListRepository {
   async findById(id: string): Promise<User | null> {
-    const usuario = await prisma.usuario.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id },
-      include: { tenant: { select: { status: true, nome: true, slug: true } } },
+      include: { tenant: { select: { status: true, name: true, slug: true } } },
     })
 
-    return usuario ? toDomainUser(usuario) : null
+    return user ? toDomainUser(user) : null
   }
 
   async findByEmail(email: string, tenantId?: string): Promise<User | null> {
-    const usuarios = await prisma.usuario.findMany({
+    const users = await prisma.user.findMany({
       where: { email: normalizeEmail(email), tenantId },
-      include: { tenant: { select: { status: true, nome: true, slug: true } } },
+      include: { tenant: { select: { status: true, name: true, slug: true } } },
       take: 2,
     })
-    return usuarios.length === 1 ? toDomainUser(usuarios[0]) : null
+    return users.length === 1 ? toDomainUser(users[0]) : null
   }
 
   async findManyByEmail(email: string): Promise<User[]> {
-    const usuarios = await prisma.usuario.findMany({
+    const users = await prisma.user.findMany({
       where: { email: normalizeEmail(email) },
-      include: { tenant: { select: { status: true, nome: true, slug: true } } },
+      include: { tenant: { select: { status: true, name: true, slug: true } } },
       orderBy: { id: 'asc' },
     })
-    return usuarios.map(toDomainUser)
+    return users.map(toDomainUser)
   }
 
   async findPageByTenant(tenantId: string, query: UserListQuery): Promise<UserListPage> {
-    const pending = { vinculoAprovadoEm: null }
+    const pending = { membershipApprovedAt: null }
     const where = {
       tenantId,
       ...(query.pendingApproval === undefined
@@ -72,14 +72,14 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
     }
     const [rows, total] = await prisma.$transaction(
       [
-        prisma.usuario.findMany({
+        prisma.user.findMany({
           where,
           orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
           skip: (query.page - 1) * query.pageSize,
           take: query.pageSize,
-          include: { tenant: { select: { status: true, nome: true, slug: true } } },
+          include: { tenant: { select: { status: true, name: true, slug: true } } },
         }),
-        prisma.usuario.count({ where }),
+        prisma.user.count({ where }),
       ],
       { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
     )
@@ -87,32 +87,32 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
   }
 
   async findManyByTenant(tenantId: string): Promise<User[]> {
-    const usuarios = await prisma.usuario.findMany({
+    const users = await prisma.user.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'asc' },
-      include: { tenant: { select: { status: true, nome: true, slug: true } } },
+      include: { tenant: { select: { status: true, name: true, slug: true } } },
     })
 
-    return usuarios.map(toDomainUser)
+    return users.map(toDomainUser)
   }
 
   async create(newUser: NewUser): Promise<User> {
-    const usuario = await prisma
+    const user = await prisma
       .$transaction(async (tx) => {
-        const created = await tx.usuario.create({
-          include: { tenant: { select: { status: true, nome: true, slug: true } } },
+        const created = await tx.user.create({
+          include: { tenant: { select: { status: true, name: true, slug: true } } },
           data: {
             tenantId: newUser.tenantId,
-            nome: newUser.nome,
+            name: newUser.name,
             email: normalizeEmail(newUser.email),
-            telefone: newUser.telefone,
+            phone: newUser.phone,
             creci: newUser.creci,
-            termosAceitosEm: newUser.termosAceitosEm,
-            emailVerificadoEm: newUser.emailVerifiedAt ?? null,
-            senhaHash: newUser.senhaHash,
-            papel: newUser.papel,
-            ...(newUser.vinculoAprovadoEm !== undefined
-              ? { vinculoAprovadoEm: newUser.vinculoAprovadoEm }
+            termsAcceptedAt: newUser.termsAcceptedAt,
+            emailVerifiedAt: newUser.emailVerifiedAt ?? null,
+            passwordHash: newUser.passwordHash,
+            role: newUser.role,
+            ...(newUser.membershipApprovedAt !== undefined
+              ? { membershipApprovedAt: newUser.membershipApprovedAt }
               : {}),
           },
         })
@@ -130,89 +130,89 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
         throw error
       })
 
-    return toDomainUser(usuario)
+    return toDomainUser(user)
   }
 
   async update(id: string, changes: UserUpdate): Promise<User> {
     return prisma.$transaction(async (tx) => {
-      const credentialsChanged = Boolean(changes.senhaHash || changes.email || changes.papel)
-      const usuario = await tx.usuario.update({
-        include: { tenant: { select: { status: true, nome: true, slug: true } } },
+      const credentialsChanged = Boolean(changes.passwordHash || changes.email || changes.role)
+      const user = await tx.user.update({
+        include: { tenant: { select: { status: true, name: true, slug: true } } },
         where: { id, tenantId: changes.tenantId },
         data: {
-          nome: changes.nome,
+          name: changes.name,
           email: changes.email ? normalizeEmail(changes.email) : undefined,
           avatarUrl: changes.avatarUrl,
-          papel: changes.papel,
-          senhaHash: changes.senhaHash,
-          telefone: changes.telefone,
+          role: changes.role,
+          passwordHash: changes.passwordHash,
+          phone: changes.phone,
           creci: changes.creci,
-          versaoSessao: credentialsChanged ? { increment: 1 } : undefined,
+          sessionVersion: credentialsChanged ? { increment: 1 } : undefined,
         },
       })
       if (credentialsChanged) {
         await tx.refreshToken.updateMany({
-          where: { userId: id, tenantId: usuario.tenantId, revokedAt: null },
+          where: { userId: id, tenantId: user.tenantId, revokedAt: null },
           data: { revokedAt: new Date() },
         })
       }
       const changedFields = [
-        ...(changes.nome !== undefined ? ['name'] : []),
+        ...(changes.name !== undefined ? ['name'] : []),
         ...(changes.email !== undefined ? ['email'] : []),
-        ...(changes.telefone !== undefined ? ['phone'] : []),
+        ...(changes.phone !== undefined ? ['phone'] : []),
         ...(changes.creci !== undefined ? ['creci'] : []),
         ...(changes.avatarUrl !== undefined ? ['avatarUrl'] : []),
-        ...(changes.papel !== undefined ? ['role'] : []),
-        ...(changes.senhaHash !== undefined ? ['password'] : []),
+        ...(changes.role !== undefined ? ['role'] : []),
+        ...(changes.passwordHash !== undefined ? ['password'] : []),
       ]
       await recordUserAudit(tx, {
         userId: id,
-        tenantId: usuario.tenantId,
+        tenantId: user.tenantId,
         action: 'UPDATED',
         actor: changes.auditActor,
         changedFields,
       })
-      return toDomainUser(usuario)
+      return toDomainUser(user)
     })
   }
 
   async deactivate(id: string, tenantId?: string, actor?: UserAuditActor): Promise<User> {
     return prisma.$transaction(async (tx) => {
-      const usuario = await tx.usuario.update({
-        include: { tenant: { select: { status: true, nome: true, slug: true } } },
+      const user = await tx.user.update({
+        include: { tenant: { select: { status: true, name: true, slug: true } } },
         where: { id, tenantId },
-        data: { ativo: false, versaoSessao: { increment: 1 } },
+        data: { active: false, sessionVersion: { increment: 1 } },
       })
       await tx.refreshToken.updateMany({
-        where: { userId: id, tenantId: usuario.tenantId, revokedAt: null },
+        where: { userId: id, tenantId: user.tenantId, revokedAt: null },
         data: { revokedAt: new Date() },
       })
       await recordUserAudit(tx, {
         userId: id,
-        tenantId: usuario.tenantId,
+        tenantId: user.tenantId,
         action: 'DEACTIVATED',
         actor,
         changedFields: ['active'],
       })
-      return toDomainUser(usuario)
+      return toDomainUser(user)
     })
   }
 
   async approveMembership(id: string, tenantId?: string, actor?: UserAuditActor): Promise<User> {
     return prisma.$transaction(async (tx) => {
-      const usuario = await tx.usuario.update({
-        include: { tenant: { select: { status: true, nome: true, slug: true } } },
+      const user = await tx.user.update({
+        include: { tenant: { select: { status: true, name: true, slug: true } } },
         where: { id, tenantId },
-        data: { vinculoAprovadoEm: new Date() },
+        data: { membershipApprovedAt: new Date() },
       })
       await recordUserAudit(tx, {
         userId: id,
-        tenantId: usuario.tenantId,
+        tenantId: user.tenantId,
         action: 'MEMBERSHIP_APPROVED',
         actor,
         changedFields: ['pendingApproval'],
       })
-      return toDomainUser(usuario)
+      return toDomainUser(user)
     })
   }
 }

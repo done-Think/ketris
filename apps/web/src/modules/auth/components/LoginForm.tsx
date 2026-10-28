@@ -42,6 +42,7 @@ import type { LoginFormProps } from '../types/login'
 
 export function LoginForm({ callbackUrl }: LoginFormProps) {
   const t = useTranslations('auth.login')
+  const validation = useTranslations('validation')
   const registrationText = useTranslations('auth.registerDetails.pendingApproval')
   const [showPassword, setShowPassword] = useState(false)
   const {
@@ -54,7 +55,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
     resetLogin,
   } = useLogin(callbackUrl)
   const styles = getStyles(Boolean(error))
-  const loginSchema = useMemo(() => createLoginSchema((key) => t(`errors.${key}`)), [t])
+  const loginSchema = useMemo(() => createLoginSchema(validation), [validation])
   const {
     control,
     handleSubmit,

@@ -125,13 +125,13 @@
       "parkingSpaces": "PLAZAS",
       "area": "ÁREA",
       "condominium": "GASTOS COMUNES",
-      "iptu": "IMPUESTO"
+      "propertyTax": "IMPUESTO"
     },
     "pricing": {
       "rent": "ALQUILER",
       "sale": "VENTA",
       "condominium": "GASTOS COMUNES",
-      "iptu": "IMPUESTO",
+      "propertyTax": "IMPUESTO",
       "administrationFee": "TASA DE ADMINISTRACIÓN",
       "securityDeposit": "GARANTÍA",
       "lastAdjustment": "ÚLTIMO AJUSTE"
@@ -193,7 +193,7 @@
       "saleValue": "Valor de venta",
       "referenceValue": "Valor de referencia del inmueble",
       "condominium": "Gastos comunes",
-      "iptu": "Impuesto mensual",
+      "propertyTax": "Impuesto mensual",
       "securityDeposit": "Garantía",
       "commission": "Comisión",
       "commercialTerms": "Condición comercial",

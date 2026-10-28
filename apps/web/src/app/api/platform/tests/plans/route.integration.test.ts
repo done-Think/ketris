@@ -22,18 +22,18 @@ describe('/api/platform/plans (integração)', () => {
   beforeAll(async () => {
     const actor = await prisma.platformAdmin.create({
       data: {
-        nome: 'Ator Planos',
+        name: 'Ator Planos',
         email: `ator-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
+        passwordHash: 'hash-fake',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
       role: 'ADMIN',
-      ativo: true,
+      active: true,
     })
     originalIndividualPlan = await prisma.platformPlan.findUniqueOrThrow({
       where: { accountType: 'INDIVIDUAL' },
@@ -115,9 +115,9 @@ describe('/api/platform/plans (integração)', () => {
   it('retorna 403 para platform admin sem a função ADMIN e não altera o preço', async () => {
     const admin = await prisma.platformAdmin.create({
       data: {
-        nome: 'Agente Planos',
+        name: 'Agente Planos',
         email: `agente-${randomUUID()}@ketris.dev`,
-        senhaHash: 'x',
+        passwordHash: 'x',
         role: 'AGENT',
       },
     })

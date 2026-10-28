@@ -1,5 +1,7 @@
 'use client'
 
+import { styles } from '@shared/styles/property-card.styles'
+
 import { Avatar, Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import BathtubOutlinedIcon from '@mui/icons-material/BathtubOutlined'
@@ -9,7 +11,7 @@ import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import { componentText, iconSize, motion, radius, shadows } from '@shared/theme/tokens'
+import { componentText } from '@shared/theme/tokens'
 import type { PropertyCardProps, PropertyFeatureKey } from '@shared/types'
 import type { LocalizedHref } from '@shared/types/localized-href'
 import { PillBadge } from './PillBadge'
@@ -39,61 +41,24 @@ export function PropertyCard({ property }: PropertyCardProps) {
   const t = useTranslations('marketplace.publicProfile.propertyCard')
 
   return (
-    <Card
-      component={Link}
-      href={getPropertyCardHref(property.href)}
-      sx={{
-        overflow: 'hidden',
-        borderRadius: `${radius.sm}px`,
-        color: 'inherit',
-        textDecoration: 'none',
-        boxShadow: shadows.propertyCard,
-        transition: motion.transition.card,
-        '&:hover': {
-          boxShadow: shadows.propertyCardHover,
-          transform: 'translateY(-4px)',
-        },
-      }}
-    >
-      <Box
-        sx={{
-          position: 'relative',
-          height: 175,
-          backgroundImage: `url("${property.image}")`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 12,
-            left: 12,
-          }}
-        >
+    <Card component={Link} href={getPropertyCardHref(property.href)} sx={styles.card}>
+      <Box sx={styles.box(property.image)}>
+        <Box sx={styles.box2}>
           <PillBadge>{t('new')}</PillBadge>
         </Box>
       </Box>
-      <CardContent sx={{ p: 2.4 }}>
-        <Typography
-          sx={{
-            color: 'text.secondary',
-            ...componentText.cardEyebrow,
-            mb: 0.6,
-          }}
-        >
-          {property.location}
-        </Typography>
-        <Typography sx={{ ...componentText.cardTitle, mb: 1 }}>{property.title}</Typography>
-        <Typography color="primary" sx={{ ...componentText.cardPrice, mb: 1.5 }}>
+      <CardContent sx={styles.cardContent}>
+        <Typography sx={styles.typography}>{property.location}</Typography>
+        <Typography sx={styles.typography2}>{property.title}</Typography>
+        <Typography color="primary" sx={styles.typography3}>
           {property.price}
         </Typography>
-        <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+        <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={styles.stack}>
           {property.details.map((detail) => {
             const Icon = detailIcons[detail.key] ?? ApartmentOutlinedIcon
             return (
               <Stack key={detail.key} direction="row" alignItems="center" spacing={0.4}>
-                <Icon sx={{ color: 'text.secondary', fontSize: iconSize.xs }} />
+                <Icon sx={styles.icon} />
                 <Typography color="text.secondary" sx={componentText.cardMeta}>
                   {detail.label}
                 </Typography>
@@ -101,20 +66,13 @@ export function PropertyCard({ property }: PropertyCardProps) {
             )
           })}
         </Stack>
-        <Divider sx={{ mb: 1.6 }} />
+        <Divider sx={styles.divider} />
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Stack direction="row" alignItems="center" spacing={1}>
-            <Avatar src={property.avatar} alt={property.broker} sx={{ width: 30, height: 30 }} />
+            <Avatar src={property.avatar} alt={property.broker} sx={styles.avatar} />
             <Typography sx={componentText.cardBroker}>{property.broker}</Typography>
           </Stack>
-          <Typography
-            sx={{
-              color: 'primary.main',
-              ...componentText.cardAction,
-            }}
-          >
-            {t('viewDetails')}
-          </Typography>
+          <Typography sx={styles.typography4}>{t('viewDetails')}</Typography>
         </Stack>
       </CardContent>
     </Card>

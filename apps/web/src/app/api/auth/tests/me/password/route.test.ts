@@ -36,7 +36,7 @@ describe('POST /api/auth/me/password', () => {
     findById.mockResolvedValue({
       id: 'current-user',
       tenantId: 'tenant-1',
-      ativo: true,
+      active: true,
       email: 'ana@example.com',
     })
   })
@@ -73,7 +73,7 @@ describe('POST /api/auth/me/password', () => {
     findById.mockResolvedValue({
       id: 'current-user',
       tenantId: 'other-tenant',
-      ativo: true,
+      active: true,
       email: 'other@example.com',
     })
 

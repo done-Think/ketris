@@ -19,7 +19,7 @@ export const GET = withErrorHandling(
     const goals = await teamContainer.listBrokerGoalsUseCase.execute({
       actorId: actor.sub,
       actorTenantId: actor.tenantId,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       brokerId: id,
     })
 
@@ -35,7 +35,7 @@ export const PUT = withErrorHandling(
     const goal = await teamContainer.setBrokerGoalUseCase.execute({
       actorId: actor.sub,
       actorTenantId: actor.tenantId,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       brokerId: id,
       monthlySales: body.monthlySales,
     })

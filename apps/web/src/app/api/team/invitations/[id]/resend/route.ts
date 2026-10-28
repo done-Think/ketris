@@ -19,7 +19,7 @@ export const POST = withErrorHandling(
     const result = await teamContainer.resendTeamInvitationUseCase.execute({
       actorId: actor.sub,
       actorTenantId: actor.tenantId,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       brokerId: id,
       locale: body.locale,
     })

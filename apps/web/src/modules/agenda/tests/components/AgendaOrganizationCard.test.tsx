@@ -12,7 +12,7 @@ it('mostra cobrança em BRL e abre a rota tipada do lançamento', () => {
         date: '2031-03-01',
         title: 'Aluguel',
         property: 'Apartamento',
-        status: 'PENDENTE',
+        status: 'PENDING',
         amount: 1234.56,
       }}
     />,
@@ -32,7 +32,7 @@ it('direciona atendimento ao chamado correspondente', () => {
         time: '12:00',
         title: 'Vazamento',
         property: 'Apartamento',
-        status: 'EM_ANDAMENTO',
+        status: 'IN_PROGRESS',
       }}
     />,
   )

@@ -13,7 +13,7 @@ import type { TenantListQuery, TenantPage, TenantStatusCounts } from '../types/t
 function toDomainPlatformTenant(tenant: Tenant): PlatformTenant {
   return {
     id: tenant.id,
-    nome: tenant.nome,
+    name: tenant.name,
     slug: tenant.slug,
     accountType: tenant.accountType,
     status: tenant.status,
@@ -35,7 +35,7 @@ function tenantWhere({
     ...(term
       ? {
           OR: [
-            { nome: { contains: term, mode: 'insensitive' } },
+            { name: { contains: term, mode: 'insensitive' } },
             { slug: { contains: term.toLowerCase() } },
           ],
         }
@@ -138,14 +138,14 @@ export class PrismaPlatformTenantRepository implements PlatformTenantRepository 
   async countUsage(tenantIds?: string[]): Promise<Map<string, TenantUsage>> {
     const scope = tenantIds ? { tenantId: { in: tenantIds } } : {}
     const [properties, brokers] = await Promise.all([
-      prisma.imovel.groupBy({
+      prisma.property.groupBy({
         by: ['tenantId'],
         where: { ...scope, status: { not: 'INACTIVE' } },
         _count: { _all: true },
       }),
-      prisma.usuario.groupBy({
+      prisma.user.groupBy({
         by: ['tenantId'],
-        where: { ...scope, papel: { in: ['AGENT', 'OWNER'] }, ativo: true },
+        where: { ...scope, role: { in: ['AGENT', 'OWNER'] }, active: true },
         _count: { _all: true },
       }),
     ])

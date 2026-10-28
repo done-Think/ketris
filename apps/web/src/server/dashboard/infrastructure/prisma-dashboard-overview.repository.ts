@@ -14,7 +14,7 @@ import type {
 function leadWhere(scope: DashboardScope): Prisma.LeadWhereInput {
   return {
     tenantId: scope.tenantId,
-    ...(scope.agentId ? { responsavelId: scope.agentId } : {}),
+    ...(scope.agentId ? { responsibleId: scope.agentId } : {}),
   }
 }
 
@@ -22,19 +22,19 @@ function startsIn(range: TimeRange): Prisma.DateTimeFilter {
   return { gte: range.start, lt: range.end }
 }
 
-function ownEventsWhere(agentId: string): Prisma.EventoAgendaWhereInput {
+function ownEventsWhere(agentId: string): Prisma.AgendaEventWhereInput {
   return {
-    responsavelId: agentId,
-    OR: [{ destino: 'SHARED_TEAM', interno: false }, { destino: 'ASSIGNED_AGENT' }],
+    responsibleId: agentId,
+    OR: [{ audience: 'SHARED_TEAM', internal: false }, { audience: 'ASSIGNED_AGENT' }],
   }
 }
 
-function upcomingEventsWhere(scope: DashboardScope): Prisma.EventoAgendaWhereInput {
+function upcomingEventsWhere(scope: DashboardScope): Prisma.AgendaEventWhereInput {
   if (!scope.agentId) return { tenantId: scope.tenantId }
 
   return {
     tenantId: scope.tenantId,
-    OR: [ownEventsWhere(scope.agentId), { destino: 'ALL_AGENTS' }],
+    OR: [ownEventsWhere(scope.agentId), { audience: 'ALL_AGENTS' }],
   }
 }
 
@@ -43,31 +43,31 @@ export class PrismaDashboardOverviewRepository implements DashboardOverviewRepos
     return prisma.lead.count({
       where: {
         ...leadWhere(scope),
-        oportunidadeId: null,
+        opportunityId: null,
         ...(createdIn ? { createdAt: startsIn(createdIn) } : {}),
       },
     })
   }
 
   countVisits(scope: DashboardScope, range: TimeRange): Promise<number> {
-    return prisma.eventoAgenda.count({
+    return prisma.agendaEvent.count({
       where: {
         tenantId: scope.tenantId,
-        tipo: 'VISIT',
+        type: 'VISIT',
         status: { not: 'CANCELLED' },
-        inicio: startsIn(range),
+        start: startsIn(range),
         ...(scope.agentId ? ownEventsWhere(scope.agentId) : {}),
       },
     })
   }
 
   countOpenProposals(scope: DashboardScope, onlyAwaitingResponse: boolean): Promise<number> {
-    return prisma.oportunidade.count({
+    return prisma.opportunity.count({
       where: {
         tenantId: scope.tenantId,
-        arquivadaEm: null,
-        status: { in: onlyAwaitingResponse ? ['ENVIADA'] : ['ENVIADA', 'EM_NEGOCIACAO'] },
-        ...(scope.agentId ? { responsavelId: scope.agentId } : {}),
+        archivedAt: null,
+        status: { in: onlyAwaitingResponse ? ['SENT'] : ['SENT', 'IN_NEGOTIATION'] },
+        ...(scope.agentId ? { responsibleId: scope.agentId } : {}),
       },
     })
   }
@@ -81,13 +81,13 @@ export class PrismaDashboardOverviewRepository implements DashboardOverviewRepos
 
     return rows.map((row) => ({
       id: row.id,
-      name: row.nome,
-      phone: row.telefone,
-      interest: row.interesse,
-      budget: row.orcamento,
-      source: row.origem,
-      stage: row.estagio,
-      notes: row.observacoes,
+      name: row.name,
+      phone: row.phone,
+      interest: row.interest,
+      budget: row.budget,
+      source: row.source,
+      stage: row.stage,
+      notes: row.notes,
       createdAt: row.createdAt,
     }))
   }
@@ -97,22 +97,22 @@ export class PrismaDashboardOverviewRepository implements DashboardOverviewRepos
     from: Date,
     limit: number,
   ): Promise<DashboardUpcomingActivity[]> {
-    const rows = await prisma.eventoAgenda.findMany({
+    const rows = await prisma.agendaEvent.findMany({
       where: {
         ...upcomingEventsWhere(scope),
         status: { not: 'CANCELLED' },
-        inicio: { gte: from },
+        start: { gte: from },
       },
-      orderBy: { inicio: 'asc' },
+      orderBy: { start: 'asc' },
       take: limit,
       include: {
-        imovel: {
+        property: {
           select: {
             id: true,
-            titulo: true,
-            valor: true,
+            title: true,
+            price: true,
             status: true,
-            endereco: { select: { logradouro: true, numero: true, bairro: true, cidade: true } },
+            address: { select: { street: true, number: true, neighborhood: true, city: true } },
           },
         },
       },
@@ -120,28 +120,28 @@ export class PrismaDashboardOverviewRepository implements DashboardOverviewRepos
 
     return rows.map((row) => ({
       id: row.id,
-      title: row.titulo,
-      kind: row.tipo,
-      start: row.inicio,
-      end: row.fim,
-      participantName: row.participanteNome,
-      participantPhone: row.participanteTelefone,
-      notes: row.notas,
-      propertyId: row.imovelId,
-      propertyReference: row.referenciaImovelLivre,
+      title: row.title,
+      kind: row.type,
+      start: row.start,
+      end: row.end,
+      participantName: row.participantName,
+      participantPhone: row.participantPhone,
+      notes: row.notes,
+      propertyId: row.propertyId,
+      propertyReference: row.freeFormPropertyReference,
       property: toVisibleActivityProperty(
-        row.imovel
+        row.property
           ? {
-              id: row.imovel.id,
-              title: row.imovel.titulo,
-              price: row.imovel.valor.toNumber(),
-              status: row.imovel.status,
-              address: row.imovel.endereco
+              id: row.property.id,
+              title: row.property.title,
+              price: row.property.price.toNumber(),
+              status: row.property.status,
+              address: row.property.address
                 ? {
-                    street: row.imovel.endereco.logradouro,
-                    number: row.imovel.endereco.numero,
-                    neighborhood: row.imovel.endereco.bairro,
-                    city: row.imovel.endereco.cidade,
+                    street: row.property.address.street,
+                    number: row.property.address.number,
+                    neighborhood: row.property.address.neighborhood,
+                    city: row.property.address.city,
                   }
                 : null,
             }

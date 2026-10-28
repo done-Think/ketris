@@ -16,7 +16,7 @@ export const POST = withErrorHandling(async (request: NextRequest, context: User
     ...input,
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     targetUserId: id,
   })
   return new NextResponse(null, { status: 204 })

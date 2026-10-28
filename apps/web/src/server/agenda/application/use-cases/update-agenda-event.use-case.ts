@@ -41,65 +41,65 @@ export class UpdateAgendaEventUseCase {
   async execute(input: UpdateAgendaEventInput) {
     const existing = await findManageableAgendaEvent(this.agendaEventRepository, input, input.id)
     if (!existing) throw new AgendaEventNotFoundError()
-    assertCanManageAgendaEvent(input.actorPapel, input.actorUserId, existing)
+    assertCanManageAgendaEvent(input.actorRole, input.actorUserId, existing)
     if (
-      !isAgencyManager(input.actorPapel) &&
-      ((input.destino !== undefined && input.destino !== (existing.destino ?? 'SHARED_TEAM')) ||
-        (input.interno !== undefined && input.interno !== Boolean(existing.interno)) ||
-        (input.responsavelId !== undefined && input.responsavelId !== existing.responsavelId))
+      !isAgencyManager(input.actorRole) &&
+      ((input.audience !== undefined && input.audience !== (existing.audience ?? 'SHARED_TEAM')) ||
+        (input.internal !== undefined && input.internal !== Boolean(existing.internal)) ||
+        (input.responsibleId !== undefined && input.responsibleId !== existing.responsibleId))
     )
       throw new ForbiddenError()
 
-    const destino = input.destino ?? existing.destino ?? 'SHARED_TEAM'
-    const interno = input.interno ?? existing.interno ?? false
-    const responsavelId = input.responsavelId ?? existing.responsavelId
+    const audience = input.audience ?? existing.audience ?? 'SHARED_TEAM'
+    const internal = input.internal ?? existing.internal ?? false
+    const responsibleId = input.responsibleId ?? existing.responsibleId
     if (
-      input.responsavelId !== undefined ||
-      (input.destino !== undefined && destino === 'ASSIGNED_AGENT')
+      input.responsibleId !== undefined ||
+      (input.audience !== undefined && audience === 'ASSIGNED_AGENT')
     ) {
       await validateAgendaResponsible(
         this.userRepository,
         manageableAgendaEventTenantId(input, existing),
-        responsavelId,
-        destino === 'ASSIGNED_AGENT',
+        responsibleId,
+        audience === 'ASSIGNED_AGENT',
       )
     }
     if (
-      interno &&
-      (destino === 'SHARED_TEAM' || input.donoEmail || input.participanteEmails?.length)
+      internal &&
+      (audience === 'SHARED_TEAM' || input.ownerEmail || input.participantEmails?.length)
     ) {
       throw new ConflictError('Eventos internos são destinados apenas à equipe da imobiliária.')
     }
     if (
-      !interno &&
-      ((input.participanteNome ?? existing.participanteNome).trim().length < 2 ||
-        !(input.participanteTelefone ?? existing.participanteTelefone).trim() ||
-        (destino !== 'SHARED_TEAM' &&
-          !(input.imovelId !== undefined ? input.imovelId : existing.imovelId) &&
-          !(input.referenciaImovelLivre !== undefined
-            ? input.referenciaImovelLivre
-            : existing.referenciaImovelLivre)))
+      !internal &&
+      ((input.participantName ?? existing.participantName).trim().length < 2 ||
+        !(input.participantPhone ?? existing.participantPhone).trim() ||
+        (audience !== 'SHARED_TEAM' &&
+          !(input.propertyId !== undefined ? input.propertyId : existing.propertyId) &&
+          !(input.freeFormPropertyReference !== undefined
+            ? input.freeFormPropertyReference
+            : existing.freeFormPropertyReference)))
     )
       throw new ConflictError('Informe imóvel, cliente e telefone para eventos com cliente.')
 
-    if (input.actorPapel === 'RENTER') {
-      if (input.donoEmail || input.participanteEmails?.length) {
+    if (input.actorRole === 'RENTER') {
+      if (input.ownerEmail || input.participantEmails?.length) {
         throw new AgendaRenterLinksForbiddenError()
       }
-      if (input.referenciaImovelLivre) throw new AgendaRenterPropertyRequiredError()
+      if (input.freeFormPropertyReference) throw new AgendaRenterPropertyRequiredError()
     }
 
-    if (input.imovelId) {
+    if (input.propertyId) {
       const property =
-        input.actorPapel === 'RENTER'
+        input.actorRole === 'RENTER'
           ? await this.propertyRepository.findRentedProperty(
               input.actorUserId ?? '',
-              input.imovelId,
+              input.propertyId,
             )
           : await this.propertyRepository.findAccessibleProperty(
               manageableAgendaEventTenantId(input, existing),
-              input.imovelId,
-              isPropertyOwner(input.actorPapel) ? input.actorUserId : undefined,
+              input.propertyId,
+              isPropertyOwner(input.actorRole) ? input.actorUserId : undefined,
             )
 
       if (!property || property.tenantId !== manageableAgendaEventTenantId(input, existing)) {
@@ -108,26 +108,26 @@ export class UpdateAgendaEventUseCase {
     }
 
     const schedule =
-      input.inicio !== undefined ||
+      input.start !== undefined ||
       input.durationMinutes !== undefined ||
-      input.responsavelId !== undefined
+      input.responsibleId !== undefined
         ? await validateAgendaSchedule(this.agendaEventRepository, existing, input)
         : undefined
-    if (!schedule && input.tipo === 'VISIT') {
-      const durationMinutes = (existing.fim.getTime() - existing.inicio.getTime()) / 60_000
+    if (!schedule && input.type === 'VISIT') {
+      const durationMinutes = (existing.end.getTime() - existing.start.getTime()) / 60_000
 
       if (durationMinutes < AGENDA_MINIMUM_VISIT_MINUTES) {
         throw new AgendaVisitMinimumDurationError()
       }
     }
 
-    if (input.status === 'CANCELLED' && !input.motivoCancelamento?.trim())
+    if (input.status === 'CANCELLED' && !input.cancellationReason?.trim())
       throw new AgendaCancellationReasonRequiredError()
 
     const propertySummary = await prepareAgendaPropertySummary(
       this.propertyCatalog,
       input,
-      input.imovelId === undefined ? existing.imovelId : input.imovelId,
+      input.propertyId === undefined ? existing.propertyId : input.propertyId,
     )
 
     const event = await this.agendaEventRepository.update(
@@ -135,22 +135,22 @@ export class UpdateAgendaEventUseCase {
       input.id,
       {
         ...schedule,
-        titulo: input.titulo,
-        tipo: input.tipo,
-        destino: input.destino,
-        interno: input.interno,
-        responsavelId: input.responsavelId,
+        title: input.title,
+        type: input.type,
+        audience: input.audience,
+        internal: input.internal,
+        responsibleId: input.responsibleId,
         status: input.status,
-        motivoCancelamento: input.motivoCancelamento,
-        imovelId: input.imovelId,
-        referenciaImovelLivre: input.referenciaImovelLivre,
-        participanteNome: input.participanteNome,
-        participanteTelefone: input.participanteTelefone,
-        notas: input.notas,
+        cancellationReason: input.cancellationReason,
+        propertyId: input.propertyId,
+        freeFormPropertyReference: input.freeFormPropertyReference,
+        participantName: input.participantName,
+        participantPhone: input.participantPhone,
+        notes: input.notes,
       },
       normalizeAgendaEventLinks({
-        donoEmail: interno ? null : input.donoEmail,
-        participanteEmails: interno ? [] : input.participanteEmails,
+        ownerEmail: internal ? null : input.ownerEmail,
+        participantEmails: internal ? [] : input.participantEmails,
       }),
       input.actorUserId,
     )

@@ -9,7 +9,7 @@ import type {
   ListOpportunitiesResponseDTO,
   OpportunityResponseDTO,
   RespondOpportunityResponseDTO,
-} from '@server/crm/types/dto'
+} from '@shared/types/generated/crm/dto'
 
 export type ListOpportunitiesResponse = ListOpportunitiesResponseDTO
 
@@ -21,9 +21,9 @@ export type ListActivitiesResponse = ListActivitiesResponseDTO
 
 export type ActivityResponse = ActivityResponseDTO
 
-export type ListPropertiesResponse = import('@server/crm/types/property').CrmPropertyPage
+export type ListPropertiesResponse = import('@shared/types/generated/crm/property').CrmPropertyPage
 
-export type PropertyResponse = import('@server/crm/types/property').CrmPropertyResponse
+export type PropertyResponse = import('@shared/types/generated/crm/property').CrmPropertyResponse
 
 export type ListContactsResponse = ListContactsResponseDTO
 

@@ -72,6 +72,19 @@ describe('trusted auth rate-limit identity', () => {
     expect(getAuthRateLimitKey(headers)).not.toBe(first)
   })
 
+  it.each(['2001:db8::1', '::ffff:192.0.2.1'])(
+    'normalizes bracketed IPv6 %s with a port without creating a new quota',
+    (address) => {
+      vi.stubEnv('VERCEL', '')
+      vi.stubEnv('TRUSTED_CLIENT_IP_HEADER', 'CloudFront-Viewer-Address')
+      vi.stubEnv('AUTH_TOKEN_SECRET', 'test-secret')
+      const first = new Headers({ 'cloudfront-viewer-address': `[${address}]:12345` })
+      const second = new Headers({ 'cloudfront-viewer-address': `[${address}]:54321` })
+      expect(getTrustedClientAddress(first)).toBe(address)
+      expect(getAuthRateLimitKey(first)).toBe(getAuthRateLimitKey(second))
+    },
+  )
+
   it('requires a configured secret', () => {
     vi.stubEnv('AUTH_TOKEN_SECRET', '')
     expect(() => getAuthRateLimitKey(new Headers())).toThrow()

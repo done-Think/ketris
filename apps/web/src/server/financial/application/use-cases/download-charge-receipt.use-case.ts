@@ -20,7 +20,7 @@ export class DownloadChargeReceiptUseCase {
       scope,
       input.chargeId,
       input.receiptId,
-      isAgencyManager(input.actorPapel),
+      isAgencyManager(input.actorRole),
     )
     if (!receipt) throw new ChargeReceiptNotFoundError()
     if (receipt.objectKey !== chargeReceiptObjectKey(receipt))

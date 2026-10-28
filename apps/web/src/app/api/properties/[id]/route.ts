@@ -17,7 +17,7 @@ export const GET = withErrorHandling(
     const property = await propertiesContainer.getPropertyUseCase.execute({
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       id,
     })
 
@@ -35,19 +35,19 @@ export const PATCH = withErrorHandling(
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
       id,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       ...body,
-      endereco: body.endereco
+      address: body.address
         ? {
-            logradouro: body.endereco.logradouro,
-            numero: body.endereco.numero,
-            complemento: body.endereco.complemento ?? null,
-            bairro: body.endereco.bairro,
-            cidade: body.endereco.cidade,
-            estado: body.endereco.estado,
-            cep: body.endereco.cep,
-            latitude: body.endereco.latitude ?? null,
-            longitude: body.endereco.longitude ?? null,
+            street: body.address.street,
+            number: body.address.number,
+            complement: body.address.complement ?? null,
+            neighborhood: body.address.neighborhood,
+            city: body.address.city,
+            state: body.address.state,
+            zipCode: body.address.zipCode,
+            latitude: body.address.latitude ?? null,
+            longitude: body.address.longitude ?? null,
           }
         : undefined,
     })
@@ -65,7 +65,7 @@ export const DELETE = withErrorHandling(
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
       id,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
     })
 
     return new NextResponse(null, { status: 204 })

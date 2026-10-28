@@ -5,7 +5,11 @@ import type { SchemaMessageTranslator } from '@shared/types'
 import { RECEIPT_CONTENT_TYPES, RECEIPT_MAX_BYTES } from '../config/receipt-limits'
 import { createChargeDateSchema } from './charge-date-schema'
 
-export function createRegisterPaymentSchema(t: SchemaMessageTranslator) {
+export function createRegisterPaymentSchema(
+  t: SchemaMessageTranslator<
+    'dateInvalid' | 'paymentMethodRequired' | 'paymentMethodTooLong' | 'receiptSize' | 'receiptType'
+  >,
+) {
   return z.object({
     paymentDate: createChargeDateSchema(t),
     paymentMethod: z

@@ -20,7 +20,7 @@ export class RequestSignupVerificationUseCase {
     if (
       !user ||
       user.emailVerifiedAt !== null ||
-      !user.ativo ||
+      !user.active ||
       user.tenantStatus === 'SUSPENDED' ||
       user.tenantStatus === 'CANCELED'
     )

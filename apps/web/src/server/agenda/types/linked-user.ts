@@ -1,10 +1,10 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 
 export interface AgendaLinkedUserCandidate {
   id: string
   email: string
   tenantId: string
-  papel: Papel
-  ativo: boolean
-  vinculoAprovadoEm: Date | null
+  role: UserRole
+  active: boolean
+  membershipApprovedAt: Date | null
 }

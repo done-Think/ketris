@@ -1,10 +1,10 @@
 export type RegistrationAccountType = 'INDIVIDUAL' | 'BROKER' | 'AGENCY'
 export type RegistrationTenantStatus = 'TRIAL' | 'ACTIVE' | 'SUSPENDED' | 'CANCELED'
-export type TenantOwnerProfile = 'proprietario' | 'corretor' | 'imobiliaria' | 'construtora'
+export type TenantOwnerProfile = 'owner' | 'broker' | 'agency' | 'developer'
 
 export interface RegistrationTenant {
   id: string
-  nome: string
+  name: string
   slug: string
   accountType: RegistrationAccountType
   status: RegistrationTenantStatus
@@ -18,9 +18,9 @@ export interface RegistrationAccount {
 }
 
 export interface RegistrationContactInput {
-  telefone: string
+  phone: string
   creci?: string
-  termosAceitosEm: Date
+  termsAcceptedAt: Date
   createBrokerProfile: boolean
 }
 
@@ -28,17 +28,17 @@ export interface NewTenantWithAdmin extends RegistrationContactInput {
   tenantName: string
   adminName: string
   email: string
-  senhaHash: string
+  passwordHash: string
   accountType: RegistrationAccountType
   status: RegistrationTenantStatus
 }
 
 export interface NewRegistrationMember extends RegistrationContactInput {
   tenantId: string
-  nome: string
+  name: string
   email: string
-  senhaHash: string
-  papel: 'AGENT' | 'RENTER'
+  passwordHash: string
+  role: 'AGENT' | 'RENTER'
   pendingApproval: boolean
 }
 

@@ -10,16 +10,16 @@ describe('/api/maintenance reopening (database integration)', () => {
   it('preserves original data and history when a linked renter adds notes and reopens a resolved ticket', async () => {
     const id = await create(env.fixture.admin.token)
     const resolvedAt = new Date('2026-10-19T10:00:00Z')
-    await prisma.chamadoManutencao.update({
+    await prisma.maintenanceTicket.update({
       where: { id },
       data: {
-        status: 'RESOLVIDO',
-        resolvidoEm: resolvedAt,
-        concluidoPorId: env.fixture.agent.id,
-        concluidoPorPapel: 'AGENT',
+        status: 'RESOLVED',
+        resolvedAt: resolvedAt,
+        completedById: env.fixture.agent.id,
+        completedByRole: 'AGENT',
       },
     })
-    const before = await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id } })
+    const before = await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id } })
     const note = await addNote(
       request(`tickets/${id}/notes`, 'POST', env.fixture.renter.token, {
         message: ' Additional detail ',
@@ -28,16 +28,16 @@ describe('/api/maintenance reopening (database integration)', () => {
     )
     expect(note.status).toBe(201)
     const noteBody = await note.json()
-    const afterNote = await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id } })
+    const afterNote = await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id } })
     expect(afterNote).toMatchObject({
-      status: 'RESOLVIDO',
-      resolvidoEm: resolvedAt,
-      titulo: before.titulo,
-      descricao: before.descricao,
+      status: 'RESOLVED',
+      resolvedAt: resolvedAt,
+      title: before.title,
+      description: before.description,
     })
     for (const user of [env.fixture.unrelated, env.other.renter]) {
       expect(
-        (await action(id, user.token, { action: 'reopen', status: 'ABERTO', reason: 'Denied' }))
+        (await action(id, user.token, { action: 'reopen', status: 'OPEN', reason: 'Denied' }))
           .status,
       ).toBe(404)
       expect(
@@ -50,13 +50,13 @@ describe('/api/maintenance reopening (database integration)', () => {
       ).toBe(404)
     }
     expect(
-      (await action(id, env.fixture.renter.token, { action: 'reopen', status: 'ABERTO' })).status,
+      (await action(id, env.fixture.renter.token, { action: 'reopen', status: 'OPEN' })).status,
     ).toBe(409)
     expect(
       (
         await action(id, env.fixture.renter.token, {
           action: 'reopen',
-          status: 'ABERTO',
+          status: 'OPEN',
           reason: ' ',
         })
       ).status,
@@ -65,27 +65,27 @@ describe('/api/maintenance reopening (database integration)', () => {
       (
         await action(id, env.fixture.renter.token, {
           action: 'reopen',
-          status: 'EM_ANDAMENTO',
+          status: 'IN_PROGRESS',
           reason: 'Denied',
         })
       ).status,
     ).toBe(403)
     const reopened = await action(id, env.fixture.renter.token, {
       action: 'reopen',
-      status: 'ABERTO',
+      status: 'OPEN',
       reason: ' Leak returned ',
     })
     expect(reopened.status).toBe(200)
     const body = await reopened.json()
     expect(body.ticket).toMatchObject({
-      status: 'ABERTO',
+      status: 'OPEN',
       resolvedAt: null,
-      title: before.titulo,
-      description: before.descricao,
-      category: before.categoria,
-      priority: before.prioridade,
-      contractId: before.contratoId,
-      propertyId: before.imovelId,
+      title: before.title,
+      description: before.description,
+      category: before.category,
+      priority: before.priority,
+      contractId: before.contractId,
+      propertyId: before.propertyId,
       permissions: { edit: false, comment: true, collaborate: true },
     })
     expect(body.ticket.activities).toEqual(
@@ -97,12 +97,12 @@ describe('/api/maintenance reopening (database integration)', () => {
           authorId: env.fixture.renter.id,
         }),
         expect.objectContaining({
-          type: 'MUDANCA_STATUS',
+          type: 'STATUS_CHANGE',
           authorId: env.fixture.renter.id,
           message: 'Leak returned',
           details: {
-            before: 'RESOLVIDO',
-            after: 'ABERTO',
+            before: 'RESOLVED',
+            after: 'OPEN',
             reason: 'Leak returned',
             previousResolution: { resolvedAt: resolvedAt.toISOString(), completedByRole: 'AGENT' },
           },
@@ -121,23 +121,23 @@ describe('/api/maintenance reopening (database integration)', () => {
       (
         await action(id, env.fixture.renter.token, {
           action: 'reopen',
-          status: 'ABERTO',
+          status: 'OPEN',
           reason: 'Repeat',
         })
       ).status,
     ).toBe(403)
   })
 
-  it.each(['CANCELADO', 'FECHADO'] as const)(
+  it.each(['CANCELED', 'CLOSED'] as const)(
     'blocks renter reopening of %s tickets',
     async (status) => {
       const id = await create()
-      await prisma.chamadoManutencao.update({ where: { id }, data: { status } })
+      await prisma.maintenanceTicket.update({ where: { id }, data: { status } })
       expect(
         (
           await action(id, env.fixture.renter.token, {
             action: 'reopen',
-            status: 'ABERTO',
+            status: 'OPEN',
             reason: 'Denied',
           })
         ).status,
@@ -147,15 +147,15 @@ describe('/api/maintenance reopening (database integration)', () => {
 
   it('blocks renter notes and reopening of archived resolved tickets', async () => {
     const id = await create()
-    await prisma.chamadoManutencao.update({
+    await prisma.maintenanceTicket.update({
       where: { id },
-      data: { status: 'RESOLVIDO', excluidoEm: new Date() },
+      data: { status: 'RESOLVED', deletedAt: new Date() },
     })
     expect(
       (
         await action(id, env.fixture.renter.token, {
           action: 'reopen',
-          status: 'ABERTO',
+          status: 'OPEN',
           reason: 'Denied',
         })
       ).status,

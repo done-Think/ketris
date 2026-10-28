@@ -1,5 +1,5 @@
+import { useTenantSessionScope } from '@shared/hooks/use-tenant-session-scope'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
 import type { MaintenanceAction } from '../types/service'
 
 import { maintenanceService } from '../services/maintenance-service'
@@ -27,157 +27,156 @@ function normalizeFilters(filters: MaintenanceTicketListFilters) {
 
 export const maintenanceQueryKeys = {
   all: ['maintenance'] as const,
-  tenant: (tenantId: string) => [...maintenanceQueryKeys.all, tenantId] as const,
-  lists: (tenantId: string) => [...maintenanceQueryKeys.tenant(tenantId), 'list'] as const,
-  list: (tenantId: string, filters: MaintenanceTicketListFilters = {}) =>
+  tenant: (tenantId: string | undefined) => [...maintenanceQueryKeys.all, tenantId] as const,
+  lists: (tenantId: string | undefined) =>
+    [...maintenanceQueryKeys.tenant(tenantId), 'list'] as const,
+  list: (tenantId: string | undefined, filters: MaintenanceTicketListFilters = {}) =>
     [...maintenanceQueryKeys.lists(tenantId), normalizeFilters(filters)] as const,
-  details: (tenantId: string) => [...maintenanceQueryKeys.tenant(tenantId), 'detail'] as const,
-  detail: (tenantId: string, ticketId: string) =>
+  details: (tenantId: string | undefined) =>
+    [...maintenanceQueryKeys.tenant(tenantId), 'detail'] as const,
+  detail: (tenantId: string | undefined, ticketId: string) =>
     [...maintenanceQueryKeys.details(tenantId), ticketId] as const,
-  activities: (tenantId: string, ticketId: string) =>
+  activities: (tenantId: string | undefined, ticketId: string) =>
     [...maintenanceQueryKeys.detail(tenantId, ticketId), 'activities'] as const,
 }
 
-export function useMaintenanceTickets(
-  tenantId: string | null | undefined,
-  filters: MaintenanceTicketListFilters = {},
-) {
-  const scopedTenantId = tenantId ?? ''
-  const { data: session } = useSession()
-
+export function useMaintenanceTickets(filters: MaintenanceTicketListFilters = {}) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
+  const session = scope.session
   return useQuery({
-    queryKey: [
-      ...maintenanceQueryKeys.list(scopedTenantId, filters),
-      session?.user?.id,
-      session?.role,
-    ],
+    queryKey: [...maintenanceQueryKeys.list(tenantId, filters), session?.user?.id, session?.role],
     queryFn: () => maintenanceService.list(filters),
-    enabled: Boolean(tenantId),
+    enabled: scope.enabled,
   })
 }
 
-export function useMaintenanceTicket(
-  tenantId: string | null | undefined,
-  ticketId: string | null | undefined,
-) {
-  const scopedTenantId = tenantId ?? ''
-  const { data: session } = useSession()
+export function useMaintenanceTicket(ticketId: string | null | undefined) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
+  const session = scope.session
   const scopedTicketId = ticketId ?? ''
 
   return useQuery({
     queryKey: [
-      ...maintenanceQueryKeys.detail(scopedTenantId, scopedTicketId),
+      ...maintenanceQueryKeys.detail(tenantId, scopedTicketId),
       session?.user?.id,
       session?.role,
     ],
     queryFn: () => maintenanceService.get(scopedTicketId),
-    enabled: Boolean(tenantId) && Boolean(ticketId),
+    enabled: scope.enabled && Boolean(ticketId),
   })
 }
 
-export function useCreateMaintenanceTicket(tenantId: string | null | undefined) {
+export function useCreateMaintenanceTicket() {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
-  const scopedTenantId = tenantId ?? ''
 
   return useMutation({
     mutationFn: (values: MaintenanceCreateTicketFormValues) =>
       maintenanceService.create(buildCreateMaintenanceTicketPayload(values)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.lists(scopedTenantId) })
+      queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.lists(tenantId) })
     },
   })
 }
 
-export function useUpdateMaintenanceTicket(tenantId: string | null | undefined) {
+export function useUpdateMaintenanceTicket() {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
-  const scopedTenantId = tenantId ?? ''
 
   return useMutation({
     mutationFn: ({ id, payload }: UpdateMaintenanceTicketVariables) =>
       maintenanceService.update(id, payload),
     onSuccess: (ticket) => {
       queryClient.invalidateQueries({
-        queryKey: maintenanceQueryKeys.detail(scopedTenantId, ticket.id),
+        queryKey: maintenanceQueryKeys.detail(tenantId, ticket.id),
       })
-      queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.lists(scopedTenantId) })
+      queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.lists(tenantId) })
     },
   })
 }
 
-export function useDeleteMaintenanceTicket(tenantId: string | null | undefined) {
+export function useDeleteMaintenanceTicket() {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
-  const scopedTenantId = tenantId ?? ''
 
   return useMutation({
     mutationFn: (id: string) => maintenanceService.remove(id),
     onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.lists(scopedTenantId) })
-      queryClient.removeQueries({ queryKey: maintenanceQueryKeys.detail(scopedTenantId, id) })
+      queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.lists(tenantId) })
+      queryClient.removeQueries({ queryKey: maintenanceQueryKeys.detail(tenantId, id) })
     },
   })
 }
 
-export function useResolveMaintenanceTicket(tenantId: string | null | undefined, ticketId: string) {
+export function useResolveMaintenanceTicket(ticketId: string) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
-  const scopedTenantId = tenantId ?? ''
 
   return useMutation({
     mutationFn: () => maintenanceService.resolve(ticketId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: maintenanceQueryKeys.detail(scopedTenantId, ticketId),
+        queryKey: maintenanceQueryKeys.detail(tenantId, ticketId),
       })
-      queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.lists(scopedTenantId) })
+      queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.lists(tenantId) })
     },
   })
 }
 
-export function useAddMaintenanceTicketNote(tenantId: string | null | undefined, ticketId: string) {
+export function useAddMaintenanceTicketNote(ticketId: string) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
-  const scopedTenantId = tenantId ?? ''
 
   return useMutation({
     mutationFn: (message: string) => maintenanceService.addNote(ticketId, message),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: maintenanceQueryKeys.detail(scopedTenantId, ticketId),
+        queryKey: maintenanceQueryKeys.detail(tenantId, ticketId),
       })
     },
   })
 }
 
-export function useUploadMaintenanceTicketAttachment(
-  tenantId: string | null | undefined,
-  ticketId: string,
-) {
+export function useUploadMaintenanceTicketAttachment(ticketId: string) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
-  const scopedTenantId = tenantId ?? ''
 
   return useMutation({
     mutationFn: (file: File) => maintenanceService.uploadAttachment(ticketId, file),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: maintenanceQueryKeys.detail(scopedTenantId, ticketId),
+        queryKey: maintenanceQueryKeys.detail(tenantId, ticketId),
       })
     },
   })
 }
 
 export function useMaintenanceOptions() {
-  const { data: session } = useSession()
+  const scope = useTenantSessionScope()
+  const session = scope.session
   return useQuery({
     queryKey: ['maintenance-options', session?.tenantId, session?.user?.id, session?.role],
     queryFn: () => maintenanceService.options(),
-    enabled: Boolean(session?.tenantId),
+    enabled: scope.enabled,
   })
 }
 
-export function useMaintenanceAction(tenantId: string | undefined, ticketId: string) {
+export function useMaintenanceAction(ticketId: string) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (action: MaintenanceAction) => maintenanceService.act(ticketId, action),
     onSuccess: async (_ticket, action) => {
-      await queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.tenant(tenantId ?? '') })
+      await queryClient.invalidateQueries({ queryKey: maintenanceQueryKeys.tenant(tenantId) })
       if (action.action === 'provider' || action.action === 'approveReplacement') {
         await queryClient.invalidateQueries({ queryKey: maintenanceProviderQueryKeys.all })
       }

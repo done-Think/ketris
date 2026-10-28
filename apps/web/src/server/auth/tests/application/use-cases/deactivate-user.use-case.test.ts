@@ -13,12 +13,12 @@ import { DeactivateUserUseCase } from '../../../application/use-cases/deactivate
 const agent: User = {
   id: 'agent-1',
   tenantId: 'tenant-1',
-  nome: 'Agente',
+  name: 'Agente',
   email: 'agent@ketris.dev',
-  senhaHash: 'hash-fake',
-  papel: 'AGENT',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-fake',
+  role: 'AGENT',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 function createDeps(overrides?: { findById?: UserRepository['findById'] }, hasPortfolio = false) {
@@ -33,7 +33,7 @@ function createDeps(overrides?: { findById?: UserRepository['findById'] }, hasPo
     findManyByTenant: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
-    deactivate: vi.fn().mockResolvedValue({ ...agent, ativo: false }),
+    deactivate: vi.fn().mockResolvedValue({ ...agent, active: false }),
     approveMembership: vi.fn(),
   }
 
@@ -48,11 +48,11 @@ describe('DeactivateUserUseCase', () => {
     const result = await useCase.execute({
       actorId: 'admin-1',
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       userId: agent.id,
     })
 
-    expect(result.ativo).toBe(false)
+    expect(result.active).toBe(false)
     expect(deps.userRepository.deactivate).toHaveBeenCalledWith(agent.id, 'tenant-1', {
       kind: 'USER',
       id: 'admin-1',
@@ -67,7 +67,7 @@ describe('DeactivateUserUseCase', () => {
       useCase.execute({
         actorId: 'agent-2',
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         userId: agent.id,
       }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
@@ -82,7 +82,7 @@ describe('DeactivateUserUseCase', () => {
       useCase.execute({
         actorId: 'admin-1',
         actorTenantId: 'tenant-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         userId: 'admin-1',
       }),
     ).rejects.toThrow(CannotDeactivateSelfError)
@@ -97,7 +97,7 @@ describe('DeactivateUserUseCase', () => {
       useCase.execute({
         actorId: 'admin-1',
         actorTenantId: 'tenant-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         userId: 'inexistente',
       }),
     ).rejects.toThrow(UserNotFoundError)
@@ -111,7 +111,7 @@ describe('DeactivateUserUseCase', () => {
       useCase.execute({
         actorId: 'admin-1',
         actorTenantId: 'tenant-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         userId: agent.id,
       }),
     ).rejects.toBeInstanceOf(PortfolioTransferRequiredError)

@@ -11,7 +11,7 @@ import {
   deleteOpportunityQuerySchema,
   patchOpportunityRequestSchema,
 } from '@server/crm/schemas/opportunity.schema'
-import { parseJsonBody, RequestValidationError, withErrorHandling } from '@server/shared/http'
+import { parseJsonBody, parseQuery, withErrorHandling } from '@server/shared/http'
 
 export const GET = withErrorHandling(async (request: NextRequest, context: CrmIdRouteContext) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
@@ -19,7 +19,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: CrmId
   const opportunity = await crmContainer.getOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     opportunityId: (await parseRouteParams(context.params, crmIdParamsSchema)).id,
   })
 
@@ -33,7 +33,7 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Crm
   const opportunity = await crmContainer.updateOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     opportunityId: (await parseRouteParams(context.params, crmIdParamsSchema)).id,
     changes: body,
   })
@@ -45,24 +45,13 @@ export const DELETE = withErrorHandling(
   async (request: NextRequest, context: CrmIdRouteContext) => {
     const actor = await requireBearerAuth(request, authContainer.tokenService)
 
-    const parsed = deleteOpportunityQuerySchema.safeParse(
-      Object.fromEntries(request.nextUrl.searchParams),
-    )
+    const query = parseQuery(request, deleteOpportunityQuerySchema)
 
-    if (!parsed.success) {
-      throw new RequestValidationError(
-        parsed.error.issues.map((issue) => ({
-          path: issue.path.join('.'),
-          message: issue.message,
-        })),
-      )
-    }
-
-    if (parsed.data.permanent) {
+    if (query.permanent) {
       await crmContainer.deleteOpportunityUseCase.execute({
         actorTenantId: actor.tenantId,
         actorId: actor.sub,
-        actorPapel: actor.papel,
+        actorRole: actor.role,
         opportunityId: (await parseRouteParams(context.params, crmIdParamsSchema)).id,
       })
 
@@ -72,7 +61,7 @@ export const DELETE = withErrorHandling(
     const opportunity = await crmContainer.archiveOpportunityUseCase.execute({
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       opportunityId: (await parseRouteParams(context.params, crmIdParamsSchema)).id,
     })
 

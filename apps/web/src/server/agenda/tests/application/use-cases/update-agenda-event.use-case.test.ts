@@ -11,27 +11,27 @@ import type { AgendaEventLinks } from '../../../types/agenda-event'
 import type { AgendaEventRepository } from '../../../application/ports/agenda-event-repository.port'
 import { UpdateAgendaEventUseCase } from '../../../application/use-cases/update-agenda-event.use-case'
 
-const updatedEvent = { id: 'event-1', titulo: 'Atualizado' } as AgendaEvent
+const updatedEvent = { id: 'event-1', title: 'Atualizado' } as AgendaEvent
 
 const shortEvent: AgendaEvent = {
   id: 'event-1',
   tenantId: 'tenant-1',
-  responsavelId: 'agent-1',
-  criadoPorId: 'agent-1',
-  responsavelNome: 'Corretor',
-  donoUsuarioId: null,
+  responsibleId: 'agent-1',
+  createdById: 'agent-1',
+  responsibleName: 'Corretor',
+  ownerUserId: null,
   dono: null,
-  participantes: [],
-  imovelId: null,
-  referenciaImovelLivre: null,
-  titulo: 'Follow-up rápido',
-  tipo: 'FOLLOW_UP',
+  participants: [],
+  propertyId: null,
+  freeFormPropertyReference: null,
+  title: 'Follow-up rápido',
+  type: 'FOLLOW_UP',
   status: 'CONFIRMED',
-  inicio: new Date('2026-10-01T13:00:00.000Z'),
-  fim: new Date('2026-10-01T13:15:00.000Z'),
-  participanteNome: 'Ana',
-  participanteTelefone: '11999990000',
-  notas: null,
+  start: new Date('2026-10-01T13:00:00.000Z'),
+  end: new Date('2026-10-01T13:15:00.000Z'),
+  participantName: 'Ana',
+  participantPhone: '11999990000',
+  notes: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 }
@@ -76,17 +76,17 @@ describe('UpdateAgendaEventUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       id: 'event-1',
-      titulo: 'Atualizado',
+      title: 'Atualizado',
     })
 
     expect(result).toBe(updatedEvent)
     expect(deps.agendaEventRepository.update).toHaveBeenCalledWith(
       'tenant-1',
       'event-1',
-      expect.objectContaining({ titulo: 'Atualizado' }),
-      { donoEmail: undefined, participanteEmails: undefined },
+      expect.objectContaining({ title: 'Atualizado' }),
+      { ownerEmail: undefined, participantEmails: undefined },
       undefined,
     )
   })
@@ -96,8 +96,8 @@ describe('UpdateAgendaEventUseCase', () => {
     vi.mocked(deps.agendaEventRepository.findByScopeAndId).mockResolvedValue({
       id: 'event-1',
       tenantId: 'agency-1',
-      responsavelId: 'agent-1',
-      criadoPorId: 'agent-1',
+      responsibleId: 'agent-1',
+      createdById: 'agent-1',
     } as AgendaEvent)
     const useCase = new UpdateAgendaEventUseCase(
       deps.agendaEventRepository,
@@ -109,9 +109,9 @@ describe('UpdateAgendaEventUseCase', () => {
       useCase.execute({
         actorTenantId: 'renters',
         actorUserId: 'renter-1',
-        actorPapel: 'RENTER',
+        actorRole: 'RENTER',
         id: 'event-1',
-        titulo: 'X',
+        title: 'X',
       }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
     expect(deps.agendaEventRepository.update).not.toHaveBeenCalled()
@@ -128,9 +128,9 @@ describe('UpdateAgendaEventUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         id: 'event-1',
-        imovelId: 'inexistente',
+        propertyId: 'inexistente',
       }),
     ).rejects.toThrow(AgendaPropertyNotFoundError)
   })
@@ -144,7 +144,7 @@ describe('UpdateAgendaEventUseCase', () => {
     )
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT', id: 'inexistente' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'AGENT', id: 'inexistente' }),
     ).rejects.toThrow(AgendaEventNotFoundError)
   })
 
@@ -159,9 +159,9 @@ describe('UpdateAgendaEventUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         id: 'event-1',
-        tipo: 'VISIT',
+        type: 'VISIT',
       }),
     ).rejects.toThrow(AgendaVisitMinimumDurationError)
     expect(deps.agendaEventRepository.update).not.toHaveBeenCalled()
@@ -170,7 +170,7 @@ describe('UpdateAgendaEventUseCase', () => {
   it('permite marcar como VISIT um evento que já dura 30min ou mais', async () => {
     const longEvent = {
       ...shortEvent,
-      fim: new Date('2026-10-01T13:30:00.000Z'),
+      end: new Date('2026-10-01T13:30:00.000Z'),
     }
     const deps = createDeps({ agendaFindByTenantAndId: vi.fn().mockResolvedValue(longEvent) })
     const useCase = new UpdateAgendaEventUseCase(
@@ -181,9 +181,9 @@ describe('UpdateAgendaEventUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       id: 'event-1',
-      tipo: 'VISIT',
+      type: 'VISIT',
     })
 
     expect(deps.agendaEventRepository.update).toHaveBeenCalled()
@@ -193,17 +193,17 @@ describe('UpdateAgendaEventUseCase', () => {
     [
       'omitidos mantêm dono e participantes',
       {},
-      { donoEmail: undefined, participanteEmails: undefined },
+      { ownerEmail: undefined, participantEmails: undefined },
     ],
     [
       'null remove o dono e [] remove os participantes',
-      { donoEmail: null, participanteEmails: [] },
-      { donoEmail: null, participanteEmails: [] },
+      { ownerEmail: null, participantEmails: [] },
+      { ownerEmail: null, participantEmails: [] },
     ],
     [
       'e-mails trocam o dono e substituem os participantes',
-      { donoEmail: 'Novo@Ketris.dev', participanteEmails: ['a@ketris.dev', 'A@ketris.dev'] },
-      { donoEmail: 'novo@ketris.dev', participanteEmails: ['a@ketris.dev'] },
+      { ownerEmail: 'Novo@Ketris.dev', participantEmails: ['a@ketris.dev', 'A@ketris.dev'] },
+      { ownerEmail: 'novo@ketris.dev', participantEmails: ['a@ketris.dev'] },
     ],
   ]
 
@@ -219,16 +219,16 @@ describe('UpdateAgendaEventUseCase', () => {
 
       await useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         id: 'event-1',
-        titulo: 'Atualizado',
+        title: 'Atualizado',
         ...links,
       })
 
       expect(deps.agendaEventRepository.update).toHaveBeenCalledWith(
         'tenant-1',
         'event-1',
-        expect.objectContaining({ titulo: 'Atualizado' }),
+        expect.objectContaining({ title: 'Atualizado' }),
         expected,
         undefined,
       )

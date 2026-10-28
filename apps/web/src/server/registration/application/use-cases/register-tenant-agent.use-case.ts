@@ -22,14 +22,14 @@ export class RegisterTenantAgentUseCase {
       throw new RegistrationEmailAlreadyInUseError()
     const user = await this.accounts.createMember({
       tenantId: agency.id,
-      nome: input.fullName,
+      name: input.fullName,
       email: input.email,
-      senhaHash: await this.passwords.hash(input.password),
-      papel: 'AGENT',
+      passwordHash: await this.passwords.hash(input.password),
+      role: 'AGENT',
       pendingApproval: true,
-      telefone: input.phone,
+      phone: input.phone,
       creci: input.creci,
-      termosAceitosEm: new Date(),
+      termsAcceptedAt: new Date(),
       createBrokerProfile: true,
     })
     return { email: user.email, tenantId: user.tenantId, pendingApproval: true }

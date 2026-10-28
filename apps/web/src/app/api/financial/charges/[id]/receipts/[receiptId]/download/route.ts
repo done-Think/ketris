@@ -16,7 +16,7 @@ export const GET = withErrorHandling(
     const download = await financialContainer.downloadChargeReceiptUseCase.execute({
       actorId: actor.sub,
       actorTenantId: actor.tenantId,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       chargeId: id,
       receiptId,
     })

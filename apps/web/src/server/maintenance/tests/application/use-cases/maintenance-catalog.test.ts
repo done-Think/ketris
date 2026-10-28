@@ -84,7 +84,7 @@ describe('Maintenance catalog permissions and safe output', () => {
           reason: 'Replace',
           requestedById: 'owner',
           requestedByName: 'Owner',
-          status: 'PENDENTE',
+          status: 'PENDING',
           decisionReason: null,
           decidedByName: null,
           decidedAt: null,

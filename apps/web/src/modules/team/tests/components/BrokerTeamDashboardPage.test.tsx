@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
-import { BrokerTeamDashboardPage } from '../../components/BrokerTeamDashboardPage'
+import { TeamDashboardComposition } from '@/app/[locale]/(dashboard)/dashboard/team/TeamDashboardComposition'
 import type { TeamMember } from '../../types/team'
 import { teamMember, teamOverview } from '../fixtures/team-member'
 
@@ -37,7 +37,10 @@ vi.mock('next-auth/react', () => ({ useSession: () => ({ data: session.current }
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
 vi.mock('../../services/team-service', () => ({ teamService: service }))
 vi.mock('../../components/TeamMembershipRequests', () => ({ TeamMembershipRequests: () => null }))
-vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ push }) }))
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+  useRouter: () => ({ push }),
+}))
 vi.mock('@modules/agenda/hooks/use-agenda-events', () => ({
   useCreateAgendaEvent: () => ({ mutateAsync: createAgendaEvent }),
 }))
@@ -134,7 +137,7 @@ function renderPage(members: TeamMember[] = [marina, bruno, carla, diego]) {
   return render(
     <QueryClientProvider client={client}>
       <ThemeProvider theme={theme}>
-        <BrokerTeamDashboardPage />
+        <TeamDashboardComposition />
       </ThemeProvider>
     </QueryClientProvider>,
   )
@@ -220,7 +223,7 @@ describe('BrokerTeamDashboardPage', () => {
     render(
       <QueryClientProvider client={client}>
         <ThemeProvider theme={theme}>
-          <BrokerTeamDashboardPage />
+          <TeamDashboardComposition />
         </ThemeProvider>
       </QueryClientProvider>,
     )

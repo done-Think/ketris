@@ -1,5 +1,7 @@
 'use client'
 
+import { styles } from '@shared/styles/home-header.styles'
+
 import { useState } from 'react'
 import {
   Avatar,
@@ -22,16 +24,7 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import ketrisLogoTransparent from '@shared/assets/ketris-logo-transparent.png'
 import { AppLogo } from '@shared/components/ui'
-import {
-  alpha,
-  componentText,
-  iconSize,
-  motion,
-  radius,
-  shadows,
-  surface,
-  zIndex,
-} from '@shared/theme/tokens'
+
 import type { HomeHeaderProps } from '@shared/types/home-header'
 import { getInitials } from '@shared/utils/get-initials'
 import { LanguageSelector } from './LanguageSelector'
@@ -54,33 +47,14 @@ export function HomeHeader({
   const canAnnounceProperty = session?.role !== 'RENTER'
 
   return (
-    <Box
-      component="header"
-      sx={{
-        bgcolor: surface.paper,
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        position: 'sticky',
-        top: 0,
-        zIndex: zIndex.header,
-        width: '100%',
-      }}
-    >
+    <Box component="header" sx={styles.box}>
       <Container maxWidth="xl">
-        <Box
-          sx={{
-            minHeight: 60,
-            display: 'grid',
-            gridTemplateColumns: { xs: 'auto 1fr', md: 'auto minmax(0, 1fr) auto' },
-            alignItems: 'center',
-            gap: 2,
-          }}
-        >
+        <Box sx={styles.box2}>
           <AppLogo
             src={ketrisLogoTransparent}
             variant="transparent"
             width={{ xs: 100, sm: 118 }}
-            sx={{ justifySelf: 'start' }}
+            sx={styles.appLogo}
           />
 
           <Stack
@@ -88,7 +62,7 @@ export function HomeHeader({
             direction="row"
             alignItems="center"
             spacing={{ xs: 2, md: 2.5, lg: 4 }}
-            sx={{ display: { xs: 'none', md: 'flex' }, justifySelf: 'center', minWidth: 0 }}
+            sx={styles.stack}
           >
             {navigationItems.map((item) => (
               <MuiLink
@@ -96,30 +70,7 @@ export function HomeHeader({
                 component={Link}
                 href={item.href}
                 underline="none"
-                sx={{
-                  color: item.active ? 'primary.main' : 'text.secondary',
-                  ...componentText.navLink,
-                  px: 1.45,
-                  py: 0.85,
-                  mt: 0.1,
-                  borderRadius: `${radius.sm}px`,
-                  position: 'relative',
-                  transition: motion.transition.interactive,
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    bottom: -2,
-                    height: 2,
-                    bgcolor: item.active ? 'primary.main' : 'transparent',
-                  },
-                  '&:hover': {
-                    bgcolor: 'transparent',
-                    color: surface.darkText,
-                    transform: 'translateY(-1px)',
-                  },
-                }}
+                sx={styles.muiLink(Boolean(item.active))}
               >
                 {item.label}
               </MuiLink>
@@ -130,7 +81,7 @@ export function HomeHeader({
             direction="row"
             alignItems="center"
             spacing={{ xs: 0.5, md: 1 }}
-            sx={{ justifySelf: 'end', flexShrink: 0 }}
+            sx={styles.stack2}
           >
             {canAnnounceProperty ? (
               <Button
@@ -139,34 +90,14 @@ export function HomeHeader({
                 variant="outlined"
                 color="secondary"
                 size="small"
-                sx={{
-                  borderColor: 'divider',
-                  color: 'text.primary',
-                  borderRadius: `${radius.sm}px`,
-                  display: { xs: 'none', md: 'inline-flex' },
-                  minHeight: 42,
-                  minWidth: 138,
-                  px: 2,
-                  whiteSpace: 'nowrap',
-                  ...componentText.headerCta,
-                  transition: motion.transition.bordered,
-                  '&:hover': {
-                    bgcolor: alpha.magenta[8],
-                    borderColor: alpha.magenta[36],
-                    color: 'primary.main',
-                  },
-                }}
+                sx={styles.button}
               >
                 {t('announceProperty')}
               </Button>
             ) : null}
             {showNotifications ? (
-              <IconButton
-                aria-label={t('notifications')}
-                size="small"
-                sx={{ width: 42, height: 42 }}
-              >
-                <NotificationsNoneOutlinedIcon sx={{ fontSize: iconSize.xl }} />
+              <IconButton aria-label={t('notifications')} size="small" sx={styles.iconButton}>
+                <NotificationsNoneOutlinedIcon sx={styles.notificationsNoneOutlinedIcon} />
               </IconButton>
             ) : null}
             {userProfile && profileButtonRef && onToggleProfile ? (
@@ -177,40 +108,19 @@ export function HomeHeader({
                 aria-haspopup="dialog"
                 ref={profileButtonRef}
                 onClick={onToggleProfile}
-                sx={{
-                  width: 48,
-                  height: 48,
-                  p: 0,
-                  border: 0,
-                  borderRadius: radius.full,
-                  bgcolor: 'transparent',
-                  cursor: 'pointer',
-                  display: 'grid',
-                  placeItems: 'center',
-                  position: 'relative',
-                  zIndex: zIndex.content - 1,
-                  transition: motion.transition.avatar,
-                  '&:hover': {
-                    boxShadow: shadows.avatarFocus,
-                    transform: 'translateY(-1px)',
-                  },
-                }}
+                sx={styles.box3}
               >
-                <Avatar
-                  alt={userProfile.name}
-                  src={userProfile.avatar}
-                  sx={{ width: 48, height: 48 }}
-                >
+                <Avatar alt={userProfile.name} src={userProfile.avatar} sx={styles.avatar}>
                   {!userProfile.avatar ? getInitials(userProfile.name) : null}
                 </Avatar>
               </Box>
             ) : isSessionLoading ? (
-              <Box sx={{ width: 48, height: 42 }} />
+              <Box sx={styles.box4} />
             ) : !showLanguageSelector ? (
               <LanguageSelector variant="header" />
             ) : null}
             {!isSessionLoading && showLanguageSelector ? (
-              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+              <Box sx={styles.box5}>
                 <LanguageSelector variant="header" />
               </Box>
             ) : null}
@@ -223,25 +133,9 @@ export function HomeHeader({
                 variant="outlined"
                 color="secondary"
                 size="small"
-                sx={{
-                  minWidth: { xs: 42, sm: 'auto' },
-                  minHeight: 42,
-                  px: { xs: 1, sm: 1.75 },
-                  borderColor: 'divider',
-                  color: 'text.primary',
-                  borderRadius: `${radius.sm}px`,
-                  whiteSpace: 'nowrap',
-                  ...componentText.headerCta,
-                  transition: motion.transition.bordered,
-                  '& .MuiButton-endIcon': { m: 0, ml: { xs: 0, sm: 0.75 } },
-                  '&:hover': {
-                    bgcolor: alpha.magenta[8],
-                    borderColor: alpha.magenta[36],
-                    color: 'primary.main',
-                  },
-                }}
+                sx={styles.button2}
               >
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                <Box component="span" sx={styles.box6}>
                   {t('signIn')}
                 </Box>
               </Button>
@@ -252,14 +146,9 @@ export function HomeHeader({
               aria-expanded={isMobileMenuOpen ? 'true' : undefined}
               onClick={() => setIsMobileMenuOpen(true)}
               size="small"
-              sx={{
-                display: { xs: 'inline-flex', md: 'none' },
-                width: 42,
-                height: 42,
-                color: surface.darkText,
-              }}
+              sx={styles.iconButton2}
             >
-              <MenuRoundedIcon sx={{ fontSize: iconSize.xl }} />
+              <MenuRoundedIcon sx={styles.menuRoundedIcon} />
             </IconButton>
           </Stack>
         </Box>
@@ -272,23 +161,20 @@ export function HomeHeader({
         onClose={closeMobileMenu}
         slotProps={{
           paper: {
-            sx: {
-              width: 'min(82vw, 320px)',
-              bgcolor: surface.paper,
-            },
+            sx: styles.paper,
           },
         }}
       >
-        <Stack sx={{ minHeight: '100%', p: 2.5 }} spacing={2}>
+        <Stack sx={styles.stack3} spacing={2}>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <AppLogo
               src={ketrisLogoTransparent}
               variant="transparent"
               width={104}
-              sx={{ flexShrink: 0 }}
+              sx={styles.appLogo2}
             />
             <IconButton aria-label={t('closeMenu')} onClick={closeMobileMenu} size="small">
-              <CloseRoundedIcon sx={{ fontSize: iconSize.xl }} />
+              <CloseRoundedIcon sx={styles.closeRoundedIcon} />
             </IconButton>
           </Stack>
 
@@ -302,21 +188,7 @@ export function HomeHeader({
                 href={item.href}
                 underline="none"
                 onClick={closeMobileMenu}
-                sx={{
-                  color: item.active ? 'primary.main' : 'text.primary',
-                  ...componentText.navLink,
-                  minHeight: 46,
-                  display: 'flex',
-                  alignItems: 'center',
-                  px: 1.5,
-                  borderRadius: `${radius.sm}px`,
-                  bgcolor: item.active ? alpha.magenta[8] : 'transparent',
-                  transition: motion.transition.interactive,
-                  '&:hover': {
-                    bgcolor: 'action.hover',
-                    color: surface.darkText,
-                  },
-                }}
+                sx={styles.muiLink2(Boolean(item.active))}
               >
                 {item.label}
               </MuiLink>
@@ -338,11 +210,7 @@ export function HomeHeader({
                 color="primary"
                 onClick={closeMobileMenu}
                 fullWidth
-                sx={{
-                  minHeight: 44,
-                  borderRadius: `${radius.sm}px`,
-                  ...componentText.headerCta,
-                }}
+                sx={styles.button3}
               >
                 {t('announceProperty')}
               </Button>

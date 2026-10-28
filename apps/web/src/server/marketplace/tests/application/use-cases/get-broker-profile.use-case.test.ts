@@ -34,7 +34,7 @@ function createDeps(findPublishedById?: BrokerProfileRepository['findPublishedBy
   const brokerProfileRepository: BrokerProfileRepository = {
     findPublishedById: findPublishedById ?? vi.fn().mockResolvedValue(profile),
     listPublished: vi.fn(),
-    findByUsuarioId: vi.fn(),
+    findByUserId: vi.fn(),
     save: vi.fn(),
     setStatus: vi.fn(),
   }

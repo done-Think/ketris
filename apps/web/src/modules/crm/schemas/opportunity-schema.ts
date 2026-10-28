@@ -6,21 +6,34 @@ import type { SchemaMessageTranslator } from '@shared/types'
 import { createPropertySelectionSchema } from './property-schema'
 
 export const opportunityStatusSchema = z.enum([
-  'RASCUNHO',
-  'ENVIADA',
-  'EM_NEGOCIACAO',
-  'ACEITA',
-  'RECUSADA',
+  'DRAFT',
+  'SENT',
+  'IN_NEGOTIATION',
+  'ACCEPTED',
+  'REJECTED',
 ])
 
-export const contractGuaranteeSchema = z.enum(['FIADOR', 'CAUCAO', 'SEGURO_FIANCA', 'NENHUMA'])
+export const contractGuaranteeSchema = z.enum(['GUARANTOR', 'DEPOSIT', 'SURETY_BOND', 'NONE'])
 
 export const opportunityFiltersSchema = z.object({
   status: opportunityStatusSchema.optional(),
   includeArchived: z.boolean().optional(),
 })
 
-export function createUpdateOpportunitySchema(t: SchemaMessageTranslator) {
+export function createUpdateOpportunitySchema(
+  t: SchemaMessageTranslator<
+    | 'atLeastOneFieldRequired'
+    | 'contractTermInvalid'
+    | 'desiredStartDateInvalid'
+    | 'emailInvalid'
+    | 'nameRequired'
+    | 'notesInvalid'
+    | 'phoneInvalid'
+    | 'proposedValuePositive'
+    | 'specialConditionInvalid'
+    | 'textTooLong'
+  >,
+) {
   return z
     .object({
       leadName: z
@@ -54,7 +67,11 @@ export function createUpdateOpportunitySchema(t: SchemaMessageTranslator) {
     })
 }
 
-export function createOpportunityTermsSchema(t: SchemaMessageTranslator) {
+export function createOpportunityTermsSchema(
+  t: SchemaMessageTranslator<
+    'contractTermInvalid' | 'desiredStartDateInvalid' | 'specialConditionInvalid'
+  >,
+) {
   return z.object({
     contact: contactSelectionSchema.nullable(),
     contractTermMonths: z
@@ -86,7 +103,20 @@ export function createOpportunityTermsSchema(t: SchemaMessageTranslator) {
   })
 }
 
-export function createOpportunityFormSchema(t: SchemaMessageTranslator) {
+export function createOpportunityFormSchema(
+  t: SchemaMessageTranslator<
+    | 'contractTermInvalid'
+    | 'desiredStartDateInvalid'
+    | 'emailInvalid'
+    | 'nameRequired'
+    | 'phoneInvalid'
+    | 'propertyRequired'
+    | 'proposedValuePositive'
+    | 'proposedValueRequired'
+    | 'specialConditionInvalid'
+    | 'textTooLong'
+  >,
+) {
   return z.object({
     property: createPropertySelectionSchema(t),
     leadName: z.string().trim().min(1, t('nameRequired')).max(CRM_LIMITS.name, t('textTooLong')),
@@ -106,13 +136,25 @@ export function createOpportunityFormSchema(t: SchemaMessageTranslator) {
         )
       }, t('proposedValuePositive')),
     notes: z.string().trim().max(CRM_LIMITS.notes, t('textTooLong')),
-    status: z.enum(['RASCUNHO', 'ENVIADA']),
+    status: z.enum(['DRAFT', 'SENT']),
     responsibleId: z.string(),
     ...createOpportunityTermsSchema(t).shape,
   })
 }
 
-export function createEditOpportunityFormSchema(t: SchemaMessageTranslator) {
+export function createEditOpportunityFormSchema(
+  t: SchemaMessageTranslator<
+    | 'contractTermInvalid'
+    | 'desiredStartDateInvalid'
+    | 'emailInvalid'
+    | 'nameRequired'
+    | 'phoneInvalid'
+    | 'proposedValuePositive'
+    | 'proposedValueRequired'
+    | 'specialConditionInvalid'
+    | 'textTooLong'
+  >,
+) {
   return z.object({
     leadName: z.string().trim().min(1, t('nameRequired')).max(CRM_LIMITS.name, t('textTooLong')),
     leadEmail: z.string().trim().max(CRM_LIMITS.email, t('emailInvalid')).email(t('emailInvalid')),

@@ -8,7 +8,7 @@ describe('resolveChargeReadScope', () => {
       resolveChargeReadScope({
         actorId: 'owner-1',
         actorTenantId: 'tenant-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
       }),
     ).toEqual({ kind: 'tenant', tenantId: 'tenant-1' })
   })
@@ -18,7 +18,7 @@ describe('resolveChargeReadScope', () => {
       resolveChargeReadScope({
         actorId: 'renter-1',
         actorTenantId: 'renters',
-        actorPapel: 'RENTER',
+        actorRole: 'RENTER',
       }),
     ).toEqual({ kind: 'renter', userId: 'renter-1' })
   })
@@ -28,7 +28,7 @@ describe('resolveChargeReadScope', () => {
       resolveChargeReadScope({
         actorId: 'owner-1',
         actorTenantId: 'tenant-1',
-        actorPapel: 'PROPERTY_OWNER',
+        actorRole: 'PROPERTY_OWNER',
       }),
     ).toEqual({ kind: 'propertyOwner', tenantId: 'tenant-1', ownerId: 'owner-1' })
   })
@@ -38,7 +38,7 @@ describe('resolveChargeReadScope', () => {
       resolveChargeReadScope({
         actorId: 'agent-1',
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
       }),
     ).toThrow(expect.objectContaining({ status: 403 }))
   })

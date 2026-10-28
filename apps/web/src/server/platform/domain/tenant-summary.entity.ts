@@ -3,7 +3,7 @@ import type { TenantSummary, TenantSummaryResponse } from '../types/tenant-summa
 export function toTenantSummaryResponse(tenant: TenantSummary): TenantSummaryResponse {
   return {
     id: tenant.id,
-    name: tenant.nome,
+    name: tenant.name,
     slug: tenant.slug,
     createdAt: tenant.createdAt,
   }

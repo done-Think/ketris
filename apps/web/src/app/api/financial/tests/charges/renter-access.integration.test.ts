@@ -22,21 +22,21 @@ describe('Renter charge isolation (database integration)', () => {
   beforeAll(async () => {
     async function tenant() {
       const row = await prisma.tenant.create({
-        data: { nome: 'Charge isolation', slug: randomUUID() },
+        data: { name: 'Charge isolation', slug: randomUUID() },
       })
       tenantIds.push(row.id)
       return row.id
     }
     const tenantId = await tenant()
     const foreignTenantId = await tenant()
-    async function user(tenantId: string, papel: 'RENTER' | 'AGENT' | 'OWNER') {
-      return prisma.usuario.create({
+    async function user(tenantId: string, role: 'RENTER' | 'AGENT' | 'OWNER') {
+      return prisma.user.create({
         data: {
           tenantId,
-          papel,
-          nome: papel,
+          role,
+          name: role,
           email: `${randomUUID()}@test.invalid`,
-          senhaHash: 'test',
+          passwordHash: 'test',
         },
       })
     }
@@ -51,45 +51,45 @@ describe('Renter charge isolation (database integration)', () => {
     async function contract(
       tenantId: string,
       agentId: string,
-      usuarioId: string | null,
-      papel: 'LOCATARIO' | 'LOCADOR' = 'LOCATARIO',
+      userId: string | null,
+      role: 'RENTER' | 'LANDLORD' = 'RENTER',
     ) {
-      const property = await prisma.imovel.create({
+      const property = await prisma.property.create({
         data: {
           tenantId,
-          responsavelId: agentId,
-          titulo: 'Rental',
-          finalidade: 'ALUGUEL',
-          tipo: 'APARTAMENTO',
-          valor: 1000,
+          responsibleId: agentId,
+          title: 'Rental',
+          purpose: 'RENT',
+          type: 'APARTMENT',
+          price: 1000,
         },
       })
-      const opportunity = await prisma.oportunidade.create({
+      const opportunity = await prisma.opportunity.create({
         data: {
           tenantId,
-          imovelId: property.id,
-          responsavelId: await propertyResponsibleId(prisma, property.id),
-          interessadoNome: 'Renter',
-          interessadoEmail: renter.email,
-          valorProposto: 1000,
-          status: 'ACEITA',
+          propertyId: property.id,
+          responsibleId: await propertyResponsibleId(prisma, property.id),
+          interestedName: 'Renter',
+          interestedEmail: renter.email,
+          proposedValue: 1000,
+          status: 'ACCEPTED',
         },
       })
-      return prisma.contrato.create({
+      return prisma.contract.create({
         data: {
           tenantId,
-          imovelId: property.id,
-          oportunidadeOrigemId: opportunity.id,
-          codigo: randomUUID(),
-          valor: 1000,
-          diaVencimento: 5,
-          dataInicio: new Date('2026-01-01'),
-          dataFim: new Date('2027-01-01'),
-          indiceReajuste: 'IPCA',
-          tipoGarantia: 'CAUCAO',
-          status: 'ATIVO',
-          partes: {
-            create: { papel, usuarioId, nome: 'Renter', cpf: '12345678900', email: renter.email },
+          propertyId: property.id,
+          sourceOpportunityId: opportunity.id,
+          code: randomUUID(),
+          amount: 1000,
+          dueDay: 5,
+          startDate: new Date('2026-01-01'),
+          endDate: new Date('2027-01-01'),
+          adjustmentIndex: 'IPCA',
+          guaranteeType: 'DEPOSIT',
+          status: 'ACTIVE',
+          parties: {
+            create: { role, userId, name: 'Renter', cpf: '12345678900', email: renter.email },
           },
         },
       })
@@ -97,34 +97,34 @@ describe('Renter charge isolation (database integration)', () => {
     const own = await contract(tenantId, agent.id, renter.id)
     const unrelated = await contract(tenantId, agent.id, otherRenter.id)
     const unlinked = await contract(tenantId, agent.id, null)
-    const wrongRole = await contract(tenantId, agent.id, renter.id, 'LOCADOR')
+    const wrongRole = await contract(tenantId, agent.id, renter.id, 'LANDLORD')
     const foreign = await contract(foreignTenantId, foreignAgent.id, renter.id)
     async function charge(
       tenantId: string,
-      contratoId: string | null,
-      tipo: 'A_RECEBER' | 'A_PAGAR' = 'A_RECEBER',
+      contractId: string | null,
+      type: 'RECEIVABLE' | 'PAYABLE' = 'RECEIVABLE',
       overdue = false,
     ) {
-      return prisma.cobranca.create({
+      return prisma.charge.create({
         data: {
           tenantId,
-          contratoId,
-          tipo,
-          status: 'PENDENTE',
-          codigo: randomUUID(),
-          descricao: 'isolation-charge',
-          valor: 1000,
-          vencimento: new Date(overdue ? '2026-10-05' : '2099-10-05'),
+          contractId,
+          type,
+          status: 'PENDING',
+          code: randomUUID(),
+          description: 'isolation-charge',
+          amount: 1000,
+          dueDate: new Date(overdue ? '2026-10-05' : '2099-10-05'),
         },
       })
     }
     ownIds = [
       (await charge(tenantId, own.id)).id,
-      (await charge(tenantId, own.id, 'A_RECEBER', true)).id,
+      (await charge(tenantId, own.id, 'RECEIVABLE', true)).id,
       (await charge(foreignTenantId, foreign.id)).id,
     ]
     hiddenIds = [
-      (await charge(tenantId, own.id, 'A_PAGAR')).id,
+      (await charge(tenantId, own.id, 'PAYABLE')).id,
       (await charge(tenantId, unrelated.id)).id,
       (await charge(tenantId, unlinked.id)).id,
       (await charge(tenantId, wrongRole.id)).id,
@@ -134,10 +134,10 @@ describe('Renter charge isolation (database integration)', () => {
 
   afterAll(async () => {
     const where = { tenantId: { in: tenantIds } }
-    await prisma.cobranca.deleteMany({ where })
-    await prisma.contrato.deleteMany({ where })
-    await prisma.oportunidade.deleteMany({ where })
-    await prisma.imovel.deleteMany({ where })
+    await prisma.charge.deleteMany({ where })
+    await prisma.contract.deleteMany({ where })
+    await prisma.opportunity.deleteMany({ where })
+    await prisma.property.deleteMany({ where })
     await prisma.tenant.deleteMany({ where: { id: { in: tenantIds } } })
     await prisma.$disconnect()
   })
@@ -152,7 +152,7 @@ describe('Renter charge isolation (database integration)', () => {
   const context = (id: string) => ({ params: Promise.resolve({ id }) })
 
   it('lists only linked receivables and scopes search, counts, status and pagination', async () => {
-    const first = await GET(request('charges?pageSize=1&search=isolation-charge&type=A_RECEBER'))
+    const first = await GET(request('charges?pageSize=1&search=isolation-charge&type=RECEIVABLE'))
     expect(first.status).toBe(200)
     const firstBody = await first.json()
     expect(firstBody.totalCount).toBe(3)
@@ -170,9 +170,9 @@ describe('Renter charge isolation (database integration)', () => {
     expect([firstBody.items[0].id, secondBody.items[0].id, thirdBody.items[0].id].sort()).toEqual(
       ownIds.slice().sort(),
     )
-    const payable = await GET(request('charges?type=A_PAGAR'))
+    const payable = await GET(request('charges?type=PAYABLE'))
     expect(await payable.json()).toMatchObject({ items: [], totalCount: 0 })
-    const overdue = await GET(request('charges?status=ATRASADA'))
+    const overdue = await GET(request('charges?status=OVERDUE'))
     expect((await overdue.json()).totalCount).toBe(1)
     const noMatch = await GET(request('charges?search=not-present'))
     expect(await noMatch.json()).toMatchObject({ items: [], totalCount: 0 })
@@ -194,10 +194,10 @@ describe('Renter charge isolation (database integration)', () => {
     const id = ownIds[0]
     const body = {
       description: 'Denied',
-      type: 'A_RECEBER',
+      type: 'RECEIVABLE',
       amount: 100,
       dueDate: '2026-10-05',
-      status: 'PENDENTE',
+      status: 'PENDING',
     }
     expect((await POST(request('charges', 'POST', body))).status).toBe(403)
     expect(
@@ -213,9 +213,9 @@ describe('Renter charge isolation (database integration)', () => {
       ).status,
     ).toBe(403)
     expect((await getSummary(request('summary'))).status).toBe(403)
-    expect(await prisma.cobranca.findUnique({ where: { id } })).toMatchObject({
-      status: 'PENDENTE',
-      pagoEm: null,
+    expect(await prisma.charge.findUnique({ where: { id } })).toMatchObject({
+      status: 'PENDING',
+      paidAt: null,
     })
   })
 

@@ -12,7 +12,8 @@ import { apiContractFixture } from '../fixtures/contract'
 vi.mock('next-auth/react', () => ({
   useSession: () => ({ data: { tenantId: 'agency', user: { id: 'manager' }, role: 'OWNER' } }),
 }))
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND')
   }),
@@ -54,7 +55,7 @@ it('mostra erro recuperável no detalhe para falha de rede sem apresentar 404', 
 
 it('renderiza dados e ações reais, removendo edição após a primeira assinatura', async () => {
   const contract = apiContractFixture()
-  contract.parties[0].signatureStatus = 'ASSINADA'
+  contract.parties[0].signatureStatus = 'SIGNED'
   contract.parties[0].signatureMethod = 'MANUAL'
   vi.spyOn(contractsService, 'get').mockResolvedValue(contract)
   vi.spyOn(contractsService, 'history').mockResolvedValue({

@@ -16,12 +16,12 @@ vi.mock('@server/auth/require-bearer-auth', () => ({ requireBearerAuth: vi.fn() 
 const user = {
   id: 'user',
   tenantId: 'tenant',
-  nome: 'User',
+  name: 'User',
   email: 'user@example.test',
-  senhaHash: 'hash',
-  papel: 'RENTER' as const,
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash',
+  role: 'RENTER' as const,
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 const request = () =>
   new NextRequest('http://localhost/api/maintenance/tickets', {
@@ -33,7 +33,7 @@ describe('Maintenance authenticated actor', () => {
     vi.mocked(requireBearerAuth).mockResolvedValue({
       sub: 'user',
       tenantId: 'tenant',
-      papel: 'OWNER',
+      role: 'OWNER',
     })
     vi.mocked(authContainer.userRepository.findById).mockResolvedValue(user)
   })
@@ -42,13 +42,13 @@ describe('Maintenance authenticated actor', () => {
       actorId: 'user',
       actorTenantId: 'tenant',
       actorName: 'User',
-      actorPapel: 'RENTER',
+      actorRole: 'RENTER',
     })
   })
   it.each([
     null,
-    { ...user, ativo: false },
-    { ...user, vinculoAprovadoEm: null },
+    { ...user, active: false },
+    { ...user, membershipApprovedAt: null },
     { ...user, tenantId: 'other' },
   ])('rejects invalid or unapproved user %#', async (invalid) => {
     vi.mocked(authContainer.userRepository.findById).mockResolvedValue(invalid)

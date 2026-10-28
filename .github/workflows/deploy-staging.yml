@@ -1,46 +1,79 @@
-name: Deploy staging (migrate + seed)
+name: Staging migration (maintenance window)
 
+# The English rename is incompatible with running older application instances.
+# A push must never migrate the shared database ahead of coordinated promotion.
 on:
-  push:
-    branches: [dev]
+  workflow_dispatch:
+    inputs:
+      maintenance_confirmed:
+        description: 'Old application instances drained and writes stopped'
+        type: boolean
+        required: true
+        default: false
+      snapshot_reference:
+        description: 'Verified restore point/snapshot reference (no secrets)'
+        type: string
+        required: true
+      deployment_reference:
+        description: 'Compatible, validated application artifact ready for promotion'
+        type: string
+        required: true
+      seed_demo:
+        description: 'Run demo seed (resets fixture users/passwords; staging demo only)'
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+  actions: read
 
 concurrency:
   group: deploy-staging
   cancel-in-progress: false
 
 jobs:
-  migrate-and-seed:
+  migrate:
+    if: github.ref == 'refs/heads/dev' && inputs.maintenance_confirmed
     runs-on: ubuntu-latest
     environment: staging
-
     env:
       DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
       PLATFORM_ADMIN_NAME: ${{ secrets.PLATFORM_ADMIN_NAME }}
       PLATFORM_ADMIN_EMAIL: ${{ secrets.PLATFORM_ADMIN_EMAIL }}
       PLATFORM_ADMIN_PASSWORD: ${{ secrets.PLATFORM_ADMIN_PASSWORD }}
       CONTRACTS_DATA_ENCRYPTION_KEY: ${{ secrets.CONTRACTS_DATA_ENCRYPTION_KEY }}
-
+      SNAPSHOT_REFERENCE: ${{ inputs.snapshot_reference }}
+      DEPLOYMENT_REFERENCE: ${{ inputs.deployment_reference }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
-
+      - name: Require successful CI for this exact commit
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {data} = await github.rest.actions.listWorkflowRuns({owner: context.repo.owner, repo: context.repo.repo, workflow_id: 'ci.yml', head_sha: context.sha, status: 'completed', per_page: 100});
+            if (!data.workflow_runs.some(run => run.conclusion === 'success' && run.head_branch === 'dev')) {
+              core.setFailed('Successful CI on dev is required for this commit.');
+            }
       - run: npm ci
-
-      - name: Valida a chave de proteção de Contracts antes de alterar o banco
+      - name: Check release prerequisites before changing the database
         run: |
           node --input-type=module <<'JS'
           const key = process.env.CONTRACTS_DATA_ENCRYPTION_KEY ?? ''
-          if (!/^[A-Za-z0-9+/]+={0,2}$/.test(key) || Buffer.from(key, 'base64').length !== 32) {
-            throw new Error('Configure CONTRACTS_DATA_ENCRYPTION_KEY com 32 bytes em base64.')
-          }
+          if (!/^[A-Za-z0-9+/]+={0,2}$/.test(key) || Buffer.from(key, 'base64').length !== 32) throw new Error('Configure the existing 32-byte contracts encryption key.');
+          if (!(process.env.SNAPSHOT_REFERENCE ?? '').trim() || !(process.env.DEPLOYMENT_REFERENCE ?? '').trim()) throw new Error('Verified snapshot and application artifact references are required.');
+          const url = new URL(process.env.DATABASE_URL ?? '');
+          if (!['postgres:', 'postgresql:'].includes(url.protocol)) throw new Error('Invalid staging database configuration.');
           JS
-
-      - name: Aplica as migrations pendentes no RDS de staging
+      - name: Apply the coordinated database release
         run: npm run db:deploy -w @ketris/web
-
-      - name: Roda o seed (idempotente — ver prisma/seed.ts)
+      - name: Seed staging demo (explicit opt-in)
+        if: inputs.seed_demo
         run: npm run db:seed -w @ketris/web
+      - name: Record the remaining promotion gate
+        run: |
+          echo 'Database migration finished. Keep maintenance active until the referenced compatible application is promoted and smoke-tested.' >> "$GITHUB_STEP_SUMMARY"

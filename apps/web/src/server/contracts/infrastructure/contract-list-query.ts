@@ -5,36 +5,35 @@ import { contractPeriodDates } from './contract-period'
 
 export function contractListQuery(filters: ContractListFilters, scope: ContractReadScope) {
   const conditions: Prisma.Sql[] = []
-  const where: Prisma.ContratoWhereInput = {
+  const where: Prisma.ContractWhereInput = {
     AND: [contractReadWhere(scope)],
     status: filters.status,
-    tipo: filters.type,
-    imovelId: filters.propertyId,
+    type: filters.type,
+    propertyId: filters.propertyId,
   }
   if (scope.kind === 'party') {
     conditions.push(
-      Prisma.sql`EXISTS (SELECT 1 FROM partes_contrato p JOIN usuarios u ON u.id = p."usuarioId" WHERE p."contratoId" = c.id AND p.papel = 'LOCATARIO' AND p."usuarioId" = ${scope.userId} AND u.ativo = true AND u.papel = 'RENTER')`,
+      Prisma.sql`EXISTS (SELECT 1 FROM contract_parties p JOIN users u ON u.id = p."userId" WHERE p."contractId" = c.id AND p.role = 'RENTER' AND p."userId" = ${scope.userId} AND u.active = true AND u.role = 'RENTER')`,
     )
   } else {
     conditions.push(Prisma.sql`c."tenantId" = ${scope.tenantId}`)
-    if (scope.kind === 'propertyOwner')
-      conditions.push(Prisma.sql`i."proprietarioId" = ${scope.ownerId}`)
+    if (scope.kind === 'propertyOwner') conditions.push(Prisma.sql`i."ownerId" = ${scope.ownerId}`)
     else if (scope.responsibleId)
-      conditions.push(Prisma.sql`i."responsavelId" = ${scope.responsibleId}`)
+      conditions.push(Prisma.sql`i."responsibleId" = ${scope.responsibleId}`)
   }
   if (filters.status) conditions.push(Prisma.sql`c.status::text = ${filters.status}`)
-  if (filters.type) conditions.push(Prisma.sql`c.tipo::text = ${filters.type}`)
-  if (filters.propertyId) conditions.push(Prisma.sql`c."imovelId" = ${filters.propertyId}`)
+  if (filters.type) conditions.push(Prisma.sql`c.type::text = ${filters.type}`)
+  if (filters.propertyId) conditions.push(Prisma.sql`c."propertyId" = ${filters.propertyId}`)
   const search = filters.search?.trim()
   if (search) {
     where.OR = [
-      { codigo: { contains: search, mode: 'insensitive' } },
-      { imovel: { titulo: { contains: search, mode: 'insensitive' } } },
-      { partes: { some: { nome: { contains: search, mode: 'insensitive' } } } },
+      { code: { contains: search, mode: 'insensitive' } },
+      { property: { title: { contains: search, mode: 'insensitive' } } },
+      { parties: { some: { name: { contains: search, mode: 'insensitive' } } } },
     ]
     const term = '%' + search + '%'
     conditions.push(
-      Prisma.sql`(c.codigo ILIKE ${term} OR i.titulo ILIKE ${term} OR EXISTS (SELECT 1 FROM partes_contrato p WHERE p."contratoId" = c.id AND p.nome ILIKE ${term}))`,
+      Prisma.sql`(c.code ILIKE ${term} OR i.title ILIKE ${term} OR EXISTS (SELECT 1 FROM contract_parties p WHERE p."contractId" = c.id AND p.name ILIKE ${term}))`,
     )
   }
   const dates = contractPeriodDates()
@@ -45,8 +44,8 @@ export function contractListQuery(filters: ContractListFilters, scope: ContractR
         ? dates.after90
         : null
   if (end) {
-    where.dataFim = { gte: dates.today, lt: end }
-    conditions.push(Prisma.sql`c."dataFim" >= ${dates.today} AND c."dataFim" < ${end}`)
+    where.endDate = { gte: dates.today, lt: end }
+    conditions.push(Prisma.sql`c."endDate" >= ${dates.today} AND c."endDate" < ${end}`)
   }
   return { where, sql: Prisma.join(conditions, ' AND ') }
 }

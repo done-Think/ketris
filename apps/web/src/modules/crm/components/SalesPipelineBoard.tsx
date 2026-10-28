@@ -16,7 +16,7 @@ import { useCreateOpportunity } from '../hooks/use-opportunities'
 import { usePipelineViewMode } from '../hooks/use-pipeline-view-mode'
 import type { CreateOpportunityFormValues } from '../types/opportunity'
 import type { SalesPipelineStageId } from '../types/sales-pipeline'
-import { errorMessage } from '../utils/error-message'
+import { extractErrorMessage } from '@shared/utils/error-message'
 import { CreateOpportunityDialog } from './opportunity-detail/CreateOpportunityDialog'
 import { SalesPipelineToolbar } from './sales-pipeline-board/SalesPipelineToolbar'
 import { SalesPipelineKanbanView } from './SalesPipelineKanbanView'
@@ -24,7 +24,7 @@ import { SalesPipelineKanbanView } from './SalesPipelineKanbanView'
 export function SalesPipelineBoard() {
   const t = useTranslations('crm.pipeline')
   const { data: session } = useSession()
-  const tenantId = session?.tenantId ?? ''
+  const tenantId = session?.tenantId
   const { filters: list, setFilter } = useListState({
     search: '',
     selectedStageId: null as SalesPipelineStageId | null,
@@ -39,7 +39,7 @@ export function SalesPipelineBoard() {
   const [viewMode, setViewMode] = usePipelineViewMode()
   const { enqueueSnackbar } = useSnackbar()
 
-  const createOpportunity = useCreateOpportunity(tenantId)
+  const createOpportunity = useCreateOpportunity()
 
   async function handleCreateOpportunity(values: CreateOpportunityFormValues) {
     try {
@@ -61,7 +61,7 @@ export function SalesPipelineBoard() {
       enqueueSnackbar(t('createSuccess'), { variant: 'success' })
       setIsCreateOpen(false)
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('createError')), { variant: 'error' })
+      enqueueSnackbar(extractErrorMessage(error, t('createError')), { variant: 'error' })
     }
   }
 
@@ -91,7 +91,6 @@ export function SalesPipelineBoard() {
       <CreateOpportunityDialog
         key={`${tenantId}:${session?.user?.id ?? ''}:${session?.role ?? ''}`}
         open={isCreateOpen}
-        tenantId={tenantId}
         canChooseResponsible={session?.role === 'OWNER'}
         isPending={createOpportunity.isPending}
         onClose={() => setIsCreateOpen(false)}
@@ -99,11 +98,7 @@ export function SalesPipelineBoard() {
       />
 
       {viewMode === 'kanban' ? (
-        <SalesPipelineKanbanView
-          tenantId={tenantId}
-          search={search}
-          selectedStageId={selectedStageId}
-        />
+        <SalesPipelineKanbanView search={search} selectedStageId={selectedStageId} />
       ) : (
         <CrmProposalsList embedded search={search} />
       )}

@@ -62,7 +62,7 @@ export interface DownloadChargeReceiptInput extends ChargeActor {
 
 export interface GetFinancialSummaryInput {
   actorTenantId: string
-  actorPapel: ChargeActor['actorPapel']
+  actorRole: ChargeActor['actorRole']
   month?: CalendarMonth
 }
 

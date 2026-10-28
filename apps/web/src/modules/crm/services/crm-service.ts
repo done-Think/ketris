@@ -1,4 +1,4 @@
-import type { ListOpportunityResponsiblesResponseDTO } from '@server/crm/types/dto'
+import type { ListOpportunityResponsiblesResponseDTO } from '@shared/types/generated/crm/dto'
 import { BaseService } from '@shared/lib/api/base-service'
 
 import type {
@@ -95,9 +95,9 @@ export class CrmService extends BaseService {
       .then((data) => data.activities)
   }
 
-  addNote(opportunityId: string, description: string) {
+  addNote(opportunityId: string, description: string, type: 'NOTE' | 'CONTACT_MADE' = 'NOTE') {
     return this.http
-      .post<ActivityResponse>(`${this.path}/${opportunityId}/activities`, { description })
+      .post<ActivityResponse>(`${this.path}/${opportunityId}/activities`, { description, type })
       .then((data) => data.activity)
   }
 

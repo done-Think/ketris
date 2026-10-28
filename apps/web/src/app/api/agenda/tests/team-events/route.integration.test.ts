@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import type { Usuario } from '@prisma/client'
+import type { User } from '@prisma/client'
 import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
@@ -15,10 +15,10 @@ describe('Agency team event visibility and mutations', () => {
   const tenants: string[] = []
   let agency: string
   let propertyId: string
-  let admin: Usuario
-  let agent: Usuario
-  let colleague: Usuario
-  let foreignAgent: Usuario
+  let admin: User
+  let agent: User
+  let colleague: User
+  let foreignAgent: User
   let collective: string
   let assigned: string
   let legacy: string
@@ -48,18 +48,18 @@ describe('Agency team event visibility and mutations', () => {
     audience: 'SHARED_TEAM' | 'ALL_AGENTS' | 'ASSIGNED_AGENT',
     internal = true,
   ) {
-    return prisma.eventoAgenda.create({
+    return prisma.agendaEvent.create({
       data: {
         tenantId,
-        responsavelId: responsibleId,
-        criadoPorId: responsibleId,
-        titulo: title,
-        destino: audience,
-        interno: internal,
-        inicio: new Date('2031-03-03T13:00:00Z'),
-        fim: new Date('2031-03-03T14:00:00Z'),
-        participanteNome: internal ? '' : 'Client',
-        participanteTelefone: internal ? '' : '(11) 99999-0000',
+        responsibleId: responsibleId,
+        createdById: responsibleId,
+        title: title,
+        audience: audience,
+        internal: internal,
+        start: new Date('2031-03-03T13:00:00Z'),
+        end: new Date('2031-03-03T14:00:00Z'),
+        participantName: internal ? '' : 'Client',
+        participantPhone: internal ? '' : '(11) 99999-0000',
       },
     })
   }
@@ -90,11 +90,11 @@ describe('Agency team event visibility and mutations', () => {
   beforeAll(async () => {
     for (const name of ['agency', 'other']) {
       tenants.push(
-        (await prisma.tenant.create({ data: { nome: name, slug: `${name}-team-${suffix}` } })).id,
+        (await prisma.tenant.create({ data: { name: name, slug: `${name}-team-${suffix}` } })).id,
       )
     }
     agency = tenants[0]
-    const users: Record<string, Usuario> = {}
+    const users: Record<string, User> = {}
     for (const [name, role, tenantId] of [
       ['admin', 'OWNER', agency],
       ['agent', 'AGENT', agency],
@@ -103,25 +103,25 @@ describe('Agency team event visibility and mutations', () => {
       ['renter', 'RENTER', agency],
       ['foreign', 'AGENT', tenants[1]],
     ] as const) {
-      const user = await prisma.usuario.create({
+      const user = await prisma.user.create({
         data: {
           tenantId,
-          nome: name,
+          name: name,
           email: `${name}-team-${suffix}@example.test`,
-          senhaHash: 'test',
-          papel: role,
-          vinculoAprovadoEm: new Date(),
+          passwordHash: 'test',
+          role: role,
+          membershipApprovedAt: new Date(),
         },
       })
       users[name] = user
       tokens[name] = await tokenService.sign({
         id: user.id,
         tenantId: user.tenantId,
-        nome: user.nome,
+        name: user.name,
         email: user.email,
-        papel: user.papel,
-        ativo: user.ativo,
-        vinculoAprovadoEm: user.vinculoAprovadoEm,
+        role: user.role,
+        active: user.active,
+        membershipApprovedAt: user.membershipApprovedAt,
       })
     }
     admin = users.admin
@@ -129,14 +129,14 @@ describe('Agency team event visibility and mutations', () => {
     colleague = users.colleague
     foreignAgent = users.foreign
     propertyId = (
-      await prisma.imovel.create({
+      await prisma.property.create({
         data: {
           tenantId: agency,
-          responsavelId: agent.id,
-          titulo: 'Visit property',
-          finalidade: 'ALUGUEL',
-          tipo: 'APARTAMENTO',
-          valor: 1000,
+          responsibleId: agent.id,
+          title: 'Visit property',
+          purpose: 'RENT',
+          type: 'APARTMENT',
+          price: 1000,
           status: 'DRAFT',
         },
       })
@@ -146,10 +146,10 @@ describe('Agency team event visibility and mutations', () => {
     legacy = (await createEvent(agency, colleague.id, 'Previous event', 'SHARED_TEAM', false)).id
     foreign = (await createEvent(tenants[1], foreignAgent.id, 'Other agency', 'ALL_AGENTS')).id
     // Even a pre-existing explicit link must not expose a newly internal event.
-    await prisma.eventoAgendaParticipante.createMany({
+    await prisma.agendaEventParticipant.createMany({
       data: [
-        { eventoId: collective, usuarioId: users.owner.id },
-        { eventoId: collective, usuarioId: users.renter.id },
+        { eventId: collective, userId: users.owner.id },
+        { eventId: collective, userId: users.renter.id },
       ],
     })
   })
@@ -189,24 +189,24 @@ describe('Agency team event visibility and mutations', () => {
   )
 
   it('includes agents added after the collective event', async () => {
-    const user = await prisma.usuario.create({
+    const user = await prisma.user.create({
       data: {
         tenantId: agency,
-        nome: 'New agent',
+        name: 'New agent',
         email: `new-team-${suffix}@example.test`,
-        senhaHash: 'test',
-        papel: 'AGENT',
-        vinculoAprovadoEm: new Date(),
+        passwordHash: 'test',
+        role: 'AGENT',
+        membershipApprovedAt: new Date(),
       },
     })
     const token = await tokenService.sign({
       id: user.id,
       tenantId: user.tenantId,
-      nome: user.nome,
+      name: user.name,
       email: user.email,
-      papel: user.papel,
-      ativo: user.ativo,
-      vinculoAprovadoEm: user.vinculoAprovadoEm,
+      role: user.role,
+      active: user.active,
+      membershipApprovedAt: user.membershipApprovedAt,
     })
     expect(await list(token)).toContain(collective)
     expect(await list(token)).not.toContain(assigned)
@@ -245,7 +245,7 @@ describe('Agency team event visibility and mutations', () => {
     )
     expect(response.status).toBe(404)
     expect(
-      await prisma.eventoAgenda.count({ where: { tenantId: agency, titulo: 'Invalid recipient' } }),
+      await prisma.agendaEvent.count({ where: { tenantId: agency, title: 'Invalid recipient' } }),
     ).toBe(0)
   })
 
@@ -272,8 +272,8 @@ describe('Agency team event visibility and mutations', () => {
       (await CANCEL(request('POST', `/${assigned}/cancel`, tokens.agent), context(assigned)))
         .status,
     ).toBe(403)
-    expect(await prisma.eventoAgenda.findUnique({ where: { id: assigned } })).toMatchObject({
-      titulo: 'Directed',
+    expect(await prisma.agendaEvent.findUnique({ where: { id: assigned } })).toMatchObject({
+      title: 'Directed',
       status: 'CONFIRMED',
     })
   })
@@ -332,8 +332,8 @@ describe('Agency team event visibility and mutations', () => {
       context(id),
     )
     expect(response.status).toBe(409)
-    expect(await prisma.eventoAgenda.findUnique({ where: { id } })).toMatchObject({
-      tipo: 'MEETING',
+    expect(await prisma.agendaEvent.findUnique({ where: { id } })).toMatchObject({
+      type: 'MEETING',
     })
   })
 
@@ -347,8 +347,8 @@ describe('Agency team event visibility and mutations', () => {
       context(id),
     )
     expect(response.status).toBe(409)
-    expect(await prisma.eventoAgenda.findUnique({ where: { id } })).toMatchObject({
-      inicio: new Date('2031-03-15T16:00:00Z'),
+    expect(await prisma.agendaEvent.findUnique({ where: { id } })).toMatchObject({
+      start: new Date('2031-03-15T16:00:00Z'),
     })
   })
 
@@ -369,8 +369,12 @@ describe('Agency team event visibility and mutations', () => {
     ])
     expect(results.map((result) => result.status).sort()).toEqual([201, 409])
     expect(
-      await prisma.eventoAgenda.count({
-        where: { tenantId: agency, imovelId: propertyId, inicio: new Date('2031-03-17T13:00:00Z') },
+      await prisma.agendaEvent.count({
+        where: {
+          tenantId: agency,
+          propertyId: propertyId,
+          start: new Date('2031-03-17T13:00:00Z'),
+        },
       }),
     ).toBe(1)
   })

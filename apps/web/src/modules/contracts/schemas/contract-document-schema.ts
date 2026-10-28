@@ -1,7 +1,9 @@
 import { z } from 'zod'
 import type { SchemaMessageTranslator } from '@shared/types'
 
-export function createContractDocumentSchema(t: SchemaMessageTranslator) {
+export function createContractDocumentSchema(
+  t: SchemaMessageTranslator<'pdf' | 'required' | 'size'>,
+) {
   return z.object({
     file: z
       .custom<File>((value) => value instanceof File, t('required'))

@@ -1,19 +1,19 @@
-import type { LeadSource, LeadSourceKey } from '@server/crm/constants/lead-sources'
+import type { LeadSource, LeadSourceKey } from '@shared/types/lead-source'
 import type {
   ConvertLeadRequestDTO,
   CreateLeadRequestDTO,
   LeadDTO,
   PatchLeadRequestDTO,
-} from '@server/crm/types/dto'
+} from '@shared/types/generated/crm/dto'
 import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { createConvertLeadSchema } from '../schemas/convert-lead-schema'
 import type { createLeadSchema } from '../schemas/create-lead-schema'
 
-export type LeadStage = 'NOVO' | 'EM_CONTATO' | 'VISITA_MARCADA' | 'PROPOSTA'
+export type LeadStage = 'NEW' | 'IN_CONTACT' | 'VISIT_SCHEDULED' | 'PROPOSAL'
 
-export type LeadApiStage = 'NOVO' | 'EM_CONTATO' | 'VISITA_MARCADA' | 'PROPOSTA'
+export type LeadApiStage = 'NEW' | 'IN_CONTACT' | 'VISIT_SCHEDULED' | 'PROPOSAL'
 
 export type Lead = LeadDTO
 
@@ -189,4 +189,4 @@ export type LeadsListProps = {
   totalCount?: number
 }
 
-export type LeadListFilters = import('@server/crm/types/dto').LeadListQueryDTO
+export type LeadListFilters = import('@shared/types/generated/crm/dto').LeadListQueryDTO

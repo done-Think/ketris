@@ -9,9 +9,9 @@ describe('ListLeadsUseCase', () => {
     const repository = { findManyByTenant } as unknown as LeadRepository
     const useCase = new ListLeadsUseCase(repository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'admin-1', actorPapel: 'OWNER' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'admin-1', actorRole: 'OWNER' })
 
-    expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', { responsavelId: undefined })
+    expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', { responsibleId: undefined })
   })
 
   it('restringe por responsavelId quando o ator é AGENT', async () => {
@@ -19,8 +19,8 @@ describe('ListLeadsUseCase', () => {
     const repository = { findManyByTenant } as unknown as LeadRepository
     const useCase = new ListLeadsUseCase(repository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'agent-1', actorPapel: 'AGENT' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'agent-1', actorRole: 'AGENT' })
 
-    expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', { responsavelId: 'agent-1' })
+    expect(findManyByTenant).toHaveBeenCalledWith('tenant-1', { responsibleId: 'agent-1' })
   })
 })

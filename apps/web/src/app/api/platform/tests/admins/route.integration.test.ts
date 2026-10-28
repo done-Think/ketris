@@ -16,18 +16,18 @@ describe('/api/platform/admins (integração)', () => {
   beforeAll(async () => {
     const actor = await prisma.platformAdmin.create({
       data: {
-        nome: 'Ator Teste',
+        name: 'Ator Teste',
         email: `ator-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
+        passwordHash: 'hash-fake',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
       role: 'ADMIN',
-      ativo: true,
+      active: true,
     })
   })
 
@@ -62,7 +62,7 @@ describe('/api/platform/admins (integração)', () => {
 
     expect(response.status).toBe(201)
     expect(json.admin.email).toBe(email)
-    expect(json.admin).not.toHaveProperty('senhaHash')
+    expect(json.admin).not.toHaveProperty('passwordHash')
 
     await prisma.platformAdmin.delete({ where: { id: json.admin.id } })
   })

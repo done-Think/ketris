@@ -42,12 +42,12 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     const second = (await responses[1].json()).provider
     expect(first.id).toBe(second.id)
     expect(
-      await prisma.prestadorManutencao.count({
-        where: { tenantId: env.fixture.tenant.id, nome: name },
+      await prisma.maintenanceProvider.count({
+        where: { tenantId: env.fixture.tenant.id, name: name },
       }),
     ).toBe(1)
     expect(
-      await prisma.atividadePrestadorManutencao.findMany({ where: { prestadorId: first.id } }),
+      await prisma.maintenanceProviderActivity.findMany({ where: { providerId: first.id } }),
     ).toMatchObject([{ action: 'CREATED', actorUserId: env.fixture.admin.id, actorRole: 'OWNER' }])
   })
 
@@ -62,7 +62,7 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     expect(response.status).toBe(201)
     const body = await response.json()
     expect(
-      (await prisma.prestadorManutencao.findUniqueOrThrow({ where: { id: body.provider.id } }))
+      (await prisma.maintenanceProvider.findUniqueOrThrow({ where: { id: body.provider.id } }))
         .tenantId,
     ).toBe(env.fixture.tenant.id)
     for (const account of [
@@ -101,15 +101,15 @@ describe('/api/maintenance provider catalog (database integration)', () => {
 
   it('scopes shared-tenant renters to the linked ticket agency instead of their account tenant', async () => {
     const id = await create(env.fixture.admin.token)
-    const partyId = env.fixture.contract.partes[0].id
-    await prisma.parteContrato.update({
+    const partyId = env.fixture.contract.parties[0].id
+    await prisma.contractParty.update({
       where: { id: partyId },
-      data: { usuarioId: env.other.renter.id, email: env.other.renter.email },
+      data: { userId: env.other.renter.id, email: env.other.renter.email },
     })
     try {
       const chosen = await add('Shared renter chosen', env.other.renter.token, id)
       expect(
-        (await prisma.prestadorManutencao.findUniqueOrThrow({ where: { id: chosen.id } })).tenantId,
+        (await prisma.maintenanceProvider.findUniqueOrThrow({ where: { id: chosen.id } })).tenantId,
       ).toBe(env.fixture.tenant.id)
       const response = await action(id, env.other.renter.token, {
         action: 'provider',
@@ -121,9 +121,9 @@ describe('/api/maintenance provider catalog (database integration)', () => {
         name: chosen.name,
       })
     } finally {
-      await prisma.parteContrato.update({
+      await prisma.contractParty.update({
         where: { id: partyId },
-        data: { usuarioId: env.fixture.renter.id, email: env.fixture.renter.email },
+        data: { userId: env.fixture.renter.id, email: env.fixture.renter.email },
       })
     }
   })
@@ -292,8 +292,8 @@ describe('/api/maintenance provider catalog (database integration)', () => {
 
   it('rolls back the provider, ticket and history if the catalog audit fails', async () => {
     const id = await create()
-    const before = await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id } })
-    const activities = await prisma.atividadeChamadoManutencao.count({ where: { chamadoId: id } })
+    const before = await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id } })
+    const activities = await prisma.maintenanceTicketActivity.count({ where: { ticketId: id } })
     const spy = vi
       .spyOn(providerAudit, 'recordMaintenanceProviderAudit')
       .mockRejectedValueOnce(new Error('Forced provider audit failure'))
@@ -306,13 +306,13 @@ describe('/api/maintenance provider catalog (database integration)', () => {
           })
         ).status,
       ).toBe(500)
-      expect(await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id } })).toEqual(before)
+      expect(await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id } })).toEqual(before)
       expect(
-        await prisma.prestadorManutencao.count({
-          where: { tenantId: env.fixture.tenant.id, nome: 'Rollback provider' },
+        await prisma.maintenanceProvider.count({
+          where: { tenantId: env.fixture.tenant.id, name: 'Rollback provider' },
         }),
       ).toBe(0)
-      expect(await prisma.atividadeChamadoManutencao.count({ where: { chamadoId: id } })).toBe(
+      expect(await prisma.maintenanceTicketActivity.count({ where: { ticketId: id } })).toBe(
         activities,
       )
     } finally {

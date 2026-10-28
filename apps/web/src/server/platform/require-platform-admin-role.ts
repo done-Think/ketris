@@ -20,7 +20,7 @@ export async function requirePlatformAdminRole(
   const { sub } = await requirePlatformBearerAuth(request, tokenService)
   const admin = await platformAdminRepository.findById(sub)
 
-  if (!admin || !admin.ativo) {
+  if (!admin || !admin.active) {
     throw new UnauthorizedError()
   }
 

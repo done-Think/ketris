@@ -5,7 +5,7 @@ import { contactTypeSchema, createContactFormSchema } from '../../schemas/contac
 const schema = createContactFormSchema((key) => key)
 
 describe('contact schemas', () => {
-  it.each(['PROPRIETARIO', 'LOCATARIO', 'CORRETOR'])('accepts the supported type %s', (type) => {
+  it.each(['OWNER', 'RENTER', 'BROKER'])('accepts the supported type %s', (type) => {
     expect(contactTypeSchema.parse(type)).toBe(type)
   })
 
@@ -18,7 +18,7 @@ describe('contact schemas', () => {
       name: 'Maria Silva',
       email: 'maria@example.com',
       phone: '(11) 90000-0000',
-      type: 'LOCATARIO',
+      type: 'RENTER',
       notes: '',
     })
 
@@ -31,7 +31,7 @@ describe('contact schemas', () => {
         name: '   ',
         email: 'maria@example.com',
         phone: '',
-        type: 'LOCATARIO',
+        type: 'RENTER',
         notes: '',
       }).success,
     ).toBe(false)
@@ -42,7 +42,7 @@ describe('contact schemas', () => {
       name: 'Maria Silva',
       email: 'not-an-email',
       phone: '',
-      type: 'LOCATARIO',
+      type: 'RENTER',
       notes: '',
     })
 
@@ -56,7 +56,7 @@ describe('contact schemas', () => {
       name: '',
       email: 'maria@example.com',
       phone: '',
-      type: 'LOCATARIO',
+      type: 'RENTER',
       notes: '',
     })
 

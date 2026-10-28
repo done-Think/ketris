@@ -39,7 +39,7 @@ function createDeps(profile: BrokerProfile | null = makeProfile()) {
   const brokerProfileRepository: BrokerProfileRepository = {
     findPublishedById: vi.fn(),
     listPublished: vi.fn(),
-    findByUsuarioId: vi.fn().mockResolvedValue(profile),
+    findByUserId: vi.fn().mockResolvedValue(profile),
     save: vi.fn(),
     setStatus: vi.fn().mockResolvedValue(profile ? { ...profile, status: 'PUBLISHED' } : null),
   }
@@ -52,7 +52,7 @@ describe('PublishBrokerProfileUseCase', () => {
     const deps = createDeps()
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    const result = await useCase.execute({ actorId: 'usuario-1', actorPapel: 'AGENT' })
+    const result = await useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })
 
     expect(result.status).toBe('PUBLISHED')
     expect(deps.brokerProfileRepository.setStatus).toHaveBeenCalledWith(
@@ -66,7 +66,7 @@ describe('PublishBrokerProfileUseCase', () => {
     const deps = createDeps(makeProfile({ phone: null, bio: null }))
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await expect(useCase.execute({ actorId: 'usuario-1', actorPapel: 'AGENT' })).rejects.toThrow(
+    await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
       ProfilePublishValidationError,
     )
     expect(deps.brokerProfileRepository.setStatus).not.toHaveBeenCalled()
@@ -76,7 +76,7 @@ describe('PublishBrokerProfileUseCase', () => {
     const deps = createDeps(makeProfile({ creci: null }))
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await expect(useCase.execute({ actorId: 'usuario-1', actorPapel: 'AGENT' })).rejects.toThrow(
+    await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
       ProfilePublishValidationError,
     )
     expect(deps.brokerProfileRepository.setStatus).not.toHaveBeenCalled()
@@ -86,7 +86,7 @@ describe('PublishBrokerProfileUseCase', () => {
     const deps = createDeps(makeProfile({ availability: null }))
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await expect(useCase.execute({ actorId: 'usuario-1', actorPapel: 'AGENT' })).rejects.toThrow(
+    await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
       ProfilePublishValidationError,
     )
     expect(deps.brokerProfileRepository.setStatus).not.toHaveBeenCalled()
@@ -96,7 +96,7 @@ describe('PublishBrokerProfileUseCase', () => {
     const deps = createDeps(makeProfile({ neighborhoods: [], specialties: [] }))
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await expect(useCase.execute({ actorId: 'usuario-1', actorPapel: 'AGENT' })).rejects.toThrow(
+    await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
       ProfilePublishValidationError,
     )
     expect(deps.brokerProfileRepository.setStatus).not.toHaveBeenCalled()
@@ -106,7 +106,7 @@ describe('PublishBrokerProfileUseCase', () => {
     const deps = createDeps(makeProfile({ avatarUrl: null, bannerUrl: null }))
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await expect(useCase.execute({ actorId: 'usuario-1', actorPapel: 'AGENT' })).rejects.toThrow(
+    await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
       ProfilePublishValidationError,
     )
     expect(deps.brokerProfileRepository.setStatus).not.toHaveBeenCalled()
@@ -116,7 +116,7 @@ describe('PublishBrokerProfileUseCase', () => {
     const deps = createDeps(null)
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await expect(useCase.execute({ actorId: 'usuario-1', actorPapel: 'AGENT' })).rejects.toThrow(
+    await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
       BrokerProfileNotFoundError,
     )
   })
@@ -125,7 +125,7 @@ describe('PublishBrokerProfileUseCase', () => {
     const deps = createDeps()
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await expect(useCase.execute({ actorId: 'usuario-1', actorPapel: 'OWNER' })).rejects.toThrow(
+    await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'OWNER' })).rejects.toThrow(
       ForbiddenError,
     )
   })

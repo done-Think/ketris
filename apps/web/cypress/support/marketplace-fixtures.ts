@@ -28,64 +28,64 @@ export async function seedMarketplaceFixtures(
     where: { key: { startsWith: 'marketplace-inquiry:' } },
   })
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Marketplace E2E', slug: slugPrefix + suffix, accountType: 'AGENCY' },
+    data: { name: 'Marketplace E2E', slug: slugPrefix + suffix, accountType: 'AGENCY' },
   })
-  const senhaHash = await bcrypt.hash(password, 10)
+  const passwordHash = await bcrypt.hash(password, 10)
   const ownerEmail = 'owner-' + suffix + '@marketplace.example.test'
-  await prisma.usuario.create({
+  await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Gestora Marketplace E2E',
+      name: 'Gestora Marketplace E2E',
       email: ownerEmail,
-      senhaHash,
-      papel: 'OWNER',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'OWNER',
+      emailVerifiedAt: new Date(),
     },
   })
   const brokerName = 'Corretora Marketplace ' + suffix
-  const broker = await prisma.usuario.create({
+  const broker = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: brokerName,
+      name: brokerName,
       email: 'broker-' + suffix + '@marketplace.example.test',
-      senhaHash,
-      papel: 'AGENT',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'AGENT',
+      emailVerifiedAt: new Date(),
     },
   })
-  await prisma.perfilPublicoCorretor.create({
+  await prisma.brokerPublicProfile.create({
     data: {
-      usuarioId: broker.id,
+      userId: broker.id,
       displayName: brokerName,
       status: 'PUBLISHED',
-      publicadoEm: new Date(),
+      publishedAt: new Date(),
     },
   })
   const city = 'Cidade E2E ' + suffix
   const propertyTitle = 'Casa Marketplace E2E ' + suffix
-  const property = await prisma.imovel.create({
+  const property = await prisma.property.create({
     data: {
       tenantId: tenant.id,
-      responsavelId: broker.id,
-      titulo: propertyTitle,
-      descricao: 'Casa com quintal para o fluxo de proposta E2E.',
-      finalidade: 'VENDA',
-      tipo: 'CASA',
-      quartos: 3,
-      banheiros: 2,
-      vagas: 2,
-      areaM2: 140,
-      valor: 650000,
+      responsibleId: broker.id,
+      title: propertyTitle,
+      description: 'Casa com quintal para o fluxo de proposta E2E.',
+      purpose: 'SALE',
+      type: 'HOUSE',
+      bedrooms: 3,
+      bathrooms: 2,
+      parkingSpots: 2,
+      areaSqm: 140,
+      price: 650000,
       status: 'PUBLISHED',
-      publicadoEm: new Date(Date.now() + 60_000),
-      endereco: {
+      publishedAt: new Date(Date.now() + 60_000),
+      address: {
         create: {
-          logradouro: 'Rua do Teste',
-          numero: '42',
-          bairro: 'Centro',
-          cidade: city,
-          estado: 'PR',
-          cep: '80010-000',
+          street: 'Rua do Teste',
+          number: '42',
+          neighborhood: 'Centro',
+          city: city,
+          state: 'PR',
+          zipCode: '80010-000',
         },
       },
     },
@@ -104,7 +104,7 @@ export async function seedMarketplaceFixtures(
 export async function cleanupMarketplaceFixtures(prisma: PrismaClient, tenantIds: string[]) {
   isolated()
   await prisma.$transaction([
-    prisma.oportunidade.deleteMany({
+    prisma.opportunity.deleteMany({
       where: { tenantId: { in: tenantIds }, tenant: { slug: { startsWith: slugPrefix } } },
     }),
     prisma.tenant.deleteMany({
@@ -122,8 +122,8 @@ export async function readMarketplaceInquiryEvidence(
   propertyId: string,
 ): Promise<MarketplaceInquiryEvidence> {
   isolated()
-  const inquiries = await prisma.oportunidade.findMany({
-    where: { imovelId: propertyId },
+  const inquiries = await prisma.opportunity.findMany({
+    where: { propertyId: propertyId },
     orderBy: { createdAt: 'desc' },
   })
   const latest = inquiries[0]
@@ -131,9 +131,9 @@ export async function readMarketplaceInquiryEvidence(
   return {
     count: inquiries.length,
     status: latest?.status ?? null,
-    leadName: latest?.interessadoNome ?? null,
-    leadEmail: latest?.interessadoEmail ?? null,
-    proposedValue: latest ? latest.valorProposto.toNumber() : null,
-    notes: latest?.observacoes ?? null,
+    leadName: latest?.interestedName ?? null,
+    leadEmail: latest?.interestedEmail ?? null,
+    proposedValue: latest ? latest.proposedValue.toNumber() : null,
+    notes: latest?.notes ?? null,
   }
 }

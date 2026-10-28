@@ -24,93 +24,93 @@ export async function seedContractFixtures(
   assertIsolatedContractDatabase()
   if (!/^[a-z0-9-]+$/.test(suffix)) throw new Error('Identificador de fixture inválido.')
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Contracts E2E', slug: 'contracts-e2e-' + suffix, accountType: 'AGENCY' },
+    data: { name: 'Contracts E2E', slug: 'contracts-e2e-' + suffix, accountType: 'AGENCY' },
   })
   const renters = await prisma.tenant.create({
-    data: { nome: 'Locatários Contracts E2E', slug: 'contracts-e2e-renters-' + suffix },
+    data: { name: 'Locatários Contracts E2E', slug: 'contracts-e2e-renters-' + suffix },
   })
-  const senhaHash = await bcrypt.hash(password, 10)
-  const owner = await prisma.usuario.create({
+  const passwordHash = await bcrypt.hash(password, 10)
+  const owner = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Gestora Contracts E2E',
+      name: 'Gestora Contracts E2E',
       email: 'owner-' + suffix + '@contracts.example.test',
-      senhaHash,
-      papel: 'OWNER',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'OWNER',
+      emailVerifiedAt: new Date(),
     },
   })
-  const propertyOwner = await prisma.usuario.create({
+  const propertyOwner = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Proprietária Contracts E2E',
+      name: 'Proprietária Contracts E2E',
       email: 'property-owner-' + suffix + '@contracts.example.test',
-      telefone: '11988888888',
-      senhaHash,
-      papel: 'PROPERTY_OWNER',
-      emailVerificadoEm: new Date(),
+      phone: '11988888888',
+      passwordHash,
+      role: 'PROPERTY_OWNER',
+      emailVerifiedAt: new Date(),
     },
   })
-  const renter = await prisma.usuario.create({
+  const renter = await prisma.user.create({
     data: {
       tenantId: renters.id,
-      nome: 'Locatária Contracts E2E',
+      name: 'Locatária Contracts E2E',
       email: 'renter-' + suffix + '@contracts.example.test',
-      telefone: '11999999999',
-      senhaHash,
-      papel: 'RENTER',
-      emailVerificadoEm: new Date(),
+      phone: '11999999999',
+      passwordHash,
+      role: 'RENTER',
+      emailVerifiedAt: new Date(),
     },
   })
-  const property = await prisma.imovel.create({
+  const property = await prisma.property.create({
     data: {
       tenantId: tenant.id,
-      responsavelId: owner.id,
-      proprietarioId: propertyOwner.id,
-      titulo: 'Apartamento Contracts E2E',
-      tipo: 'APARTAMENTO',
-      finalidade: 'ALUGUEL',
-      valor: 2450.75,
+      responsibleId: owner.id,
+      ownerId: propertyOwner.id,
+      title: 'Apartamento Contracts E2E',
+      type: 'APARTMENT',
+      purpose: 'RENT',
+      price: 2450.75,
       status: 'PUBLISHED',
     },
   })
-  await prisma.oportunidade.create({
+  await prisma.opportunity.create({
     data: {
       tenantId: tenant.id,
-      imovelId: property.id,
-      responsavelId: await propertyResponsibleId(prisma, property.id),
-      interessadoNome: renter.nome,
-      interessadoEmail: renter.email,
-      interessadoTelefone: renter.telefone,
-      valorProposto: 2450.75,
-      status: 'ACEITA',
+      propertyId: property.id,
+      responsibleId: await propertyResponsibleId(prisma, property.id),
+      interestedName: renter.name,
+      interestedEmail: renter.email,
+      interestedPhone: renter.phone,
+      proposedValue: 2450.75,
+      status: 'ACCEPTED',
     },
   })
   for (let index = 0; index < 26; index++) {
-    const opportunity = await prisma.oportunidade.create({
+    const opportunity = await prisma.opportunity.create({
       data: {
         tenantId: tenant.id,
-        imovelId: property.id,
-        responsavelId: await propertyResponsibleId(prisma, property.id),
-        interessadoNome: 'Histórico ' + index,
-        interessadoEmail: 'history-' + index + '@example.test',
-        valorProposto: 1000 + index,
-        status: 'ACEITA',
+        propertyId: property.id,
+        responsibleId: await propertyResponsibleId(prisma, property.id),
+        interestedName: 'Histórico ' + index,
+        interestedEmail: 'history-' + index + '@example.test',
+        proposedValue: 1000 + index,
+        status: 'ACCEPTED',
       },
     })
-    await prisma.contrato.create({
+    await prisma.contract.create({
       data: {
         tenantId: tenant.id,
-        imovelId: property.id,
-        oportunidadeOrigemId: opportunity.id,
-        codigo: 'LEG-' + String(index).padStart(3, '0'),
-        valor: 1000 + index,
-        diaVencimento: 5,
-        dataInicio: new Date('2020-01-01'),
-        dataFim: new Date('2021-01-01'),
-        indiceReajuste: 'IPCA',
-        tipoGarantia: 'CAUCAO',
-        status: 'ENCERRADO',
+        propertyId: property.id,
+        sourceOpportunityId: opportunity.id,
+        code: 'LEG-' + String(index).padStart(3, '0'),
+        amount: 1000 + index,
+        dueDay: 5,
+        startDate: new Date('2020-01-01'),
+        endDate: new Date('2021-01-01'),
+        adjustmentIndex: 'IPCA',
+        guaranteeType: 'DEPOSIT',
+        status: 'CLOSED',
       },
     })
   }
@@ -118,21 +118,31 @@ export async function seedContractFixtures(
     tenantIds: [tenant.id, renters.id],
     ownerEmail: owner.email,
     ownerId: owner.id,
-    ownerName: propertyOwner.nome,
+    ownerName: propertyOwner.name,
     renterEmail: renter.email,
-    leadName: renter.nome,
+    leadName: renter.name,
     propertyId: property.id,
-    propertyTitle: property.titulo,
+    propertyTitle: property.title,
   }
 }
 
 export async function cleanupContractFixtures(prisma: PrismaClient, tenantIds: string[]) {
   assertIsolatedContractDatabase()
   if (tenantIds.length) {
-    await prisma.cobranca.deleteMany({
+    await prisma.charge.deleteMany({
       where: { tenantId: { in: tenantIds }, tenant: { slug: { startsWith: 'contracts-e2e-' } } },
     })
-    await prisma.contrato.deleteMany({
+    await prisma.contractSignature.deleteMany({
+      where: {
+        contractParty: {
+          contract: {
+            tenantId: { in: tenantIds },
+            tenant: { slug: { startsWith: 'contracts-e2e-' } },
+          },
+        },
+      },
+    })
+    await prisma.contract.deleteMany({
       where: { tenantId: { in: tenantIds }, tenant: { slug: { startsWith: 'contracts-e2e-' } } },
     })
     await prisma.tenant.deleteMany({
@@ -147,24 +157,24 @@ export async function readContractEvidence(
   contractId: string,
 ): Promise<ContractEvidenceResult> {
   assertIsolatedContractDatabase()
-  const contract = await prisma.contrato.findFirstOrThrow({
+  const contract = await prisma.contract.findFirstOrThrow({
     where: { id: contractId, tenant: { slug: { startsWith: 'contracts-e2e-' } } },
     include: {
-      imovel: { select: { status: true } },
-      partes: { include: { assinatura: true } },
-      _count: { select: { cobrancas: true } },
+      property: { select: { status: true } },
+      parties: { include: { signature: true } },
+      _count: { select: { charges: true } },
     },
   })
   const audits = await prisma.contractAuditEvent.findMany({ where: { contractId } })
   return {
     status: contract.status,
-    propertyStatus: contract.imovel.status,
-    chargeCount: contract._count.cobrancas,
-    protectedCpfs: contract.partes.every((party) => party.cpf.startsWith('enc:v1:')),
-    signatures: contract.partes.map((party) => ({
-      method: party.assinatura?.metodo ?? null,
-      hash: party.assinatura?.sha256Documento ?? null,
-      author: party.assinatura?.assinadaPorId ?? null,
+    propertyStatus: contract.property.status,
+    chargeCount: contract._count.charges,
+    protectedCpfs: contract.parties.every((party) => party.cpf.startsWith('enc:v1:')),
+    signatures: contract.parties.map((party) => ({
+      method: party.signature?.method ?? null,
+      hash: party.signature?.documentSha256 ?? null,
+      author: party.signature?.signedById ?? null,
     })),
     actions: audits.map((audit) => audit.action),
   }

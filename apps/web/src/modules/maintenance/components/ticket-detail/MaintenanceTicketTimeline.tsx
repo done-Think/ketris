@@ -8,7 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import AttachFileRoundedIcon from '@mui/icons-material/AttachFileRounded'
 import { Avatar, Box, Button, CircularProgress, Divider, Stack, Typography } from '@mui/material'
 import { RhfTextField } from '@shared/components/form'
-import { useSession } from 'next-auth/react'
 import { useFormatter, useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import type { ChangeEvent } from 'react'
@@ -36,8 +35,6 @@ export function MaintenanceTicketTimeline({ ticket }: MaintenanceTicketSectionPr
   const t = useTranslations('dashboard.maintenance')
   const detailT = useTranslations('dashboard.maintenance.detail')
   const ticketId = ticket.id
-  const { data: session } = useSession()
-  const tenantId = session?.tenantId
   const { enqueueSnackbar } = useSnackbar()
 
   const formatter = useFormatter()
@@ -53,9 +50,9 @@ export function MaintenanceTicketTimeline({ ticket }: MaintenanceTicketSectionPr
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const addNoteMutation = useAddMaintenanceTicketNote(tenantId, ticketId)
+  const addNoteMutation = useAddMaintenanceTicketNote(ticketId)
 
-  const uploadAttachmentMutation = useUploadMaintenanceTicketAttachment(tenantId, ticketId)
+  const uploadAttachmentMutation = useUploadMaintenanceTicketAttachment(ticketId)
 
   async function handleAttachmentChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]

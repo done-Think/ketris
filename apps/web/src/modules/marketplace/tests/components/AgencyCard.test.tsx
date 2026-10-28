@@ -35,8 +35,8 @@ const agency: AgencyCardProps = {
   summary: 'Operação focada em imóveis residenciais de alto padrão nos Jardins.',
   href: '/agencies/alameda-prime-imoveis/38210',
   teamHighlights: [
-    { usuarioId: 'marina-costa', name: 'Marina Costa', avatarUrl: null },
-    { usuarioId: 'juliana-mendes', name: 'Juliana Mendes', avatarUrl: null },
+    { userId: 'marina-costa', name: 'Marina Costa', avatarUrl: null },
+    { userId: 'juliana-mendes', name: 'Juliana Mendes', avatarUrl: null },
   ],
   featuredListings: [
     {

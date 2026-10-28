@@ -31,7 +31,7 @@ describe('contrato entre os editores de perfil e as rotas de salvar', () => {
       displayName: 'Imobiliária Horizonte',
       coverage: 'Jardins',
       yearsInMarket: '12',
-      team: [{ usuarioId: 'usuario-1', name: 'Marina' }],
+      team: [{ userId: 'usuario-1', name: 'Marina' }],
     })
 
     expect(saveAgencyProfileRequestSchema.safeParse(draft).error?.issues).toBeUndefined()

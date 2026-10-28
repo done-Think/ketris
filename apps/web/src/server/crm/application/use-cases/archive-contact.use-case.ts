@@ -19,7 +19,7 @@ export class ArchiveContactUseCase {
   ) {}
 
   async execute(input: ArchiveContactInput): Promise<ArchiveContactOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     const contact = await this.contactRepository.findById(input.contactId)
 
     if (!contact || contact.tenantId !== input.actorTenantId) {
@@ -31,7 +31,7 @@ export class ArchiveContactUseCase {
       input.actorTenantId,
       contact.id,
       input.actorId,
-      input.actorPapel,
+      input.actorRole,
       contact.createdById,
     )
 

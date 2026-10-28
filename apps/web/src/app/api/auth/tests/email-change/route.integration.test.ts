@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { authContainer } from '@server/auth/container'
-import { toAuthenticatedUser } from '@server/auth/domain/user.entity'
+import { toAuthenticatedUser } from '../../../../../server/auth/application/authenticated-user'
 import { prisma } from '@server/db/prisma'
 import { SesMailer } from '@server/shared/email/ses-mailer'
 
@@ -29,16 +29,16 @@ function request(body: unknown, token?: string) {
   })
 }
 
-function createUser(overrides: Partial<Prisma.UsuarioUncheckedCreateInput> = {}) {
-  return prisma.usuario.create({
+function createUser(overrides: Partial<Prisma.UserUncheckedCreateInput> = {}) {
+  return prisma.user.create({
     data: {
       tenantId,
-      nome: 'Email change target',
+      name: 'Email change target',
       email: `${randomUUID()}@change.example.test`,
-      senhaHash: 'not-used-in-email-confirmation',
-      papel: 'AGENT',
-      emailVerificadoEm: null,
-      vinculoAprovadoEm: null,
+      passwordHash: 'not-used-in-email-confirmation',
+      role: 'AGENT',
+      emailVerifiedAt: null,
+      membershipApprovedAt: null,
       ...overrides,
     },
   })
@@ -81,17 +81,17 @@ async function createRefresh(userId: string, accountTenantId = tenantId) {
 describe('Email change by manager with public confirmation', () => {
   beforeAll(async () => {
     tenantId = (
-      await prisma.tenant.create({ data: { nome: 'Email change', slug: `change-${randomUUID()}` } })
+      await prisma.tenant.create({ data: { name: 'Email change', slug: `change-${randomUUID()}` } })
     ).id
     otherTenantId = (
       await prisma.tenant.create({
-        data: { nome: 'Other email change', slug: `change-${randomUUID()}` },
+        data: { name: 'Other email change', slug: `change-${randomUUID()}` },
       })
     ).id
     const manager = await createUser({
-      papel: 'OWNER',
-      emailVerificadoEm: new Date(),
-      vinculoAprovadoEm: new Date(),
+      role: 'OWNER',
+      emailVerifiedAt: new Date(),
+      membershipApprovedAt: new Date(),
     })
     managerToken = await tokenFor(manager.id)
   })
@@ -115,7 +115,7 @@ describe('Email change by manager with public confirmation', () => {
       const otherAccount = await createUser({
         tenantId: otherTenantId,
         email: target.email,
-        emailVerificadoEm: new Date(),
+        emailVerifiedAt: new Date(),
       })
       const refresh = await createRefresh(target.id)
       const secondRefresh = await createRefresh(target.id)
@@ -131,20 +131,20 @@ describe('Email change by manager with public confirmation', () => {
       expect([...link.searchParams.keys()]).toEqual(['request'])
       expect(link.searchParams.get('request')).toBe(stored.id)
       expect(link.searchParams.has('code')).toBe(false)
-      expect((await prisma.usuario.findUniqueOrThrow({ where: { id: target.id } })).email).toBe(
+      expect((await prisma.user.findUniqueOrThrow({ where: { id: target.id } })).email).toBe(
         target.email,
       )
       expect(stored.codeHash).not.toBe(code)
       const response = await confirmPublic(request({ requestId: stored.id, code }))
       expect(response.status).toBe(204)
       expect(await response.text()).toBe('')
-      const changed = await prisma.usuario.findUniqueOrThrow({ where: { id: target.id } })
+      const changed = await prisma.user.findUniqueOrThrow({ where: { id: target.id } })
       expect(changed.email).toBe(newEmail)
-      expect(changed.emailVerificadoEm).not.toBeNull()
-      expect(changed.versaoSessao).toBe(target.versaoSessao + 1)
-      expect(changed.papel).toBe(target.papel)
-      expect(changed.ativo).toBe(target.ativo)
-      expect(changed.vinculoAprovadoEm).toBeNull()
+      expect(changed.emailVerifiedAt).not.toBeNull()
+      expect(changed.sessionVersion).toBe(target.sessionVersion + 1)
+      expect(changed.role).toBe(target.role)
+      expect(changed.active).toBe(target.active)
+      expect(changed.membershipApprovedAt).toBeNull()
       expect(
         (await prisma.refreshToken.findUniqueOrThrow({ where: { id: refresh.id } })).revokedAt,
       ).not.toBeNull()
@@ -155,16 +155,19 @@ describe('Email change by manager with public confirmation', () => {
       expect(
         (await prisma.refreshToken.findUniqueOrThrow({ where: { id: otherRefresh.id } })).revokedAt,
       ).toBeNull()
-      expect(
-        (await prisma.usuario.findUniqueOrThrow({ where: { id: otherAccount.id } })).email,
-      ).toBe(target.email)
+      expect((await prisma.user.findUniqueOrThrow({ where: { id: otherAccount.id } })).email).toBe(
+        target.email,
+      )
       expect(await prisma.refreshToken.count({ where: { userId: target.id } })).toBe(2)
     },
   )
 
   it('rejects non-manager escalation, cross-tenant targets and missing authentication before sending a code', async () => {
     const target = await createUser()
-    const agent = await createUser({ emailVerificadoEm: new Date(), vinculoAprovadoEm: new Date() })
+    const agent = await createUser({
+      emailVerifiedAt: new Date(),
+      membershipApprovedAt: new Date(),
+    })
     const otherTarget = await createUser({ tenantId: otherTenantId })
     const agentToken = await tokenFor(agent.id)
     expect((await begin(target.id, `${randomUUID()}@new.example.test`, agentToken)).status).toBe(
@@ -201,7 +204,7 @@ describe('Email change by manager with public confirmation', () => {
       data: { purpose: 'SIGNUP' },
     })
     expect((await confirmPublic(request({ requestId: stored.id, code }))).status).toBe(400)
-    expect((await prisma.usuario.findUniqueOrThrow({ where: { id: target.id } })).email).toBe(
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: target.id } })).email).toBe(
       target.email,
     )
   })
@@ -220,13 +223,13 @@ describe('Email change by manager with public confirmation', () => {
     expect(
       (await prisma.emailVerificationCode.findUniqueOrThrow({ where: { id: stored.id } })).attempts,
     ).toBe(5)
-    expect((await prisma.usuario.findUniqueOrThrow({ where: { id: target.id } })).email).toBe(
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: target.id } })).email).toBe(
       target.email,
     )
   })
 
   it('rejects expired proof and prevents activating an inactive account during confirmation', async () => {
-    const target = await createUser({ ativo: false })
+    const target = await createUser({ active: false })
     const newEmail = `${randomUUID()}@new.example.test`
     expect((await begin(target.id, newEmail)).status).toBe(204)
     const { stored, code } = await proofFor(target.id)
@@ -235,7 +238,7 @@ describe('Email change by manager with public confirmation', () => {
       data: { expiresAt: new Date(Date.now() - 1) },
     })
     expect((await confirmPublic(request({ requestId: stored.id, code }))).status).toBe(400)
-    expect((await prisma.usuario.findUniqueOrThrow({ where: { id: target.id } })).email).toBe(
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: target.id } })).email).toBe(
       target.email,
     )
     await prisma.emailVerificationCode.update({
@@ -243,7 +246,7 @@ describe('Email change by manager with public confirmation', () => {
       data: { expiresAt: new Date(Date.now() + 60_000) },
     })
     expect((await confirmPublic(request({ requestId: stored.id, code }))).status).toBe(204)
-    expect((await prisma.usuario.findUniqueOrThrow({ where: { id: target.id } })).ativo).toBe(false)
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: target.id } })).active).toBe(false)
   })
 
   it('consumes proof once under concurrent confirmation and rejects replay', async () => {
@@ -256,9 +259,9 @@ describe('Email change by manager with public confirmation', () => {
     ])
     expect(responses.map((response) => response.status).sort()).toEqual([204, 400])
     expect((await confirmPublic(request({ requestId: stored.id, code }))).status).toBe(400)
-    expect(
-      (await prisma.usuario.findUniqueOrThrow({ where: { id: target.id } })).versaoSessao,
-    ).toBe(target.versaoSessao + 1)
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: target.id } })).sessionVersion).toBe(
+      target.sessionVersion + 1,
+    )
   })
 
   it('enforces resend cooldown and invalidates the preceding request on replacement', async () => {
@@ -283,13 +286,13 @@ describe('Email change by manager with public confirmation', () => {
   })
 
   it('keeps the existing authenticated self flow working', async () => {
-    const target = await createUser({ papel: 'RENTER', emailVerificadoEm: new Date() })
+    const target = await createUser({ role: 'RENTER', emailVerifiedAt: new Date() })
     const token = await tokenFor(target.id)
     const email = `${randomUUID()}@new.example.test`
     expect((await requestSelf(request({ email, locale: 'pt-BR' }, token))).status).toBe(204)
     const { code } = await proofFor(target.id)
     expect((await confirmSelf(request({ email, code }, token))).status).toBe(204)
-    expect((await prisma.usuario.findUniqueOrThrow({ where: { id: target.id } })).email).toBe(email)
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: target.id } })).email).toBe(email)
     expect(
       (await requestSelf(request({ email: 'another@example.test', locale: 'pt-BR' }, token)))
         .status,

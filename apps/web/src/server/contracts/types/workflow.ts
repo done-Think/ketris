@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { ContractManageScope, NewContractParty } from './contract-entity'
 import type {
   AdjustmentIndex,
@@ -11,7 +11,7 @@ import type { ContractActor } from './contract-entity'
 
 export interface ContractEditableState {
   status: ContractStatus
-  parties: { signatureStatus: 'PENDENTE' | 'ASSINADA' }[]
+  parties: { signatureStatus: 'PENDING' | 'SIGNED' }[]
 }
 
 export interface ContractWorkflowScope extends ContractManageScope {
@@ -22,7 +22,7 @@ export interface ContractWorkflowScope extends ContractManageScope {
 export interface ContractMutationActor {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   contractId: string
 }
 

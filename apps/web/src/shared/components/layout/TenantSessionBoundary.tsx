@@ -1,5 +1,7 @@
 'use client'
 
+import { styles } from '@shared/styles/tenant-session-boundary.styles'
+
 import { useEffect } from 'react'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
@@ -9,7 +11,6 @@ import { useTranslations } from 'next-intl'
 
 import { Link, useRouter } from '@/i18n/navigation'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
-import { alpha, radius, surface } from '@shared/theme/tokens'
 
 import type { TenantSessionBoundaryProps } from '@shared/types/tenant-session-boundary'
 import { useRetainedAuthContent } from '@shared/hooks/use-retained-auth-content'
@@ -59,7 +60,7 @@ export function TenantSessionBoundary({ children }: TenantSessionBoundaryProps) 
 
   if (status === 'loading') {
     return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: '55vh' }}>
+      <Stack alignItems="center" justifyContent="center" sx={styles.stack}>
         <CircularProgress size={30} aria-label={t('loadingSession')} />
       </Stack>
     )
@@ -67,30 +68,15 @@ export function TenantSessionBoundary({ children }: TenantSessionBoundaryProps) 
 
   if (isSessionInvalid) {
     return (
-      <Stack
-        alignItems="center"
-        justifyContent="center"
-        spacing={2}
-        sx={{ minHeight: '55vh', textAlign: 'center' }}
-      >
-        <Box
-          sx={{
-            display: 'grid',
-            placeItems: 'center',
-            width: 52,
-            height: 52,
-            borderRadius: `${radius.md}px`,
-            bgcolor: alpha.magenta[10],
-            color: 'primary.main',
-          }}
-        >
+      <Stack alignItems="center" justifyContent="center" spacing={2} sx={styles.stack2}>
+        <Box sx={styles.box}>
           <LockOutlinedIcon />
         </Box>
         <Box>
-          <Typography variant="h5" sx={{ mb: 0.5 }}>
+          <Typography variant="h5" sx={styles.typography}>
             {t('restrictedTitle')}
           </Typography>
-          <Typography color="text.secondary" sx={{ maxWidth: 430 }}>
+          <Typography color="text.secondary" sx={styles.typography2}>
             {t('restrictedDescription')}
           </Typography>
         </Box>
@@ -101,5 +87,5 @@ export function TenantSessionBoundary({ children }: TenantSessionBoundaryProps) 
     )
   }
 
-  return <Box sx={{ minHeight: '100%', bgcolor: surface.app }}>{children}</Box>
+  return <Box sx={styles.box2}>{children}</Box>
 }

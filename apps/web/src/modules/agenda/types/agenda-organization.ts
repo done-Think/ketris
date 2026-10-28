@@ -1,14 +1,12 @@
-import type { z } from 'zod'
-import type { chargeListItemSchema } from '@server/financial/schemas/charge.schema'
-import type { maintenanceTicketListItemSchema } from '@server/maintenance/schemas/maintenance-ticket.schema'
+import type { components } from '@shared/types/generated/api'
 import type { AgendaTimeSlot } from './agenda-event'
 
 export type AgendaChargeApi = Pick<
-  z.infer<typeof chargeListItemSchema>,
+  components['schemas']['ChargeListItem'],
   'id' | 'code' | 'description' | 'dueDate' | 'amount' | 'propertyTitle' | 'status'
 >
 export type AgendaMaintenanceApi = Pick<
-  z.infer<typeof maintenanceTicketListItemSchema>,
+  components['schemas']['MaintenanceTicketListItem'],
   'id' | 'title' | 'propertyTitle' | 'createdAt' | 'scheduledAt' | 'status'
 >
 
@@ -17,17 +15,21 @@ export interface AgendaPage<T> {
   totalCount: number
 }
 
-export type AgendaOrganizationItem = {
+type AgendaOrganizationBase = {
   id: string
   sourceId: string
-  kind: 'charge' | 'ticketOpened' | 'ticketScheduled'
   date: string
   time?: string
   title: string
   property: string
-  status: AgendaChargeApi['status'] | AgendaMaintenanceApi['status']
   amount?: number
 }
+
+export type AgendaOrganizationItem = AgendaOrganizationBase &
+  (
+    | { kind: 'charge'; status: AgendaChargeApi['status'] }
+    | { kind: 'ticketOpened' | 'ticketScheduled'; status: AgendaMaintenanceApi['status'] }
+  )
 
 export interface AgendaOrganizationCardProps {
   item: AgendaOrganizationItem

@@ -12,7 +12,7 @@ function createDeps() {
 
     findById: vi
       .fn()
-      .mockResolvedValue({ id: 'user-1', tenantId: 'tenant-1', senhaHash: 'hash-atual' }),
+      .mockResolvedValue({ id: 'user-1', tenantId: 'tenant-1', passwordHash: 'hash-atual' }),
     findByEmail: vi.fn(),
     findManyByTenant: vi.fn(),
     create: vi.fn(),
@@ -42,7 +42,7 @@ describe('ChangeOwnPasswordUseCase', () => {
     expect(deps.passwordHasher.compare).toHaveBeenCalledWith('senha-atual', 'hash-atual')
     expect(deps.passwordHasher.hash).toHaveBeenCalledWith('nova-senha-123')
     expect(deps.userRepository.update).toHaveBeenCalledWith('user-1', {
-      senhaHash: 'hash-novo',
+      passwordHash: 'hash-novo',
       tenantId: 'tenant-1',
       auditActor: { kind: 'USER', id: 'user-1' },
     })

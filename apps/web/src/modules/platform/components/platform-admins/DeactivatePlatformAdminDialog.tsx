@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
+import { getApiErrorCode } from '@shared/utils/error-message'
 
 import { useDeactivatePlatformAdmin } from '../../hooks/use-platform-admins'
 import type { DeactivatePlatformAdminDialogProps } from '../../types/platform-admin'
@@ -19,6 +20,7 @@ export function DeactivatePlatformAdminDialog({
   onClose,
 }: DeactivatePlatformAdminDialogProps) {
   const t = useTranslations('platform.admins')
+  const errorsT = useTranslations('platform.errors')
   const { enqueueSnackbar } = useSnackbar()
   const deactivateAdmin = useDeactivatePlatformAdmin()
 
@@ -27,8 +29,13 @@ export function DeactivatePlatformAdminDialog({
       await deactivateAdmin.mutateAsync(admin.id)
       enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
       onClose()
-    } catch {
-      enqueueSnackbar(t('updateError'), { variant: 'error' })
+    } catch (error) {
+      enqueueSnackbar(
+        getApiErrorCode(error) === 'LAST_PLATFORM_ADMIN'
+          ? errorsT('lastPlatformAdmin')
+          : t('updateError'),
+        { variant: 'error' },
+      )
     }
   }
 

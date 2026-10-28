@@ -19,11 +19,11 @@ describe('histórico transacional de Agenda', () => {
   it('registra as quatro operações, com tenant, autor e motivo do cancelamento', async () => {
     const { tenantId, userId } = await fixture()
     const event = await repository.create(agendaFixtureEvent(tenantId, userId))
-    await repository.update(tenantId, event.id, { titulo: 'Novo título' }, undefined, userId)
+    await repository.update(tenantId, event.id, { title: 'Novo título' }, undefined, userId)
     await repository.reschedule(
       tenantId,
       event.id,
-      { inicio: new Date('2031-03-02T15:00:00Z'), fim: new Date('2031-03-02T16:00:00Z') },
+      { start: new Date('2031-03-02T15:00:00Z'), end: new Date('2031-03-02T16:00:00Z') },
       userId,
     )
     await repository.cancel(tenantId, event.id, {
@@ -43,13 +43,13 @@ describe('histórico transacional de Agenda', () => {
     expect(history.every((entry) => entry.actorUserId === userId)).toBe(true)
     expect(history[1].changedFields).toEqual(['title'])
     expect(history[3].cancellationReason).toBe('Cliente indisponível')
-    const stored = await prisma.eventoAgenda.findUniqueOrThrow({ where: { id: event.id } })
+    const stored = await prisma.agendaEvent.findUniqueOrThrow({ where: { id: event.id } })
     expect(stored).toMatchObject({
       status: 'CANCELLED',
-      canceladoPorId: userId,
-      motivoCancelamento: 'Cliente indisponível',
+      canceledById: userId,
+      cancellationReason: 'Cliente indisponível',
     })
-    expect(stored.canceladoEm).toBeInstanceOf(Date)
+    expect(stored.canceledAt).toBeInstanceOf(Date)
   })
 
   it('reverte a edição quando o histórico não pode registrar o autor', async () => {
@@ -59,12 +59,12 @@ describe('histórico transacional de Agenda', () => {
       repository.update(
         tenantId,
         event.id,
-        { titulo: 'Não deve persistir' },
+        { title: 'Não deve persistir' },
         undefined,
         'missing-author',
       ),
     ).rejects.toMatchObject({ code: 'P2003' })
-    expect((await prisma.eventoAgenda.findUniqueOrThrow({ where: { id: event.id } })).titulo).toBe(
+    expect((await prisma.agendaEvent.findUniqueOrThrow({ where: { id: event.id } })).title).toBe(
       'Reunião de teste',
     )
     expect(await prisma.agendaEventAudit.count({ where: { eventId: event.id } })).toBe(1)
@@ -79,7 +79,7 @@ describe('histórico transacional de Agenda', () => {
         reason: 'Não deve persistir',
       }),
     ).rejects.toMatchObject({ code: 'P2003' })
-    expect((await prisma.eventoAgenda.findUniqueOrThrow({ where: { id: event.id } })).status).toBe(
+    expect((await prisma.agendaEvent.findUniqueOrThrow({ where: { id: event.id } })).status).toBe(
       'CONFIRMED',
     )
     const other = await fixture()
@@ -87,7 +87,7 @@ describe('histórico transacional de Agenda', () => {
       await repository.update(
         other.tenantId,
         event.id,
-        { titulo: 'Outro tenant' },
+        { title: 'Outro tenant' },
         undefined,
         other.userId,
       ),
@@ -98,51 +98,51 @@ describe('histórico transacional de Agenda', () => {
   it('bloqueia exclusão física do responsável e preserva inativação e eventos', async () => {
     const { tenantId, userId } = await fixture()
     const event = await repository.create(agendaFixtureEvent(tenantId, userId))
-    await expect(prisma.usuario.delete({ where: { id: userId } })).rejects.toMatchObject({
+    await expect(prisma.user.delete({ where: { id: userId } })).rejects.toMatchObject({
       code: 'P2003',
     })
     await new PrismaUserRepository().deactivate(userId, tenantId, { kind: 'USER', id: userId })
-    expect(await prisma.eventoAgenda.count({ where: { id: event.id } })).toBe(1)
-    expect((await prisma.usuario.findUniqueOrThrow({ where: { id: userId } })).ativo).toBe(false)
+    expect(await prisma.agendaEvent.count({ where: { id: event.id } })).toBe(1)
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: userId } })).active).toBe(false)
   })
 })
 
 it('prioriza o vínculo da conta no tenant mesmo quando há um locatário com o mesmo e-mail em outro tenant', async () => {
   const local = await fixture(),
     foreign = await fixture()
-  const manager = await prisma.usuario.findUniqueOrThrow({ where: { id: local.userId } })
-  const renter = await prisma.usuario.create({
+  const manager = await prisma.user.findUniqueOrThrow({ where: { id: local.userId } })
+  const renter = await prisma.user.create({
     data: {
       tenantId: foreign.tenantId,
-      nome: 'Outra conta da pessoa',
+      name: 'Outra conta da pessoa',
       email: manager.email,
-      senhaHash: 'test-only',
-      papel: 'RENTER',
+      passwordHash: 'test-only',
+      role: 'RENTER',
     },
   })
   const event = await repository.create(agendaFixtureEvent(local.tenantId, local.userId), {
-    donoEmail: manager.email,
+    ownerEmail: manager.email,
   })
-  expect(event.donoUsuarioId).toBe(local.userId)
-  expect(event.donoUsuarioId).not.toBe(renter.id)
+  expect(event.ownerUserId).toBe(local.userId)
+  expect(event.ownerUserId).not.toBe(renter.id)
 })
 
 it('registra o autor real quando ele difere do responsável pelo evento', async () => {
   const { tenantId, userId } = await fixture()
-  const responsible = await prisma.usuario.create({
+  const responsible = await prisma.user.create({
     data: {
       tenantId,
-      nome: 'Outra responsável',
+      name: 'Outra responsável',
       email: `responsible-${userId}@example.test`,
-      senhaHash: 'test-only',
-      papel: 'AGENT',
+      passwordHash: 'test-only',
+      role: 'AGENT',
     },
   })
   const event = await repository.create({
     ...agendaFixtureEvent(tenantId, userId),
-    responsavelId: responsible.id,
+    responsibleId: responsible.id,
   })
-  await repository.update(tenantId, event.id, { titulo: 'Editado pela gestão' }, undefined, userId)
+  await repository.update(tenantId, event.id, { title: 'Editado pela gestão' }, undefined, userId)
   const history = await prisma.agendaEventAudit.findMany({ where: { eventId: event.id } })
   expect(history).toHaveLength(2)
   expect(

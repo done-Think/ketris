@@ -29,9 +29,9 @@ export class PublishBrokerProfileUseCase {
   constructor(private readonly brokerProfileRepository: BrokerProfileRepository) {}
 
   async execute(input: PublishBrokerProfileInput): Promise<BrokerProfile> {
-    assertBrokerProfileAccess(input.actorPapel)
+    assertBrokerProfileAccess(input.actorRole)
 
-    const profile = await this.brokerProfileRepository.findByUsuarioId(input.actorId)
+    const profile = await this.brokerProfileRepository.findByUserId(input.actorId)
 
     if (!profile) {
       throw new BrokerProfileNotFoundError()

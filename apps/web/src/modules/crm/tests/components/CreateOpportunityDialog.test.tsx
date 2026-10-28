@@ -37,7 +37,6 @@ describe('CreateOpportunityDialog', () => {
     render(
       <CreateOpportunityDialog
         open
-        tenantId="tenant-1"
         canChooseResponsible={false}
         isPending={false}
         onClose={vi.fn()}
@@ -56,7 +55,6 @@ describe('CreateOpportunityDialog', () => {
     render(
       <CreateOpportunityDialog
         open
-        tenantId="tenant-1"
         canChooseResponsible={false}
         isPending={false}
         onClose={vi.fn()}
@@ -76,7 +74,6 @@ describe('CreateOpportunityDialog', () => {
     render(
       <CreateOpportunityDialog
         open
-        tenantId="tenant-1"
         canChooseResponsible={false}
         isPending={false}
         onClose={vi.fn()}
@@ -97,7 +94,7 @@ describe('CreateOpportunityDialog', () => {
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
         proposedValue: '2500',
-        status: 'RASCUNHO',
+        status: 'DRAFT',
       }),
     )
   })
@@ -108,7 +105,6 @@ describe('CreateOpportunityDialog', () => {
     render(
       <CreateOpportunityDialog
         open
-        tenantId="tenant-1"
         canChooseResponsible={false}
         isPending={false}
         onClose={onClose}
@@ -126,7 +122,6 @@ describe('CreateOpportunityDialog', () => {
     render(
       <CreateOpportunityDialog
         open
-        tenantId="tenant-1"
         canChooseResponsible
         isPending={false}
         onClose={vi.fn()}
@@ -153,7 +148,6 @@ describe('CreateOpportunityDialog', () => {
     render(
       <CreateOpportunityDialog
         open
-        tenantId="tenant-1"
         canChooseResponsible={false}
         isPending={false}
         onClose={vi.fn()}

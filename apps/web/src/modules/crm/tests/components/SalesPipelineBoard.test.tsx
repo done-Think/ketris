@@ -1,3 +1,4 @@
+import common from '@/i18n/messages/pt-BR/common.json'
 vi.mock('../../hooks/use-contacts', () => ({
   useCrmContactOptions: () => ({ data: [], isFetching: false }),
 }))
@@ -65,12 +66,12 @@ function makeOpportunity(
     responsibleId: 'agent-1',
     responsibleName: 'Ana Corretora',
     leadName: `Contato ${index}`,
-    leadEmail: `contato${index}@example.com`,
+    leadEmail: `contact${index}@example.com`,
     leadPhone: `(11) 90000-000${index}`,
     proposedValue: index * 1000,
     contractTermMonths: null,
     desiredStartDate: null,
-    guaranteeType: 'NENHUMA',
+    guaranteeType: 'NONE',
     specialConditions: [],
     notes: null,
     status,
@@ -88,7 +89,7 @@ function makeProperty(
   return {
     id: `property-${index}`,
     title: `Imóvel ${index}`,
-    purpose: 'ALUGUEL',
+    purpose: 'RENT',
     propertyType: 'Apartamento',
     price: index * 1000,
     condoFee: null,
@@ -174,8 +175,8 @@ describe('SalesPipelineBoard', () => {
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
-    vi.mocked(useInfiniteOpportunities).mockImplementation((tenant, filters, enabled) => {
-      const query = useOpportunities(tenant)
+    vi.mocked(useInfiniteOpportunities).mockImplementation((filters, enabled) => {
+      const query = useOpportunities()
       const all = (query.data ?? []) as unknown as Opportunity[]
       const propertyList = (propertyResponse.data ?? []) as CrmPropertySummary[]
       const items = enabled
@@ -195,10 +196,10 @@ describe('SalesPipelineBoard', () => {
         key: item.status,
         count: 1,
         amount: item.proposedValue,
-        rental: item.property?.purpose === 'ALUGUEL' ? item.proposedValue : 0,
-        sale: item.property?.purpose === 'VENDA' ? item.proposedValue : 0,
+        rental: item.property?.purpose === 'RENT' ? item.proposedValue : 0,
+        sale: item.property?.purpose === 'SALE' ? item.proposedValue : 0,
         unclassified:
-          item.property?.purpose !== 'ALUGUEL' && item.property?.purpose !== 'VENDA'
+          item.property?.purpose !== 'RENT' && item.property?.purpose !== 'SALE'
             ? item.proposedValue
             : 0,
       }))
@@ -294,11 +295,11 @@ describe('SalesPipelineBoard', () => {
 
   it('renders the requested five-stage sales pipeline with real API statuses', () => {
     const opportunities = [
-      makeOpportunity(1, 'RASCUNHO', { leadName: 'Carlos Eduardo' }),
-      makeOpportunity(2, 'ENVIADA', { leadName: 'Ricardo Mendes' }),
-      makeOpportunity(3, 'EM_NEGOCIACAO', { leadName: 'Daniela Flores' }),
-      makeOpportunity(4, 'ACEITA', { leadName: 'Gabriel Henrique' }),
-      makeOpportunity(5, 'RECUSADA', { leadName: 'Oportunidade perdida' }),
+      makeOpportunity(1, 'DRAFT', { leadName: 'Carlos Eduardo' }),
+      makeOpportunity(2, 'SENT', { leadName: 'Ricardo Mendes' }),
+      makeOpportunity(3, 'IN_NEGOTIATION', { leadName: 'Daniela Flores' }),
+      makeOpportunity(4, 'ACCEPTED', { leadName: 'Gabriel Henrique' }),
+      makeOpportunity(5, 'REJECTED', { leadName: 'Oportunidade perdida' }),
     ]
     mockOpportunitiesQuery({ data: opportunities })
     mockPropertiesQuery({ data: opportunities.map((_, index) => makeProperty(index + 1)) })
@@ -318,7 +319,9 @@ describe('SalesPipelineBoard', () => {
     const closedTotals = within(closed).getByRole('group', { name: 'Total projetado de Fechado' })
     expect(within(closed).getByText('Oportunidade perdida')).toBeVisible()
     expect(within(closed).getByText('2')).toBeVisible()
-    expect(within(closedTotals).getByText(matchesText(formatMonthlyCurrency(4000)))).toBeVisible()
+    expect(
+      within(closedTotals).getByText(matchesText(formatMonthlyCurrency(4000, common.perMonth))),
+    ).toBeVisible()
     expect(
       within(screen.getByRole('region', { name: 'Qualificação' })).getByText('0'),
     ).toBeVisible()
@@ -327,11 +330,11 @@ describe('SalesPipelineBoard', () => {
   it('shows compact cards and projected totals for rent and sale', () => {
     mockOpportunitiesQuery({
       data: [
-        makeOpportunity(1, 'RASCUNHO', {
+        makeOpportunity(1, 'DRAFT', {
           leadName: 'Carlos Eduardo',
           proposedValue: 5200,
         }),
-        makeOpportunity(2, 'RASCUNHO', {
+        makeOpportunity(2, 'DRAFT', {
           leadName: 'Letícia Ramos',
           proposedValue: 920000,
         }),
@@ -339,8 +342,8 @@ describe('SalesPipelineBoard', () => {
     })
     mockPropertiesQuery({
       data: [
-        makeProperty(1, { title: 'Studio Vila Mariana', purpose: 'ALUGUEL' }),
-        makeProperty(2, { title: 'Casa Pinheiros', purpose: 'VENDA' }),
+        makeProperty(1, { title: 'Studio Vila Mariana', purpose: 'RENT' }),
+        makeProperty(2, { title: 'Casa Pinheiros', purpose: 'SALE' }),
       ],
     })
 
@@ -358,11 +361,15 @@ describe('SalesPipelineBoard', () => {
     })
     expect(within(prospecting).getByText('Studio Vila Mariana')).toBeVisible()
     expect(within(prospecting).getByText('Casa Pinheiros')).toBeVisible()
-    expect(within(rentalCard).getByText(matchesText(formatMonthlyCurrency(5200)))).toBeVisible()
+    expect(
+      within(rentalCard).getByText(matchesText(formatMonthlyCurrency(5200, common.perMonth))),
+    ).toBeVisible()
     expect(within(saleCard).getByText(matchesText(formatCurrency(920000)))).toBeVisible()
     expect(within(totals).getByText('Aluguel')).toBeVisible()
     expect(within(totals).getByText('Venda')).toBeVisible()
-    expect(within(totals).getByText(matchesText(formatMonthlyCurrency(5200)))).toBeVisible()
+    expect(
+      within(totals).getByText(matchesText(formatMonthlyCurrency(5200, common.perMonth))),
+    ).toBeVisible()
     expect(within(totals).getByText(matchesText(formatCurrency(920000)))).toBeVisible()
   })
 
@@ -370,8 +377,8 @@ describe('SalesPipelineBoard', () => {
     const user = userEvent.setup()
     mockOpportunitiesQuery({
       data: [
-        makeOpportunity(1, 'RASCUNHO', { leadName: 'Carlos Eduardo' }),
-        makeOpportunity(2, 'ENVIADA', { leadName: 'Ricardo Mendes' }),
+        makeOpportunity(1, 'DRAFT', { leadName: 'Carlos Eduardo' }),
+        makeOpportunity(2, 'SENT', { leadName: 'Ricardo Mendes' }),
       ],
     })
     mockPropertiesQuery({
@@ -392,8 +399,8 @@ describe('SalesPipelineBoard', () => {
     const user = userEvent.setup()
     mockOpportunitiesQuery({
       data: [
-        makeOpportunity(1, 'RASCUNHO', { leadName: 'Carlos Eduardo' }),
-        makeOpportunity(2, 'EM_NEGOCIACAO', { leadName: 'Daniela Flores' }),
+        makeOpportunity(1, 'DRAFT', { leadName: 'Carlos Eduardo' }),
+        makeOpportunity(2, 'IN_NEGOTIATION', { leadName: 'Daniela Flores' }),
       ],
     })
     renderPipeline()
@@ -423,7 +430,7 @@ describe('SalesPipelineBoard', () => {
 
   it('opens the create opportunity dialog from the toolbar button', async () => {
     const user = userEvent.setup()
-    mockOpportunitiesQuery({ data: [makeOpportunity(1, 'RASCUNHO')] })
+    mockOpportunitiesQuery({ data: [makeOpportunity(1, 'DRAFT')] })
     mockPropertiesQuery({ data: [makeProperty(1)] })
     renderPipeline()
 
@@ -445,7 +452,7 @@ describe('SalesPipelineBoard', () => {
   })
 
   it('renders the property summary without requesting the public catalog', () => {
-    mockOpportunitiesQuery({ data: [makeOpportunity(1, 'RASCUNHO')] })
+    mockOpportunitiesQuery({ data: [makeOpportunity(1, 'DRAFT')] })
     mockPropertiesQuery({ data: [makeProperty(1, { title: 'Imóvel não publicado' })] })
     renderPipeline()
     expect(screen.getByText('Imóvel não publicado')).toBeVisible()

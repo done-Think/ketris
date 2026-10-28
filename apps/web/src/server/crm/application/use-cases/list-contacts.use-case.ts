@@ -18,10 +18,10 @@ export class ListContactsUseCase {
   ) {}
 
   async execute(input: ListContactsInput): Promise<ListContactsOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     const page = await this.contactRepository.findManyByTenant(input.actorTenantId, {
       ...input.filters,
-      responsavelId: input.actorPapel === 'AGENT' ? input.actorId : undefined,
+      responsibleId: input.actorRole === 'AGENT' ? input.actorId : undefined,
     })
 
     const contacts = page.items

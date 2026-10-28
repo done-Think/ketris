@@ -13,9 +13,9 @@ describe('atomic platform refresh-token rotation', () => {
   beforeAll(async () => {
     const admin = await prisma.platformAdmin.create({
       data: {
-        nome: 'Platform rotation test',
+        name: 'Platform rotation test',
         email: `rotation-${randomUUID()}@example.test`,
-        senhaHash: 'test-hash',
+        passwordHash: 'test-hash',
       },
     })
     platformAdminId = admin.id
@@ -92,6 +92,14 @@ describe('atomic platform refresh-token rotation', () => {
   })
 
   it('serializes administrator deactivation and rotation without leaving an active descendant', async () => {
+    const actor = await prisma.platformAdmin.create({
+      data: {
+        name: 'Rotation manager',
+        email: `rotation-manager-${randomUUID()}@example.test`,
+        passwordHash: 'unused',
+        role: 'ADMIN',
+      },
+    })
     const tokenHash = `deactivate-race-${randomUUID()}`
     await repository.create({
       platformAdminId,
@@ -125,9 +133,8 @@ describe('atomic platform refresh-token rotation', () => {
       })
       const deactivation = new DeactivatePlatformAdminUseCase(
         new PrismaPlatformAdminRepository(),
-        repository,
       ).execute({
-        actorId: 'another-administrator',
+        actorId: actor.id,
         platformAdminId,
       })
       releaseLock()
@@ -151,6 +158,7 @@ describe('atomic platform refresh-token rotation', () => {
     } finally {
       releaseLock()
       await blocker
+      await prisma.platformAdmin.delete({ where: { id: actor.id } })
     }
   })
 })

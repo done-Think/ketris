@@ -8,12 +8,13 @@ export class UnpublishAgencyProfileUseCase {
   constructor(private readonly agencyProfileRepository: AgencyProfileRepository) {}
 
   async execute(input: UnpublishAgencyProfileInput): Promise<AgencyProfile> {
-    assertAgencyProfileAccess(input.actorPapel)
+    assertAgencyProfileAccess(input.actorRole)
 
     const unpublished = await this.agencyProfileRepository.setStatus(
       input.actorTenantId,
       'DRAFT',
       null,
+      input.actorId,
     )
 
     if (!unpublished) {

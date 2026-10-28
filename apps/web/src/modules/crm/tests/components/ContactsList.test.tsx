@@ -17,7 +17,7 @@ function renderList(props: ContactsListProps = {}) {
       <ContactsList
         contacts={getContactListFixtures('pt-BR').slice(0, 5)}
         totalCount={6}
-        counts={{ ALL: 6, PROPRIETARIO: 2, LOCATARIO: 3, CORRETOR: 1 }}
+        counts={{ ALL: 6, OWNER: 2, RENTER: 3, BROKER: 1 }}
         {...props}
       />
     </ThemeProvider>,
@@ -45,7 +45,7 @@ describe('ContactsList', () => {
     fireEvent.click(screen.getByRole('button', { name: /Proprietários/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Go to next page' }))
     expect(onSearchChange).toHaveBeenCalledWith('Letícia')
-    expect(onFilterChange).toHaveBeenCalledWith('PROPRIETARIO')
+    expect(onFilterChange).toHaveBeenCalledWith('OWNER')
     expect(onPageChange).toHaveBeenCalledWith(2)
   })
 

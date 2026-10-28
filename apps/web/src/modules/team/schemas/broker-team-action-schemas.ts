@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { createNewPasswordSchema } from '@shared/schemas/new-password-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 
-export function createBrokerGoalSchema(t: SchemaMessageTranslator) {
+export function createBrokerGoalSchema(t: SchemaMessageTranslator<'goalError'>) {
   return z.object({
     monthlySales: z.coerce
       .number()
@@ -13,14 +13,18 @@ export function createBrokerGoalSchema(t: SchemaMessageTranslator) {
   })
 }
 
-export function createBrokerInviteSchema(t: SchemaMessageTranslator) {
+export function createBrokerInviteSchema(
+  t: SchemaMessageTranslator<'inviteEmailError' | 'inviteNameError'>,
+) {
   return z.object({
     name: z.string().trim().min(1, t('inviteNameError')).max(120, t('inviteNameError')),
     email: z.string().trim().max(254, t('inviteEmailError')).email(t('inviteEmailError')),
   })
 }
 
-export function createBrokerTransferSchema(t: SchemaMessageTranslator) {
+export function createBrokerTransferSchema(
+  t: SchemaMessageTranslator<'destinationError' | 'itemsError'>,
+) {
   return z
     .object({
       destinationId: z.string().min(1, t('destinationError')),
@@ -38,11 +42,15 @@ export function createBrokerTransferSchema(t: SchemaMessageTranslator) {
     )
 }
 
-export function createBrokerDeactivateSchema(t: SchemaMessageTranslator) {
+export function createBrokerDeactivateSchema(t: SchemaMessageTranslator<'destinationError'>) {
   return z.object({ destinationId: z.string().min(1, t('destinationError')) })
 }
 
-export function createAcceptInvitationSchema(t: SchemaMessageTranslator) {
+export function createAcceptInvitationSchema(
+  t: SchemaMessageTranslator<
+    'passwordConfirmationRequired' | 'passwordMismatch' | 'passwordTooLong' | 'passwordTooShort'
+  >,
+) {
   return z
     .object({
       password: createNewPasswordSchema(t),

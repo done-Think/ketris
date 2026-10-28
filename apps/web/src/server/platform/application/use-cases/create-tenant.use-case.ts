@@ -13,7 +13,7 @@ export class CreateTenantUseCase {
     }
 
     return this.tenantRepository.create({
-      nome: input.nome,
+      name: input.name,
       slug: input.slug,
       accountType: input.accountType,
       status: input.status,

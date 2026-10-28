@@ -5,7 +5,7 @@ export interface ContactListFilters extends CrmListFilters {
   type?: Contact['type']
   q?: string
   includeArchived?: boolean
-  responsavelId?: string
+  responsibleId?: string
 }
 
 export interface ContactRepository {

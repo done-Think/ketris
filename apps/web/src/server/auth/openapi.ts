@@ -306,7 +306,7 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Auth'],
     summary: 'Desativa um usuário (proprietário ou agente) — soft delete',
     description:
-      'Requer papel OWNER. Não remove o registro do banco: marca a conta como inativa (ativo = false) ' +
+      'Requer papel OWNER. Não remove o registro do banco: marca a conta como inativa (active = false) ' +
       'e revoga todos os refresh tokens ativos do usuário. Um dono não pode desativar a própria ' +
       'conta por esta rota.',
     security: [{ bearerAuth: [] }],

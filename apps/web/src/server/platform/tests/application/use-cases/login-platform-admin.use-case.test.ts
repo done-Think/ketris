@@ -11,13 +11,13 @@ import { LoginPlatformAdminUseCase } from '../../../application/use-cases/login-
 
 const admin: PlatformAdmin = {
   id: 'platform-admin-1',
-  nome: 'Dono Ketris',
+  name: 'Dono Ketris',
   email: 'dono@ketris.dev',
-  senhaHash: 'hash-fake',
+  passwordHash: 'hash-fake',
   role: 'ADMIN',
-  ativo: true,
+  active: true,
   createdAt: new Date('2026-01-01T00:00:00.000Z'),
-  ultimoAcessoEm: null,
+  lastAccessAt: null,
 }
 
 function createDeps(overrides?: {
@@ -73,18 +73,18 @@ describe('LoginPlatformAdminUseCase', () => {
     expect(result.refreshToken.length).toBeGreaterThan(32)
     expect(result.admin).toMatchObject({
       id: admin.id,
-      nome: admin.nome,
+      name: admin.name,
       email: admin.email,
       role: admin.role,
-      ativo: admin.ativo,
+      active: admin.active,
       createdAt: admin.createdAt,
     })
-    expect(result.admin).not.toHaveProperty('senhaHash')
+    expect(result.admin).not.toHaveProperty('passwordHash')
     expect(deps.platformAdminRepository.recordAccess).toHaveBeenCalledWith(
       admin.id,
-      result.admin.ultimoAcessoEm,
+      result.admin.lastAccessAt,
     )
-    expect(result.admin.ultimoAcessoEm).toBeInstanceOf(Date)
+    expect(result.admin.lastAccessAt).toBeInstanceOf(Date)
   })
 
   it('persiste o hash do refresh token com platformAdminId/expiresAt', async () => {
@@ -120,7 +120,7 @@ describe('LoginPlatformAdminUseCase', () => {
   })
 
   it('lança InvalidPlatformCredentialsError quando o admin está desativado', async () => {
-    const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue({ ...admin, ativo: false }) })
+    const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue({ ...admin, active: false }) })
     const useCase = buildUseCase(deps)
 
     await expect(

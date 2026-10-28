@@ -11,7 +11,7 @@ export async function withAgendaPropertySummaries(
 ): Promise<AgendaEvent[]> {
   if (!catalog) return events
   const propertyIds = [
-    ...new Set(events.flatMap((event) => (event.imovelId ? [event.imovelId] : []))),
+    ...new Set(events.flatMap((event) => (event.propertyId ? [event.propertyId] : []))),
   ]
   const summaries = await catalog.summaries(
     { ...actor, actorUserId: actor.actorUserId ?? '' } satisfies AgendaReadActor,
@@ -20,7 +20,7 @@ export async function withAgendaPropertySummaries(
   const labels = new Map(summaries.map((property) => [property.id, property.label]))
   return events.map((event) => ({
     ...event,
-    propertyLabel: event.imovelId ? (labels.get(event.imovelId) ?? null) : null,
+    propertyLabel: event.propertyId ? (labels.get(event.propertyId) ?? null) : null,
   }))
 }
 

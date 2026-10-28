@@ -16,32 +16,32 @@ describe('/api/crm/contacts/[id] (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária CRM Contact Detail', slug: `crm-contact-id-${randomUUID()}` },
+      data: { name: 'Imobiliária CRM Contact Detail', slug: `crm-contact-id-${randomUUID()}` },
     })
     tenantId = tenant.id
 
     const other = await prisma.tenant.create({
-      data: { nome: 'Outra Imobiliária', slug: `crm-contact-id-other-${randomUUID()}` },
+      data: { name: 'Outra Imobiliária', slug: `crm-contact-id-other-${randomUUID()}` },
     })
     otherTenantId = other.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin',
+        name: 'Admin',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
   })
 
@@ -52,8 +52,8 @@ describe('/api/crm/contacts/[id] (integração)', () => {
   })
 
   async function createContact(tenant = tenantId) {
-    return prisma.contato.create({
-      data: { tenantId: tenant, nome: 'Carlos', email: `carlos-${randomUUID()}@exemplo.com` },
+    return prisma.contact.create({
+      data: { tenantId: tenant, name: 'Carlos', email: `carlos-${randomUUID()}@exemplo.com` },
     })
   }
 
@@ -172,8 +172,8 @@ describe('/api/crm/contacts/[id] (integração)', () => {
       expect(response.status).toBe(200)
       expect(json.contact.archivedAt).not.toBeNull()
 
-      const reloaded = await prisma.contato.findUniqueOrThrow({ where: { id: contact.id } })
-      expect(reloaded.arquivadoEm).not.toBeNull()
+      const reloaded = await prisma.contact.findUniqueOrThrow({ where: { id: contact.id } })
+      expect(reloaded.archivedAt).not.toBeNull()
     })
   })
 })

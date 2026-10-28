@@ -1,5 +1,6 @@
 import { BaseService } from '@shared/lib/api/base-service'
 import { HttpClient, httpClient } from '@shared/lib/api/http-client'
+import { uploadToSignedUrl } from '@shared/lib/api/signed-upload'
 import { sha256Hex } from '@shared/utils/sha256-hex'
 
 import type {
@@ -74,11 +75,11 @@ export class FinancialService extends BaseService {
       `${this.path}/charges/${id}/receipt-uploads`,
       { name: file.name, contentType: file.type, size: file.size, sha256: await sha256Hex(file) },
     )
-    await this.storage.put(authorization.uploadUrl, file, {
-      headers: authorization.headers,
-      timeout: 120000,
-      skipUnauthorizedHandling: true,
-    })
+    await uploadToSignedUrl(
+      this.storage,
+      { url: authorization.uploadUrl, headers: authorization.headers },
+      file,
+    )
 
     return authorization.uploadToken
   }

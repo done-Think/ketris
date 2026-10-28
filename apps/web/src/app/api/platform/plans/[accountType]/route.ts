@@ -29,7 +29,7 @@ export const PATCH = withErrorHandling(
     const plan = await platformContainer.updatePlatformPlanUseCase.execute({
       accountType: accountType.data,
       ...body,
-      actor: { id: actor.id, name: actor.nome },
+      actor: { id: actor.id, name: actor.name },
     })
 
     return NextResponse.json({ plan: toPlatformPlanResponse(plan) }, { status: 200 })

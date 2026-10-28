@@ -20,14 +20,14 @@ export class RespondToOpportunityUseCase {
   ) {}
 
   async execute(input: RespondToOpportunityInput): Promise<RespondToOpportunityOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     const current = await this.opportunityRepository.findById(input.opportunityId)
 
     if (!current || current.tenantId !== input.actorTenantId) {
       throw new OpportunityNotFoundError()
     }
 
-    assertOpportunityAccess(current, input.actorId ?? '', input.actorPapel)
+    assertOpportunityAccess(current, input.actorId ?? '', input.actorRole)
 
     if (!canRespond(current.status)) {
       throw new OpportunityNotAnswerableError(current.status)
@@ -41,7 +41,7 @@ export class RespondToOpportunityUseCase {
     const message = input.message?.trim()
     const activity = await this.activityRepository.create({
       opportunityId: current.id,
-      type: 'PROPOSTA_RESPONDIDA',
+      type: 'PROPOSAL_ANSWERED',
       description: message ?? '',
       systemAction: input.action,
       authorId: input.actorId ?? null,

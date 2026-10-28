@@ -1,4 +1,4 @@
-import { contractOptionMessage } from '../utils/contract-option-message'
+import { formatContractOption } from '../utils/contract-option-message'
 import { useFormatter, useTranslations } from 'next-intl'
 import type { ContractPresentation } from '../types/presentation'
 
@@ -9,8 +9,8 @@ export function useContractPresentation(): ContractPresentation {
   return {
     date: (value) => formatter.dateTime(new Date(value), { dateStyle: 'short', timeZone: 'UTC' }),
     money: (value) => formatter.number(value, { style: 'currency', currency: 'BRL' }),
-    adjustment: (value) => conditions(contractOptionMessage('adjustmentIndexOptions', value)),
-    guarantee: (value) => conditions(contractOptionMessage('guaranteeTypeOptions', value)),
+    adjustment: (value) => formatContractOption('adjustmentIndexOptions', value, conditions),
+    guarantee: (value) => formatContractOption('guaranteeTypeOptions', value, conditions),
     paymentDay: (day) => detail('paymentDay', { day }),
   }
 }

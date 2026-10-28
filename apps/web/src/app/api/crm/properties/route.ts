@@ -11,7 +11,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const page = await crmContainer.listCrmPropertiesUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     filters: parseQuery(request, crmPropertyQuerySchema),
   })
   return NextResponse.json(page)

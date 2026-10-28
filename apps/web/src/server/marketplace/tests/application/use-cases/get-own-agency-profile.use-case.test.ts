@@ -19,22 +19,22 @@ function createDeps() {
 }
 
 describe('GetOwnAgencyProfileUseCase', () => {
-  it.each(['OWNER'] as const)('busca o perfil do tenant quando o ator é %s', async (actorPapel) => {
+  it.each(['OWNER'] as const)('busca o perfil do tenant quando o ator é %s', async (actorRole) => {
     const deps = createDeps()
     const useCase = new GetOwnAgencyProfileUseCase(deps.agencyProfileRepository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorRole })
 
     expect(deps.agencyProfileRepository.findByTenantId).toHaveBeenCalledWith('tenant-1')
   })
 
   it.each(['AGENT', 'RENTER'] as const)(
     'lança ForbiddenError quando o ator não é OWNER (%s)',
-    async (actorPapel) => {
+    async (actorRole) => {
       const deps = createDeps()
       const useCase = new GetOwnAgencyProfileUseCase(deps.agencyProfileRepository)
 
-      await expect(useCase.execute({ actorTenantId: 'tenant-1', actorPapel })).rejects.toThrow(
+      await expect(useCase.execute({ actorTenantId: 'tenant-1', actorRole })).rejects.toThrow(
         ForbiddenError,
       )
     },

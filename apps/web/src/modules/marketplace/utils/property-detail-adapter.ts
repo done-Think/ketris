@@ -40,7 +40,7 @@ function buildLocation(property: PublicPropertyDetail): string {
 function buildPrice(property: PublicPropertyDetail, locale: AppLocale, t: PropertyText): string {
   const formatted = formatCompactCurrency(property.price, locale)
 
-  return property.purpose === 'ALUGUEL' ? t('monthly', { price: formatted }) : formatted
+  return property.purpose === 'RENT' ? t('monthly', { price: formatted }) : formatted
 }
 
 function buildAddressLine(property: PublicPropertyDetail): string {

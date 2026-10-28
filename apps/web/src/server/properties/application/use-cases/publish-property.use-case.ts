@@ -9,7 +9,7 @@ export class PublishPropertyUseCase {
   constructor(private readonly propertyRepository: PropertyRepository) {}
 
   async execute(input: PublishPropertyInput) {
-    assertCanEditProperties(input.actorPapel)
+    assertCanEditProperties(input.actorRole)
 
     const property = await this.propertyRepository.findByTenantAndId(input.actorTenantId, input.id)
 
@@ -17,7 +17,7 @@ export class PublishPropertyUseCase {
       throw new PropertyNotFoundError()
     }
 
-    assertPropertyAccess(property, input.actorId, input.actorPapel)
+    assertPropertyAccess(property, input.actorId, input.actorRole)
 
     const missingFields = getPublishMissingFields(property)
 
@@ -30,6 +30,7 @@ export class PublishPropertyUseCase {
       input.id,
       'PUBLISHED',
       input.publishedAt ?? new Date(),
+      input.actorId,
     )
 
     if (!publishedProperty) {

@@ -19,12 +19,12 @@ import { CreateAgendaEventUseCase } from '../../../application/use-cases/create-
 const actor: User = {
   id: 'agent-1',
   tenantId: 'tenant-1',
-  nome: 'Corretor',
+  name: 'Corretor',
   email: 'corretor@ketris.dev',
-  senhaHash: 'hash',
-  papel: 'AGENT',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash',
+  role: 'AGENT',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 const PINNED_NOW = new Date('2030-01-15T12:00:00.000Z')
@@ -34,22 +34,22 @@ const VALID_FIM = new Date('2030-01-15T17:00:00.000Z')
 const createdEvent: AgendaEvent = {
   id: 'event-1',
   tenantId: 'tenant-1',
-  responsavelId: 'agent-1',
-  criadoPorId: 'agent-1',
-  responsavelNome: 'Corretor',
-  donoUsuarioId: null,
+  responsibleId: 'agent-1',
+  createdById: 'agent-1',
+  responsibleName: 'Corretor',
+  ownerUserId: null,
   dono: null,
-  participantes: [],
-  imovelId: null,
-  referenciaImovelLivre: null,
-  titulo: 'Visita ao imóvel',
-  tipo: 'VISIT',
+  participants: [],
+  propertyId: null,
+  freeFormPropertyReference: null,
+  title: 'Visita ao imóvel',
+  type: 'VISIT',
   status: 'CONFIRMED',
-  inicio: VALID_INICIO,
-  fim: VALID_FIM,
-  participanteNome: 'Ana',
-  participanteTelefone: '(11) 99999-0000',
-  notas: null,
+  start: VALID_INICIO,
+  end: VALID_FIM,
+  participantName: 'Ana',
+  participantPhone: '(11) 99999-0000',
+  notes: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 }
@@ -111,24 +111,24 @@ describe('CreateAgendaEventUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorUserId: 'agent-1',
-      actorPapel: 'AGENT',
-      titulo: 'Visita ao imóvel',
-      tipo: 'VISIT',
-      inicio: VALID_INICIO,
+      actorRole: 'AGENT',
+      title: 'Visita ao imóvel',
+      type: 'VISIT',
+      start: VALID_INICIO,
       durationMinutes: 60,
-      participanteNome: 'Ana',
-      participanteTelefone: '(11) 99999-0000',
+      participantName: 'Ana',
+      participantPhone: '(11) 99999-0000',
     })
 
     expect(deps.agendaEventRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: 'tenant-1',
-        responsavelId: 'agent-1',
-        criadoPorId: 'agent-1',
-        inicio: VALID_INICIO,
-        fim: VALID_FIM,
+        responsibleId: 'agent-1',
+        createdById: 'agent-1',
+        start: VALID_INICIO,
+        end: VALID_FIM,
       }),
-      { donoEmail: undefined, participanteEmails: undefined },
+      { ownerEmail: undefined, participantEmails: undefined },
     )
     expect(deps.userRepository.findById).not.toHaveBeenCalled()
   })
@@ -145,12 +145,12 @@ describe('CreateAgendaEventUseCase', () => {
       useCase.execute({
         actorTenantId: 'renters',
         actorUserId: 'renter-1',
-        actorPapel: 'RENTER',
-        titulo: 'Visita',
-        inicio: VALID_INICIO,
+        actorRole: 'RENTER',
+        title: 'Visita',
+        start: VALID_INICIO,
         durationMinutes: 30,
-        participanteNome: 'Ana',
-        participanteTelefone: '11999990000',
+        participantName: 'Ana',
+        participantPhone: '11999990000',
       }),
     ).rejects.toThrow(AgendaRenterPropertyRequiredError)
     expect(deps.agendaEventRepository.create).not.toHaveBeenCalled()
@@ -171,13 +171,13 @@ describe('CreateAgendaEventUseCase', () => {
     await useCase.execute({
       actorTenantId: 'renters',
       actorUserId: 'renter-1',
-      actorPapel: 'RENTER',
-      imovelId: 'property-1',
-      titulo: 'Vistoria',
-      inicio: VALID_INICIO,
+      actorRole: 'RENTER',
+      propertyId: 'property-1',
+      title: 'Vistoria',
+      start: VALID_INICIO,
       durationMinutes: 30,
-      participanteNome: 'Ana',
-      participanteTelefone: '11999990000',
+      participantName: 'Ana',
+      participantPhone: '11999990000',
     })
 
     expect(deps.propertyRepository.findRentedProperty).toHaveBeenCalledWith(
@@ -191,7 +191,7 @@ describe('CreateAgendaEventUseCase', () => {
       expect.any(Date),
     )
     expect(deps.agendaEventRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ tenantId: 'agency-1', responsavelId: 'renter-1' }),
+      expect.objectContaining({ tenantId: 'agency-1', responsibleId: 'renter-1' }),
       expect.anything(),
     )
   })
@@ -209,13 +209,13 @@ describe('CreateAgendaEventUseCase', () => {
       useCase.execute({
         actorTenantId: 'renters',
         actorUserId: 'renter-1',
-        actorPapel: 'RENTER',
-        imovelId: 'property-2',
-        titulo: 'Vistoria',
-        inicio: VALID_INICIO,
+        actorRole: 'RENTER',
+        propertyId: 'property-2',
+        title: 'Vistoria',
+        start: VALID_INICIO,
         durationMinutes: 30,
-        participanteNome: 'Ana',
-        participanteTelefone: '11999990000',
+        participantName: 'Ana',
+        participantPhone: '11999990000',
       }),
     ).rejects.toThrow(AgendaPropertyNotFoundError)
   })
@@ -232,13 +232,13 @@ describe('CreateAgendaEventUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorUserId: 'agent-1',
-        actorPapel: 'OWNER',
-        responsavelId: 'outro-agente',
-        titulo: 'Visita',
-        inicio: VALID_INICIO,
+        actorRole: 'OWNER',
+        responsibleId: 'outro-agente',
+        title: 'Visita',
+        start: VALID_INICIO,
         durationMinutes: 30,
-        participanteNome: 'Ana',
-        participanteTelefone: '11999990000',
+        participantName: 'Ana',
+        participantPhone: '11999990000',
       }),
     ).rejects.toThrow(AgendaResponsibleNotFoundError)
     expect(deps.agendaEventRepository.create).not.toHaveBeenCalled()
@@ -256,13 +256,13 @@ describe('CreateAgendaEventUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorUserId: 'agent-1',
-        actorPapel: 'AGENT',
-        imovelId: 'inexistente',
-        titulo: 'Visita',
-        inicio: VALID_INICIO,
+        actorRole: 'AGENT',
+        propertyId: 'inexistente',
+        title: 'Visita',
+        start: VALID_INICIO,
         durationMinutes: 30,
-        participanteNome: 'Ana',
-        participanteTelefone: '11999990000',
+        participantName: 'Ana',
+        participantPhone: '11999990000',
       }),
     ).rejects.toThrow(AgendaPropertyNotFoundError)
     expect(deps.agendaEventRepository.create).not.toHaveBeenCalled()
@@ -280,12 +280,12 @@ describe('CreateAgendaEventUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorUserId: 'agent-1',
-        actorPapel: 'AGENT',
-        titulo: 'Visita',
-        inicio: new Date(Date.now() + 60 * 60_000),
+        actorRole: 'AGENT',
+        title: 'Visita',
+        start: new Date(Date.now() + 60 * 60_000),
         durationMinutes: 30,
-        participanteNome: 'Ana',
-        participanteTelefone: '11999990000',
+        participantName: 'Ana',
+        participantPhone: '11999990000',
       }),
     ).rejects.toThrow(AgendaMinimumAdvanceNoticeError)
     expect(deps.agendaEventRepository.create).not.toHaveBeenCalled()
@@ -303,12 +303,12 @@ describe('CreateAgendaEventUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorUserId: 'agent-1',
-        actorPapel: 'AGENT',
-        titulo: 'Visita',
-        inicio: VALID_INICIO,
+        actorRole: 'AGENT',
+        title: 'Visita',
+        start: VALID_INICIO,
         durationMinutes: 30,
-        participanteNome: 'Ana',
-        participanteTelefone: '11999990000',
+        participantName: 'Ana',
+        participantPhone: '11999990000',
       }),
     ).rejects.toThrow(AgendaEventConflictError)
     expect(deps.agendaEventRepository.create).not.toHaveBeenCalled()
@@ -325,19 +325,19 @@ describe('CreateAgendaEventUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorUserId: 'agent-1',
-      actorPapel: 'AGENT',
-      titulo: 'Vistoria de entrada',
-      inicio: VALID_INICIO,
+      actorRole: 'AGENT',
+      title: 'Vistoria de entrada',
+      start: VALID_INICIO,
       durationMinutes: 60,
-      participanteNome: 'Ana',
-      participanteTelefone: '(11) 99999-0000',
-      donoEmail: ' Locatario@Ketris.dev ',
-      participanteEmails: ['Fiador@ketris.dev', 'fiador@ketris.dev'],
+      participantName: 'Ana',
+      participantPhone: '(11) 99999-0000',
+      ownerEmail: ' Locatario@Ketris.dev ',
+      participantEmails: ['Fiador@ketris.dev', 'fiador@ketris.dev'],
     })
 
     expect(deps.agendaEventRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({ tenantId: 'tenant-1' }),
-      { donoEmail: 'locatario@ketris.dev', participanteEmails: ['fiador@ketris.dev'] },
+      { ownerEmail: 'locatario@ketris.dev', participantEmails: ['fiador@ketris.dev'] },
     )
   })
 })

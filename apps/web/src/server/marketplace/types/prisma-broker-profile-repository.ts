@@ -1,26 +1,26 @@
-export type UsuarioWithPerfilRow = {
+export type UserWithProfileRow = {
   id: string
   tenantId: string
-  nome: string
+  name: string
   email: string
   avatarUrl: string | null
-  tenant: { nome: string }
-  perfilPublico: {
+  tenant: { name: string }
+  publicProfile: {
     displayName: string
     headline: string | null
     bio: string | null
     creci: string | null
-    telefone: string | null
-    regiao: string | null
-    bairros: string[]
-    especialidades: string[]
-    disponibilidade: string | null
-    corPrimaria: string | null
-    corSecundaria: string | null
-    corFundo: string | null
+    phone: string | null
+    region: string | null
+    neighborhoods: string[]
+    specialties: string[]
+    availability: string | null
+    primaryColor: string | null
+    secondaryColor: string | null
+    backgroundColor: string | null
     avatarUrl: string | null
     bannerUrl: string | null
     status: 'DRAFT' | 'PUBLISHED'
-    publicadoEm: Date | null
+    publishedAt: Date | null
   } | null
 }

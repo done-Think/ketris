@@ -23,7 +23,7 @@ describe('GetProfileMediaUseCase', () => {
   })
 
   it.each([
-    [['contracts', 'tenant-1', 'contrato.pdf', 'x']],
+    [['contracts', 'tenant-1', 'contract.pdf', 'x']],
     [['profiles', 'users', 'usuario-1', 'avatar.webp']],
     [['profiles', 'brokers', '..', 'avatar.webp']],
     [['profiles', 'agencies', 'tenant%2F1', 'logo.webp']],

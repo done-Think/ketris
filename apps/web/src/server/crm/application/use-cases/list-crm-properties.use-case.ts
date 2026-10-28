@@ -5,7 +5,7 @@ import type { CrmPropertyCatalog } from '../ports/crm-property-catalog.port'
 export class ListCrmPropertiesUseCase {
   constructor(private readonly catalog: CrmPropertyCatalog) {}
   async execute(input: ListCrmPropertiesInput) {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     return this.catalog.list(input.filters)
   }
 }

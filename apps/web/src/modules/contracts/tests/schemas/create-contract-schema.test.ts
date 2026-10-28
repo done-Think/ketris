@@ -19,11 +19,11 @@ const validValues = {
   guarantorCpf: '',
   guarantorEmail: '',
   guarantorPhone: '',
-  contractType: 'RESIDENCIAL',
+  contractType: 'RESIDENTIAL',
   dueDay: '05',
   startDate: '01/09/2026',
   endDate: '31/08/2029',
-  guaranteeType: 'CAUCAO',
+  guaranteeType: 'DEPOSIT',
   adjustmentIndex: 'IPCA',
   notes: '',
 }
@@ -74,7 +74,7 @@ describe('createContractSchema', () => {
     const result = schema.safeParse({
       ...validValues,
       hasGuarantor: false,
-      guaranteeType: 'FIADOR',
+      guaranteeType: 'GUARANTOR',
       guarantorName: '',
       guarantorCpf: '',
       guarantorEmail: '',
@@ -88,7 +88,7 @@ describe('createContractSchema', () => {
     const result = schema.safeParse({
       ...validValues,
       hasGuarantor: false,
-      guaranteeType: 'CAUCAO',
+      guaranteeType: 'DEPOSIT',
       guarantorName: '',
       guarantorCpf: '',
       guarantorEmail: '',
@@ -102,7 +102,7 @@ describe('createContractSchema', () => {
     const result = schema.safeParse({
       ...validValues,
       hasGuarantor: true,
-      guaranteeType: 'FIADOR',
+      guaranteeType: 'GUARANTOR',
       guarantorName: 'Fernanda Lima',
       guarantorCpf: '456.789.123-64',
       guarantorEmail: 'fernanda@example.com',

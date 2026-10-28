@@ -15,12 +15,12 @@ function ownerInput(suffix: string): NewTenantWithAdmin {
     tenantName: `${prefix}-${suffix}`,
     adminName: 'Pessoa Teste',
     email: `${randomUUID()}@example.test`,
-    senhaHash: 'first-test-hash',
+    passwordHash: 'first-test-hash',
     accountType: 'AGENCY',
     status: 'TRIAL',
-    telefone: '+5511999999999',
+    phone: '+5511999999999',
     creci: 'CRECI-123',
-    termosAceitosEm: acceptedAt,
+    termsAcceptedAt: acceptedAt,
     createBrokerProfile: false,
   }
 }
@@ -36,14 +36,14 @@ async function agency(
 function memberInput(tenantId: string, email = `${randomUUID()}@example.test`) {
   return {
     tenantId,
-    nome: 'Corretor Teste',
+    name: 'Corretor Teste',
     email,
-    senhaHash: 'member-test-hash',
-    papel: 'AGENT' as const,
+    passwordHash: 'member-test-hash',
+    role: 'AGENT' as const,
     pendingApproval: true,
-    telefone: '+5511888888888',
+    phone: '+5511888888888',
     creci: 'CRECI-456',
-    termosAceitosEm: acceptedAt,
+    termsAcceptedAt: acceptedAt,
     createBrokerProfile: true,
   }
 }
@@ -61,24 +61,24 @@ describe('PrismaRegistrationRepository', () => {
       createBrokerProfile: true,
     }
     const { tenant, user } = await repository.createTenantWithAdmin(input)
-    const stored = await prisma.usuario.findUniqueOrThrow({
+    const stored = await prisma.user.findUniqueOrThrow({
       where: { id: user.id },
-      include: { perfilPublico: true },
+      include: { publicProfile: true },
     })
     expect(tenant).toMatchObject({ accountType: 'BROKER', status: 'TRIAL' })
     expect(stored).toMatchObject({
-      papel: 'OWNER',
-      telefone: input.telefone,
+      role: 'OWNER',
+      phone: input.phone,
       creci: input.creci,
-      termosAceitosEm: acceptedAt,
-      emailVerificadoEm: null,
-      versaoSessao: 0,
-      perfilPublico: {
+      termsAcceptedAt: acceptedAt,
+      emailVerifiedAt: null,
+      sessionVersion: 0,
+      publicProfile: {
         displayName: input.adminName,
-        telefone: input.telefone,
+        phone: input.phone,
         creci: input.creci,
         status: 'DRAFT',
-        publicadoEm: null,
+        publishedAt: null,
       },
     })
     expect(await prisma.refreshToken.count({ where: { userId: user.id } })).toBe(0)
@@ -93,16 +93,16 @@ describe('PrismaRegistrationRepository', () => {
     const second = await repository.createTenantWithAdmin({
       ...ownerInput('second-same-email'),
       email: `  ${email.toUpperCase()}  `,
-      senhaHash: 'second-test-hash',
+      passwordHash: 'second-test-hash',
     })
     expect(first.user.id).not.toBe(second.user.id)
     expect(await repository.findAccountByEmail(first.tenant.id, email)).toEqual(first.user)
     expect(await repository.findAccountByEmail(second.tenant.id, email)).toEqual(second.user)
     expect(
-      (await prisma.usuario.findUniqueOrThrow({ where: { id: first.user.id } })).senhaHash,
+      (await prisma.user.findUniqueOrThrow({ where: { id: first.user.id } })).passwordHash,
     ).toBe('first-test-hash')
     expect(
-      (await prisma.usuario.findUniqueOrThrow({ where: { id: second.user.id } })).senhaHash,
+      (await prisma.user.findUniqueOrThrow({ where: { id: second.user.id } })).passwordHash,
     ).toBe('second-test-hash')
   })
 
@@ -113,7 +113,7 @@ describe('PrismaRegistrationRepository', () => {
     )
     expect(new Set(results.map((result) => result.tenant.slug)).size).toBe(4)
     for (const result of results) {
-      expect(await prisma.usuario.count({ where: { tenantId: result.tenant.id } })).toBe(1)
+      expect(await prisma.user.count({ where: { tenantId: result.tenant.id } })).toBe(1)
     }
   })
 
@@ -124,20 +124,20 @@ describe('PrismaRegistrationRepository', () => {
       const input = memberInput(tenant.id)
       const user = await repository.createMember(input)
       expect(
-        await prisma.usuario.findUniqueOrThrow({
+        await prisma.user.findUniqueOrThrow({
           where: { id: user.id },
-          include: { perfilPublico: true },
+          include: { publicProfile: true },
         }),
       ).toMatchObject({
-        papel: 'AGENT',
-        emailVerificadoEm: null,
-        vinculoAprovadoEm: null,
-        telefone: input.telefone,
+        role: 'AGENT',
+        emailVerifiedAt: null,
+        membershipApprovedAt: null,
+        phone: input.phone,
         creci: input.creci,
-        termosAceitosEm: acceptedAt,
-        perfilPublico: {
-          displayName: input.nome,
-          telefone: input.telefone,
+        termsAcceptedAt: acceptedAt,
+        publicProfile: {
+          displayName: input.name,
+          phone: input.phone,
           creci: input.creci,
           status: 'DRAFT',
         },
@@ -158,9 +158,7 @@ describe('PrismaRegistrationRepository', () => {
       (attempt) => attempt.status === 'rejected',
     ) as PromiseRejectedResult
     expect(failure.reason).toBeInstanceOf(RegistrationEmailAlreadyInUseError)
-    expect(await prisma.usuario.count({ where: { tenantId: first.id, email: input.email } })).toBe(
-      1,
-    )
+    expect(await prisma.user.count({ where: { tenantId: first.id, email: input.email } })).toBe(1)
     expect(await repository.findAccountByEmail(second.id, input.email)).toBeNull()
     expect(await repository.createMember({ ...input, tenantId: second.id })).toMatchObject({
       tenantId: second.id,
@@ -197,29 +195,29 @@ describe('PrismaRegistrationRepository', () => {
     const tenant = await agency('renter-system')
     const user = await repository.createMember({
       ...memberInput(tenant.id),
-      papel: 'RENTER',
+      role: 'RENTER',
       pendingApproval: false,
       creci: undefined,
       createBrokerProfile: false,
     })
-    const stored = await prisma.usuario.findUniqueOrThrow({
+    const stored = await prisma.user.findUniqueOrThrow({
       where: { id: user.id },
-      include: { perfilPublico: true },
+      include: { publicProfile: true },
     })
     expect(stored).toMatchObject({
-      papel: 'RENTER',
-      emailVerificadoEm: null,
-      telefone: '+5511888888888',
-      termosAceitosEm: acceptedAt,
-      perfilPublico: null,
+      role: 'RENTER',
+      emailVerifiedAt: null,
+      phone: '+5511888888888',
+      termsAcceptedAt: acceptedAt,
+      publicProfile: null,
     })
-    expect(stored.vinculoAprovadoEm).toBeInstanceOf(Date)
+    expect(stored.membershipApprovedAt).toBeInstanceOf(Date)
   })
 
   it('searches only eligible agencies, excludes requested slugs, and limits ordered results to twenty', async () => {
     const query = `${prefix}-search`
     const data = Array.from({ length: 24 }, (_, index) => ({
-      nome: `${query}-${String(index).padStart(2, '0')}`,
+      name: `${query}-${String(index).padStart(2, '0')}`,
       slug: `${query}-${index}`,
       accountType: 'AGENCY' as const,
       status: index % 2 ? ('ACTIVE' as const) : ('TRIAL' as const),
@@ -228,19 +226,19 @@ describe('PrismaRegistrationRepository', () => {
       data: [
         ...data,
         {
-          nome: `${query}-blocked`,
+          name: `${query}-blocked`,
           slug: `${query}-blocked`,
           accountType: 'AGENCY',
           status: 'SUSPENDED',
         },
         {
-          nome: `${query}-broker`,
+          name: `${query}-broker`,
           slug: `${query}-broker`,
           accountType: 'BROKER',
           status: 'ACTIVE',
         },
         {
-          nome: `${query}-individual`,
+          name: `${query}-individual`,
           slug: `${query}-individual`,
           accountType: 'INDIVIDUAL',
           status: 'ACTIVE',
@@ -249,8 +247,8 @@ describe('PrismaRegistrationRepository', () => {
     })
     const results = await repository.searchByName(query.toUpperCase(), [data[0].slug])
     expect(results).toHaveLength(20)
-    expect(results.map((result) => result.nome)).toEqual(
-      data.slice(1, 21).map((record) => record.nome),
+    expect(results.map((result) => result.name)).toEqual(
+      data.slice(1, 21).map((record) => record.name),
     )
     expect(
       results.every(

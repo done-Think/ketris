@@ -17,7 +17,7 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Char
   const upload = await financialContainer.initChargeReceiptUploadUseCase.execute({
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     chargeId: id,
     ...body,
   })

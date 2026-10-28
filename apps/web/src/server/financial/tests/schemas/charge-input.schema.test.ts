@@ -9,18 +9,18 @@ import { initChargeReceiptUploadRequestSchema } from '../../schemas/charge-recei
 
 describe('schemas de entrada do financeiro', () => {
   it('a edição não aceita status nem campos desconhecidos', () => {
-    expect(updateChargeRequestSchema.safeParse({ status: 'PAGA' }).success).toBe(false)
+    expect(updateChargeRequestSchema.safeParse({ status: 'PAID' }).success).toBe(false)
     expect(updateChargeRequestSchema.safeParse({ amount: 10 }).success).toBe(true)
   })
 
   it('a criação só aceita pendente ou agendada e exige descrição sem contrato', () => {
-    const base = { type: 'A_RECEBER', amount: 10, dueDate: '2026-11-01' }
+    const base = { type: 'RECEIVABLE', amount: 10, dueDate: '2026-11-01' }
     expect(
-      createChargeRequestSchema.safeParse({ ...base, status: 'PAGA', description: 'x' }).success,
+      createChargeRequestSchema.safeParse({ ...base, status: 'PAID', description: 'x' }).success,
     ).toBe(false)
-    expect(createChargeRequestSchema.safeParse({ ...base, status: 'PENDENTE' }).success).toBe(false)
+    expect(createChargeRequestSchema.safeParse({ ...base, status: 'PENDING' }).success).toBe(false)
     expect(
-      createChargeRequestSchema.safeParse({ ...base, status: 'AGENDADA', description: 'x' })
+      createChargeRequestSchema.safeParse({ ...base, status: 'SCHEDULED', description: 'x' })
         .success,
     ).toBe(true)
   })

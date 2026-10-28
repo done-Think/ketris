@@ -14,37 +14,38 @@ export class CreatePropertyUseCase {
   ) {}
 
   execute(input: CreatePropertyInput) {
-    assertCanEditProperties(input.actorPapel)
+    assertCanEditProperties(input.actorRole)
     return this.createProperty(input)
   }
 
   private async createProperty(input: CreatePropertyInput) {
-    assertPropertyMediaScope(input.actorTenantId, input.midias)
-    const ownerId = isPropertyOwner(input.actorPapel)
-      ? input.actorUserId
-      : (input.proprietarioId ?? null)
+    assertPropertyMediaScope(input.actorTenantId, input.media)
+    const ownerId = isPropertyOwner(input.actorRole) ? input.actorUserId : (input.ownerId ?? null)
     if (ownerId && !(await this.ownerDirectory.findActiveOwner(input.actorTenantId, ownerId))) {
       throw new PropertyOwnerValidationError()
     }
-    return this.propertyRepository.create({
-      tenantId: input.actorTenantId,
-      responsavelId: input.actorUserId,
-      proprietarioId: ownerId,
-      titulo: input.titulo,
-      descricao: input.descricao,
-      finalidade: input.finalidade,
-      tipo: input.tipo,
-      anuncio: input.anuncio,
-      quartos: input.quartos,
-      banheiros: input.banheiros,
-      vagas: input.vagas,
-      areaM2: input.areaM2,
-      valor: input.valor,
-      valorAluguel: input.valorAluguel,
-      condominio: input.condominio,
-      iptu: input.iptu,
-      endereco: input.endereco,
-      midias: input.midias,
-    })
+    return this.propertyRepository.create(
+      {
+        tenantId: input.actorTenantId,
+        responsibleId: input.actorUserId,
+        ownerId: ownerId,
+        title: input.title,
+        description: input.description,
+        purpose: input.purpose,
+        type: input.type,
+        listing: input.listing,
+        bedrooms: input.bedrooms,
+        bathrooms: input.bathrooms,
+        parkingSpots: input.parkingSpots,
+        areaSqm: input.areaSqm,
+        price: input.price,
+        rentalPrice: input.rentalPrice,
+        condoFee: input.condoFee,
+        propertyTax: input.propertyTax,
+        address: input.address,
+        media: input.media,
+      },
+      input.actorUserId,
+    )
   }
 }

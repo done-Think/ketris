@@ -14,7 +14,7 @@ import {
 } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance regularization', () => {
-  it.each(['ABERTO', 'RESOLVIDO', 'CANCELADO', 'FECHADO'] as const)(
+  it.each(['OPEN', 'RESOLVED', 'CANCELED', 'CLOSED'] as const)(
     'admin links legacy %s calls without changing their lifecycle, including archived calls',
     async (status) => {
       for (const deletedAt of [null, new Date('2026-10-01')]) {
@@ -28,7 +28,7 @@ describe('Maintenance regularization', () => {
           expect.anything(),
           { contractId: contract.id },
           expect.objectContaining({
-            type: 'EDICAO',
+            type: 'EDIT',
             authorId: admin.actorId,
             details: {
               before: { contractId: null, propertyId: ticket.propertyId },
@@ -66,7 +66,7 @@ describe('Maintenance regularization', () => {
     expect(repo.mutate).toHaveBeenCalledWith(
       expect.anything(),
       { responsibleId: user.actorId },
-      expect.objectContaining({ type: 'RESPONSAVEL_ALTERADO', authorId: user.actorId }),
+      expect.objectContaining({ type: 'RESPONSIBLE_CHANGED', authorId: user.actorId }),
     )
     await expect(
       actOnTicket(repository({ responsibleId: 'other' }), user, ticket.id, { action: 'assume' }),
@@ -95,19 +95,19 @@ describe('Maintenance regularization', () => {
   })
 
   it('soft deletes without changing status and restores without removing history', async () => {
-    const repo = repository({ status: 'EM_ANDAMENTO' })
+    const repo = repository({ status: 'IN_PROGRESS' })
     await deleteTicket(repo, admin, ticket.id)
     expect(repo.mutate).toHaveBeenCalledWith(
       expect.anything(),
       { deletedAt: expect.any(Date), deletedById: 'admin' },
-      expect.objectContaining({ type: 'EXCLUSAO' }),
+      expect.objectContaining({ type: 'DELETION' }),
     )
-    const archived = repository({ status: 'EM_ANDAMENTO', deletedAt: new Date() })
+    const archived = repository({ status: 'IN_PROGRESS', deletedAt: new Date() })
     await actOnTicket(archived, admin, ticket.id, { action: 'restore' })
     expect(archived.mutate).toHaveBeenCalledWith(
       expect.anything(),
       { deletedAt: null, deletedById: null },
-      expect.objectContaining({ type: 'RESTAURACAO' }),
+      expect.objectContaining({ type: 'RESTORATION' }),
     )
     expect(canAccessTicket(renter, { ...ticket, deletedAt: new Date() })).toBe(false)
   })

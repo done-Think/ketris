@@ -19,23 +19,23 @@ describe('GET /api/marketplace/agencies (integração)', () => {
 
   beforeAll(async () => {
     const publishedTenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária Publicada', slug: `diretorio-agencia-publicada-${randomUUID()}` },
+      data: { name: 'Imobiliária Publicada', slug: `diretorio-agencia-publicada-${randomUUID()}` },
     })
     publishedTenantId = publishedTenant.id
-    await prisma.perfilPublicoImobiliaria.create({
+    await prisma.agencyPublicProfile.create({
       data: {
         tenantId: publishedTenantId,
         displayName: `Imobiliária Publicada ${marker}`,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        publishedAt: new Date(),
       },
     })
 
     const draftTenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária Rascunho', slug: `diretorio-agencia-rascunho-${randomUUID()}` },
+      data: { name: 'Imobiliária Rascunho', slug: `diretorio-agencia-rascunho-${randomUUID()}` },
     })
     draftTenantId = draftTenant.id
-    await prisma.perfilPublicoImobiliaria.create({
+    await prisma.agencyPublicProfile.create({
       data: { tenantId: draftTenantId, displayName: 'Imobiliária Rascunho', status: 'DRAFT' },
     })
   })

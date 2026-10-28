@@ -125,13 +125,13 @@
       "parkingSpaces": "VAGAS",
       "area": "ÁREA",
       "condominium": "CONDOMÍNIO",
-      "iptu": "IPTU"
+      "propertyTax": "IPTU"
     },
     "pricing": {
       "rent": "ALUGUEL",
       "sale": "VENDA",
       "condominium": "CONDOMÍNIO",
-      "iptu": "IPTU",
+      "propertyTax": "IPTU",
       "administrationFee": "TAXA DE ADMINISTRAÇÃO",
       "securityDeposit": "GARANTIA",
       "lastAdjustment": "ÚLTIMO AJUSTE"
@@ -193,7 +193,7 @@
       "saleValue": "Valor de venda",
       "referenceValue": "Valor de referência do imóvel",
       "condominium": "Condomínio",
-      "iptu": "IPTU mensal",
+      "propertyTax": "IPTU mensal",
       "securityDeposit": "Garantia",
       "commission": "Comissão",
       "commercialTerms": "Condição comercial",

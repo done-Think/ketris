@@ -1,5 +1,5 @@
-import type { LeadSource } from '@server/crm/constants/lead-sources'
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { LeadSource } from '@shared/types/lead-source'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { TimeRange } from '@server/shared/types/time-zone-calendar'
 
 export interface DashboardScope {
@@ -22,7 +22,7 @@ export interface DashboardMetrics {
   proposalsAwaitingResponse: number
 }
 
-export type DashboardLeadStage = 'NOVO' | 'EM_CONTATO' | 'VISITA_MARCADA' | 'PROPOSTA'
+export type DashboardLeadStage = 'NEW' | 'IN_CONTACT' | 'VISIT_SCHEDULED' | 'PROPOSAL'
 
 export interface DashboardRecentLead {
   id: string
@@ -82,5 +82,5 @@ export interface DashboardOverview {
 export interface GetDashboardOverviewInput {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }

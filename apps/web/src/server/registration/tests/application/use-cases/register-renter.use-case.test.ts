@@ -18,13 +18,13 @@ describe('RegisterRenterUseCase', () => {
     expect(accounts.findAccountByEmail).toHaveBeenCalledWith(tenant.id, details.email)
     expect(accounts.createMember).toHaveBeenCalledWith({
       tenantId: tenant.id,
-      nome: details.fullName,
+      name: details.fullName,
       email: details.email,
-      senhaHash: 'test-hash',
-      papel: 'RENTER',
+      passwordHash: 'test-hash',
+      role: 'RENTER',
       pendingApproval: false,
-      telefone: details.phone,
-      termosAceitosEm: expect.any(Date),
+      phone: details.phone,
+      termsAcceptedAt: expect.any(Date),
       createBrokerProfile: false,
     })
     expect(result).toEqual({ email: account.email, tenantId: tenant.id, pendingApproval: false })

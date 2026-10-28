@@ -7,7 +7,6 @@ import { useListState } from '@shared/hooks/use-list-state'
 import { crmPageCounts } from '../utils/page-counts'
 
 import type { AppLocale } from '@/i18n/types/locale.types'
-import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
@@ -35,8 +34,6 @@ export function LeadsDashboardPage() {
   const locale = useLocale() as AppLocale
   const t = useTranslations('crm.leads')
   const searchParams = useSearchParams()
-  const { data: session } = useSession()
-  const tenantId = session?.tenantId ?? ''
   const { filters: list, setFilter } = useListState({
     search: '',
     activeFilter: 'ALL' as LeadFilter,
@@ -45,7 +42,7 @@ export function LeadsDashboardPage() {
     pageSize: 5,
   })
   const query = useDebouncedValue(list.search)
-  const leadsQuery = useLeads(tenantId, {
+  const leadsQuery = useLeads({
     q: query || undefined,
     stage: list.activeFilter === 'ALL' ? undefined : list.activeFilter,
     page: list.page,
@@ -55,12 +52,12 @@ export function LeadsDashboardPage() {
     sortDirection: list.sort?.direction,
   })
   const linkedLeadId = searchParams?.get('leadId') ?? null
-  const updateLeadStage = useUpdateLeadStage(tenantId)
+  const updateLeadStage = useUpdateLeadStage()
   const leads = (leadsQuery.data?.leads ?? []).map((lead) => toDashboardLead(lead, locale, format))
   const [isCreateLeadDialogOpen, setIsCreateLeadDialogOpen] = useState(false)
   const [selectedContactId, setSelectedContactId] = useState<string | null | undefined>(undefined)
   const contactId = selectedContactId === undefined ? linkedLeadId : selectedContactId
-  const contactQuery = useLead(tenantId, contactId)
+  const contactQuery = useLead(contactId)
   const [convertLead, setConvertLead] = useState<DashboardLead | null>(null)
 
   function handleStageChange(leadId: string, stage: LeadApiStage) {

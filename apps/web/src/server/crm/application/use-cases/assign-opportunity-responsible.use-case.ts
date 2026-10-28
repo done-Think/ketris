@@ -21,8 +21,8 @@ export class AssignOpportunityResponsibleUseCase {
   async execute(
     input: AssignOpportunityResponsibleInput,
   ): Promise<AssignOpportunityResponsibleOutput> {
-    assertCrmAccess(input.actorPapel)
-    if (!isAgencyManager(input.actorPapel))
+    assertCrmAccess(input.actorRole)
+    if (!isAgencyManager(input.actorRole))
       throw new ForbiddenError('Só o responsável pela imobiliária troca o responsável.')
     const current = await this.opportunityRepository.findById(input.opportunityId)
     if (!current || current.tenantId !== input.actorTenantId) throw new OpportunityNotFoundError()
@@ -40,7 +40,7 @@ export class AssignOpportunityResponsibleUseCase {
     )
     await this.activityRepository.create({
       opportunityId: current.id,
-      type: 'NOTA',
+      type: 'NOTE',
       description: `${current.responsibleName} → ${name}`,
       systemAction: 'RESPONSIBLE_CHANGED',
       authorId: input.actorId,

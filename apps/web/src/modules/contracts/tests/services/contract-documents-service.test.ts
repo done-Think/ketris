@@ -12,13 +12,23 @@ afterEach(() => {
 })
 
 it('envia metadados à API e bytes ao storage sem encaminhar token ou tenant', async () => {
-  const calls: { url?: string; headers: Record<string, unknown>; data: unknown }[] = []
+  const calls: {
+    url?: string
+    headers: Record<string, unknown>
+    data: unknown
+    withCredentials?: boolean
+  }[] = []
   const file = new File(['%PDF-1.7 test'], 'Contrato final.pdf', { type: 'application/pdf' })
   const hash = createHash('sha256')
     .update(Buffer.from(await file.arrayBuffer()))
     .digest('hex')
   const adapter: AxiosAdapter = async (config) => {
-    calls.push({ url: config.url, headers: config.headers.toJSON(), data: config.data })
+    calls.push({
+      url: config.url,
+      headers: config.headers.toJSON(),
+      data: config.data,
+      withCredentials: config.withCredentials,
+    })
     const data = config.url?.endsWith('/uploads')
       ? {
           uploadUrl: 'https://private-storage.example.test/upload',
@@ -46,6 +56,7 @@ it('envia metadados à API e bytes ao storage sem encaminhar token ou tenant', a
   expect(calls[1].headers).not.toHaveProperty('Authorization')
   expect(calls[1].headers).not.toHaveProperty('X-Tenant-Id')
   expect(calls[1].headers['Content-Type']).toBe('application/pdf')
+  expect(calls[1].withCredentials).toBe(false)
   expect(calls[1].data).toBe(file)
   expect(JSON.parse(String(calls[2].data))).toEqual({ uploadToken: 'ticket' })
   expect(calls[2].headers.Authorization).toBe('Bearer secret-session-token')

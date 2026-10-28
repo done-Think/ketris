@@ -1,15 +1,15 @@
 import type { PlatformAdminRole } from './platform-admin'
 
 export interface NewPlatformAdmin {
-  nome: string
+  name: string
   email: string
-  senhaHash: string
+  passwordHash: string
   role: PlatformAdminRole
 }
 
 export interface PlatformAdminUpdate {
-  nome?: string
+  name?: string
   email?: string
   role?: PlatformAdminRole
-  ativo?: true
+  active?: true
 }

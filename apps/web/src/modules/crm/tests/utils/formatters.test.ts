@@ -1,3 +1,6 @@
+import ptCommon from '@/i18n/messages/pt-BR/common.json'
+import enCommon from '@/i18n/messages/en-US/common.json'
+import esCommon from '@/i18n/messages/es-ES/common.json'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -11,7 +14,7 @@ import {
 describe('CRM formatters', () => {
   it('formats values as Brazilian currency', () => {
     expect(formatCurrency(4800)).toContain('4.800')
-    expect(formatMonthlyCurrency(4800)).toContain('/mês')
+    expect(formatMonthlyCurrency(4800, ptCommon.perMonth)).toContain('/mês')
   })
 
   it('formats dates and relative times in Brazilian Portuguese', () => {
@@ -25,8 +28,8 @@ describe('CRM formatters', () => {
     expect(formatCurrency(10500.5, 'pt-BR')).toContain('10.500,5')
     expect(formatCurrency(10500.5, 'en-US')).toContain('10,500.5')
     expect(formatCurrency(10500.5, 'es-ES')).toContain('10.500,5')
-    expect(formatMonthlyCurrency(2, 'en-US')).toContain('/month')
-    expect(formatMonthlyCurrency(2, 'es-ES')).toContain('/mes')
+    expect(formatMonthlyCurrency(2, enCommon.perMonth, 'en-US')).toContain('/month')
+    expect(formatMonthlyCurrency(2, esCommon.perMonth, 'es-ES')).toContain('/mes')
     expect(formatDate('2026-08-10T12:00:00.000Z', 'en-US')).toContain('Aug')
     expect(formatDate('2026-08-10T12:00:00.000Z', 'es-ES')).toContain('ago')
   })

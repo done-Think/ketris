@@ -12,7 +12,8 @@ vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
 }))
 
-vi.mock('@/i18n/navigation', () => ({
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
   useRouter: vi.fn(),
 }))
 

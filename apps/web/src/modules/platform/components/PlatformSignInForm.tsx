@@ -26,14 +26,12 @@ import { styles } from '../styles/platform-sign-in-form.styles'
 
 export function PlatformSignInForm() {
   const t = useTranslations('platform.login')
+  const validation = useTranslations('validation')
   const formsT = useTranslations('platform.forms')
   const loginT = useTranslations('auth.login')
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
-  const platformSignInSchema = useMemo(
-    () => createPlatformSignInSchema((key) => t(`errors.${key}`)),
-    [t],
-  )
+  const platformSignInSchema = useMemo(() => createPlatformSignInSchema(validation), [validation])
 
   const {
     control,

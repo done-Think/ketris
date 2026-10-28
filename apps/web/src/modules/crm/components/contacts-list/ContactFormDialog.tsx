@@ -26,7 +26,8 @@ const emptyContactFormValues: ContactFormValues = {
   name: '',
   email: '',
   phone: '',
-  type: 'LOCATARIO',
+  type: 'RENTER',
+  avatarUrl: '',
   notes: '',
 }
 
@@ -98,13 +99,20 @@ function ContactFormDialogForm({
                     onBlur={field.onBlur}
                     inputRef={field.ref}
                   >
-                    <MenuItem value="PROPRIETARIO">{t('types.PROPRIETARIO')}</MenuItem>
-                    <MenuItem value="LOCATARIO">{t('types.LOCATARIO')}</MenuItem>
-                    <MenuItem value="CORRETOR">{t('types.CORRETOR')}</MenuItem>
+                    <MenuItem value="OWNER">{t('types.OWNER')}</MenuItem>
+                    <MenuItem value="RENTER">{t('types.RENTER')}</MenuItem>
+                    <MenuItem value="BROKER">{t('types.BROKER')}</MenuItem>
                   </Select>
                   {errors.type?.message && <FormHelperText>{errors.type.message}</FormHelperText>}
                 </FormControl>
               )}
+            />
+            <TextField
+              label={t('fields.avatarUrl')}
+              type="url"
+              error={Boolean(errors.avatarUrl)}
+              helperText={errors.avatarUrl?.message}
+              {...register('avatarUrl')}
             />
             <TextField
               label={t('fields.notes')}

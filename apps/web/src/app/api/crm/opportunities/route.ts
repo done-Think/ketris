@@ -20,7 +20,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const page = await crmContainer.listOpportunitiesUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     filters,
   })
 
@@ -37,7 +37,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const opportunity = await crmContainer.createOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     propertyId: body.propertyId,
     responsibleId: body.responsibleId,
     contactId: body.contactId,

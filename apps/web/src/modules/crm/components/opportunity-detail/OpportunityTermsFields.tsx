@@ -12,7 +12,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
 import * as crmStyles from '../../styles/opportunity-terms-fields.styles'
@@ -21,7 +20,6 @@ import { ContactAutocomplete } from './ContactAutocomplete'
 
 export function OpportunityTermsFields() {
   const t = useTranslations('crm.opportunityDetail')
-  const { data: session } = useSession()
   const {
     register,
     control,
@@ -37,7 +35,6 @@ export function OpportunityTermsFields() {
           name="contact"
           render={({ field, fieldState }) => (
             <ContactAutocomplete
-              tenantId={session?.tenantId ?? ''}
               value={field.value}
               onChange={(contact) => {
                 field.onChange(contact)
@@ -88,10 +85,10 @@ export function OpportunityTermsFields() {
               onBlur={field.onBlur}
               inputRef={field.ref}
             >
-              <MenuItem value="NENHUMA">{t('guarantees.none')}</MenuItem>
-              <MenuItem value="FIADOR">{t('guarantees.guarantor')}</MenuItem>
-              <MenuItem value="CAUCAO">{t('guarantees.deposit')}</MenuItem>
-              <MenuItem value="SEGURO_FIANCA">{t('guarantees.insurance')}</MenuItem>
+              <MenuItem value="NONE">{t('guarantees.none')}</MenuItem>
+              <MenuItem value="GUARANTOR">{t('guarantees.guarantor')}</MenuItem>
+              <MenuItem value="DEPOSIT">{t('guarantees.deposit')}</MenuItem>
+              <MenuItem value="SURETY_BOND">{t('guarantees.insurance')}</MenuItem>
             </Select>
             {errors.guaranteeType?.message && (
               <FormHelperText>{errors.guaranteeType.message}</FormHelperText>

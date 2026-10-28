@@ -6,8 +6,8 @@ import dayjs from 'dayjs'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
-import { agendaService } from '@modules/agenda/services/agenda-service'
-import { agendaQueryKeys } from '@modules/agenda/config/agenda-query-keys'
+import { dashboardAgendaService } from '@shared/services/dashboard-agenda-service'
+import { dashboardAgendaQueryKeys } from '@shared/config/dashboard-agenda-query-keys'
 import type { AgendaEventNotificationSource } from '@shared/types/dashboard-agenda-notifications'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
@@ -19,16 +19,13 @@ export function useDashboardAgendaNotifications(): DashboardNotificationItem[] {
   const horizonEnd = useMemo(() => today.add(1, 'day'), [today])
 
   const eventsQuery = useQuery<AgendaEventNotificationSource[]>({
-    queryKey: agendaQueryKeys.notifications(
+    queryKey: dashboardAgendaQueryKeys.notifications(
       tenantId,
       session?.user?.id,
       session?.role,
       today.format('YYYY-MM-DD'),
     ),
-    queryFn: async () => {
-      const events = await agendaService.list(today.toISOString(), horizonEnd.toISOString())
-      return events.flatMap((event) => ('participantName' in event ? [event] : []))
-    },
+    queryFn: () => dashboardAgendaService.list(today.toISOString(), horizonEnd.toISOString()),
     enabled: Boolean(tenantId && session?.user?.id && session?.role) && session?.role !== 'RENTER',
   })
 

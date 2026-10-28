@@ -6,9 +6,27 @@ import type { SchemaMessageTranslator } from '@shared/types'
 
 import { createEmailSchema } from './login-schema'
 
-const NON_BROKER_PROFILE_IDS = ['proprietario', 'imobiliaria', 'construtora', 'locatario'] as const
+const NON_BROKER_PROFILE_IDS = ['owner', 'agency', 'developer', 'renter'] as const
 
-export function createRegistrationDetailsSchema(t: SchemaMessageTranslator) {
+export function createRegistrationDetailsSchema(
+  t: SchemaMessageTranslator<
+    | 'acceptTermsRequired'
+    | 'creciRequired'
+    | 'creciTooLong'
+    | 'emailInvalid'
+    | 'emailRequired'
+    | 'emailTooLong'
+    | 'fullNameRequired'
+    | 'fullNameTooLong'
+    | 'passwordConfirmationRequired'
+    | 'passwordMismatch'
+    | 'passwordTooLong'
+    | 'passwordTooShort'
+    | 'phoneInvalid'
+    | 'phoneRequired'
+    | 'phoneTooLong'
+  >,
+) {
   const commonDetailsFields = {
     fullName: z.string().trim().min(3, t('fullNameRequired')).max(200, t('fullNameTooLong')),
     email: createEmailSchema(t).pipe(z.string().max(254, t('emailTooLong'))),
@@ -25,7 +43,7 @@ export function createRegistrationDetailsSchema(t: SchemaMessageTranslator) {
     .discriminatedUnion('profile', [
       z.object({
         ...commonDetailsFields,
-        profile: z.literal('corretor'),
+        profile: z.literal('broker'),
         creci: z.string().trim().min(1, t('creciRequired')).max(32, t('creciTooLong')),
         agencyId: z.string().min(1).optional(),
       }),

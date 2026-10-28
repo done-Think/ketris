@@ -23,7 +23,7 @@ export class ConfirmContractDocumentUploadUseCase {
   ) {}
 
   async execute(input: ConfirmContractDocumentUploadInput) {
-    const permission = resolveContractManageScope(input.actorId, input.actorPapel)
+    const permission = resolveContractManageScope(input.actorId, input.actorRole)
     const descriptor = await this.tickets.verify(input.uploadToken)
     if (
       descriptor.actorId !== input.actorId ||

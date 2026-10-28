@@ -11,7 +11,7 @@ vi.mock('../../../application/password-reset-email', () => ({
 const input = {
   actorId: 'u1',
   actorTenantId: 't1',
-  actorPapel: 'OWNER' as const,
+  actorRole: 'OWNER' as const,
   email: 'NEXT@example.test',
   locale: 'pt-BR' as const,
 }
@@ -44,7 +44,7 @@ describe('RequestEmailChangeUseCase', () => {
   it('impede corretor de iniciar alteração de outra pessoa e não vaza conta de outro tenant', async () => {
     const d = setup()
     await expect(
-      d.useCase.execute({ ...input, actorPapel: 'AGENT', targetUserId: 'target' }),
+      d.useCase.execute({ ...input, actorRole: 'AGENT', targetUserId: 'target' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
     expect(d.users.findById).not.toHaveBeenCalled()
     vi.mocked(d.users.findById).mockResolvedValue(account({ tenantId: 'foreign' }))

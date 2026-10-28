@@ -19,7 +19,10 @@ vi.mock('next-auth/react', () => ({
   useSession: () => ({ data: mocks.session, status: 'authenticated' }),
 }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar: mocks.enqueueSnackbar }) }))
-vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ push: mocks.push }) }))
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+  useRouter: () => ({ push: mocks.push }),
+}))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
@@ -51,7 +54,7 @@ beforeEach(() => {
           propertyTitle: 'Casa Morumbi',
           dueDate: '2026-10-30T00:00:00.000Z',
           amount: 9200,
-          status: 'PENDENTE',
+          status: 'PENDING',
         },
       ],
     }),

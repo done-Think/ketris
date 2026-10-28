@@ -52,7 +52,7 @@ const receiptFile = () => new File(['%PDF'], 'comprovante.pdf', { type: 'applica
 describe('financial mutations', () => {
   it('uploads the receipt before registering the payment with its token', async () => {
     vi.mocked(financialService.uploadReceipt).mockResolvedValue('upload-token')
-    vi.mocked(financialService.registerPayment).mockResolvedValue(apiCharge({ status: 'PAGA' }))
+    vi.mocked(financialService.registerPayment).mockResolvedValue(apiCharge({ status: 'PAID' }))
     const { result } = renderHook(() => useRegisterChargePayment(), { wrapper })
 
     await act(() =>
@@ -71,7 +71,7 @@ describe('financial mutations', () => {
   })
 
   it('registers the payment without uploading when there is no receipt', async () => {
-    vi.mocked(financialService.registerPayment).mockResolvedValue(apiCharge({ status: 'PAGA' }))
+    vi.mocked(financialService.registerPayment).mockResolvedValue(apiCharge({ status: 'PAID' }))
     const { result } = renderHook(() => useRegisterChargePayment(), { wrapper })
 
     await act(() =>

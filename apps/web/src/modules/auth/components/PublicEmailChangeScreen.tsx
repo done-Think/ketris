@@ -15,7 +15,7 @@ import type {
   PublicEmailChangeScreenProps,
   PublicEmailChangeValues,
 } from '../types/public-email-change'
-import { AuthShell } from './AuthShell'
+import { AuthShell } from '@shared/components/layout/AuthShell'
 import { VerificationCodeField } from './VerificationCodeField'
 
 export function PublicEmailChangeScreen({ requestId }: PublicEmailChangeScreenProps) {

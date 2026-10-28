@@ -46,7 +46,7 @@ const lead: DashboardLead = {
   interest: 'Casa residencial',
   source: 'MARKETPLACE',
   broker: 'Thiago Santos',
-  stage: 'PROPOSTA',
+  stage: 'PROPOSAL',
   opportunityId: null,
 }
 

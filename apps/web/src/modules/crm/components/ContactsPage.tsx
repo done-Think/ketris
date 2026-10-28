@@ -8,7 +8,6 @@ import type { ContactFilter } from '../types/contact'
 import { crmPageCounts } from '../utils/page-counts'
 
 import type { AppLocale } from '@/i18n/types/locale.types'
-import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useState } from 'react'
@@ -21,7 +20,7 @@ import {
 } from '../hooks/use-contacts'
 import type { ApiContactListItem, ContactFormValues, ContactListItem } from '../types/contact'
 import { mapContactToListItem } from '../utils/contact-adapter'
-import { errorMessage } from '../utils/error-message'
+import { extractErrorMessage } from '@shared/utils/error-message'
 import { ContactsList } from './ContactsList'
 import { ArchiveContactDialog } from './contacts-list/ArchiveContactDialog'
 import { ContactFormDialog } from './contacts-list/ContactFormDialog'
@@ -30,8 +29,6 @@ export function ContactsPage() {
   const format = useCrmFormatter()
   const locale = useLocale() as AppLocale
   const t = useTranslations('crm.contacts')
-  const { data: session } = useSession()
-  const tenantId = session?.tenantId ?? ''
   const { enqueueSnackbar } = useSnackbar()
 
   const { filters: list, setFilter } = useListState({
@@ -41,15 +38,15 @@ export function ContactsPage() {
     pageSize: 5,
   })
   const query = useDebouncedValue(list.search)
-  const contactsQuery = useContacts(tenantId, {
+  const contactsQuery = useContacts({
     q: query || undefined,
     type: list.type === 'ALL' ? undefined : list.type,
     page: list.page,
     pageSize: list.pageSize,
   })
-  const createContact = useCreateContact(tenantId)
-  const updateContact = useUpdateContact(tenantId)
-  const archiveContact = useArchiveContact(tenantId)
+  const createContact = useCreateContact()
+  const updateContact = useUpdateContact()
+  const archiveContact = useArchiveContact()
 
   const [formOpen, setFormOpen] = useState(false)
   const [editingContact, setEditingContact] = useState<ApiContactListItem | null>(null)
@@ -90,6 +87,7 @@ export function ContactsPage() {
       phone: values.phone.trim() || null,
       type: values.type,
       notes: values.notes.trim() || null,
+      avatarUrl: values.avatarUrl?.trim() || null,
     }
 
     try {
@@ -103,7 +101,7 @@ export function ContactsPage() {
       setFormOpen(false)
     } catch (error) {
       enqueueSnackbar(
-        errorMessage(error, t('contactForm.saveError'), {
+        extractErrorMessage(error, t('contactForm.saveError'), {
           CONTACT_EMAIL_ALREADY_EXISTS: t('contactForm.emailAlreadyExists'),
         }),
         { variant: 'error' },
@@ -119,7 +117,7 @@ export function ContactsPage() {
       enqueueSnackbar(t('archiveDialog.success'), { variant: 'success' })
       setArchivingContact(null)
     } catch (error) {
-      enqueueSnackbar(errorMessage(error, t('archiveDialog.error')), { variant: 'error' })
+      enqueueSnackbar(extractErrorMessage(error, t('archiveDialog.error')), { variant: 'error' })
     }
   }
 
@@ -130,6 +128,7 @@ export function ContactsPage() {
         phone: editingContact.phone ?? '',
         type: editingContact.type,
         notes: editingContact.notes ?? '',
+        avatarUrl: editingContact.avatarUrl ?? '',
       }
     : null
 

@@ -10,7 +10,7 @@ import {
 } from '@server/contracts/tests/fixtures/workflow-database'
 import { GET } from '../../route'
 import { POST as link } from '../../[id]/parties/[partyId]/link-user/route'
-import type { ContractsResponseDTO } from '@server/contracts/types/dto'
+import type { ContractsResponseDTO } from '@shared/types/generated/contracts/dto'
 import pt from '@/i18n/messages/pt-BR/contracts.json'
 import en from '@/i18n/messages/en-US/contracts.json'
 import es from '@/i18n/messages/es-ES/contracts.json'
@@ -20,45 +20,45 @@ const prefix = 'list-' + randomUUID()
 const dates = contractPeriodDates()
 beforeAll(async () => {
   fixture = await createContractWorkflowFixture()
-  const responsavelId = await propertyResponsibleId(prisma, fixture.propertyId)
-  await prisma.oportunidade.createMany({
+  const responsibleId = await propertyResponsibleId(prisma, fixture.propertyId)
+  await prisma.opportunity.createMany({
     data: Array.from({ length: 103 }, (_, index) => ({
       id: prefix + '-opp-' + index,
       tenantId: fixture.tenantId,
-      imovelId: fixture.propertyId,
-      responsavelId,
-      interessadoNome: 'Pessoa ' + index,
-      interessadoEmail: 'person' + index + '@example.test',
-      valorProposto: 2000,
-      status: 'ACEITA',
+      propertyId: fixture.propertyId,
+      responsibleId,
+      interestedName: 'Pessoa ' + index,
+      interestedEmail: 'person' + index + '@example.test',
+      proposedValue: 2000,
+      status: 'ACCEPTED',
     })),
   })
   const statuses = [
-    'RASCUNHO',
-    'EM_REVISAO',
-    'AGUARDANDO_ASSINATURA',
-    'ASSINADO',
-    'ATIVO',
-    'ENCERRADO',
-    'CANCELADO',
+    'DRAFT',
+    'IN_REVIEW',
+    'AWAITING_SIGNATURE',
+    'SIGNED',
+    'ACTIVE',
+    'CLOSED',
+    'CANCELED',
   ] as const
-  await prisma.contrato.createMany({
+  await prisma.contract.createMany({
     data: Array.from({ length: 103 }, (_, index) => ({
       id: prefix + '-contract-' + index,
       tenantId: fixture.tenantId,
-      imovelId: fixture.propertyId,
-      oportunidadeOrigemId: prefix + '-opp-' + index,
-      codigo: 'LST-' + String(index).padStart(3, '0'),
-      tipo: 'RESIDENCIAL',
-      valor: 1000 + index + 0.25,
-      diaVencimento: 5,
-      dataInicio: new Date('2020-01-01'),
-      dataFim:
+      propertyId: fixture.propertyId,
+      sourceOpportunityId: prefix + '-opp-' + index,
+      code: 'LST-' + String(index).padStart(3, '0'),
+      type: 'RESIDENTIAL',
+      amount: 1000 + index + 0.25,
+      dueDay: 5,
+      startDate: new Date('2020-01-01'),
+      endDate:
         index < 2
           ? new Date(dates.today.getTime() + (index === 0 ? 15 : 45) * 86400000)
           : new Date('2021-01-01'),
-      indiceReajuste: 'IPCA',
-      tipoGarantia: 'CAUCAO',
+      adjustmentIndex: 'IPCA',
+      guaranteeType: 'DEPOSIT',
       status: statuses[index % statuses.length],
     })),
   })
@@ -105,13 +105,13 @@ it.each([
   ['es-ES', es],
 ] as const)('ordena status pelo texto de %s sobre todas as páginas', async (locale, dictionary) => {
   const labels = {
-    RASCUNHO: 'draft',
-    EM_REVISAO: 'review',
-    AGUARDANDO_ASSINATURA: 'awaitingSignature',
-    ASSINADO: 'signed',
-    ATIVO: 'active',
-    ENCERRADO: 'closed',
-    CANCELADO: 'cancelled',
+    DRAFT: 'draft',
+    IN_REVIEW: 'review',
+    AWAITING_SIGNATURE: 'awaitingSignature',
+    SIGNED: 'signed',
+    ACTIVE: 'active',
+    CLOSED: 'closed',
+    CANCELED: 'cancelled',
   } as const
   const first = await list('?sortBy=status&sortOrder=asc&locale=' + locale + '&pageSize=100')
   const second = await list(

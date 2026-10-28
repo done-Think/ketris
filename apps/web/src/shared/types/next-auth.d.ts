@@ -2,8 +2,8 @@ import 'next-auth'
 
 import type { DefaultSession } from 'next-auth'
 
-import type { Papel } from '@server/auth/domain/user.entity'
-import type { PlatformAdminRole } from '@server/platform/types/platform-admin'
+import type { UserRole } from '@shared/types/user-role'
+import type { PlatformAdminRole } from '@shared/types/user-role'
 
 type SessionScope = 'tenant' | 'platform'
 
@@ -13,7 +13,7 @@ declare module 'next-auth' {
     refreshToken: string
     scope: SessionScope
     tenantId?: string
-    role?: Papel
+    role?: UserRole
     platformRole?: PlatformAdminRole
     sessionVersion?: number
   }
@@ -24,7 +24,7 @@ declare module 'next-auth' {
     refreshToken?: string
     scope?: SessionScope
     tenantId?: string
-    role?: Papel
+    role?: UserRole
     platformRole?: PlatformAdminRole
     user: { id: string } & DefaultSession['user']
   }
@@ -39,7 +39,7 @@ declare module 'next-auth/jwt' {
     refreshToken?: string
     scope?: SessionScope
     tenantId?: string
-    role?: Papel
+    role?: UserRole
     platformRole?: PlatformAdminRole
     sessionVersion?: number
   }

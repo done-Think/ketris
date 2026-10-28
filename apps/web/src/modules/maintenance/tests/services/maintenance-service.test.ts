@@ -1,5 +1,8 @@
+import axios, { type AxiosAdapter } from 'axios'
 import { HttpClient } from '@shared/lib/api/http-client'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { API_CONTRACT_HEADER } from '@shared/config/api-contract'
+import { maintenanceFileSha256 } from '../../utils/maintenance-file'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MaintenanceService } from '../../services/maintenance-service'
 import { MaintenanceUploadValidationError } from '../../utils/maintenance-file'
 
@@ -8,8 +11,13 @@ vi.mock('../../utils/maintenance-file', async (original) => ({
   maintenanceFileSha256: vi.fn().mockResolvedValue('ab'.repeat(32)),
 }))
 
-describe('MaintenanceService direct upload', () => {
-  afterEach(() => vi.unstubAllGlobals())
+describe('MaintenanceService signed upload', () => {
+  beforeEach(() => vi.mocked(maintenanceFileSha256).mockResolvedValue('ab'.repeat(32)))
+  const originalAdapter = axios.defaults.adapter
+  afterEach(() => {
+    axios.defaults.adapter = originalAdapter
+    vi.restoreAllMocks()
+  })
   function setup(ok = true) {
     const http = new HttpClient()
     const post = vi
@@ -22,9 +30,11 @@ describe('MaintenanceService direct upload', () => {
         token: 'signed-grant',
       })
       .mockResolvedValueOnce({ attachment: { id: 'attachment-1' } })
-    const put = vi.fn().mockResolvedValue({ ok })
-    vi.stubGlobal('fetch', put)
-    return { service: new MaintenanceService(http), post, put }
+    const storage = new HttpClient('')
+    const put = vi.spyOn(storage, 'put')
+    if (ok) put.mockResolvedValue(undefined)
+    else put.mockRejectedValue(new Error('Storage upload failed'))
+    return { service: new MaintenanceService(http, storage), post, put }
   }
   it('passes category filtering and pagination to the server without losing custom categories', async () => {
     const http = new HttpClient()
@@ -42,11 +52,11 @@ describe('MaintenanceService direct upload', () => {
       '/maintenance/tickets/ticket-1/attachments/upload',
       { filename: file.name, size: file.size, contentType: file.type, sha256: 'ab'.repeat(32) },
     ])
-    expect(put).toHaveBeenCalledWith('https://private.example.test/object', {
-      method: 'PUT',
+    expect(put).toHaveBeenCalledWith('https://private.example.test/object', file, {
       headers: { 'Content-Type': 'image/png', 'x-amz-checksum-sha256': 'checksum' },
-      credentials: 'omit',
-      body: file,
+      withCredentials: false,
+      timeout: 120000,
+      skipUnauthorizedHandling: true,
     })
     expect(post.mock.calls[1]).toEqual([
       '/maintenance/tickets/ticket-1/attachments/complete',
@@ -63,6 +73,53 @@ describe('MaintenanceService direct upload', () => {
       ),
     ).rejects.toThrow()
     expect(post).toHaveBeenCalledTimes(1)
+  })
+  it('keeps API authentication and tenant headers out of the signed storage request', async () => {
+    const calls: {
+      url?: string
+      headers: Record<string, unknown>
+      data: unknown
+      withCredentials?: boolean
+    }[] = []
+    const adapter: AxiosAdapter = async (config) => {
+      calls.push({
+        url: config.url,
+        headers: config.headers.toJSON(),
+        data: config.data,
+        withCredentials: config.withCredentials,
+      })
+      const data = config.url?.endsWith('/upload')
+        ? {
+            upload: {
+              url: 'https://private.example.test/object',
+              headers: { 'Content-Type': 'image/png' },
+            },
+            token: 'signed-grant',
+          }
+        : config.url === 'https://private.example.test/object'
+          ? ''
+          : { attachment: { id: 'attachment-1' } }
+      return { data, status: 200, statusText: 'OK', headers: {}, config }
+    }
+    axios.defaults.adapter = adapter
+    const api = new HttpClient('https://api.example.test')
+    api.setAuthToken('private-token')
+    api.setTenant('tenant-1')
+    const file = new File(['image'], 'repair.png', { type: 'image/png' })
+
+    await expect(new MaintenanceService(api).uploadAttachment('ticket-1', file)).resolves.toEqual({
+      id: 'attachment-1',
+    })
+    expect(calls).toHaveLength(3)
+    expect(calls[0].headers.Authorization).toBe('Bearer private-token')
+    expect(calls[0].headers['X-Tenant-Id']).toBe('tenant-1')
+    expect(calls[1].headers).not.toHaveProperty('Authorization')
+    expect(calls[1].headers).not.toHaveProperty('X-Tenant-Id')
+    expect(calls[1].headers).not.toHaveProperty(API_CONTRACT_HEADER)
+    expect(calls[1].headers['Content-Type']).toBe('image/png')
+    expect(calls[1].data).toBe(file)
+    expect(calls[1].withCredentials).toBe(false)
+    expect(calls[2].headers.Authorization).toBe('Bearer private-token')
   })
   it.each([
     new File([], 'empty.png', { type: 'image/png' }),

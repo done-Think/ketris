@@ -6,8 +6,7 @@ export type SalesPipelineStageId =
 
 export type SalesPipelineStage = {
   id: SalesPipelineStageId
-  label: string
-  labelKey: string
+  labelKey: SalesPipelineStageId
   statuses: readonly OpportunityStatus[]
   color: string
   softColor: string
@@ -49,13 +48,11 @@ export type PipelineStageColumnProps = {
 }
 
 export type SalesPipelineKanbanViewProps = {
-  tenantId: string
   search: string
   selectedStageId: SalesPipelineStageId | null
 }
 
 export interface CrmPipelineColumnProps {
-  tenantId: string
   search: string
   stage: SalesPipelineStage
   visible: boolean

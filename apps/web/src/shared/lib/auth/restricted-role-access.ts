@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@shared/types/user-role'
 import type { RestrictedRole, RestrictedRoleAccess } from '@shared/types/restricted-role-access'
 
 const propertyDetailPathname = /^\/dashboard\/properties(?:\/(?!new(?:\/|$))[^/]+)?\/?$/
@@ -48,12 +48,12 @@ export const restrictedRoleAccess: Record<RestrictedRole, RestrictedRoleAccess> 
   },
 }
 
-export function getRestrictedRoleAccess(role: Papel | undefined): RestrictedRoleAccess | null {
+export function getRestrictedRoleAccess(role: UserRole | undefined): RestrictedRoleAccess | null {
   if (role === 'RENTER' || role === 'PROPERTY_OWNER') return restrictedRoleAccess[role]
 
   return null
 }
 
-export function getRoleHomePathname(role: Papel | undefined, fallback: string): string {
+export function getRoleHomePathname(role: UserRole | undefined, fallback: string): string {
   return getRestrictedRoleAccess(role)?.home ?? fallback
 }

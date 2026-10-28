@@ -123,7 +123,7 @@ function MaintenanceLinksForm({ onClose }: MaintenanceLinksDialogProps) {
                 >
                   <MenuItem value="">{t('unchanged')}</MenuItem>
                   {(contract?.parties ?? [])
-                    .filter((party) => party.role === 'LOCATARIO')
+                    .filter((party) => party.role === 'RENTER')
                     .map((party) => (
                       <MenuItem key={party.id} value={party.id}>
                         {party.name}

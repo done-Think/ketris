@@ -7,7 +7,7 @@ const optionalTextSchema = z.string().trim().min(1).max(2000).nullable().optiona
 
 export const saveAgencyProfileTeamMemberSchema = z
   .object({
-    usuarioId: z.string().min(1),
+    userId: z.string().min(1),
     order: z.number().int().nonnegative(),
   })
   .strict()
@@ -43,7 +43,7 @@ export const agencyListingSummarySchema = z
   .object({
     id: z.string(),
     title: z.string(),
-    purpose: z.enum(['ALUGUEL', 'VENDA', 'AMBOS']),
+    purpose: z.enum(['RENT', 'SALE', 'BOTH']),
     price: z.number(),
     neighborhood: z.string().nullable(),
     city: z.string().nullable(),
@@ -53,7 +53,7 @@ export const agencyListingSummarySchema = z
 
 export const agencyTeamHighlightSchema = z
   .object({
-    usuarioId: z.string(),
+    userId: z.string(),
     name: z.string(),
     avatarUrl: z.string().nullable(),
     order: z.number(),

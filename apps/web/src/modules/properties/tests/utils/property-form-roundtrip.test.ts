@@ -18,8 +18,8 @@ describe('property form roundtrip', () => {
     })
     const strictContract = createPropertyRequestSchema
       .extend({
-        endereco: propertyAddressInputSchema.strict().optional(),
-        midias: propertyMediaInputSchema.strict().array().optional(),
+        address: propertyAddressInputSchema.strict().optional(),
+        media: propertyMediaInputSchema.strict().array().optional(),
       })
       .strict()
     for (const body of [toCreatePayload(payload), toUpdatePayload(payload)]) {

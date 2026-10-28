@@ -1,5 +1,7 @@
 'use client'
 
+import { styles } from '@shared/styles/dashboard-notifications-button.styles'
+
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded'
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded'
 import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded'
@@ -9,15 +11,7 @@ import { useState } from 'react'
 
 import { useRouter } from '@/i18n/navigation'
 import { useDashboardAgendaNotifications } from '@shared/hooks/use-dashboard-agenda-notifications'
-import {
-  alpha,
-  brand,
-  dashboardLayout,
-  iconSize,
-  radius,
-  shadows,
-  surface,
-} from '@shared/theme/tokens'
+
 import type {
   DashboardNotificationItem,
   DashboardNotificationsButtonProps,
@@ -62,32 +56,10 @@ export function DashboardNotificationsButton({
           aria-label={t('ariaLabel')}
           aria-expanded={isOpen ? 'true' : undefined}
           onClick={(event) => setAnchorEl(event.currentTarget)}
-          sx={{
-            display: { xs: placement === 'navigationHeader' ? 'inline-flex' : 'none' },
-            [dashboardLayout.desktopMediaQuery]: { display: 'inline-flex' },
-            width: 42,
-            height: 42,
-            border: '1px solid',
-            borderColor: alpha.graphite[8],
-            bgcolor: surface.paper,
-            color: brand.graphite[500],
-            boxShadow: shadows.crmCardCompact,
-            '&:hover': { bgcolor: surface.paper },
-          }}
+          sx={styles.iconButton(placement)}
         >
-          <Badge
-            badgeContent={notificationItems.length}
-            overlap="circular"
-            sx={{
-              '& .MuiBadge-badge': {
-                bgcolor: brand.magenta[500],
-                color: surface.lightText,
-                fontSize: 10,
-                fontWeight: 900,
-              },
-            }}
-          >
-            <NotificationsNoneRoundedIcon sx={{ fontSize: iconSize.lg }} />
+          <Badge badgeContent={notificationItems.length} overlap="circular" sx={styles.badge}>
+            <NotificationsNoneRoundedIcon sx={styles.notificationsNoneRoundedIcon} />
           </Badge>
         </IconButton>
       </Tooltip>
@@ -100,28 +72,16 @@ export function DashboardNotificationsButton({
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         slotProps={{
           paper: {
-            sx: {
-              width: { xs: 312, sm: 360 },
-              maxWidth: 'calc(100vw - 32px)',
-              mt: 1,
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              boxShadow: shadows.crmCardHover,
-            },
+            sx: styles.paper,
           },
         }}
       >
-        <Box sx={{ p: 1.6 }}>
-          <Typography sx={{ color: brand.graphite[500], fontSize: 15, fontWeight: 900 }}>
-            {t('title')}
-          </Typography>
-          <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}>
-            {t('subtitle')}
-          </Typography>
+        <Box sx={styles.box}>
+          <Typography sx={styles.typography}>{t('title')}</Typography>
+          <Typography sx={styles.typography2}>{t('subtitle')}</Typography>
         </Box>
-        <Divider sx={{ borderColor: alpha.graphite[8] }} />
-        <Stack sx={{ maxHeight: 360, overflowY: 'auto', p: 0.8 }}>
+        <Divider sx={styles.divider} />
+        <Stack sx={styles.stack}>
           {notificationItems.length > 0 ? (
             notificationItems.map((notification) => {
               const Icon = notificationKindIcons[notification.kind]
@@ -132,58 +92,23 @@ export function DashboardNotificationsButton({
                   component="button"
                   type="button"
                   onClick={() => selectNotification(notification)}
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: '32px 1fr',
-                    gap: 1,
-                    width: '100%',
-                    border: 0,
-                    borderRadius: `${radius.sm}px`,
-                    bgcolor: surface.paper,
-                    px: 1,
-                    py: 1.1,
-                    cursor: hasNotificationAction(notification) ? 'pointer' : 'default',
-                    textAlign: 'left',
-                    '&:hover, &:focus-visible': {
-                      bgcolor: hasNotificationAction(notification)
-                        ? alpha.magenta[6]
-                        : surface.paper,
-                      outline: 'none',
-                    },
-                  }}
+                  sx={styles.box2(hasNotificationAction(notification))}
                 >
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      placeItems: 'center',
-                      width: 32,
-                      height: 32,
-                      borderRadius: radius.full,
-                      bgcolor: alpha.magenta[10],
-                      color: brand.magenta[600],
-                    }}
-                  >
-                    <Icon sx={{ fontSize: iconSize.md }} />
+                  <Box sx={styles.box3}>
+                    <Icon sx={styles.icon} />
                   </Box>
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography
-                      noWrap
-                      sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 900 }}
-                    >
+                  <Box sx={styles.box4}>
+                    <Typography noWrap sx={styles.typography3}>
                       {notification.title}
                     </Typography>
-                    <Typography sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}>
-                      {notification.message}
-                    </Typography>
+                    <Typography sx={styles.typography4}>{notification.message}</Typography>
                   </Box>
                 </Box>
               )
             })
           ) : (
-            <Box sx={{ px: 1, py: 2.2 }}>
-              <Typography sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 700 }}>
-                {t('empty')}
-              </Typography>
+            <Box sx={styles.box5}>
+              <Typography sx={styles.typography5}>{t('empty')}</Typography>
             </Box>
           )}
         </Stack>

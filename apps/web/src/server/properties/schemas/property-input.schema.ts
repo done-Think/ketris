@@ -10,13 +10,13 @@ import {
 
 export const propertyAddressInputSchema = z
   .object({
-    logradouro: z.string().trim().min(1),
-    numero: z.string().trim().min(1),
-    complemento: z.string().trim().min(1).nullable().optional(),
-    bairro: z.string().trim().min(1),
-    cidade: z.string().trim().min(1),
-    estado: z.string().trim().length(2),
-    cep: z.string().trim().min(8),
+    street: z.string().trim().min(1),
+    number: z.string().trim().min(1),
+    complement: z.string().trim().min(1).nullable().optional(),
+    neighborhood: z.string().trim().min(1),
+    city: z.string().trim().min(1),
+    state: z.string().trim().length(2),
+    zipCode: z.string().trim().min(8),
     latitude: z.number().min(-90).max(90).nullable().optional(),
     longitude: z.number().min(-180).max(180).nullable().optional(),
   })
@@ -25,8 +25,8 @@ export const propertyAddressInputSchema = z
 export const propertyMediaInputSchema = z
   .object({
     url: z.string().trim().min(1),
-    tipo: z.string().trim().min(1).optional(),
-    ordem: z.number().int().nonnegative().optional(),
+    type: z.enum(['photo', 'video', 'floorPlan']).optional(),
+    position: z.number().int().nonnegative().optional(),
   })
   .openapi('TenantPropertyMediaInput')
 
@@ -35,22 +35,22 @@ const optionalNullableNonNegativeNumberSchema = z.number().nonnegative().nullabl
 
 export const createPropertyRequestSchema = z
   .object({
-    proprietarioId: z.string().min(1).nullable().optional(),
-    titulo: z.string().trim().min(1).max(200),
-    descricao: z.string().trim().min(1).max(10000).nullable().optional(),
-    finalidade: propertyPurposeSchema,
-    tipo: propertyTypeSchema,
-    anuncio: propertyListingSchema.optional(),
-    quartos: optionalNullableNonNegativeIntSchema,
-    banheiros: optionalNullableNonNegativeIntSchema,
-    vagas: optionalNullableNonNegativeIntSchema,
-    areaM2: optionalNullableNonNegativeNumberSchema,
-    valor: z.number().positive(),
-    valorAluguel: optionalNullableNonNegativeNumberSchema,
-    condominio: optionalNullableNonNegativeNumberSchema,
-    iptu: optionalNullableNonNegativeNumberSchema,
-    endereco: propertyAddressInputSchema.optional(),
-    midias: z.array(propertyMediaInputSchema).optional(),
+    ownerId: z.string().min(1).nullable().optional(),
+    title: z.string().trim().min(1).max(200),
+    description: z.string().trim().min(1).max(10000).nullable().optional(),
+    purpose: propertyPurposeSchema,
+    type: propertyTypeSchema,
+    listing: propertyListingSchema.optional(),
+    bedrooms: optionalNullableNonNegativeIntSchema,
+    bathrooms: optionalNullableNonNegativeIntSchema,
+    parkingSpots: optionalNullableNonNegativeIntSchema,
+    areaSqm: optionalNullableNonNegativeNumberSchema,
+    price: z.number().positive(),
+    rentalPrice: optionalNullableNonNegativeNumberSchema,
+    condoFee: optionalNullableNonNegativeNumberSchema,
+    propertyTax: optionalNullableNonNegativeNumberSchema,
+    address: propertyAddressInputSchema.optional(),
+    media: z.array(propertyMediaInputSchema).optional(),
   })
   .openapi('CreateTenantPropertyRequest')
 
@@ -72,7 +72,7 @@ export const listPropertiesQuerySchema = z
     pageSize: z.coerce.number().int().positive().max(100).default(25),
     search: z.string().trim().max(200).optional(),
     status: propertyStatusSchema.optional(),
-    finalidade: propertyPurposeSchema.optional(),
+    purpose: propertyPurposeSchema.optional(),
   })
   .openapi('ListTenantPropertiesQuery')
 

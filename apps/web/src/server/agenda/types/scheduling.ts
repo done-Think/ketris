@@ -1,9 +1,9 @@
 import type { AgendaEventKind } from './agenda-event'
 
 export interface AgendaScheduleChanges {
-  inicio?: Date
+  start?: Date
   durationMinutes?: number
-  responsavelId?: string
-  tipo?: AgendaEventKind | null
+  responsibleId?: string
+  type?: AgendaEventKind | null
   outsideBusinessHoursConfirmed?: boolean
 }

@@ -5,7 +5,7 @@ import type {
   OpportunityDTO,
   PatchOpportunityRequestDTO,
   RespondOpportunityRequestDTO,
-} from '@server/crm/types/dto'
+} from '@shared/types/generated/crm/dto'
 import type { z } from 'zod'
 
 import type {
@@ -17,7 +17,10 @@ import type {
 
 export type OpportunityStatus = z.infer<typeof opportunityStatusSchema>
 export type ContractGuarantee = z.infer<typeof contractGuaranteeSchema>
-export type OpportunityFilters = import('@server/crm/types/dto').ListOpportunitiesQueryDTO
+export type OpportunityFilters = Omit<
+  import('@shared/types/generated/crm/dto').ListOpportunitiesQueryDTO,
+  'includeArchived' | 'statuses'
+> & { includeArchived?: boolean; statuses?: OpportunityStatus[] }
 export type UpdateOpportunityPayload = PatchOpportunityRequestDTO
 export type OpportunityEditFormValues = z.infer<ReturnType<typeof createEditOpportunityFormSchema>>
 export type CreateOpportunityFormValues = z.infer<ReturnType<typeof createOpportunityFormSchema>>

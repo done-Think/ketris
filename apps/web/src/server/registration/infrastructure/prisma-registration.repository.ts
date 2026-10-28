@@ -21,7 +21,7 @@ import type {
 const MAX_SLUG_ATTEMPTS = 5
 const tenantSelect = {
   id: true,
-  nome: true,
+  name: true,
   slug: true,
   accountType: true,
   status: true,
@@ -46,7 +46,7 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
           const tenant = await transaction.tenant
             .create({
               data: {
-                nome: input.tenantName,
+                name: input.tenantName,
                 slug,
                 accountType: input.accountType,
                 status: input.status,
@@ -57,18 +57,18 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
               tenantSlugConflict = isUniqueConflict(error)
               throw error
             })
-          const user = await transaction.usuario
+          const user = await transaction.user
             .create({
               data: {
                 tenantId: tenant.id,
-                nome: input.adminName,
+                name: input.adminName,
                 email: normalizeEmail(input.email),
-                senhaHash: input.senhaHash,
-                papel: 'OWNER',
-                telefone: input.telefone,
+                passwordHash: input.passwordHash,
+                role: 'OWNER',
+                phone: input.phone,
                 creci: input.creci,
-                termosAceitosEm: input.termosAceitosEm,
-                emailVerificadoEm: null,
+                termsAcceptedAt: input.termsAcceptedAt,
+                emailVerifiedAt: null,
               },
               select: { id: true, tenantId: true, email: true },
             })
@@ -87,11 +87,11 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
             },
           })
           if (input.createBrokerProfile) {
-            await transaction.perfilPublicoCorretor.create({
+            await transaction.brokerPublicProfile.create({
               data: {
-                usuarioId: user.id,
+                userId: user.id,
                 displayName: input.adminName,
-                telefone: input.telefone,
+                phone: input.phone,
                 creci: input.creci,
                 status: 'DRAFT',
               },
@@ -109,25 +109,25 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
   async createMember(input: NewRegistrationMember): Promise<RegistrationAccount> {
     return prisma.$transaction(async (transaction) => {
       const [tenant] = await transaction.$queryRaw<RegistrationTenant[]>`
-        SELECT "id", "nome", "slug", "accountType", "status", "createdAt"
+        SELECT "id", "name", "slug", "accountType", "status", "createdAt"
         FROM "tenants" WHERE "id" = ${input.tenantId} FOR SHARE
       `
-      if (input.papel === 'AGENT') assertAgencyCanReceiveMembers(tenant ?? null)
+      if (input.role === 'AGENT') assertAgencyCanReceiveMembers(tenant ?? null)
       else if (!tenant) throw new RenterTenantNotConfiguredError()
 
-      const user = await transaction.usuario
+      const user = await transaction.user
         .create({
           data: {
             tenantId: input.tenantId,
-            nome: input.nome,
+            name: input.name,
             email: normalizeEmail(input.email),
-            senhaHash: input.senhaHash,
-            papel: input.papel,
-            telefone: input.telefone,
+            passwordHash: input.passwordHash,
+            role: input.role,
+            phone: input.phone,
             creci: input.creci,
-            termosAceitosEm: input.termosAceitosEm,
-            emailVerificadoEm: null,
-            vinculoAprovadoEm: input.pendingApproval ? null : new Date(),
+            termsAcceptedAt: input.termsAcceptedAt,
+            emailVerifiedAt: null,
+            membershipApprovedAt: input.pendingApproval ? null : new Date(),
           },
           select: { id: true, tenantId: true, email: true },
         })
@@ -146,11 +146,11 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
         },
       })
       if (input.createBrokerProfile) {
-        await transaction.perfilPublicoCorretor.create({
+        await transaction.brokerPublicProfile.create({
           data: {
-            usuarioId: user.id,
-            displayName: input.nome,
-            telefone: input.telefone,
+            userId: user.id,
+            displayName: input.name,
+            phone: input.phone,
             creci: input.creci,
             status: 'DRAFT',
           },
@@ -161,7 +161,7 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
   }
 
   findAccountByEmail(tenantId: string, email: string): Promise<RegistrationAccount | null> {
-    return prisma.usuario.findUnique({
+    return prisma.user.findUnique({
       where: { tenantId_email: { tenantId, email: normalizeEmail(email) } },
       select: { id: true, tenantId: true, email: true },
     })
@@ -178,12 +178,12 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
   searchByName(query: string, excludeSlugs: string[]): Promise<RegistrationTenant[]> {
     return prisma.tenant.findMany({
       where: {
-        nome: { contains: query, mode: 'insensitive' },
+        name: { contains: query, mode: 'insensitive' },
         slug: { notIn: excludeSlugs },
         accountType: 'AGENCY',
         status: { in: ['ACTIVE', 'TRIAL'] },
       },
-      orderBy: { nome: 'asc' },
+      orderBy: { name: 'asc' },
       take: 20,
       select: tenantSelect,
     })

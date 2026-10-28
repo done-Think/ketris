@@ -29,7 +29,7 @@ const emptyCreateOpportunityValues: CreateOpportunityFormValues = {
   property: null,
   contractTermMonths: '',
   desiredStartDate: '',
-  guaranteeType: 'NENHUMA',
+  guaranteeType: 'NONE',
   specialConditions: [],
   contact: null,
   leadName: '',
@@ -37,7 +37,7 @@ const emptyCreateOpportunityValues: CreateOpportunityFormValues = {
   leadPhone: '',
   proposedValue: '',
   notes: '',
-  status: 'RASCUNHO',
+  status: 'DRAFT',
   responsibleId: '',
 }
 
@@ -47,7 +47,6 @@ export function CreateOpportunityDialog(props: CreateOpportunityDialogProps) {
 
 function CreateOpportunityDialogForm({
   open,
-  tenantId,
   canChooseResponsible,
   isPending,
   onClose,
@@ -84,7 +83,6 @@ function CreateOpportunityDialogForm({
                 render={({ field }) => (
                   <Box sx={crmStyles.boxSx2}>
                     <PropertyAutocomplete
-                      tenantId={tenantId}
                       value={field.value}
                       onChange={field.onChange}
                       error={Boolean(errors.property)}
@@ -144,8 +142,8 @@ function CreateOpportunityDialogForm({
                       onBlur={field.onBlur}
                       inputRef={field.ref}
                     >
-                      <MenuItem value="RASCUNHO">{t('statuses.draft')}</MenuItem>
-                      <MenuItem value="ENVIADA">{t('statuses.sent')}</MenuItem>
+                      <MenuItem value="DRAFT">{t('statuses.draft')}</MenuItem>
+                      <MenuItem value="SENT">{t('statuses.sent')}</MenuItem>
                     </Select>
                   </FormControl>
                 )}

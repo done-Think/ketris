@@ -21,66 +21,66 @@ export function editContract(
   return runManagedContractMutation(contractId, scope, async (tx, row) => {
     const contract = toDomainContract(row, protector)
     assertContractEditable(contract)
-    if (new Set(row.partes.map((party) => party.papel)).size !== row.partes.length)
+    if (new Set(row.parties.map((party) => party.role)).size !== row.parties.length)
       throw new ConflictError('Revise as partes duplicadas do contrato antes de editar.')
     const changedFields = contractChangedFields(contract, data)
     if (!changedFields.length) return contract
     const roles = new Set(data.parties.map((party) => party.role))
-    const removedIds = row.partes
-      .filter((party) => !roles.has(party.papel))
+    const removedIds = row.parties
+      .filter((party) => !roles.has(party.role))
       .map((party) => party.id)
     if (removedIds.length)
-      await tx.parteContrato.deleteMany({
+      await tx.contractParty.deleteMany({
         where: {
           id: { in: removedIds },
-          contratoId: contractId,
-          contrato: { tenantId: scope.tenantId },
+          contractId: contractId,
+          contract: { tenantId: scope.tenantId },
         },
       })
     for (const party of data.parties) {
-      const existing = row.partes.find((candidate) => candidate.papel === party.role)
+      const existing = row.parties.find((candidate) => candidate.role === party.role)
       const previous = contract.parties.find((candidate) => candidate.role === party.role)
       if (previous && sameContractPartyValues(previous, party)) continue
       const id = existing?.id ?? randomUUID()
       const values = {
-        nome: party.name,
+        name: party.name,
         cpf: protector.encryptCpf(party.cpf, { tenantId: scope.tenantId, partyId: id }),
         email: party.email,
-        telefone: party.phone,
+        phone: party.phone,
       }
       if (existing) {
         const unlink =
-          party.role === 'LOCATARIO' &&
-          normalizeEmail(existing.email) !== normalizeEmail(party.email)
-        await tx.parteContrato.update({
-          where: { id, contratoId: contractId, contrato: { tenantId: scope.tenantId } },
-          data: { ...values, ...(unlink ? { usuarioId: null } : {}) },
+          party.role === 'RENTER' && normalizeEmail(existing.email) !== normalizeEmail(party.email)
+        await tx.contractParty.update({
+          where: { id, contractId: contractId, contract: { tenantId: scope.tenantId } },
+          data: { ...values, ...(unlink ? { userId: null } : {}) },
         })
-        if (unlink && existing.usuarioId && !changedFields.includes('parties.userId'))
+        if (unlink && existing.userId && !changedFields.includes('parties.userId'))
           changedFields.push('parties.userId')
       } else
-        await tx.parteContrato.create({
+        await tx.contractParty.create({
           data: {
             id,
-            contratoId: contractId,
-            papel: party.role,
+            contractId: contractId,
+            tenantId: scope.tenantId,
+            role: party.role,
             ...values,
-            assinatura: { create: {} },
+            signature: { create: {} },
           },
         })
     }
-    await tx.contrato.update({
+    await tx.contract.update({
       where: { id: contractId, tenantId: scope.tenantId },
       data: {
-        tipo: data.type,
-        valor: data.amount,
-        diaVencimento: data.dueDay,
-        dataInicio: data.startDate,
-        dataFim: data.endDate,
-        indiceReajuste: data.adjustmentIndex,
-        tipoGarantia: data.guaranteeType,
-        observacoes: data.notes,
-        revisaoDados: { increment: 1 },
+        type: data.type,
+        amount: data.amount,
+        dueDay: data.dueDay,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        adjustmentIndex: data.adjustmentIndex,
+        guaranteeType: data.guaranteeType,
+        notes: data.notes,
+        dataRevision: { increment: 1 },
       },
     })
     await recordContractAudit(tx, {

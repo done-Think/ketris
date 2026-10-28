@@ -10,7 +10,7 @@ import { ListTenantUsersUseCase } from '../../../application/use-cases/list-tena
 
 const tenant: TenantSummary = {
   id: 't1',
-  nome: 'Imobiliária A',
+  name: 'Imobiliária A',
   slug: 'imobiliaria-a',
   createdAt: new Date(),
 }
@@ -19,22 +19,22 @@ const users: User[] = [
   {
     id: 'u1',
     tenantId: 't1',
-    nome: 'Admin',
+    name: 'Admin',
     email: 'admin@a.dev',
-    senhaHash: 'h',
-    papel: 'OWNER',
-    ativo: true,
-    vinculoAprovadoEm: new Date(),
+    passwordHash: 'h',
+    role: 'OWNER',
+    active: true,
+    membershipApprovedAt: new Date(),
   },
   {
     id: 'u2',
     tenantId: 't1',
-    nome: 'Agente',
+    name: 'Agente',
     email: 'agente@a.dev',
-    senhaHash: 'h',
-    papel: 'AGENT',
-    ativo: true,
-    vinculoAprovadoEm: new Date(),
+    passwordHash: 'h',
+    role: 'AGENT',
+    active: true,
+    membershipApprovedAt: new Date(),
   },
 ]
 
@@ -65,8 +65,8 @@ describe('ListTenantUsersUseCase', () => {
     })
     expect(result).toMatchObject({ totalCount: 7, page: 2, pageSize: 2 })
     expect(result.items).toHaveLength(2)
-    expect(result.items.some((user) => user.papel === 'OWNER')).toBe(true)
-    expect(result.items.every((user) => !('senhaHash' in user))).toBe(true)
+    expect(result.items.some((user) => user.role === 'OWNER')).toBe(true)
+    expect(result.items.every((user) => !('passwordHash' in user))).toBe(true)
   })
 
   it('lança TenantNotFoundError quando o tenant não existe', async () => {

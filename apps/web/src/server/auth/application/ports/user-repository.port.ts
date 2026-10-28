@@ -1,28 +1,28 @@
 import type { UserAuditActor } from '../../types/user-audit'
-import type { Papel, User } from '../../domain/user.entity'
+import type { UserRole, User } from '../../domain/user.entity'
 
 export interface NewUser {
   auditActor?: UserAuditActor
   tenantId: string
-  nome: string
+  name: string
   email: string
-  senhaHash: string
-  papel: Papel
-  telefone?: string | null
+  passwordHash: string
+  role: UserRole
+  phone?: string | null
   creci?: string | null
-  termosAceitosEm?: Date
+  termsAcceptedAt?: Date
   emailVerifiedAt?: Date | null
-  vinculoAprovadoEm?: Date | null
+  membershipApprovedAt?: Date | null
 }
 
 export interface UserUpdate {
   auditActor?: UserAuditActor
-  nome?: string
+  name?: string
   email?: string
   avatarUrl?: string | null
-  papel?: Papel
-  senhaHash?: string
-  telefone?: string | null
+  role?: UserRole
+  passwordHash?: string
+  phone?: string | null
   creci?: string | null
   tenantId?: string
 }

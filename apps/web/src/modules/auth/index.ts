@@ -1,4 +1,4 @@
-export { AuthShell } from './components/AuthShell'
+export { AuthShell } from '@shared/components/layout/AuthShell'
 export { LoginAccountPrompt } from './components/LoginAccountPrompt'
 export { LoginForm } from './components/LoginForm'
 export { PasswordRecoveryConfirmation } from './components/PasswordRecoveryConfirmation'

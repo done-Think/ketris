@@ -1,6 +1,6 @@
 import type { TokenService } from '../application/ports/token-service.port'
 import type { ValidateAccessTokenUseCase } from '../application/use-cases/validate-access-token.use-case'
-import type { AuthenticatedUser } from '../domain/user.entity'
+import type { AuthenticatedUser } from '../types/authenticated-user'
 
 export class ValidatedTokenService implements TokenService {
   constructor(

@@ -44,15 +44,14 @@ import type { ApiContractParty } from '../types/service'
 
 export function ContractDetailDashboardPage({ contractId }: ContractDetailDashboardPageProps) {
   const { data: session } = useSession()
-  const tenantId = session?.tenantId ?? ''
   const t = useTranslations('contracts.detail')
   const errors = useTranslations('contracts.errors')
   const { enqueueSnackbar } = useSnackbar()
   const presentation = useContractPresentation()
-  const query = useContract(tenantId, contractId)
-  const signature = useSignContractParty(tenantId, contractId)
-  const transition = useTransitionContract(tenantId, contractId)
-  const link = useLinkContractParty(tenantId, contractId)
+  const query = useContract(contractId)
+  const signature = useSignContractParty(contractId)
+  const transition = useTransitionContract(contractId)
+  const link = useLinkContractParty(contractId)
   const [signParty, setSignParty] = useState<ApiContractParty | null>(null)
   const [linkParty, setLinkParty] = useState<ApiContractParty | null>(null)
   const [transitionAction, setTransitionAction] = useState<'cancel' | 'close' | null>(null)
@@ -81,12 +80,12 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
 
   const data = query.data
   const contract = mapContractFromApi(data, presentation)
-  const beforeActivation = ['RASCUNHO', 'EM_REVISAO', 'AGUARDANDO_ASSINATURA', 'ASSINADO'].includes(
+  const beforeActivation = ['DRAFT', 'IN_REVIEW', 'AWAITING_SIGNATURE', 'SIGNED'].includes(
     data.status,
   )
   const canEdit =
-    ['RASCUNHO', 'EM_REVISAO', 'AGUARDANDO_ASSINATURA'].includes(data.status) &&
-    !data.parties.some((party) => party.signatureStatus === 'ASSINADA')
+    ['DRAFT', 'IN_REVIEW', 'AWAITING_SIGNATURE'].includes(data.status) &&
+    !data.parties.some((party) => party.signatureStatus === 'SIGNED')
   const busy = uploading || signature.isPending || transition.isPending || link.isPending
 
   return (
@@ -104,7 +103,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
           readOnly={!canManage}
           canEdit={canEdit}
           canCancel={beforeActivation}
-          canClose={data.status === 'ATIVO'}
+          canClose={data.status === 'ACTIVE'}
           busy={busy}
           onEdit={() => setEditing(true)}
           onCancel={() => {
@@ -137,7 +136,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
               <Typography sx={styles.typography4}>{contract.notes || t('emptyNotes')}</Typography>
             </ContractDetailPanel>
             <Box id="history">
-              <ContractHistoryPanel tenantId={tenantId} contractId={contractId} />
+              <ContractHistoryPanel contractId={contractId} />
             </Box>
           </Stack>
           <Stack spacing={3} sx={styles.stack5}>
@@ -164,11 +163,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
               />
             </Box>
             {canManage && (
-              <ContractDocumentUpload
-                contractId={contractId}
-                tenantId={tenantId}
-                onBusyChange={setUploading}
-              />
+              <ContractDocumentUpload contractId={contractId} onBusyChange={setUploading} />
             )}
           </Stack>
         </Stack>
@@ -203,11 +198,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
           />
         )}
         {editing && canManage && canEdit && (
-          <ContractEditDialog
-            contract={data}
-            tenantId={tenantId}
-            onClose={() => setEditing(false)}
-          />
+          <ContractEditDialog contract={data} onClose={() => setEditing(false)} />
         )}
         <Dialog
           open={Boolean(linkParty)}

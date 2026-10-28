@@ -20,56 +20,56 @@ export function contractRequest(token: string, path: string, method = 'GET', bod
 
 export async function createContractWorkflowFixture() {
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Contracts workflow', slug: 'contracts-workflow-' + randomUUID() },
+    data: { name: 'Contracts workflow', slug: 'contracts-workflow-' + randomUUID() },
   })
-  const actor = await prisma.usuario.create({
+  const actor = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Gestora',
+      name: 'Gestora',
       email: randomUUID() + '@example.test',
-      senhaHash: 'test-only',
-      papel: 'OWNER',
+      passwordHash: 'test-only',
+      role: 'OWNER',
     },
   })
-  const agent = await prisma.usuario.create({
+  const agent = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Outro corretor',
+      name: 'Outro corretor',
       email: randomUUID() + '@example.test',
-      senhaHash: 'test-only',
-      papel: 'AGENT',
+      passwordHash: 'test-only',
+      role: 'AGENT',
     },
   })
-  const renter = await prisma.usuario.create({
+  const renter = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Locatário',
+      name: 'Locatário',
       email: randomUUID() + '@example.test',
-      senhaHash: 'test-only',
-      papel: 'RENTER',
+      passwordHash: 'test-only',
+      role: 'RENTER',
     },
   })
-  const property = await prisma.imovel.create({
+  const property = await prisma.property.create({
     data: {
       tenantId: tenant.id,
-      responsavelId: actor.id,
-      titulo: 'Apartamento workflow',
-      tipo: 'APARTAMENTO',
-      finalidade: 'ALUGUEL',
-      valor: 2000,
+      responsibleId: actor.id,
+      title: 'Apartamento workflow',
+      type: 'APARTMENT',
+      purpose: 'RENT',
+      price: 2000,
       status: 'PUBLISHED',
-      publicadoEm: new Date('2020-01-01'),
+      publishedAt: new Date('2020-01-01'),
     },
   })
-  const opportunity = await prisma.oportunidade.create({
+  const opportunity = await prisma.opportunity.create({
     data: {
       tenantId: tenant.id,
-      imovelId: property.id,
-      responsavelId: await propertyResponsibleId(prisma, property.id),
-      interessadoNome: renter.nome,
-      interessadoEmail: renter.email,
-      status: 'ACEITA',
-      valorProposto: 2000,
+      propertyId: property.id,
+      responsibleId: await propertyResponsibleId(prisma, property.id),
+      interestedName: renter.name,
+      interestedEmail: renter.email,
+      status: 'ACCEPTED',
+      proposedValue: 2000,
     },
   })
   const tokens = new JoseTokenService()
@@ -78,13 +78,13 @@ export async function createContractWorkflowFixture() {
   const renterToken = await tokens.sign(renter)
   const body = {
     opportunityId: opportunity.id,
-    type: 'RESIDENCIAL',
+    type: 'RESIDENTIAL',
     amount: 1750.75,
     dueDay: 5,
     startDate: '2031-01-01',
     endDate: '2032-01-01',
     adjustmentIndex: 'IPCA',
-    guaranteeType: 'CAUCAO',
+    guaranteeType: 'DEPOSIT',
     notes: null,
     owner: {
       name: 'Proprietária',
@@ -92,18 +92,18 @@ export async function createContractWorkflowFixture() {
       email: 'owner@example.test',
       phone: '11999999999',
     },
-    tenant: { name: renter.nome, cpf: '98765432100', email: renter.email, phone: '11999999999' },
+    tenant: { name: renter.name, cpf: '98765432100', email: renter.email, phone: '11999999999' },
     guarantor: null,
   }
   const response = await createContract(contractRequest(ownerToken, '', 'POST', body))
   if (response.status !== 201) {
-    await prisma.contrato.deleteMany({ where: { tenantId: tenant.id } })
+    await prisma.contract.deleteMany({ where: { tenantId: tenant.id } })
     await prisma.tenant.delete({ where: { id: tenant.id } })
     throw new Error('Falha ao preparar contrato válido para integração.')
   }
-  const row = await prisma.contrato.findUniqueOrThrow({
-    where: { oportunidadeOrigemId: opportunity.id },
-    include: { partes: true },
+  const row = await prisma.contract.findUniqueOrThrow({
+    where: { sourceOpportunityId: opportunity.id },
+    include: { parties: true },
   })
   return {
     tenantId: tenant.id,
@@ -115,8 +115,8 @@ export async function createContractWorkflowFixture() {
     agentToken,
     renterToken,
     renterId: renter.id,
-    ownerPartyId: row.partes.find((party) => party.papel === 'LOCADOR')!.id,
-    tenantPartyId: row.partes.find((party) => party.papel === 'LOCATARIO')!.id,
+    ownerPartyId: row.parties.find((party) => party.role === 'LANDLORD')!.id,
+    tenantPartyId: row.parties.find((party) => party.role === 'RENTER')!.id,
     editBody: {
       type: body.type,
       amount: body.amount,
@@ -134,27 +134,30 @@ export async function createContractWorkflowFixture() {
 }
 
 export async function createVerifiedContractProof(contractId: string, actorId: string) {
-  const contract = await prisma.contrato.findUniqueOrThrow({
+  const contract = await prisma.contract.findUniqueOrThrow({
     where: { id: contractId },
-    select: { tenantId: true, revisaoDados: true },
+    select: { tenantId: true, dataRevision: true },
   })
   const id = randomUUID()
-  return prisma.documentoContrato.create({
+  return prisma.contractDocument.create({
     data: {
       id,
-      contratoId: contractId,
-      nome: 'Contrato comprovado.pdf',
+      contractId: contractId,
+      name: 'Contrato comprovado.pdf',
       sha256: 'd'.repeat(64),
-      tamanhoBytes: 120,
+      sizeBytes: 120,
       objectKey: 'contracts/' + contract.tenantId + '/' + contractId + '/' + id + '.pdf',
-      enviadoPorId: actorId,
-      revisaoContrato: contract.revisaoDados,
+      uploadedById: actorId,
+      contractRevision: contract.dataRevision,
     },
   })
 }
 
 export async function cleanupContractWorkflowFixture(tenantId: string) {
-  await prisma.cobranca.deleteMany({ where: { tenantId } })
-  await prisma.contrato.deleteMany({ where: { tenantId } })
+  await prisma.charge.deleteMany({ where: { tenantId } })
+  await prisma.contractSignature.deleteMany({
+    where: { contractParty: { contract: { tenantId } } },
+  })
+  await prisma.contract.deleteMany({ where: { tenantId } })
   await prisma.tenant.delete({ where: { id: tenantId } })
 }

@@ -104,7 +104,7 @@ describe('Maintenance direct attachment authorization', () => {
   })
   it('revalidates collaboration after the file was uploaded', async () => {
     const p = ports()
-    const tickets = repository({ status: 'RESOLVIDO' })
+    const tickets = repository({ status: 'RESOLVED' })
     await expect(
       new CompleteMaintenanceAttachmentUploadUseCase(tickets, p.storage, p.tickets).execute({
         ...renter,

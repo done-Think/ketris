@@ -20,7 +20,7 @@ export const POST = withErrorHandling(
     const result = await teamContainer.deactivateBrokerUseCase.execute({
       actorId: actor.sub,
       actorTenantId: actor.tenantId,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       brokerId: id,
       destinationId: body.destinationId,
     })

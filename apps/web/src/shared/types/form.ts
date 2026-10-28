@@ -3,7 +3,7 @@ import type { TextFieldProps } from '@mui/material'
 
 export type InputMask = string | Array<{ mask: string }>
 
-export type SchemaMessageTranslator = (key: string) => string
+export type SchemaMessageTranslator<Key extends string = string> = (key: Key) => string
 
 export type MaskedInputProps = {
   mask: InputMask

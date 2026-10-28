@@ -43,19 +43,19 @@ function request(path: string, token: string, body?: unknown) {
 }
 async function tenant() {
   const row = await prisma.tenant.create({
-    data: { nome: 'Combined link test', slug: randomUUID() },
+    data: { name: 'Combined link test', slug: randomUUID() },
   })
   tenantIds.push(row.id)
   return row
 }
-async function user(tenantId: string, papel: 'AGENT' | 'OWNER' | 'PROPERTY_OWNER' | 'RENTER') {
-  const row = await prisma.usuario.create({
+async function user(tenantId: string, role: 'AGENT' | 'OWNER' | 'PROPERTY_OWNER' | 'RENTER') {
+  const row = await prisma.user.create({
     data: {
       tenantId,
-      papel,
-      nome: papel,
+      role,
+      name: role,
       email: `${randomUUID()}@link.test`,
-      senhaHash: 'test',
+      passwordHash: 'test',
     },
   })
   return { ...row, token: await tokens.sign(row) }
@@ -66,72 +66,72 @@ async function agency(renterEmail: string) {
   const agent = await user(agencyTenant.id, 'AGENT')
   const owner = await user(agencyTenant.id, 'OWNER')
   const propertyOwner = await user(agencyTenant.id, 'PROPERTY_OWNER')
-  const property = await prisma.imovel.create({
+  const property = await prisma.property.create({
     data: {
       tenantId: agencyTenant.id,
-      responsavelId: agent.id,
-      titulo: 'Property',
-      finalidade: 'ALUGUEL',
-      tipo: 'APARTAMENTO',
-      valor: 1000,
+      responsibleId: agent.id,
+      title: 'Property',
+      purpose: 'RENT',
+      type: 'APARTMENT',
+      price: 1000,
     },
   })
-  const opportunity = await prisma.oportunidade.create({
+  const opportunity = await prisma.opportunity.create({
     data: {
       tenantId: agencyTenant.id,
-      imovelId: property.id,
-      responsavelId: await propertyResponsibleId(prisma, property.id),
-      interessadoNome: 'Renter',
-      interessadoEmail: renterEmail,
-      valorProposto: 1000,
-      status: 'ACEITA',
+      propertyId: property.id,
+      responsibleId: await propertyResponsibleId(prisma, property.id),
+      interestedName: 'Renter',
+      interestedEmail: renterEmail,
+      proposedValue: 1000,
+      status: 'ACCEPTED',
     },
   })
-  const contract = await prisma.contrato.create({
+  const contract = await prisma.contract.create({
     data: {
       tenantId: agencyTenant.id,
-      imovelId: property.id,
-      oportunidadeOrigemId: opportunity.id,
-      codigo: randomUUID(),
-      valor: 1000,
-      diaVencimento: 5,
-      dataInicio: new Date('2026-01-01'),
-      dataFim: new Date('2027-01-01'),
-      indiceReajuste: 'IPCA',
-      tipoGarantia: 'CAUCAO',
-      status: 'ATIVO',
-      partes: {
+      propertyId: property.id,
+      sourceOpportunityId: opportunity.id,
+      code: randomUUID(),
+      amount: 1000,
+      dueDay: 5,
+      startDate: new Date('2026-01-01'),
+      endDate: new Date('2027-01-01'),
+      adjustmentIndex: 'IPCA',
+      guaranteeType: 'DEPOSIT',
+      status: 'ACTIVE',
+      parties: {
         create: {
-          papel: 'LOCATARIO',
-          nome: 'Renter',
+          role: 'RENTER',
+          name: 'Renter',
           cpf: '00000000000',
           email: renterEmail.toUpperCase(),
         },
       },
     },
-    include: { partes: true },
+    include: { parties: true },
   })
-  const charge = await prisma.cobranca.create({
+  const charge = await prisma.charge.create({
     data: {
       tenantId: agencyTenant.id,
-      contratoId: contract.id,
-      tipo: 'A_RECEBER',
-      codigo: randomUUID(),
-      valor: 1000,
-      vencimento: new Date('2026-10-05'),
-      status: 'PENDENTE',
+      contractId: contract.id,
+      type: 'RECEIVABLE',
+      code: randomUUID(),
+      amount: 1000,
+      dueDate: new Date('2026-10-05'),
+      status: 'PENDING',
     },
   })
-  const ticket = await prisma.chamadoManutencao.create({
+  const ticket = await prisma.maintenanceTicket.create({
     data: {
       tenantId: agencyTenant.id,
-      imovelId: property.id,
-      contratoId: contract.id,
-      abertoPorId: admin.id,
-      abertoPorNome: admin.nome,
-      titulo: 'Leak',
-      descricao: 'Leak',
-      categoria: 'PLUMBING',
+      propertyId: property.id,
+      contractId: contract.id,
+      openedById: admin.id,
+      openedByName: admin.name,
+      title: 'Leak',
+      description: 'Leak',
+      category: 'PLUMBING',
     },
   })
   return {
@@ -144,7 +144,7 @@ async function agency(renterEmail: string) {
     contract,
     charge,
     ticket,
-    party: contract.partes[0],
+    party: contract.parties[0],
   }
 }
 
@@ -170,7 +170,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
   afterAll(async () => {
     // Fixtures only: agency tenants precede the shared user tenants during cleanup.
     for (const tenantId of [...tenantIds].reverse()) {
-      await prisma.solicitacaoTrocaPrestador.deleteMany({ where: { chamado: { tenantId } } })
+      await prisma.providerChangeRequest.deleteMany({ where: { ticket: { tenantId } } })
       await prisma.tenant.delete({ where: { id: tenantId } })
     }
     await prisma.$disconnect()
@@ -264,27 +264,27 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
     async (path) => {
       const otherPath = path === 'contracts' ? 'maintenance' : 'contracts'
       expect((await confirm(otherPath)).status).toBe(success(otherPath))
-      await prisma.usuario.update({
+      await prisma.user.update({
         where: { id: renter.id },
         data: { email: `${randomUUID()}@changed.test` },
       })
       const replacement = await user(renter.tenantId, 'RENTER')
-      await prisma.usuario.update({ where: { id: replacement.id }, data: { email: renter.email } })
+      await prisma.user.update({ where: { id: replacement.id }, data: { email: renter.email } })
       const candidate = { ...replacement, email: renter.email }
-      const auditCount = await prisma.atividadeChamadoManutencao.count({
-        where: { chamadoId: a.ticket.id },
+      const auditCount = await prisma.maintenanceTicketActivity.count({
+        where: { ticketId: a.ticket.id },
       })
       expect((await confirm(path, a, a.admin.token, candidate, a.propertyOwner.id)).status).toBe(
         409,
       )
       expect(
-        (await prisma.parteContrato.findUniqueOrThrow({ where: { id: a.party.id } })).usuarioId,
+        (await prisma.contractParty.findUniqueOrThrow({ where: { id: a.party.id } })).userId,
       ).toBe(renter.id)
       expect(
-        (await prisma.imovel.findUniqueOrThrow({ where: { id: a.property.id } })).proprietarioId,
+        (await prisma.property.findUniqueOrThrow({ where: { id: a.property.id } })).ownerId,
       ).toBeNull()
       expect(
-        await prisma.atividadeChamadoManutencao.count({ where: { chamadoId: a.ticket.id } }),
+        await prisma.maintenanceTicketActivity.count({ where: { ticketId: a.ticket.id } }),
       ).toBe(auditCount)
       await expectAccess(a, renter.token, 200)
       await expectAccess(a, replacement.token, 404)
@@ -296,12 +296,12 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
     async (path) => {
       expect((await confirm(path, a, a.admin.token, unrelated)).status).toBe(409)
       expect((await confirm(path, { ...a, party: b.party })).status).toBe(404)
-      for (const papel of ['LOCADOR', 'FIADOR'] as const) {
-        await prisma.parteContrato.update({ where: { id: a.party.id }, data: { papel } })
+      for (const role of ['LANDLORD', 'GUARANTOR'] as const) {
+        await prisma.contractParty.update({ where: { id: a.party.id }, data: { role } })
         expect((await confirm(path)).status).toBe(404)
       }
       expect(
-        (await prisma.parteContrato.findUniqueOrThrow({ where: { id: a.party.id } })).usuarioId,
+        (await prisma.contractParty.findUniqueOrThrow({ where: { id: a.party.id } })).userId,
       ).toBeNull()
     },
   )
@@ -311,31 +311,31 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
       expect((await confirm(path, a, actor.token)).status).toBe(403)
     expect((await confirm(path, a, b.admin.token)).status).toBe(path === 'contracts' ? 404 : 403)
     expect(
-      (await prisma.parteContrato.findUniqueOrThrow({ where: { id: a.party.id } })).usuarioId,
+      (await prisma.contractParty.findUniqueOrThrow({ where: { id: a.party.id } })).userId,
     ).toBeNull()
     expect((await confirm(path, a, a.owner.token)).status).toBe(success(path))
     expect(
-      (await prisma.parteContrato.findUniqueOrThrow({ where: { id: a.party.id } })).usuarioId,
+      (await prisma.contractParty.findUniqueOrThrow({ where: { id: a.party.id } })).userId,
     ).toBe(renter.id)
   })
 
   it.each(paths)(
     '%s rejects inactive and non-renter accounts without partial changes',
     async (path) => {
-      for (const data of [{ ativo: false }, { ativo: true, papel: 'AGENT' as const }]) {
-        await prisma.usuario.update({ where: { id: renter.id }, data })
+      for (const data of [{ active: false }, { active: true, role: 'AGENT' as const }]) {
+        await prisma.user.update({ where: { id: renter.id }, data })
         expect((await confirm(path, a, a.admin.token, renter, a.propertyOwner.id)).status).toBe(404)
         expect(
-          (await prisma.imovel.findUniqueOrThrow({ where: { id: a.property.id } })).proprietarioId,
+          (await prisma.property.findUniqueOrThrow({ where: { id: a.property.id } })).ownerId,
         ).toBeNull()
       }
     },
   )
 
   it('lets the property owner read only the contracts and charges of their properties', async () => {
-    await prisma.imovel.update({
+    await prisma.property.update({
       where: { id: a.property.id },
-      data: { proprietarioId: a.propertyOwner.id },
+      data: { ownerId: a.propertyOwner.id },
     })
     const token = a.propertyOwner.token
     const contracts = await (await listContracts(request('contracts', token))).json()
@@ -351,7 +351,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
         .status,
     ).toBe(200)
 
-    await prisma.imovel.update({ where: { id: a.property.id }, data: { proprietarioId: null } })
+    await prisma.property.update({ where: { id: a.property.id }, data: { ownerId: null } })
     expect(
       (await readCharge(request(`financial/charges/${a.charge.id}`, token), context(a.charge.id)))
         .status,
@@ -377,7 +377,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
     expect(created.status).toBe(201)
     const ticket = (await created.json()).ticket
     expect(
-      (await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id: ticket.id } })).tenantId,
+      (await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id: ticket.id } })).tenantId,
     ).toBe(a.tenant.id)
     const ctx = context(ticket.id)
     expect(
@@ -464,11 +464,11 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
   it('does not expose legacy tickets or inconsistent contract/property/tenant relationships', async () => {
     expect((await confirm('contracts')).status).toBe(200)
     for (const data of [
-      { contratoId: null },
-      { contratoId: a.contract.id, imovelId: b.property.id },
-      { imovelId: a.property.id, tenantId: b.tenant.id },
+      { contractId: null },
+      { contractId: a.contract.id, propertyId: b.property.id },
+      { propertyId: a.property.id, tenantId: b.tenant.id },
     ]) {
-      await prisma.chamadoManutencao.update({ where: { id: a.ticket.id }, data })
+      await prisma.maintenanceTicket.update({ where: { id: a.ticket.id }, data })
       expect(
         (
           await readTicket(
@@ -481,20 +481,20 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
         await (await listTickets(request('maintenance/tickets', renter.token))).json(),
       ).toMatchObject({ items: [], totalCount: 0 })
     }
-    await prisma.imovel.update({ where: { id: a.property.id }, data: { tenantId: b.tenant.id } })
+    await prisma.property.update({ where: { id: a.property.id }, data: { tenantId: b.tenant.id } })
     const choices = await (await options(request('maintenance/options', renter.token))).json()
     expect(choices.contracts).toEqual([])
-    await prisma.imovel.update({ where: { id: a.property.id }, data: { tenantId: a.tenant.id } })
-    await prisma.chamadoManutencao.update({
+    await prisma.property.update({ where: { id: a.property.id }, data: { tenantId: a.tenant.id } })
+    await prisma.maintenanceTicket.update({
       where: { id: a.ticket.id },
-      data: { tenantId: a.tenant.id, imovelId: a.property.id, contratoId: a.contract.id },
+      data: { tenantId: a.tenant.id, propertyId: a.property.id, contractId: a.contract.id },
     })
   })
 
   it('revokes access when the linked account becomes inactive or changes role', async () => {
     expect((await confirm('maintenance')).status).toBe(204)
-    for (const data of [{ ativo: false }, { ativo: true, papel: 'AGENT' as const }]) {
-      await prisma.usuario.update({ where: { id: renter.id }, data })
+    for (const data of [{ active: false }, { active: true, role: 'AGENT' as const }]) {
+      await prisma.user.update({ where: { id: renter.id }, data })
       expect([401, 403, 404]).toContain(
         (
           await readTicket(
@@ -520,7 +520,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
     expect([204, 409]).toContain(responses[1].status)
     expect(responses.some((r) => r.status === 200 || r.status === 204)).toBe(true)
     expect(
-      (await prisma.parteContrato.findUniqueOrThrow({ where: { id: a.party.id } })).usuarioId,
+      (await prisma.contractParty.findUniqueOrThrow({ where: { id: a.party.id } })).userId,
     ).toBe(renter.id)
     await expectAccess(a, renter.token, 200)
   })
@@ -537,8 +537,8 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
       linkContractPartyUser(prisma, { ...input, userId: unrelated.id }),
     ])
     expect(results.filter(Boolean)).toHaveLength(1)
-    const winner = (await prisma.parteContrato.findUniqueOrThrow({ where: { id: a.party.id } }))
-      .usuarioId
+    const winner = (await prisma.contractParty.findUniqueOrThrow({ where: { id: a.party.id } }))
+      .userId
     expect(winner).toBe(results[0] ? renter.id : unrelated.id)
   })
 })

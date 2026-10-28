@@ -8,7 +8,7 @@ export const contactListFixtures: readonly (ContactListItem & { minutesAgo: numb
   {
     id: 'ricardo-mendes',
     name: 'Ricardo Mendes',
-    type: 'LOCATARIO',
+    type: 'RENTER',
     phone: '(11) 98722-1200',
     email: 'ricardo.mendes@email.com',
     propertyCount: 2,
@@ -20,7 +20,7 @@ export const contactListFixtures: readonly (ContactListItem & { minutesAgo: numb
   {
     id: 'sandra-vasconcellos',
     name: 'Sandra Vasconcellos',
-    type: 'PROPRIETARIO',
+    type: 'OWNER',
     phone: '(11) 99100-4491',
     email: 'sandra.vasc@corpprop.br',
     propertyCount: 4,
@@ -32,7 +32,7 @@ export const contactListFixtures: readonly (ContactListItem & { minutesAgo: numb
   {
     id: 'heitor-prado',
     name: 'Heitor Prado',
-    type: 'CORRETOR',
+    type: 'BROKER',
     phone: '(11) 98112-9900',
     email: 'heitor.prado@ketrisrealty.com',
     propertyCount: 12,
@@ -44,7 +44,7 @@ export const contactListFixtures: readonly (ContactListItem & { minutesAgo: numb
   {
     id: 'leticia-ramos',
     name: 'Letícia Ramos',
-    type: 'LOCATARIO',
+    type: 'RENTER',
     phone: '(11) 97711-2004',
     email: 'leticia_ramos@outlook.com',
     propertyCount: 1,
@@ -56,7 +56,7 @@ export const contactListFixtures: readonly (ContactListItem & { minutesAgo: numb
   {
     id: 'carlos-eduardo',
     name: 'Carlos Eduardo',
-    type: 'LOCATARIO',
+    type: 'RENTER',
     phone: '(11) 98221-1250',
     email: 'carlos.edu@tecblue.com',
     propertyCount: 2,
@@ -68,7 +68,7 @@ export const contactListFixtures: readonly (ContactListItem & { minutesAgo: numb
   {
     id: 'ana-beatriz-ramos',
     name: 'Ana Beatriz Ramos',
-    type: 'PROPRIETARIO',
+    type: 'OWNER',
     phone: '(11) 99882-1011',
     email: 'anabeatriz@grupojardins.com',
     propertyCount: 8,

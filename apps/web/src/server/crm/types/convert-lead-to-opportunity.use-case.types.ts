@@ -1,11 +1,11 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { Lead } from '../domain/lead.entity'
 import type { Opportunity } from '../domain/opportunity.entity'
 
 export interface ConvertLeadToOpportunityInput {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   leadId: string
   propertyId: string
   proposedValue: number

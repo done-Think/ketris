@@ -19,7 +19,7 @@ it('uses the original hourly grid and keeps due dates separate from service time
       date: days[0].key,
       title: 'Rent',
       property: 'Apartment',
-      status: 'PENDENTE',
+      status: 'PENDING',
       amount: 1000,
     },
     {
@@ -30,7 +30,7 @@ it('uses the original hourly grid and keeps due dates separate from service time
       time: '06:30',
       title: 'Leak',
       property: 'Apartment',
-      status: 'ABERTO',
+      status: 'OPEN',
     },
     {
       id: 'scheduled-1',
@@ -40,7 +40,7 @@ it('uses the original hourly grid and keeps due dates separate from service time
       time: '20:00',
       title: 'Leak',
       property: 'Apartment',
-      status: 'ABERTO',
+      status: 'OPEN',
     },
   ]
   render(

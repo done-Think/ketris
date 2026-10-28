@@ -20,7 +20,7 @@ function buildListingPrice(
 ): string {
   const formatted = formatCompactCurrency(listing.price, locale)
 
-  return listing.purpose === 'ALUGUEL' ? t('monthly', { price: formatted }) : formatted
+  return listing.purpose === 'RENT' ? t('monthly', { price: formatted }) : formatted
 }
 
 function buildLogoInitials(displayName: string): string {
@@ -70,7 +70,7 @@ export function toAgencyProfile(
       .slice()
       .sort((first, second) => first.order - second.order)
       .map((member) => ({
-        usuarioId: member.usuarioId,
+        userId: member.userId,
         name: member.name,
         avatarUrl: member.avatarUrl,
       })),

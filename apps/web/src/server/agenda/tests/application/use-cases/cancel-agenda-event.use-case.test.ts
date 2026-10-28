@@ -30,7 +30,7 @@ describe('CancelAgendaEventUseCase', () => {
     const result = await useCase.execute({
       reason: 'Cliente indisponível',
       actorTenantId: 'tenant-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       id: 'event-1',
     })
 
@@ -46,7 +46,7 @@ describe('CancelAgendaEventUseCase', () => {
     vi.mocked(deps.agendaEventRepository.findByScopeAndId).mockResolvedValue({
       ...cancelledEvent,
       tenantId: 'agency-1',
-      criadoPorId: 'renter-1',
+      createdById: 'renter-1',
     } as AgendaEvent)
     const useCase = new CancelAgendaEventUseCase(deps.agendaEventRepository)
 
@@ -54,7 +54,7 @@ describe('CancelAgendaEventUseCase', () => {
       reason: 'Cliente indisponível',
       actorTenantId: 'renters',
       actorUserId: 'renter-1',
-      actorPapel: 'RENTER',
+      actorRole: 'RENTER',
       id: 'event-1',
     })
 
@@ -73,8 +73,8 @@ describe('CancelAgendaEventUseCase', () => {
     vi.mocked(deps.agendaEventRepository.findByScopeAndId).mockResolvedValue({
       ...cancelledEvent,
       tenantId: 'agency-1',
-      responsavelId: 'agent-1',
-      criadoPorId: 'agent-1',
+      responsibleId: 'agent-1',
+      createdById: 'agent-1',
     } as AgendaEvent)
     const useCase = new CancelAgendaEventUseCase(deps.agendaEventRepository)
 
@@ -83,7 +83,7 @@ describe('CancelAgendaEventUseCase', () => {
         reason: 'Cliente indisponível',
         actorTenantId: 'renters',
         actorUserId: 'renter-1',
-        actorPapel: 'RENTER',
+        actorRole: 'RENTER',
         id: 'event-1',
       }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
@@ -98,7 +98,7 @@ describe('CancelAgendaEventUseCase', () => {
       useCase.execute({
         reason: 'Cliente indisponível',
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         id: 'inexistente',
       }),
     ).rejects.toThrow(AgendaEventNotFoundError)

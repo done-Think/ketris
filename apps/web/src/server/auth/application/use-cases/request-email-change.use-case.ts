@@ -26,7 +26,7 @@ export class RequestEmailChangeUseCase {
   async execute(input: RequestEmailChangeInput): Promise<void> {
     const targetUserId = input.targetUserId ?? input.actorId
     const isSelf = targetUserId === input.actorId
-    if (!isSelf && (!input.actorPapel || !isAgencyManager(input.actorPapel))) {
+    if (!isSelf && (!input.actorRole || !isAgencyManager(input.actorRole))) {
       throw new ForbiddenError(
         'Apenas a gestão da imobiliária pode solicitar alterações de e-mail para outros usuários.',
       )

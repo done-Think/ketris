@@ -37,7 +37,7 @@ describe('ConfirmEmailChangeUseCase', () => {
   )
   it('rejeita conta inativa e código destinado a outro endereço', async () => {
     const d = setup()
-    vi.mocked(d.users.findById).mockResolvedValue(account({ ativo: false }))
+    vi.mocked(d.users.findById).mockResolvedValue(account({ active: false }))
     await expect(d.useCase.execute(input)).rejects.toMatchObject({ code: 'ACCOUNT_DEACTIVATED' })
     vi.mocked(d.users.findById).mockResolvedValue(account())
     await expect(

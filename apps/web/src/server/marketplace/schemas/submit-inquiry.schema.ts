@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 export const submitInquiryRequestSchema = z
   .object({
+    website: z.string().max(200).optional(),
     leadName: z
       .string()
       .trim()
@@ -37,7 +38,7 @@ export const submitInquiryResponseSchema = z
     inquiry: z.object({
       id: z.string(),
       propertyId: z.string(),
-      status: z.literal('ENVIADA'),
+      status: z.literal('SENT'),
       createdAt: z.string(),
     }),
   })

@@ -9,6 +9,7 @@ vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
 
   return {
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
     useRouter: () => ({ push: pushMock }),
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
       function MockLocalizedLink({ href = '', ...props }, ref) {
@@ -45,7 +46,7 @@ describe('RegistrationProfileScreen', () => {
 
     expect(pushMock).toHaveBeenCalledWith({
       pathname: '/register/details',
-      query: { profile: 'corretor' },
+      query: { profile: 'broker' },
     })
   })
 })

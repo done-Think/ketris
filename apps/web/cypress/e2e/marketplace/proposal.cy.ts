@@ -61,7 +61,7 @@ describe('Proposta pelo marketplace', () => {
     cy.get('[role="dialog"]').should('not.exist')
     evidence().then((result) => {
       expect(result.count).to.eq(1)
-      expect(result.status).to.eq('ENVIADA')
+      expect(result.status).to.eq('SENT')
       expect(result.leadName).to.eq('Interessada Proposta E2E')
       expect(result.leadEmail).to.eq('interessada@proposta.example.test')
       expect(result.proposedValue).to.eq(600000)
@@ -81,23 +81,23 @@ describe('Proposta pelo marketplace', () => {
     evidence().its('proposedValue').should('eq', 650000)
   })
 
-  it('avisa o limite de envios sem criar oportunidades além dele', () => {
+  it('avisa a cota por imóvel/e-mail sem criar oportunidades além dela', () => {
     cy.viewport(1280, 900)
     cy.then(() => {
-      for (let attempt = 0; attempt < 5; attempt += 1)
+      for (let attempt = 0; attempt < 3; attempt += 1)
         cy.request({
           method: 'POST',
           url: `/api/marketplace/properties/${fixture!.propertyId}/inquiries`,
-          body: { leadName: 'Lote E2E', leadEmail: `lote-${attempt}@proposta.example.test` },
+          body: { leadName: 'Lote E2E', leadEmail: 'cota@proposta.example.test' },
         })
     })
     openProposal()
     dialog().find('input[name="leadName"]').type('Bloqueada E2E')
-    dialog().find('input[name="leadEmail"]').type('bloqueada@proposta.example.test')
+    dialog().find('input[name="leadEmail"]').type('cota@proposta.example.test')
     cy.intercept('POST', '**/api/marketplace/properties/*/inquiries').as('inquiry')
     dialog().contains('button', 'Enviar').click()
     cy.wait('@inquiry').its('response.statusCode').should('eq', 429)
     cy.contains('Você enviou muitas mensagens em pouco tempo').should('be.visible')
-    evidence().its('count').should('eq', 5)
+    evidence().its('count').should('eq', 3)
   })
 })

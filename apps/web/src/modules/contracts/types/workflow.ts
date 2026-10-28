@@ -5,7 +5,6 @@ import type { createContractDocumentSchema } from '../schemas/contract-document-
 export type ContractDocumentForm = z.infer<ReturnType<typeof createContractDocumentSchema>>
 export interface ContractDocumentUploadProps {
   contractId: string
-  tenantId: string
   onBusyChange: (busy: boolean) => void
 }
 export interface ContractManualSignatureDialogProps {
@@ -26,11 +25,9 @@ export interface ContractTransitionDialogProps {
 }
 export interface ContractEditDialogProps {
   contract: ApiContract
-  tenantId: string
   onClose: () => void
 }
 export interface ContractHistoryPanelProps {
-  tenantId: string
   contractId: string
 }
 export interface ContractSignMutationInput {

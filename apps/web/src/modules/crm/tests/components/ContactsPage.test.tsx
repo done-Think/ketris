@@ -52,7 +52,7 @@ const contact: ApiContactListItem = {
   name: 'Ricardo Mendes',
   email: 'ricardo@example.com',
   phone: '(11) 98722-1200',
-  type: 'LOCATARIO',
+  type: 'RENTER',
   avatarUrl: null,
   notes: 'Interessado em apartamentos',
   lastInteraction: null,

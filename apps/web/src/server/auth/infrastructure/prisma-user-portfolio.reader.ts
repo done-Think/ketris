@@ -5,14 +5,14 @@ import type { UserPortfolioReader } from '../application/ports/user-portfolio-re
 export class PrismaUserPortfolioReader implements UserPortfolioReader {
   async hasPortfolio(tenantId: string, userId: string): Promise<boolean> {
     const [properties, leads, opportunities, events] = await Promise.all([
-      prisma.imovel.count({ where: { tenantId, responsavelId: userId } }),
-      prisma.lead.count({ where: { tenantId, responsavelId: userId } }),
-      prisma.oportunidade.count({ where: { tenantId, responsavelId: userId } }),
-      prisma.eventoAgenda.count({
+      prisma.property.count({ where: { tenantId, responsibleId: userId } }),
+      prisma.lead.count({ where: { tenantId, responsibleId: userId } }),
+      prisma.opportunity.count({ where: { tenantId, responsibleId: userId } }),
+      prisma.agendaEvent.count({
         where: {
           tenantId,
-          responsavelId: userId,
-          inicio: { gte: new Date() },
+          responsibleId: userId,
+          start: { gte: new Date() },
           status: { not: 'CANCELLED' },
         },
       }),

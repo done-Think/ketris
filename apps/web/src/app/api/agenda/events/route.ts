@@ -18,18 +18,18 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
   const query = parseQuery(request, listAgendaEventsQuerySchema)
 
-  const actorPapel = actor.papel
+  const actorRole = actor.role
   const events = await agendaContainer.listAgendaEventsUseCase.execute({
     actorTenantId: actor.tenantId,
     actorUserId: actor.sub,
-    actorPapel,
+    actorRole,
     from: query.from,
     to: query.to,
-    responsavelId: query.responsibleId,
+    responsibleId: query.responsibleId,
   })
 
   return NextResponse.json(
-    { events: events.map((event) => toAgendaEventReadResponse(event, actorPapel, actor.sub)) },
+    { events: events.map((event) => toAgendaEventReadResponse(event, actorRole, actor.sub)) },
     { status: 200 },
   )
 })
@@ -41,22 +41,22 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const event = await agendaContainer.createAgendaEventUseCase.execute({
     actorTenantId: actor.tenantId,
     actorUserId: actor.sub,
-    actorPapel: actor.papel,
-    responsavelId: body.responsibleId,
-    destino: body.audience,
-    interno: body.internal,
-    imovelId: body.propertyId,
-    referenciaImovelLivre: body.propertyReference,
-    titulo: body.title,
-    tipo: body.kind,
-    inicio: body.start,
+    actorRole: actor.role,
+    responsibleId: body.responsibleId,
+    audience: body.audience,
+    internal: body.internal,
+    propertyId: body.propertyId,
+    freeFormPropertyReference: body.propertyReference,
+    title: body.title,
+    type: body.kind,
+    start: body.start,
     outsideBusinessHoursConfirmed: body.outsideBusinessHoursConfirmed,
     durationMinutes: body.durationMinutes,
-    participanteNome: body.participantName,
-    participanteTelefone: body.participantPhone,
-    notas: body.notes,
-    donoEmail: body.ownerEmail,
-    participanteEmails: body.participantEmails,
+    participantName: body.participantName,
+    participantPhone: body.participantPhone,
+    notes: body.notes,
+    ownerEmail: body.ownerEmail,
+    participantEmails: body.participantEmails,
   })
 
   return NextResponse.json({ event: toAgendaEventResponse(event) }, { status: 201 })

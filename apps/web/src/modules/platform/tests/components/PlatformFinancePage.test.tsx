@@ -18,6 +18,7 @@ const finance: ApiPlatformFinance = {
   trialAccounts: 1,
   suspendedAccounts: 2,
   canceledThisMonth: 1,
+  churnBaseAccounts: 4,
   churnRate: 0.25,
   byAccountType: [
     { accountType: 'INDIVIDUAL', activeAccounts: 0, mrr: 0 },

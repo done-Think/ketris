@@ -41,6 +41,7 @@ vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
 
   return {
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
     usePathname: vi.fn(() => '/platform'),
     useRouter: vi.fn(() => ({ push: vi.fn() })),
     Link: React.forwardRef<HTMLAnchorElement, MockLinkProps>(function MockLocalizedLink(

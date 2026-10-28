@@ -7,12 +7,12 @@ import type {
 export function toAuthenticatedPlatformAdmin(admin: PlatformAdmin): AuthenticatedPlatformAdmin {
   return {
     id: admin.id,
-    nome: admin.nome,
+    name: admin.name,
     email: admin.email,
     role: admin.role,
-    ativo: admin.ativo,
+    active: admin.active,
     createdAt: admin.createdAt,
-    ultimoAcessoEm: admin.ultimoAcessoEm,
+    lastAccessAt: admin.lastAccessAt,
   }
 }
 
@@ -21,11 +21,11 @@ export function toAuthenticatedPlatformAdminResponse(
 ): AuthenticatedPlatformAdminResponse {
   return {
     id: admin.id,
-    name: admin.nome,
+    name: admin.name,
     email: admin.email,
     role: admin.role,
-    active: admin.ativo,
+    active: admin.active,
     createdAt: admin.createdAt.toISOString(),
-    lastAccessAt: admin.ultimoAcessoEm?.toISOString() ?? null,
+    lastAccessAt: admin.lastAccessAt?.toISOString() ?? null,
   }
 }

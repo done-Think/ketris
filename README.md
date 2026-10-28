@@ -47,8 +47,9 @@ não `.env.local`) e ajuste se necessário.
 nvm use
 npm install
 docker compose up -d          # sobe o Postgres local (postgres:16-alpine, porta 55532 no host)
-npm run db:migrate            # aplica o schema Prisma no banco
-npm run db:seed               # cria várias imobiliárias, corretores, proprietários, construtoras e locatários (imobiliariahorizonte@ketris.com.br)
+npm run db:deploy             # aplica as migrations versionadas; preserva o banco existente
+npm run db:generate           # atualiza o Prisma Client
+npm run db:seed               # demonstração: contas e perfis públicos; redefine usuários/senhas das fixtures
 npm run dev
 ```
 
@@ -69,7 +70,20 @@ npm run test        # Vitest
 npm run e2e         # Cypress
 npm run format      # Prettier
 
-npm run db:migrate  # aplica migrations do Prisma
-npm run db:seed     # roda o seed (tenant + usuário admin)
+npm run db:deploy   # aplica migrations versionadas em banco existente
+npm run db:migrate  # cria/aplica migrations durante desenvolvimento de schema
+npm run db:seed     # dados de demonstração, incluindo corretores e imobiliárias públicos
 npm run db:studio   # abre o Prisma Studio (inspeção visual do banco)
+npm run api:generate # atualiza OpenAPI e os tipos HTTP do front
+npm run api:check    # falha quando o contrato gerado está desatualizado
 ```
+
+O seed cria 11 perfis de corretores elegíveis e 3 imobiliárias de demonstração. Perfis públicos
+existentes conservam conteúdo, status de rascunho e equipe selecionada. As contas do dataset
+continuam usando a senha de desenvolvimento indicada no seed; não rodar esse dataset em produção.
+
+Sem credenciais AWS em desenvolvimento, os uploads usam o storage local. S3/SES também aceitam
+credenciais temporárias, profile local e role em produção pela cadeia padrão do SDK. O envio real
+de e-mails exige SES configurado. As [políticas de segurança](docs/security-policies.md), o
+[ensaio de migrations](apps/web/prisma/english-rename/README.md) e a
+[publicação coordenada](docs/staging-release.md) detalham as validações de ambiente.

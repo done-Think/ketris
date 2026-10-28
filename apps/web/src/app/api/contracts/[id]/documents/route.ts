@@ -16,7 +16,7 @@ export const POST = withErrorHandling(
     const result = await contractsContainer.confirmContractDocumentUploadUseCase.execute({
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       contractId: id,
       ...data,
     })

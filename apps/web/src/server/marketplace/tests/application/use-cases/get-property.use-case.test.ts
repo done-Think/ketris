@@ -9,8 +9,8 @@ const detail: PublishedPropertyDetail = {
   id: 'imovel-1',
   tenantId: 'tenant-1',
   title: 'Apartamento no centro',
-  purpose: 'ALUGUEL',
-  propertyType: 'APARTAMENTO',
+  purpose: 'RENT',
+  propertyType: 'APARTMENT',
   price: 2500,
   condoFee: 400,
   propertyTax: 100,
@@ -39,7 +39,7 @@ const detail: PublishedPropertyDetail = {
     longitude: null,
   },
   media: [
-    { id: 'midia-1', url: 'https://cdn.ketris.dev/imovel-1/capa.jpg', type: 'foto', order: 0 },
+    { id: 'midia-1', url: 'https://cdn.ketris.dev/imovel-1/capa.jpg', type: 'photo', order: 0 },
   ],
 }
 

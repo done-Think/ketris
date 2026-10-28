@@ -43,68 +43,68 @@ export function crmListSql(
   let searchable: Prisma.Sql[]
   let columns: Record<string, Prisma.Sql>
   if (kind === 'contact') {
-    from = Prisma.sql`contatos r`
-    group = Prisma.sql`r.tipo::text`
-    if (!filters.includeArchived) base.push(Prisma.sql`r."arquivadoEm" IS NULL`)
-    if (scope.actorPapel === 'AGENT')
+    from = Prisma.sql`contacts r`
+    group = Prisma.sql`r.type::text`
+    if (!filters.includeArchived) base.push(Prisma.sql`r."archivedAt" IS NULL`)
+    if (scope.actorRole === 'AGENT')
       base.push(
-        Prisma.sql`(r."createdById" = ${scope.actorId ?? ''} OR EXISTS (SELECT 1 FROM oportunidades o WHERE o."contatoId" = r.id AND o."tenantId" = ${scope.actorTenantId} AND o."responsavelId" = ${scope.actorId ?? ''}))`,
+        Prisma.sql`(r."createdById" = ${scope.actorId ?? ''} OR EXISTS (SELECT 1 FROM opportunities o WHERE o."contactId" = r.id AND o."tenantId" = ${scope.actorTenantId} AND o."responsibleId" = ${scope.actorId ?? ''}))`,
       )
-    if (filters.type) extra.push(Prisma.sql`r.tipo::text = ${filters.type}`)
-    searchable = [Prisma.sql`r.nome`, Prisma.sql`r.email`, Prisma.sql`r.telefone`]
+    if (filters.type) extra.push(Prisma.sql`r.type::text = ${filters.type}`)
+    searchable = [Prisma.sql`r.name`, Prisma.sql`r.email`, Prisma.sql`r.phone`]
     columns = {
-      name: Prisma.sql`r.nome`,
-      lastInteraction: Prisma.sql`r."ultimaInteracao"`,
+      name: Prisma.sql`r.name`,
+      lastInteraction: Prisma.sql`r."lastInteraction"`,
       createdAt: Prisma.sql`r."createdAt"`,
       type: enumOrder(
-        Prisma.sql`r.tipo`,
+        Prisma.sql`r.type`,
         {
-          LOCATARIO: messages.contacts.types.tenant,
-          PROPRIETARIO: messages.contacts.types.owner,
-          CORRETOR: messages.contacts.types.broker,
+          RENTER: messages.contacts.types.tenant,
+          OWNER: messages.contacts.types.owner,
+          BROKER: messages.contacts.types.broker,
         },
         filters.locale ?? 'pt-BR',
       ),
     }
   } else if (kind === 'lead') {
-    from = Prisma.sql`leads r JOIN usuarios u ON u.id = r."responsavelId"`
-    group = Prisma.sql`r.estagio::text`
-    if (scope.actorPapel === 'AGENT')
-      base.push(Prisma.sql`r."responsavelId" = ${scope.actorId ?? ''}`)
-    if (filters.stage) extra.push(Prisma.sql`r.estagio::text = ${filters.stage}`)
+    from = Prisma.sql`leads r JOIN users u ON u.id = r."responsibleId"`
+    group = Prisma.sql`r.stage::text`
+    if (scope.actorRole === 'AGENT')
+      base.push(Prisma.sql`r."responsibleId" = ${scope.actorId ?? ''}`)
+    if (filters.stage) extra.push(Prisma.sql`r.stage::text = ${filters.stage}`)
     const sourceLabels = Object.fromEntries(
       LEAD_SOURCES.map((code) => [code, messages.leads.create.sources[LEAD_SOURCE_KEYS[code]]]),
     )
-    const sourceLabel = Prisma.sql`CASE r.origem::text ${Prisma.join(
+    const sourceLabel = Prisma.sql`CASE r.source::text ${Prisma.join(
       LEAD_SOURCES.map((code) => Prisma.sql`WHEN ${code} THEN ${sourceLabels[code]}`),
       ' ',
     )} END`
-    searchable = [Prisma.sql`r.nome`, Prisma.sql`r.interesse`, sourceLabel, Prisma.sql`u.nome`]
-    const token = Prisma.sql`substring(r.orcamento from '[0-9]+[0-9.,]*')`
-    const suffixed = Prisma.sql`r.orcamento ~* '[0-9][[:space:]]*[mk]'`
+    searchable = [Prisma.sql`r.name`, Prisma.sql`r.interest`, sourceLabel, Prisma.sql`u.name`]
+    const token = Prisma.sql`substring(r.budget from '[0-9]+[0-9.,]*')`
+    const suffixed = Prisma.sql`r.budget ~* '[0-9][[:space:]]*[mk]'`
     const numericText = Prisma.sql`CASE WHEN ${suffixed} THEN replace(${token}, ',', '.') ELSE replace(replace(${token}, '.', ''), ',', '.') END`
-    const budget = Prisma.sql`CASE WHEN ${numericText} ~ '^[0-9]+([.][0-9]+)?$' THEN (${numericText})::numeric * CASE WHEN r.orcamento ~* '[0-9][[:space:]]*m' THEN 1000000 WHEN r.orcamento ~* '[0-9][[:space:]]*k' THEN 1000 ELSE 1 END ELSE 0 END`
+    const budget = Prisma.sql`CASE WHEN ${numericText} ~ '^[0-9]+([.][0-9]+)?$' THEN (${numericText})::numeric * CASE WHEN r.budget ~* '[0-9][[:space:]]*m' THEN 1000000 WHEN r.budget ~* '[0-9][[:space:]]*k' THEN 1000 ELSE 1 END ELSE 0 END`
     columns = {
-      name: Prisma.sql`r.nome`,
-      interest: Prisma.sql`r.interesse`,
+      name: Prisma.sql`r.name`,
+      interest: Prisma.sql`r.interest`,
       budget,
-      stage: Prisma.sql`r.estagio`,
-      source: enumOrder(Prisma.sql`r.origem`, sourceLabels, filters.locale ?? 'pt-BR'),
+      stage: Prisma.sql`r.stage`,
+      source: enumOrder(Prisma.sql`r.source`, sourceLabels, filters.locale ?? 'pt-BR'),
       lastContact: Prisma.sql`r."updatedAt"`,
       createdAt: Prisma.sql`r."createdAt"`,
     }
   } else {
-    from = Prisma.sql`oportunidades r JOIN imoveis i ON i.id = r."imovelId" LEFT JOIN enderecos e ON e."imovelId" = i.id`
+    from = Prisma.sql`opportunities r JOIN properties i ON i.id = r."propertyId" LEFT JOIN property_addresses e ON e."propertyId" = i.id`
     group = Prisma.sql`r.status::text`
-    amount = Prisma.sql`r."valorProposto"`
-    purpose = Prisma.sql`i.finalidade::text`
-    if (!filters.includeArchived) base.push(Prisma.sql`r."arquivadaEm" IS NULL`)
-    if (scope.actorPapel === 'AGENT')
-      base.push(Prisma.sql`r."responsavelId" = ${scope.actorId ?? ''}`)
+    amount = Prisma.sql`r."proposedValue"`
+    purpose = Prisma.sql`i.purpose::text`
+    if (!filters.includeArchived) base.push(Prisma.sql`r."archivedAt" IS NULL`)
+    if (scope.actorRole === 'AGENT')
+      base.push(Prisma.sql`r."responsibleId" = ${scope.actorId ?? ''}`)
     if (filters.status) extra.push(Prisma.sql`r.status::text = ${filters.status}`)
     if (filters.statuses?.length)
       extra.push(Prisma.sql`r.status::text IN (${Prisma.join(filters.statuses)})`)
-    if (filters.contactId) extra.push(Prisma.sql`r."contatoId" = ${filters.contactId}`)
+    if (filters.contactId) extra.push(Prisma.sql`r."contactId" = ${filters.contactId}`)
     const labels = Object.fromEntries(
       Object.entries(CRM_STATUS_KEYS).map(([code, key]) => [
         code,
@@ -113,16 +113,16 @@ export function crmListSql(
     )
     searchable = [
       Prisma.sql`r.id`,
-      Prisma.sql`r."interessadoNome"`,
-      Prisma.sql`r."interessadoEmail"`,
-      Prisma.sql`r."interessadoTelefone"`,
-      Prisma.sql`i.titulo`,
-      Prisma.sql`i.tipo::text`,
+      Prisma.sql`r."interestedName"`,
+      Prisma.sql`r."interestedEmail"`,
+      Prisma.sql`r."interestedPhone"`,
+      Prisma.sql`i.title`,
+      Prisma.sql`i.type::text`,
       Prisma.sql`i.id`,
-      Prisma.sql`e.bairro`,
-      Prisma.sql`e.cidade`,
-      Prisma.sql`e.logradouro`,
-      Prisma.sql`r."valorProposto"::text`,
+      Prisma.sql`e.neighborhood`,
+      Prisma.sql`e.city`,
+      Prisma.sql`e.street`,
+      Prisma.sql`r."proposedValue"::text`,
     ]
     const matchingStatuses = Object.entries(labels)
       .filter(([, label]) => normalized(label).includes(normalized(filters.q?.trim() ?? '')))
@@ -132,8 +132,8 @@ export function crmListSql(
         Prisma.sql`CASE WHEN r.status::text IN (${Prisma.join(matchingStatuses)}) THEN ${filters.q.trim()} ELSE '' END`,
       )
     columns = {
-      name: Prisma.sql`r."interessadoNome"`,
-      property: Prisma.sql`i.titulo`,
+      name: Prisma.sql`r."interestedName"`,
+      property: Prisma.sql`i.title`,
       proposedValue: amount,
       status: enumOrder(Prisma.sql`r.status`, labels, filters.locale ?? 'pt-BR'),
       createdAt: Prisma.sql`r."createdAt"`,

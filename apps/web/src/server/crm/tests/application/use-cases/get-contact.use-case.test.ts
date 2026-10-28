@@ -12,7 +12,7 @@ const contact: Contact = {
   name: 'Carlos',
   email: 'carlos@exemplo.com',
   phone: null,
-  type: 'PROPRIETARIO',
+  type: 'OWNER',
   avatarUrl: null,
   notes: null,
   lastInteraction: null,
@@ -36,7 +36,7 @@ describe('GetContactUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       contactId: 'contato-1',
     })
 
@@ -52,7 +52,7 @@ describe('GetContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         contactId: 'contato-1',
       }),
     ).rejects.toThrow(ContactNotFoundError)
@@ -67,7 +67,7 @@ describe('GetContactUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'agent-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       contactId: 'contato-1',
     })
 
@@ -87,7 +87,7 @@ describe('GetContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         contactId: 'contato-1',
       }),
     ).rejects.toThrow(ContactNotFoundError)

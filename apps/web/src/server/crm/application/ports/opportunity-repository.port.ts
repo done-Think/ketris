@@ -11,7 +11,7 @@ export interface OpportunityListFilters extends CrmListFilters {
   status?: Opportunity['status']
   includeArchived?: boolean
   contactId?: string
-  responsavelId?: string
+  responsibleId?: string
 }
 
 export interface OpportunityRepository {

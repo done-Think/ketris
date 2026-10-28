@@ -18,7 +18,7 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Char
   const charge = await financialContainer.reverseChargePaymentUseCase.execute({
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     chargeId: id,
     reason: body.reason,
   })

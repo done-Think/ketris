@@ -1,159 +1,50 @@
-export type ApiChargeType = 'A_RECEBER' | 'A_PAGAR'
+import type { components, paths } from '@shared/types/generated/api'
+export type ApiChargeType = components['schemas']['Charge']['type']
 
-export type ApiChargeStatus = 'PENDENTE' | 'PAGA' | 'ATRASADA' | 'AGENDADA' | 'CANCELADA'
+export type ApiChargeStatus = components['schemas']['Charge']['status']
 
-export type ApiStoredChargeStatus = Exclude<ApiChargeStatus, 'ATRASADA'>
+export type ApiStoredChargeStatus = NonNullable<
+  components['schemas']['ChargeAuditEvent']['fromStatus']
+>
 
-export type ApiNewChargeStatus = Extract<ApiChargeStatus, 'PENDENTE' | 'AGENDADA'>
+export type ApiNewChargeStatus = components['schemas']['CreateChargeRequest']['status']
 
-export type ApiChargeAuditAction =
-  'CREATED' | 'UPDATED' | 'PAYMENT_REGISTERED' | 'PAYMENT_REVERSED' | 'CANCELLED' | 'DELETED'
+export type ApiChargeAuditAction = components['schemas']['ChargeAuditEvent']['action']
 
-export interface ApiChargeReceipt {
-  id: string
-  name: string
-  contentType: string
-  size: number
-  uploadedAt: string
-}
+export type ApiChargeReceipt = NonNullable<components['schemas']['ChargeReceipt']>
 
-export interface ApiCharge {
-  id: string
-  code: string
-  type: ApiChargeType
-  status: ApiChargeStatus
-  amount: number
-  dueDate: string
-  description: string | null
-  paymentMethod: string | null
-  paidAt: string | null
-  cancelledAt: string | null
-  cancellationReason: string | null
-  receipt: ApiChargeReceipt | null
-  createdAt: string
-  updatedAt: string
-  contractId: string | null
-  contractCode: string | null
-  propertyId: string | null
-  propertyTitle: string | null
-  propertyAddress: string | null
-  payerName: string | null
-  payerEmail: string | null
-}
+export type ApiCharge = components['schemas']['Charge']
 
-export interface ApiChargeListItem {
-  id: string
-  code: string
-  type: ApiChargeType
-  status: ApiChargeStatus
-  amount: number
-  dueDate: string
-  description: string | null
-  contractId: string | null
-  payerName: string | null
-  propertyTitle: string | null
-  updatedAt: string
-}
+export type ApiChargeListItem = components['schemas']['ChargeListItem']
 
-export type ApiChargeStatusCounts = Record<ApiChargeStatus | 'ALL', number>
+export type ApiChargeStatusCounts = components['schemas']['ChargeStatusCounts']
 
-export interface ChargeListFilters {
-  type?: ApiChargeType
-  status?: ApiChargeStatus
-  dueMonth?: string
-  search?: string
-  page?: number
-  pageSize?: number
-}
+export type ChargeListFilters = NonNullable<
+  paths['/financial/charges']['get']['parameters']['query']
+>
 
-export interface CreateChargePayload {
-  contractId?: string
-  description?: string
-  type: ApiChargeType
-  amount: number
-  dueDate: string
-  status: ApiNewChargeStatus
-}
+export type CreateChargePayload = components['schemas']['CreateChargeRequest']
 
-export interface UpdateChargePayload {
-  description?: string | null
-  type?: ApiChargeType
-  amount?: number
-  dueDate?: string
-}
+export type UpdateChargePayload = components['schemas']['UpdateChargeRequest']
 
-export interface RegisterChargePaymentPayload {
-  paidAt: string
-  paymentMethod: string
-  receiptUploadToken?: string
-}
+export type RegisterChargePaymentPayload = components['schemas']['RegisterChargePaymentRequest']
 
-export interface ChargeReasonPayload {
-  reason: string
-}
+export type ChargeReasonPayload = components['schemas']['ChargeReasonRequest']
 
-export interface ListChargesResponse {
-  items: ApiChargeListItem[]
-  totalCount: number
-  statusCounts: ApiChargeStatusCounts
-}
+export type ListChargesResponse = components['schemas']['ChargesResponse']
 
-export interface ChargeResponse {
-  charge: ApiCharge
-}
+export type ChargeResponse = components['schemas']['ChargeResponse']
 
-export interface ApiChargeAuditEvent {
-  id: string
-  action: ApiChargeAuditAction
-  actorType: 'USER' | 'SYSTEM'
-  actorName: string | null
-  changedFields: string[]
-  fromStatus: ApiStoredChargeStatus | null
-  toStatus: ApiStoredChargeStatus | null
-  reason: string | null
-  receipt: ApiChargeReceipt | null
-  createdAt: string
-}
+export type ApiChargeAuditEvent = components['schemas']['ChargeAuditEvent']
 
-export interface ChargeHistoryResponse {
-  events: ApiChargeAuditEvent[]
-}
+export type ChargeHistoryResponse = components['schemas']['ChargeHistoryResponse']
 
-export interface ChargeReceiptUploadAuthorization {
-  uploadUrl: string
-  headers: Record<string, string>
-  uploadToken: string
-  expiresAt: string
-}
+export type ChargeReceiptUploadAuthorization = components['schemas']['ChargeReceiptUploadResponse']
 
-export interface ChargeReceiptDownload {
-  url: string
-  expiresAt: string
-}
+export type ChargeReceiptDownload = components['schemas']['ChargeReceiptDownloadResponse']
 
-export interface FinancialMonthlyTotal {
-  year: number
-  month: number
-  total: number
-}
+export type FinancialMonthlyTotal = components['schemas']['FinancialMonthlyTotal']
 
-export interface FinancialUpcomingCharge {
-  id: string
-  code: string
-  description: string | null
-  payerName: string | null
-  propertyId: string | null
-  propertyTitle: string | null
-  dueDate: string
-  amount: number
-  status: ApiChargeStatus
-}
+export type FinancialUpcomingCharge = components['schemas']['FinancialUpcomingCharge']
 
-export interface FinancialSummary {
-  monthlyReceivable: number
-  overdueTotal: number
-  defaultRatePercentage: number
-  occupancyRatePercentage: number
-  monthlySeries: FinancialMonthlyTotal[]
-  upcomingDues: FinancialUpcomingCharge[]
-}
+export type FinancialSummary = components['schemas']['FinancialSummary']

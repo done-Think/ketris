@@ -23,7 +23,7 @@ export class RegisterChargePaymentUseCase {
   ) {}
 
   async execute(input: RegisterChargePaymentInput): Promise<Charge> {
-    assertCanAccessFinance(input.actorPapel)
+    assertCanAccessFinance(input.actorRole)
 
     const current = await this.chargeRepository.findById(input.actorTenantId, input.chargeId)
     if (!current) throw new ChargeNotFoundError()

@@ -28,11 +28,9 @@ export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetai
 
   const { data: session } = useSession()
 
-  const tenantId = session?.tenantId
-
   const isRenter = session?.role === 'RENTER'
 
-  const ticketQuery = useMaintenanceTicket(tenantId, ticketId)
+  const ticketQuery = useMaintenanceTicket(ticketId)
 
   const ticket = ticketQuery.data
 
@@ -108,17 +106,17 @@ export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetai
           <MaintenanceWorkflowControls ticket={ticket} />
           <MaintenanceSchedule key={ticket.id} ticket={ticket} />
         </Box>
-        {isRenter && ticket.status === 'AGUARDANDO_CONFIRMACAO' && (
+        {isRenter && ticket.status === 'AWAITING_CONFIRMATION' && (
           <Typography variant="body2" color="text.secondary">
             {t('renter.resolutionNotice')}
           </Typography>
         )}
-        {isRenter && ticket.status === 'RESOLVIDO' && !ticket.deletedAt && (
+        {isRenter && ticket.status === 'RESOLVED' && !ticket.deletedAt && (
           <Typography variant="body2" color="text.secondary">
             {t('renter.resolvedNotice')}
           </Typography>
         )}
-        {isRenter && ['CANCELADO', 'FECHADO'].includes(ticket.status) && (
+        {isRenter && ['CANCELED', 'CLOSED'].includes(ticket.status) && (
           <Typography variant="body2" color="text.secondary">
             {t('renter.readOnlyNotice')}
           </Typography>

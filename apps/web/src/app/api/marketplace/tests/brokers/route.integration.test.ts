@@ -20,41 +20,41 @@ describe('GET /api/marketplace/brokers (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária Diretório', slug: `diretorio-corretores-${randomUUID()}` },
+      data: { name: 'Imobiliária Diretório', slug: `diretorio-corretores-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const publishedAgent = await prisma.usuario.create({
+    const publishedAgent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretora Publicada',
+        name: 'Corretora Publicada',
         email: `publicada-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     publishedAgentId = publishedAgent.id
-    await prisma.perfilPublicoCorretor.create({
+    await prisma.brokerPublicProfile.create({
       data: {
-        usuarioId: publishedAgentId,
+        userId: publishedAgentId,
         displayName: `Corretora Publicada ${marker}`,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        publishedAt: new Date(),
       },
     })
 
-    const draftAgent = await prisma.usuario.create({
+    const draftAgent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor Rascunho',
+        name: 'Corretor Rascunho',
         email: `rascunho-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     draftAgentId = draftAgent.id
-    await prisma.perfilPublicoCorretor.create({
-      data: { usuarioId: draftAgentId, displayName: 'Corretor Rascunho', status: 'DRAFT' },
+    await prisma.brokerPublicProfile.create({
+      data: { userId: draftAgentId, displayName: 'Corretor Rascunho', status: 'DRAFT' },
     })
   })
 

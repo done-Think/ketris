@@ -42,14 +42,7 @@ export const confirmEmailChangeSchema = z
   .strict()
   .openapi('ConfirmEmailChange')
 
-export const pendingEmailVerificationResponseSchema = z
-  .object({
-    outcome: z.literal('PENDING_EMAIL_VERIFICATION'),
-    email,
-    tenantId: z.string(),
-    emailSent: z.boolean(),
-  })
-  .openapi('PendingEmailVerificationResponse')
+export { pendingEmailVerificationResponseSchema } from '@server/shared/schemas/email-verification.schema'
 
 export const confirmSignupVerificationResponseSchema = z
   .discriminatedUnion('outcome', [

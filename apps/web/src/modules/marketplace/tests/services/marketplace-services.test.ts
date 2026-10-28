@@ -27,7 +27,7 @@ describe('MarketplaceService', () => {
 
     await expect(
       new MarketplaceService(client()).searchProperties({
-        purpose: 'ALUGUEL',
+        purpose: 'RENT',
         location: '',
         hasParking: true,
         page: 2,
@@ -35,7 +35,7 @@ describe('MarketplaceService', () => {
       }),
     ).resolves.toBe(page)
     expect(http.get).toHaveBeenCalledWith('/marketplace/properties', {
-      params: { purpose: 'ALUGUEL', hasParking: 'true', page: 2, pageSize: 10 },
+      params: { purpose: 'RENT', hasParking: 'true', page: 2, pageSize: 10 },
     })
   })
 

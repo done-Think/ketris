@@ -4,7 +4,7 @@ import type { JWT } from 'next-auth/jwt'
 
 import { authContainer } from '@server/auth/container'
 import { AccountDeactivatedError, InvalidCredentialsError } from '@server/auth/domain/errors'
-import { papelSchema } from '@server/auth/schemas/user.schema'
+import { userRoleSchema } from '@server/auth/schemas/user.schema'
 import { assertUserCanAuthenticate } from '@server/auth/domain/user-access-policy'
 import { platformContainer } from '@server/platform/container'
 import { InvalidPlatformCredentialsError } from '@server/platform/domain/errors'
@@ -35,14 +35,14 @@ export const authOptions: NextAuthOptions = {
 
           return {
             id: user.id,
-            name: user.nome,
+            name: user.name,
             email: user.email,
             image: user.avatarUrl ?? undefined,
             accessToken,
             refreshToken,
             scope: 'tenant',
             tenantId: user.tenantId,
-            role: user.papel,
+            role: user.role,
             sessionVersion: user.sessionVersion ?? 0,
           }
         } catch (error) {
@@ -73,18 +73,18 @@ export const authOptions: NextAuthOptions = {
           )
           const user = await authContainer.userRepository.findById(payload.sub)
 
-          if (!user || !user.ativo) return null
+          if (!user || !user.active) return null
 
           return {
             id: user.id,
-            name: user.nome,
+            name: user.name,
             email: user.email,
             image: user.avatarUrl ?? undefined,
             accessToken: credentials.accessToken,
             refreshToken: credentials.refreshToken,
             scope: 'tenant',
             tenantId: user.tenantId,
-            role: user.papel,
+            role: user.role,
             sessionVersion: payload.sessionVersion ?? 0,
           }
         } catch (error) {
@@ -112,7 +112,7 @@ export const authOptions: NextAuthOptions = {
 
           return {
             id: admin.id,
-            name: admin.nome,
+            name: admin.name,
             email: admin.email,
             accessToken,
             refreshToken,
@@ -143,7 +143,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       if ('papel' in token) {
-        const legacyRole = papelSchema.safeParse(token.papel)
+        const legacyRole = userRoleSchema.safeParse(token.papel)
         if (token.role === undefined && legacyRole.success) token.role = legacyRole.data
         delete token.papel
       }
@@ -165,20 +165,20 @@ export const authOptions: NextAuthOptions = {
           if (
             !currentUser ||
             currentUser.tenantId !== token.tenantId ||
-            currentUser.papel !== token.role ||
-            !papelSchema.safeParse(token.role).success ||
+            currentUser.role !== token.role ||
+            !userRoleSchema.safeParse(token.role).success ||
             (currentUser.sessionVersion ?? 0) !== (token.sessionVersion ?? 0)
           )
             return clearSessionToken(token)
           assertUserCanAuthenticate(currentUser)
-          token.name = currentUser.nome
+          token.name = currentUser.name
           token.email = currentUser.email
           token.picture = currentUser.avatarUrl
           await adoptValidatedSessionTokens(token)
         } else if (token.scope === 'platform' && typeof token.sub === 'string') {
           const admin = await platformContainer.platformAdminRepository.findById(token.sub)
-          if (!admin?.ativo) return clearSessionToken(token)
-          token.name = admin.nome
+          if (!admin?.active) return clearSessionToken(token)
+          token.name = admin.name
           token.email = admin.email
           token.platformRole = admin.role
           await adoptValidatedSessionTokens(token)
@@ -223,7 +223,7 @@ async function adoptValidatedSessionTokens(token: JWT): Promise<void> {
       if (
         claims.sub !== token.sub ||
         claims.tenantId !== token.tenantId ||
-        claims.papel !== token.role ||
+        claims.role !== token.role ||
         (claims.sessionVersion ?? 0) !== (token.sessionVersion ?? 0)
       ) {
         delete token.pendingAccessToken

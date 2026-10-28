@@ -1,7 +1,7 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 import { crmListQuerySchema, crmPaginationSchema } from './pagination.schema'
-export const crmPropertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA', 'AMBOS'])
+export const crmPropertyPurposeSchema = z.enum(['RENT', 'SALE', 'BOTH'])
 
 export const crmPropertySummarySchema = z
   .object({

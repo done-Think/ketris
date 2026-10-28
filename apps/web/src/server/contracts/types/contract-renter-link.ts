@@ -6,6 +6,6 @@ export interface RenterParty {
   userId: string | null
 }
 
-export type RenterAccount = Pick<User, 'id' | 'email' | 'ativo' | 'papel'>
+export type RenterAccount = Pick<User, 'id' | 'email' | 'active' | 'role'>
 
 export type ContractRenterCandidate = RenterAccount & Pick<User, 'tenantId'>

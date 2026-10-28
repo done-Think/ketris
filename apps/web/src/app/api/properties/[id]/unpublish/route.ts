@@ -17,7 +17,7 @@ export const POST = withErrorHandling(
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
       id,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
     })
 
     return NextResponse.json({ property }, { status: 200 })

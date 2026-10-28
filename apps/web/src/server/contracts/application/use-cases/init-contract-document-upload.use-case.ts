@@ -20,7 +20,7 @@ export class InitContractDocumentUploadUseCase {
   ) {}
 
   async execute(input: InitContractDocumentUploadInput) {
-    const permission = resolveContractManageScope(input.actorId, input.actorPapel)
+    const permission = resolveContractManageScope(input.actorId, input.actorRole)
     const scope: ContractReadScope = {
       kind: 'tenant',
       tenantId: input.actorTenantId,

@@ -5,7 +5,7 @@ import { GetCrmPropertyUseCase } from '../../../application/use-cases/get-crm-pr
 import { ListCrmPropertiesUseCase } from '../../../application/use-cases/list-crm-properties.use-case'
 import { OpportunityPropertyNotFoundError } from '../../../domain/errors'
 
-const actor = { actorId: 'agent-1', actorTenantId: 'tenant-1', actorPapel: 'AGENT' as const }
+const actor = { actorId: 'agent-1', actorTenantId: 'tenant-1', actorRole: 'AGENT' as const }
 describe('CRM property catalog use cases', () => {
   it('delegates paged property selection after authorizing staff', async () => {
     const page = {
@@ -21,11 +21,11 @@ describe('CRM property catalog use cases', () => {
   })
   it.each(['RENTER', 'PROPERTY_OWNER'] as const)(
     'refuses property selection by %s',
-    async (actorPapel) => {
+    async (actorRole) => {
       const list = vi.fn()
       const useCase = new ListCrmPropertiesUseCase({ list } as unknown as CrmPropertyCatalog)
       await expect(
-        useCase.execute({ ...actor, actorPapel, filters: { page: 1, pageSize: 10 } }),
+        useCase.execute({ ...actor, actorRole, filters: { page: 1, pageSize: 10 } }),
       ).rejects.toThrow(ForbiddenError)
       expect(list).not.toHaveBeenCalled()
     },

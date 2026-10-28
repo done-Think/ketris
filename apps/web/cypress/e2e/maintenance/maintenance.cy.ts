@@ -92,7 +92,7 @@ describe('Maintenance real workflows', () => {
       expect(response?.body.summary.totalCount).to.eq(6)
       expect(response?.body.summary.urgentCount).to.eq(1)
     })
-    cy.get('button[aria-label="Go to next page"]').filter(':visible').click()
+    cy.get('button[aria-label="Ir para a próxima página"]').filter(':visible').click()
     cy.wait('@tickets').then(({ request, response }) => {
       expect(request.url).to.include('page=2')
       expect(response?.body.items).to.have.length(1)
@@ -176,13 +176,13 @@ describe('Maintenance real workflows', () => {
     cy.wait('@action').its('response.statusCode').should('eq', 200)
     cy.contains('button', 'Finalizar chamado').click()
     confirm()
-    cy.wait('@action').its('response.body.ticket.status').should('eq', 'RESOLVIDO')
+    cy.wait('@action').its('response.body.ticket.status').should('eq', 'RESOLVED')
     cy.then(() => cy.task<MaintenanceEvidence>('readMaintenanceEvidence', fixture!.ticketId)).then(
       (result) => {
         expect(result.attachmentCount).to.eq(1)
         expect(result.uploadId).to.be.a('string')
         expect(result.providerId).to.be.a('string')
-        expect(result.status).to.eq('RESOLVIDO')
+        expect(result.status).to.eq('RESOLVED')
       },
     )
   })

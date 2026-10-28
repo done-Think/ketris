@@ -1,4 +1,7 @@
-import type { RegisterRequestDTO, RegisterResponseDTO } from '@server/registration/types/http'
+import type {
+  RegisterRequestDTO,
+  RegisterResponseDTO,
+} from '@shared/types/generated/registration/http'
 
 import { BaseService } from '@shared/lib/api/base-service'
 

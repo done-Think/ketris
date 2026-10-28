@@ -16,7 +16,7 @@ export const GET = withErrorHandling(
     const history = await contractsContainer.listContractHistoryUseCase.execute({
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       contractId: id,
       ...query,
     })

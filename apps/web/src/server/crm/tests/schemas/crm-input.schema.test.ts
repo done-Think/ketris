@@ -23,7 +23,7 @@ const lead = {
   phone: '11999999999',
   interest: 'Apartamento',
   budget: 'Sob consulta, até 2 mil',
-  source: 'SITE',
+  source: 'WEBSITE',
 }
 
 describe('CRM request validation', () => {
@@ -46,7 +46,7 @@ describe('CRM request validation', () => {
     const terms = {
       contractTermMonths: 30,
       desiredStartDate: '2030-02-28',
-      guaranteeType: 'CAUCAO',
+      guaranteeType: 'DEPOSIT',
       specialConditions: ['Pets, mediante vistoria', 'Desconto inicial\nRevisar em janeiro'],
     }
     const result = createOpportunityRequestSchema.parse({ ...opportunity, ...terms })

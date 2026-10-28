@@ -66,13 +66,13 @@ export type DashboardProperty = {
     parkingSpaces: string
     area: string
     condominium: string
-    iptu: string
+    propertyTax: string
   }
   pricing: {
     rent: string
     sale: string
     condominium: string
-    iptu: string
+    propertyTax: string
     administrationFee: string
     securityDeposit: string
     lastAdjustment: string
@@ -162,14 +162,14 @@ export type CreatePropertyValuesStepFieldsProps = {
 }
 
 export type PropertyValueFieldName =
-  'mainValue' | 'rentalValue' | 'condominium' | 'iptu' | 'negotiationTerm'
+  'mainValue' | 'rentalValue' | 'condominium' | 'propertyTax' | 'negotiationTerm'
 
 export type PropertyValueFieldLabel =
   | 'referenceValue'
   | 'rentValue'
   | 'saleValue'
   | 'condominium'
-  | 'iptu'
+  | 'propertyTax'
   | 'securityDeposit'
   | 'commission'
   | 'commercialTerms'

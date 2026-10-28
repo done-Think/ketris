@@ -286,7 +286,8 @@
     },
     "namePlaceholder": "E.g. Horizon Real Estate",
     "slugLabel": "Identifier (slug)",
-    "slugPlaceholder": "horizon-real-estate"
+    "slugPlaceholder": "horizon-real-estate",
+    "administrator": "Administrator"
   },
   "table": {
     "first": "First page",
@@ -442,5 +443,8 @@
     "createSuccess": "Account {name} created.",
     "createError": "Unable to create the account. Please try again.",
     "forbidden": "Only administrators with the Admin role can create accounts."
+  },
+  "errors": {
+    "lastPlatformAdmin": "Keep at least one active administrator on the platform."
   }
 }

@@ -39,7 +39,7 @@ export function OpportunityCard({
   const propertyTitle = property?.title ?? t('propertyReference', { id: opportunity.propertyId })
   const propertyLocation = getPropertyLocation(property, t('propertyUnavailable'))
   const value =
-    property?.purpose === 'ALUGUEL'
+    property?.purpose === 'RENT'
       ? format.money(opportunity.proposedValue, true)
       : format.money(opportunity.proposedValue)
 

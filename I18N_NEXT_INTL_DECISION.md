@@ -1,377 +1,71 @@
-# Por que usar next-intl no Ketris
+# Internacionalização, rotas e SEO do Ketris
 
-Data: 2026-08-21
+Decisão atualizada em 27/10/2026. Esta referência substitui a proposta anterior de prefixos `as-needed`.
 
-Este documento explica a decisao de usar `next-intl` no Ketris e define como vamos traduzir textos e rotas sem quebrar o padrao interno do projeto.
+O projeto usa Next.js App Router e `next-intl`. Os idiomas são `pt-BR`, `en-US` e `es-ES`. Português é o idioma padrão. A moeda dos valores imobiliários continua sendo BRL, e as regras de data de negócio usam `America/Sao_Paulo`, independentemente do idioma da interface.
 
-## Decisao atual
+## Fonte única das rotas
 
-Usaremos `next-intl` com:
+[routing.ts](apps/web/src/i18n/routing.ts) define idiomas, prefixos, cookie e `pathnames`. O modo de prefixo é **`always`**:
 
-- pastas internas em ingles
-- pathnames canonicos em ingles
-- URLs publicas localizadas por idioma
-- textos, metadata, validacoes e formatos traduzidos por locale
+| Idioma  | Prefixo | Imóveis          | Corretores       | Imobiliárias        |
+| ------- | ------- | ---------------- | ---------------- | ------------------- |
+| `pt-BR` | `/pt`   | `/pt/imoveis`    | `/pt/corretores` | `/pt/imobiliarias`  |
+| `en-US` | `/en`   | `/en/properties` | `/en/brokers`    | `/en/agencies`      |
+| `es-ES` | `/es`   | `/es/inmuebles`  | `/es/corredores` | `/es/inmobiliarias` |
 
-Exemplo:
+As pastas e os pathnames internos permanecem em inglês, como `/properties/[id]`. As rotas públicas do marketplace com finalidade de SEO possuem URLs traduzidas. Login, cadastro, convites, recuperação de senha e áreas privadas mantêm o mesmo pathname interno em todos os idiomas; apenas o prefixo muda. A agenda usa `/dashboard/agenda` em todos os idiomas. A URL anterior `/en/dashboard/schedule` redireciona permanentemente para `/en/dashboard/agenda`.
 
-| Idioma | URL publica | Pathname canonico interno | Pasta do projeto |
-| --- | --- | --- | --- |
-| Portugues | `/imoveis` | `/properties` | `app/[locale]/properties` |
-| Ingles | `/en/properties` | `/properties` | `app/[locale]/properties` |
-| Portugues | `/corretores` | `/brokers` | `app/[locale]/brokers` |
-| Ingles | `/en/brokers` | `/brokers` | `app/[locale]/brokers` |
+[navigation.ts](apps/web/src/i18n/navigation.ts) exporta `Link`, `redirect`, `getPathname`, `usePathname` e `useRouter`. Componentes usam essas funções para navegar; não concatenam prefixos manualmente. O arquivo duplicado `locale-prefix.ts` foi removido.
 
-Isso atende aos dois objetivos:
+O seletor de idioma mantém o pathname interno, parâmetros dinâmicos, filtros repetidos da query e fragmento. [current-route.ts](apps/web/src/i18n/current-route.ts) valida o contexto atual e usa `getPathname` do `next-intl` para gerar a URL. A navegação usa o router do Next para preservar também o fragmento, omitido pelo compilador de URLs da versão instalada do `next-intl`; o middleware atualiza o cookie pelo prefixo de idioma. Não há uma segunda tabela de traduções de URL.
 
-- o usuario `pt-BR` entende melhor onde esta pela URL
-- o projeto continua padronizado com pastas e rotas canonicas em ingles
+## Mensagens e tipos
 
-## Por que usar next-intl
+Os catálogos ficam em `apps/web/src/i18n/messages/<locale>/<namespace>.json`. `AppConfig.Messages` usa a estrutura do catálogo português como contrato de tipos. Chaves dinâmicas são uniões literais ou `TranslationKey<'namespace'>`; uma string arbitrária não é uma chave de tradução válida.
 
-`next-intl` e uma biblioteca feita para internacionalizacao no Next.js moderno, incluindo App Router.
+O teste de paridade em [message-parity.test.ts](apps/web/src/i18n/tests/message-parity.test.ts) compara as chaves dos três idiomas e os parâmetros de interpolação a partir da árvore ICU. Textos traduzidos dos ramos de plural não são confundidos com nomes de parâmetros. Esse teste faz parte da suíte unitária executada pelo CI.
 
-Ela resolve:
+`validation.json` reúne mensagens comuns de e-mail, credenciais e tamanho. Os schemas compartilhados recebem tradutores com as chaves que realmente consomem. Login, recuperação de senha e login da plataforma usam o catálogo comum; mensagens específicas de domínio continuam nos namespaces do módulo.
 
-- traducao em Server Components
-- traducao em Client Components
-- provider para React
-- mensagens organizadas por namespace
-- formatacao de data
-- formatacao de numeros
-- pluralizacao
-- interpolacao
-- metadata localizada
-- roteamento localizado com `pathnames`
-- integracao com request do Next
-- troca de idioma integrada com navegacao
+## Mensagens enviadas ao navegador
 
-Sem ela, teriamos que criar e manter manualmente:
+`getMessages()` pode carregar o catálogo completo no servidor. O layout raiz envia somente `common` ao navegador. [ScopedMessages](apps/web/src/i18n/scoped-messages.tsx) seleciona os namespaces usados por cada grupo ou módulo antes de renderizar um provider aninhado:
 
-- loader de mensagens
-- contexto React de idioma
-- hooks de traducao
-- formatadores
-- integracao server/client
-- persistencia de preferencia
-- fallback de idioma
-- padrao para validacoes
-- padrao para metadata
-- mapeamento entre URL publica localizada e rota interna
+- Marketplace público: `marketplace` e `common`.
+- Auth: `auth`, `validation` e os trechos compartilhados do cabeçalho, rodapé e perfil.
+- Dashboard: mensagens compartilhadas da navegação, perfil e notificações; cada módulo acrescenta seu próprio namespace.
+- Plataforma: `platform`, `common` e o trecho de perfil compartilhado.
 
-Isso aumentaria a chance de cada modulo implementar i18n de um jeito diferente.
+O seletor faz cópias dos trechos escolhidos e não altera os catálogos de outra rota. A seleção inclui mensagens dos componentes compartilhados presentes na página. Um novo componente que usa outro namespace deve acrescentá-lo ao layout do módulo.
 
-## A duvida principal
+O tema Material UI, os textos do Data Grid e os textos do seletor de datas acompanham o locale. O adapter Day.js usa `pt-br`, `en` ou `es`. Cores e demais preferências de marca continuam partindo do tema compartilhado.
 
-Se o usuario escolhe o idioma no client side, por que o server side precisa saber o idioma?
+## Metadata e indexação
 
-Porque no Next.js App Router muitas partes da tela podem ser renderizadas no servidor antes do JavaScript do navegador executar.
+[seo.ts](apps/web/src/i18n/seo.ts) deriva URLs absolutas de `NEXT_PUBLIC_APP_URL` e usa os mesmos `pathnames` da navegação. Home, listas e detalhes públicos publicam canonical, alternates dos três idiomas e `x-default`. A URL preferida da imobiliária usa nome normalizado e CRECI, com fallback para ID nos registros legados que não têm esses dados.
 
-Exemplos:
+As áreas privadas, páginas de autenticação e previews recebem `robots: { index: false, follow: false }`. O `robots.txt` também exclui esses caminhos e a API. Essas regras de indexação complementam a autorização do aplicativo.
 
-- Server Components
-- layouts
-- pages
-- metadata
-- mensagens renderizadas no primeiro carregamento
-- validacoes usadas em server actions
-- formatacao inicial de datas e moedas
+A indexação pública só é habilitada com `NEXT_PUBLIC_ENV=production`, fora de um deploy Vercel Preview e fora de hosts locais. Staging e desenvolvimento não anunciam sitemaps aos crawlers.
 
-Se o servidor nao sabe o idioma, ele renderiza uma versao inicial em um idioma e o client troca depois. Isso pode causar:
+## Sitemaps paginados
 
-- flicker visual
-- HTML inicial com texto errado
-- problemas de hidratacao
-- metadata errada
-- pior SEO
-- duplicacao de logica entre server e client
-- mais JavaScript no browser
+`/sitemap.xml` lista as quatro rotas públicas principais nos três idiomas. Em produção, `robots.txt` anuncia também os shards de detalhes em `/sitemaps/<properties|brokers|agencies>/<pagina>.xml`.
 
-Entao a escolha pode acontecer em um componente client side, mas ela precisa navegar ou persistir a preferencia de forma que o proximo request seja renderizado no idioma correto pelo servidor.
+Cada shard busca no máximo 1.000 registros e emite no máximo 3.000 URLs, mantendo alternates de idioma. Propriedades devem estar publicadas. Perfis públicos seguem os mesmos predicados de elegibilidade das APIs: publicação, usuário ativo e aprovado quando aplicável e tenant permitido. A leitura dinâmica evita manter perfis inelegíveis em um cache de sitemap.
 
-Fluxo esperado:
+Os leitores de registros são executados na requisição. Não há consulta ao banco em `generateStaticParams` durante o build. IDs de página inválidos ou fora da quantidade existente retornam 404.
 
-```txt
-1. Usuario acessa /imoveis
-2. Middleware identifica pt-BR pela URL sem prefixo
-3. Server renderiza textos, metadata e formatos em pt-BR
-4. Usuario escolhe English no seletor
-5. App navega para /en/properties
-6. Server renderiza a mesma pagina canonica com locale en-US
+## Verificação
+
+A implementação tem testes para a seleção do payload de mensagens, paridade de chaves e parâmetros ICU, canonical/hreflang, regras de indexação, navegação com parâmetros e partição dos sitemaps. As suítes existentes de metadata e navegação continuam relevantes.
+
+```sh
+npm run test:run -w @ketris/web -- src/i18n/tests/ --maxWorkers=1 --minWorkers=1
+npm run typecheck
+npm run lint
+npm run build
 ```
 
-## Como o Next entende `/imoveis` se a pasta e `properties`
-
-O Next usa as pastas para definir a estrutura interna. O `next-intl` adiciona uma camada de mapeamento chamada `pathnames`.
-
-Exemplo conceitual:
-
-```ts
-export const routing = defineRouting({
-  locales: ['pt-BR', 'en-US'],
-  defaultLocale: 'pt-BR',
-  localePrefix: {
-    mode: 'as-needed',
-    prefixes: {
-      'en-US': '/en',
-    },
-  },
-  pathnames: {
-    '/properties': {
-      'pt-BR': '/imoveis',
-      'en-US': '/properties',
-    },
-    '/brokers': {
-      'pt-BR': '/corretores',
-      'en-US': '/brokers',
-    },
-    '/agencies': {
-      'pt-BR': '/imobiliarias',
-      'en-US': '/agencies',
-    },
-  },
-})
-```
-
-A pasta continua em ingles:
-
-```txt
-apps/web/src/app/[locale]/properties/page.tsx
-```
-
-Mas a URL em portugues pode ser:
-
-```txt
-/imoveis
-```
-
-E a URL em ingles:
-
-```txt
-/en/properties
-```
-
-O mapeamento faz a ponte entre URL publica localizada e pathname interno.
-
-## Por que traduzir URLs publicas
-
-Traduzir URL publica faz sentido para o marketplace porque:
-
-- melhora clareza para usuarios `pt-BR`
-- melhora leitura e compartilhamento de links
-- melhora SEO por idioma
-- evita uma experiencia misturada, como interface em portugues com URL `/properties`
-- permite preservar URLs antigas em portugues enquanto o codigo interno fica em ingles
-
-## Onde traduzir rotas
-
-Traduzir principalmente rotas publicas:
-
-| Pathname canonico | PT-BR | EN-US |
-| --- | --- | --- |
-| `/properties` | `/imoveis` | `/properties` |
-| `/brokers` | `/corretores` | `/brokers` |
-| `/agencies` | `/imobiliarias` | `/agencies` |
-
-Rotas de produto interno podem ser avaliadas caso a caso:
-
-| Area | Recomendacao |
-| --- | --- |
-| Marketplace publico | Traduzir URLs |
-| Auth publico | Pode usar prefixo por locale, mas pathname pode continuar igual |
-| Dashboard | Manter canonico em ingles; traduzir URL so se houver ganho claro |
-| CRM | Manter canonico em ingles |
-| Platform | Manter canonico em ingles |
-| Backoffice | Manter canonico em ingles |
-| API | Nao localizar |
-
-## Por que nao fazer apenas client side
-
-Uma abordagem apenas client side seria algo como:
-
-```txt
-Renderiza tudo em portugues
-Depois o React carrega
-Depois le localStorage
-Depois troca os textos para ingles
-```
-
-Isso parece simples, mas traz problemas:
-
-| Problema | Impacto |
-| --- | --- |
-| Primeiro paint no idioma errado | Experiencia ruim |
-| Metadata nao traduzida no servidor | SEO pior |
-| Server Components sem traducoes | Perde parte do beneficio do App Router |
-| Duplicacao de dicionarios | Mais manutencao |
-| Validacao espalhada | Forms ficam inconsistentes |
-| Hydration mismatch possivel | Bugs dificeis de rastrear |
-
-O `next-intl` evita isso porque funciona tanto no servidor quanto no cliente.
-
-## Por que o arquivo `shared/i18n/pt-br.ts` nao e o melhor caminho
-
-O commit recente criou um arquivo:
-
-```txt
-apps/web/src/shared/i18n/pt-br.ts
-```
-
-Esse arquivo centraliza alguns textos em portugues, mas ele nao resolve internacionalizacao de verdade.
-
-Problemas:
-
-- so existe `pt-br`
-- nao integra com Server Components
-- nao integra com metadata
-- nao integra com locale do request
-- nao troca idioma de verdade
-- nao define fallback
-- nao define formato de data/moeda
-- nao mapeia URLs localizadas
-- incentiva imports diretos de texto em config/data
-- cria uma arquitetura paralela ao `next-intl`
-
-Ele pode servir como fonte temporaria para migrar textos existentes, mas nao deve ser expandido como padrao da aplicacao.
-
-## E o seletor de idioma no client?
-
-O seletor de idioma continua sendo um componente client side, porque o usuario clica nele.
-
-Mas ele nao deve apenas fazer:
-
-```txt
-setSelectedLanguage('en')
-```
-
-Isso muda so o estado visual daquele componente.
-
-O comportamento correto e:
-
-```txt
-1. Usuario seleciona English
-2. App usa a navegacao do next-intl para trocar locale
-3. Usuario vai de /imoveis para /en/properties
-4. Server e client passam a usar en-US
-```
-
-Assim o idioma escolhido afeta a aplicacao inteira, nao apenas o menu.
-
-## O que muda no plano original
-
-O plano precisa seguir este direcionamento:
-
-- usar `/en` para o locale ingles
-- manter `pt-BR` sem prefixo quando possivel
-- usar `pathnames` para URLs publicas traduzidas
-- manter pastas e pathnames canonicos em ingles
-- usar `next-intl` para textos e formatos
-- usar provider para client components
-- usar request config para server components
-- usar middleware/config do `next-intl` para resolver locale pela URL
-
-## Padrao recomendado para mensagens
-
-Mensagens ficam em:
-
-```txt
-apps/web/src/i18n/messages
-├── en-US
-│   ├── common.json
-│   ├── auth.json
-│   ├── marketplace.json
-│   └── validation.json
-└── pt-BR
-    ├── common.json
-    ├── auth.json
-    ├── marketplace.json
-    └── validation.json
-```
-
-Componentes nao devem importar texto assim:
-
-```ts
-import { publicMarketplaceText } from '@shared/i18n/pt-br'
-```
-
-Componentes devem usar traducoes do `next-intl`.
-
-Exemplo:
-
-```ts
-const t = useTranslations('marketplace.header')
-
-return <Button>{t('announceProperty')}</Button>
-```
-
-## Padrao recomendado para configs
-
-Configs nao devem guardar label final em portugues.
-
-Evitar:
-
-```ts
-export const navigationItems = [
-  { label: 'Comprar', href: '/properties?purpose=buy' },
-]
-```
-
-Preferir:
-
-```ts
-export const navigationItems = [
-  { labelKey: 'buy', href: '/properties?purpose=buy' },
-]
-```
-
-O componente resolve:
-
-```ts
-const t = useTranslations('marketplace.navigation')
-
-navigationItems.map((item) => t(item.labelKey))
-```
-
-## Padrao recomendado para formularios
-
-Formularios continuam usando:
-
-- React Hook Form
-- Zod
-- validators do modulo
-- tipos no `types` do modulo
-
-Mensagens de validacao devem ser traduzidas por chave ou por schema factory.
-
-Exemplo conceitual:
-
-```ts
-export function createLoginSchema(t: (key: string) => string) {
-  return z.object({
-    email: z.string().email(t('email.invalid')),
-  })
-}
-```
-
-## Decisao final
-
-Vamos usar `next-intl` porque ele resolve i18n de forma consistente no App Router, tanto no servidor quanto no cliente.
-
-Vamos traduzir URLs publicas porque isso melhora a experiencia do usuario `pt-BR` e ajuda SEO.
-
-Para o Ketris, o caminho certo e:
-
-```txt
-Pastas em ingles + URLs publicas localizadas + textos traduzidos por next-intl
-```
-
-Essa decisao evita uma arquitetura paralela de dicionarios manuais e evita que o seletor de idioma seja apenas visual.
-
-## Fontes oficiais
-
-- next-intl Request Configuration: https://next-intl.dev/docs/usage/configuration
-- next-intl Server and Client Components: https://next-intl.dev/docs/environments/server-client-components
-- next-intl Routing Configuration: https://next-intl.dev/docs/routing/configuration
-- next-intl Middleware: https://next-intl.dev/docs/routing/middleware
-- Next.js Internationalization Guide: https://nextjs.org/docs/app/guides/internationalization
-
+A validação de deploy deve conferir o domínio configurado, o ambiente de indexação, o redirect legado, os links de idiomas e a retirada de um perfil inelegível das APIs e dos sitemaps. Passar nos testes locais não comprova o estado publicado em staging ou produção.

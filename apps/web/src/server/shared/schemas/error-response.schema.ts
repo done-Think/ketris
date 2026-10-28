@@ -6,7 +6,16 @@ export const errorResponseSchema = z
     error: z.object({
       code: z.string(),
       message: z.string(),
-      issues: z.array(z.object({ path: z.string(), message: z.string() })).optional(),
+      issues: z
+        .array(
+          z.object({
+            path: z.string(),
+            message: z.string(),
+            code: z.string().optional(),
+            params: z.record(z.unknown()).optional(),
+          }),
+        )
+        .optional(),
     }),
   })
   .openapi('ErrorResponse')

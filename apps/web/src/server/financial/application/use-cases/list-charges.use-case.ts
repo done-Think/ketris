@@ -12,11 +12,11 @@ import type { ChargeRepository } from '../ports/charge-repository.port'
 
 const emptyStatusCounts: ChargeStatusCounts = {
   ALL: 0,
-  PENDENTE: 0,
-  ATRASADA: 0,
-  PAGA: 0,
-  AGENDADA: 0,
-  CANCELADA: 0,
+  PENDING: 0,
+  OVERDUE: 0,
+  PAID: 0,
+  SCHEDULED: 0,
+  CANCELED: 0,
 }
 
 export class ListChargesUseCase {
@@ -26,10 +26,10 @@ export class ListChargesUseCase {
   ) {}
 
   async execute(input: ListChargesInput): Promise<ChargeListResult<ChargeListItem>> {
-    const { actorId, actorTenantId, actorPapel, ...filters } = input
-    const scope = resolveChargeReadScope({ actorId, actorTenantId, actorPapel })
+    const { actorId, actorTenantId, actorRole, ...filters } = input
+    const scope = resolveChargeReadScope({ actorId, actorTenantId, actorRole })
 
-    if (scope.kind === 'renter' && filters.type === 'A_PAGAR') {
+    if (scope.kind === 'renter' && filters.type === 'PAYABLE') {
       return { items: [], totalCount: 0, statusCounts: emptyStatusCounts }
     }
 

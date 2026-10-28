@@ -21,32 +21,32 @@ describe('password recovery repositories (integration)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Recovery fixture', slug: `recovery-${randomUUID()}` },
+      data: { name: 'Recovery fixture', slug: `recovery-${randomUUID()}` },
     })
     const otherTenant = await prisma.tenant.create({
-      data: { nome: 'Other recovery fixture', slug: `recovery-other-${randomUUID()}` },
+      data: { name: 'Other recovery fixture', slug: `recovery-other-${randomUUID()}` },
     })
     tenantId = tenant.id
     otherTenantId = otherTenant.id
-    const user = await prisma.usuario.create({
+    const user = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Recovery fixture',
+        name: 'Recovery fixture',
         email: mailbox,
-        senhaHash: 'original',
-        papel: 'AGENT',
-        ativo: false,
-        emailVerificadoEm: null,
-        vinculoAprovadoEm: null,
+        passwordHash: 'original',
+        role: 'AGENT',
+        active: false,
+        emailVerifiedAt: null,
+        membershipApprovedAt: null,
       },
     })
-    const other = await prisma.usuario.create({
+    const other = await prisma.user.create({
       data: {
         tenantId: otherTenantId,
-        nome: 'Other recovery fixture',
+        name: 'Other recovery fixture',
         email: mailbox,
-        senhaHash: 'other-original',
-        papel: 'OWNER',
+        passwordHash: 'other-original',
+        role: 'OWNER',
       },
     })
     userId = user.id
@@ -55,13 +55,13 @@ describe('password recovery repositories (integration)', () => {
   beforeEach(async () => {
     await prisma.emailOwnershipCode.deleteMany({ where: { email: mailbox } })
     await prisma.refreshToken.deleteMany({ where: { userId: { in: [userId, otherUserId] } } })
-    await prisma.usuario.update({
+    await prisma.user.update({
       where: { id: userId },
-      data: { senhaHash: 'original', versaoSessao: 0 },
+      data: { passwordHash: 'original', sessionVersion: 0 },
     })
-    await prisma.usuario.update({
+    await prisma.user.update({
       where: { id: otherUserId },
-      data: { senhaHash: 'other-original', versaoSessao: 0 },
+      data: { passwordHash: 'other-original', sessionVersion: 0 },
     })
   })
   afterAll(async () => {
@@ -161,15 +161,15 @@ describe('password recovery repositories (integration)', () => {
         passwordHash: 'new-hash',
       }),
     ).toBe(true)
-    const updated = await prisma.usuario.findUniqueOrThrow({ where: { id: userId } })
+    const updated = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
     expect(updated).toMatchObject({
-      senhaHash: 'new-hash',
-      versaoSessao: 1,
-      emailVerificadoEm: null,
-      ativo: false,
-      vinculoAprovadoEm: null,
+      passwordHash: 'new-hash',
+      sessionVersion: 1,
+      emailVerifiedAt: null,
+      active: false,
+      membershipApprovedAt: null,
     })
-    expect((await prisma.usuario.findUniqueOrThrow({ where: { id: otherUserId } })).senhaHash).toBe(
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: otherUserId } })).passwordHash).toBe(
       'other-original',
     )
     expect(await prisma.refreshToken.count({ where: { userId, revokedAt: null } })).toBe(0)
@@ -190,7 +190,7 @@ describe('password recovery repositories (integration)', () => {
       accounts.resetPassword({ ...input, passwordHash: 'second-hash' }),
     ])
     expect(resets.filter(Boolean)).toHaveLength(1)
-    expect((await prisma.usuario.findUniqueOrThrow({ where: { id: userId } })).versaoSessao).toBe(1)
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: userId } })).sessionVersion).toBe(1)
     expect(await accounts.resetPassword(input)).toBe(false)
     expect(
       await accounts.resetPassword({ ...input, tenantId: otherTenantId, sessionVersion: 1 }),
@@ -232,9 +232,9 @@ describe('password recovery repositories (integration)', () => {
     } finally {
       fail.mockRestore()
     }
-    expect(await prisma.usuario.findUniqueOrThrow({ where: { id: userId } })).toMatchObject({
-      senhaHash: 'original',
-      versaoSessao: 0,
+    expect(await prisma.user.findUniqueOrThrow({ where: { id: userId } })).toMatchObject({
+      passwordHash: 'original',
+      sessionVersion: 0,
     })
   })
 })

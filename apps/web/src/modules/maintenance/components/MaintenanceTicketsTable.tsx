@@ -38,16 +38,18 @@ export function MaintenanceTicketsTable({
       <Table size="small" sx={maintenanceStyles.tableSx}>
         <TableHead>
           <TableRow>
-            {[
-              'ticket',
-              'property',
-              'category',
-              'priority',
-              'tenant',
-              'openedAt',
-              'status',
-              'actions',
-            ].map((column) => (
+            {(
+              [
+                'ticket',
+                'property',
+                'category',
+                'priority',
+                'tenant',
+                'openedAt',
+                'status',
+                'actions',
+              ] as const
+            ).map((column) => (
               <TableCell
                 key={column}
                 align={column === 'actions' ? 'center' : undefined}

@@ -13,15 +13,17 @@ export function CreatePropertyAddressStepFields({
 
   return (
     <Box sx={styles.box}>
-      {[
-        ['street', 'street'],
-        ['number', 'number'],
-        ['complement', 'complement'],
-        ['neighborhood', 'neighborhood'],
-        ['city', 'city'],
-        ['state', 'state'],
-        ['zipCode', 'zipCode'],
-      ].map(([name, label]) => (
+      {(
+        [
+          ['street', 'street'],
+          ['number', 'number'],
+          ['complement', 'complement'],
+          ['neighborhood', 'neighborhood'],
+          ['city', 'city'],
+          ['state', 'state'],
+          ['zipCode', 'zipCode'],
+        ] as const
+      ).map(([name, label]) => (
         <Controller
           key={name}
           control={control}

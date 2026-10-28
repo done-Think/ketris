@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 
 export interface ContractPartyUserLink {
   partyId: string
@@ -8,7 +8,7 @@ export interface ContractPartyUserLink {
 interface ContractPartyUserLinkActor {
   actorTenantId: string
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
   contractId: string
   partyId: string
 }

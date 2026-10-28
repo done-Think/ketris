@@ -24,13 +24,13 @@ export class RegisterRenterUseCase {
       throw new RegistrationEmailAlreadyInUseError()
     const user = await this.accounts.createMember({
       tenantId: tenant.id,
-      nome: input.fullName,
+      name: input.fullName,
       email: input.email,
-      senhaHash: await this.passwords.hash(input.password),
-      papel: 'RENTER',
+      passwordHash: await this.passwords.hash(input.password),
+      role: 'RENTER',
       pendingApproval: false,
-      telefone: input.phone,
-      termosAceitosEm: new Date(),
+      phone: input.phone,
+      termsAcceptedAt: new Date(),
       createBrokerProfile: false,
     })
     return { email: user.email, tenantId: user.tenantId, pendingApproval: false }

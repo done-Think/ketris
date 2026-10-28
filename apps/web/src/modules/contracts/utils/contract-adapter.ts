@@ -33,13 +33,13 @@ export function mapContractFromApi(
   contract: ApiContract,
   presentation: ContractPresentation,
 ): ContractListItem {
-  const owner = contract.parties.find((party) => party.role === 'LOCADOR')
-  const tenant = contract.parties.find((party) => party.role === 'LOCATARIO')
+  const owner = contract.parties.find((party) => party.role === 'LANDLORD')
+  const tenant = contract.parties.find((party) => party.role === 'RENTER')
 
   return {
     canEdit:
-      ['RASCUNHO', 'EM_REVISAO', 'AGUARDANDO_ASSINATURA'].includes(contract.status) &&
-      !contract.parties.some((party) => party.signatureStatus === 'ASSINADA'),
+      ['DRAFT', 'IN_REVIEW', 'AWAITING_SIGNATURE'].includes(contract.status) &&
+      !contract.parties.some((party) => party.signatureStatus === 'SIGNED'),
     id: contract.id,
     code: contract.code,
     title: contract.property.title ?? contract.propertyId,
@@ -69,7 +69,7 @@ function parseBrDate(value: string): string {
 export function buildCreateContractPayload(
   values: CreateContractFormValues,
 ): CreateContractPayload {
-  const hasGuarantor = values.hasGuarantor || values.guaranteeType === 'FIADOR'
+  const hasGuarantor = values.hasGuarantor || values.guaranteeType === 'GUARANTOR'
 
   return {
     opportunityId: values.opportunityId,

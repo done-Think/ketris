@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@shared/types/user-role'
 
 export type RoleGuardProps = {
-  allowedRoles: readonly Papel[]
+  allowedRoles: readonly UserRole[]
   children: ReactNode
 }

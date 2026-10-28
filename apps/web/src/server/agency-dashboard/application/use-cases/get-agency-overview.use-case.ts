@@ -10,7 +10,7 @@ export class GetAgencyOverviewUseCase {
   ) {}
 
   async execute(input: GetAgencyOverviewInput): Promise<AgencyOverview> {
-    assertCanViewAgencyOverview(input.actorPapel)
+    assertCanViewAgencyOverview(input.actorRole)
 
     const referenceDate = new Date()
 
@@ -35,7 +35,7 @@ export class GetAgencyOverviewUseCase {
       this.repository.getOccupancyPercentage(input.actorTenantId),
       this.financialSummaryProvider.execute({
         actorTenantId: input.actorTenantId,
-        actorPapel: input.actorPapel,
+        actorRole: input.actorRole,
       }),
       this.repository.getTopBrokers(input.actorTenantId),
       this.repository.getRecentActivities(input.actorTenantId),

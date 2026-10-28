@@ -1,6 +1,6 @@
-export type InquiryStatus = 'RASCUNHO' | 'ENVIADA' | 'EM_NEGOCIACAO' | 'ACEITA' | 'RECUSADA'
+export type InquiryStatus = 'DRAFT' | 'SENT' | 'IN_NEGOTIATION' | 'ACCEPTED' | 'REJECTED'
 
-export type GuaranteeType = 'FIADOR' | 'CAUCAO' | 'SEGURO_FIANCA' | 'NENHUMA'
+export type GuaranteeType = 'GUARANTOR' | 'DEPOSIT' | 'SURETY_BOND' | 'NONE'
 
 export interface Inquiry {
   id: string

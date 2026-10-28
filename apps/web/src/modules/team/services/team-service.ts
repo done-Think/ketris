@@ -8,6 +8,15 @@ import type {
   TeamOverview,
   TeamTransferCounts,
   TransferPortfolioPayload,
+  TeamMembershipRequest,
+  TeamMembershipRequestsResponse,
+  ApproveTeamMembershipResponse,
+  TeamGoalHistoryResponse,
+  TeamGoalResponse,
+  TeamPortfolioTransferResponse,
+  TeamInvitationPreviewResponse,
+  AcceptTeamInvitationResponse,
+  ResendTeamInvitationResponse,
 } from '../types/team'
 import type { AppLocale } from '@/i18n/types/locale.types'
 
@@ -18,30 +27,46 @@ class TeamService extends BaseService {
     return this.http.get<TeamOverview>(this.path)
   }
 
+  async membershipRequests(): Promise<TeamMembershipRequest[]> {
+    const users: TeamMembershipRequest[] = []
+    let page = 1
+    while (true) {
+      const result = await this.http.get<TeamMembershipRequestsResponse>('/auth/users', {
+        params: { pendingApproval: true, page, pageSize: 100 },
+      })
+      users.push(...result.users)
+      if (!result.users.length || page * result.pageSize >= result.total) return users
+      page += 1
+    }
+  }
+
+  approveMembership(userId: string): Promise<TeamMembershipRequest> {
+    return this.http
+      .patch<ApproveTeamMembershipResponse>(`/auth/users/${userId}/approve`)
+      .then((response) => response.user)
+  }
+
   goals(memberId: string): Promise<TeamGoalChange[]> {
     return this.http
-      .get<{ goals: TeamGoalChange[] }>(`${this.path}/members/${memberId}/goal`)
+      .get<TeamGoalHistoryResponse>(`${this.path}/members/${memberId}/goal`)
       .then((data) => data.goals)
   }
 
   setGoal(memberId: string, monthlySales: number): Promise<TeamGoalChange> {
     return this.http
-      .put<{ goal: TeamGoalChange }>(`${this.path}/members/${memberId}/goal`, { monthlySales })
+      .put<TeamGoalResponse>(`${this.path}/members/${memberId}/goal`, { monthlySales })
       .then((data) => data.goal)
   }
 
   transfer(memberId: string, payload: TransferPortfolioPayload): Promise<TeamTransferCounts> {
     return this.http
-      .post<{ transferred: TeamTransferCounts }>(
-        `${this.path}/members/${memberId}/transfer`,
-        payload,
-      )
+      .post<TeamPortfolioTransferResponse>(`${this.path}/members/${memberId}/transfer`, payload)
       .then((data) => data.transferred)
   }
 
   deactivate(memberId: string, destinationId: string): Promise<TeamTransferCounts> {
     return this.http
-      .post<{ transferred: TeamTransferCounts }>(`${this.path}/members/${memberId}/deactivate`, {
+      .post<TeamPortfolioTransferResponse>(`${this.path}/members/${memberId}/deactivate`, {
         destinationId,
       })
       .then((data) => data.transferred)
@@ -55,8 +80,8 @@ class TeamService extends BaseService {
     return this.http.post<InviteBrokerResult>(`${this.path}/invitations`, payload)
   }
 
-  resendInvitation(memberId: string, locale: AppLocale): Promise<{ emailDelivered: boolean }> {
-    return this.http.post<{ emailDelivered: boolean }>(
+  resendInvitation(memberId: string, locale: AppLocale): Promise<ResendTeamInvitationResponse> {
+    return this.http.post<ResendTeamInvitationResponse>(
       `${this.path}/invitations/${memberId}/resend`,
       { locale },
     )
@@ -68,14 +93,14 @@ class TeamService extends BaseService {
 
   previewInvitation(token: string): Promise<TeamInvitationPreview> {
     return this.http
-      .get<{ invitation: TeamInvitationPreview }>(`${this.path}/invitations/accept`, {
+      .get<TeamInvitationPreviewResponse>(`${this.path}/invitations/accept`, {
         params: { token },
       })
       .then((data) => data.invitation)
   }
 
-  acceptInvitation(token: string, password: string): Promise<{ email: string }> {
-    return this.http.post<{ email: string }>(`${this.path}/invitations/accept`, {
+  acceptInvitation(token: string, password: string): Promise<AcceptTeamInvitationResponse> {
+    return this.http.post<AcceptTeamInvitationResponse>(`${this.path}/invitations/accept`, {
       token,
       password,
     })

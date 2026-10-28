@@ -17,7 +17,8 @@ export function AgendaOrganizationCard({ item }: AgendaOrganizationCardProps) {
     agendaEventToneStyles[
       item.kind === 'charge' ? 'warning' : item.kind === 'ticketOpened' ? 'info' : 'primary'
     ]
-  const status = t(`${item.kind === 'charge' ? 'chargeStatuses' : 'ticketStatuses'}.${item.status}`)
+  const status =
+    item.kind === 'charge' ? t(`chargeStatuses.${item.status}`) : t(`ticketStatuses.${item.status}`)
 
   return (
     <Box

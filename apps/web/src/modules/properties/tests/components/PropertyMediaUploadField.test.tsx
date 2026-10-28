@@ -29,7 +29,7 @@ describe('PropertyMediaUploadField', () => {
         ? Promise.reject(new Error('storage error'))
         : Promise.resolve({
             url: '/api/properties/media/properties/tenant-1/success.png',
-            type: 'foto',
+            type: 'photo',
           }),
     )
     const { container } = render(
@@ -64,7 +64,7 @@ describe('PropertyMediaUploadField', () => {
         ? new Promise<PropertyMediaInput>((resolve) => {
             finishUpload = resolve
           })
-        : Promise.resolve({ url: '/fast.png', type: 'foto' }),
+        : Promise.resolve({ url: '/fast.png', type: 'photo' }),
     )
     const { container } = render(
       <QueryClientProvider client={new QueryClient()}>
@@ -87,7 +87,7 @@ describe('PropertyMediaUploadField', () => {
       target: { files: [new File(['image'], 'extra.png', { type: 'image/png' })] },
     })
     expect(upload).toHaveBeenCalledTimes(2)
-    await act(async () => finishUpload({ url: '/slow.png', type: 'foto' }))
+    await act(async () => finishUpload({ url: '/slow.png', type: 'photo' }))
     await waitFor(() => expect(input).not.toBeDisabled())
     expect(screen.getAllByRole('button', { name: 'Remover imagem' })).toHaveLength(3)
     expect(container.querySelector('img[src="/existing.png"]')).toBeInTheDocument()

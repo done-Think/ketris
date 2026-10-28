@@ -20,10 +20,10 @@ const opportunity: Opportunity = {
   proposedValue: 2500,
   contractTermMonths: null,
   desiredStartDate: null,
-  guaranteeType: 'NENHUMA',
+  guaranteeType: 'NONE',
   specialConditions: [],
   notes: null,
-  status: 'ENVIADA',
+  status: 'SENT',
   archivedAt: null,
   createdAt: new Date('2026-08-10T00:00:00.000Z'),
   updatedAt: new Date('2026-08-10T00:00:00.000Z'),
@@ -36,7 +36,7 @@ function createDeps(overrides?: {
   const opportunityRepository = {
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(opportunity),
     update:
-      overrides?.update ?? vi.fn().mockResolvedValue({ ...opportunity, status: 'EM_NEGOCIACAO' }),
+      overrides?.update ?? vi.fn().mockResolvedValue({ ...opportunity, status: 'IN_NEGOTIATION' }),
   } as unknown as OpportunityRepository
 
   const activityRepository = {
@@ -58,7 +58,7 @@ describe('UpdateOpportunityUseCase', () => {
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       opportunityId: 'op-1',
       changes: { leadName: 'Maria Silva' },
     })
@@ -82,16 +82,16 @@ describe('UpdateOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         opportunityId: 'op-1',
-        changes: { status: 'ACEITA' },
+        changes: { status: 'ACCEPTED' },
       }),
     ).rejects.toThrow(OpportunityNotFoundError)
     expect(update).not.toHaveBeenCalled()
   })
 
   it('permite uma transição de status válida e registra a mudança na timeline', async () => {
-    const update = vi.fn().mockResolvedValue({ ...opportunity, status: 'EM_NEGOCIACAO' })
+    const update = vi.fn().mockResolvedValue({ ...opportunity, status: 'IN_NEGOTIATION' })
     const deps = createDeps({ update })
     const useCase = new UpdateOpportunityUseCase(
       deps.opportunityRepository,
@@ -101,19 +101,19 @@ describe('UpdateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       actorId: 'user-1',
       actorName: 'Ana',
       opportunityId: 'op-1',
-      changes: { status: 'EM_NEGOCIACAO' },
+      changes: { status: 'IN_NEGOTIATION' },
     })
 
     expect(deps.activityRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         opportunityId: 'op-1',
-        type: 'MUDANCA_STATUS',
-        previousStatus: 'ENVIADA',
-        newStatus: 'EM_NEGOCIACAO',
+        type: 'STATUS_CHANGE',
+        previousStatus: 'SENT',
+        newStatus: 'IN_NEGOTIATION',
         authorId: 'user-1',
         authorName: 'Ana',
       }),
@@ -132,9 +132,9 @@ describe('UpdateOpportunityUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'OWNER',
+        actorRole: 'OWNER',
         opportunityId: 'op-1',
-        changes: { status: 'RASCUNHO' },
+        changes: { status: 'DRAFT' },
       }),
     ).rejects.toThrow(InvalidStatusTransitionError)
     expect(update).not.toHaveBeenCalled()
@@ -151,7 +151,7 @@ describe('UpdateOpportunityUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
       opportunityId: 'op-1',
       changes: { notes: 'Aceita animais.' },
     })
@@ -171,7 +171,7 @@ describe('UpdateOpportunityUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'agent-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       opportunityId: 'op-1',
       changes: { leadName: 'Maria Silva' },
     })
@@ -194,7 +194,7 @@ describe('UpdateOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-2',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         opportunityId: 'op-1',
         changes: { leadName: 'Maria Silva' },
       }),

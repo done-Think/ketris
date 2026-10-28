@@ -1,7 +1,7 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-import { authenticatedUserResponseSchema, tenantMemberPapelSchema } from './user.schema'
+import { authenticatedUserResponseSchema, tenantMemberRoleSchema } from './user.schema'
 
 export const updateUserRequestSchema = z
   .object({
@@ -19,7 +19,7 @@ export const updateUserRequestSchema = z
       .optional(),
     creci: z.string().trim().max(32).nullable().optional(),
     avatarUrl: z.string().min(1).nullable().optional(),
-    role: tenantMemberPapelSchema.optional(),
+    role: tenantMemberRoleSchema.optional(),
   })
   .strict()
   .refine(

@@ -16,11 +16,11 @@ export class TransitionPropertyFromActiveContractUseCase {
       throw new ContractNotFoundError()
     }
 
-    if (contractProperty.contractStatus !== 'ATIVO') {
+    if (contractProperty.contractStatus !== 'ACTIVE') {
       throw new ContractPropertyTransitionError()
     }
 
-    const status: PropertyStatus = contractProperty.finalidade === 'ALUGUEL' ? 'RENTED' : 'SOLD'
+    const status: PropertyStatus = contractProperty.purpose === 'RENT' ? 'RENTED' : 'SOLD'
     const property = await this.propertyRepository.setStatus(
       input.actorTenantId,
       contractProperty.propertyId,

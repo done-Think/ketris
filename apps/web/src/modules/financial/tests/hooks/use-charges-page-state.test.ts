@@ -10,7 +10,7 @@ describe('useChargesPageState', () => {
   it('starts on receivables, all statuses, first page', () => {
     const { result } = renderHook(() => useChargesPageState(false))
     expect(result.current.query).toEqual({
-      type: 'A_RECEBER',
+      type: 'RECEIVABLE',
       status: undefined,
       search: undefined,
       page: 1,
@@ -22,11 +22,11 @@ describe('useChargesPageState', () => {
     const { result } = renderHook(() => useChargesPageState(false))
     act(() => result.current.setPage(3))
     act(() => result.current.setStatus('overdue'))
-    expect(result.current.query).toMatchObject({ status: 'ATRASADA', page: 1 })
+    expect(result.current.query).toMatchObject({ status: 'OVERDUE', page: 1 })
 
     act(() => result.current.setPage(2))
     act(() => result.current.setDirection('payable'))
-    expect(result.current.query).toMatchObject({ type: 'A_PAGAR', status: undefined, page: 1 })
+    expect(result.current.query).toMatchObject({ type: 'PAYABLE', status: undefined, page: 1 })
 
     act(() => result.current.setRowsPerPage(25))
     expect(result.current.query).toMatchObject({ pageSize: 25, page: 1 })
@@ -44,7 +44,7 @@ describe('useChargesPageState', () => {
   it('always asks for receivables when only those are visible', () => {
     const { result } = renderHook(() => useChargesPageState(true))
     act(() => result.current.setDirection('payable'))
-    expect(result.current.query.type).toBe('A_RECEBER')
+    expect(result.current.query.type).toBe('RECEIVABLE')
   })
 
   it('opens and closes dialogs', () => {

@@ -21,70 +21,70 @@ export async function seedTeamFixtures(
   isolated()
   if (!/^[a-z0-9-]+$/.test(suffix)) throw new Error('Identificador inválido.')
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Imobiliária Equipe E2E', slug: slugPrefix + suffix, accountType: 'AGENCY' },
+    data: { name: 'Imobiliária Equipe E2E', slug: slugPrefix + suffix, accountType: 'AGENCY' },
   })
-  const senhaHash = await bcrypt.hash(password, 10)
+  const passwordHash = await bcrypt.hash(password, 10)
   const ownerEmail = 'owner-' + suffix + '@team.example.test'
-  await prisma.usuario.create({
+  await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Gestora Equipe',
+      name: 'Gestora Equipe',
       email: ownerEmail,
-      senhaHash,
-      papel: 'OWNER',
+      passwordHash,
+      role: 'OWNER',
     },
   })
   const sourceName = 'Ana Origem ' + suffix
   const destinationName = 'Bruno Destino ' + suffix
-  const source = await prisma.usuario.create({
+  const source = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: sourceName,
+      name: sourceName,
       email: 'ana-' + suffix + '@team.example.test',
-      telefone: '(41) 99999-1111',
-      senhaHash,
-      papel: 'AGENT',
+      phone: '(41) 99999-1111',
+      passwordHash,
+      role: 'AGENT',
     },
   })
-  await prisma.usuario.create({
+  await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: destinationName,
+      name: destinationName,
       email: 'bruno-' + suffix + '@team.example.test',
-      senhaHash,
-      papel: 'AGENT',
+      passwordHash,
+      role: 'AGENT',
     },
   })
   for (const index of [1, 2, 3]) {
-    await prisma.imovel.create({
+    await prisma.property.create({
       data: {
         tenantId: tenant.id,
-        responsavelId: source.id,
-        titulo: 'Imóvel Equipe ' + index + ' ' + suffix,
-        descricao: 'Imóvel da carteira da corretora de origem.',
-        finalidade: 'VENDA',
-        tipo: 'APARTAMENTO',
-        quartos: 2,
-        banheiros: 1,
-        vagas: 1,
-        areaM2: 70,
-        valor: 400000 + index,
+        responsibleId: source.id,
+        title: 'Imóvel Equipe ' + index + ' ' + suffix,
+        description: 'Imóvel da carteira da corretora de origem.',
+        purpose: 'SALE',
+        type: 'APARTMENT',
+        bedrooms: 2,
+        bathrooms: 1,
+        parkingSpots: 1,
+        areaSqm: 70,
+        price: 400000 + index,
         status: 'PUBLISHED',
       },
     })
   }
-  const property = await prisma.imovel.findFirstOrThrow({
-    where: { tenantId: tenant.id, responsavelId: source.id },
+  const property = await prisma.property.findFirstOrThrow({
+    where: { tenantId: tenant.id, responsibleId: source.id },
   })
-  await prisma.oportunidade.create({
+  await prisma.opportunity.create({
     data: {
       tenantId: tenant.id,
-      imovelId: property.id,
-      responsavelId: source.id,
-      interessadoNome: 'Interessada Equipe',
-      interessadoEmail: 'interessada-' + suffix + '@team.example.test',
-      valorProposto: 390000,
-      status: 'ENVIADA',
+      propertyId: property.id,
+      responsibleId: source.id,
+      interestedName: 'Interessada Equipe',
+      interestedEmail: 'interessada-' + suffix + '@team.example.test',
+      proposedValue: 390000,
+      status: 'SENT',
     },
   })
   const contactedAt = new Date()
@@ -92,14 +92,14 @@ export async function seedTeamFixtures(
     await prisma.lead.create({
       data: {
         tenantId: tenant.id,
-        responsavelId: source.id,
-        nome: 'Lead Equipe ' + index,
-        telefone: '41999990000',
-        interesse: 'Apartamento',
-        orcamento: 'A combinar',
-        origem: 'SITE',
-        estagio: index === 1 ? 'NOVO' : 'EM_CONTATO',
-        primeiroContatoEm: index === 1 ? null : contactedAt,
+        responsibleId: source.id,
+        name: 'Lead Equipe ' + index,
+        phone: '41999990000',
+        interest: 'Apartamento',
+        budget: 'A combinar',
+        source: 'WEBSITE',
+        stage: index === 1 ? 'NEW' : 'IN_CONTACT',
+        firstContactAt: index === 1 ? null : contactedAt,
         createdAt: new Date(contactedAt.getTime() - 30 * 60_000),
       },
     })
@@ -112,9 +112,9 @@ export async function cleanupTeamFixtures(prisma: PrismaClient, tenantIds: strin
   isolated()
   const where = { tenantId: { in: tenantIds }, tenant: { slug: { startsWith: slugPrefix } } }
   await prisma.$transaction([
-    prisma.oportunidade.deleteMany({ where }),
+    prisma.opportunity.deleteMany({ where }),
     prisma.lead.deleteMany({ where }),
-    prisma.imovel.deleteMany({ where }),
+    prisma.property.deleteMany({ where }),
     prisma.tenant.deleteMany({
       where: { id: { in: tenantIds }, slug: { startsWith: slugPrefix } },
     }),
@@ -128,23 +128,23 @@ export async function readTeamEvidence(
 ): Promise<TeamEvidence> {
   isolated()
   const [source, destination, invited] = await Promise.all([
-    prisma.usuario.findFirstOrThrow({
-      where: { tenantId: input.tenantId, nome: input.sourceName },
+    prisma.user.findFirstOrThrow({
+      where: { tenantId: input.tenantId, name: input.sourceName },
     }),
-    prisma.usuario.findFirstOrThrow({
-      where: { tenantId: input.tenantId, nome: input.destinationName },
+    prisma.user.findFirstOrThrow({
+      where: { tenantId: input.tenantId, name: input.destinationName },
     }),
-    prisma.usuario.findFirst({
+    prisma.user.findFirst({
       where: { tenantId: input.tenantId, email: input.invitedEmail },
-      include: { conviteEquipe: true },
+      include: { teamInvitation: true },
     }),
   ])
-  const count = (model: 'imovel' | 'lead' | 'oportunidade', responsavelId: string) =>
-    model === 'imovel'
-      ? prisma.imovel.count({ where: { tenantId: input.tenantId, responsavelId } })
+  const count = (model: 'property' | 'lead' | 'opportunity', responsibleId: string) =>
+    model === 'property'
+      ? prisma.property.count({ where: { tenantId: input.tenantId, responsibleId } })
       : model === 'lead'
-        ? prisma.lead.count({ where: { tenantId: input.tenantId, responsavelId } })
-        : prisma.oportunidade.count({ where: { tenantId: input.tenantId, responsavelId } })
+        ? prisma.lead.count({ where: { tenantId: input.tenantId, responsibleId } })
+        : prisma.opportunity.count({ where: { tenantId: input.tenantId, responsibleId } })
   const [
     sourceProperties,
     sourceLeads,
@@ -155,30 +155,30 @@ export async function readTeamEvidence(
     goal,
     transfers,
   ] = await Promise.all([
-    count('imovel', source.id),
+    count('property', source.id),
     count('lead', source.id),
-    count('imovel', destination.id),
+    count('property', destination.id),
     count('lead', destination.id),
-    count('oportunidade', source.id),
-    count('oportunidade', destination.id),
-    prisma.metaCorretor.findFirst({
-      where: { tenantId: input.tenantId, usuarioId: source.id },
+    count('opportunity', source.id),
+    count('opportunity', destination.id),
+    prisma.brokerGoal.findFirst({
+      where: { tenantId: input.tenantId, userId: source.id },
       orderBy: { createdAt: 'desc' },
     }),
-    prisma.transferenciaCarteira.count({ where: { tenantId: input.tenantId } }),
+    prisma.portfolioTransfer.count({ where: { tenantId: input.tenantId } }),
   ])
 
   return {
-    sourceActive: source.ativo,
+    sourceActive: source.active,
     sourceProperties,
     sourceLeads,
     destinationProperties,
     destinationLeads,
     sourceOpportunities,
     destinationOpportunities,
-    goal: goal?.vendasMensais ?? null,
+    goal: goal?.monthlySales ?? null,
     transfers,
-    invitedActive: invited ? invited.ativo : null,
-    invitationAccepted: Boolean(invited?.conviteEquipe?.aceitoEm),
+    invitedActive: invited ? invited.active : null,
+    invitationAccepted: Boolean(invited?.teamInvitation?.acceptedAt),
   }
 }

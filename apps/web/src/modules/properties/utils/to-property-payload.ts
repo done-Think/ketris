@@ -40,11 +40,11 @@ export function toPropertyPayload(
     bedrooms: values.bedrooms,
     bathrooms: values.bathrooms,
     parkingSpots: values.parkingSpaces,
-    areaM2: values.area,
+    areaSqm: values.area,
     price: values.mainValue,
     rentalPrice: purpose === 'BOTH' ? values.rentalValue : null,
     condoFee: values.condominium,
-    propertyTax: values.iptu,
+    propertyTax: values.propertyTax,
     address: {
       street: values.street,
       number: values.number,

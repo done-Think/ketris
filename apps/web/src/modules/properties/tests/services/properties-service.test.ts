@@ -8,47 +8,47 @@ import type { Property, PropertyFormValues } from '../../types/property'
 const apiProperty = {
   id: 'property-1',
   tenantId: 'tenant-1',
-  responsavelId: 'user-1',
-  proprietarioId: null,
-  responsavelNome: 'Corretor responsável',
+  responsibleId: 'user-1',
+  ownerId: null,
+  responsibleName: 'Corretor responsável',
   activeContractId: null,
-  anuncio: {
-    comodidades: [],
-    condicoesNegociacao: null,
-    publicarAposRevisao: false,
-    permiteContatoWhatsapp: false,
-    destaque: false,
+  listing: {
+    amenities: [],
+    negotiationTerms: null,
+    publishAfterReview: false,
+    allowWhatsappContact: false,
+    featured: false,
   },
-  titulo: 'Apartamento Jardins',
-  descricao: 'Pronto para morar',
-  finalidade: 'ALUGUEL' as const,
-  tipo: 'APARTAMENTO',
+  title: 'Apartamento Jardins',
+  description: 'Pronto para morar',
+  purpose: 'RENT' as const,
+  type: 'APARTMENT',
   status: 'PUBLISHED' as const,
-  publicadoEm: '2026-09-01T10:00:00.000Z',
+  publishedAt: '2026-09-01T10:00:00.000Z',
   createdAt: '2026-08-01T10:00:00.000Z',
   updatedAt: '2026-09-01T10:00:00.000Z',
-  endereco: {
-    logradouro: 'Alameda Lorena',
-    numero: '1420',
-    complemento: null,
-    bairro: 'Jardins',
-    cidade: 'São Paulo',
-    estado: 'SP',
-    cep: '01000-000',
+  address: {
+    street: 'Alameda Lorena',
+    number: '1420',
+    complement: null,
+    neighborhood: 'Jardins',
+    city: 'São Paulo',
+    state: 'SP',
+    zipCode: '01000-000',
     latitude: null,
     longitude: null,
   },
-  midias: [
+  media: [
     {
       id: 'media-1',
       url: 'https://cdn.ketris.dev/foto.jpg',
-      tipo: 'foto',
-      ordem: 0,
+      type: 'photo',
+      position: 0,
       createdAt: '2026-08-01T10:00:00.000Z',
     },
   ],
-  valores: { valor: 6500, valorAluguel: null, condominio: 1200, iptu: 380 },
-  caracteristicas: { quartos: 3, banheiros: 2, vagas: 2, areaM2: 95 },
+  values: { price: 6500, rentalPrice: null, condoFee: 1200, propertyTax: 380 },
+  characteristics: { bedrooms: 3, bathrooms: 2, parkingSpots: 2, areaSqm: 95 },
 }
 
 const mappedProperty: Property = {
@@ -88,13 +88,13 @@ const mappedProperty: Property = {
     {
       id: 'media-1',
       url: 'https://cdn.ketris.dev/foto.jpg',
-      type: 'foto',
+      type: 'photo',
       order: 0,
       createdAt: '2026-08-01T10:00:00.000Z',
     },
   ],
   values: { price: 6500, rentalPrice: null, condoFee: 1200, propertyTax: 380 },
-  characteristics: { bedrooms: 3, bathrooms: 2, parkingSpots: 2, areaM2: 95 },
+  characteristics: { bedrooms: 3, bathrooms: 2, parkingSpots: 2, areaSqm: 95 },
 }
 
 describe('PropertiesService', () => {
@@ -132,7 +132,7 @@ describe('PropertiesService', () => {
     await service.list({ status: 'PUBLISHED', purpose: 'SALE' })
 
     expect(http.get).toHaveBeenCalledWith('/properties', {
-      params: { page: 1, pageSize: 100, status: 'PUBLISHED', finalidade: 'VENDA' },
+      params: { page: 1, pageSize: 100, status: 'PUBLISHED', purpose: 'SALE' },
     })
   })
 
@@ -154,7 +154,7 @@ describe('PropertiesService', () => {
       bedrooms: 3,
       bathrooms: 2,
       parkingSpots: 2,
-      areaM2: 95,
+      areaSqm: 95,
       price: 6500,
       rentalPrice: null,
       condoFee: 1200,
@@ -163,20 +163,20 @@ describe('PropertiesService', () => {
 
     await expect(service.create(payload)).resolves.toEqual(mappedProperty)
     expect(http.post).toHaveBeenCalledWith('/properties', {
-      titulo: 'Apartamento Jardins',
-      descricao: 'Pronto para morar',
-      finalidade: 'ALUGUEL',
-      tipo: 'APARTAMENTO',
-      quartos: 3,
-      banheiros: 2,
-      vagas: 2,
-      areaM2: 95,
-      valor: 6500,
-      valorAluguel: null,
-      condominio: 1200,
-      iptu: 380,
-      endereco: undefined,
-      midias: undefined,
+      title: 'Apartamento Jardins',
+      description: 'Pronto para morar',
+      purpose: 'RENT',
+      type: 'APARTMENT',
+      bedrooms: 3,
+      bathrooms: 2,
+      parkingSpots: 2,
+      areaSqm: 95,
+      price: 6500,
+      rentalPrice: null,
+      condoFee: 1200,
+      propertyTax: 380,
+      address: undefined,
+      media: undefined,
     })
   })
 
@@ -184,7 +184,7 @@ describe('PropertiesService', () => {
     http.patch.mockResolvedValueOnce({ property: apiProperty })
 
     await expect(service.update('property-1', { price: 7000 })).resolves.toEqual(mappedProperty)
-    expect(http.patch).toHaveBeenCalledWith('/properties/property-1', { valor: 7000 })
+    expect(http.patch).toHaveBeenCalledWith('/properties/property-1', { price: 7000 })
   })
 
   it('publishes a property and unwraps the response', async () => {
@@ -208,12 +208,12 @@ describe('PropertiesService', () => {
     expect(http.delete).toHaveBeenCalledWith('/properties/property-1')
   })
   it('maps stable English identifiers to API enums and restores them on the response', async () => {
-    const anuncio = {
-      comodidades: ['MOBILIADO', 'ACEITA_PETS'],
-      condicoesNegociacao: 'Caução',
-      publicarAposRevisao: true,
-      permiteContatoWhatsapp: false,
-      destaque: true,
+    const apiListing = {
+      amenities: ['FURNISHED', 'PET_FRIENDLY'],
+      negotiationTerms: 'Caução',
+      publishAfterReview: true,
+      allowWhatsappContact: false,
+      featured: true,
     }
     const listing: Property['listing'] = {
       amenities: ['furnished', 'petFriendly'],
@@ -222,7 +222,9 @@ describe('PropertiesService', () => {
       allowWhatsappContact: false,
       featured: true,
     }
-    http.post.mockResolvedValueOnce({ property: { ...apiProperty, tipo: 'OUTRO', anuncio } })
+    http.post.mockResolvedValueOnce({
+      property: { ...apiProperty, type: 'OTHER', listing: apiListing },
+    })
     const result = await service.create({
       title: 'Imóvel',
       purpose: 'SALE',
@@ -232,7 +234,7 @@ describe('PropertiesService', () => {
     })
     expect(http.post).toHaveBeenCalledWith(
       '/properties',
-      expect.objectContaining({ tipo: 'OUTRO', finalidade: 'VENDA', anuncio }),
+      expect.objectContaining({ type: 'OTHER', purpose: 'SALE', listing: apiListing }),
     )
     expect(result.type).toBe('other')
     expect(result.listing).toEqual(listing)

@@ -11,20 +11,20 @@ export async function validateAgendaSchedule(
   existing: AgendaEvent,
   changes: AgendaScheduleChanges,
 ) {
-  const inicio = changes.inicio ?? existing.inicio
+  const start = changes.start ?? existing.start
   const durationMinutes =
-    changes.durationMinutes ?? (existing.fim.getTime() - existing.inicio.getTime()) / 60_000
+    changes.durationMinutes ?? (existing.end.getTime() - existing.start.getTime()) / 60_000
   if (
-    (changes.tipo === undefined ? existing.tipo : changes.tipo) === 'VISIT' &&
+    (changes.type === undefined ? existing.type : changes.type) === 'VISIT' &&
     durationMinutes < AGENDA_MINIMUM_VISIT_MINUTES
   ) {
     throw new AgendaVisitMinimumDurationError()
   }
-  const unchangedStart = inicio.getTime() === existing.inicio.getTime()
-  const fim = new Date(inicio.getTime() + durationMinutes * 60000)
-  const unchangedPeriod = unchangedStart && fim.getTime() === existing.fim.getTime()
+  const unchangedStart = start.getTime() === existing.start.getTime()
+  const end = new Date(start.getTime() + durationMinutes * 60000)
+  const unchangedPeriod = unchangedStart && end.getTime() === existing.end.getTime()
   if (!unchangedPeriod) {
-    assertWithinAgendaSchedulingWindow(inicio, new Date(), {
+    assertWithinAgendaSchedulingWindow(start, new Date(), {
       ...changes,
       durationMinutes,
       unchangedStart,
@@ -33,13 +33,13 @@ export async function validateAgendaSchedule(
   if (
     await repository.hasOverlap(
       existing.tenantId,
-      changes.responsavelId ?? existing.responsavelId,
-      inicio,
-      fim,
+      changes.responsibleId ?? existing.responsibleId,
+      start,
+      end,
       existing.id,
     )
   ) {
     throw new AgendaEventConflictError()
   }
-  return { inicio, fim }
+  return { start, end }
 }

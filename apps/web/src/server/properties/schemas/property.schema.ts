@@ -2,41 +2,41 @@ import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
 export const propertyTypeSchema = z.enum([
-  'APARTAMENTO',
-  'CASA',
+  'APARTMENT',
+  'HOUSE',
   'STUDIO',
-  'COBERTURA',
-  'COMERCIAL',
+  'PENTHOUSE',
+  'COMMERCIAL',
   'LOFT',
-  'OUTRO',
+  'OTHER',
 ])
 
 export const propertyListingSchema = z
   .object({
-    comodidades: z
-      .array(z.enum(['MOBILIADO', 'VARANDA_GOURMET', 'ACEITA_PETS', 'PORTARIA_24H']))
+    amenities: z
+      .array(z.enum(['FURNISHED', 'GOURMET_BALCONY', 'PET_FRIENDLY', 'CONCIERGE_24H']))
       .max(4),
-    condicoesNegociacao: z.string().trim().max(2000).nullable(),
-    publicarAposRevisao: z.boolean(),
-    permiteContatoWhatsapp: z.boolean(),
-    destaque: z.boolean(),
+    negotiationTerms: z.string().trim().max(2000).nullable(),
+    publishAfterReview: z.boolean(),
+    allowWhatsappContact: z.boolean(),
+    featured: z.boolean(),
   })
   .strict()
   .openapi('TenantPropertyListing')
 
-export const propertyPurposeSchema = z.enum(['ALUGUEL', 'VENDA', 'AMBOS'])
+export const propertyPurposeSchema = z.enum(['RENT', 'SALE', 'BOTH'])
 
 export const propertyStatusSchema = z.enum(['DRAFT', 'PUBLISHED', 'RENTED', 'SOLD', 'INACTIVE'])
 
 export const propertyAddressSchema = z
   .object({
-    logradouro: z.string(),
-    numero: z.string(),
-    complemento: z.string().nullable(),
-    bairro: z.string(),
-    cidade: z.string(),
-    estado: z.string(),
-    cep: z.string(),
+    street: z.string(),
+    number: z.string(),
+    complement: z.string().nullable(),
+    neighborhood: z.string(),
+    city: z.string(),
+    state: z.string(),
+    zipCode: z.string(),
     latitude: z.number().nullable(),
     longitude: z.number().nullable(),
   })
@@ -46,27 +46,27 @@ export const propertyMediaSchema = z
   .object({
     id: z.string(),
     url: z.string(),
-    tipo: z.string(),
-    ordem: z.number().int(),
+    type: z.enum(['photo', 'video', 'floorPlan']),
+    position: z.number().int(),
     createdAt: z.string(),
   })
   .openapi('TenantPropertyMedia')
 
 export const propertyValuesSchema = z
   .object({
-    valor: z.number(),
-    valorAluguel: z.number().nullable(),
-    condominio: z.number().nullable(),
-    iptu: z.number().nullable(),
+    price: z.number(),
+    rentalPrice: z.number().nullable(),
+    condoFee: z.number().nullable(),
+    propertyTax: z.number().nullable(),
   })
   .openapi('TenantPropertyValues')
 
 export const propertyCharacteristicsSchema = z
   .object({
-    quartos: z.number().int().nullable(),
-    banheiros: z.number().int().nullable(),
-    vagas: z.number().int().nullable(),
-    areaM2: z.number().nullable(),
+    bedrooms: z.number().int().nullable(),
+    bathrooms: z.number().int().nullable(),
+    parkingSpots: z.number().int().nullable(),
+    areaSqm: z.number().nullable(),
   })
   .openapi('TenantPropertyCharacteristics')
 
@@ -74,23 +74,23 @@ export const propertySchema = z
   .object({
     id: z.string(),
     tenantId: z.string(),
-    responsavelId: z.string(),
-    responsavelNome: z.string(),
+    responsibleId: z.string(),
+    responsibleName: z.string(),
     activeContractId: z.string().nullable(),
-    titulo: z.string(),
-    descricao: z.string().nullable(),
-    finalidade: propertyPurposeSchema,
-    tipo: propertyTypeSchema,
-    proprietarioId: z.string().nullable(),
-    anuncio: propertyListingSchema,
+    title: z.string(),
+    description: z.string().nullable(),
+    purpose: propertyPurposeSchema,
+    type: propertyTypeSchema,
+    ownerId: z.string().nullable(),
+    listing: propertyListingSchema,
     status: propertyStatusSchema,
-    publicadoEm: z.string().nullable(),
+    publishedAt: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),
-    endereco: propertyAddressSchema.nullable(),
-    midias: z.array(propertyMediaSchema),
-    valores: propertyValuesSchema,
-    caracteristicas: propertyCharacteristicsSchema,
+    address: propertyAddressSchema.nullable(),
+    media: z.array(propertyMediaSchema),
+    values: propertyValuesSchema,
+    characteristics: propertyCharacteristicsSchema,
   })
   .openapi('TenantProperty')
 

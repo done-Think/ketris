@@ -16,7 +16,7 @@ export const GET = withErrorHandling(async (request: NextRequest, context: UserR
   const user = await authContainer.getUserUseCase.execute({
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     userId: id,
   })
 
@@ -31,14 +31,14 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Use
   const user = await authContainer.updateUserUseCase.execute({
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     userId: id,
-    nome: body.name,
+    name: body.name,
     email: body.email,
     avatarUrl: body.avatarUrl,
-    telefone: body.phone,
+    phone: body.phone,
     creci: body.creci,
-    papel: body.role,
+    role: body.role,
   })
 
   return NextResponse.json({ user: toAuthenticatedUserResponse(user) }, { status: 200 })
@@ -51,7 +51,7 @@ export const DELETE = withErrorHandling(async (request: NextRequest, context: Us
   const user = await authContainer.deactivateUserUseCase.execute({
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     userId: id,
   })
 

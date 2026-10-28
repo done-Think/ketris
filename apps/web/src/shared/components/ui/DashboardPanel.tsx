@@ -1,21 +1,7 @@
-import { Box } from '@mui/material'
-
-import { alpha, radius, shadows, surface } from '@shared/theme/tokens'
+import { Paper } from '@mui/material'
 
 import type { DashboardPanelProps } from '@shared/types/dashboard-panel'
 
 export function DashboardPanel({ children }: DashboardPanelProps) {
-  return (
-    <Box
-      sx={{
-        bgcolor: surface.paper,
-        border: '1px solid',
-        borderColor: alpha.graphite[6],
-        borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.propertyCard,
-      }}
-    >
-      {children}
-    </Box>
-  )
+  return <Paper variant="dashboard">{children}</Paper>
 }

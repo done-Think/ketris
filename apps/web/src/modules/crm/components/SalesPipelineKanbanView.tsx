@@ -10,11 +10,7 @@ import { useTranslations } from 'next-intl'
 import { salesPipelineStages } from '../config/sales-pipeline-stages'
 import type { SalesPipelineKanbanViewProps } from '../types/sales-pipeline'
 
-export function SalesPipelineKanbanView({
-  tenantId,
-  search,
-  selectedStageId,
-}: SalesPipelineKanbanViewProps) {
+export function SalesPipelineKanbanView({ search, selectedStageId }: SalesPipelineKanbanViewProps) {
   const t = useTranslations('crm.pipeline')
   return (
     <Box aria-label={t('boardAriaLabel')} sx={crmStyles.boxSx}>
@@ -23,7 +19,6 @@ export function SalesPipelineKanbanView({
           <CrmPipelineColumn
             key={stage.id}
             stage={stage}
-            tenantId={tenantId}
             search={search}
             visible={!selectedStageId || selectedStageId === stage.id}
           />

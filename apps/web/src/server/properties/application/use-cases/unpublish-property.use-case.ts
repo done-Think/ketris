@@ -8,7 +8,7 @@ export class UnpublishPropertyUseCase {
   constructor(private readonly propertyRepository: PropertyRepository) {}
 
   async execute(input: UnpublishPropertyInput) {
-    assertCanEditProperties(input.actorPapel)
+    assertCanEditProperties(input.actorRole)
 
     const existing = await this.propertyRepository.findByTenantAndId(input.actorTenantId, input.id)
 
@@ -16,13 +16,14 @@ export class UnpublishPropertyUseCase {
       throw new PropertyNotFoundError()
     }
 
-    assertPropertyAccess(existing, input.actorId, input.actorPapel)
+    assertPropertyAccess(existing, input.actorId, input.actorRole)
 
     const property = await this.propertyRepository.setStatus(
       input.actorTenantId,
       input.id,
       'INACTIVE',
-      existing.publicadoEm,
+      existing.publishedAt,
+      input.actorId,
     )
 
     if (!property) {

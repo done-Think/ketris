@@ -13,7 +13,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     ...query,
     actorTenantId: actor.tenantId,
     actorUserId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
   })
   return NextResponse.json(page)
 })

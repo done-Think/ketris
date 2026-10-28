@@ -19,7 +19,6 @@ export interface CrmAutocompleteProps<T extends { id: string }> {
   helperText?: string
 }
 export interface CrmContactAutocompleteProps {
-  tenantId: string
   value: CrmContactOption | null
   onChange: (value: CrmContactOption | null) => void
   error?: boolean

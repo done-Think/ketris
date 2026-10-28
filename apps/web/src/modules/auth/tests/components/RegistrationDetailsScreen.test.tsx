@@ -17,6 +17,7 @@ vi.mock('next-auth/react', () => ({
 vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
   return {
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
     useRouter: () => routerMock,
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
       function MockLink(props, ref) {
@@ -38,7 +39,7 @@ function renderScreen() {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <RegistrationDetailsScreen profile="corretor" />
+      <RegistrationDetailsScreen profile="broker" />
     </QueryClientProvider>,
   )
 }

@@ -18,31 +18,31 @@ export class PrismaContractPartyLinkTransaction implements ContractPartyLinkTran
   }
 
   private dependencies(tx: Prisma.TransactionClient): ContractPartyLinkDependencies {
-    const userSelect = { id: true, tenantId: true, email: true, papel: true, ativo: true } as const
+    const userSelect = { id: true, tenantId: true, email: true, role: true, active: true } as const
     return {
       users: {
         findManyByEmail: (email) =>
-          tx.usuario.findMany({ where: { email: normalizeEmail(email) }, select: userSelect }),
-        findById: (id) => tx.usuario.findUnique({ where: { id }, select: userSelect }),
+          tx.user.findMany({ where: { email: normalizeEmail(email) }, select: userSelect }),
+        findById: (id) => tx.user.findUnique({ where: { id }, select: userSelect }),
       },
       contracts: {
         findById: async (id, scope) => {
-          await tx.$queryRaw`SELECT id FROM "contratos" WHERE id = ${id} AND "tenantId" = ${scope.tenantId} FOR UPDATE`
-          const contract = await tx.contrato.findFirst({
+          await tx.$queryRaw`SELECT id FROM "contracts" WHERE id = ${id} AND "tenantId" = ${scope.tenantId} FOR UPDATE`
+          const contract = await tx.contract.findFirst({
             where: { id, tenantId: scope.tenantId },
             select: {
               id: true,
-              partes: { select: { id: true, papel: true, email: true, usuarioId: true } },
+              parties: { select: { id: true, role: true, email: true, userId: true } },
             },
           })
           return contract
             ? {
                 id: contract.id,
-                parties: contract.partes.map((party) => ({
+                parties: contract.parties.map((party) => ({
                   id: party.id,
-                  role: party.papel,
+                  role: party.role,
                   email: party.email,
-                  userId: party.usuarioId,
+                  userId: party.userId,
                 })),
               }
             : null

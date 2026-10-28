@@ -17,14 +17,14 @@ it('seleciona valores, fecha o menu e monta o link da busca com o código do tip
 
   act(() => result.current.openSearchMenu('propertyType'))
   expect(result.current.activeSearchMenu).toBe('propertyType')
-  act(() => result.current.selectSearchValue('propertyType', 'CASA'))
+  act(() => result.current.selectSearchValue('propertyType', 'HOUSE'))
   act(() => result.current.selectSearchValue('location', 'Moema, São Paulo'))
 
   expect(result.current.activeSearchMenu).toBeNull()
   expect(result.current.searchHref.query).toEqual({
     purpose: 'rent',
     location: 'Moema, São Paulo',
-    propertyType: 'CASA',
+    propertyType: 'HOUSE',
   })
 })
 
@@ -58,7 +58,7 @@ it('filtra as opções pelo rótulo traduzido, ignorando acentos', () => {
 
   expect(result.current.filterSearchOptions('location')).toContain('Moema, São Paulo')
   expect(result.current.filterSearchOptions('location')).not.toContain('Savassi, Belo Horizonte')
-  expect(result.current.filterSearchOptions('propertyType')).toEqual(['APARTAMENTO'])
+  expect(result.current.filterSearchOptions('propertyType')).toEqual(['APARTMENT'])
   expect(result.current.getSearchOptionLabel('propertyType', '')).toBe('Todos os tipos')
 })
 

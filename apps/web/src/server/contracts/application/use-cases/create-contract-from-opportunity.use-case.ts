@@ -14,9 +14,9 @@ export class CreateContractFromOpportunityUseCase {
   constructor(private readonly contractRepository: ContractRepository) {}
 
   async execute(input: CreateContractFromOpportunityInput): Promise<Contract> {
-    const scope = resolveContractManageScope(input.actorId, input.actorPapel)
+    const scope = resolveContractManageScope(input.actorId, input.actorRole)
 
-    if (input.guaranteeType === 'FIADOR' && !input.guarantor) {
+    if (input.guaranteeType === 'GUARANTOR' && !input.guarantor) {
       throw new GuarantorPartyRequiredError()
     }
 
@@ -34,17 +34,17 @@ export class CreateContractFromOpportunityUseCase {
       throw new OpportunityAlreadyHasContractError()
     }
 
-    if (opportunity.status !== 'ACEITA') {
+    if (opportunity.status !== 'ACCEPTED') {
       throw new OpportunityNotAcceptedError()
     }
 
     const parties: NewContractParty[] = [
-      { ...input.owner, role: 'LOCADOR' },
-      { ...input.tenant, role: 'LOCATARIO' },
+      { ...input.owner, role: 'LANDLORD' },
+      { ...input.tenant, role: 'RENTER' },
     ]
 
     if (input.guarantor) {
-      parties.push({ ...input.guarantor, role: 'FIADOR' })
+      parties.push({ ...input.guarantor, role: 'GUARANTOR' })
     }
 
     return this.contractRepository.create(

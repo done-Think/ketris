@@ -27,6 +27,7 @@ import type {
 import { styles } from '../../styles/property-inquiry-dialog.styles'
 
 const defaultValues: PropertyInquiryFormValues = {
+  website: '',
   leadName: '',
   leadEmail: '',
   leadPhone: '',
@@ -54,6 +55,7 @@ function PropertyInquiryForm({ mode, propertyId, onClose }: PropertyInquiryDialo
   const submitInquiry = useSubmitPropertyInquiry(propertyId)
   const schema = useMemo(() => createPropertyInquirySchema((key) => t(`errors.${key}`)), [t])
   const {
+    register,
     control,
     handleSubmit,
     formState: { errors },
@@ -65,6 +67,7 @@ function PropertyInquiryForm({ mode, propertyId, onClose }: PropertyInquiryDialo
   function onSubmit(values: PropertyInquiryFormValues) {
     submitInquiry.mutate(
       {
+        website: values.website || undefined,
         leadName: values.leadName,
         leadEmail: values.leadEmail,
         leadPhone: values.leadPhone || undefined,
@@ -86,6 +89,15 @@ function PropertyInquiryForm({ mode, propertyId, onClose }: PropertyInquiryDialo
 
   return (
     <Box component="form" noValidate onSubmit={handleSubmit(onSubmit)}>
+      <Box
+        component="input"
+        {...register('website')}
+        type="text"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        sx={styles.honeypot}
+      />
       <DialogTitle>{t(mode === 'visit' ? 'visitTitle' : 'proposalTitle')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2}>

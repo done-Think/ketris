@@ -1,33 +1,41 @@
 import type { ApiContractStatus } from '../types/service'
 
-export const contractStatusMessageKeys: Record<ApiContractStatus, string> = {
-  RASCUNHO: 'draft',
-  EM_REVISAO: 'review',
-  AGUARDANDO_ASSINATURA: 'awaitingSignature',
-  ASSINADO: 'signed',
-  ATIVO: 'active',
-  ENCERRADO: 'closed',
-  CANCELADO: 'cancelled',
+export const contractStatusMessageKeys: Record<
+  ApiContractStatus,
+  TranslationKey<'contracts.status'>
+> = {
+  DRAFT: 'draft',
+  IN_REVIEW: 'review',
+  AWAITING_SIGNATURE: 'awaitingSignature',
+  SIGNED: 'signed',
+  ACTIVE: 'active',
+  CLOSED: 'closed',
+  CANCELED: 'cancelled',
 }
 
-export const contractOptionMessageKeys: Record<string, Record<string, string>> = {
+export const contractOptionMessageKeys = {
   contractTypeOptions: {
-    RESIDENCIAL: 'residential',
-    COMERCIAL: 'commercial',
-    TEMPORADA: 'shortTerm',
+    RESIDENTIAL: 'contractTypeOptions.residential',
+    COMMERCIAL: 'contractTypeOptions.commercial',
+    SEASONAL: 'contractTypeOptions.shortTerm',
   },
   guaranteeTypeOptions: {
-    FIADOR: 'guarantor',
-    CAUCAO: 'deposit',
-    SEGURO_FIANCA: 'insurance',
-    TITULO_CAPITALIZACAO: 'capitalizationBond',
+    GUARANTOR: 'guaranteeTypeOptions.guarantor',
+    DEPOSIT: 'guaranteeTypeOptions.deposit',
+    SURETY_BOND: 'guaranteeTypeOptions.insurance',
+    CAPITALIZATION_BOND: 'guaranteeTypeOptions.capitalizationBond',
   },
-  adjustmentIndexOptions: { IPCA: 'ipca', IGPM: 'igpm', INPC: 'inpc' },
-}
+  adjustmentIndexOptions: {
+    IPCA: 'adjustmentIndexOptions.ipca',
+    IGPM: 'adjustmentIndexOptions.igpm',
+    INPC: 'adjustmentIndexOptions.inpc',
+  },
+} as const
 
 export const contractPartyMessageKeys = {
-  LOCADOR: 'landlord',
-  LOCATARIO: 'tenant',
-  FIADOR: 'guarantor',
+  LANDLORD: 'landlord',
+  RENTER: 'tenant',
+  GUARANTOR: 'guarantor',
 } as const
 export const contractSignatureMessageKeys = { MANUAL: 'manual', PROVIDER: 'provider' } as const
+import type { TranslationKey } from '@/i18n/types/messages.types'

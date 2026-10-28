@@ -5,7 +5,7 @@ import { createRegistrationDetailsSchema } from '../../schemas/registration-deta
 const registrationDetailsSchema = createRegistrationDetailsSchema((key) => key)
 
 const validDetails = {
-  profile: 'proprietario' as const,
+  profile: 'owner' as const,
   fullName: 'Maria da Silva',
   email: 'MARIA@EMAIL.COM',
   phone: '(11) 99999-9999',
@@ -23,7 +23,7 @@ describe('registrationDetailsSchema', () => {
   })
 
   it('exige CRECI para o perfil corretor', () => {
-    const result = registrationDetailsSchema.safeParse({ ...validDetails, profile: 'corretor' })
+    const result = registrationDetailsSchema.safeParse({ ...validDetails, profile: 'broker' })
 
     expect(result.success).toBe(false)
     if (!result.success) {
@@ -34,7 +34,7 @@ describe('registrationDetailsSchema', () => {
   it('aceita companyName e agencyId opcionais só no perfil corretor', () => {
     const withAgency = registrationDetailsSchema.safeParse({
       ...validDetails,
-      profile: 'corretor',
+      profile: 'broker',
       creci: '00000-F',
       agencyId: 'agency-1',
       companyName: 'Minha Corretora',
@@ -46,12 +46,12 @@ describe('registrationDetailsSchema', () => {
   it('aceita corretor autônomo, sem agencyId', () => {
     const autonomous = registrationDetailsSchema.safeParse({
       ...validDetails,
-      profile: 'corretor',
+      profile: 'broker',
       creci: '00000-F',
     })
 
     expect(autonomous.success).toBe(true)
-    if (autonomous.success && autonomous.data.profile === 'corretor') {
+    if (autonomous.success && autonomous.data.profile === 'broker') {
       expect(autonomous.data.agencyId).toBeUndefined()
     }
   })

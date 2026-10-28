@@ -20,47 +20,47 @@ describe('/api/marketplace/profiles/broker (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária Perfil Corretor', slug: `perfil-corretor-${randomUUID()}` },
+      data: { name: 'Imobiliária Perfil Corretor', slug: `perfil-corretor-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const agent = await prisma.usuario.create({
+    const agent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Marina Costa',
+        name: 'Marina Costa',
         email: `marina-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     agentId = agent.id
     agentToken = await tokenService.sign({
       id: agent.id,
       tenantId: agent.tenantId,
-      nome: agent.nome,
+      name: agent.name,
       email: agent.email,
-      papel: agent.papel,
-      ativo: agent.ativo,
-      vinculoAprovadoEm: agent.vinculoAprovadoEm,
+      role: agent.role,
+      active: agent.active,
+      membershipApprovedAt: agent.membershipApprovedAt,
     })
 
-    const admin = await prisma.usuario.create({
+    const admin = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin da Imobiliária',
+        name: 'Admin da Imobiliária',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     adminToken = await tokenService.sign({
       id: admin.id,
       tenantId: admin.tenantId,
-      nome: admin.nome,
+      name: admin.name,
       email: admin.email,
-      papel: admin.papel,
-      ativo: admin.ativo,
-      vinculoAprovadoEm: admin.vinculoAprovadoEm,
+      role: admin.role,
+      active: admin.active,
+      membershipApprovedAt: admin.membershipApprovedAt,
     })
   })
 
@@ -155,23 +155,23 @@ describe('/api/marketplace/profiles/broker (integração)', () => {
   })
 
   it('publish retorna 422 quando faltam campos obrigatórios', async () => {
-    const otherAgent = await prisma.usuario.create({
+    const otherAgent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Bruna Lima',
+        name: 'Bruna Lima',
         email: `bruna-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     const otherAgentToken = await tokenService.sign({
       id: otherAgent.id,
       tenantId: otherAgent.tenantId,
-      nome: otherAgent.nome,
+      name: otherAgent.name,
       email: otherAgent.email,
-      papel: otherAgent.papel,
-      ativo: otherAgent.ativo,
-      vinculoAprovadoEm: otherAgent.vinculoAprovadoEm,
+      role: otherAgent.role,
+      active: otherAgent.active,
+      membershipApprovedAt: otherAgent.membershipApprovedAt,
     })
 
     await PUT(

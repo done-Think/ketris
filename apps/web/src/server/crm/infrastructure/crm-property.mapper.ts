@@ -3,52 +3,52 @@ import type { CrmPropertyRow } from '../types/prisma-property'
 import type { CrmPropertyDetail } from '../types/property'
 
 export const crmPropertyInclude = {
-  endereco: true,
-  responsavel: { select: { nome: true, avatarUrl: true } },
-  midias: { orderBy: { ordem: 'asc' } },
-} as const satisfies Prisma.ImovelInclude
+  address: true,
+  responsible: { select: { name: true, avatarUrl: true } },
+  media: { orderBy: { position: 'asc' } },
+} as const satisfies Prisma.PropertyInclude
 
 export function toCrmProperty(row: CrmPropertyRow): CrmPropertyDetail {
-  const address = row.endereco
+  const address = row.address
   return {
     id: row.id,
-    title: row.titulo,
-    purpose: row.finalidade,
-    propertyType: row.tipo,
-    price: row.valor.toNumber(),
-    condoFee: row.condominio?.toNumber() ?? null,
-    propertyTax: row.iptu?.toNumber() ?? null,
-    bedrooms: row.quartos,
-    bathrooms: row.banheiros,
-    parkingSpots: row.vagas,
-    area: row.areaM2?.toNumber() ?? null,
-    city: address?.cidade ?? null,
-    neighborhood: address?.bairro ?? null,
+    title: row.title,
+    purpose: row.purpose,
+    propertyType: row.type,
+    price: row.price.toNumber(),
+    condoFee: row.condoFee?.toNumber() ?? null,
+    propertyTax: row.propertyTax?.toNumber() ?? null,
+    bedrooms: row.bedrooms,
+    bathrooms: row.bathrooms,
+    parkingSpots: row.parkingSpots,
+    area: row.areaSqm?.toNumber() ?? null,
+    city: address?.city ?? null,
+    neighborhood: address?.neighborhood ?? null,
     latitude: address?.latitude?.toNumber() ?? null,
     longitude: address?.longitude?.toNumber() ?? null,
-    brokerName: row.responsavel.nome,
-    brokerAvatarUrl: row.responsavel.avatarUrl,
-    coverUrl: row.midias[0]?.url ?? null,
-    publishedAt: row.publicadoEm?.toISOString() ?? null,
-    description: row.descricao,
+    brokerName: row.responsible.name,
+    brokerAvatarUrl: row.responsible.avatarUrl,
+    coverUrl: row.media[0]?.url ?? null,
+    publishedAt: row.publishedAt?.toISOString() ?? null,
+    description: row.description,
     address: address
       ? {
-          street: address.logradouro,
-          number: address.numero,
-          complement: address.complemento,
-          neighborhood: address.bairro,
-          city: address.cidade,
-          state: address.estado,
-          zipCode: address.cep,
+          street: address.street,
+          number: address.number,
+          complement: address.complement,
+          neighborhood: address.neighborhood,
+          city: address.city,
+          state: address.state,
+          zipCode: address.zipCode,
           latitude: address.latitude?.toNumber() ?? null,
           longitude: address.longitude?.toNumber() ?? null,
         }
       : null,
-    media: row.midias.map((media) => ({
+    media: row.media.map((media) => ({
       id: media.id,
       url: media.url,
-      type: media.tipo,
-      order: media.ordem,
+      type: media.type,
+      order: media.position,
     })),
   }
 }

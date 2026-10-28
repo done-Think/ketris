@@ -35,7 +35,7 @@ describe('Maintenance scheduling', () => {
       expect.anything(),
       expect.objectContaining({ scheduledAt }),
       expect.objectContaining({
-        type: 'EDICAO',
+        type: 'EDIT',
         details: { before: { scheduledAt: null }, after: { scheduledAt } },
       }),
     )
@@ -58,7 +58,7 @@ describe('Maintenance scheduling', () => {
       expect.anything(),
       { scheduledAt: new Date(scheduledAt) },
       expect.objectContaining({
-        type: 'EDICAO',
+        type: 'EDIT',
         authorId: renter.actorId,
         details: {
           before: { scheduledAt: null },
@@ -78,7 +78,7 @@ describe('Maintenance scheduling', () => {
     ).rejects.toBeInstanceOf(MaintenanceTicketNotFoundError)
     await expect(
       actOnTicket(
-        repository({ status: 'RESOLVIDO', provider: { name: 'Provider' } }),
+        repository({ status: 'RESOLVED', provider: { name: 'Provider' } }),
         renter,
         ticket.id,
         { action: 'schedule', scheduledAt },

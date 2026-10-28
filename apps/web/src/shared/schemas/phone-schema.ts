@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import type { SchemaMessageTranslator } from '@shared/types'
 
-export function createPhoneSchema(t: SchemaMessageTranslator) {
+export function createPhoneSchema(t: SchemaMessageTranslator<'phoneInvalid' | 'phoneRequired'>) {
   return z
     .string()
     .trim()

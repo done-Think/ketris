@@ -1,25 +1,25 @@
-export type TenantWithPerfilRow = {
+export type TenantWithProfileRow = {
   id: string
-  nome: string
-  corPrimaria: string | null
-  corSecundaria: string | null
-  perfilPublico: {
+  name: string
+  primaryColor: string | null
+  secondaryColor: string | null
+  publicProfile: {
     displayName: string
     headline: string | null
-    resumo: string | null
+    summary: string | null
     legalCreci: string | null
-    sede: string | null
-    endereco: string | null
-    telefone: string | null
+    headquarters: string | null
+    address: string | null
+    phone: string | null
     email: string | null
-    cobertura: string[]
-    segmentos: string[]
-    anosDeMercado: number | null
-    corFundo: string | null
+    coverage: string[]
+    segments: string[]
+    yearsInMarket: number | null
+    backgroundColor: string | null
     logoUrl: string | null
     bannerUrl: string | null
     status: 'DRAFT' | 'PUBLISHED'
-    publicadoEm: Date | null
-    destaques: { ordem: number; usuario: { id: string; nome: string; avatarUrl: string | null } }[]
+    publishedAt: Date | null
+    highlights: { position: number; user: { id: string; name: string; avatarUrl: string | null } }[]
   } | null
 }

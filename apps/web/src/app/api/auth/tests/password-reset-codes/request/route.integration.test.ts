@@ -21,16 +21,16 @@ describe('POST /auth/password-reset-codes mailbox ownership integration', () => 
   beforeAll(async () => {
     for (const name of ['First account', 'Second account']) {
       const tenant = await prisma.tenant.create({
-        data: { nome: name, slug: `request-proof-${randomUUID()}` },
+        data: { name: name, slug: `request-proof-${randomUUID()}` },
       })
       tenantIds.push(tenant.id)
-      await prisma.usuario.create({
+      await prisma.user.create({
         data: {
           tenantId: tenant.id,
-          nome: 'Mailbox fixture',
+          name: 'Mailbox fixture',
           email,
-          senhaHash: 'original',
-          papel: 'OWNER',
+          passwordHash: 'original',
+          role: 'OWNER',
         },
       })
     }

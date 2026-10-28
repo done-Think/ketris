@@ -14,7 +14,6 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useForm } from 'react-hook-form'
@@ -37,10 +36,8 @@ export function ContractsCreatePage() {
   const t = useTranslations('contracts.wizard')
   const errors = useTranslations('contracts.errors')
   const router = useRouter()
-  const { data: session } = useSession()
-  const tenantId = session?.tenantId ?? ''
   const { enqueueSnackbar } = useSnackbar()
-  const createContractMutation = useCreateContract(tenantId)
+  const createContractMutation = useCreateContract()
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false)
   const contractSchema = useMemo(() => createContractSchema((key) => t(`errors.${key}`)), [t])
   const {

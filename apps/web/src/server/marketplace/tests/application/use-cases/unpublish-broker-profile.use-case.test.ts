@@ -11,7 +11,7 @@ function createDeps(setStatusResult: BrokerProfile | null) {
   const brokerProfileRepository: BrokerProfileRepository = {
     findPublishedById: vi.fn(),
     listPublished: vi.fn(),
-    findByUsuarioId: vi.fn(),
+    findByUserId: vi.fn(),
     save: vi.fn(),
     setStatus: vi.fn().mockResolvedValue(setStatusResult),
   }
@@ -24,7 +24,7 @@ describe('UnpublishBrokerProfileUseCase', () => {
     const deps = createDeps({ status: 'DRAFT' } as BrokerProfile)
     const useCase = new UnpublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await useCase.execute({ actorId: 'usuario-1', actorPapel: 'AGENT' })
+    await useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })
 
     expect(deps.brokerProfileRepository.setStatus).toHaveBeenCalledWith('usuario-1', 'DRAFT', null)
   })
@@ -33,7 +33,7 @@ describe('UnpublishBrokerProfileUseCase', () => {
     const deps = createDeps(null)
     const useCase = new UnpublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await expect(useCase.execute({ actorId: 'usuario-1', actorPapel: 'AGENT' })).rejects.toThrow(
+    await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
       BrokerProfileNotFoundError,
     )
   })
@@ -42,7 +42,7 @@ describe('UnpublishBrokerProfileUseCase', () => {
     const deps = createDeps({ status: 'DRAFT' } as BrokerProfile)
     const useCase = new UnpublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await expect(useCase.execute({ actorId: 'usuario-1', actorPapel: 'RENTER' })).rejects.toThrow(
+    await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'RENTER' })).rejects.toThrow(
       ForbiddenError,
     )
   })

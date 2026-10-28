@@ -85,13 +85,13 @@ describe('envio privado de documentos de Contracts', () => {
 
   it.each(['RENTER', 'PROPERTY_OWNER'] as const)(
     'recusa envio pelo perfil %s antes de acessar dados ou storage',
-    async (actorPapel) => {
+    async (actorRole) => {
       const { init, confirm, repository, storage, descriptor } = setup()
       await expect(
-        init.execute({ ...documentActor, actorPapel, ...descriptor }),
+        init.execute({ ...documentActor, actorRole, ...descriptor }),
       ).rejects.toMatchObject({ status: 403 })
       await expect(
-        confirm.execute({ ...documentActor, actorPapel, uploadToken: 'token' }),
+        confirm.execute({ ...documentActor, actorRole, uploadToken: 'token' }),
       ).rejects.toMatchObject({ status: 403 })
       expect(repository.context).not.toHaveBeenCalled()
       expect(storage.uploadLocation).not.toHaveBeenCalled()
@@ -104,7 +104,7 @@ describe('envio privado de documentos de Contracts', () => {
     await expect(
       init.execute({
         ...documentActor,
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         name: descriptor.name,
         size: descriptor.size,
         sha256: descriptor.sha256,
@@ -176,7 +176,7 @@ describe('download privado de documentos de Contracts', () => {
     const result = await download.execute({
       ...documentActor,
       actorTenantId: 'renter-tenant',
-      actorPapel: 'RENTER',
+      actorRole: 'RENTER',
       documentId: 'document',
     })
     expect(repository.find).toHaveBeenCalledWith('contract', 'document', {

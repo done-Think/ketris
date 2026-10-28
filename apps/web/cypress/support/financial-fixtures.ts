@@ -33,114 +33,114 @@ export async function seedFinancialFixtures(
   isolated()
   if (!/^[a-z0-9-]+$/.test(suffix)) throw new Error('Identificador inválido.')
   const tenant = await prisma.tenant.create({
-    data: { nome: 'Financial E2E', slug: slugPrefix + suffix, accountType: 'AGENCY' },
+    data: { name: 'Financial E2E', slug: slugPrefix + suffix, accountType: 'AGENCY' },
   })
   const renters = await prisma.tenant.create({
-    data: { nome: 'Locatários Financial E2E', slug: slugPrefix + 'renters-' + suffix },
+    data: { name: 'Locatários Financial E2E', slug: slugPrefix + 'renters-' + suffix },
   })
-  const senhaHash = await bcrypt.hash(password, 10)
-  const owner = await prisma.usuario.create({
+  const passwordHash = await bcrypt.hash(password, 10)
+  const owner = await prisma.user.create({
     data: {
       tenantId: tenant.id,
-      nome: 'Gestora Financial E2E',
+      name: 'Gestora Financial E2E',
       email: 'owner-' + suffix + '@financial.example.test',
-      senhaHash,
-      papel: 'OWNER',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'OWNER',
+      emailVerifiedAt: new Date(),
     },
   })
-  const renter = await prisma.usuario.create({
+  const renter = await prisma.user.create({
     data: {
       tenantId: renters.id,
-      nome: 'Locatária Financial E2E',
+      name: 'Locatária Financial E2E',
       email: 'renter-' + suffix + '@financial.example.test',
-      senhaHash,
-      papel: 'RENTER',
-      emailVerificadoEm: new Date(),
+      passwordHash,
+      role: 'RENTER',
+      emailVerifiedAt: new Date(),
     },
   })
-  const property = await prisma.imovel.create({
+  const property = await prisma.property.create({
     data: {
       tenantId: tenant.id,
-      responsavelId: owner.id,
-      titulo: 'Apartamento Financial E2E',
-      finalidade: 'ALUGUEL',
-      tipo: 'APARTAMENTO',
-      valor: 3200,
+      responsibleId: owner.id,
+      title: 'Apartamento Financial E2E',
+      purpose: 'RENT',
+      type: 'APARTMENT',
+      price: 3200,
     },
   })
-  const opportunity = await prisma.oportunidade.create({
+  const opportunity = await prisma.opportunity.create({
     data: {
       tenantId: tenant.id,
-      imovelId: property.id,
-      responsavelId: await propertyResponsibleId(prisma, property.id),
-      interessadoNome: renter.nome,
-      interessadoEmail: renter.email,
-      valorProposto: 3200,
-      status: 'ACEITA',
+      propertyId: property.id,
+      responsibleId: await propertyResponsibleId(prisma, property.id),
+      interestedName: renter.name,
+      interestedEmail: renter.email,
+      proposedValue: 3200,
+      status: 'ACCEPTED',
     },
   })
-  const contract = await prisma.contrato.create({
+  const contract = await prisma.contract.create({
     data: {
       tenantId: tenant.id,
-      imovelId: property.id,
-      oportunidadeOrigemId: opportunity.id,
-      codigo: 'FIN-E2E-001',
-      valor: 3200,
-      diaVencimento: 5,
-      dataInicio: new Date('2026-01-01'),
-      dataFim: new Date('2030-01-01'),
-      indiceReajuste: 'IPCA',
-      tipoGarantia: 'CAUCAO',
-      status: 'ATIVO',
-      partes: {
+      propertyId: property.id,
+      sourceOpportunityId: opportunity.id,
+      code: 'FIN-E2E-001',
+      amount: 3200,
+      dueDay: 5,
+      startDate: new Date('2026-01-01'),
+      endDate: new Date('2030-01-01'),
+      adjustmentIndex: 'IPCA',
+      guaranteeType: 'DEPOSIT',
+      status: 'ACTIVE',
+      parties: {
         create: {
-          papel: 'LOCATARIO',
-          nome: renter.nome,
+          role: 'RENTER',
+          name: renter.name,
           email: renter.email,
           cpf: '00000000000',
-          usuarioId: renter.id,
+          userId: renter.id,
         },
       },
     },
   })
   const year = new Date().getFullYear()
-  const overdue = await prisma.cobranca.create({
+  const overdue = await prisma.charge.create({
     data: {
       tenantId: tenant.id,
-      contratoId: contract.id,
-      codigo: `COB-${year}-0001`,
-      descricao: 'Aluguel atrasado E2E',
-      tipo: 'A_RECEBER',
-      valor: 3200,
-      vencimento: daysFromToday(-10),
-      status: 'PENDENTE',
-      criadoPorId: owner.id,
+      contractId: contract.id,
+      code: `COB-${year}-0001`,
+      description: 'Aluguel atrasado E2E',
+      type: 'RECEIVABLE',
+      amount: 3200,
+      dueDate: daysFromToday(-10),
+      status: 'PENDING',
+      createdById: owner.id,
     },
   })
-  const scheduled = await prisma.cobranca.create({
+  const scheduled = await prisma.charge.create({
     data: {
       tenantId: tenant.id,
-      contratoId: contract.id,
-      codigo: `COB-${year}-0002`,
-      descricao: 'Aluguel futuro E2E',
-      tipo: 'A_RECEBER',
-      valor: 3200,
-      vencimento: daysFromToday(20),
-      status: 'AGENDADA',
-      criadoPorId: owner.id,
+      contractId: contract.id,
+      code: `COB-${year}-0002`,
+      description: 'Aluguel futuro E2E',
+      type: 'RECEIVABLE',
+      amount: 3200,
+      dueDate: daysFromToday(20),
+      status: 'SCHEDULED',
+      createdById: owner.id,
     },
   })
-  const payable = await prisma.cobranca.create({
+  const payable = await prisma.charge.create({
     data: {
       tenantId: tenant.id,
-      codigo: `COB-${year}-0003`,
-      descricao: 'Manutenção a pagar E2E',
-      tipo: 'A_PAGAR',
-      valor: 450,
-      vencimento: daysFromToday(5),
-      status: 'PENDENTE',
-      criadoPorId: owner.id,
+      code: `COB-${year}-0003`,
+      description: 'Manutenção a pagar E2E',
+      type: 'PAYABLE',
+      amount: 450,
+      dueDate: daysFromToday(5),
+      status: 'PENDING',
+      createdById: owner.id,
     },
   })
   return {
@@ -148,10 +148,10 @@ export async function seedFinancialFixtures(
     ownerEmail: owner.email,
     renterEmail: renter.email,
     overdueChargeId: overdue.id,
-    overdueChargeCode: overdue.codigo,
-    scheduledChargeCode: scheduled.codigo,
-    payableChargeCode: payable.codigo,
-    propertyTitle: property.titulo,
+    overdueChargeCode: overdue.code,
+    scheduledChargeCode: scheduled.code,
+    payableChargeCode: payable.code,
+    propertyTitle: property.title,
   }
 }
 
@@ -160,10 +160,10 @@ export async function cleanupFinancialFixtures(prisma: PrismaClient, tenantIds: 
   const where = { tenantId: { in: tenantIds }, tenant: { slug: { startsWith: slugPrefix } } }
   await prisma.$transaction([
     prisma.chargeAuditEvent.deleteMany({ where }),
-    prisma.cobranca.updateMany({ where, data: { comprovanteAtualId: null } }),
-    prisma.comprovanteCobranca.deleteMany({ where }),
-    prisma.cobranca.deleteMany({ where }),
-    prisma.contrato.deleteMany({ where }),
+    prisma.charge.updateMany({ where, data: { currentReceiptId: null } }),
+    prisma.chargeReceipt.deleteMany({ where }),
+    prisma.charge.deleteMany({ where }),
+    prisma.contract.deleteMany({ where }),
     prisma.tenant.deleteMany({
       where: { id: { in: tenantIds }, slug: { startsWith: slugPrefix } },
     }),
@@ -176,9 +176,9 @@ export async function readFinancialEvidence(
   chargeId: string,
 ): Promise<FinancialEvidence> {
   isolated()
-  const charge = await prisma.cobranca.findFirstOrThrow({
+  const charge = await prisma.charge.findFirstOrThrow({
     where: { id: chargeId, tenant: { slug: { startsWith: slugPrefix } } },
-    include: { comprovantes: true },
+    include: { receipts: true },
   })
   const audit = await prisma.chargeAuditEvent.findMany({
     where: { chargeId },
@@ -186,9 +186,9 @@ export async function readFinancialEvidence(
   })
   return {
     status: charge.status,
-    paidById: charge.pagoPorId,
-    cancellationReason: charge.motivoCancelamento,
-    receiptCount: charge.comprovantes.length,
+    paidById: charge.paidById,
+    cancellationReason: charge.cancellationReason,
+    receiptCount: charge.receipts.length,
     auditActions: audit.map((event) => event.action),
   }
 }

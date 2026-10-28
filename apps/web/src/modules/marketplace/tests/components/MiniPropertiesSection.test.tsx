@@ -18,6 +18,7 @@ vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
 
   return {
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
     Link: React.forwardRef<HTMLAnchorElement, { href: { params: { id: string } } }>(
       function MockLocalizedLink({ href, ...props }, ref) {
         return React.createElement('a', { ...props, href: `/properties/${href.params.id}`, ref })
@@ -30,8 +31,8 @@ function summary(id: string): PublicPropertySummary {
   return {
     id,
     title: `Casa ${id}`,
-    purpose: 'VENDA',
-    propertyType: 'CASA',
+    purpose: 'SALE',
+    propertyType: 'HOUSE',
     price: 900000,
     condoFee: null,
     propertyTax: null,

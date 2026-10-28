@@ -1,9 +1,9 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@shared/types/user-role'
 
-export type RestrictedRole = Extract<Papel, 'RENTER' | 'PROPERTY_OWNER'>
+export type RestrictedRole = Extract<UserRole, 'RENTER' | 'PROPERTY_OWNER'>
 
 export type RestrictedRoleAccess = {
-  home: string
+  home: '/dashboard/finance/charges' | '/dashboard/properties'
   navigationHrefs: readonly string[]
   isAllowedPathname: (pathname: string) => boolean
   canManageProperties: boolean

@@ -1,4 +1,4 @@
-import { LEAD_SOURCES } from '@server/crm/constants/lead-sources'
+import { LEAD_SOURCES } from '@shared/config/lead-sources'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
@@ -17,11 +17,8 @@ export const dashboardMetricsSchema = z
     openProposals: z
       .number()
       .int()
-      .openapi({ description: 'Oportunidades não arquivadas em ENVIADA ou EM_NEGOCIACAO.' }),
-    proposalsAwaitingResponse: z
-      .number()
-      .int()
-      .openapi({ description: 'Oportunidades em ENVIADA.' }),
+      .openapi({ description: 'Oportunidades não arquivadas em SENT ou IN_NEGOTIATION.' }),
+    proposalsAwaitingResponse: z.number().int().openapi({ description: 'Oportunidades em SENT.' }),
   })
   .openapi('DashboardMetrics')
 
@@ -33,7 +30,7 @@ export const dashboardRecentLeadSchema = z
     interest: z.string(),
     budget: z.string(),
     source: z.enum(LEAD_SOURCES),
-    stage: z.enum(['NOVO', 'EM_CONTATO', 'VISITA_MARCADA', 'PROPOSTA']),
+    stage: z.enum(['NEW', 'IN_CONTACT', 'VISIT_SCHEDULED', 'PROPOSAL']),
     notes: z.string().nullable(),
     createdAt: z.string(),
   })

@@ -1,4 +1,4 @@
-import type { LoginRequestInput, LoginResponseDTO } from '@server/auth/types/http'
+import type { LoginRequestInput, LoginResponseDTO } from '@shared/types/generated/auth/http'
 
 export type AuthLoginPayload = LoginRequestInput
 export type AuthLoginResponse = LoginResponseDTO

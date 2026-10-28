@@ -28,14 +28,14 @@ export type ContractActionHandler = (
 ) => void
 
 export type ContractMetric = {
-  label: string
+  label: 'active' | 'expiring30' | 'total'
   value: string
   caption: string
   tone: 'primary' | 'info' | 'warning' | 'success'
 }
 
 export type ContractFilterTab = {
-  label: string
+  label: 'ALL' | 'active' | 'expiring90' | 'closed'
   status: ContractsFiltersFormValues['status']
   period: ContractsFiltersFormValues['period']
 }
@@ -141,9 +141,13 @@ export type ContractFieldConfig = {
   multiline?: boolean
 }
 
-export type ContractFieldMeta = {
+export type ContractFieldLabelKey =
+  | TranslationKey<'contracts.wizard.conditions.fields'>
+  | TranslationKey<'contracts.wizard.parties.fields'>
+
+export type ContractFieldMeta<LabelKey extends ContractFieldLabelKey = ContractFieldLabelKey> = {
   name: CreateContractFieldName
-  labelKey: string
+  labelKey: LabelKey
   mask?: string
   options?: string[]
   optionsNamespace?: string
@@ -211,3 +215,4 @@ export interface ContractTableState {
   sort: GridSortModel
   paging: ContractListPagingState
 }
+import type { TranslationKey } from '@/i18n/types/messages.types'

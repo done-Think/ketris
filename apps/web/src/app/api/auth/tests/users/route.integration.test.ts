@@ -16,47 +16,47 @@ describe('/api/auth/users (integração)', () => {
   let agentToken: string
 
   beforeAll(async () => {
-    const tenant = await prisma.tenant.create({ data: { nome: 'Tenant Users', slug: tenantSlug } })
+    const tenant = await prisma.tenant.create({ data: { name: 'Tenant Users', slug: tenantSlug } })
     tenantId = tenant.id
 
-    const admin = await prisma.usuario.create({
+    const admin = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin Teste',
+        name: 'Admin Teste',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
 
-    const agent = await prisma.usuario.create({
+    const agent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Agente Teste',
+        name: 'Agente Teste',
         email: `agent-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
 
     adminToken = await tokenService.sign({
       id: admin.id,
       tenantId: admin.tenantId,
-      nome: admin.nome,
+      name: admin.name,
       email: admin.email,
-      papel: admin.papel,
-      ativo: admin.ativo,
-      vinculoAprovadoEm: admin.vinculoAprovadoEm,
+      role: admin.role,
+      active: admin.active,
+      membershipApprovedAt: admin.membershipApprovedAt,
     })
 
     agentToken = await tokenService.sign({
       id: agent.id,
       tenantId: agent.tenantId,
-      nome: agent.nome,
+      name: agent.name,
       email: agent.email,
-      papel: agent.papel,
-      ativo: agent.ativo,
-      vinculoAprovadoEm: agent.vinculoAprovadoEm,
+      role: agent.role,
+      active: agent.active,
+      membershipApprovedAt: agent.membershipApprovedAt,
     })
   })
 
@@ -94,7 +94,7 @@ describe('/api/auth/users (integração)', () => {
       expect(json.user.tenantId).toBe(tenantId)
       expect(json.user.role).toBe('AGENT')
       expect(json.user.active).toBe(true)
-      expect(json.user).not.toHaveProperty('senhaHash')
+      expect(json.user).not.toHaveProperty('passwordHash')
       expect(json.user).not.toHaveProperty('nome')
       expect(json.user).not.toHaveProperty('papel')
       expect(json.user).not.toHaveProperty('ativo')
@@ -131,17 +131,17 @@ describe('/api/auth/users (integração)', () => {
     it('retorna 409 quando já existe usuário com o e-mail neste tenant', async () => {
       const email = `duplicado-${randomUUID()}@ketris.dev`
 
-      const primeira = await POST(
+      const first = await POST(
         buildRequest('POST', { name: 'Primeira', email, password: 'senha-longa-123' }, adminToken),
       )
-      expect(primeira.status).toBe(201)
+      expect(first.status).toBe(201)
 
-      const segunda = await POST(
+      const second = await POST(
         buildRequest('POST', { name: 'Segunda', email, password: 'outra-senha-123' }, adminToken),
       )
-      const json = await segunda.json()
+      const json = await second.json()
 
-      expect(segunda.status).toBe(409)
+      expect(second.status).toBe(409)
       expect(json.error.code).toBe('EMAIL_ALREADY_IN_USE')
     })
 

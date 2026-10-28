@@ -42,7 +42,7 @@ export class PropertiesService extends BaseService {
       ...(filters.sortOrder ? { sortOrder: filters.sortOrder } : {}),
       ...(filters.search ? { search: filters.search } : {}),
       ...(filters.status ? { status: filters.status } : {}),
-      ...(filters.purpose ? { finalidade: toApiPurpose(filters.purpose) } : {}),
+      ...(filters.purpose ? { purpose: toApiPurpose(filters.purpose) } : {}),
     }
     return this.http
       .get<PropertiesResponse>(this.path, { params })
@@ -108,7 +108,7 @@ export class PropertiesService extends BaseService {
       .post<UploadPropertyMediaResponse>(`${this.path}/media`, formData, {
         headers: { 'Content-Type': undefined },
       })
-      .then((data) => ({ url: data.media.url, type: 'foto' }))
+      .then((data) => ({ url: data.media.url, type: 'photo' }))
   }
 }
 

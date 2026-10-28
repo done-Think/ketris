@@ -31,7 +31,7 @@ describe('autorização temporária de envio de Contracts', () => {
     const token = await tickets.issue(documentDescriptor)
     vi.advanceTimersByTime(600_000)
     await expect(tickets.verify(token)).rejects.toMatchObject({ code: 'CONTRACT_UPLOAD_EXPIRED' })
-    const loginToken = await new SignJWT({ tenantId: 'agency', papel: 'OWNER' })
+    const loginToken = await new SignJWT({ tenantId: 'agency', role: 'OWNER' })
       .setProtectedHeader({ alg: 'HS256' })
       .setSubject('manager')
       .setExpirationTime('10m')

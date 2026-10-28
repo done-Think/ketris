@@ -15,7 +15,7 @@ describe('POST /api/platform/login (integração)', () => {
 
   beforeAll(async () => {
     const admin = await prisma.platformAdmin.create({
-      data: { nome: 'Login Teste', email, senhaHash: await bcrypt.hash(password, 10) },
+      data: { name: 'Login Teste', email, passwordHash: await bcrypt.hash(password, 10) },
     })
     adminId = admin.id
   })
@@ -40,7 +40,7 @@ describe('POST /api/platform/login (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.admin.email).toBe(email)
-    expect(json.admin).not.toHaveProperty('senhaHash')
+    expect(json.admin).not.toHaveProperty('passwordHash')
     expect(typeof json.accessToken).toBe('string')
     expect(typeof json.refreshToken).toBe('string')
   })

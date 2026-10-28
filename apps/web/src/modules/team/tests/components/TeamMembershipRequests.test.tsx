@@ -14,11 +14,9 @@ const usersQuery = vi.hoisted(() => ({
 const useUsers = vi.fn((enabled: boolean) => (enabled ? usersQuery.current : { data: undefined }))
 
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
-vi.mock('@modules/auth/hooks/use-users', () => ({
-  useUsers: (enabled: boolean) => useUsers(enabled),
-}))
-vi.mock('@modules/auth/hooks/use-approve-user-membership', () => ({
-  useApproveUserMembership: () => ({ mutateAsync: approve, isPending: false }),
+vi.mock('../../hooks/use-team-memberships', () => ({
+  useTeamMembershipRequests: (enabled: boolean) => useUsers(enabled),
+  useApproveTeamMembership: () => ({ mutateAsync: approve, isPending: false }),
 }))
 
 const pendingAgent = {

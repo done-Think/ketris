@@ -22,7 +22,7 @@ const receipt = {
 
 describe('charge-adapter', () => {
   it('maps a list item, keeping the derived overdue status', () => {
-    expect(mapChargeListItemFromApi(apiListItem({ status: 'ATRASADA', type: 'A_PAGAR' }))).toEqual({
+    expect(mapChargeListItemFromApi(apiListItem({ status: 'OVERDUE', type: 'PAYABLE' }))).toEqual({
       id: 'charge-1',
       code: 'COB-2026-0001',
       contractId: 'contract-1',
@@ -57,7 +57,7 @@ describe('charge-adapter', () => {
   it('maps a paid charge with its payment and current receipt', () => {
     const charge = mapChargeFromApi(
       apiCharge({
-        status: 'PAGA',
+        status: 'PAID',
         paidAt: '2026-10-08T00:00:00.000Z',
         paymentMethod: 'PIX',
         receipt,
@@ -73,7 +73,7 @@ describe('charge-adapter', () => {
   it('maps a cancelled charge with date and reason', () => {
     const charge = mapChargeFromApi(
       apiCharge({
-        status: 'CANCELADA',
+        status: 'CANCELED',
         cancelledAt: '2026-10-09T15:00:00.000Z',
         cancellationReason: 'Contrato rescindido',
       }),
@@ -89,11 +89,11 @@ describe('charge-adapter', () => {
     expect(
       mapStatusCountsFromApi({
         ALL: 9,
-        PENDENTE: 1,
-        ATRASADA: 2,
-        PAGA: 3,
-        AGENDADA: 2,
-        CANCELADA: 1,
+        PENDING: 1,
+        OVERDUE: 2,
+        PAID: 3,
+        SCHEDULED: 2,
+        CANCELED: 1,
       }),
     ).toEqual({ all: 9, pending: 1, overdue: 2, paid: 3, scheduled: 2, cancelled: 1 })
   })
@@ -125,10 +125,10 @@ describe('charge-adapter', () => {
       }),
     ).toEqual({
       description: 'Taxa extra',
-      type: 'A_PAGAR',
+      type: 'PAYABLE',
       amount: 150,
       dueDate: '2026-11-05',
-      status: 'AGENDADA',
+      status: 'SCHEDULED',
     })
   })
 
@@ -143,14 +143,14 @@ describe('charge-adapter', () => {
     })
     expect(payload).toEqual({
       description: null,
-      type: 'A_RECEBER',
+      type: 'RECEIVABLE',
       amount: 3000,
       dueDate: '2026-10-15',
     })
   })
 
   it('only sends the description when editing a paid or cancelled charge', () => {
-    for (const status of ['PAGA', 'CANCELADA'] as const) {
+    for (const status of ['PAID', 'CANCELED'] as const) {
       const row = mapChargeListItemFromApi(apiListItem({ status }))
       expect(isLockedCharge(row)).toBe(true)
       expect(
@@ -180,7 +180,7 @@ describe('charge-adapter', () => {
       status: 'pending',
     })
     expect(
-      chargeToFormValues(mapChargeListItemFromApi(apiListItem({ status: 'AGENDADA' }))),
+      chargeToFormValues(mapChargeListItemFromApi(apiListItem({ status: 'SCHEDULED' }))),
     ).toEqual({
       description: 'Aluguel outubro',
       amount: 2800,

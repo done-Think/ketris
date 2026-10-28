@@ -23,42 +23,42 @@ describe('/api/platform/tenants (integração)', () => {
   beforeAll(async () => {
     const actor = await prisma.platformAdmin.create({
       data: {
-        nome: 'Ator Teste',
+        name: 'Ator Teste',
         email: `ator-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
+        passwordHash: 'hash-fake',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
       role: 'ADMIN',
-      ativo: true,
+      active: true,
     })
 
     const agent = await prisma.platformAdmin.create({
       data: {
-        nome: 'Agente Teste',
+        name: 'Agente Teste',
         email: `agente-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
+        passwordHash: 'hash-fake',
         role: 'AGENT',
       },
     })
     agentId = agent.id
     agentToken = await tokenService.sign({
       id: agent.id,
-      nome: agent.nome,
+      name: agent.name,
       email: agent.email,
       role: 'AGENT',
-      ativo: true,
+      active: true,
     })
 
-    await prisma.tenant.create({ data: { nome: 'Tenant Existente', slug: existingTenantSlug } })
+    await prisma.tenant.create({ data: { name: 'Tenant Existente', slug: existingTenantSlug } })
     for (const [index, slug] of pagedSlugs.entries())
       await prisma.tenant.create({
         data: {
-          nome: `Paginado ${marker} ${index}`,
+          name: `Paginado ${marker} ${index}`,
           slug,
           accountType: index === 2 ? 'BROKER' : 'AGENCY',
           status: index === 0 ? 'SUSPENDED' : 'ACTIVE',

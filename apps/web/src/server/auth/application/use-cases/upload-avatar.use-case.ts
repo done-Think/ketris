@@ -16,7 +16,7 @@ export class UploadAvatarUseCase {
   async execute(input: UploadAvatarInput) {
     const user = await this.users.findById(input.actorId)
     if (!user || user.tenantId !== input.actorTenantId) throw new UserNotFoundError()
-    if (!user.ativo) throw new AccountDeactivatedError()
+    if (!user.active) throw new AccountDeactivatedError()
     if (
       !['image/jpeg', 'image/png', 'image/webp'].includes(input.contentType) ||
       input.body.byteLength === 0 ||

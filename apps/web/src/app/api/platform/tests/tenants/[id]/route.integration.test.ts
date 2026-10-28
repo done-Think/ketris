@@ -18,23 +18,23 @@ describe('GET /api/platform/tenants/[id] (integração)', () => {
   beforeAll(async () => {
     const admin = await prisma.platformAdmin.create({
       data: {
-        nome: 'Leitor',
+        name: 'Leitor',
         email: `leitor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
+        passwordHash: 'hash-fake',
         role: 'AGENT',
       },
     })
     adminId = admin.id
     token = await tokenService.sign({
       id: admin.id,
-      nome: admin.nome,
+      name: admin.name,
       email: admin.email,
       role: 'AGENT',
-      ativo: true,
+      active: true,
     })
     tenantId = (
       await prisma.tenant.create({
-        data: { nome: 'Tenant Detalhe', slug, accountType: 'AGENCY', status: 'ACTIVE' },
+        data: { name: 'Tenant Detalhe', slug, accountType: 'AGENCY', status: 'ACTIVE' },
       })
     ).id
   })

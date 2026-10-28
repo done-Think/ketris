@@ -15,10 +15,10 @@ import type {
 const staffRoles = ['AGENT', 'OWNER'] as const
 
 const openOpportunityWhere = {
-  arquivadaEm: null,
-  status: { not: 'RECUSADA' },
-  contrato: { is: null },
-} satisfies Prisma.OportunidadeWhereInput
+  archivedAt: null,
+  status: { not: 'REJECTED' },
+  contract: { is: null },
+} satisfies Prisma.OpportunityWhereInput
 
 function countMap(rows: { key: string | null; count: number }[]): Map<string, number> {
   return new Map(rows.flatMap((row) => (row.key ? [[row.key, row.count] as const] : [])))
@@ -26,31 +26,31 @@ function countMap(rows: { key: string | null; count: number }[]): Map<string, nu
 
 async function moveItems(
   tx: Prisma.TransactionClient,
-  { tenantId, sourceId, destinationId, items, opportunityScope, now }: TeamTransferCommand,
+  { tenantId, sourceId, destinationId, items, opportunityScope, now, actor }: TeamTransferCommand,
 ): Promise<TeamTransferResult> {
   const [properties, leads, opportunities, events] = await Promise.all([
     items.properties
-      ? tx.imovel.findMany({ where: { tenantId, responsavelId: sourceId }, select: { id: true } })
+      ? tx.property.findMany({ where: { tenantId, responsibleId: sourceId }, select: { id: true } })
       : [],
     items.leads
-      ? tx.lead.findMany({ where: { tenantId, responsavelId: sourceId }, select: { id: true } })
+      ? tx.lead.findMany({ where: { tenantId, responsibleId: sourceId }, select: { id: true } })
       : [],
     items.opportunities
-      ? tx.oportunidade.findMany({
+      ? tx.opportunity.findMany({
           where: {
             tenantId,
-            responsavelId: sourceId,
+            responsibleId: sourceId,
             ...(opportunityScope === 'open' ? openOpportunityWhere : {}),
           },
           select: { id: true },
         })
       : [],
     items.futureEvents
-      ? tx.eventoAgenda.findMany({
+      ? tx.agendaEvent.findMany({
           where: {
             tenantId,
-            responsavelId: sourceId,
-            inicio: { gte: now },
+            responsibleId: sourceId,
+            start: { gte: now },
             status: { not: 'CANCELLED' },
           },
           select: { id: true },
@@ -65,33 +65,33 @@ async function moveItems(
   }
   await Promise.all([
     result.propertyIds.length
-      ? tx.imovel.updateMany({
+      ? tx.property.updateMany({
           where: { tenantId, id: { in: result.propertyIds } },
-          data: { responsavelId: destinationId },
+          data: { responsibleId: destinationId, updatedById: actor.id },
         })
       : null,
     result.leadIds.length
       ? tx.lead.updateMany({
           where: { tenantId, id: { in: result.leadIds } },
-          data: { responsavelId: destinationId },
+          data: { responsibleId: destinationId, updatedById: actor.id },
         })
       : null,
     result.opportunityIds.length
-      ? tx.oportunidade.updateMany({
+      ? tx.opportunity.updateMany({
           where: { tenantId, id: { in: result.opportunityIds } },
-          data: { responsavelId: destinationId },
+          data: { responsibleId: destinationId, updatedById: actor.id },
         })
       : null,
     result.eventIds.length
-      ? tx.eventoAgenda.updateMany({
+      ? tx.agendaEvent.updateMany({
           where: { tenantId, id: { in: result.eventIds } },
-          data: { responsavelId: destinationId },
+          data: { responsibleId: destinationId, updatedById: actor.id },
         })
       : null,
     result.eventIds.length
-      ? tx.eventoAgenda.updateMany({
-          where: { tenantId, id: { in: result.eventIds }, donoUsuarioId: sourceId },
-          data: { donoUsuarioId: destinationId },
+      ? tx.agendaEvent.updateMany({
+          where: { tenantId, id: { in: result.eventIds }, ownerUserId: sourceId },
+          data: { ownerUserId: destinationId, updatedById: actor.id },
         })
       : null,
   ])
@@ -104,72 +104,72 @@ async function recordTransfer(
   command: TeamTransferCommand,
   result: TeamTransferResult,
 ) {
-  const people = await tx.usuario.findMany({
+  const people = await tx.user.findMany({
     where: { tenantId: command.tenantId, id: { in: [command.sourceId, command.destinationId] } },
-    select: { id: true, nome: true },
+    select: { id: true, name: true },
   })
-  const nameOf = (id: string) => people.find((person) => person.id === id)?.nome ?? ''
-  await tx.transferenciaCarteira.create({
+  const nameOf = (id: string) => people.find((person) => person.id === id)?.name ?? ''
+  await tx.portfolioTransfer.create({
     data: {
       tenantId: command.tenantId,
-      motivo: command.reason,
-      origemId: command.sourceId,
-      origemNome: nameOf(command.sourceId),
-      destinoId: command.destinationId,
-      destinoNome: nameOf(command.destinationId),
-      autorId: command.actor.id,
-      autorNome: command.actor.name,
-      imovelIds: result.propertyIds,
+      reason: command.reason,
+      sourceId: command.sourceId,
+      sourceName: nameOf(command.sourceId),
+      targetId: command.destinationId,
+      targetName: nameOf(command.destinationId),
+      authorId: command.actor.id,
+      authorName: command.actor.name,
+      propertyIds: result.propertyIds,
       leadIds: result.leadIds,
-      eventoIds: result.eventIds,
-      oportunidadeIds: result.opportunityIds,
+      eventIds: result.eventIds,
+      opportunityIds: result.opportunityIds,
     },
   })
 }
 
 export class PrismaTeamRepository implements TeamRepository {
   async listMembers(tenantId: string): Promise<TeamMemberRow[]> {
-    const users = await prisma.usuario.findMany({
+    const users = await prisma.user.findMany({
       where: {
         tenantId,
-        papel: 'AGENT',
-        OR: [{ vinculoAprovadoEm: { not: null } }, { conviteEquipe: { isNot: null } }],
+        role: 'AGENT',
+        OR: [{ membershipApprovedAt: { not: null } }, { teamInvitation: { isNot: null } }],
       },
-      orderBy: [{ ativo: 'desc' }, { nome: 'asc' }],
+      orderBy: [{ active: 'desc' }, { name: 'asc' }],
       select: {
         id: true,
-        nome: true,
+        name: true,
         email: true,
-        telefone: true,
+        phone: true,
         avatarUrl: true,
-        ativo: true,
-        perfilPublico: {
-          select: { headline: true, especialidades: true, telefone: true, status: true },
+        active: true,
+        publicProfile: {
+          select: { headline: true, specialties: true, phone: true, status: true },
         },
-        conviteEquipe: { select: { enviadoEm: true, expiraEm: true, aceitoEm: true } },
+        teamInvitation: { select: { sentAt: true, expiresAt: true, acceptedAt: true } },
       },
     })
     const now = Date.now()
 
     return users.map((user) => {
-      const invitation = user.conviteEquipe
-      const pending = invitation && !invitation.aceitoEm
+      const invitation = user.teamInvitation
+      const pending = invitation && !invitation.acceptedAt
 
       return {
         id: user.id,
-        name: user.nome,
+        name: user.name,
         email: user.email,
-        phone: user.telefone ?? user.perfilPublico?.telefone ?? null,
+        phone: user.phone ?? user.publicProfile?.phone ?? null,
         avatarUrl: user.avatarUrl,
-        headline: user.perfilPublico?.headline ?? null,
-        specialties: user.perfilPublico?.especialidades ?? [],
-        hasPublicProfile: user.perfilPublico?.status === 'PUBLISHED',
-        active: user.ativo,
+        headline: user.publicProfile?.headline ?? null,
+        specialties: user.publicProfile?.specialties ?? [],
+        hasPublicProfile: user.publicProfile?.status === 'PUBLISHED',
+        active: user.active,
         invitation: pending
           ? {
-              status: invitation.expiraEm.getTime() < now ? 'EXPIRED' : 'PENDING',
-              sentAt: invitation.enviadoEm,
-              expiresAt: invitation.expiraEm,
+              status: invitation.expiresAt.getTime() < now ? 'EXPIRED' : 'PENDING',
+              sentAt: invitation.sentAt,
+              expiresAt: invitation.expiresAt,
             }
           : null,
       }
@@ -202,61 +202,61 @@ export class PrismaTeamRepository implements TeamRepository {
       opportunityResponses,
       goals,
     ] = await Promise.all([
-      prisma.imovel.groupBy({
-        by: ['responsavelId'],
-        where: { tenantId, responsavelId: { in: memberIds }, status: { not: 'INACTIVE' } },
+      prisma.property.groupBy({
+        by: ['responsibleId'],
+        where: { tenantId, responsibleId: { in: memberIds }, status: { not: 'INACTIVE' } },
         _count: { _all: true },
       }),
       prisma.lead.groupBy({
-        by: ['responsavelId'],
-        where: { tenantId, responsavelId: { in: memberIds }, oportunidadeId: null },
+        by: ['responsibleId'],
+        where: { tenantId, responsibleId: { in: memberIds }, opportunityId: null },
         _count: { _all: true },
       }),
-      prisma.oportunidade.groupBy({
-        by: ['responsavelId'],
+      prisma.opportunity.groupBy({
+        by: ['responsibleId'],
         where: {
           tenantId,
-          responsavelId: { in: memberIds },
+          responsibleId: { in: memberIds },
           ...openOpportunityWhere,
         },
         _count: { _all: true },
       }),
       prisma.$queryRaw<{ key: string; count: number }[]>`
-          SELECT o."responsavelId" AS key, COUNT(*)::int AS count
-          FROM contratos c JOIN oportunidades o ON o.id = c."oportunidadeOrigemId"
-          WHERE c."tenantId" = ${tenantId} AND o."responsavelId" IN (${ids})
-            AND c."ativadoEm" >= ${period.monthStart} AND c."ativadoEm" < ${period.monthEnd}
-            AND c.status::text <> 'CANCELADO'
-          GROUP BY o."responsavelId"`,
-      prisma.atividadeOportunidade.groupBy({
-        by: ['autorId'],
+          SELECT o."responsibleId" AS key, COUNT(*)::int AS count
+          FROM contracts c JOIN opportunities o ON o.id = c."sourceOpportunityId"
+          WHERE c."tenantId" = ${tenantId} AND o."responsibleId" IN (${ids})
+            AND c."activatedAt" >= ${period.monthStart} AND c."activatedAt" < ${period.monthEnd}
+            AND c.status::text <> 'CANCELED'
+          GROUP BY o."responsibleId"`,
+      prisma.opportunityActivity.groupBy({
+        by: ['authorId'],
         where: {
-          tipo: 'CONTATO_REALIZADO',
-          autorId: { in: memberIds },
+          type: 'CONTACT_MADE',
+          authorId: { in: memberIds },
           createdAt: { gte: period.monthStart, lt: period.monthEnd },
-          oportunidade: { tenantId },
+          opportunity: { tenantId },
         },
         _count: { _all: true },
       }),
       prisma.$queryRaw<{ key: string; minutes: number }[]>`
-          SELECT "responsavelId" AS key,
-                 EXTRACT(EPOCH FROM ("primeiroContatoEm" - "createdAt")) / 60 AS minutes
+          SELECT "responsibleId" AS key,
+                 EXTRACT(EPOCH FROM ("firstContactAt" - "createdAt")) / 60 AS minutes
           FROM leads
-          WHERE "tenantId" = ${tenantId} AND "responsavelId" IN (${ids})
-            AND "createdAt" >= ${period.responseWindowStart} AND "primeiroContatoEm" IS NOT NULL`,
+          WHERE "tenantId" = ${tenantId} AND "responsibleId" IN (${ids})
+            AND "createdAt" >= ${period.responseWindowStart} AND "firstContactAt" IS NOT NULL`,
       prisma.$queryRaw<{ key: string; minutes: number }[]>`
-          SELECT o."responsavelId" AS key,
+          SELECT o."responsibleId" AS key,
                  EXTRACT(EPOCH FROM (MIN(a."createdAt") - o."createdAt")) / 60 AS minutes
-          FROM oportunidades o
-          JOIN atividades_oportunidade a
-            ON a."oportunidadeId" = o.id AND a."autorId" = o."responsavelId"
-          WHERE o."tenantId" = ${tenantId} AND o."responsavelId" IN (${ids})
+          FROM opportunities o
+          JOIN opportunity_activities a
+            ON a."opportunityId" = o.id AND a."authorId" = o."responsibleId"
+          WHERE o."tenantId" = ${tenantId} AND o."responsibleId" IN (${ids})
             AND o."createdAt" >= ${period.responseWindowStart}
-          GROUP BY o.id, o."responsavelId", o."createdAt"`,
-      prisma.metaCorretor.findMany({
-        where: { tenantId, usuarioId: { in: memberIds } },
+          GROUP BY o.id, o."responsibleId", o."createdAt"`,
+      prisma.brokerGoal.findMany({
+        where: { tenantId, userId: { in: memberIds } },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        distinct: ['usuarioId'],
+        distinct: ['userId'],
       }),
     ])
     const responseMinutes = new Map<string, number[]>()
@@ -267,24 +267,24 @@ export class PrismaTeamRepository implements TeamRepository {
 
     return {
       properties: countMap(
-        properties.map((row) => ({ key: row.responsavelId, count: row._count._all })),
+        properties.map((row) => ({ key: row.responsibleId, count: row._count._all })),
       ),
       openLeads: countMap(
-        openLeads.map((row) => ({ key: row.responsavelId, count: row._count._all })),
+        openLeads.map((row) => ({ key: row.responsibleId, count: row._count._all })),
       ),
       openOpportunities: countMap(
-        openOpportunities.map((row) => ({ key: row.responsavelId, count: row._count._all })),
+        openOpportunities.map((row) => ({ key: row.responsibleId, count: row._count._all })),
       ),
       monthlySales: countMap(sales),
-      returns: countMap(returns.map((row) => ({ key: row.autorId, count: row._count._all }))),
+      returns: countMap(returns.map((row) => ({ key: row.authorId, count: row._count._all }))),
       responseMinutes,
       goals: new Map(
         goals.map((goal) => [
-          goal.usuarioId,
+          goal.userId,
           {
-            monthlySales: goal.vendasMensais,
+            monthlySales: goal.monthlySales,
             setAt: goal.createdAt,
-            setByName: goal.definidoPorNome,
+            setByName: goal.definedByName,
           },
         ]),
       ),
@@ -292,24 +292,24 @@ export class PrismaTeamRepository implements TeamRepository {
   }
 
   async findStaffUser(tenantId: string, userId: string): Promise<TeamStaffUser | null> {
-    const user = await prisma.usuario.findFirst({
-      where: { tenantId, id: userId, papel: { in: [...staffRoles] } },
+    const user = await prisma.user.findFirst({
+      where: { tenantId, id: userId, role: { in: [...staffRoles] } },
       select: {
         id: true,
-        nome: true,
-        papel: true,
-        ativo: true,
-        conviteEquipe: { select: { aceitoEm: true } },
+        name: true,
+        role: true,
+        active: true,
+        teamInvitation: { select: { acceptedAt: true } },
       },
     })
 
     return user
       ? {
           id: user.id,
-          name: user.nome,
-          papel: user.papel,
-          active: user.ativo,
-          pendingInvitation: Boolean(user.conviteEquipe && !user.conviteEquipe.aceitoEm),
+          name: user.name,
+          role: user.role,
+          active: user.active,
+          pendingInvitation: Boolean(user.teamInvitation && !user.teamInvitation.acceptedAt),
         }
       : null
   }
@@ -326,9 +326,9 @@ export class PrismaTeamRepository implements TeamRepository {
     return prisma.$transaction(async (tx) => {
       const result = await moveItems(tx, command)
       await recordTransfer(tx, command, result)
-      await tx.usuario.updateMany({
+      await tx.user.updateMany({
         where: { tenantId: command.tenantId, id: command.sourceId },
-        data: { ativo: false, versaoSessao: { increment: 1 } },
+        data: { active: false, sessionVersion: { increment: 1 } },
       })
       await tx.refreshToken.updateMany({
         where: { userId: command.sourceId, tenantId: command.tenantId, revokedAt: null },
@@ -347,9 +347,9 @@ export class PrismaTeamRepository implements TeamRepository {
 
   async activate(tenantId: string, userId: string, actorId: string): Promise<boolean> {
     return prisma.$transaction(async (tx) => {
-      const { count } = await tx.usuario.updateMany({
-        where: { tenantId, id: userId, ativo: false },
-        data: { ativo: true },
+      const { count } = await tx.user.updateMany({
+        where: { tenantId, id: userId, active: false },
+        data: { active: true },
       })
       if (count)
         await recordUserAudit(tx, {
@@ -369,36 +369,36 @@ export class PrismaTeamRepository implements TeamRepository {
     monthlySales: number,
     actor: { id: string; name: string },
   ): Promise<TeamGoalChange> {
-    const goal = await prisma.metaCorretor.create({
+    const goal = await prisma.brokerGoal.create({
       data: {
         tenantId,
-        usuarioId: userId,
-        vendasMensais: monthlySales,
-        definidoPorId: actor.id,
-        definidoPorNome: actor.name,
+        userId: userId,
+        monthlySales: monthlySales,
+        definedById: actor.id,
+        definedByName: actor.name,
       },
     })
 
     return {
       id: goal.id,
-      monthlySales: goal.vendasMensais,
+      monthlySales: goal.monthlySales,
       setAt: goal.createdAt,
-      setByName: goal.definidoPorNome,
+      setByName: goal.definedByName,
     }
   }
 
   async listGoals(tenantId: string, userId: string, limit: number): Promise<TeamGoalChange[]> {
-    const goals = await prisma.metaCorretor.findMany({
-      where: { tenantId, usuarioId: userId },
+    const goals = await prisma.brokerGoal.findMany({
+      where: { tenantId, userId: userId },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit,
     })
 
     return goals.map((goal) => ({
       id: goal.id,
-      monthlySales: goal.vendasMensais,
+      monthlySales: goal.monthlySales,
       setAt: goal.createdAt,
-      setByName: goal.definidoPorNome,
+      setByName: goal.definedByName,
     }))
   }
 }

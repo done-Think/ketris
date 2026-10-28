@@ -1,9 +1,11 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
 import { getDatabaseUrl } from '../src/server/db/database-url'
+import { createPostgresAdapter } from '../src/server/db/postgres-adapter'
 import { protectLegacyContractCpfs } from '../src/server/contracts/infrastructure/protect-legacy-contract-cpfs'
 
-const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: getDatabaseUrl() }) })
+const prisma = new PrismaClient({
+  adapter: createPostgresAdapter({ connectionString: getDatabaseUrl() }),
+})
 
 async function main() {
   const count = await protectLegacyContractCpfs(prisma)

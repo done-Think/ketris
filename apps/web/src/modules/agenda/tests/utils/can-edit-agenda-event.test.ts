@@ -27,10 +27,10 @@ describe('permissões do frontend preservam as regras de Agenda do backend', () 
       let allowed = true
       try {
         assertCanManageAgendaEvent(role, 'user', {
-          interno: internal,
-          destino: audience,
-          responsavelId: responsibleId,
-          criadoPorId: createdById,
+          internal: internal,
+          audience: audience,
+          responsibleId: responsibleId,
+          createdById: createdById,
         } as DomainEvent)
       } catch {
         allowed = false

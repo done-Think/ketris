@@ -27,7 +27,7 @@ export class CreateOpportunityUseCase {
   ) {}
 
   async execute(input: CreateOpportunityInput): Promise<CreateOpportunityOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     const ownsProperty = await this.propertyLookup.existsForTenant(
       input.actorTenantId,
       input.propertyId,
@@ -35,13 +35,13 @@ export class CreateOpportunityUseCase {
 
     if (!ownsProperty) throw new OpportunityPropertyNotFoundError()
 
-    if (input.actorPapel === 'AGENT') {
-      const responsavelId = await this.propertyLookup.findResponsavelId(
+    if (input.actorRole === 'AGENT') {
+      const responsibleId = await this.propertyLookup.findResponsibleId(
         input.actorTenantId,
         input.propertyId,
       )
 
-      if (responsavelId !== input.actorId) {
+      if (responsibleId !== input.actorId) {
         throw new ForbiddenError('Você só pode criar oportunidades para os próprios imóveis.')
       }
     }
@@ -49,7 +49,7 @@ export class CreateOpportunityUseCase {
     const responsibleId = await resolveOpportunityResponsible(this.responsibleLookup, {
       tenantId: input.actorTenantId,
       actorId: input.actorId,
-      actorPapel: input.actorPapel,
+      actorRole: input.actorRole,
       requestedId: input.responsibleId,
     })
 
@@ -77,7 +77,7 @@ export class CreateOpportunityUseCase {
       leadPhone: input.leadPhone ?? null,
       proposedValue: input.proposedValue,
       notes: input.notes ?? null,
-      status: input.status ?? 'RASCUNHO',
+      status: input.status ?? 'DRAFT',
       contractTermMonths: input.contractTermMonths,
       desiredStartDate: input.desiredStartDate,
       guaranteeType: input.guaranteeType,
@@ -87,7 +87,7 @@ export class CreateOpportunityUseCase {
 
     await this.activityRepository.create({
       opportunityId: opportunity.id,
-      type: 'NOTA',
+      type: 'NOTE',
       description: '',
       systemAction: 'OPPORTUNITY_CREATED',
       authorId: input.actorId,

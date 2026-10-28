@@ -125,13 +125,13 @@
       "parkingSpaces": "PARKING",
       "area": "AREA",
       "condominium": "CONDO FEE",
-      "iptu": "PROPERTY TAX"
+      "propertyTax": "PROPERTY TAX"
     },
     "pricing": {
       "rent": "RENT",
       "sale": "SALE",
       "condominium": "CONDO FEE",
-      "iptu": "PROPERTY TAX",
+      "propertyTax": "PROPERTY TAX",
       "administrationFee": "MANAGEMENT FEE",
       "securityDeposit": "GUARANTEE",
       "lastAdjustment": "LAST ADJUSTMENT"
@@ -193,7 +193,7 @@
       "saleValue": "Sale value",
       "referenceValue": "Property reference value",
       "condominium": "Condo fee",
-      "iptu": "Monthly property tax",
+      "propertyTax": "Monthly property tax",
       "securityDeposit": "Guarantee",
       "commission": "Commission",
       "commercialTerms": "Commercial terms",

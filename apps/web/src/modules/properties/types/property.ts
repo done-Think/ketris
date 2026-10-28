@@ -1,13 +1,13 @@
-import type { AppLocale } from '@/i18n/types/locale.types'
+import type { components } from '@shared/types/generated/api'
+
 export type PropertyType =
   'apartment' | 'house' | 'studio' | 'penthouse' | 'commercial' | 'loft' | 'other'
 
-export type ApiPropertyType =
-  'APARTAMENTO' | 'CASA' | 'STUDIO' | 'COBERTURA' | 'COMERCIAL' | 'LOFT' | 'OUTRO'
+export type ApiPropertyType = components['schemas']['TenantProperty']['type']
 
 export type PropertyAmenity = 'furnished' | 'gourmetBalcony' | 'petFriendly' | 'concierge24h'
 
-export type ApiPropertyAmenity = 'MOBILIADO' | 'VARANDA_GOURMET' | 'ACEITA_PETS' | 'PORTARIA_24H'
+export type ApiPropertyAmenity = components['schemas']['TenantPropertyListing']['amenities'][number]
 
 export interface PropertyListing {
   amenities: PropertyAmenity[]
@@ -17,57 +17,26 @@ export interface PropertyListing {
   featured: boolean
 }
 
-export interface ApiPropertyListing {
-  comodidades: ApiPropertyAmenity[]
-  condicoesNegociacao: string | null
-  publicarAposRevisao: boolean
-  permiteContatoWhatsapp: boolean
-  destaque: boolean
-}
+export type ApiPropertyListing = components['schemas']['TenantPropertyListing']
 
-export type PropertyPurpose = 'RENT' | 'SALE' | 'BOTH'
+export type PropertyPurpose = components['schemas']['TenantProperty']['purpose']
 
-export type PropertyStatus = 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
+export type PropertyStatus = components['schemas']['TenantProperty']['status']
 
-export interface PropertyAddress {
-  street: string
-  number: string
-  complement: string | null
-  neighborhood: string
-  city: string
-  state: string
-  zipCode: string
-  latitude: number | null
-  longitude: number | null
-}
+export type PropertyAddress = NonNullable<components['schemas']['TenantPropertyAddress']>
 
-export interface PropertyMedia {
-  id: string
-  url: string
-  type: string
-  order: number
-  createdAt: string
-}
+export type PropertyMediaType = components['schemas']['TenantPropertyMedia']['type']
 
-export interface PropertyMediaInput {
-  url: string
-  type?: string
-  order?: number
-}
+export type PropertyMedia = Omit<ApiPropertyMedia, 'position'> & { order: number }
 
-export interface PropertyValues {
-  price: number
-  rentalPrice: number | null
-  condoFee: number | null
-  propertyTax: number | null
-}
+export type PropertyMediaInput = Omit<
+  components['schemas']['TenantPropertyMediaInput'],
+  'position'
+> & { order?: number }
 
-export interface PropertyCharacteristics {
-  bedrooms: number | null
-  bathrooms: number | null
-  parkingSpots: number | null
-  areaM2: number | null
-}
+export type PropertyValues = components['schemas']['TenantPropertyValues']
+
+export type PropertyCharacteristics = components['schemas']['TenantPropertyCharacteristics']
 
 export interface Property {
   id: string
@@ -101,7 +70,7 @@ export interface PropertyFormValues {
   bedrooms?: number | null
   bathrooms?: number | null
   parkingSpots?: number | null
-  areaM2?: number | null
+  areaSqm?: number | null
   price: number
   rentalPrice?: number | null
   condoFee?: number | null
@@ -110,87 +79,25 @@ export interface PropertyFormValues {
   media?: PropertyMediaInput[]
 }
 
-export type PropertySortField =
-  'title' | 'type' | 'saleValue' | 'rentalValue' | 'status' | 'broker' | 'updatedAt'
+export type PropertySortField = NonNullable<
+  components['schemas']['ListTenantPropertiesQuery']['sortBy']
+>
 
-export interface PropertyListFilters {
-  locale?: AppLocale
-  sortBy?: PropertySortField
-  sortOrder?: 'asc' | 'desc'
-  page?: number
-  pageSize?: number
-  search?: string
-  status?: PropertyStatus
-  purpose?: PropertyPurpose
-}
+export type PropertyListFilters = components['schemas']['ListTenantPropertiesQuery']
 
-export interface ApiPropertyAddress {
-  logradouro: string
-  numero: string
-  complemento: string | null
-  bairro: string
-  cidade: string
-  estado: string
-  cep: string
-  latitude: number | null
-  longitude: number | null
-}
+export type ApiPropertyAddress = NonNullable<components['schemas']['TenantPropertyAddress']>
 
-export interface ApiPropertyMedia {
-  id: string
-  url: string
-  tipo: string
-  ordem: number
-  createdAt: string
-}
+export type ApiPropertyMedia = components['schemas']['TenantPropertyMedia']
 
-export interface ApiProperty {
-  anuncio: ApiPropertyListing
-  id: string
-  tenantId: string
-  responsavelId: string
-  responsavelNome: string
-  activeContractId: string | null
-  proprietarioId: string | null
-  titulo: string
-  descricao: string | null
-  finalidade: 'ALUGUEL' | 'VENDA' | 'AMBOS'
-  tipo: ApiPropertyType
-  status: PropertyStatus
-  publicadoEm: string | null
-  createdAt: string
-  updatedAt: string
-  endereco: ApiPropertyAddress | null
-  midias: ApiPropertyMedia[]
-  valores: {
-    valor: number
-    valorAluguel: number | null
-    condominio: number | null
-    iptu: number | null
-  }
-  caracteristicas: {
-    quartos: number | null
-    banheiros: number | null
-    vagas: number | null
-    areaM2: number | null
-  }
-}
+export type ApiProperty = components['schemas']['TenantProperty']
 
-export interface PropertyOwnerOption {
-  id: string
-  name: string
-}
-export interface PropertyOwnersResponse {
-  owners: PropertyOwnerOption[]
-  pagination: PropertyPage['pagination']
-}
+export type PropertyOwnerOption = components['schemas']['PropertyOwnersResponse']['owners'][number]
+export type PropertyOwnersResponse = components['schemas']['PropertyOwnersResponse']
 export interface PropertyPayloadOptions {
   existingAddress?: PropertyAddress | null
   canChooseOwner?: boolean
 }
 
-export interface PropertyPage {
+export type PropertyPage = Omit<components['schemas']['TenantPropertiesResponse'], 'properties'> & {
   properties: Property[]
-  pagination: { page: number; pageSize: number; total: number; totalPages: number }
-  counts: Record<PropertyStatus, number>
 }

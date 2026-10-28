@@ -1,4 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import type { PublicPropertyDetail } from './property'
 import type { AgencyProfileDraft } from './agency-profile'
 import type { BrokerProfileDraft } from './broker-profile'
@@ -20,12 +20,12 @@ export interface GetBrokerProfileInput {
 
 export interface GetOwnAgencyProfileInput {
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export interface GetOwnBrokerProfileInput {
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export interface GetPropertyInput {
@@ -35,23 +35,25 @@ export interface GetPropertyInput {
 export type GetPropertyOutput = PublicPropertyDetail
 
 export interface PublishAgencyProfileInput {
+  actorId?: string
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export interface PublishBrokerProfileInput {
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export interface SaveAgencyProfileInput extends AgencyProfileDraft {
+  actorId?: string
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export interface SaveBrokerProfileInput extends BrokerProfileDraft {
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export type SearchPropertiesInput = PropertySearchFilters & PropertySearchPage
@@ -59,6 +61,7 @@ export type SearchPropertiesInput = PropertySearchFilters & PropertySearchPage
 export type SearchPropertiesOutput = PropertySearchResult & PropertySearchPage
 
 export interface SubmitInquiryInput {
+  website?: string
   propertyId: string
   leadName: string
   leadEmail: string
@@ -70,13 +73,14 @@ export interface SubmitInquiryInput {
 export type SubmitInquiryOutput = CreatedInquiry
 
 export interface UnpublishAgencyProfileInput {
+  actorId?: string
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export interface UnpublishBrokerProfileInput {
   actorId: string
-  actorPapel: Papel
+  actorRole: UserRole
 }
 
 export type ProfileMediaTarget = 'broker-avatar' | 'broker-banner' | 'agency-logo' | 'agency-banner'
@@ -84,7 +88,7 @@ export type ProfileMediaTarget = 'broker-avatar' | 'broker-banner' | 'agency-log
 export interface UploadProfileMediaUseCaseInput {
   actorId: string
   actorTenantId: string
-  actorPapel: Papel
+  actorRole: UserRole
   target: ProfileMediaTarget
   filename: string
   contentType: string

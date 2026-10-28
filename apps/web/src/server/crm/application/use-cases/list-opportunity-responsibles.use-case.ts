@@ -12,8 +12,8 @@ export class ListOpportunityResponsiblesUseCase {
   constructor(private readonly responsibleLookup: ResponsibleLookupPort) {}
 
   async execute(input: ListOpportunityResponsiblesInput): Promise<OpportunityResponsible[]> {
-    assertCrmAccess(input.actorPapel)
-    if (!isAgencyManager(input.actorPapel))
+    assertCrmAccess(input.actorRole)
+    if (!isAgencyManager(input.actorRole))
       throw new ForbiddenError('Só o responsável pela imobiliária escolhe responsáveis.')
 
     return this.responsibleLookup.listActiveStaff(input.actorTenantId)

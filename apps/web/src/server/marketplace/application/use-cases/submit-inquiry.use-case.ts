@@ -1,4 +1,4 @@
-import { PropertyNotFoundError } from '../../domain/errors'
+import { InquiryRejectedError, PropertyNotFoundError } from '../../domain/errors'
 import { toCreatedInquiry } from '../../domain/inquiry.entity'
 import type { InquiryRepository } from '../ports/inquiry-repository.port'
 import type { PublicPropertyRepository } from '../ports/public-property-repository.port'
@@ -11,6 +11,7 @@ export class SubmitInquiryUseCase {
   ) {}
 
   async execute(input: SubmitInquiryInput): Promise<SubmitInquiryOutput> {
+    if (input.website?.trim()) throw new InquiryRejectedError()
     const property = await this.propertyRepository.findPublishedById(input.propertyId)
 
     if (!property) {
@@ -21,7 +22,7 @@ export class SubmitInquiryUseCase {
       tenantId: property.tenantId,
       propertyId: property.id,
       leadName: input.leadName,
-      leadEmail: input.leadEmail,
+      leadEmail: input.leadEmail.trim().toLowerCase(),
       leadPhone: input.leadPhone ?? null,
       proposedValue: input.proposedValue ?? property.price,
       notes: input.notes ?? null,

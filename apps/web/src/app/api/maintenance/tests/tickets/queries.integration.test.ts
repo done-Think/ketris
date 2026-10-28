@@ -52,25 +52,25 @@ describe('/api/maintenance full summaries and consistent access', () => {
         (await listTickets(request('tickets?category=', 'GET', env.fixture.admin.token))).status,
       ).toBe(400)
     } finally {
-      await prisma.chamadoManutencao.deleteMany({ where: { id: { in: [...ids.values()] } } })
+      await prisma.maintenanceTicket.deleteMany({ where: { id: { in: [...ids.values()] } } })
     }
   })
 
   it('aggregates every authorized ticket independently of pagination and filters', async () => {
-    await prisma.chamadoManutencao.createMany({
+    await prisma.maintenanceTicket.createMany({
       data: Array.from({ length: 125 }, (_value, index) => ({
         tenantId: env.fixture.tenant.id,
-        imovelId: env.fixture.property.id,
-        contratoId: env.fixture.contract.id,
-        categoria: 'PLUMBING',
-        titulo: `Ticket ${String(index).padStart(3, '0')}`,
-        descricao: 'Real stored ticket',
-        abertoPorId: env.fixture.admin.id,
-        abertoPorNome: env.fixture.admin.nome,
-        prioridade: index >= 100 ? ('URGENTE' as const) : ('NORMAL' as const),
-        status: index >= 100 ? ('RESOLVIDO' as const) : ('ABERTO' as const),
+        propertyId: env.fixture.property.id,
+        contractId: env.fixture.contract.id,
+        category: 'PLUMBING',
+        title: `Ticket ${String(index).padStart(3, '0')}`,
+        description: 'Real stored ticket',
+        openedById: env.fixture.admin.id,
+        openedByName: env.fixture.admin.name,
+        priority: index >= 100 ? ('URGENT' as const) : ('NORMAL' as const),
+        status: index >= 100 ? ('RESOLVED' as const) : ('OPEN' as const),
         createdAt: new Date('2026-01-01T12:00:00Z'),
-        resolvidoEm: index >= 100 ? new Date('2026-01-04T12:00:00Z') : null,
+        resolvedAt: index >= 100 ? new Date('2026-01-04T12:00:00Z') : null,
         updatedAt: new Date(new Date('2026-01-05T12:00:00Z').getTime() + index * 1000),
       })),
     })
@@ -86,13 +86,13 @@ describe('/api/maintenance full summaries and consistent access', () => {
       summary: {
         totalCount: 125,
         urgentCount: 25,
-        byStatus: { ABERTO: 100, RESOLVIDO: 25 },
+        byStatus: { OPEN: 100, RESOLVED: 25 },
         averageResolutionDays: 3,
       },
     })
     expect(body.items.every((item: Record<string, unknown>) => !('access' in item))).toBe(true)
     const filtered = await listTickets(
-      request('tickets?status=ABERTO&pageSize=5', 'GET', env.fixture.admin.token),
+      request('tickets?status=OPEN&pageSize=5', 'GET', env.fixture.admin.token),
     )
     expect(await filtered.json()).toMatchObject({ totalCount: 100, summary: body.summary })
     const found = await listTickets(
@@ -128,18 +128,18 @@ describe('/api/maintenance full summaries and consistent access', () => {
         summary: { totalCount: 0, urgentCount: 0, byStatus: {}, averageResolutionDays: null },
       })
     }
-    await prisma.chamadoManutencao.createMany({
+    await prisma.maintenanceTicket.createMany({
       data: Array.from({ length: 5 }, (_value, index) => ({
         tenantId: env.fixture.tenant.id,
-        imovelId: env.fixture.property.id,
-        contratoId: env.fixture.contract.id,
-        categoria: 'PAINTING',
-        titulo: `Archived ${index}`,
-        descricao: 'Archived ticket',
-        abertoPorId: env.fixture.admin.id,
-        abertoPorNome: env.fixture.admin.nome,
-        excluidoEm: new Date(),
-        prioridade: index === 0 ? ('URGENTE' as const) : ('NORMAL' as const),
+        propertyId: env.fixture.property.id,
+        contractId: env.fixture.contract.id,
+        category: 'PAINTING',
+        title: `Archived ${index}`,
+        description: 'Archived ticket',
+        openedById: env.fixture.admin.id,
+        openedByName: env.fixture.admin.name,
+        deletedAt: new Date(),
+        priority: index === 0 ? ('URGENT' as const) : ('NORMAL' as const),
       })),
     })
     const archived = await listTickets(
@@ -155,28 +155,28 @@ describe('/api/maintenance full summaries and consistent access', () => {
   })
 
   it('keeps inconsistent and legacy relationships visible only to management', async () => {
-    const otherProperty = await prisma.imovel.create({
+    const otherProperty = await prisma.property.create({
       data: {
         tenantId: env.fixture.tenant.id,
-        responsavelId: env.fixture.agent.id,
-        titulo: 'Second property',
-        finalidade: 'ALUGUEL',
-        tipo: 'CASA',
-        valor: 1000,
+        responsibleId: env.fixture.agent.id,
+        title: 'Second property',
+        purpose: 'RENT',
+        type: 'HOUSE',
+        price: 1000,
       },
     })
     const contract = await env.anotherContract(otherProperty.id)
-    const invalid = await prisma.chamadoManutencao.create({
+    const invalid = await prisma.maintenanceTicket.create({
       data: {
         tenantId: env.fixture.tenant.id,
-        imovelId: env.fixture.property.id,
-        contratoId: contract.id,
-        responsavelId: env.fixture.agent.id,
-        categoria: 'PLUMBING',
-        titulo: 'Inconsistent relation',
-        descricao: 'Contract belongs to another property',
-        abertoPorId: env.fixture.admin.id,
-        abertoPorNome: env.fixture.admin.nome,
+        propertyId: env.fixture.property.id,
+        contractId: contract.id,
+        responsibleId: env.fixture.agent.id,
+        category: 'PLUMBING',
+        title: 'Inconsistent relation',
+        description: 'Contract belongs to another property',
+        openedById: env.fixture.admin.id,
+        openedByName: env.fixture.admin.name,
       },
     })
     const manager = await listTickets(
@@ -196,7 +196,7 @@ describe('/api/maintenance full summaries and consistent access', () => {
           .status,
       ).toBe(404)
     }
-    const legacy = await env.legacyTicket('ABERTO')
+    const legacy = await env.legacyTicket('OPEN')
     expect(
       (
         await (
@@ -226,7 +226,7 @@ describe('/api/maintenance full summaries and consistent access', () => {
     const ticket = (await response.json()).ticket
     expect(ticket.category).toBe('PLUMBING')
     expect(
-      (await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id: ticket.id } })).categoria,
+      (await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id: ticket.id } })).category,
     ).toBe('PLUMBING')
     for (const [search, locale] of [
       ['Hidraulica', 'pt-BR'],

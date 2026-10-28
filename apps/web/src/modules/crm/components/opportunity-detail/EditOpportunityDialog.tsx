@@ -27,7 +27,7 @@ const emptyEditOpportunityValues: OpportunityEditFormValues = {
   proposedValue: '',
   contractTermMonths: '',
   desiredStartDate: '',
-  guaranteeType: 'NENHUMA',
+  guaranteeType: 'NONE',
   specialConditions: [],
   notes: '',
 }

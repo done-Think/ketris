@@ -11,13 +11,13 @@ import { RefreshPlatformAdminTokenUseCase } from '../../../application/use-cases
 
 const admin: PlatformAdmin = {
   id: 'platform-admin-1',
-  nome: 'Dono Ketris',
+  name: 'Dono Ketris',
   email: 'dono@ketris.dev',
-  senhaHash: 'hash-fake',
+  passwordHash: 'hash-fake',
   role: 'ADMIN',
-  ativo: true,
+  active: true,
   createdAt: new Date('2026-01-01T00:00:00.000Z'),
-  ultimoAcessoEm: null,
+  lastAccessAt: null,
 }
 
 const stored: StoredPlatformRefreshToken = { id: 'rt-1', platformAdminId: admin.id }
@@ -104,7 +104,7 @@ describe('RefreshPlatformAdminTokenUseCase', () => {
   })
 
   it('lança InvalidPlatformRefreshTokenError quando o admin do token está desativado', async () => {
-    const deps = createDeps({ findById: vi.fn().mockResolvedValue({ ...admin, ativo: false }) })
+    const deps = createDeps({ findById: vi.fn().mockResolvedValue({ ...admin, active: false }) })
     const useCase = new RefreshPlatformAdminTokenUseCase(
       deps.platformAdminRepository,
       deps.tokenService,

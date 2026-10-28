@@ -83,8 +83,8 @@ describe('property presentation', () => {
     const summary: PublicPropertySummary = {
       id: 'p1',
       title: 'Casa',
-      purpose: 'ALUGUEL',
-      propertyType: 'CASA',
+      purpose: 'RENT',
+      propertyType: 'HOUSE',
       price: 3200,
       condoFee: null,
       propertyTax: null,
@@ -143,8 +143,8 @@ describe('public profile editor adapters', () => {
       yearsInMarket: '12',
       coverage: 'Centro, Batel',
       team: [
-        { usuarioId: 'u2', name: 'Bia' },
-        { usuarioId: 'u1', name: 'Caio' },
+        { userId: 'u2', name: 'Bia' },
+        { userId: 'u1', name: 'Caio' },
       ],
     })
 
@@ -152,8 +152,8 @@ describe('public profile editor adapters', () => {
       yearsInMarket: 12,
       coverage: ['Centro', 'Batel'],
       team: [
-        { usuarioId: 'u2', order: 0 },
-        { usuarioId: 'u1', order: 1 },
+        { userId: 'u2', order: 0 },
+        { userId: 'u1', order: 1 },
       ],
     })
     expect(agencyEditor.toDraft(agencyEditor.emptyValues).yearsInMarket).toBeNull()

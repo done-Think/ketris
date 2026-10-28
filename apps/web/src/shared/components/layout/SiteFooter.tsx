@@ -1,5 +1,7 @@
 'use client'
 
+import { styles } from '@shared/styles/site-footer.styles'
+
 import {
   Box,
   Container,
@@ -17,7 +19,7 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { AppLogo } from '@shared/components/ui'
-import { alpha, componentText, iconSize, surface } from '@shared/theme/tokens'
+
 import type { SiteFooterProps } from '@shared/types/site-footer'
 
 const socialLinks = [
@@ -30,78 +32,34 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
   const t = useTranslations('marketplace.footer')
 
   return (
-    <Box component="footer" sx={{ mt: 'auto', bgcolor: surface.dark, color: surface.lightText }}>
+    <Box component="footer" sx={styles.box}>
       <Container maxWidth="xl">
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              md: 'minmax(260px, 1fr) minmax(520px, 0.95fr)',
-            },
-            gap: { xs: 1.25, md: 7 },
-            py: { xs: 2.4, md: 7 },
-          }}
-        >
-          <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+        <Box sx={styles.box2}>
+          <Box sx={styles.box3}>
             <AppLogo
               src={ketrisLogoFooter}
               width={{ xs: 92, md: 102 }}
               marginBottom={{ xs: 0.6, md: 2 }}
             />
-            <Typography
-              sx={{
-                color: alpha.white[62],
-                ...componentText.footerBody,
-                maxWidth: { xs: 310, md: 360 },
-                mx: { xs: 'auto', md: 0 },
-              }}
-            >
-              {t('description')}
-            </Typography>
+            <Typography sx={styles.typography}>{t('description')}</Typography>
             <Stack
               direction="row"
               justifyContent={{ xs: 'center', md: 'flex-start' }}
               spacing={1.2}
-              sx={{ mt: { xs: 0.8, md: 3 } }}
+              sx={styles.stack}
             >
               {socialLinks.map(({ label, icon: Icon }) => (
-                <IconButton
-                  key={label}
-                  aria-label={label}
-                  size="small"
-                  sx={{
-                    width: 32,
-                    height: 32,
-                    bgcolor: alpha.white[8],
-                    color: alpha.white[78],
-                    '&:hover': {
-                      bgcolor: 'primary.main',
-                      color: surface.lightText,
-                    },
-                  }}
-                >
-                  <Icon sx={{ fontSize: iconSize.md }} />
+                <IconButton key={label} aria-label={label} size="small" sx={styles.iconButton}>
+                  <Icon sx={styles.icon} />
                 </IconButton>
               ))}
             </Stack>
           </Box>
 
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(120px, 1fr))' },
-              gap: { xs: 1.25, md: 6 },
-              justifySelf: { md: 'end' },
-              width: '100%',
-              maxWidth: { md: 620 },
-            }}
-          >
+          <Box sx={styles.box4}>
             {columns.map((column) => (
-              <Box key={column.title} sx={{ textAlign: { xs: 'center', md: 'right' } }}>
-                <Typography sx={{ ...componentText.footerHeading, mb: { xs: 0.5, md: 2 } }}>
-                  {column.title}
-                </Typography>
+              <Box key={column.title} sx={styles.box5}>
+                <Typography sx={styles.typography2}>{column.title}</Typography>
                 <Stack
                   direction={{ xs: 'row', md: 'column' }}
                   spacing={{ xs: 0.8, md: 1.25 }}
@@ -116,12 +74,7 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
                       component={Link}
                       href={item.href}
                       underline="none"
-                      sx={{
-                        color: alpha.white[56],
-                        ...componentText.footerLink,
-                        whiteSpace: 'nowrap',
-                        '&:hover': { color: surface.lightText },
-                      }}
+                      sx={styles.muiLink}
                     >
                       {item.label}
                     </MuiLink>
@@ -132,33 +85,23 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
           </Box>
         </Box>
 
-        <Divider
-          sx={{
-            borderColor: alpha.white[8],
-            width: '100vw',
-            ml: 'calc(50% - 50vw)',
-          }}
-        />
+        <Divider sx={styles.divider} />
 
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           alignItems={{ xs: 'center', sm: 'center' }}
           justifyContent="space-between"
           spacing={{ xs: 1.4, sm: 2 }}
-          sx={{ py: { xs: 2, md: 3 }, textAlign: { xs: 'center', sm: 'left' } }}
+          sx={styles.stack2}
         >
-          <Typography sx={{ color: alpha.white[50], ...componentText.footerLegal }}>
+          <Typography sx={styles.typography3}>
             © 2026{' '}
             <MuiLink
               href="https://www.donethink.com/"
               target="_blank"
               rel="noopener noreferrer"
               underline="none"
-              sx={{
-                ...componentText.footerBrand,
-                color: 'inherit',
-                '&:hover': { color: surface.lightText },
-              }}
+              sx={styles.muiLink2}
             >
               doneThink
             </MuiLink>{' '}
@@ -171,7 +114,7 @@ export function SiteFooter({ columns, legalLinks }: SiteFooterProps) {
                 component={Link}
                 href={item.href}
                 underline="none"
-                sx={{ color: alpha.white[50], ...componentText.footerLegal }}
+                sx={styles.muiLink3}
               >
                 {item.label}
               </MuiLink>

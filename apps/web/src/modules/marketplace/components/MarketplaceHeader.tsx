@@ -24,13 +24,13 @@ function getSwitchModeAction(role: string | undefined): {
 
   if (role === 'AGENT') {
     return {
-      href: '/register/details?profile=imobiliaria' as LocalizedStringHref,
+      href: '/register/details?profile=agency' as LocalizedStringHref,
       labelKey: 'createAgency',
     }
   }
 
   return {
-    href: '/register/details?profile=corretor' as LocalizedStringHref,
+    href: '/register/details?profile=broker' as LocalizedStringHref,
     labelKey: 'becomeBroker',
   }
 }

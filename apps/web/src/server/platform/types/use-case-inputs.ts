@@ -1,5 +1,5 @@
 import type { AuthenticatedPlatformAdmin, PlatformAdminRole } from './platform-admin'
-import type { AuthenticatedUser } from '@server/auth/domain/user.entity'
+import type { AuthenticatedUser } from '../../auth/types/authenticated-user'
 import type { NewTenant } from './tenant-repository'
 import type { TenantSummary } from './tenant-summary'
 import type { BillingSummary } from './platform-billing'
@@ -10,7 +10,8 @@ import type { TenantAccountType } from './tenant-account'
 import type { TenantStatus } from './tenant-account'
 
 export interface CreatePlatformAdminInput {
-  nome: string
+  actorId: string
+  name: string
   email: string
   password: string
   role: PlatformAdminRole
@@ -21,7 +22,7 @@ export type CreatePlatformAdminOutput = AuthenticatedPlatformAdmin
 export interface CreateTenantAdminInput {
   actorId?: string
   tenantId: string
-  nome: string
+  name: string
   email: string
   password: string
 }
@@ -90,11 +91,12 @@ export interface RefreshPlatformAdminTokenOutput {
 }
 
 export interface UpdatePlatformAdminInput {
+  actorId: string
   platformAdminId: string
-  nome?: string
+  name?: string
   email?: string
   role?: PlatformAdminRole
-  ativo?: true
+  active?: true
 }
 
 export type UpdatePlatformAdminOutput = AuthenticatedPlatformAdmin

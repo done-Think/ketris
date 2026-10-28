@@ -25,7 +25,7 @@ export function useRegister() {
         locale,
       }
       return registrationService.register(
-        values.profile === 'corretor'
+        values.profile === 'broker'
           ? {
               ...details,
               profile: values.profile,
@@ -33,7 +33,7 @@ export function useRegister() {
               ...(values.agencyId ? { agencyId: values.agencyId } : {}),
               ...(values.companyName?.trim() ? { companyName: values.companyName.trim() } : {}),
             }
-          : values.profile === 'locatario'
+          : values.profile === 'renter'
             ? { ...details, profile: values.profile }
             : {
                 ...details,

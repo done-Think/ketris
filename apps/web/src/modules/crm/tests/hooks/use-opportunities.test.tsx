@@ -1,7 +1,8 @@
+const identity = vi.hoisted(() => ({ tenantId: 'tenant-1' as string | undefined }))
 vi.mock('next-auth/react', () => ({
   useSession: () => ({
     status: 'authenticated',
-    data: { tenantId: 'tenant-1', user: { id: 'user-1' }, role: 'OWNER' },
+    data: { tenantId: identity.tenantId, user: { id: 'user-1' }, role: 'OWNER' },
   }),
 }))
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -42,10 +43,10 @@ const opportunity: Opportunity = {
   proposedValue: 4800,
   contractTermMonths: null,
   desiredStartDate: null,
-  guaranteeType: 'NENHUMA',
+  guaranteeType: 'NONE',
   specialConditions: [],
   notes: null,
-  status: 'ENVIADA',
+  status: 'SENT',
   archivedAt: null,
   createdAt: '2026-08-12T10:00:00.000Z',
   updatedAt: '2026-08-12T10:00:00.000Z',
@@ -69,16 +70,17 @@ function createWrapper(queryClient: QueryClient) {
 describe('CRM query keys and hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    identity.tenantId = 'tenant-1'
   })
 
   it('scopes list keys by tenant and normalized filters', () => {
-    expect(crmQueryKeys.list('tenant-1', { status: 'ENVIADA' })).toEqual([
+    expect(crmQueryKeys.list('tenant-1', { status: 'SENT' })).toEqual([
       'crm',
       'opportunities',
       'tenant-1',
       'list',
       [],
-      { status: 'ENVIADA', includeArchived: false },
+      { status: 'SENT', includeArchived: false },
     ])
     expect(crmQueryKeys.list('tenant-2', { includeArchived: true })).not.toEqual(
       crmQueryKeys.list('tenant-1', { includeArchived: true }),
@@ -92,8 +94,8 @@ describe('CRM query keys and hooks', () => {
       groups: [],
     })
     const queryClient = createQueryClient()
-    const filters = { status: 'ENVIADA' as const }
-    const { result } = renderHook(() => useOpportunities('tenant-1', filters), {
+    const filters = { status: 'SENT' as const }
+    const { result } = renderHook(() => useOpportunities(filters), {
       wrapper: createWrapper(queryClient),
     })
 
@@ -112,7 +114,7 @@ describe('CRM query keys and hooks', () => {
     })
     const queryClient = createQueryClient()
     const filters = { q: 'Jardins' }
-    const { result } = renderHook(() => useCrmProperties('tenant-1', filters), {
+    const { result } = renderHook(() => useCrmProperties(filters), {
       wrapper: createWrapper(queryClient),
     })
 
@@ -125,8 +127,9 @@ describe('CRM query keys and hooks', () => {
   })
 
   it('does not request opportunities without a tenant', () => {
+    identity.tenantId = undefined
     const queryClient = createQueryClient()
-    const { result } = renderHook(() => useOpportunities(null), {
+    const { result } = renderHook(() => useOpportunities(), {
       wrapper: createWrapper(queryClient),
     })
 
@@ -135,19 +138,19 @@ describe('CRM query keys and hooks', () => {
   })
 
   it('updates the detail cache and invalidates tenant lists after an update', async () => {
-    const updated = { ...opportunity, status: 'EM_NEGOCIACAO' as const }
+    const updated = { ...opportunity, status: 'IN_NEGOTIATION' as const }
     vi.mocked(crmService.update).mockResolvedValueOnce(updated)
     const queryClient = createQueryClient()
     const listKey = crmQueryKeys.list('tenant-1')
     queryClient.setQueryData(listKey, [opportunity])
-    const { result } = renderHook(() => useUpdateOpportunity('tenant-1'), {
+    const { result } = renderHook(() => useUpdateOpportunity(), {
       wrapper: createWrapper(queryClient),
     })
 
     await act(async () => {
       await result.current.mutateAsync({
         id: opportunity.id,
-        changes: { status: 'EM_NEGOCIACAO' },
+        changes: { status: 'IN_NEGOTIATION' },
       })
     })
 

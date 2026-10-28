@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { useSession } from 'next-auth/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useOpportunities } from '../../hooks/use-opportunities'
+import { crmQueryKeys, useOpportunities } from '../../hooks/use-opportunities'
 import { crmService } from '../../services/crm-service'
 
 vi.mock('next-auth/react', () => ({ useSession: vi.fn() }))
@@ -32,7 +32,7 @@ describe('CRM session cache isolation', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
     )
-    const { result, rerender } = renderHook(() => useOpportunities('tenant-1'), { wrapper })
+    const { result, rerender } = renderHook(() => useOpportunities(), { wrapper })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(crmService.list).toHaveBeenCalledTimes(1)
     session('user-2')
@@ -44,15 +44,23 @@ describe('CRM session cache isolation', () => {
     expect(client.getQueryCache().getAll()).toHaveLength(3)
     client.clear()
   })
-  it('does not fetch for a stale tenant scope after account switching', () => {
+  it('derives the tenant from the active session after account switching', async () => {
     session('user-2', 'OWNER', 'tenant-2')
     const client = new QueryClient()
+    client.setQueryData(crmQueryKeys.list('tenant-1', {}, ['user-2', 'OWNER']), {
+      ...page,
+      privateTenant: 'tenant-1',
+    })
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
     )
-    const { result } = renderHook(() => useOpportunities('tenant-1'), { wrapper })
-    expect(result.current.fetchStatus).toBe('idle')
-    expect(crmService.list).not.toHaveBeenCalled()
+    const { result } = renderHook(() => useOpportunities(), { wrapper })
+    expect(result.current.data).toBeUndefined()
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(crmService.list).toHaveBeenCalledTimes(1)
+    expect(client.getQueryData(crmQueryKeys.list('tenant-2', {}, ['user-2', 'OWNER']))).toEqual(
+      page,
+    )
     client.clear()
   })
 })

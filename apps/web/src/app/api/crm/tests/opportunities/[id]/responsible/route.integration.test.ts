@@ -20,27 +20,27 @@ describe('/api/crm/opportunities/[id]/responsible (integração)', () => {
   let propertyAgentId: string
   let assigneeId: string
   let inactiveId: string
-  let imovelId: string
+  let propertyId: string
 
-  async function user(papel: 'OWNER' | 'AGENT', nome: string, ativo = true) {
-    const created = await prisma.usuario.create({
+  async function user(role: 'OWNER' | 'AGENT', name: string, active = true) {
+    const created = await prisma.user.create({
       data: {
         tenantId,
-        nome,
+        name,
         email: `${randomUUID()}@responsavel.test`,
-        senhaHash: 'hash-fake',
-        papel,
-        ativo,
+        passwordHash: 'hash-fake',
+        role,
+        active,
       },
     })
     const token = await tokenService.sign({
       id: created.id,
       tenantId,
-      nome: created.nome,
+      name: created.name,
       email: created.email,
-      papel: created.papel,
-      ativo: created.ativo,
-      vinculoAprovadoEm: created.vinculoAprovadoEm,
+      role: created.role,
+      active: created.active,
+      membershipApprovedAt: created.membershipApprovedAt,
     })
 
     return { id: created.id, token }
@@ -49,7 +49,7 @@ describe('/api/crm/opportunities/[id]/responsible (integração)', () => {
   beforeAll(async () => {
     tenantId = (
       await prisma.tenant.create({
-        data: { nome: 'Imobiliária Responsável', slug: `crm-resp-${randomUUID()}` },
+        data: { name: 'Imobiliária Responsável', slug: `crm-resp-${randomUUID()}` },
       })
     ).id
     ownerToken = (await user('OWNER', 'Gestora')).token
@@ -60,36 +60,36 @@ describe('/api/crm/opportunities/[id]/responsible (integração)', () => {
     assigneeId = assignee.id
     assigneeToken = assignee.token
     inactiveId = (await user('AGENT', 'Carla Inativa', false)).id
-    imovelId = (
-      await prisma.imovel.create({
+    propertyId = (
+      await prisma.property.create({
         data: {
           tenantId,
-          responsavelId: propertyAgentId,
-          titulo: 'Imóvel da Ana',
-          finalidade: 'ALUGUEL',
-          tipo: 'APARTAMENTO',
-          valor: 2000,
+          responsibleId: propertyAgentId,
+          title: 'Imóvel da Ana',
+          purpose: 'RENT',
+          type: 'APARTMENT',
+          price: 2000,
         },
       })
     ).id
   })
 
   afterAll(async () => {
-    await prisma.oportunidade.deleteMany({ where: { tenantId } })
+    await prisma.opportunity.deleteMany({ where: { tenantId } })
     await prisma.tenant.delete({ where: { id: tenantId } })
     await prisma.$disconnect()
   })
 
   async function opportunity() {
-    return prisma.oportunidade.create({
+    return prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId,
-        responsavelId: propertyAgentId,
-        interessadoNome: 'Maria',
-        interessadoEmail: `${randomUUID()}@exemplo.com`,
-        valorProposto: 2500,
-        status: 'ENVIADA',
+        propertyId,
+        responsibleId: propertyAgentId,
+        interestedName: 'Maria',
+        interestedEmail: `${randomUUID()}@exemplo.com`,
+        proposedValue: 2500,
+        status: 'SENT',
       },
     })
   }
@@ -155,7 +155,7 @@ describe('/api/crm/opportunities/[id]/responsible (integração)', () => {
     )
 
     expect(response.status).toBe(403)
-    expect((await prisma.oportunidade.findUniqueOrThrow({ where: { id } })).responsavelId).toBe(
+    expect((await prisma.opportunity.findUniqueOrThrow({ where: { id } })).responsibleId).toBe(
       propertyAgentId,
     )
   })

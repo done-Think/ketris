@@ -15,7 +15,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const page = await crmContainer.listLeadsUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     filters: parseQuery(request, listLeadsQuerySchema),
   })
 
@@ -32,7 +32,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const lead = await crmContainer.createLeadUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel,
+    actorRole: actor.role,
     name: body.name,
     phone: body.phone,
     email: body.email ?? null,

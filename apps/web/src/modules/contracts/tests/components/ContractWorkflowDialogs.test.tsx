@@ -105,7 +105,7 @@ describe('confirmações reais de Contracts', () => {
     const contract = apiContractFixture()
     const edit = vi.spyOn(contractsService, 'edit').mockResolvedValue(contract)
     const close = vi.fn()
-    show(<ContractEditDialog contract={contract} tenantId="agency" onClose={close} />)
+    show(<ContractEditDialog contract={contract} onClose={close} />)
     const value = screen.getByRole('spinbutton', { name: /Valor/ })
     fireEvent.change(value, { target: { value: '1800.25' } })
     fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
@@ -140,7 +140,7 @@ describe('documentos e histórico no detalhe', () => {
       .spyOn(contractDocumentsService, 'upload')
       .mockRejectedValue(new Error('Storage indisponível'))
     const busy = vi.fn()
-    show(<ContractDocumentUpload contractId="contract" tenantId="agency" onBusyChange={busy} />)
+    show(<ContractDocumentUpload contractId="contract" onBusyChange={busy} />)
     const input = screen.getByLabelText('PDF comprobatório')
     fireEvent.change(input, {
       target: { files: [new File(['texto'], 'arquivo.txt', { type: 'text/plain' })] },
@@ -148,7 +148,7 @@ describe('documentos e histórico no detalhe', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enviar PDF' }))
     expect(await screen.findByText('Selecione um arquivo no formato PDF.')).toBeInTheDocument()
     expect(upload).not.toHaveBeenCalled()
-    const file = new File(['%PDF-1.7'], 'contrato.pdf', { type: 'application/pdf' })
+    const file = new File(['%PDF-1.7'], 'contract.pdf', { type: 'application/pdf' })
     fireEvent.change(input, { target: { files: [file] } })
     fireEvent.click(screen.getByRole('button', { name: 'Enviar PDF' }))
     expect(
@@ -178,7 +178,7 @@ describe('documentos e histórico no detalhe', () => {
         },
       ],
     }))
-    show(<ContractHistoryPanel contractId="contract" tenantId="agency" />)
+    show(<ContractHistoryPanel contractId="contract" />)
     expect(await screen.findByText('Contrato criado')).toBeInTheDocument()
     expect(screen.getByText('Gestora')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Ir para a página 2' }))

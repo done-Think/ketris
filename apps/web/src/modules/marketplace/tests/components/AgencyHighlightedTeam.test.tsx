@@ -14,9 +14,9 @@ const brand = {
   logoUrl: null,
 }
 const team: AgencyTeamHighlight[] = [
-  { usuarioId: 'marina-costa', name: 'Marina Costa', avatarUrl: null },
-  { usuarioId: 'juliana-mendes', name: 'Juliana Mendes', avatarUrl: null },
-  { usuarioId: 'bianca-azevedo', name: 'Bianca Azevedo', avatarUrl: null },
+  { userId: 'marina-costa', name: 'Marina Costa', avatarUrl: null },
+  { userId: 'juliana-mendes', name: 'Juliana Mendes', avatarUrl: null },
+  { userId: 'bianca-azevedo', name: 'Bianca Azevedo', avatarUrl: null },
 ]
 
 function renderAgencyHighlightedTeam() {

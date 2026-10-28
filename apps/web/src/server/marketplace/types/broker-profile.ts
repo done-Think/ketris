@@ -3,7 +3,7 @@ export type BrokerProfileStatus = 'DRAFT' | 'PUBLISHED'
 export interface BrokerListingSummary {
   id: string
   title: string
-  purpose: 'ALUGUEL' | 'VENDA' | 'AMBOS'
+  purpose: 'RENT' | 'SALE' | 'BOTH'
   price: number
   neighborhood: string | null
   city: string | null

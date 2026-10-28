@@ -343,7 +343,7 @@ describe('PublicProfileEditorPage', () => {
           backgroundColor: '#ffffff',
           logoUrl: 'https://cdn.ketris.com.br/logo.jpg',
           bannerUrl: 'https://cdn.ketris.com.br/banner.jpg',
-          team: [{ usuarioId: 'broker-1', name: 'Marina Costa', avatarUrl: null, order: 0 }],
+          team: [{ userId: 'broker-1', name: 'Marina Costa', avatarUrl: null, order: 0 }],
         },
       } as unknown as ReturnType<typeof useOwnAgencyProfile>)
       agencyProfileMocks.saveMutate.mockImplementation((_payload, options) => {

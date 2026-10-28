@@ -7,25 +7,25 @@ import type { AgendaPropertyRecord } from '../types/prisma-property'
 
 const propertySelect = {
   id: true,
-  titulo: true,
-  endereco: { select: { bairro: true, cidade: true } },
+  title: true,
+  address: { select: { neighborhood: true, city: true } },
 } as const
 
 export class PrismaAgendaPropertyCatalog implements AgendaPropertyCatalog {
   list(query: AgendaPropertyOptionsQuery) {
     const search = query.search?.trim()
-    const where: Prisma.ImovelWhereInput = {
+    const where: Prisma.PropertyWhereInput = {
       ...agendaPropertyWhere(query),
       ...(search
         ? {
             OR: [
-              { titulo: { contains: search, mode: 'insensitive' } },
+              { title: { contains: search, mode: 'insensitive' } },
               {
-                endereco: {
+                address: {
                   is: {
                     OR: [
-                      { bairro: { contains: search, mode: 'insensitive' } },
-                      { cidade: { contains: search, mode: 'insensitive' } },
+                      { neighborhood: { contains: search, mode: 'insensitive' } },
+                      { city: { contains: search, mode: 'insensitive' } },
                     ],
                   },
                 },
@@ -36,14 +36,14 @@ export class PrismaAgendaPropertyCatalog implements AgendaPropertyCatalog {
     }
     return prisma.$transaction(
       async (tx) => {
-        const items = await tx.imovel.findMany({
+        const items = await tx.property.findMany({
           where,
           select: propertySelect,
           orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
           skip: (query.page - 1) * query.pageSize,
           take: query.pageSize,
         })
-        const total = await tx.imovel.count({ where })
+        const total = await tx.property.count({ where })
         return {
           items: items.map(toPropertyOption),
           total,
@@ -57,7 +57,7 @@ export class PrismaAgendaPropertyCatalog implements AgendaPropertyCatalog {
 
   async summaries(actor: AgendaReadActor, propertyIds: string[]) {
     if (!propertyIds.length) return []
-    const records = await prisma.imovel.findMany({
+    const records = await prisma.property.findMany({
       where: { ...agendaPropertyWhere(actor), id: { in: propertyIds } },
       select: propertySelect,
     })
@@ -65,28 +65,28 @@ export class PrismaAgendaPropertyCatalog implements AgendaPropertyCatalog {
   }
 }
 
-export function agendaPropertyWhere(actor: AgendaReadActor): Prisma.ImovelWhereInput {
-  if (actor.actorPapel === 'RENTER')
+export function agendaPropertyWhere(actor: AgendaReadActor): Prisma.PropertyWhereInput {
+  if (actor.actorRole === 'RENTER')
     return {
-      contratos: {
+      contracts: {
         some: {
-          status: 'ATIVO',
-          partes: { some: { papel: 'LOCATARIO', usuarioId: actor.actorUserId } },
+          status: 'ACTIVE',
+          parties: { some: { role: 'RENTER', userId: actor.actorUserId } },
         },
       },
     }
   return {
     tenantId: actor.actorTenantId,
-    ...(actor.actorPapel === 'AGENT' ? { responsavelId: actor.actorUserId } : {}),
-    ...(actor.actorPapel === 'PROPERTY_OWNER' ? { proprietarioId: actor.actorUserId } : {}),
+    ...(actor.actorRole === 'AGENT' ? { responsibleId: actor.actorUserId } : {}),
+    ...(actor.actorRole === 'PROPERTY_OWNER' ? { ownerId: actor.actorUserId } : {}),
   }
 }
 
 function toPropertyOption(record: AgendaPropertyRecord) {
   return {
     id: record.id,
-    label: record.endereco
-      ? `${record.titulo} - ${record.endereco.bairro}, ${record.endereco.cidade}`
-      : record.titulo,
+    label: record.address
+      ? `${record.title} - ${record.address.neighborhood}, ${record.address.city}`
+      : record.title,
   }
 }

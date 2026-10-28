@@ -7,8 +7,8 @@ export class GetOwnBrokerProfileUseCase {
   constructor(private readonly brokerProfileRepository: BrokerProfileRepository) {}
 
   async execute(input: GetOwnBrokerProfileInput): Promise<BrokerProfile | null> {
-    assertBrokerProfileAccess(input.actorPapel)
+    assertBrokerProfileAccess(input.actorRole)
 
-    return this.brokerProfileRepository.findByUsuarioId(input.actorId)
+    return this.brokerProfileRepository.findByUserId(input.actorId)
   }
 }

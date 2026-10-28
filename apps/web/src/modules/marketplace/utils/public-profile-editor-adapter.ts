@@ -102,7 +102,7 @@ export function toPreviewProfile(
       title: listing.title,
       location: [listing.neighborhood, listing.city].filter(Boolean).join(', '),
       price:
-        listing.purpose === 'ALUGUEL'
+        listing.purpose === 'RENT'
           ? t('monthly', { price: formatCompactCurrency(listing.price, locale) })
           : formatCompactCurrency(listing.price, locale),
       href: `/properties/${listing.id}`,

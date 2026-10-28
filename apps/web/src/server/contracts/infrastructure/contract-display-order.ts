@@ -7,22 +7,22 @@ import type { ContractStatus } from '../types/contract'
 
 const dictionaries = { 'pt-BR': pt, 'en-US': en, 'es-ES': es }
 const statusKeys: Record<ContractStatus, keyof typeof pt.status> = {
-  RASCUNHO: 'draft',
-  EM_REVISAO: 'review',
-  AGUARDANDO_ASSINATURA: 'awaitingSignature',
-  ASSINADO: 'signed',
-  ATIVO: 'active',
-  ENCERRADO: 'closed',
-  CANCELADO: 'cancelled',
+  DRAFT: 'draft',
+  IN_REVIEW: 'review',
+  AWAITING_SIGNATURE: 'awaitingSignature',
+  SIGNED: 'signed',
+  ACTIVE: 'active',
+  CLOSED: 'closed',
+  CANCELED: 'cancelled',
 }
 
 export function contractDisplayOrder(filters: ContractListFilters) {
   const columns = {
-    property: Prisma.sql`i.titulo`,
-    tenant: Prisma.sql`(SELECT MIN(p.nome) FROM partes_contrato p WHERE p."contratoId" = c.id AND p.papel = 'LOCATARIO')`,
-    amount: Prisma.sql`c.valor`,
-    startDate: Prisma.sql`c."dataInicio"`,
-    endDate: Prisma.sql`c."dataFim"`,
+    property: Prisma.sql`i.title`,
+    tenant: Prisma.sql`(SELECT MIN(p.name) FROM contract_parties p WHERE p."contractId" = c.id AND p.role = 'RENTER')`,
+    amount: Prisma.sql`c.amount`,
+    startDate: Prisma.sql`c."startDate"`,
+    endDate: Prisma.sql`c."endDate"`,
     updatedAt: Prisma.sql`c."updatedAt"`,
   }
   if (filters.sortBy !== 'status') return columns[filters.sortBy ?? 'updatedAt']

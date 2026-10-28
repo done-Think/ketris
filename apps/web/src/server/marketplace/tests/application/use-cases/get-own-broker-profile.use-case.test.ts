@@ -9,7 +9,7 @@ function createDeps() {
   const brokerProfileRepository: BrokerProfileRepository = {
     findPublishedById: vi.fn(),
     listPublished: vi.fn(),
-    findByUsuarioId: vi.fn().mockResolvedValue(null),
+    findByUserId: vi.fn().mockResolvedValue(null),
     save: vi.fn(),
     setStatus: vi.fn(),
   }
@@ -22,18 +22,18 @@ describe('GetOwnBrokerProfileUseCase', () => {
     const deps = createDeps()
     const useCase = new GetOwnBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await useCase.execute({ actorId: 'usuario-1', actorPapel: 'AGENT' })
+    await useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })
 
-    expect(deps.brokerProfileRepository.findByUsuarioId).toHaveBeenCalledWith('usuario-1')
+    expect(deps.brokerProfileRepository.findByUserId).toHaveBeenCalledWith('usuario-1')
   })
 
   it.each(['OWNER', 'RENTER'] as const)(
     'lança ForbiddenError quando o ator não é AGENT (%s)',
-    async (actorPapel) => {
+    async (actorRole) => {
       const deps = createDeps()
       const useCase = new GetOwnBrokerProfileUseCase(deps.brokerProfileRepository)
 
-      await expect(useCase.execute({ actorId: 'usuario-1', actorPapel })).rejects.toThrow(
+      await expect(useCase.execute({ actorId: 'usuario-1', actorRole })).rejects.toThrow(
         ForbiddenError,
       )
     },

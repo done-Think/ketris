@@ -1,4 +1,4 @@
-import { papelSchema } from '@server/auth/schemas/user.schema'
+import { userRoleSchema } from '@server/auth/schemas/user.schema'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
@@ -23,7 +23,7 @@ export const agendaEventSchema = z
     audience: z.enum(['SHARED_TEAM', 'ALL_AGENTS', 'ASSIGNED_AGENT']),
     internal: z.boolean(),
     createdById: z.string().nullable(),
-    createdBy: z.object({ name: z.string(), role: papelSchema }).nullable(),
+    createdBy: z.object({ name: z.string(), role: userRoleSchema }).nullable(),
     propertyId: z.string().nullable(),
     propertyLabel: z.string().nullable(),
     propertyReference: z

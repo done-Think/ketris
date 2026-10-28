@@ -2,7 +2,7 @@ import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
 import { resetPasswordRequestSchema } from './reset-password.schema'
-import { authenticatedUserResponseSchema, tenantMemberPapelSchema } from './user.schema'
+import { authenticatedUserResponseSchema, tenantMemberRoleSchema } from './user.schema'
 
 export const createUserRequestSchema = z
   .object({
@@ -21,7 +21,7 @@ export const createUserRequestSchema = z
     password: resetPasswordRequestSchema.shape.password.openapi({
       example: 'trocar-em-desenvolvimento',
     }),
-    role: tenantMemberPapelSchema.default('AGENT'),
+    role: tenantMemberRoleSchema.default('AGENT'),
   })
   .strict()
   .openapi('CreateUserRequest')

@@ -51,6 +51,24 @@ describe('Home pública do marketplace', () => {
     cy.contains('button', 'Enviar proposta').should('be.visible')
   })
 
+  it('troca o idioma do detalhe público preservando o imóvel, filtros, fragmento e cookie', () => {
+    cy.viewport(1280, 900)
+    cy.then(() => {
+      cy.visit(`/pt/imoveis/${fixture!.propertyId}?area=one&area=two#details`)
+      cy.contains('h1', fixture!.propertyTitle).should('be.visible')
+      cy.contains('button', 'BR').first().click()
+      cy.contains('[role="menuitem"]', 'Espanhol').click()
+      cy.location('pathname', { timeout: 60000 }).should(
+        'eq',
+        `/es/inmuebles/${fixture!.propertyId}`,
+      )
+      cy.location('search').should('eq', '?area=one&area=two')
+      cy.location('hash').should('eq', '#details')
+      cy.getCookie('NEXT_LOCALE').its('value').should('eq', 'es-ES')
+      cy.contains('h1', fixture!.propertyTitle).should('be.visible')
+    })
+  })
+
   it('envia a finalidade escolhida no seletor Alugar/Comprar para a busca', () => {
     cy.viewport(1280, 900)
     cy.visit('/pt')

@@ -45,7 +45,7 @@ describe('cadastro e primeiro login com confirmação real', () => {
   })
 
   it('persiste telefone e aceite, não emite sessão antecipada e permite confirmar uma única vez', async () => {
-    const input = { ...details(), profile: 'proprietario' }
+    const input = { ...details(), profile: 'owner' }
     const response = await register(request('register', input))
     expect(response.status).toBe(201)
     const body = await response.json()
@@ -53,12 +53,12 @@ describe('cadastro e primeiro login com confirmação real', () => {
     expect(body.outcome).toBe('PENDING_EMAIL_VERIFICATION')
     expect(body.emailSent).toBe(true)
     expect('accessToken' in body).toBe(false)
-    const user = await prisma.usuario.findUniqueOrThrow({
+    const user = await prisma.user.findUniqueOrThrow({
       where: { tenantId_email: { tenantId: body.tenantId, email: input.email } },
     })
-    expect(user.telefone).toBe(input.phone)
-    expect(user.termosAceitosEm).not.toBeNull()
-    expect(user.emailVerificadoEm).toBeNull()
+    expect(user.phone).toBe(input.phone)
+    expect(user.termsAcceptedAt).not.toBeNull()
+    expect(user.emailVerifiedAt).toBeNull()
     expect(await prisma.refreshToken.count({ where: { userId: user.id } })).toBe(0)
     const code = latestCode()
     const unverifiedLogin = await login(
@@ -92,19 +92,19 @@ describe('cadastro e primeiro login com confirmação real', () => {
   })
 
   it('inicializa perfil público do corretor com telefone e CRECI reais sem publicá-lo', async () => {
-    const input = { ...details(), profile: 'corretor', creci: '12345-F' }
+    const input = { ...details(), profile: 'broker', creci: '12345-F' }
     const response = await register(request('register', input))
     expect(response.status).toBe(201)
     const body = await response.json()
     tenants.push(body.tenantId)
-    const user = await prisma.usuario.findUniqueOrThrow({
+    const user = await prisma.user.findUniqueOrThrow({
       where: { tenantId_email: { tenantId: body.tenantId, email: input.email } },
     })
-    const profile = await prisma.perfilPublicoCorretor.findUniqueOrThrow({
-      where: { usuarioId: user.id },
+    const profile = await prisma.brokerPublicProfile.findUniqueOrThrow({
+      where: { userId: user.id },
     })
     expect(user.creci).toBe(input.creci)
-    expect(profile.telefone).toBe(input.phone)
+    expect(profile.phone).toBe(input.phone)
     expect(profile.creci).toBe(input.creci)
     expect(profile.status).toBe('DRAFT')
   })
@@ -112,14 +112,14 @@ describe('cadastro e primeiro login com confirmação real', () => {
   it('exige tanto confirmação de e-mail quanto aprovação para novo vínculo de corretor', async () => {
     const agency = await prisma.tenant.create({
       data: {
-        nome: 'Imobiliária elegível',
+        name: 'Imobiliária elegível',
         slug: `agency-${randomUUID()}`,
         accountType: 'AGENCY',
         status: 'ACTIVE',
       },
     })
     tenants.push(agency.id)
-    const input = { ...details(), profile: 'corretor', creci: '12345-F', agencyId: agency.id }
+    const input = { ...details(), profile: 'broker', creci: '12345-F', agencyId: agency.id }
     const response = await register(request('register', input))
     expect(response.status).toBe(202)
     const body = await response.json()
@@ -132,17 +132,17 @@ describe('cadastro e primeiro login com confirmação real', () => {
       }),
     )
     expect((await verified.json()).outcome).toBe('PENDING_APPROVAL')
-    const user = await prisma.usuario.findUniqueOrThrow({
+    const user = await prisma.user.findUniqueOrThrow({
       where: { tenantId_email: { tenantId: agency.id, email: input.email } },
     })
     expect(await prisma.refreshToken.count({ where: { userId: user.id } })).toBe(0)
-    expect(user.vinculoAprovadoEm).toBeNull()
+    expect(user.membershipApprovedAt).toBeNull()
   })
 
   it('também exige confirmação para contas criadas pela gestão', async () => {
     const agency = await prisma.tenant.create({
       data: {
-        nome: 'Gestão',
+        name: 'Gestão',
         slug: `managed-${randomUUID()}`,
         accountType: 'AGENCY',
         status: 'ACTIVE',
@@ -150,26 +150,26 @@ describe('cadastro e primeiro login com confirmação real', () => {
     })
     tenants.push(agency.id)
     const input = details()
-    const manager = await prisma.usuario.create({
+    const manager = await prisma.user.create({
       data: {
         tenantId: agency.id,
-        nome: 'Gestor',
+        name: 'Gestor',
         email: `${randomUUID()}@manager.example.test`,
-        senhaHash: 'test-only',
-        papel: 'OWNER',
+        passwordHash: 'test-only',
+        role: 'OWNER',
       },
     })
     const managed = await authContainer.createUserUseCase.execute({
       actorId: manager.id,
       actorTenantId: agency.id,
-      actorPapel: 'OWNER',
-      nome: input.fullName,
+      actorRole: 'OWNER',
+      name: input.fullName,
       email: input.email,
       password: input.password,
-      papel: 'PROPERTY_OWNER',
+      role: 'PROPERTY_OWNER',
     })
     expect(
-      (await prisma.usuario.findUniqueOrThrow({ where: { id: managed.id } })).emailVerificadoEm,
+      (await prisma.user.findUniqueOrThrow({ where: { id: managed.id } })).emailVerifiedAt,
     ).toBeNull()
     const response = await login(
       request('auth/login', { email: input.email, password: input.password }),
@@ -189,7 +189,7 @@ describe('cadastro e primeiro login com confirmação real', () => {
 
   it('preserva conta e código quando o envio falha, sem fornecer tokens', async () => {
     send.mockRejectedValueOnce(new Error('Falha de entrega simulada'))
-    const input = { ...details(), profile: 'proprietario' }
+    const input = { ...details(), profile: 'owner' }
     const response = await register(request('register', input))
     expect(response.status).toBe(201)
     const body = await response.json()
@@ -197,13 +197,13 @@ describe('cadastro e primeiro login com confirmação real', () => {
     expect(body.emailSent).toBe(false)
     expect('accessToken' in body).toBe(false)
     expect(
-      await prisma.usuario.count({ where: { tenantId: body.tenantId, email: input.email } }),
+      await prisma.user.count({ where: { tenantId: body.tenantId, email: input.email } }),
     ).toBe(1)
     expect(await prisma.emailVerificationCode.count({ where: { tenantId: body.tenantId } })).toBe(1)
   })
 
   it('rejeita campos não suportados, ausência de aceite e senha maior que 72 bytes antes de gravar', async () => {
-    const input = { ...details(), profile: 'proprietario' }
+    const input = { ...details(), profile: 'owner' }
     for (const invalid of [
       { ...input, acceptTerms: false },
       { ...input, password: 'é'.repeat(37) },
@@ -211,7 +211,7 @@ describe('cadastro e primeiro login com confirmação real', () => {
     ]) {
       expect((await register(request('register', invalid))).status).toBe(400)
     }
-    expect(await prisma.usuario.count({ where: { email: input.email } })).toBe(0)
+    expect(await prisma.user.count({ where: { email: input.email } })).toBe(0)
     expect(send).not.toHaveBeenCalled()
   })
 })

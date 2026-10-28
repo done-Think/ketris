@@ -32,7 +32,7 @@ describe('ConfirmSignupVerificationUseCase', () => {
   it('não concede acesso a corretor sem aprovação mesmo após comprovar o e-mail', async () => {
     const d = setup()
     vi.mocked(d.users.findById).mockResolvedValue(
-      account({ papel: 'AGENT', vinculoAprovadoEm: null }),
+      account({ role: 'AGENT', membershipApprovedAt: null }),
     )
     await expect(d.useCase.execute(input)).resolves.toEqual({
       outcome: 'PENDING_APPROVAL',
@@ -71,7 +71,7 @@ describe('ConfirmSignupVerificationUseCase', () => {
     })
     expect(d.tokens.sign).not.toHaveBeenCalled()
     vi.mocked(d.codes.confirm).mockResolvedValue(true)
-    vi.mocked(d.users.findById).mockResolvedValue(account({ ativo: false }))
+    vi.mocked(d.users.findById).mockResolvedValue(account({ active: false }))
     await expect(d.useCase.execute(input)).rejects.toMatchObject({ code: 'ACCOUNT_DEACTIVATED' })
     expect(d.refresh.create).not.toHaveBeenCalled()
   })

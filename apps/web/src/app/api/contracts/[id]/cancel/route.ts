@@ -16,7 +16,7 @@ export const POST = withErrorHandling(
     const contract = await contractsContainer.transitionContractUseCase.execute({
       actorTenantId: actor.tenantId,
       actorId: actor.sub,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       contractId: id,
       reason,
       action: 'CANCEL',

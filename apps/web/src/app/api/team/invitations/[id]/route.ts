@@ -15,7 +15,7 @@ export const DELETE = withErrorHandling(
     await teamContainer.cancelTeamInvitationUseCase.execute({
       actorId: actor.sub,
       actorTenantId: actor.tenantId,
-      actorPapel: actor.papel,
+      actorRole: actor.role,
       brokerId: id,
     })
 

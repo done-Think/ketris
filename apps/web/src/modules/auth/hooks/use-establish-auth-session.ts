@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { signIn } from 'next-auth/react'
 
 import { useRouter } from '@/i18n/navigation'
-import type { ConfirmSignupVerificationResponseDTO } from '@server/auth/types/http'
+import type { ConfirmSignupVerificationResponseDTO } from '@shared/types/generated/auth/http'
 import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
 import { getAuthDestination } from '../utils/auth-destination'
 

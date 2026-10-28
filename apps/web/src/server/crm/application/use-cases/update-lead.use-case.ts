@@ -9,16 +9,16 @@ export class UpdateLeadUseCase {
   constructor(private readonly leadRepository: LeadRepository) {}
 
   async execute(input: UpdateLeadInput): Promise<UpdateLeadOutput> {
-    assertCrmAccess(input.actorPapel)
+    assertCrmAccess(input.actorRole)
     const lead = await this.leadRepository.findById(input.leadId)
 
     if (!lead || lead.tenantId !== input.actorTenantId) {
       throw new LeadNotFoundError()
     }
 
-    assertLeadAccess(lead.responsavelId, input.actorId, input.actorPapel)
+    assertLeadAccess(lead.responsibleId, input.actorId, input.actorRole)
 
-    if (lead.opportunityId && input.changes.stage && input.changes.stage !== 'PROPOSTA')
+    if (lead.opportunityId && input.changes.stage && input.changes.stage !== 'PROPOSAL')
       throw new LeadStageLockedError()
 
     return this.leadRepository.update(lead.id, input.changes)

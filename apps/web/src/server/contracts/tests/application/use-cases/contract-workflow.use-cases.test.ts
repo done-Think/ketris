@@ -44,7 +44,7 @@ function setup() {
 describe('casos de uso do ciclo de vida de Contracts', () => {
   it('edita somente no tenant e responsabilidade do corretor, sem transferir a origem', async () => {
     const { repository, contract, data, edit } = setup()
-    expect(await edit.execute({ ...documentActor, actorPapel: 'AGENT', data })).toBe(contract)
+    expect(await edit.execute({ ...documentActor, actorRole: 'AGENT', data })).toBe(contract)
     expect(repository.edit).toHaveBeenCalledWith(
       'contract',
       { tenantId: 'agency', actorId: 'manager', responsibleId: 'manager' },
@@ -57,18 +57,18 @@ describe('casos de uso do ciclo de vida de Contracts', () => {
   it('exige a parte fiadora quando a garantia é FIADOR', () => {
     const { repository, data, edit } = setup()
     expect(() =>
-      edit.execute({ ...documentActor, data: { ...data, guaranteeType: 'FIADOR' } }),
+      edit.execute({ ...documentActor, data: { ...data, guaranteeType: 'GUARANTOR' } }),
     ).toThrow()
     expect(repository.edit).not.toHaveBeenCalled()
   })
 
   it.each(['RENTER', 'PROPERTY_OWNER'] as const)(
     'impede gerenciamento por %s sem gravar',
-    (actorPapel) => {
+    (actorRole) => {
       const { repository, data, edit, transition } = setup()
-      expect(() => edit.execute({ ...documentActor, actorPapel, data })).toThrow()
+      expect(() => edit.execute({ ...documentActor, actorRole, data })).toThrow()
       expect(() =>
-        transition.execute({ ...documentActor, actorPapel, action: 'CLOSE', reason: 'Motivo' }),
+        transition.execute({ ...documentActor, actorRole, action: 'CLOSE', reason: 'Motivo' }),
       ).toThrow()
       expect(repository.edit).not.toHaveBeenCalled()
       expect(repository.transition).not.toHaveBeenCalled()
@@ -95,22 +95,19 @@ describe('casos de uso do ciclo de vida de Contracts', () => {
   })
 
   it.each([
-    { actorPapel: 'OWNER' as const, scope: { kind: 'tenant', tenantId: 'agency' } },
+    { actorRole: 'OWNER' as const, scope: { kind: 'tenant', tenantId: 'agency' } },
     {
-      actorPapel: 'AGENT' as const,
+      actorRole: 'AGENT' as const,
       scope: { kind: 'tenant', tenantId: 'agency', responsibleId: 'manager' },
     },
-    { actorPapel: 'RENTER' as const, scope: { kind: 'party', userId: 'manager' } },
+    { actorRole: 'RENTER' as const, scope: { kind: 'party', userId: 'manager' } },
     {
-      actorPapel: 'PROPERTY_OWNER' as const,
+      actorRole: 'PROPERTY_OWNER' as const,
       scope: { kind: 'propertyOwner', tenantId: 'agency', ownerId: 'manager' },
     },
-  ])(
-    'consulta histórico com o escopo de $actorPapel e paginação',
-    async ({ actorPapel, scope }) => {
-      const { repository, history } = setup()
-      await history.execute({ ...documentActor, actorPapel, page: 3, pageSize: 10 })
-      expect(repository.history).toHaveBeenCalledWith('contract', scope, 3, 10)
-    },
-  )
+  ])('consulta histórico com o escopo de $actorPapel e paginação', async ({ actorRole, scope }) => {
+    const { repository, history } = setup()
+    await history.execute({ ...documentActor, actorRole, page: 3, pageSize: 10 })
+    expect(repository.history).toHaveBeenCalledWith('contract', scope, 3, 10)
+  })
 })

@@ -13,19 +13,19 @@ export function runManagedContractMutation<T>(
   work: ContractWorkflowWork<T>,
 ): Promise<T> {
   return prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`SELECT id FROM "contratos" WHERE id = ${contractId} AND "tenantId" = ${scope.tenantId} FOR NO KEY UPDATE`
+    await tx.$queryRaw`SELECT id FROM "contracts" WHERE id = ${contractId} AND "tenantId" = ${scope.tenantId} FOR NO KEY UPDATE`
     const where = {
       id: contractId,
       tenantId: scope.tenantId,
-      imovel: {
+      property: {
         tenantId: scope.tenantId,
-        ...(scope.responsibleId ? { responsavelId: scope.responsibleId } : {}),
+        ...(scope.responsibleId ? { responsibleId: scope.responsibleId } : {}),
       },
     }
-    const candidate = await tx.contrato.findFirst({ where, select: { imovelId: true } })
+    const candidate = await tx.contract.findFirst({ where, select: { propertyId: true } })
     if (!candidate) throw new ContractNotFoundError()
-    await tx.$queryRaw`SELECT id FROM "imoveis" WHERE id = ${candidate.imovelId} AND "tenantId" = ${scope.tenantId} FOR NO KEY UPDATE`
-    const contract = await tx.contrato.findFirst({ where, include: contractInclude })
+    await tx.$queryRaw`SELECT id FROM "properties" WHERE id = ${candidate.propertyId} AND "tenantId" = ${scope.tenantId} FOR NO KEY UPDATE`
+    const contract = await tx.contract.findFirst({ where, include: contractInclude })
     if (!contract) throw new ContractNotFoundError()
     return work(tx, contract)
   })
@@ -37,7 +37,7 @@ export async function readContractAfterWrite(
   tenantId: string,
   protector: ContractDataProtector,
 ) {
-  const row = await tx.contrato.findFirst({
+  const row = await tx.contract.findFirst({
     where: { id: contractId, tenantId },
     include: contractInclude,
   })

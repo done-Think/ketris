@@ -1,21 +1,26 @@
-# Contracts: configurar CORS do storage privado
+# Contracts: CORS compartilhado e validação do storage privado
 
-Pendência de implantação: aplicar no bucket privado de uploads as origens exatas da aplicação em `contract_document_allowed_origins`. A configuração está preparada em `infra/terraform/s3.tf`, mas não foi aplicada na AWS.
+Status: configuração de CORS aplicada em 26/10/2026; fluxo de Contracts na aplicação publicada
+aguarda validação. O [registro de Maintenance](maintenance-s3-cors.md) documenta a leitura pela API
+S3 e os preflights realizados naquela data. Em 28/10, o estado local do Terraform ainda registra a
+regra `contract_documents` com GET/HEAD/PUT e cabeçalhos de tipo, tamanho e checksum.
 
-## Impacto enquanto estiver pendente
+A regra vale para o bucket, compartilhado por Contracts e Maintenance. As origens registradas são
+`http://localhost:3000`, `https://ketris-web-x9bk.vercel.app` e `https://www.ketris.com.br`.
+A afirmação anterior de que esse CORS não havia sido aplicado estava desatualizada.
 
-O navegador não consegue concluir o envio direto de novos PDFs ao S3. A autorização inicial da API pode funcionar, mas o envio do arquivo falha por CORS e o documento não é confirmado no contrato.
+## Validação que permanece necessária
 
-Novos registros manuais de assinatura ficam impedidos quando não existe PDF comprobatório válido da revisão atual. A exigência de comprovante permanece vigente; o adiamento não autoriza assinar sem documento. Edições que alterem os dados do contrato continuam exigindo novo PDF antes de registrar assinaturas.
+O estado local e os preflights históricos não comprovam o fluxo atual do app publicado. A sessão
+AWS estava expirada em 28/10, impedindo nova leitura da configuração real. Após renovar o acesso,
+conferir drift/origens e validar no navegador: autorização → PUT com checksum → confirmação do PDF
+→ leitura assinada → registro manual com comprovante da revisão atual.
 
-Listagem, cadastro, edição, histórico, vínculo de locatário, cancelamento e encerramento não dependem desse CORS. Continuam sujeitos às permissões, estados e validações existentes. Chave de criptografia e migrations são pré-requisitos separados e não estão dispensados por este débito.
+Credenciais, permissões e versão compatível da aplicação são pré-requisitos distintos. Não se
+presume que uploads atuais estejam bloqueados por CORS, nem que estejam funcionando apenas porque
+a regra consta no estado. O bucket continua privado; este registro não autoriza acesso público.
 
-## Critério de conclusão
-
-1. Definir as origens exatas de cada aplicação que utiliza o bucket, incluindo a origem local somente se necessária.
-2. Aplicar a configuração preparada, preservando o bucket privado e eventuais regras existentes necessárias.
-3. Validar pelo navegador de uma origem autorizada: autorização, PUT com checksum, confirmação do PDF e registro manual com comprovante da revisão atual.
-
-Os testes automatizados utilizam simulador local e já validam o fluxo da aplicação. Eles não comprovam a configuração de CORS do bucket real.
-
-Consulte [operação de Contracts](../contracts-operations.md) para configuração e implantação.
+Listagem, cadastro, edição, histórico, vínculo de locatário, cancelamento e encerramento mantêm suas
+regras existentes. O adiamento da validação não dispensa PDF válido para novas assinaturas manuais.
+Consulte [operação de Contracts](../contracts-operations.md) e
+[publicação coordenada](../staging-release.md).

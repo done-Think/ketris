@@ -1,10 +1,13 @@
 import { maintenanceSystemActionKeys } from '@server/maintenance/constants/maintenance-system-actions'
+import { maintenanceHistoryStatuses } from '../config/maintenance-history-statuses'
 import type { ApiMaintenanceActivity } from '../types/service'
-import { maintenanceStatusFromApiMap } from './maintenance-adapter'
 
 export function formatMaintenanceActivity(
   activity: ApiMaintenanceActivity,
-  translate: (key: string, values?: Record<string, string>) => string,
+  translate: (
+    key: TranslationKey<'dashboard.maintenance'>,
+    values?: Record<string, string>,
+  ) => string,
 ): string {
   const code = activity.systemAction
   if (!code) return activity.message
@@ -12,7 +15,7 @@ export function formatMaintenanceActivity(
   if (!key) return activity.message
   const statusLabel = (value: unknown) => {
     if (typeof value !== 'string') return ''
-    const status = Object.entries(maintenanceStatusFromApiMap).find(([code]) => code === value)?.[1]
+    const status = maintenanceHistoryStatuses.get(value)
     return status ? translate(`statuses.${status}`) : value
   }
   const message = translate(`activityMessages.${key}`, {
@@ -30,3 +33,4 @@ export function formatMaintenanceActivity(
     ? `${message}\n${activity.message}`
     : message
 }
+import type { TranslationKey } from '@/i18n/types/messages.types'

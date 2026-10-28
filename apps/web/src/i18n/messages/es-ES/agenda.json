@@ -10,20 +10,20 @@
       "ticketScheduled": "Atención programada"
     },
     "chargeStatuses": {
-      "PENDENTE": "Pendiente",
-      "PAGA": "Pagado",
-      "ATRASADA": "Vencido",
-      "AGENDADA": "Programado",
-      "CANCELADA": "Cancelado"
+      "PENDING": "Pendiente",
+      "PAID": "Pagado",
+      "OVERDUE": "Vencido",
+      "SCHEDULED": "Programado",
+      "CANCELED": "Cancelado"
     },
     "ticketStatuses": {
-      "ABERTO": "Abierto",
-      "EM_ANDAMENTO": "En curso",
-      "RESOLVIDO": "Resuelto",
-      "FECHADO": "Cerrado",
-      "AGUARDANDO_CONFIRMACAO": "Pendiente de confirmación",
-      "CONTESTADO": "Impugnado",
-      "CANCELADO": "Cancelado"
+      "OPEN": "Abierto",
+      "IN_PROGRESS": "En curso",
+      "RESOLVED": "Resuelto",
+      "CLOSED": "Cerrado",
+      "AWAITING_CONFIRMATION": "Pendiente de confirmación",
+      "DISPUTED": "Impugnado",
+      "CANCELED": "Cancelado"
     }
   },
   "dashboard": {
