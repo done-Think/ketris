@@ -260,6 +260,7 @@
       "cityRequired": "Informe a cidade",
       "stateRequired": "Informe a UF",
       "zipCodeRequired": "Informe o CEP",
+      "zipCodeInvalid": "Informe um CEP com 8 dígitos, como 37502-330.",
       "numberInvalid": "Informe um valor válido",
       "areaRequired": "Informe a área útil",
       "mainValueRequired": "Informe o valor principal",

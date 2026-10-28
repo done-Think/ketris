@@ -4,6 +4,7 @@ import type { SearchResultProperty } from '../types/search'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { PropertyText } from '../types/property-presentation'
 import { formatCompactCurrency } from './search-results'
+import { formatPostalCode } from '@shared/utils/postal-code'
 
 const fallbackImage =
   'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=82'
@@ -49,7 +50,7 @@ function buildAddressLine(property: PublicPropertyDetail): string {
     [property.address.neighborhood, `${property.address.city}/${property.address.state}`]
       .filter(Boolean)
       .join(', '),
-    property.address.zipCode,
+    formatPostalCode(property.address.zipCode),
   ]
     .filter(Boolean)
     .join(' — ')

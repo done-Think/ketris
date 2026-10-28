@@ -16,6 +16,16 @@ beforeEach(async () => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('ViaCEP service', () => {
+  it.each(['37.502-330', '37 502 330', '37502.330'])(
+    'looks up a pasted CEP with separators: %s',
+    async (zipCode) => {
+      const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(address)))
+      vi.stubGlobal('fetch', fetch)
+      expect(await lookupPostalCode(zipCode, signal)).toMatchObject({ city: 'Itajubá' })
+      expect(fetch).toHaveBeenCalledWith('https://viacep.com.br/ws/37502330/json/', { signal })
+    },
+  )
+
   it('maps the external address and caches a normalized CEP', async () => {
     const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(address)))
     vi.stubGlobal('fetch', fetch)

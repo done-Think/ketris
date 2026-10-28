@@ -260,6 +260,7 @@
       "cityRequired": "Enter the city",
       "stateRequired": "Enter the state",
       "zipCodeRequired": "Enter the ZIP code",
+      "zipCodeInvalid": "Enter a Brazilian postal code with 8 digits, such as 37502-330.",
       "numberInvalid": "Enter a valid value",
       "areaRequired": "Enter the usable area",
       "mainValueRequired": "Enter the main value",

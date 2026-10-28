@@ -1,5 +1,6 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
+import { normalizePostalCode } from '@shared/utils/postal-code'
 
 import {
   propertyListingSchema,
@@ -16,7 +17,20 @@ export const propertyAddressInputSchema = z
     neighborhood: z.string().trim().min(1),
     city: z.string().trim().min(1),
     state: z.string().trim().length(2),
-    zipCode: z.string().trim().min(8),
+    zipCode: z
+      .string()
+      .trim()
+      .min(8)
+      .refine((value) => normalizePostalCode(value) !== null, {
+        message: 'Informe um CEP com 8 dígitos.',
+        params: { i18nKey: 'formatInvalid' },
+      })
+      .transform((value) => normalizePostalCode(value)!)
+      .openapi({
+        description:
+          'CEP brasileiro com 8 dígitos. Pontos, espaços e hífen são aceitos e removidos ao salvar.',
+        example: '37502330',
+      }),
     latitude: z.number().min(-90).max(90).nullable().optional(),
     longitude: z.number().min(-180).max(180).nullable().optional(),
   })

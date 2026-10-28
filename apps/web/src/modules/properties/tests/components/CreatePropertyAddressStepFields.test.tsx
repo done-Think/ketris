@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { useForm } from 'react-hook-form'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -21,10 +22,11 @@ const address: PostalCodeAddress = {
   state: 'MG',
 }
 
-function Wrapper() {
+function Wrapper({ zipCode = '' }: { zipCode?: string }) {
   const { control, setValue, getValues } = useForm<CreateDashboardPropertyFormValues>({
     defaultValues: {
       ...createDashboardPropertyDefaultValues,
+      zipCode,
       number: '35',
       complement: 'apto 101',
       latitude: -23.55,
@@ -44,12 +46,34 @@ function Wrapper() {
   )
 }
 function enterPostalCode(value: string) {
-  fireEvent.change(screen.getByLabelText('CEP'), { target: { value } })
+  fireEvent.input(screen.getByLabelText('CEP'), { target: { value } })
   fireEvent.blur(screen.getByLabelText('CEP'))
 }
 
 beforeEach(() => vi.resetAllMocks())
 describe('property address by postal code', () => {
+  it('formats a saved unmasked CEP without clearing the saved coordinates', () => {
+    render(<Wrapper zipCode="37502330" />)
+    expect(screen.getByLabelText('CEP')).toHaveValue('37502-330')
+    expect(screen.getByLabelText('Latitude (opcional)')).toHaveValue(-23.55)
+    expect(screen.getByLabelText('Longitude (opcional)')).toHaveValue(-46.63)
+    expect(lookup).not.toHaveBeenCalled()
+  })
+
+  it.each(['37502330', '37502-330', '37.502-330', '37 502 330'])(
+    'accepts pasted CEP %s and looks it up using eight digits',
+    async (value) => {
+      lookup.mockResolvedValue(address)
+      const user = userEvent.setup()
+      render(<Wrapper />)
+      await user.click(screen.getByLabelText('CEP'))
+      await user.paste(value)
+      expect(screen.getByLabelText('CEP')).toHaveValue('37502-330')
+      await user.tab()
+      await waitFor(() => expect(lookup).toHaveBeenCalledWith('37502330', expect.any(AbortSignal)))
+    },
+  )
+
   it('fills the address on CEP blur while preserving number and complement and clearing stale coordinates', async () => {
     lookup.mockResolvedValue(address)
     render(<Wrapper />)

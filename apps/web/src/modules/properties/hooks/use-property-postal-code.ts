@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { UseFormGetValues, UseFormSetValue } from 'react-hook-form'
 
 import type { CreateDashboardPropertyFormValues } from '../types/dashboard-property'
-import { lookupPostalCode, normalizePostalCode } from '../services/postal-code-service'
+import { lookupPostalCode } from '../services/postal-code-service'
+import { normalizePostalCode } from '@shared/utils/postal-code'
 
 export function usePropertyPostalCode(
   getValues: UseFormGetValues<CreateDashboardPropertyFormValues>,

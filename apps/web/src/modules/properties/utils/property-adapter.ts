@@ -1,4 +1,5 @@
 import type { components } from '@shared/types/generated/api'
+import { normalizePostalCode } from '@shared/utils/postal-code'
 import type {
   ApiProperty,
   ApiPropertyType,
@@ -79,7 +80,7 @@ function toApiAddress(address: PropertyAddress) {
     neighborhood: address.neighborhood,
     city: address.city,
     state: address.state,
-    zipCode: address.zipCode,
+    zipCode: normalizePostalCode(address.zipCode) ?? address.zipCode,
     latitude: address.latitude,
     longitude: address.longitude,
   }

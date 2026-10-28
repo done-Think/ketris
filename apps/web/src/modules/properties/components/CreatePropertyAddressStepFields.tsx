@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 
 import type { CreatePropertyAddressStepFieldsProps } from '../types/dashboard-property'
 import { usePropertyPostalCode } from '../hooks/use-property-postal-code'
+import { MaskedInput } from '@shared/components/form/MaskedInput'
 
 export function CreatePropertyAddressStepFields({
   control,
@@ -37,12 +38,20 @@ export function CreatePropertyAddressStepFields({
             name as
               'street' | 'number' | 'neighborhood' | 'city' | 'state' | 'zipCode' | 'complement'
           }
-          render={({ field, fieldState }) => (
+          render={({ field: { ref, ...field }, fieldState }) => (
             <TextField
               {...field}
+              inputRef={ref}
+              value={
+                name === 'zipCode' ? String(field.value ?? '').replace(/\D/g, '') : field.value
+              }
               onChange={(event) => {
-                if (name === 'zipCode') postalCode.cancel()
-                field.onChange(event)
+                if (name === 'zipCode') {
+                  const digits = event.target.value.replace(/\D/g, '')
+                  if (digits === String(field.value ?? '').replace(/\D/g, '')) return
+                  postalCode.cancel()
+                  field.onChange(digits)
+                } else field.onChange(event)
                 onAddressChange()
               }}
               onBlur={() => {
@@ -56,6 +65,20 @@ export function CreatePropertyAddressStepFields({
                 (name === 'zipCode' ? t(`postalCode.${postalCode.status}`) : undefined)
               }
               sx={getAddressFieldStyles(name)}
+              slotProps={
+                name === 'zipCode'
+                  ? {
+                      input: { inputComponent: MaskedInput as never },
+                      htmlInput: {
+                        mask: '00000-000',
+                        unmask: true,
+                        prepare: (value: string) => value.replace(/\D/g, ''),
+                        inputMode: 'numeric',
+                        autoComplete: 'postal-code',
+                      },
+                    }
+                  : undefined
+              }
             />
           )}
         />

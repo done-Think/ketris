@@ -53,6 +53,11 @@ function mapped(input = property) {
 }
 
 describe('property location', () => {
+  it('formats an unmasked stored CEP in the public address', () => {
+    const result = mapped({ ...property, address: { ...property.address!, zipCode: '37502330' } })
+    expect(result.address).toContain('37502-330')
+  })
+
   it('does not invent São Paulo coordinates when the address has no coordinates', () => {
     const result = mapped()
     expect(result.mapCenter).toBeNull()

@@ -260,6 +260,7 @@
       "cityRequired": "Indica la ciudad",
       "stateRequired": "Indica el estado",
       "zipCodeRequired": "Indica el código postal",
+      "zipCodeInvalid": "Introduce un código postal brasileño de 8 dígitos, como 37502-330.",
       "numberInvalid": "Indica un valor válido",
       "areaRequired": "Indica el área útil",
       "mainValueRequired": "Indica el valor principal",

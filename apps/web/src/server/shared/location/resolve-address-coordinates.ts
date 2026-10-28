@@ -1,4 +1,5 @@
 import type { AddressCoordinates, AddressGeocoder, GeocodingAddress } from './address-geocoder.port'
+import { normalizePostalCode } from '@shared/utils/postal-code'
 
 type LocatedAddress = GeocodingAddress & {
   latitude: number | null
@@ -29,8 +30,10 @@ export async function resolveAddressCoordinates<T extends LocatedAddress>(
   if (!address) return undefined
   const locationChanged =
     previous &&
-    (['street', 'number', 'neighborhood', 'city', 'state', 'zipCode'] as const).some(
-      (field) => address[field] !== previous[field],
+    (['street', 'number', 'neighborhood', 'city', 'state', 'zipCode'] as const).some((field) =>
+      field === 'zipCode'
+        ? normalizePostalCode(address.zipCode ?? '') !== normalizePostalCode(previous.zipCode ?? '')
+        : address[field] !== previous[field],
     )
   const staleCoordinates =
     locationChanged &&

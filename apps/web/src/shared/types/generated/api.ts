@@ -13747,6 +13747,10 @@ export interface components {
       number: string
       state: string
       street: string
+      /**
+       * @description CEP brasileiro com 8 dígitos. Pontos, espaços e hífen são aceitos e removidos ao salvar.
+       * @example 37502330
+       */
       zipCode: string
     }
     TenantPropertyCharacteristics: {

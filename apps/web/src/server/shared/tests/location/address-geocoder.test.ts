@@ -136,6 +136,14 @@ describe('address geocoding', () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 
+  it('preserves coordinates when only CEP punctuation changes', async () => {
+    const { fetch, geocoder } = setup([])
+    const previous = { ...address, latitude: -22.44, longitude: -45.44 }
+    const current = { ...previous, zipCode: '37500000' }
+    expect(await resolveAddressCoordinates(current, geocoder, previous)).toEqual(current)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
   it('does not reuse incomplete coordinates as a valid position', async () => {
     const { geocoder } = setup([])
     expect(await resolveAddressCoordinates({ ...address, latitude: -23.55 }, geocoder)).toEqual(

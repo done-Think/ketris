@@ -11,6 +11,7 @@ import type {
   CreatePropertyPurpose,
 } from '../types/dashboard-property'
 import type { SchemaMessageTranslator } from '@shared/types'
+import { normalizePostalCode } from '@shared/utils/postal-code'
 
 export function createDashboardPropertySchema(
   t: SchemaMessageTranslator<
@@ -36,6 +37,7 @@ export function createDashboardPropertySchema(
     | 'titleRequired'
     | 'titleTooLong'
     | 'zipCodeRequired'
+    | 'zipCodeInvalid'
   >,
 ) {
   const numberField = z.coerce.number().nonnegative(t('numberInvalid'))
@@ -78,7 +80,12 @@ export function createDashboardPropertySchema(
       neighborhood: z.string().min(2, t('neighborhoodRequired')),
       city: z.string().min(2, t('cityRequired')),
       state: z.string().length(2, t('stateRequired')),
-      zipCode: z.string().min(8, t('zipCodeRequired')),
+      zipCode: z
+        .string()
+        .trim()
+        .min(1, t('zipCodeRequired'))
+        .refine((value) => normalizePostalCode(value) !== null, t('zipCodeInvalid'))
+        .transform((value) => normalizePostalCode(value)!),
       bedrooms: countField,
       bathrooms: countField,
       parkingSpaces: countField,

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createPropertyRequestSchema,
   updatePropertyRequestSchema,
+  propertyAddressInputSchema,
 } from '../../schemas/property-input.schema'
 
 const listing = {
@@ -14,6 +15,26 @@ const listing = {
 }
 
 describe('property input contract', () => {
+  const address = {
+    street: 'Rua Padre Júlio Chevalier',
+    number: '35',
+    neighborhood: 'Anhumas',
+    city: 'Itajubá',
+    state: 'MG',
+  }
+  it.each(['37502330', '37502-330', '37.502-330', '37 502 330'])(
+    'normalizes accepted CEP %s to eight digits at the API boundary',
+    (zipCode) => {
+      expect(propertyAddressInputSchema.parse({ ...address, zipCode }).zipCode).toBe('37502330')
+    },
+  )
+  it.each(['1234567', '123456789', 'ABCDEFGH', '37502A330'])(
+    'rejects invalid CEP %s at the API boundary',
+    (zipCode) => {
+      expect(propertyAddressInputSchema.safeParse({ ...address, zipCode }).success).toBe(false)
+    },
+  )
+
   it('accepts typed property and listing fields', () => {
     expect(
       createPropertyRequestSchema.parse({

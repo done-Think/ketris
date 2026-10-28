@@ -1,12 +1,8 @@
 import { postalCodeResponseSchema } from '../schemas/postal-code-schema'
 import type { PostalCodeAddress } from '../types/postal-code'
+import { normalizePostalCode } from '@shared/utils/postal-code'
 
 const cache = new Map<string, { address: PostalCodeAddress | null; expiresAt: number }>()
-
-export function normalizePostalCode(value: string) {
-  const trimmed = value.trim()
-  return /^\d{5}-?\d{3}$/.test(trimmed) ? trimmed.replace('-', '') : null
-}
 
 export async function lookupPostalCode(
   zipCode: string,
