@@ -10,6 +10,8 @@ import { CreatePropertyValuesStepFields } from './CreatePropertyValuesStepFields
 import { PropertyMediaUploadField } from './PropertyMediaUploadField'
 
 export function CreatePropertyStepFields({
+  getValues,
+  setValue,
   control,
   onAddressChange,
   activeStepKey,
@@ -34,7 +36,12 @@ export function CreatePropertyStepFields({
       {activeStepKey === 'basic' ? <CreatePropertyBasicStepFields control={control} /> : null}
 
       {activeStepKey === 'address' ? (
-        <CreatePropertyAddressStepFields control={control} onAddressChange={onAddressChange} />
+        <CreatePropertyAddressStepFields
+          control={control}
+          getValues={getValues}
+          setValue={setValue}
+          onAddressChange={onAddressChange}
+        />
       ) : null}
 
       {activeStepKey === 'features' ? <CreatePropertyFeaturesStepFields control={control} /> : null}

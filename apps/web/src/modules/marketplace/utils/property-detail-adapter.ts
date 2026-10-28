@@ -8,8 +8,6 @@ import { formatCompactCurrency } from './search-results'
 const fallbackImage =
   'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=82'
 
-const fallbackMapCenter = { latitude: -23.5505, longitude: -46.6333 }
-
 function buildDetails(property: PublicPropertyDetail): SearchResultProperty['details'] {
   const details: SearchResultProperty['details'] = []
 
@@ -46,7 +44,13 @@ function buildPrice(property: PublicPropertyDetail, locale: AppLocale, t: Proper
 function buildAddressLine(property: PublicPropertyDetail): string {
   if (!property.address) return buildLocation(property)
 
-  return [`${property.address.street}, ${property.address.number}`, buildLocation(property)]
+  return [
+    `${property.address.street}, ${property.address.number}`,
+    [property.address.neighborhood, `${property.address.city}/${property.address.state}`]
+      .filter(Boolean)
+      .join(', '),
+    property.address.zipCode,
+  ]
     .filter(Boolean)
     .join(' — ')
 }
@@ -80,7 +84,7 @@ export function mapDetailToMarketplacePropertyDetail(
     mapCenter:
       property.latitude !== null && property.longitude !== null
         ? { latitude: property.latitude, longitude: property.longitude }
-        : fallbackMapCenter,
+        : null,
     broker: property.brokerName ?? 'Ketris',
     brokerPhone: '',
     brokerEmail: '',

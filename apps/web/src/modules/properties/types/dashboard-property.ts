@@ -4,7 +4,13 @@ import type { TextFieldProps } from '@mui/material'
 import type { Property, PropertyListing } from './property'
 import type { GridSortModel, GridPaginationModel, GridRenderCellParams } from '@mui/x-data-grid'
 import type { FormEventHandler, ReactNode } from 'react'
-import type { Control, FieldErrors, UseFormTrigger } from 'react-hook-form'
+import type {
+  Control,
+  FieldErrors,
+  UseFormTrigger,
+  UseFormGetValues,
+  UseFormSetValue,
+} from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { createDashboardPropertySchema } from '../schemas/create-dashboard-property-schema'
@@ -134,6 +140,8 @@ export type CreatePropertyStepsNavProps = {
 }
 
 export type CreatePropertyStepFieldsProps = {
+  getValues: UseFormGetValues<CreateDashboardPropertyFormValues>
+  setValue: UseFormSetValue<CreateDashboardPropertyFormValues>
   onAddressChange: () => void
   control: Control<CreateDashboardPropertyFormValues>
   activeStepKey: CreatePropertyStepKey
@@ -146,6 +154,8 @@ export type CreatePropertyBasicStepFieldsProps = {
 }
 
 export type CreatePropertyAddressStepFieldsProps = {
+  getValues: UseFormGetValues<CreateDashboardPropertyFormValues>
+  setValue: UseFormSetValue<CreateDashboardPropertyFormValues>
   onAddressChange: () => void
   control: Control<CreateDashboardPropertyFormValues>
 }

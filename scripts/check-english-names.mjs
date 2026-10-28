@@ -33,6 +33,14 @@ const jwtReaders = new Set([
   'jose-token.service.test.ts',
 ])
 const oldClientTokens = new Set(['titulo', 'finalidade', 'tipo', 'valor', 'VENDA', 'CASA'])
+// ViaCEP's wire format is outside our control. Only these two external keys are exempt,
+// and only at its parsing/mapping boundary and the corresponding provider fixtures.
+const postalCodeBoundaryFiles = new Set([
+  'apps/web/src/modules/properties/schemas/postal-code-schema.ts',
+  'apps/web/src/modules/properties/services/postal-code-service.ts',
+  'apps/web/src/modules/properties/tests/services/postal-code-service.test.ts',
+])
+const postalCodeWireTokens = new Set(['logradouro', 'bairro'])
 const violations = []
 
 async function files(directory) {
@@ -48,6 +56,7 @@ async function files(directory) {
 function allowed(file, token, literal) {
   const basename = path.basename(file)
   return (
+    (postalCodeBoundaryFiles.has(path.relative(root, file)) && postalCodeWireTokens.has(token)) ||
     basename === 'maintenance-migrations.integration.test.ts' ||
     (literal && auditReaders.has(basename)) ||
     (token === 'papel' && jwtReaders.has(basename)) ||

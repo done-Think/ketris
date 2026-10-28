@@ -53,6 +53,23 @@ function createDeps(findPublishedById?: PublicPropertyRepository['findPublishedB
 }
 
 describe('GetPropertyUseCase', () => {
+  it('resolves the address for an existing published property without coordinates', async () => {
+    const deps = createDeps(
+      vi.fn().mockResolvedValue({ ...detail, latitude: null, longitude: null }),
+    )
+    const geocoder = { locate: vi.fn().mockResolvedValue({ latitude: -25.42, longitude: -49.27 }) }
+    const result = await new GetPropertyUseCase(deps.propertyRepository, geocoder).execute({
+      propertyId: detail.id,
+    })
+    expect(geocoder.locate).toHaveBeenCalledWith(detail.address)
+    expect(result).toMatchObject({
+      latitude: -25.42,
+      longitude: -49.27,
+      address: { latitude: -25.42, longitude: -49.27 },
+    })
+    expect(result).not.toHaveProperty('tenantId')
+  })
+
   it('retorna o detalhe público do imóvel sem expor o tenantId', async () => {
     const deps = createDeps()
     const useCase = new GetPropertyUseCase(deps.propertyRepository)

@@ -96,6 +96,52 @@ function createRepository(overrides?: Partial<PropertyRepository>): PropertyRepo
 }
 
 describe('properties use cases', () => {
+  it('resolves and persists the address coordinates when creating without manual coordinates', async () => {
+    const repository = createRepository()
+    const geocoder = { locate: vi.fn().mockResolvedValue({ latitude: -25.42, longitude: -49.27 }) }
+    await new CreatePropertyUseCase(repository, createOwnerDirectory(), geocoder).execute({
+      actorTenantId: 'tenant-1',
+      actorUserId: 'user-1',
+      actorRole: 'AGENT',
+      title: property.title,
+      purpose: property.purpose,
+      type: property.type,
+      price: property.values.price,
+      address: property.address!,
+    })
+    expect(geocoder.locate).toHaveBeenCalledWith(property.address)
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        address: expect.objectContaining({ latitude: -25.42, longitude: -49.27 }),
+      }),
+      'user-1',
+    )
+  })
+
+  it('geocodes a changed address instead of retaining its old coordinates', async () => {
+    const oldAddress = { ...property.address!, latitude: -23.55, longitude: -46.63 }
+    const repository = createRepository({
+      findByTenantAndId: vi.fn().mockResolvedValue({ ...property, address: oldAddress }),
+    })
+    const geocoder = { locate: vi.fn().mockResolvedValue({ latitude: -22.43, longitude: -45.45 }) }
+    await new UpdatePropertyUseCase(repository, createOwnerDirectory(), geocoder).execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'user-1',
+      actorRole: 'AGENT',
+      id: property.id,
+      address: { ...oldAddress, city: 'Itajubá', state: 'MG' },
+    })
+    expect(geocoder.locate).toHaveBeenCalled()
+    expect(repository.update).toHaveBeenCalledWith(
+      'tenant-1',
+      property.id,
+      expect.objectContaining({
+        address: expect.objectContaining({ city: 'Itajubá', latitude: -22.43, longitude: -45.45 }),
+      }),
+      'user-1',
+    )
+  })
+
   it('cria imóvel sempre no tenant e responsável do ator autenticado', async () => {
     const repository = createRepository()
     const useCase = new CreatePropertyUseCase(repository, createOwnerDirectory())

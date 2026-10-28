@@ -4,24 +4,28 @@ import { Box, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import type { CreatePropertyAddressStepFieldsProps } from '../types/dashboard-property'
+import { usePropertyPostalCode } from '../hooks/use-property-postal-code'
 
 export function CreatePropertyAddressStepFields({
   control,
   onAddressChange,
+  getValues,
+  setValue,
 }: CreatePropertyAddressStepFieldsProps) {
   const t = useTranslations('properties.create')
+  const postalCode = usePropertyPostalCode(getValues, setValue, onAddressChange)
 
   return (
     <Box sx={styles.box}>
       {(
         [
+          ['zipCode', 'zipCode'],
           ['street', 'street'],
           ['number', 'number'],
           ['complement', 'complement'],
           ['neighborhood', 'neighborhood'],
           ['city', 'city'],
           ['state', 'state'],
-          ['zipCode', 'zipCode'],
         ] as const
       ).map(([name, label]) => (
         <Controller
@@ -35,12 +39,20 @@ export function CreatePropertyAddressStepFields({
             <TextField
               {...field}
               onChange={(event) => {
+                if (name === 'zipCode') postalCode.cancel()
                 field.onChange(event)
                 onAddressChange()
               }}
+              onBlur={() => {
+                field.onBlur()
+                if (name === 'zipCode') void postalCode.lookup()
+              }}
               label={t(`fields.${label}`)}
               error={Boolean(fieldState.error)}
-              helperText={fieldState.error?.message}
+              helperText={
+                fieldState.error?.message ??
+                (name === 'zipCode' ? t(`postalCode.${postalCode.status}`) : undefined)
+              }
               sx={getAddressFieldStyles(name)}
             />
           )}
@@ -59,7 +71,10 @@ export function CreatePropertyAddressStepFields({
               type="number"
               label={t(`fields.${name}`)}
               error={Boolean(fieldState.error)}
-              helperText={fieldState.error?.message}
+              helperText={
+                fieldState.error?.message ??
+                (name === 'latitude' ? t('coordinatesHint') : undefined)
+              }
               slotProps={{ htmlInput: { step: 'any' } }}
             />
           )}

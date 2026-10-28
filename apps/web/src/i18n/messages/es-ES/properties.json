@@ -169,6 +169,13 @@
     "negotiationTerms": "Condiciones de negociación"
   },
   "create": {
+    "coordinatesHint": "Opcional: intentaremos localizar el inmueble por su dirección al guardar. Si es necesario, introduce ambas coordenadas.",
+    "postalCode": {
+      "idle": "Introduce el código postal y sal del campo para completar la dirección. Revisa los datos antes de guardar.",
+      "loading": "Consultando código postal…",
+      "notFound": "Código postal no encontrado. Revisa el código o introduce la dirección manualmente.",
+      "unavailable": "La consulta del código postal no está disponible. Puedes introducir la dirección manualmente."
+    },
     "title": "Publicar inmueble",
     "mobileTitle": "Nuevo inmueble",
     "back": "Volver",

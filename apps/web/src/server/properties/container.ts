@@ -13,6 +13,7 @@ import { PrismaPropertyRepository } from './infrastructure/prisma-property.repos
 import { S3PropertyMediaStorage } from './infrastructure/s3-property-media-storage'
 import { LocalPropertyMediaStorage } from './infrastructure/local-property-media-storage'
 import { shouldUseLocalUploadsStorage } from '@server/shared/storage/s3-client'
+import { addressGeocoder } from '@server/shared/location/geocoder'
 
 const propertyRepository = new PrismaPropertyRepository()
 const propertyOwnerDirectory = new PrismaPropertyOwnerDirectory()
@@ -22,10 +23,18 @@ const propertyMediaStorage = shouldUseLocalUploadsStorage()
 
 export const propertiesContainer = {
   listPropertyOwnersUseCase: new ListPropertyOwnersUseCase(propertyOwnerDirectory),
-  createPropertyUseCase: new CreatePropertyUseCase(propertyRepository, propertyOwnerDirectory),
+  createPropertyUseCase: new CreatePropertyUseCase(
+    propertyRepository,
+    propertyOwnerDirectory,
+    addressGeocoder,
+  ),
   listPropertiesUseCase: new ListPropertiesUseCase(propertyRepository),
   getPropertyUseCase: new GetPropertyUseCase(propertyRepository),
-  updatePropertyUseCase: new UpdatePropertyUseCase(propertyRepository, propertyOwnerDirectory),
+  updatePropertyUseCase: new UpdatePropertyUseCase(
+    propertyRepository,
+    propertyOwnerDirectory,
+    addressGeocoder,
+  ),
   deletePropertyUseCase: new DeletePropertyUseCase(propertyRepository),
   publishPropertyUseCase: new PublishPropertyUseCase(propertyRepository),
   unpublishPropertyUseCase: new UnpublishPropertyUseCase(propertyRepository),

@@ -6,11 +6,17 @@ import { isPropertyOwner } from '@server/auth/domain/roles'
 
 import { assertCanEditProperties } from '../authorization'
 import type { PropertyRepository } from '../ports/property-repository.port'
+import {
+  unavailableAddressGeocoder,
+  type AddressGeocoder,
+} from '@server/shared/location/address-geocoder.port'
+import { resolveAddressCoordinates } from '@server/shared/location/resolve-address-coordinates'
 
 export class CreatePropertyUseCase {
   constructor(
     private readonly propertyRepository: PropertyRepository,
     private readonly ownerDirectory: PropertyOwnerDirectory,
+    private readonly geocoder: AddressGeocoder = unavailableAddressGeocoder,
   ) {}
 
   execute(input: CreatePropertyInput) {
@@ -42,7 +48,7 @@ export class CreatePropertyUseCase {
         rentalPrice: input.rentalPrice,
         condoFee: input.condoFee,
         propertyTax: input.propertyTax,
-        address: input.address,
+        address: await resolveAddressCoordinates(input.address, this.geocoder),
         media: input.media,
       },
       input.actorUserId,

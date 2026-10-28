@@ -169,6 +169,13 @@
     "negotiationTerms": "Condições de negociação"
   },
   "create": {
+    "coordinatesHint": "Opcional: tentaremos localizar o imóvel pelo endereço ao salvar. Se necessário, informe as duas coordenadas.",
+    "postalCode": {
+      "idle": "Informe o CEP e saia do campo para preencher o endereço. Confira os dados antes de salvar.",
+      "loading": "Consultando CEP…",
+      "notFound": "CEP não encontrado. Confira o CEP ou preencha o endereço manualmente.",
+      "unavailable": "Consulta de CEP indisponível. Você pode preencher o endereço manualmente."
+    },
     "title": "Cadastrar imóvel",
     "mobileTitle": "Novo Imóvel",
     "back": "Voltar",

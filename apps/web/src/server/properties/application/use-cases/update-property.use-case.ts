@@ -7,11 +7,17 @@ import type { UpdatePropertyInput } from '../../types/use-case-inputs'
 import { assertCanEditProperties, assertPropertyAccess } from '../authorization'
 import { PropertyNotFoundError } from '../../domain/errors'
 import type { PropertyRepository } from '../ports/property-repository.port'
+import {
+  unavailableAddressGeocoder,
+  type AddressGeocoder,
+} from '@server/shared/location/address-geocoder.port'
+import { resolveAddressCoordinates } from '@server/shared/location/resolve-address-coordinates'
 
 export class UpdatePropertyUseCase {
   constructor(
     private readonly propertyRepository: PropertyRepository,
     private readonly ownerDirectory: PropertyOwnerDirectory,
+    private readonly geocoder: AddressGeocoder = unavailableAddressGeocoder,
   ) {}
 
   async execute(input: UpdatePropertyInput) {
@@ -57,7 +63,7 @@ export class UpdatePropertyUseCase {
         rentalPrice: input.rentalPrice,
         condoFee: input.condoFee,
         propertyTax: input.propertyTax,
-        address: input.address,
+        address: await resolveAddressCoordinates(input.address, this.geocoder, existing.address),
         media: input.media,
       },
       input.actorId,
