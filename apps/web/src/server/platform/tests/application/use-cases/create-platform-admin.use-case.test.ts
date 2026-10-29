@@ -3,26 +3,30 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
 
 import { PlatformAdminEmailAlreadyInUseError } from '../../../domain/errors'
-import type { PlatformAdmin } from '../../../domain/platform-admin.entity'
+import type { PlatformAdmin } from '../../../types/platform-admin'
 import type { PlatformAdminRepository } from '../../../application/ports/platform-admin-repository.port'
 import { CreatePlatformAdminUseCase } from '../../../application/use-cases/create-platform-admin.use-case'
 
 const existingAdmin: PlatformAdmin = {
   id: 'platform-admin-1',
-  nome: 'Dono Ketris',
+  name: 'Dono Ketris',
   email: 'dono@ketris.dev',
-  senhaHash: 'hash-fake',
+  passwordHash: 'hash-fake',
   role: 'ADMIN',
-  ativo: true,
+  active: true,
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  lastAccessAt: null,
 }
 
 const createdAdmin: PlatformAdmin = {
   id: 'platform-admin-2',
-  nome: 'Sócio Ketris',
+  name: 'Sócio Ketris',
   email: 'socio@ketris.dev',
-  senhaHash: 'hash-novo',
+  passwordHash: 'hash-novo',
   role: 'ADMIN',
-  ativo: true,
+  active: true,
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  lastAccessAt: null,
 }
 
 function createDeps(overrides?: { findByEmail?: PlatformAdminRepository['findByEmail'] }) {
@@ -33,6 +37,7 @@ function createDeps(overrides?: { findByEmail?: PlatformAdminRepository['findByE
     create: vi.fn().mockResolvedValue(createdAdmin),
     update: vi.fn(),
     deactivate: vi.fn(),
+    recordAccess: vi.fn(),
   }
   const passwordHasher: PasswordHasher = {
     compare: vi.fn(),
@@ -51,19 +56,23 @@ describe('CreatePlatformAdminUseCase', () => {
     )
 
     const result = await useCase.execute({
-      nome: 'Sócio Ketris',
+      actorId: 'acting-admin',
+      name: 'Sócio Ketris',
       email: 'socio@ketris.dev',
       password: 'senha-longa-123',
       role: 'ADMIN_AGENT',
     })
 
-    expect(result).not.toHaveProperty('senhaHash')
-    expect(deps.platformAdminRepository.create).toHaveBeenCalledWith({
-      nome: 'Sócio Ketris',
-      email: 'socio@ketris.dev',
-      senhaHash: 'hash-novo',
-      role: 'ADMIN_AGENT',
-    })
+    expect(result).not.toHaveProperty('passwordHash')
+    expect(deps.platformAdminRepository.create).toHaveBeenCalledWith(
+      {
+        name: 'Sócio Ketris',
+        email: 'socio@ketris.dev',
+        passwordHash: 'hash-novo',
+        role: 'ADMIN_AGENT',
+      },
+      'acting-admin',
+    )
   })
 
   it('lança PlatformAdminEmailAlreadyInUseError quando já existe um platform admin com o e-mail', async () => {
@@ -75,7 +84,8 @@ describe('CreatePlatformAdminUseCase', () => {
 
     await expect(
       useCase.execute({
-        nome: 'X',
+        actorId: 'acting-admin',
+        name: 'X',
         email: existingAdmin.email,
         password: 'senha-longa-123',
         role: 'ADMIN',

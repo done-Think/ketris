@@ -8,6 +8,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as crmStyles from '../../styles/archive-opportunity-dialog.styles'
 
 import type { ArchiveOpportunityDialogProps } from '../../types/opportunity-detail'
 
@@ -21,7 +22,7 @@ export function ArchiveOpportunityDialog({
 
   return (
     <Dialog open={open} onClose={() => !isPending && onClose()}>
-      <DialogTitle sx={{ letterSpacing: 0 }}>{t('archiveTitle')}</DialogTitle>
+      <DialogTitle sx={crmStyles.dialogTitleSx}>{t('archiveTitle')}</DialogTitle>
       <DialogContent>
         <Typography color="text.secondary">{t('archiveDescription')}</Typography>
       </DialogContent>

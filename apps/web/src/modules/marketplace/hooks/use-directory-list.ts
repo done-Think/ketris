@@ -1,89 +1,56 @@
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import { useTranslations } from 'next-intl'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { useEffect, useRef, useState } from 'react'
 
-import { createDirectorySearchFormSchema } from '../schemas/directory-search-schema'
-import type {
-  DirectorySearchFormValues,
-  UseDirectoryListParams,
-  UseDirectoryListResult,
-} from '../types/directory'
-import { normalizeSearchText } from '../utils/search'
+import { useDebouncedValue } from '@shared/hooks/use-debounced-value'
 
-export function useDirectoryList<TItem>({
-  getSearchableText,
-  initialCount,
-  items,
+import type { UseDirectoryListParams, UseDirectoryListResult } from '../types/directory'
+
+export function useDirectoryList<TApi, TItem>({
+  queryKey,
+  fetchPage,
+  toItem,
   pageSize,
-}: UseDirectoryListParams<TItem>): UseDirectoryListResult<TItem> {
-  const t = useTranslations('marketplace.directory.errors')
-  const directorySearchFormSchema = useMemo(
-    () => createDirectorySearchFormSchema((key) => t(key)),
-    [t],
-  )
-  const { getValues, register, setValue, watch } = useForm<DirectorySearchFormValues>({
-    defaultValues: {
-      isLoadingMore: false,
-      searchQuery: '',
-      visibleCount: initialCount,
-    },
-    resolver: zodResolver(directorySearchFormSchema),
+}: UseDirectoryListParams<TApi, TItem>): UseDirectoryListResult<TItem> {
+  const [search, setSearch] = useState('')
+  const q = useDebouncedValue(search.trim(), 300)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+  const query = useInfiniteQuery({
+    queryKey: queryKey({ q, pageSize }),
+    queryFn: ({ pageParam }) => fetchPage({ q: q || undefined, page: pageParam, pageSize }),
+    initialPageParam: 1,
+    getNextPageParam: (last) =>
+      last.page * last.pageSize < last.totalCount ? last.page + 1 : undefined,
   })
-  const { isLoadingMore, searchQuery, visibleCount } = watch()
-  const loadMoreRef = useRef<HTMLDivElement | null>(null)
-  const filteredItems = useMemo(() => {
-    const normalizedQuery = normalizeSearchText(searchQuery.trim())
-
-    return items.filter((item) => {
-      const searchableText = normalizeSearchText(getSearchableText(item))
-
-      return !normalizedQuery || searchableText.includes(normalizedQuery)
-    })
-  }, [getSearchableText, items, searchQuery])
-  const visibleItems = useMemo(
-    () => filteredItems.slice(0, visibleCount),
-    [filteredItems, visibleCount],
-  )
-  const hasMoreItems = visibleCount < filteredItems.length
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = query
 
   useEffect(() => {
-    setValue('visibleCount', initialCount)
-  }, [initialCount, searchQuery, setValue])
-
-  useEffect(() => {
-    const loadMoreElement = loadMoreRef.current
-    if (!loadMoreElement || !hasMoreItems || isLoadingMore) return
+    const element = loadMoreRef.current
+    if (!element || !hasNextPage || isFetchingNextPage) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry?.isIntersecting) return
-
-        setValue('isLoadingMore', true)
-        window.setTimeout(() => {
-          setValue(
-            'visibleCount',
-            Math.min(getValues('visibleCount') + pageSize, filteredItems.length),
-          )
-          setValue('isLoadingMore', false)
-        }, 420)
+        if (entry?.isIntersecting) void fetchNextPage()
       },
       { rootMargin: '360px 0px' },
     )
-
-    observer.observe(loadMoreElement)
+    observer.observe(element)
 
     return () => observer.disconnect()
-  }, [filteredItems.length, getValues, hasMoreItems, isLoadingMore, pageSize, setValue])
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  const pages = query.data?.pages ?? []
 
   return {
-    filteredItems,
-    hasMoreItems,
-    isLoadingMore,
+    items: pages.flatMap((page) => page.items.map(toItem)),
+    totalCount: pages[0]?.totalCount ?? 0,
+    hasMoreItems: Boolean(hasNextPage),
+    isLoading: query.isLoading,
+    isLoadingMore: isFetchingNextPage,
+    isError: query.isError,
     loadMoreRef,
-    register,
-    visibleItems,
+    search,
+    setSearch,
   }
 }

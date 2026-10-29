@@ -1,5 +1,4 @@
-export type ProposalManagementStatus =
-  'EM_NEGOCIACAO' | 'ENVIADA' | 'ACEITA' | 'RECUSADA' | 'RASCUNHO'
+export type ProposalManagementStatus = 'IN_NEGOTIATION' | 'SENT' | 'ACCEPTED' | 'REJECTED' | 'DRAFT'
 
 export type ProposalManagementFilterId = 'all' | ProposalManagementStatus
 
@@ -53,14 +52,6 @@ export type ProposalManagementSummary = {
   conversionRateLabel: string
 }
 
-export type ProposalManagementQuery = {
-  search?: string
-  status?: ProposalManagementFilterId
-  page?: number
-  pageSize?: number
-  statusLabel?: (status: ProposalManagementStatus) => string
-}
-
 export type ProposalManagementPage = {
   items: readonly ProposalManagementListItem[]
   page: number
@@ -111,4 +102,10 @@ export type ProposalFixtureInput = {
   status: ProposalManagementStatus
   createdAt: string
   createdLabel: string
+}
+
+export interface CrmProposalsListProps {
+  embedded?: boolean
+  search: string
+  header?: import('react').ReactNode
 }

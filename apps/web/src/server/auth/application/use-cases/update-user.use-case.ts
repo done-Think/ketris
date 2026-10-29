@@ -1,26 +1,13 @@
+import type { UpdateUserOutput } from '../../types/use-case-outputs'
+import type { UpdateUserInput } from '../../types/use-case-inputs'
+import { assertAvatarScope } from '../../domain/avatar-policy'
+import { AccountDeactivatedError } from '../../domain/errors'
+import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
-import { EmailAlreadyInUseError, UserNotFoundError } from '../../domain/errors'
-import {
-  toAuthenticatedUser,
-  type AuthenticatedUser,
-  type NonAdminPapel,
-  type Papel,
-} from '../../domain/user.entity'
+import { EmailConfirmationRequiredError, UserNotFoundError } from '../../domain/errors'
+import { toAuthenticatedUser } from '../authenticated-user'
 import type { UserRepository } from '../ports/user-repository.port'
-
-export interface UpdateUserInput {
-  actorId: string
-  actorTenantId: string
-  actorPapel: Papel
-  userId: string
-  nome?: string
-  email?: string
-  avatarUrl?: string | null
-  papel?: NonAdminPapel
-}
-
-export type UpdateUserOutput = AuthenticatedUser
 
 export class UpdateUserUseCase {
   constructor(private readonly userRepository: UserRepository) {}
@@ -28,37 +15,44 @@ export class UpdateUserUseCase {
   async execute(input: UpdateUserInput): Promise<UpdateUserOutput> {
     const isSelfUpdate = input.actorId === input.userId
 
-    if (!isSelfUpdate && input.actorPapel !== 'ADMIN') {
-      throw new ForbiddenError('Apenas administradores podem editar usuários.')
+    if (!isSelfUpdate && !isAgencyManager(input.actorRole)) {
+      throw new ForbiddenError('Apenas a gestão da imobiliária pode editar usuários.')
     }
 
     const target = await this.userRepository.findById(input.userId)
 
-    if (
-      !target ||
-      target.tenantId !== input.actorTenantId ||
-      (target.papel === 'ADMIN' && !isSelfUpdate)
-    ) {
+    if (!target || target.tenantId !== input.actorTenantId) {
       throw new UserNotFoundError()
     }
 
-    if (isSelfUpdate && input.papel !== undefined) {
-      throw new ForbiddenError('Self updates cannot change roles.')
+    if (input.avatarUrl !== undefined) {
+      if (!isSelfUpdate)
+        throw new ForbiddenError('O avatar só pode ser alterado pelo próprio usuário.')
+      if (!target.active) throw new AccountDeactivatedError()
+      assertAvatarScope(
+        input.avatarUrl,
+        input.actorTenantId,
+        input.actorId,
+        target.avatarUrl ?? null,
+      )
     }
 
-    if (input.email && input.email !== target.email) {
-      const existing = await this.userRepository.findByEmail(input.email)
+    if (isSelfUpdate && input.role !== undefined) {
+      throw new ForbiddenError('O próprio usuário não pode alterar seu papel.')
+    }
 
-      if (existing) {
-        throw new EmailAlreadyInUseError()
-      }
+    if (input.email && input.email.trim().toLowerCase() !== target.email.toLowerCase()) {
+      throw new EmailConfirmationRequiredError()
     }
 
     const updated = await this.userRepository.update(input.userId, {
-      nome: input.nome,
-      email: input.email,
+      name: input.name,
+      tenantId: input.actorTenantId,
+      auditActor: { kind: 'USER', id: input.actorId },
+      phone: input.phone,
+      creci: input.creci,
       avatarUrl: input.avatarUrl,
-      papel: input.papel,
+      role: input.role,
     })
 
     return toAuthenticatedUser(updated)

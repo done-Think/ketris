@@ -1,18 +1,15 @@
+import { styles, getStatusChipStyles } from '../styles/property-detail-header.styles'
 import { Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import PublishOutlinedIcon from '@mui/icons-material/PublishOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
-import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
-import { radius, surface } from '@shared/theme/tokens'
 
-import { useContracts } from '@modules/contracts/hooks/use-contracts'
-
-import { dashboardPropertyStatusStyles } from '../config/dashboard-property-ui'
+import { dashboardPropertyStatusStyles } from '../styles/property-status.styles'
 import type { PropertyDetailHeaderProps } from '../types/dashboard-property'
 
 export function PropertyDetailHeader({
@@ -31,14 +28,8 @@ export function PropertyDetailHeader({
   const statusT = useTranslations('properties.dashboard.filters')
   const status = dashboardPropertyStatusStyles[property.status]
   const isPublished = property.apiStatus === 'PUBLISHED'
-  const { data: session } = useSession()
-  const isRented = property.status === 'Alugado'
-  const activeContractQuery = useContracts(isRented && canManage ? session?.tenantId : undefined, {
-    propertyId: property.id,
-    status: 'ATIVO',
-  })
-  const activeContract = activeContractQuery.data?.items[0]
-
+  const activeContractId = property.activeContractId
+  const isRented = property.status === 'rented'
   return (
     <Stack
       direction="row"
@@ -47,9 +38,9 @@ export function PropertyDetailHeader({
       justifyContent="space-between"
       useFlexGap
       gap={2}
-      sx={{ mb: 2.6 }}
+      sx={styles.stack}
     >
-      <Box sx={{ flex: '1 1 420px', minWidth: 0 }}>
+      <Box sx={styles.box}>
         <Stack
           direction="row"
           flexWrap="wrap"
@@ -57,33 +48,14 @@ export function PropertyDetailHeader({
           useFlexGap
           columnGap={1.6}
           rowGap={0.8}
-          sx={{ mb: 0.7 }}
+          sx={styles.stack2}
         >
-          <Typography
-            variant="h2"
-            sx={{
-              minWidth: 0,
-              fontSize: { xs: 30, md: 42 },
-              fontWeight: 900,
-              overflowWrap: 'anywhere',
-            }}
-          >
+          <Typography variant="h2" sx={styles.typography}>
             {property.title}
           </Typography>
-          <Chip
-            label={statusT(property.status)}
-            sx={{
-              flexShrink: 0,
-              height: 32,
-              borderRadius: `${radius.full}px`,
-              bgcolor: status.bgcolor,
-              color: status.color,
-              fontSize: 13.5,
-              fontWeight: 900,
-            }}
-          />
+          <Chip label={statusT(property.status)} sx={getStatusChipStyles(status)} />
         </Stack>
-        <Typography sx={{ color: 'text.secondary', fontSize: { xs: 15, md: 17 } }}>
+        <Typography sx={styles.typography2}>
           {property.address} - {property.location}
         </Typography>
       </Box>
@@ -95,7 +67,7 @@ export function PropertyDetailHeader({
           alignItems="flex-start"
           useFlexGap
           gap={1.2}
-          sx={{ flexShrink: 0, maxWidth: '100%' }}
+          sx={styles.stack3}
         >
           <Button
             variant="outlined"
@@ -103,14 +75,7 @@ export function PropertyDetailHeader({
             startIcon={<DeleteOutlineRoundedIcon />}
             onClick={onDeleteRequest}
             disabled={isDeleting}
-            sx={{
-              height: 46,
-              px: 2.2,
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              fontSize: 15,
-              fontWeight: 900,
-            }}
+            sx={styles.button}
           >
             {t('delete')}
           </Button>
@@ -119,14 +84,7 @@ export function PropertyDetailHeader({
             color="secondary"
             startIcon={<EditOutlinedIcon />}
             onClick={onEdit}
-            sx={{
-              height: 46,
-              px: 2.2,
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              fontSize: 15,
-              fontWeight: 900,
-            }}
+            sx={styles.button2}
           >
             {t('edit')}
           </Button>
@@ -144,35 +102,22 @@ export function PropertyDetailHeader({
               }
               onClick={isPublished ? onUnpublish : onPublish}
               disabled={isPublishing || isUnpublishing}
-              sx={{
-                height: 46,
-                px: 2.4,
-                borderRadius: `${radius.sm}px`,
-                fontSize: 15,
-                fontWeight: 900,
-              }}
+              sx={styles.button3}
             >
               {isPublished ? t('unpublish') : t('publish')}
             </Button>
-            {activeContract ? (
+            {isRented && activeContractId ? (
               <Button
                 onClick={() =>
                   router.push({
                     pathname: '/dashboard/contracts/[id]',
-                    params: { id: activeContract.id },
+                    params: { id: activeContractId },
                   })
                 }
                 variant="outlined"
                 color="secondary"
                 startIcon={<ArticleOutlinedIcon />}
-                sx={{
-                  height: 46,
-                  px: 2.4,
-                  borderRadius: `${radius.sm}px`,
-                  bgcolor: surface.paper,
-                  fontSize: 15,
-                  fontWeight: 900,
-                }}
+                sx={styles.button4}
               >
                 {t('activeContract')}
               </Button>

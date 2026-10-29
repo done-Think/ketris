@@ -83,8 +83,9 @@ Documentos relacionados: `ketris-design-system.md` (identidade visual e tokens),
   feature de upload de foto de imóvel — a rota de upload em si ainda não existe no código.
 - **CI:** GitHub Actions (`.github/workflows/ci.yml`) — typecheck, lint, testes unitários e de
   integração contra um Postgres efêmero do próprio runner, nunca contra o RDS de staging.
-- **Deploy do schema:** `.github/workflows/deploy-staging.yml`, disparado só em push para `dev`, roda
-  `prisma migrate deploy` + `npm run db:seed` (idempotente) contra o RDS de staging.
+- **Deploy do schema:** `.github/workflows/deploy-staging.yml` é chamado pelo CI após os testes na `dev`.
+  Coordena migrations compatíveis, testes de login e promoção na Vercel. Ativação externa e
+  configuração em [staging-release.md](staging-release.md); sem seed completo/reset automático.
 - **App:** Vercel (Preview + Production). Envs configurados manualmente no dashboard — ver
   `infra/terraform/README.md`.
 

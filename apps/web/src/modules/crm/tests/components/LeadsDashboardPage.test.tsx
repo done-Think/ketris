@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -10,6 +10,7 @@ import { LeadsDashboardPage } from '../../components/LeadsDashboardPage'
 import {
   useConvertLeadToOpportunity,
   useCreateLead,
+  useLead,
   useLeads,
   useUpdateLeadStage,
 } from '../../hooks/use-leads'
@@ -28,6 +29,7 @@ vi.mock('../../hooks/use-leads', async (importOriginal) => {
 
   return {
     ...original,
+    useLead: vi.fn(),
     useLeads: vi.fn(),
     useCreateLead: vi.fn(),
     useUpdateLeadStage: vi.fn(),
@@ -44,7 +46,8 @@ vi.mock('notistack', () => ({
   useSnackbar: () => ({ enqueueSnackbar: mocks.enqueueSnackbar }),
 }))
 
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   useSearchParams: () => mocks.searchParams,
 }))
 
@@ -52,14 +55,14 @@ function makeLead(index: number, overrides: Partial<Lead> = {}): Lead {
   return {
     id: `lead-00${index}`,
     tenantId: 'tenant-1',
-    responsavelId: 'agent-1',
+    responsibleId: 'agent-1',
     name: `Lead ${index}`,
     phone: `(11) 9000${index}-000${index}`,
     email: `lead${index}@email.com`,
     interest: `Interesse ${index}`,
     budget: index === 2 ? 'R$ 850K' : `R$ ${index}M`,
-    source: 'Marketplace',
-    stage: 'NOVO',
+    source: 'MARKETPLACE',
+    stage: 'NEW',
     notes: null,
     opportunityId: null,
     createdAt: '2026-09-01T10:00:00.000Z',
@@ -72,24 +75,53 @@ const leadFixtures: Lead[] = [
   makeLead(1, {
     name: 'João Silva',
     email: 'joao.silva@email.com',
-    stage: 'NOVO',
+    stage: 'NEW',
     budget: 'R$ 1M',
   }),
-  makeLead(2, { name: 'Maria Fernandes', stage: 'EM_CONTATO', budget: 'R$ 300K' }),
-  makeLead(3, { name: 'Rafael Lima', stage: 'VISITA_MARCADA', budget: 'R$ 800K' }),
-  makeLead(4, { name: 'Carla Rocha', stage: 'PROPOSTA', budget: 'R$ 1.5M' }),
-  makeLead(5, { name: 'Guilherme Santos', stage: 'NOVO', budget: 'R$ 2M' }),
-  makeLead(6, { name: 'Patrícia Lima', stage: 'EM_CONTATO', budget: 'R$ 500K' }),
+  makeLead(2, { name: 'Maria Fernandes', stage: 'IN_CONTACT', budget: 'R$ 300K' }),
+  makeLead(3, { name: 'Rafael Lima', stage: 'VISIT_SCHEDULED', budget: 'R$ 800K' }),
+  makeLead(4, { name: 'Carla Rocha', stage: 'PROPOSAL', budget: 'R$ 1.5M' }),
+  makeLead(5, { name: 'Guilherme Santos', stage: 'NEW', budget: 'R$ 2M' }),
+  makeLead(6, { name: 'Patrícia Lima', stage: 'IN_CONTACT', budget: 'R$ 500K' }),
 ]
 
 function mockLeadsQuery(overrides: Record<string, unknown> = {}) {
-  vi.mocked(useLeads).mockReturnValue({
-    data: leadFixtures,
-    isLoading: false,
-    isError: false,
-    refetch: vi.fn(),
-    ...overrides,
-  } as unknown as ReturnType<typeof useLeads>)
+  vi.mocked(useLead).mockImplementation(
+    (id) => ({ data: leadFixtures.find((lead) => lead.id === id) }) as ReturnType<typeof useLead>,
+  )
+  vi.mocked(useLeads).mockImplementation((filters = {}) => {
+    let leads = [...leadFixtures]
+    if (filters.q)
+      leads = leads.filter((lead) => lead.name.toLowerCase().includes(filters.q!.toLowerCase()))
+    if (filters.stage) leads = leads.filter((lead) => lead.stage === filters.stage)
+    if (filters.sortBy === 'budget')
+      leads = [leadFixtures[1], ...leads.filter((lead) => lead.id !== leadFixtures[1].id)]
+    const page = filters.page ?? 1,
+      pageSize = filters.pageSize ?? 5
+    return {
+      data: {
+        leads: leads.slice((page - 1) * pageSize, page * pageSize),
+        pagination: {
+          page,
+          pageSize,
+          pageCount: Math.ceil(leads.length / pageSize),
+          totalCount: leads.length,
+        },
+        groups: ['NEW', 'IN_CONTACT', 'VISIT_SCHEDULED', 'PROPOSAL'].map((key) => ({
+          key,
+          count: leadFixtures.filter((lead) => lead.stage === key).length,
+          amount: 0,
+          rental: 0,
+          sale: 0,
+          unclassified: 0,
+        })),
+      },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+      ...overrides,
+    } as unknown as ReturnType<typeof useLeads>
+  })
 }
 
 function renderPage() {
@@ -178,6 +210,8 @@ describe('LeadsDashboardPage', () => {
 
     await user.type(screen.getByLabelText('Buscar leads'), 'Rafael')
 
+    await screen.findAllByText('Rafael Lima')
+    await waitFor(() => expect(screen.queryAllByText('João Silva')).toHaveLength(0))
     expect(screen.getAllByText('Rafael Lima').length).toBeGreaterThan(0)
     expect(screen.queryAllByText('João Silva')).toHaveLength(0)
   })
@@ -242,6 +276,6 @@ describe('LeadsDashboardPage', () => {
     await user.click(screen.getByLabelText('Estágio'))
     await user.click(await screen.findByRole('option', { name: 'Em contato' }))
 
-    expect(mutate).toHaveBeenCalledWith({ leadId: 'lead-001', stage: 'EM_CONTATO' })
+    expect(mutate).toHaveBeenCalledWith({ leadId: 'lead-001', stage: 'IN_CONTACT' })
   })
 })

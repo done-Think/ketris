@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { ContactEmailAlreadyExistsError } from '../../../domain/errors'
-import type { Contact } from '../../../domain/contact.entity'
 import type { ContactRepository } from '../../../application/ports/contact-repository.port'
 import { CreateContactUseCase } from '../../../application/use-cases/create-contact.use-case'
+import type { Contact } from '../../../domain/contact.entity'
+import { ContactEmailAlreadyExistsError } from '../../../domain/errors'
 
 const existing: Contact = {
   id: 'contato-1',
@@ -11,7 +11,7 @@ const existing: Contact = {
   name: 'Carlos',
   email: 'carlos@exemplo.com',
   phone: null,
-  type: 'PROPRIETARIO',
+  type: 'OWNER',
   avatarUrl: null,
   notes: null,
   lastInteraction: null,
@@ -29,10 +29,11 @@ describe('CreateContactUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
+      actorRole: 'OWNER',
       name: 'Novo Contato',
       email: 'Novo@Exemplo.com',
       phone: null,
-      type: 'LOCATARIO',
+      type: 'RENTER',
       avatarUrl: null,
       notes: null,
     })
@@ -52,10 +53,11 @@ describe('CreateContactUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
+        actorRole: 'OWNER',
         name: 'Duplicado',
         email: 'carlos@exemplo.com',
         phone: null,
-        type: 'LOCATARIO',
+        type: 'RENTER',
         avatarUrl: null,
         notes: null,
       }),

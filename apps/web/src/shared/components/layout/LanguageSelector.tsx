@@ -1,15 +1,18 @@
 'use client'
 
+import { styles } from '@shared/styles/language-selector.styles'
+
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
 import { Box, Button, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import { useLocale, useTranslations } from 'next-intl'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
 
-import { localeCookieMaxAge, localeCookieName, localeCookiePath } from '@/i18n/locale-cookie'
-import { getLocaleFromPathname, getLocalizedPathnameForLocale } from '@/i18n/locale-prefix'
+import { getCurrentRouteHref, getLocaleChangePathname } from '@/i18n/current-route'
+import { usePathname } from '@/i18n/navigation'
+import { syncClientLocaleCookie } from '@/i18n/locale-cookie'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import { alpha, componentText, radius, shadows } from '@shared/theme/tokens'
+import { componentText } from '@shared/theme/tokens'
 import type { LanguageOption, LanguageSelectorProps } from '@shared/types/language-selector'
 
 export function LanguageSelector(props: LanguageSelectorProps) {
@@ -23,11 +26,13 @@ export function LanguageSelector(props: LanguageSelectorProps) {
 function LanguageSelectorContent({ variant = 'profile' }: LanguageSelectorProps) {
   const locale = useLocale() as AppLocale
   const pathname = usePathname()
+  const params = useParams() ?? {}
+  const router = useRouter()
   const searchParams = useSearchParams()
   const t = useTranslations('marketplace.profile')
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const isHeader = variant === 'header'
-  const currentLocale = getLocaleFromPathname(pathname) ?? locale
+  const currentLocale = locale
   const languageOptions: LanguageOption[] = [
     {
       locale: 'pt-BR',
@@ -52,13 +57,15 @@ function LanguageSelectorContent({ variant = 'profile' }: LanguageSelectorProps)
     languageOptions.find((language) => language.locale === currentLocale) ?? languageOptions[0]
 
   const handleLanguageSelect = (nextLocale: AppLocale) => {
-    const nextPathname = getLocalizedPathnameForLocale(window.location.pathname, nextLocale)
-    const queryString = searchParams.toString()
-    const nextHref = queryString ? `${nextPathname}?${queryString}` : nextPathname
-
-    document.cookie = `${localeCookieName}=${nextLocale}; Path=${localeCookiePath}; SameSite=Lax; Max-Age=${localeCookieMaxAge}`
+    const href = getCurrentRouteHref(
+      pathname,
+      params,
+      new URLSearchParams(searchParams?.toString() ?? ''),
+    )
     setAnchor(null)
-    window.location.assign(nextHref)
+    // Cached client navigation can skip middleware; preserve both locale cookie and fragment.
+    syncClientLocaleCookie(nextLocale)
+    router.replace(getLocaleChangePathname(nextLocale, href, window.location.hash))
   }
 
   return (
@@ -68,45 +75,18 @@ function LanguageSelectorContent({ variant = 'profile' }: LanguageSelectorProps)
         onClick={(event) => setAnchor(event.currentTarget)}
         endIcon={<KeyboardArrowDownRoundedIcon fontSize="small" />}
         fullWidth={!isHeader}
-        sx={{
-          justifyContent: 'flex-start',
-          minHeight: 42,
-          borderRadius: `${radius.sm}px`,
-          color: 'text.primary',
-          px: isHeader ? 1.3 : undefined,
-          minWidth: isHeader ? 88 : undefined,
-          ...componentText.resetButtonText,
-          ...componentText.modalAction,
-          '& .MuiButton-endIcon': {
-            ml: 'auto',
-          },
-          '&:hover': {
-            bgcolor: alpha.magenta[8],
-            color: 'primary.main',
-          },
-        }}
+        sx={styles.button(isHeader)}
       >
         <Stack
           component="span"
           direction="row"
           alignItems="center"
           justifyContent="space-between"
-          sx={{ width: '100%', minWidth: 0 }}
+          sx={styles.stack}
         >
           {!isHeader ? <Box component="span">{t('language')}</Box> : null}
           <Stack component="span" direction="row" alignItems="center" spacing={0.75}>
-            <Box
-              component="img"
-              src={selectedLanguage.flagSrc}
-              alt=""
-              sx={{
-                width: 22,
-                height: 22,
-                borderRadius: radius.full,
-                objectFit: 'cover',
-                boxShadow: `0 0 0 1px ${alpha.graphite[10]}`,
-              }}
-            />
+            <Box component="img" src={selectedLanguage.flagSrc} alt="" sx={styles.box} />
             <Box component="span">{selectedLanguage.shortLabel}</Box>
           </Stack>
         </Stack>
@@ -124,12 +104,7 @@ function LanguageSelectorContent({ variant = 'profile' }: LanguageSelectorProps)
             'aria-label': t('language'),
           },
           paper: {
-            sx: {
-              mt: 0.75,
-              borderRadius: `${radius.sm}px`,
-              boxShadow: shadows.popover,
-              minWidth: 176,
-            },
+            sx: styles.paper,
           },
         }}
       >
@@ -138,20 +113,9 @@ function LanguageSelectorContent({ variant = 'profile' }: LanguageSelectorProps)
             key={language.locale}
             selected={currentLocale === language.locale}
             onClick={() => handleLanguageSelect(language.locale)}
-            sx={{ minHeight: 40, gap: 1.2 }}
+            sx={styles.menuItem}
           >
-            <Box
-              component="img"
-              src={language.flagSrc}
-              alt=""
-              sx={{
-                width: 22,
-                height: 22,
-                borderRadius: radius.full,
-                objectFit: 'cover',
-                boxShadow: `0 0 0 1px ${alpha.graphite[10]}`,
-              }}
-            />
+            <Box component="img" src={language.flagSrc} alt="" sx={styles.box2} />
             <Typography sx={componentText.modalSubtitle}>{language.label}</Typography>
           </MenuItem>
         ))}

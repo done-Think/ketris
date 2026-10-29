@@ -11,17 +11,14 @@ import {
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as crmStyles from '../../styles/leads-table.styles'
 
-import { alpha, brand, surface } from '@shared/theme/tokens'
-
-import type { LeadTableSortField, LeadsTableProps } from '../../types/lead'
+import type { LeadTableColumn, LeadsTableProps } from '../../types/lead'
 import { LeadAvatar } from './LeadAvatar'
 import { LeadStatusChip } from './LeadStatusChip'
+import { leadSourceKey } from '@shared/config/lead-sources'
 
-const leadTableColumns: {
-  key: 'name' | 'interest' | 'budget' | 'status' | 'source' | 'lastContact' | 'actions'
-  sortField?: LeadTableSortField
-}[] = [
+const leadTableColumns: LeadTableColumn[] = [
   { key: 'name', sortField: 'name' },
   { key: 'interest', sortField: 'interest' },
   { key: 'budget', sortField: 'budget' },
@@ -35,71 +32,19 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
   const t = useTranslations('crm.leads')
 
   return (
-    <TableContainer sx={{ overflowX: 'auto' }}>
-      <Table
-        size="small"
-        aria-label={t('tableAriaLabel')}
-        sx={{
-          minWidth: 1100,
-          tableLayout: 'fixed',
-          '& .MuiTableCell-root': { borderBottom: 0, overflow: 'hidden' },
-          '& .MuiTableHead-root .MuiTableCell-root': {
-            px: 1.5,
-            py: 0,
-            color: brand.neutral[500],
-            fontSize: 14,
-            fontWeight: 700,
-            lineHeight: 1.2,
-            letterSpacing: '0.01em',
-            textAlign: 'left',
-            textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
-          },
-          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(3), & .MuiTableBody-root .MuiTableCell-root:nth-of-type(3), & .MuiTableHead-root .MuiTableCell-root:nth-of-type(4), & .MuiTableBody-root .MuiTableCell-root:nth-of-type(4)':
-            {
-              textAlign: 'center',
-            },
-          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(6), & .MuiTableBody-root .MuiTableCell-root:nth-of-type(6)':
-            {
-              textAlign: 'center',
-            },
-          '& .MuiTableHead-root .MuiTableCell-root:nth-of-type(3) .MuiTableSortLabel-root, & .MuiTableHead-root .MuiTableCell-root:nth-of-type(4) .MuiTableSortLabel-root, & .MuiTableHead-root .MuiTableCell-root:nth-of-type(6) .MuiTableSortLabel-root':
-            {
-              justifyContent: 'center',
-              width: '100%',
-            },
-          '& .MuiTableSortLabel-root': {
-            color: 'inherit',
-            font: 'inherit',
-            textTransform: 'inherit',
-          },
-          '& .MuiTableSortLabel-root:hover, & .MuiTableSortLabel-root.Mui-active': {
-            color: brand.neutral[500],
-          },
-          '& .MuiTableSortLabel-icon': {
-            color: `${brand.neutral[500]} !important`,
-          },
-          '& .MuiTableBody-root .MuiTableCell-root': {
-            px: 1.5,
-            py: 0,
-            color: brand.graphite[500],
-            fontSize: 15.5,
-            lineHeight: 1.3,
-            whiteSpace: 'nowrap',
-          },
-        }}
-      >
+    <TableContainer sx={crmStyles.tableContainerSx}>
+      <Table size="small" aria-label={t('tableAriaLabel')} sx={crmStyles.tableSx}>
         <colgroup>
-          <col style={{ width: '19%' }} />
-          <col style={{ width: '17%' }} />
-          <col style={{ width: '16%' }} />
-          <col style={{ width: '15%' }} />
-          <col style={{ width: '9%' }} />
-          <col style={{ width: '14%' }} />
-          <col style={{ width: '10%' }} />
+          <col />
+          <col />
+          <col />
+          <col />
+          <col />
+          <col />
+          <col />
         </colgroup>
         <TableHead>
-          <TableRow sx={{ height: 44, bgcolor: surface.app }}>
+          <TableRow sx={crmStyles.tableRowSx}>
             {leadTableColumns.map(({ key, sortField }) => (
               <TableCell
                 key={key}
@@ -123,38 +68,22 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
         </TableHead>
         <TableBody>
           {leads.map((lead, index) => (
-            <TableRow
-              key={lead.id}
-              sx={{
-                height: 58,
-                bgcolor: index % 2 === 1 ? surface.app : surface.paper,
-                transition: 'background-color 160ms ease',
-                '&:hover': { bgcolor: alpha.graphite[6] },
-              }}
-            >
+            <TableRow key={lead.id} sx={crmStyles.getTableRowSx(index)}>
               <TableCell>
-                <Stack direction="row" alignItems="center" spacing={1.2} sx={{ minWidth: 0 }}>
+                <Stack direction="row" alignItems="center" spacing={1.2} sx={crmStyles.stackSx}>
                   <LeadAvatar lead={lead} />
-                  <Typography
-                    noWrap
-                    title={lead.name}
-                    sx={{ minWidth: 0, fontSize: 16, fontWeight: 650 }}
-                  >
+                  <Typography noWrap title={lead.name} sx={crmStyles.typographySx}>
                     {lead.name}
                   </Typography>
                 </Stack>
               </TableCell>
               <TableCell>
-                <Typography
-                  noWrap
-                  title={lead.interest}
-                  sx={{ color: 'text.secondary', fontSize: 15.5 }}
-                >
+                <Typography noWrap title={lead.interest} sx={crmStyles.typographySx2}>
                   {lead.interest}
                 </Typography>
               </TableCell>
               <TableCell align="center">
-                <Typography noWrap title={lead.budget} sx={{ fontSize: 15.5, fontWeight: 800 }}>
+                <Typography noWrap title={lead.budget} sx={crmStyles.typographySx3}>
                   {lead.budget}
                 </Typography>
               </TableCell>
@@ -162,20 +91,12 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
                 <LeadStatusChip stage={lead.stage} />
               </TableCell>
               <TableCell>
-                <Typography
-                  noWrap
-                  title={lead.source}
-                  sx={{ color: 'text.secondary', fontSize: 15.5 }}
-                >
-                  {lead.source}
+                <Typography noWrap sx={crmStyles.typographySx2}>
+                  {t(`create.sources.${leadSourceKey(lead.source)}`)}
                 </Typography>
               </TableCell>
               <TableCell align="center">
-                <Typography
-                  noWrap
-                  title={lead.lastContact}
-                  sx={{ color: 'text.secondary', fontSize: 15.5 }}
-                >
+                <Typography noWrap title={lead.lastContact} sx={crmStyles.typographySx2}>
                   {lead.lastContact}
                 </Typography>
               </TableCell>
@@ -185,7 +106,7 @@ export function LeadsTable({ leads, sort, onContactLead, onSortChange }: LeadsTa
                   size="small"
                   disabled={!onContactLead}
                   onClick={() => onContactLead?.(lead)}
-                  sx={{ minWidth: 0, px: 0.6, fontSize: 15.5, fontWeight: 800 }}
+                  sx={crmStyles.buttonSx}
                 >
                   {t('contactAction')}
                 </Button>

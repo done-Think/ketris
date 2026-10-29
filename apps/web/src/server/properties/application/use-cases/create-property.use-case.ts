@@ -1,41 +1,57 @@
-import { ForbiddenError } from '@server/shared/errors'
+import { assertPropertyMediaScope } from '../../domain/property-media-policy'
+import type { PropertyOwnerDirectory } from '../ports/property-owner-directory.port'
+import { PropertyOwnerValidationError } from '../../domain/errors'
+import type { CreatePropertyInput } from '../../types/use-case-inputs'
+import { isPropertyOwner } from '@server/auth/domain/roles'
 
-import type { Papel } from '@server/auth/domain/user.entity'
-
+import { assertCanEditProperties } from '../authorization'
 import type { PropertyRepository } from '../ports/property-repository.port'
-import type { NewProperty } from '../../types/property'
+import {
+  unavailableAddressGeocoder,
+  type AddressGeocoder,
+} from '@server/shared/location/address-geocoder.port'
+import { resolveAddressCoordinates } from '@server/shared/location/resolve-address-coordinates'
 
 export class CreatePropertyUseCase {
-  constructor(private readonly propertyRepository: PropertyRepository) {}
+  constructor(
+    private readonly propertyRepository: PropertyRepository,
+    private readonly ownerDirectory: PropertyOwnerDirectory,
+    private readonly geocoder: AddressGeocoder = unavailableAddressGeocoder,
+  ) {}
 
-  execute(
-    input: Omit<NewProperty, 'tenantId' | 'responsavelId'> & {
-      actorTenantId: string
-      actorUserId: string
-      actorPapel: Papel
-    },
-  ) {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar imóveis.')
+  execute(input: CreatePropertyInput) {
+    assertCanEditProperties(input.actorRole)
+    return this.createProperty(input)
+  }
+
+  private async createProperty(input: CreatePropertyInput) {
+    assertPropertyMediaScope(input.actorTenantId, input.media)
+    const ownerId = isPropertyOwner(input.actorRole) ? input.actorUserId : (input.ownerId ?? null)
+    if (ownerId && !(await this.ownerDirectory.findActiveOwner(input.actorTenantId, ownerId))) {
+      throw new PropertyOwnerValidationError()
     }
-
-    return this.propertyRepository.create({
-      tenantId: input.actorTenantId,
-      responsavelId: input.actorUserId,
-      titulo: input.titulo,
-      descricao: input.descricao,
-      finalidade: input.finalidade,
-      tipo: input.tipo,
-      quartos: input.quartos,
-      banheiros: input.banheiros,
-      vagas: input.vagas,
-      areaM2: input.areaM2,
-      valor: input.valor,
-      valorAluguel: input.valorAluguel,
-      condominio: input.condominio,
-      iptu: input.iptu,
-      endereco: input.endereco,
-      midias: input.midias,
-    })
+    return this.propertyRepository.create(
+      {
+        tenantId: input.actorTenantId,
+        responsibleId: input.actorUserId,
+        ownerId: ownerId,
+        title: input.title,
+        description: input.description,
+        purpose: input.purpose,
+        type: input.type,
+        listing: input.listing,
+        bedrooms: input.bedrooms,
+        bathrooms: input.bathrooms,
+        parkingSpots: input.parkingSpots,
+        areaSqm: input.areaSqm,
+        price: input.price,
+        rentalPrice: input.rentalPrice,
+        condoFee: input.condoFee,
+        propertyTax: input.propertyTax,
+        address: await resolveAddressCoordinates(input.address, this.geocoder),
+        media: input.media,
+      },
+      input.actorUserId,
+    )
   }
 }

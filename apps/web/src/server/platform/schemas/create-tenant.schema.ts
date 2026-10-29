@@ -7,7 +7,12 @@ const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 export const createTenantRequestSchema = z
   .object({
-    name: z.string().min(1, 'Nome é obrigatório.').openapi({ example: 'Imobiliária Exemplo' }),
+    name: z
+      .string()
+      .trim()
+      .min(1, 'Nome é obrigatório.')
+      .max(120, 'Nome muito longo.')
+      .openapi({ example: 'Imobiliária Exemplo' }),
     slug: z
       .string()
       .min(1, 'Slug é obrigatório.')
@@ -20,9 +25,8 @@ export const createTenantRequestSchema = z
       description: 'Situação inicial. TRIAL não entra no MRR até ser ativada. Padrão: ACTIVE.',
     }),
   })
+  .strict()
   .openapi('CreateTenantRequest')
-
-export type CreateTenantRequestDTO = z.infer<typeof createTenantRequestSchema>
 
 export const createTenantResponseSchema = z
   .object({

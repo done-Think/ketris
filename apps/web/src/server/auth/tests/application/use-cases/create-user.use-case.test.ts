@@ -9,23 +9,23 @@ import { CreateUserUseCase } from '../../../application/use-cases/create-user.us
 const admin: User = {
   id: 'admin-1',
   tenantId: 'tenant-1',
-  nome: 'Admin',
+  name: 'Admin',
   email: 'admin@ketris.dev',
-  senhaHash: 'hash-fake',
-  papel: 'ADMIN',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-fake',
+  role: 'OWNER',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 const createdUser: User = {
   id: 'user-2',
   tenantId: 'tenant-1',
-  nome: 'Ana Agente',
+  name: 'Ana Agente',
   email: 'ana@ketris.dev',
-  senhaHash: 'hash-novo',
-  papel: 'AGENT',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-novo',
+  role: 'AGENT',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 function createDeps(overrides?: {
@@ -33,6 +33,8 @@ function createDeps(overrides?: {
   create?: UserRepository['create']
 }) {
   const userRepository: UserRepository = {
+    findManyByEmail: vi.fn(),
+
     findById: vi.fn(),
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
@@ -50,87 +52,92 @@ function createDeps(overrides?: {
 }
 
 describe('CreateUserUseCase', () => {
-  it('cria o usuário quando o ator é ADMIN e o e-mail não existe no tenant', async () => {
+  it('cria o usuário quando o ator é OWNER e o e-mail não existe no tenant', async () => {
     const deps = createDeps()
     const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
 
     const result = await useCase.execute({
+      actorId: 'admin-1',
       actorTenantId: admin.tenantId,
-      actorPapel: admin.papel,
-      nome: 'Ana Agente',
+      actorRole: admin.role,
+      name: 'Ana Agente',
       email: 'ana@ketris.dev',
       password: 'senha-longa-123',
-      papel: 'AGENT',
+      role: 'AGENT',
     })
 
     expect(result).toEqual({
       id: createdUser.id,
       tenantId: createdUser.tenantId,
-      nome: createdUser.nome,
+      name: createdUser.name,
       email: createdUser.email,
       avatarUrl: null,
-      papel: createdUser.papel,
-      ativo: createdUser.ativo,
-      vinculoAprovadoEm: createdUser.vinculoAprovadoEm,
+      role: createdUser.role,
+      active: createdUser.active,
+      membershipApprovedAt: createdUser.membershipApprovedAt,
     })
-    expect(result).not.toHaveProperty('senhaHash')
+    expect(result).not.toHaveProperty('passwordHash')
     expect(deps.passwordHasher.hash).toHaveBeenCalledWith('senha-longa-123')
     expect(deps.userRepository.create).toHaveBeenCalledWith({
+      auditActor: { kind: 'USER', id: 'admin-1' },
       tenantId: admin.tenantId,
-      nome: 'Ana Agente',
+      name: 'Ana Agente',
       email: 'ana@ketris.dev',
-      senhaHash: 'hash-novo',
-      papel: 'AGENT',
+      passwordHash: 'hash-novo',
+      role: 'AGENT',
     })
   })
 
-  it('lança ForbiddenError quando o ator não é ADMIN', async () => {
+  it('lança ForbiddenError quando o ator não é OWNER', async () => {
     const deps = createDeps()
     const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
 
     await expect(
       useCase.execute({
+        actorId: 'admin-1',
         actorTenantId: admin.tenantId,
-        actorPapel: 'AGENT',
-        nome: 'Ana Agente',
+        actorRole: 'AGENT',
+        name: 'Ana Agente',
         email: 'ana@ketris.dev',
         password: 'senha-longa-123',
-        papel: 'AGENT',
+        role: 'AGENT',
       }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
     expect(deps.userRepository.create).not.toHaveBeenCalled()
   })
 
-  it('lança EmailAlreadyInUseError quando já existe usuário com o e-mail em qualquer tenant', async () => {
+  it('lança EmailAlreadyInUseError quando já existe usuário com o e-mail no mesmo tenant', async () => {
     const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue(admin) })
     const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
 
     await expect(
       useCase.execute({
+        actorId: 'admin-1',
         actorTenantId: admin.tenantId,
-        actorPapel: 'ADMIN',
-        nome: 'Ana Agente',
+        actorRole: 'OWNER',
+        name: 'Ana Agente',
         email: admin.email,
         password: 'senha-longa-123',
-        papel: 'AGENT',
+        role: 'AGENT',
       }),
     ).rejects.toThrow(EmailAlreadyInUseError)
     expect(deps.userRepository.create).not.toHaveBeenCalled()
   })
 
-  it('checa duplicidade globalmente (e-mail é único no sistema todo, não só por tenant)', async () => {
+  it('checa duplicidade somente no tenant do ator', async () => {
     const deps = createDeps()
     const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
 
     await useCase.execute({
+      actorId: 'admin-1',
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
-      nome: 'Ana Agente',
+      actorRole: 'OWNER',
+      name: 'Ana Agente',
       email: 'ana@ketris.dev',
       password: 'senha-longa-123',
-      papel: 'AGENT',
+      role: 'AGENT',
     })
 
-    expect(deps.userRepository.findByEmail).toHaveBeenCalledWith('ana@ketris.dev')
+    expect(deps.userRepository.findByEmail).toHaveBeenCalledWith('ana@ketris.dev', 'tenant-1')
   })
 })

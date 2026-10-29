@@ -1,17 +1,20 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 
 export interface ContractPartyUserLink {
   partyId: string
   userId: string
 }
 
-export interface LinkContractPartyUserInput {
+interface ContractPartyUserLinkActor {
   actorTenantId: string
-  actorPapel: Papel
+  actorId: string
+  actorRole: UserRole
   contractId: string
   partyId: string
-  email: string
 }
+
+export type LinkContractPartyUserInput = ContractPartyUserLinkActor &
+  ({ email: string; userId?: never } | { userId: string; email?: never })
 
 export interface LinkContractPartyUserData {
   tenantId: string
@@ -19,6 +22,10 @@ export interface LinkContractPartyUserData {
   partyId: string
   userId: string
   email: string
+}
+
+export interface AuditedContractPartyUserLinkData extends LinkContractPartyUserData {
+  actorId: string
 }
 
 export interface LinkContractPartyUserRouteContext {

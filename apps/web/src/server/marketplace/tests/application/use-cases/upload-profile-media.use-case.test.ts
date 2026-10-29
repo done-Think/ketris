@@ -6,6 +6,7 @@ import { UploadProfileMediaUseCase } from '../../../application/use-cases/upload
 
 function createStorage(overrides?: Partial<ProfileMediaStoragePort>): ProfileMediaStoragePort {
   return {
+    read: vi.fn(),
     upload: vi.fn().mockResolvedValue({
       url: '/api/marketplace/media/profiles/brokers/user-1/uuid-photo.jpg',
       contentType: 'image/jpeg',
@@ -17,7 +18,7 @@ function createStorage(overrides?: Partial<ProfileMediaStoragePort>): ProfileMed
 const baseInput = {
   actorId: 'user-1',
   actorTenantId: 'tenant-1',
-  actorPapel: 'AGENT' as const,
+  actorRole: 'AGENT' as const,
   target: 'broker-avatar' as const,
   filename: 'photo.jpg',
   contentType: 'image/jpeg',
@@ -61,7 +62,7 @@ describe('UploadProfileMediaUseCase', () => {
     const storage = createStorage()
     const useCase = new UploadProfileMediaUseCase(storage)
 
-    await useCase.execute({ ...baseInput, actorPapel: 'ADMIN', target })
+    await useCase.execute({ ...baseInput, actorRole: 'OWNER', target })
 
     expect(storage.upload).toHaveBeenCalledWith(
       expect.objectContaining({ keyPrefix: expectedPrefix }),
@@ -73,17 +74,17 @@ describe('UploadProfileMediaUseCase', () => {
     const useCase = new UploadProfileMediaUseCase(storage)
 
     await expect(
-      useCase.execute({ ...baseInput, actorPapel: 'ADMIN', target: 'broker-avatar' }),
+      useCase.execute({ ...baseInput, actorRole: 'OWNER', target: 'broker-avatar' }),
     ).rejects.toThrow('Só corretores')
     expect(storage.upload).not.toHaveBeenCalled()
   })
 
-  it('bloqueia quem não é ADMIN/OWNER de enviar mídia de imobiliária', async () => {
+  it('bloqueia quem não é OWNER de enviar mídia de imobiliária', async () => {
     const storage = createStorage()
     const useCase = new UploadProfileMediaUseCase(storage)
 
     await expect(
-      useCase.execute({ ...baseInput, actorPapel: 'AGENT', target: 'agency-logo' }),
+      useCase.execute({ ...baseInput, actorRole: 'AGENT', target: 'agency-logo' }),
     ).rejects.toThrow('Só administradores')
     expect(storage.upload).not.toHaveBeenCalled()
   })

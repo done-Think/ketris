@@ -1,10 +1,8 @@
 import { prisma } from '@server/db/prisma'
 
-import type { PlatformGrowthMonth, PlatformRecentTenant } from '../domain/platform-overview.entity'
-import type {
-  PlatformOverviewCounts,
-  PlatformOverviewRepository,
-} from '../application/ports/platform-overview-repository.port'
+import type { PlatformGrowthMonth, PlatformRecentTenant } from '../types/platform-overview'
+import type { PlatformOverviewRepository } from '../application/ports/platform-overview-repository.port'
+import type { PlatformOverviewCounts } from '../types/platform-overview-repository'
 
 const RECENT_TENANTS_LIMIT = 5
 const GROWTH_MONTHS_BACK = 5
@@ -29,16 +27,16 @@ export class PrismaPlatformOverviewRepository implements PlatformOverviewReposit
       contractsForSeries,
     ] = await Promise.all([
       prisma.tenant.count(),
-      prisma.usuario.count({ where: { papel: { in: ['AGENT', 'OWNER'] } } }),
-      prisma.imovel.count(),
+      prisma.user.count({ where: { role: { in: ['AGENT', 'OWNER'] } } }),
+      prisma.property.count(),
       prisma.tenant.findMany({
         orderBy: { createdAt: 'desc' },
         take: RECENT_TENANTS_LIMIT,
         include: {
           _count: {
             select: {
-              usuarios: { where: { papel: { in: ['AGENT', 'OWNER'] } } },
-              imoveis: true,
+              users: { where: { role: { in: ['AGENT', 'OWNER'] } } },
+              properties: true,
             },
           },
         },
@@ -47,9 +45,9 @@ export class PrismaPlatformOverviewRepository implements PlatformOverviewReposit
         where: { createdAt: { gte: seriesWindow.start, lt: seriesWindow.end } },
         select: { createdAt: true },
       }),
-      prisma.contrato.findMany({
-        where: { ativadoEm: { gte: seriesWindow.start, lt: seriesWindow.end } },
-        select: { ativadoEm: true },
+      prisma.contract.findMany({
+        where: { activatedAt: { gte: seriesWindow.start, lt: seriesWindow.end } },
+        select: { activatedAt: true },
       }),
     ])
 
@@ -74,22 +72,22 @@ export class PrismaPlatformOverviewRepository implements PlatformOverviewReposit
       if (bucket) bucket.tenants += 1
     }
 
-    for (const contrato of contractsForSeries) {
-      const ativadoEm = contrato.ativadoEm
-      if (!ativadoEm) continue
+    for (const contract of contractsForSeries) {
+      const activatedAt = contract.activatedAt
+      if (!activatedAt) continue
 
       const bucket = growthTrend.find(
         (entry) =>
-          entry.year === ativadoEm.getFullYear() && entry.month === ativadoEm.getMonth() + 1,
+          entry.year === activatedAt.getFullYear() && entry.month === activatedAt.getMonth() + 1,
       )
       if (bucket) bucket.contracts += 1
     }
 
     const recentTenantsMapped: PlatformRecentTenant[] = recentTenants.map((tenant) => ({
       id: tenant.id,
-      name: tenant.nome,
-      brokersCount: tenant._count.usuarios,
-      propertiesCount: tenant._count.imoveis,
+      name: tenant.name,
+      brokersCount: tenant._count.users,
+      propertiesCount: tenant._count.properties,
       createdAt: tenant.createdAt,
     }))
 

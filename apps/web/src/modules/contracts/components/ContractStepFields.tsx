@@ -1,22 +1,15 @@
 import type { ContractStepFieldsProps } from '../types/contract'
-import { ConditionsStep, conditionsStepFieldNames } from './contract-step-fields/ConditionsStep'
-import { OpportunityStep, opportunityStepFieldNames } from './contract-step-fields/OpportunityStep'
-import { PartiesStep, partiesStepFieldNames } from './contract-step-fields/PartiesStep'
+import { ConditionsStep } from './contract-step-fields/ConditionsStep'
+import { OpportunityStep } from './contract-step-fields/OpportunityStep'
+import { PartiesStep } from './contract-step-fields/PartiesStep'
 import { ReviewStep } from './contract-step-fields/ReviewStep'
 
-export { conditionsStepFieldNames, opportunityStepFieldNames, partiesStepFieldNames }
-
-export function ContractStepFields({
-  activeStepKey,
-  control,
-  setValue,
-  values,
-}: ContractStepFieldsProps) {
+export function ContractStepFields({ activeStepKey, control, setValue }: ContractStepFieldsProps) {
   if (activeStepKey === 'opportunity') {
-    return <OpportunityStep control={control} setValue={setValue} values={values} />
+    return <OpportunityStep control={control} setValue={setValue} />
   }
   if (activeStepKey === 'conditions') return <ConditionsStep control={control} />
-  if (activeStepKey === 'review') return <ReviewStep values={values} />
+  if (activeStepKey === 'review') return <ReviewStep control={control} />
 
-  return <PartiesStep control={control} setValue={setValue} values={values} />
+  return <PartiesStep control={control} setValue={setValue} />
 }

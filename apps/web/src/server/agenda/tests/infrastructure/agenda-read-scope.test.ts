@@ -2,21 +2,21 @@
 import { beforeEach, expect, it, vi } from 'vitest'
 import { prisma } from '@server/db/prisma'
 import { PrismaAgendaEventRepository } from '../../infrastructure/prisma-agenda-event.repository'
-import type { AgendaReadScope } from '../../domain/agenda-event.entity'
+import type { AgendaReadScope } from '../../types/agenda-event'
 
 vi.mock('@server/db/prisma', () => ({
-  prisma: { eventoAgenda: { findMany: vi.fn(), findFirst: vi.fn() } },
+  prisma: { agendaEvent: { findMany: vi.fn(), findFirst: vi.fn() } },
 }))
 const repository = new PrismaAgendaEventRepository()
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(prisma.eventoAgenda.findMany).mockResolvedValue([])
-  vi.mocked(prisma.eventoAgenda.findFirst).mockResolvedValue(null)
+  vi.mocked(prisma.agendaEvent.findMany).mockResolvedValue([])
+  vi.mocked(prisma.agendaEvent.findFirst).mockResolvedValue(null)
 })
 
 async function filters(scope: AgendaReadScope) {
   await repository.list({ scope, from: new Date('2026-10-20'), to: new Date('2026-10-25') })
-  return vi.mocked(prisma.eventoAgenda.findMany).mock.calls[0][0]!.where!
+  return vi.mocked(prisma.agendaEvent.findMany).mock.calls[0][0]!.where!
 }
 
 it('limits the administrator to its tenant', async () => {
@@ -30,14 +30,14 @@ it('combines the agent tenant with collective, legacy and personally assigned ev
   const expected = {
     tenantId: 'agency',
     OR: [
-      { destino: 'LEGACY_TEAM', interno: false },
-      { destino: 'ALL_AGENTS' },
-      { destino: 'ASSIGNED_AGENT', responsavelId: 'agent' },
+      { audience: 'SHARED_TEAM', internal: false },
+      { audience: 'ALL_AGENTS' },
+      { audience: 'ASSIGNED_AGENT', responsibleId: 'agent' },
     ],
   }
   expect(await filters(scope)).toMatchObject({ AND: [expected, {}] })
   expect(await repository.findByScopeAndId(scope, 'other-agent-event')).toBeNull()
-  expect(prisma.eventoAgenda.findFirst).toHaveBeenCalledWith(
+  expect(prisma.agendaEvent.findFirst).toHaveBeenCalledWith(
     expect.objectContaining({ where: { AND: [expected, { id: 'other-agent-event' }] } }),
   )
 })
@@ -47,12 +47,13 @@ it('excludes internal events for owners even with an explicit link', async () =>
     AND: [
       {
         tenantId: 'agency',
-        interno: false,
+        internal: false,
         OR: [
-          { destino: 'LEGACY_TEAM' },
-          { imovel: { proprietarioId: 'owner', tenantId: 'agency' } },
-          { donoUsuarioId: 'owner' },
-          { participantes: { some: { usuarioId: 'owner' } } },
+          { responsibleId: 'owner' },
+          { createdById: 'owner' },
+          { property: { ownerId: 'owner', tenantId: 'agency' } },
+          { ownerUserId: 'owner' },
+          { participants: { some: { userId: 'owner' } } },
         ],
       },
       {},
@@ -64,8 +65,12 @@ it('excludes internal events for renters even with an explicit link', async () =
   expect(await filters({ kind: 'linkedUser', userId: 'renter' })).toMatchObject({
     AND: [
       {
-        interno: false,
-        OR: [{ donoUsuarioId: 'renter' }, { participantes: { some: { usuarioId: 'renter' } } }],
+        internal: false,
+        OR: [
+          { createdById: 'renter' },
+          { ownerUserId: 'renter' },
+          { participants: { some: { userId: 'renter' } } },
+        ],
       },
       {},
     ],

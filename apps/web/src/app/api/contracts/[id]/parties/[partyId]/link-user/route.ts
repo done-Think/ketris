@@ -1,23 +1,24 @@
+import type { ContractPartyRouteContext } from '@server/contracts/types/route-context'
+import { contractPartyIdParamsSchema } from '@server/contracts/schemas/contract.schema'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { contractsContainer } from '@server/contracts/container'
 import { linkContractPartyUserRequestSchema } from '@server/contracts/schemas/contract-input.schema'
-import type { LinkContractPartyUserRouteContext } from '@server/contracts/types/contract-party-user-link'
-import { parseJsonBody, withErrorHandling } from '@server/shared/http'
+import { parseJsonBody, parseRouteParams, withErrorHandling } from '@server/shared/http'
 
 export const POST = withErrorHandling(
-  async (request: NextRequest, context: LinkContractPartyUserRouteContext) => {
+  async (request: NextRequest, context: ContractPartyRouteContext) => {
     const actor = await requireBearerAuth(request, authContainer.tokenService)
     const body = await parseJsonBody(request, linkContractPartyUserRequestSchema)
-    const { id, partyId } = await context.params
+    const { id, partyId } = await parseRouteParams(context.params, contractPartyIdParamsSchema)
 
     const link = await contractsContainer.linkContractPartyUserUseCase.execute({
       actorTenantId: actor.tenantId,
-      actorPapel: actor.papel as Papel,
+      actorId: actor.sub,
+      actorRole: actor.role,
       contractId: id,
       partyId,
       email: body.email,

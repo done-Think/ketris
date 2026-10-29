@@ -1,7 +1,12 @@
 'use client'
 
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
+import * as maintenanceStyles from '../styles/maintenance-tickets-table.styles'
+
+import { formatMaintenanceCategory } from '../utils/maintenance-category'
+
+import { Link } from '@/i18n/navigation'
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded'
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import {
   Box,
   Chip,
@@ -14,12 +19,9 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-import { useTranslations } from 'next-intl'
-import { Link } from '@/i18n/navigation'
 import { DashboardTablePagination } from '@shared/components/layout'
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { useTranslations } from 'next-intl'
 import type { MaintenanceTicketsTableProps } from '../types/maintenance-dashboard'
-import { statusStyles, priorityColors } from '../utils/maintenance-presentation'
 
 export function MaintenanceTicketsTable({
   pagedTickets,
@@ -32,31 +34,26 @@ export function MaintenanceTicketsTable({
 }: MaintenanceTicketsTableProps) {
   const t = useTranslations('dashboard.maintenance')
   return (
-    <TableContainer
-      sx={{
-        borderRadius: `${radius.sm}px`,
-        bgcolor: surface.paper,
-        boxShadow: shadows.crmCardCompact,
-        overflowX: 'auto',
-      }}
-    >
-      <Table size="small" sx={{ minWidth: 800 }}>
+    <TableContainer sx={maintenanceStyles.tableContainerSx}>
+      <Table size="small" sx={maintenanceStyles.tableSx}>
         <TableHead>
           <TableRow>
-            {[
-              'ticket',
-              'property',
-              'category',
-              'priority',
-              'tenant',
-              'openedAt',
-              'status',
-              'actions',
-            ].map((column) => (
+            {(
+              [
+                'ticket',
+                'property',
+                'category',
+                'priority',
+                'tenant',
+                'openedAt',
+                'status',
+                'actions',
+              ] as const
+            ).map((column) => (
               <TableCell
                 key={column}
                 align={column === 'actions' ? 'center' : undefined}
-                sx={headerCellSx}
+                sx={maintenanceStyles.headerCellSx}
               >
                 {t(`columns.${column}`)}
               </TableCell>
@@ -65,66 +62,34 @@ export function MaintenanceTicketsTable({
         </TableHead>
         <TableBody>
           {pagedTickets.map((ticket, index) => (
-            <TableRow
-              key={ticket.id}
-              sx={{
-                bgcolor: index % 2 === 1 ? surface.app : surface.paper,
-                transition: 'background-color 160ms ease',
-                '&:hover': { bgcolor: alpha.graphite[6] },
-                '&:last-child td': { borderBottom: 0 },
-              }}
-            >
-              <TableCell
-                title={ticket.id}
-                sx={{
-                  ...bodyCellSx,
-                  ...truncatedCellSx(110),
-                  color: 'primary.main',
-                  fontWeight: 900,
-                }}
-              >
+            <TableRow key={ticket.id} sx={maintenanceStyles.getTableRowSx(index)}>
+              <TableCell title={ticket.id} sx={maintenanceStyles.extraStyleSx3}>
                 {ticket.id}
               </TableCell>
-              <TableCell
-                title={ticket.property}
-                sx={{ ...bodyCellSx, ...truncatedCellSx(200), fontWeight: 900 }}
-              >
+              <TableCell title={ticket.property} sx={maintenanceStyles.extraStyleSx4}>
                 {ticket.property}
               </TableCell>
-              <TableCell sx={bodyCellSx}>{ticket.category}</TableCell>
-              <TableCell sx={bodyCellSx}>
+              <TableCell sx={maintenanceStyles.bodyCellSx}>
+                {formatMaintenanceCategory(ticket.category, (key) => t(`categories.${key}`))}
+              </TableCell>
+              <TableCell sx={maintenanceStyles.bodyCellSx}>
                 <Stack direction="row" spacing={0.65} alignItems="center">
-                  <Box
-                    sx={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      bgcolor: priorityColors[ticket.priority],
-                    }}
-                  />
+                  <Box sx={maintenanceStyles.extraStyleSx1(ticket)} />
                   <span>{t(`priorities.${ticket.priority}`)}</span>
                 </Stack>
               </TableCell>
-              <TableCell title={ticket.tenant} sx={{ ...bodyCellSx, ...truncatedCellSx(160) }}>
+              <TableCell title={ticket.tenant} sx={maintenanceStyles.extraStyleSx5}>
                 {ticket.tenant}
               </TableCell>
-              <TableCell sx={{ ...bodyCellSx, color: brand.neutral[400] }}>
-                {ticket.openedAt}
-              </TableCell>
-              <TableCell sx={bodyCellSx}>
+              <TableCell sx={maintenanceStyles.extraStyleSx6}>{ticket.openedAt}</TableCell>
+              <TableCell sx={maintenanceStyles.bodyCellSx}>
                 <Chip
                   label={t(`statuses.${ticket.status}`)}
                   size="small"
-                  sx={{
-                    height: 22,
-                    bgcolor: statusStyles[ticket.status].bgcolor,
-                    color: statusStyles[ticket.status].color,
-                    fontSize: 11,
-                    fontWeight: 900,
-                  }}
+                  sx={maintenanceStyles.extraStyleSx2(ticket)}
                 />
               </TableCell>
-              <TableCell sx={bodyCellSx} align="center">
+              <TableCell sx={maintenanceStyles.bodyCellSx} align="center">
                 <Stack direction="row" spacing={0.4} justifyContent="center">
                   <IconButton
                     component={Link}
@@ -134,15 +99,9 @@ export function MaintenanceTicketsTable({
                     }}
                     aria-label={t('viewTicket', { ticket: ticket.id })}
                     size="small"
-                    sx={{
-                      width: 30,
-                      height: 30,
-                      borderRadius: `${radius.sm}px`,
-                      bgcolor: surface.app,
-                      color: brand.graphite[500],
-                    }}
+                    sx={maintenanceStyles.iconButtonSx}
                   >
-                    <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
+                    <VisibilityOutlinedIcon sx={maintenanceStyles.visibilityOutlinedIconSx} />
                   </IconButton>
                   {(ticket.permissions?.edit || ticket.permissions?.delete) && (
                     <IconButton
@@ -151,9 +110,9 @@ export function MaintenanceTicketsTable({
                       onClick={(event) => {
                         onOpenMenu(event.currentTarget, ticket.id)
                       }}
-                      sx={{ width: 30, height: 30, color: brand.graphite[500] }}
+                      sx={maintenanceStyles.iconButtonSx2}
                     >
-                      <MoreVertRoundedIcon sx={{ fontSize: 18 }} />
+                      <MoreVertRoundedIcon sx={maintenanceStyles.moreVertRoundedIconSx} />
                     </IconButton>
                   )}
                 </Stack>
@@ -162,7 +121,7 @@ export function MaintenanceTicketsTable({
           ))}
           {pagedTickets.length === 0 && (
             <TableRow>
-              <TableCell colSpan={8} align="center" sx={bodyCellSx}>
+              <TableCell colSpan={8} align="center" sx={maintenanceStyles.bodyCellSx}>
                 {t('empty')}
               </TableCell>
             </TableRow>
@@ -181,28 +140,3 @@ export function MaintenanceTicketsTable({
     </TableContainer>
   )
 }
-const headerCellSx = {
-  height: 40,
-  px: 1.25,
-  py: 0.8,
-  bgcolor: surface.app,
-  borderColor: brand.neutral[100],
-  color: brand.neutral[600],
-  fontSize: 12,
-  fontWeight: 900,
-  letterSpacing: '.07em',
-  textTransform: 'uppercase',
-  whiteSpace: 'nowrap',
-} as const
-const bodyCellSx = {
-  height: 54,
-  px: 1.25,
-  py: 0.8,
-  borderColor: brand.neutral[100],
-  color: brand.neutral[600],
-  fontSize: 13,
-  fontWeight: 700,
-  whiteSpace: 'nowrap',
-} as const
-const truncatedCellSx = (maxWidth: number) =>
-  ({ maxWidth, overflow: 'hidden', textOverflow: 'ellipsis' }) as const

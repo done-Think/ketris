@@ -1,22 +1,20 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import { isAgencyManager, isAgencyStaff } from '@server/auth/domain/roles'
+import type { UserRole } from '@server/auth/domain/user.entity'
+import { ForbiddenError } from '@server/shared/errors'
 
 import { ContactNotFoundError, LeadNotFoundError, OpportunityNotFoundError } from '../domain/errors'
+import type { Opportunity } from '../domain/opportunity.entity'
 import type { OpportunityRepository } from './ports/opportunity-repository.port'
-import type { PropertyLookupPort } from './ports/property-lookup.port'
 
-export async function assertAgentOwnsProperty(
-  propertyLookup: PropertyLookupPort,
-  tenantId: string,
-  propertyId: string,
+export function assertOpportunityAccess(
+  opportunity: Pick<Opportunity, 'responsibleId'>,
   actorId: string,
-  actorPapel: Papel,
-): Promise<void> {
-  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
-  if (actorPapel !== 'AGENT') throw new OpportunityNotFoundError()
+  actorRole: UserRole,
+): void {
+  if (isAgencyManager(actorRole)) return
+  if (actorRole === 'AGENT' && opportunity.responsibleId === actorId) return
 
-  const responsavelId = await propertyLookup.findResponsavelId(tenantId, propertyId)
-
-  if (responsavelId !== actorId) throw new OpportunityNotFoundError()
+  throw new OpportunityNotFoundError()
 }
 
 export async function assertAgentOwnsContact(
@@ -24,19 +22,31 @@ export async function assertAgentOwnsContact(
   tenantId: string,
   contactId: string,
   actorId: string,
-  actorPapel: Papel,
+  actorRole: UserRole,
+  createdById?: string | null,
 ): Promise<void> {
-  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
-  if (actorPapel !== 'AGENT') throw new ContactNotFoundError()
+  if (isAgencyManager(actorRole)) return
+  if (actorRole !== 'AGENT') throw new ContactNotFoundError()
+  if (createdById === actorId) return
 
   const hasAccess = await opportunityRepository.existsForAgent(tenantId, contactId, actorId)
 
   if (!hasAccess) throw new ContactNotFoundError()
 }
 
-export function assertLeadAccess(responsavelId: string, actorId: string, actorPapel: Papel): void {
-  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
-  if (actorPapel === 'AGENT' && responsavelId === actorId) return
+export function assertLeadAccess(
+  responsibleId: string,
+  actorId: string,
+  actorRole: UserRole,
+): void {
+  if (isAgencyManager(actorRole)) return
+  if (actorRole === 'AGENT' && responsibleId === actorId) return
 
   throw new LeadNotFoundError()
+}
+
+export function assertCrmAccess(actorRole: UserRole): void {
+  if (!isAgencyStaff(actorRole)) {
+    throw new ForbiddenError('Só a equipe da imobiliária acessa o CRM.')
+  }
 }

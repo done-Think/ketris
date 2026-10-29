@@ -3,16 +3,34 @@ import { z } from 'zod'
 
 export const submitInquiryRequestSchema = z
   .object({
-    leadName: z.string().min(1, 'Nome é obrigatório.').openapi({ example: 'Maria Silva' }),
-    leadEmail: z.string().email('E-mail inválido.').openapi({ example: 'maria@exemplo.com' }),
-    leadPhone: z.string().min(1).optional().openapi({ example: '(41) 99999-9999' }),
-    proposedValue: z.number().positive('Valor proposto deve ser positivo.').optional(),
+    website: z.string().max(200).optional(),
+    leadName: z
+      .string()
+      .trim()
+      .min(1, 'Nome é obrigatório.')
+      .max(120)
+      .openapi({ example: 'Maria Silva' }),
+    leadEmail: z
+      .string()
+      .trim()
+      .max(254)
+      .email('E-mail inválido.')
+      .openapi({ example: 'maria@exemplo.com' }),
+    leadPhone: z.string().trim().min(1).max(30).optional().openapi({ example: '(41) 99999-9999' }),
+    proposedValue: z
+      .number()
+      .positive('Valor proposto deve ser positivo.')
+      .max(9999999999.99)
+      .optional(),
     notes: z
       .string()
+      .trim()
       .min(1)
+      .max(2000)
       .optional()
       .openapi({ example: 'Tenho interesse em agendar uma visita.' }),
   })
+  .strict()
   .openapi('SubmitInquiryRequest')
 
 export const submitInquiryResponseSchema = z
@@ -20,7 +38,7 @@ export const submitInquiryResponseSchema = z
     inquiry: z.object({
       id: z.string(),
       propertyId: z.string(),
-      status: z.literal('ENVIADA'),
+      status: z.literal('SENT'),
       createdAt: z.string(),
     }),
   })

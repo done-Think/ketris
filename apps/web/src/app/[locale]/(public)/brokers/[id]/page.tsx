@@ -2,6 +2,8 @@ import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
+import { privateMetadata, publicMetadata } from '@/i18n/seo'
+
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { marketplaceContainer } from '@server/marketplace/container'
 import { BrokerProfileNotFoundError } from '@server/marketplace/domain/errors'
@@ -35,11 +37,13 @@ export async function generateMetadata({ params }: LocaleRoutePageProps<{ id: st
 
   if (!broker) {
     return {
+      ...privateMetadata,
       title: t('brokerNotFound.metadataTitle'),
     }
   }
 
   return {
+    ...publicMetadata(locale, { pathname: '/brokers/[id]', params: { id } }),
     title: `Ketris | ${broker.name}`,
     description: t('details.brokerDescription', {
       name: broker.name,

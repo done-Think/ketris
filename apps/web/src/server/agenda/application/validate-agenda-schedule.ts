@@ -1,5 +1,7 @@
+import type { AgendaScheduleChanges } from '../types/scheduling'
 import type { AgendaEventRepository } from './ports/agenda-event-repository.port'
-import type { AgendaEvent, AgendaEventKind } from '../domain/agenda-event.entity'
+import type { AgendaEvent } from '../domain/agenda-event.entity'
+
 import { assertWithinAgendaSchedulingWindow } from '../domain/agenda-scheduling-rules'
 import { AgendaEventConflictError, AgendaVisitMinimumDurationError } from '../domain/errors'
 import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-scheduling'
@@ -7,28 +9,22 @@ import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-schedulin
 export async function validateAgendaSchedule(
   repository: AgendaEventRepository,
   existing: AgendaEvent,
-  changes: {
-    inicio?: Date
-    durationMinutes?: number
-    responsavelId?: string
-    tipo?: AgendaEventKind | null
-    outsideBusinessHoursConfirmed?: boolean
-  },
+  changes: AgendaScheduleChanges,
 ) {
-  const inicio = changes.inicio ?? existing.inicio
+  const start = changes.start ?? existing.start
   const durationMinutes =
-    changes.durationMinutes ?? (existing.fim.getTime() - existing.inicio.getTime()) / 60_000
+    changes.durationMinutes ?? (existing.end.getTime() - existing.start.getTime()) / 60_000
   if (
-    (changes.tipo === undefined ? existing.tipo : changes.tipo) === 'VISIT' &&
+    (changes.type === undefined ? existing.type : changes.type) === 'VISIT' &&
     durationMinutes < AGENDA_MINIMUM_VISIT_MINUTES
   ) {
     throw new AgendaVisitMinimumDurationError()
   }
-  const unchangedStart = inicio.getTime() === existing.inicio.getTime()
-  const fim = new Date(inicio.getTime() + durationMinutes * 60000)
-  const unchangedPeriod = unchangedStart && fim.getTime() === existing.fim.getTime()
+  const unchangedStart = start.getTime() === existing.start.getTime()
+  const end = new Date(start.getTime() + durationMinutes * 60000)
+  const unchangedPeriod = unchangedStart && end.getTime() === existing.end.getTime()
   if (!unchangedPeriod) {
-    assertWithinAgendaSchedulingWindow(inicio, new Date(), {
+    assertWithinAgendaSchedulingWindow(start, new Date(), {
       ...changes,
       durationMinutes,
       unchangedStart,
@@ -37,13 +33,13 @@ export async function validateAgendaSchedule(
   if (
     await repository.hasOverlap(
       existing.tenantId,
-      changes.responsavelId ?? existing.responsavelId,
-      inicio,
-      fim,
+      changes.responsibleId ?? existing.responsibleId,
+      start,
+      end,
       existing.id,
     )
   ) {
     throw new AgendaEventConflictError()
   }
-  return { inicio, fim }
+  return { start, end }
 }

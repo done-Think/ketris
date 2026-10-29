@@ -1,23 +1,31 @@
 import type { ReactNode } from 'react'
+
+import type { MaintenanceCategory } from '@shared/lib/utils/maintenance-categories'
 import type { ApiMaintenanceTicket, MaintenanceAction, MaintenancePermissions } from './service'
 
 export type MaintenancePriority = 'urgent' | 'high' | 'normal'
 
-export type MaintenanceCreateTicketFormValues = {
+export type MaintenanceTicketFormValues = {
   contractId?: string
-  propertyId: string
-  category: string
+  propertyId?: string
+  category: MaintenanceCategory | ''
   priority: MaintenancePriority
   title: string
   description: string
+}
+
+export type MaintenanceCreateTicketFormValues = Omit<MaintenanceTicketFormValues, 'category'> & {
+  category: MaintenanceCategory
 }
 
 export type MaintenanceCreateTicketDialogProps = {
   open: boolean
   onClose: () => void
   onCreate: (values: MaintenanceCreateTicketFormValues) => Promise<boolean | void> | void
-  initialValues?: MaintenanceCreateTicketFormValues
+  initialValues?: MaintenanceTicketFormValues
   mode?: 'create' | 'edit'
+  loadError?: boolean
+  onRetry?: () => void
 }
 
 export type MaintenanceStatus =
@@ -28,7 +36,7 @@ export interface MaintenanceTicket {
   id: string
   propertyId: string
   property: string
-  category: string
+  category: MaintenanceCategory
   priority: MaintenancePriority
   tenant: string
   openedAt: string

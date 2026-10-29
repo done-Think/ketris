@@ -1,3 +1,6 @@
+vi.mock('../../hooks/use-contacts', () => ({
+  useCrmContactOptions: () => ({ data: [], isFetching: false }),
+}))
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -7,11 +10,12 @@ import { theme } from '@shared/theme/theme'
 
 import { OpportunityDetail } from '../../components/OpportunityDetail'
 import type { Opportunity } from '../../types/opportunity'
-import type { PublicPropertyDetail } from '../../types/property'
+import type { CrmPropertyDetail } from '../../types/property'
 
 const mocks = vi.hoisted(() => ({
   useOpportunity: vi.fn(),
-  useCrmProperty: vi.fn(),
+  useOpportunityActivities: vi.fn(),
+  useCrmAuthorizedProperty: vi.fn(),
   useUpdateOpportunity: vi.fn(),
   useArchiveOpportunity: vi.fn(),
   update: vi.fn(),
@@ -20,11 +24,18 @@ const mocks = vi.hoisted(() => ({
   refetchProperty: vi.fn(),
   enqueueSnackbar: vi.fn(),
   replace: vi.fn(),
+  assign: vi.fn(),
+  role: { current: 'AGENT' as 'AGENT' | 'OWNER' },
 }))
 
 vi.mock('next-auth/react', () => ({
   useSession: () => ({
-    data: { tenantId: 'tenant-1', scope: 'tenant', user: { id: 'user-1' } },
+    data: {
+      tenantId: 'tenant-1',
+      scope: 'tenant',
+      role: mocks.role.current,
+      user: { id: 'user-1' },
+    },
     status: 'authenticated',
   }),
 }))
@@ -33,6 +44,7 @@ vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
 
   return {
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
     useRouter: () => ({ replace: mocks.replace }),
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
       function MockLocalizedLink({ href = '', ...props }, ref) {
@@ -48,34 +60,53 @@ vi.mock('notistack', () => ({
 
 vi.mock('../../hooks/use-opportunities', () => ({
   useOpportunity: mocks.useOpportunity,
-  useCrmProperty: mocks.useCrmProperty,
+  useOpportunityActivities: mocks.useOpportunityActivities,
+  useCrmAuthorizedProperty: mocks.useCrmAuthorizedProperty,
   useUpdateOpportunity: mocks.useUpdateOpportunity,
   useArchiveOpportunity: mocks.useArchiveOpportunity,
+  useRecordOpportunityActivity: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+    isSuccess: false,
+    isError: false,
+  }),
+  useCrmResponsibles: (enabled: boolean) => ({
+    data: enabled
+      ? [
+          { id: 'agent-1', name: 'Ana Corretora', role: 'AGENT' },
+          { id: 'agent-2', name: 'Bruno Corretor', role: 'AGENT' },
+        ]
+      : undefined,
+  }),
+  useAssignOpportunityResponsible: () => ({ mutateAsync: mocks.assign, isPending: false }),
 }))
 
 const opportunity: Opportunity = {
   id: 'opportunity-1',
   tenantId: 'tenant-1',
+  contactId: null,
   propertyId: 'property-1',
+  responsibleId: 'agent-1',
+  responsibleName: 'Ana Corretora',
   leadName: 'Ricardo Mendes',
   leadEmail: 'ricardo@example.com',
   leadPhone: '(11) 98722-1200',
   proposedValue: 4800,
   contractTermMonths: 30,
   desiredStartDate: '2026-09-01T00:00:00.000Z',
-  guaranteeType: 'FIADOR',
+  guaranteeType: 'GUARANTOR',
   specialConditions: ['Aceita pets'],
   notes: 'Prefere visitas pela manhã.',
-  status: 'ENVIADA',
+  status: 'SENT',
   archivedAt: null,
   createdAt: '2026-08-10T10:00:00.000Z',
   updatedAt: '2026-08-12T10:00:00.000Z',
 }
 
-const property: PublicPropertyDetail = {
+const property: CrmPropertyDetail = {
   id: 'property-1',
   title: 'Apartamento Jardins',
-  purpose: 'ALUGUEL',
+  purpose: 'RENT',
   propertyType: 'apartamento',
   price: 4500,
   condoFee: 800,
@@ -108,13 +139,15 @@ function renderDetail(opportunityId = opportunity.id) {
 describe('OpportunityDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.role.current = 'AGENT'
+    mocks.useOpportunityActivities.mockReturnValue({ data: [], isLoading: false, isError: false })
     mocks.useOpportunity.mockReturnValue({
       data: opportunity,
       isLoading: false,
       isError: false,
       refetch: mocks.refetchOpportunity,
     })
-    mocks.useCrmProperty.mockReturnValue({
+    mocks.useCrmAuthorizedProperty.mockReturnValue({
       data: property,
       isLoading: false,
       isError: false,
@@ -141,14 +174,14 @@ describe('OpportunityDetail', () => {
     expect(screen.getAllByText('Ricardo Mendes').length).toBeGreaterThan(0)
     expect(screen.getByText('ricardo@example.com')).toBeInTheDocument()
     expect(screen.getByText('Apartamento Jardins')).toBeInTheDocument()
-    expect(screen.getByText('Oportunidade atualizada')).toBeInTheDocument()
-    expect(screen.getByText('Oportunidade criada')).toBeInTheDocument()
+    expect(screen.queryByText('Oportunidade atualizada')).not.toBeInTheDocument()
+    expect(screen.queryByText('Oportunidade criada')).not.toBeInTheDocument()
 
     expect(screen.getByText('Alinhar retorno do proprietário')).toBeInTheDocument()
     expect(screen.getByText('Fazer follow-up da proposta')).toBeInTheDocument()
     expect(screen.getByText('Validar documentos')).toBeInTheDocument()
     expect(screen.getByText('Agendar visita ou chamada')).toBeInTheDocument()
-    expect(screen.getByText('Oportunidade criada')).toBeInTheDocument()
+    expect(screen.queryByText('Oportunidade criada')).not.toBeInTheDocument()
     expect(screen.queryByText(/imóveis sugeridos/i)).not.toBeInTheDocument()
   })
   it('confirms and persists a status change through PATCH', async () => {
@@ -165,7 +198,7 @@ describe('OpportunityDetail', () => {
     await waitFor(() =>
       expect(mocks.update).toHaveBeenCalledWith({
         id: opportunity.id,
-        changes: { status: 'EM_NEGOCIACAO' },
+        changes: { status: 'IN_NEGOTIATION' },
       }),
     )
     expect(mocks.enqueueSnackbar).toHaveBeenCalledWith('Oportunidade movida para Negociação.', {
@@ -241,5 +274,119 @@ describe('OpportunityDetail', () => {
     expect(screen.getByText('Não foi possível carregar esta oportunidade.')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
     expect(mocks.refetchOpportunity).toHaveBeenCalled()
+  })
+  it('preserves unsaved edits through refetches and mutation-state changes', async () => {
+    const user = userEvent.setup()
+    const { rerender } = renderDetail()
+    await user.click(screen.getByRole('button', { name: 'Editar dados' }))
+    const notes = screen.getByLabelText('Observações')
+    await user.clear(notes)
+    await user.type(notes, 'Edição local ainda não salva')
+    mocks.useOpportunity.mockReturnValue({
+      data: { ...opportunity, notes: 'Nova versão no servidor' },
+      isError: true,
+      isLoading: false,
+      refetch: mocks.refetchOpportunity,
+    })
+    rerender(
+      <ThemeProvider theme={theme}>
+        <OpportunityDetail opportunityId={opportunity.id} />
+      </ThemeProvider>,
+    )
+    expect(screen.getByLabelText('Observações')).toHaveValue('Edição local ainda não salva')
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }))
+    await waitFor(() =>
+      expect(mocks.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          changes: expect.objectContaining({ notes: 'Edição local ainda não salva' }),
+        }),
+      ),
+    )
+  })
+
+  it('preserves commas and line breaks inside separate special conditions', async () => {
+    const conditions = ['Pets, mediante vistoria', 'Desconto inicial\nRevisão em janeiro']
+    mocks.useOpportunity.mockReturnValue({
+      data: { ...opportunity, specialConditions: conditions },
+      isError: false,
+      isLoading: false,
+    })
+    const user = userEvent.setup()
+    renderDetail()
+    await user.click(screen.getByRole('button', { name: 'Editar dados' }))
+    expect(screen.getByLabelText('Condição 1')).toHaveValue(conditions[0])
+    expect(screen.getByLabelText('Condição 2')).toHaveValue(conditions[1])
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }))
+    await waitFor(() =>
+      expect(mocks.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          changes: expect.objectContaining({ specialConditions: conditions }),
+        }),
+      ),
+    )
+  })
+
+  it('renders the actual timeline and translates system statuses without inventing earlier activities', () => {
+    mocks.useOpportunityActivities.mockReturnValue({
+      data: [
+        {
+          id: 'real-activity',
+          type: 'STATUS_CHANGE',
+          systemAction: 'STATUS_CHANGED',
+          previousStatus: 'SENT',
+          newStatus: 'ACCEPTED',
+          description: '',
+          createdAt: '2026-10-25T12:00:00.000Z',
+        },
+      ],
+      isLoading: false,
+      isError: false,
+    })
+    renderDetail()
+    expect(screen.getByText('Status alterado de Enviada para Aceita.')).toBeVisible()
+    expect(screen.queryByText('Oportunidade criada')).not.toBeInTheDocument()
+    expect(document.querySelectorAll('time')).toHaveLength(1)
+  })
+
+  it('disables transitions forbidden by the same backend state machine', () => {
+    mocks.useOpportunity.mockReturnValue({
+      data: { ...opportunity, status: 'ACCEPTED' },
+      isError: false,
+      isLoading: false,
+    })
+    renderDetail()
+    expect(screen.getByRole('button', { name: 'Mover de etapa' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Descartar lead' })).toBeDisabled()
+  })
+
+  it('shows the responsible to agents without letting them change it', () => {
+    renderDetail()
+
+    const panel = screen.getByRole('heading', { name: 'Responsável' }).closest('section')
+    expect(panel).toHaveTextContent('Ana Corretora')
+    expect(
+      screen.queryByRole('combobox', { name: 'Responsável pela oportunidade' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('lets the OWNER change the responsible', async () => {
+    mocks.role.current = 'OWNER'
+    mocks.assign.mockResolvedValue({
+      ...opportunity,
+      responsibleId: 'agent-2',
+      responsibleName: 'Bruno Corretor',
+    })
+    const user = userEvent.setup()
+    renderDetail()
+
+    await user.click(screen.getByRole('combobox', { name: 'Responsável pela oportunidade' }))
+    await user.click(screen.getByRole('option', { name: 'Bruno Corretor' }))
+
+    await waitFor(() =>
+      expect(mocks.assign).toHaveBeenCalledWith({ id: opportunity.id, responsibleId: 'agent-2' }),
+    )
+    expect(mocks.enqueueSnackbar).toHaveBeenCalledWith('Agora Bruno Corretor é o responsável.', {
+      variant: 'success',
+    })
   })
 })

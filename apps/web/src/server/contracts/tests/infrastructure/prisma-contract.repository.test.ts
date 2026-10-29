@@ -1,19 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-vi.mock('@server/db/prisma', () => ({
-  prisma: { contrato: { findMany: vi.fn(), count: vi.fn(), findFirst: vi.fn() } },
-}))
-
 import { prisma } from '@server/db/prisma'
 import { PrismaContractRepository } from '../../infrastructure/prisma-contract.repository'
 
+vi.mock('@server/db/prisma', () => {
+  const tx = {
+    contract: { findMany: vi.fn(), count: vi.fn(), findFirst: vi.fn() },
+    $queryRaw: vi.fn().mockResolvedValue([]),
+  }
+  return {
+    prisma: {
+      ...tx,
+      $transaction: vi.fn(async (work: (client: typeof tx) => Promise<unknown>) => work(tx)),
+    },
+  }
+})
+
 const partyScope = { kind: 'party', userId: 'renter-1' } as const
 const partyRestriction = {
-  partes: {
+  parties: {
     some: {
-      papel: 'LOCATARIO',
-      usuarioId: 'renter-1',
-      usuario: { ativo: true, papel: 'RENTER' },
+      role: 'RENTER',
+      userId: 'renter-1',
+      user: { active: true, role: 'RENTER' },
     },
   },
 }
@@ -21,9 +29,9 @@ const partyRestriction = {
 describe('PrismaContractRepository read authorization', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(prisma.contrato.findMany).mockResolvedValue([])
-    vi.mocked(prisma.contrato.count).mockResolvedValue(0)
-    vi.mocked(prisma.contrato.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.contract.findMany).mockResolvedValue([])
+    vi.mocked(prisma.contract.count).mockResolvedValue(0)
+    vi.mocked(prisma.contract.findFirst).mockResolvedValue(null)
   })
 
   it('applies the same renter restriction to search results and pagination totals', async () => {
@@ -31,23 +39,24 @@ describe('PrismaContractRepository read authorization', () => {
       { search: 'Jardins', page: 2, pageSize: 5 },
       partyScope,
     )
-    const listQuery = vi.mocked(prisma.contrato.findMany).mock.calls[0][0]!
-    const countQuery = vi.mocked(prisma.contrato.count).mock.calls[0][0]!
-    expect(listQuery.where).toEqual(countQuery.where)
-    expect(listQuery.where).toMatchObject({ AND: [partyRestriction] })
+    const listQuery = vi.mocked(prisma.contract.findMany).mock.calls[0][0]!
+    const countQuery = vi.mocked(prisma.contract.count).mock.calls[0][0]!
+    expect(listQuery.where).toMatchObject({ AND: [countQuery.where, { id: { in: [] } }] })
+    expect(countQuery.where).toMatchObject({ AND: [partyRestriction] })
     expect(listQuery.where).not.toHaveProperty('tenantId')
-    expect(listQuery.where?.OR).toHaveLength(3)
-    expect(listQuery).toMatchObject({ skip: 5, take: 5 })
+    expect(countQuery.where?.OR).toHaveLength(3)
+    const sql = vi.mocked(prisma.$queryRaw).mock.calls[0][0]
+    expect(sql).toMatchObject({ values: expect.arrayContaining(['renter-1', 5]) })
   })
 
   it('reads a contract by ID only through the renter link, in any tenant', async () => {
     await new PrismaContractRepository().findById('contract-1', partyScope)
-    expect(prisma.contrato.findFirst).toHaveBeenCalledWith(
+    expect(prisma.contract.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 'contract-1', ...partyRestriction } }),
     )
   })
 
-  it('keeps agency staff reads inside their tenant and the AGENT inside its properties', async () => {
+  it('keeps agency staff reads inside their tenant and the AGENT inside its properties and opportunities', async () => {
     const repository = new PrismaContractRepository()
     await repository.findMany({}, { kind: 'tenant', tenantId: 'agency-1' })
     await repository.findById('contract-1', {
@@ -55,17 +64,22 @@ describe('PrismaContractRepository read authorization', () => {
       tenantId: 'agency-1',
       responsibleId: 'agent-1',
     })
-    expect(prisma.contrato.findMany).toHaveBeenCalledWith(
+    expect(prisma.contract.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ AND: [{ tenantId: 'agency-1' }] }),
+        where: expect.objectContaining({
+          AND: [expect.objectContaining({ AND: [{ tenantId: 'agency-1' }] }), { id: { in: [] } }],
+        }),
       }),
     )
-    expect(prisma.contrato.findFirst).toHaveBeenCalledWith(
+    expect(prisma.contract.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
           id: 'contract-1',
           tenantId: 'agency-1',
-          imovel: { responsavelId: 'agent-1' },
+          OR: [
+            { property: { responsibleId: 'agent-1' } },
+            { sourceOpportunity: { responsibleId: 'agent-1' } },
+          ],
         },
       }),
     )

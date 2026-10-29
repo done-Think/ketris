@@ -1,28 +1,17 @@
-import { ForbiddenError } from '@server/shared/errors'
+import type { UploadPropertyMediaUseCaseInput } from '../../types/use-case-inputs'
 
-import type { Papel } from '@server/auth/domain/user.entity'
-
+import { assertCanEditProperties } from '../authorization'
 import { PropertyMediaValidationError } from '../../domain/errors'
 import type { PropertyMediaStoragePort } from '../ports/property-media-storage.port'
 
 const allowedContentTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const maxFileSizeBytes = 8 * 1024 * 1024
 
-export interface UploadPropertyMediaUseCaseInput {
-  actorTenantId: string
-  actorPapel: Papel
-  filename: string
-  contentType: string
-  body: Buffer
-}
-
 export class UploadPropertyMediaUseCase {
   constructor(private readonly mediaStorage: PropertyMediaStoragePort) {}
 
   async execute(input: UploadPropertyMediaUseCaseInput) {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar imóveis.')
-    }
+    assertCanEditProperties(input.actorRole)
 
     if (input.body.byteLength === 0) {
       throw new PropertyMediaValidationError('Arquivo vazio.')

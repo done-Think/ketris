@@ -1,10 +1,18 @@
-import type { ReactNode } from 'react'
+const identity = vi.hoisted((): { tenantId: string | undefined; userId: string } => ({
+  tenantId: 'tenant-1',
+  userId: 'user-1',
+}))
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({
+    status: 'authenticated',
+    data: { tenantId: identity.tenantId, user: { id: identity.userId }, role: 'OWNER' },
+  }),
+}))
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { crmService } from '../../services/crm-service'
-import type { ApiContactListItem } from '../../types/contact'
 import {
   crmContactQueryKeys,
   useArchiveContact,
@@ -12,6 +20,8 @@ import {
   useCreateContact,
   useUpdateContact,
 } from '../../hooks/use-contacts'
+import { crmService } from '../../services/crm-service'
+import type { ApiContactListItem } from '../../types/contact'
 
 vi.mock('../../services/crm-service', () => ({
   crmService: {
@@ -29,7 +39,7 @@ const contact: ApiContactListItem = {
   name: 'Maria Silva',
   email: 'maria@example.com',
   phone: null,
-  type: 'LOCATARIO',
+  type: 'RENTER',
   avatarUrl: null,
   notes: null,
   lastInteraction: null,
@@ -57,15 +67,18 @@ function createWrapper(queryClient: QueryClient) {
 describe('CRM contact query keys and hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    identity.tenantId = 'tenant-1'
+    identity.userId = 'user-1'
   })
 
   it('scopes list keys by tenant and normalized filters', () => {
-    expect(crmContactQueryKeys.list('tenant-1', { type: 'LOCATARIO' })).toEqual([
+    expect(crmContactQueryKeys.list('tenant-1', { type: 'RENTER' })).toEqual([
       'crm',
       'contacts',
       'tenant-1',
       'list',
-      { type: 'LOCATARIO', q: null, includeArchived: false },
+      [],
+      { type: 'RENTER', q: null, includeArchived: false },
     ])
     expect(crmContactQueryKeys.list('tenant-2', { includeArchived: true })).not.toEqual(
       crmContactQueryKeys.list('tenant-1', { includeArchived: true }),
@@ -73,24 +86,29 @@ describe('CRM contact query keys and hooks', () => {
   })
 
   it('loads a filtered tenant contact list', async () => {
-    vi.mocked(crmService.listContacts).mockResolvedValueOnce([contact])
+    vi.mocked(crmService.listContacts).mockResolvedValueOnce({
+      contacts: [contact],
+      pagination: { page: 1, pageSize: 5, pageCount: 1, totalCount: 1 },
+      groups: [],
+    })
     const queryClient = createQueryClient()
-    const filters = { type: 'LOCATARIO' as const }
-    const { result } = renderHook(() => useContacts('tenant-1', filters), {
+    const filters = { type: 'RENTER' as const }
+    const { result } = renderHook(() => useContacts(filters), {
       wrapper: createWrapper(queryClient),
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(crmService.listContacts).toHaveBeenCalledWith(filters)
-    expect(queryClient.getQueryData(crmContactQueryKeys.list('tenant-1', filters))).toEqual([
-      contact,
-    ])
+    expect(
+      queryClient.getQueryData(crmContactQueryKeys.list('tenant-1', filters, ['user-1', 'OWNER'])),
+    ).toMatchObject({ contacts: [contact] })
   })
 
   it('does not request contacts without a tenant', () => {
+    identity.tenantId = undefined
     const queryClient = createQueryClient()
-    const { result } = renderHook(() => useContacts(null), {
+    const { result } = renderHook(() => useContacts(), {
       wrapper: createWrapper(queryClient),
     })
 
@@ -103,7 +121,7 @@ describe('CRM contact query keys and hooks', () => {
     const queryClient = createQueryClient()
     const listKey = crmContactQueryKeys.list('tenant-1')
     queryClient.setQueryData(listKey, [])
-    const { result } = renderHook(() => useCreateContact('tenant-1'), {
+    const { result } = renderHook(() => useCreateContact(), {
       wrapper: createWrapper(queryClient),
     })
 
@@ -120,7 +138,7 @@ describe('CRM contact query keys and hooks', () => {
     const queryClient = createQueryClient()
     const listKey = crmContactQueryKeys.list('tenant-1')
     queryClient.setQueryData(listKey, [contact])
-    const { result } = renderHook(() => useUpdateContact('tenant-1'), {
+    const { result } = renderHook(() => useUpdateContact(), {
       wrapper: createWrapper(queryClient),
     })
 
@@ -128,9 +146,11 @@ describe('CRM contact query keys and hooks', () => {
       await result.current.mutateAsync({ id: contact.id, changes: { name: 'Maria S.' } })
     })
 
-    expect(queryClient.getQueryData(crmContactQueryKeys.detail('tenant-1', contact.id))).toEqual(
-      updated,
-    )
+    expect(
+      queryClient.getQueryData(
+        crmContactQueryKeys.detail('tenant-1', contact.id, ['user-1', 'OWNER']),
+      ),
+    ).toEqual(updated)
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(true)
   })
 
@@ -140,7 +160,7 @@ describe('CRM contact query keys and hooks', () => {
     const queryClient = createQueryClient()
     const listKey = crmContactQueryKeys.list('tenant-1')
     queryClient.setQueryData(listKey, [contact])
-    const { result } = renderHook(() => useArchiveContact('tenant-1'), {
+    const { result } = renderHook(() => useArchiveContact(), {
       wrapper: createWrapper(queryClient),
     })
 
@@ -148,9 +168,43 @@ describe('CRM contact query keys and hooks', () => {
       await result.current.mutateAsync(contact.id)
     })
 
-    expect(queryClient.getQueryData(crmContactQueryKeys.detail('tenant-1', contact.id))).toEqual(
-      archived,
-    )
+    expect(
+      queryClient.getQueryData(
+        crmContactQueryKeys.detail('tenant-1', contact.id, ['user-1', 'OWNER']),
+      ),
+    ).toEqual(archived)
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(true)
+  })
+
+  it('stores an in-flight update only under the session that initiated it', async () => {
+    const updated = { ...contact, name: 'Maria S.' }
+    let completeUpdate: (value: ApiContactListItem) => void = () => undefined
+    vi.mocked(crmService.updateContact).mockReturnValueOnce(
+      new Promise((resolve) => {
+        completeUpdate = resolve
+      }),
+    )
+    const client = createQueryClient()
+    const { result, rerender } = renderHook(() => useUpdateContact(), {
+      wrapper: createWrapper(client),
+    })
+    act(() => result.current.mutate({ id: contact.id, changes: { name: updated.name } }))
+    await waitFor(() => expect(crmService.updateContact).toHaveBeenCalled())
+    identity.tenantId = 'tenant-2'
+    identity.userId = 'user-2'
+    rerender()
+    await act(async () => completeUpdate(updated))
+
+    await waitFor(() =>
+      expect(
+        client.getQueryData(
+          crmContactQueryKeys.detail('tenant-1', contact.id, ['user-1', 'OWNER']),
+        ),
+      ).toEqual(updated),
+    )
+    expect(
+      client.getQueryData(crmContactQueryKeys.detail('tenant-2', contact.id, ['user-2', 'OWNER'])),
+    ).toBeUndefined()
+    client.clear()
   })
 })

@@ -1,40 +1,28 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type {
+  ArchiveOpportunityInput,
+  ArchiveOpportunityOutput,
+} from '../../types/archive-opportunity.use-case.types'
+export type {
+  ArchiveOpportunityInput,
+  ArchiveOpportunityOutput,
+} from '../../types/archive-opportunity.use-case.types'
 
 import { OpportunityNotFoundError } from '../../domain/errors'
-import type { Opportunity } from '../../domain/opportunity.entity'
-import { assertAgentOwnsProperty } from '../authorization'
+import { assertOpportunityAccess, assertCrmAccess } from '../authorization'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../ports/property-lookup.port'
-
-export interface ArchiveOpportunityInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  opportunityId: string
-}
-
-export type ArchiveOpportunityOutput = Opportunity
 
 export class ArchiveOpportunityUseCase {
-  constructor(
-    private readonly opportunityRepository: OpportunityRepository,
-    private readonly propertyLookup: PropertyLookupPort,
-  ) {}
+  constructor(private readonly opportunityRepository: OpportunityRepository) {}
 
   async execute(input: ArchiveOpportunityInput): Promise<ArchiveOpportunityOutput> {
+    assertCrmAccess(input.actorRole)
     const opportunity = await this.opportunityRepository.findById(input.opportunityId)
 
     if (!opportunity || opportunity.tenantId !== input.actorTenantId) {
       throw new OpportunityNotFoundError()
     }
 
-    await assertAgentOwnsProperty(
-      this.propertyLookup,
-      input.actorTenantId,
-      opportunity.propertyId,
-      input.actorId,
-      input.actorPapel,
-    )
+    assertOpportunityAccess(opportunity, input.actorId, input.actorRole)
 
     return this.opportunityRepository.archive(opportunity.id)
   }

@@ -15,11 +15,11 @@ describe('GET /api/tenants/search (integração)', () => {
     await prisma.tenant.upsert({
       where: { slug: 'locatarios' },
       update: {},
-      create: { nome: 'Locatários Ketris', slug: 'locatarios' },
+      create: { name: 'Locatários Ketris', slug: 'locatarios' },
     })
 
     const tenant = await prisma.tenant.create({
-      data: { nome: `Imobiliária Buscável ${marker}`, slug: `imobiliaria-buscavel-${marker}` },
+      data: { name: `Imobiliária Buscável ${marker}`, slug: `imobiliaria-buscavel-${marker}` },
     })
     tenantId = tenant.id
   })

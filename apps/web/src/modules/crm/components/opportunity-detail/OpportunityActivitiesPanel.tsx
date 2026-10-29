@@ -1,101 +1,50 @@
 'use client'
 
-import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded'
-import { Avatar, Box, Chip, Paper, Stack, Typography } from '@mui/material'
-import { useLocale, useTranslations } from 'next-intl'
-import type { AppLocale } from '@/i18n/types/locale.types'
+import { useCrmFormatter } from '../../hooks/use-crm-formatter'
 
-import { brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import * as crmStyles from '../../styles/opportunity-activities-panel.styles'
+
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded'
+import { Avatar, Box, Chip, CircularProgress, Paper, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import type { OpportunityActivitiesPanelProps } from '../../types/opportunity-detail'
-import { formatRelativeDate } from '../../utils/formatters'
-import { panelSx } from './opportunity-detail.styles'
 
-export function OpportunityActivitiesPanel({ activities }: OpportunityActivitiesPanelProps) {
-  const locale = useLocale() as AppLocale
+export function OpportunityActivitiesPanel({
+  activities,
+  isLoading,
+}: OpportunityActivitiesPanelProps) {
+  const format = useCrmFormatter()
   const t = useTranslations('crm.opportunityDetail')
   return (
-    <Box sx={{ position: 'relative', minHeight: 148, height: { lg: '100%' } }}>
-      <Paper
-        component="section"
-        elevation={0}
-        sx={{
-          ...panelSx,
-          position: { xs: 'relative', lg: 'absolute' },
-          inset: { lg: 0 },
-          display: 'flex',
-          flexDirection: 'column',
-          width: '100%',
-          height: '100%',
-          p: { xs: 2, md: 2.5 },
-        }}
-      >
-        <Typography
-          component="h2"
-          sx={{ mb: 1.35, fontSize: 16, fontWeight: 800, textAlign: 'center' }}
-        >
+    <Box sx={crmStyles.boxSx}>
+      <Paper component="section" elevation={0} sx={crmStyles.paperSx}>
+        <Typography component="h2" sx={crmStyles.typographySx}>
           {t('activitiesTitle')}
         </Typography>
-        <Box
-          sx={{
-            display: 'flex',
-            minHeight: 0,
-            flex: 1,
-            flexDirection: 'column',
-            p: 1,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.app,
-            overflowY: 'auto',
-            scrollbarWidth: 'thin',
-          }}
-        >
-          {activities.length > 0 ? (
+        <Box sx={crmStyles.boxSx2}>
+          {isLoading ? (
+            <CircularProgress size={24} />
+          ) : activities.length > 0 ? (
             <Stack spacing={1.25}>
               {activities.map((activity) => (
-                <Stack
-                  key={activity.key}
-                  direction="row"
-                  spacing={1.4}
-                  sx={{
-                    px: 1.45,
-                    py: 1.55,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: `${radius.sm}px`,
-                    bgcolor: surface.paper,
-                  }}
-                >
-                  <Avatar
-                    sx={{
-                      width: 34,
-                      height: 34,
-                      flexShrink: 0,
-                      bgcolor: surface.app,
-                      color: brand.neutral[500],
-                    }}
-                  >
-                    <HistoryRoundedIcon sx={{ fontSize: iconSize.sm }} />
+                <Stack key={activity.key} direction="row" spacing={1.4} sx={crmStyles.stackSx}>
+                  <Avatar sx={crmStyles.avatarSx}>
+                    <HistoryRoundedIcon sx={crmStyles.historyRoundedIconSx} />
                   </Avatar>
-                  <Box
-                    sx={{
-                      minWidth: 0,
-                      flex: 1,
-                    }}
-                  >
+                  <Box sx={crmStyles.boxSx3}>
                     <Stack direction="row" justifyContent="space-between" gap={1}>
-                      <Typography sx={{ fontSize: 13, fontWeight: 800 }}>
-                        {activity.title}
-                      </Typography>
+                      <Typography sx={crmStyles.typographySx2}>{activity.title}</Typography>
                       <Chip
                         component="time"
                         dateTime={activity.occurredAt}
-                        label={formatRelativeDate(activity.occurredAt, new Date(), locale)}
+                        label={format.relative(activity.occurredAt)}
                         size="small"
                         variant="outlined"
-                        sx={{ height: 22, flexShrink: 0, fontSize: 11, fontWeight: 700 }}
+                        sx={crmStyles.chipSx}
                       />
                     </Stack>
-                    <Typography color="text.secondary" sx={{ mt: 0.25, fontSize: 11.5 }}>
+                    <Typography color="text.secondary" sx={crmStyles.typographySx3}>
                       {activity.detail}
                     </Typography>
                   </Box>
@@ -103,18 +52,9 @@ export function OpportunityActivitiesPanel({ activities }: OpportunityActivities
               ))}
             </Stack>
           ) : (
-            <Stack
-              alignItems="center"
-              justifyContent="center"
-              spacing={1}
-              sx={{
-                minHeight: 86,
-                p: 2,
-                borderRadius: `${radius.sm}px`,
-              }}
-            >
-              <HistoryRoundedIcon sx={{ color: 'text.disabled' }} />
-              <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{t('activitiesEmpty')}</Typography>
+            <Stack alignItems="center" justifyContent="center" spacing={1} sx={crmStyles.stackSx2}>
+              <HistoryRoundedIcon sx={crmStyles.historyRoundedIconSx2} />
+              <Typography sx={crmStyles.typographySx4}>{t('activitiesEmpty')}</Typography>
             </Stack>
           )}
         </Box>

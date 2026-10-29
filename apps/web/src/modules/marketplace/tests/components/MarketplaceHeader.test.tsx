@@ -22,11 +22,27 @@ vi.mock('@shared/lib/auth/clear-client-session', () => ({
   clearClientSession: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => routerMock,
 }))
+
+vi.mock('@/i18n/navigation', async () => {
+  const React = await import('react')
+
+  return {
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+    usePathname: () => '/',
+    useRouter: () => routerMock,
+    Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
+      function MockLocalizedLink({ href = '', ...props }, ref) {
+        return React.createElement('a', { ...props, href, ref })
+      },
+    ),
+  }
+})
 
 function renderMarketplaceHeader() {
   render(
@@ -124,7 +140,7 @@ describe('MarketplaceHeader', () => {
 
     expect(screen.getByRole('link', { name: 'Tornar corretor' })).toHaveAttribute(
       'href',
-      '/register/details?profile=corretor',
+      '/register/details?profile=broker',
     )
   })
 
@@ -141,14 +157,14 @@ describe('MarketplaceHeader', () => {
 
     expect(screen.getByRole('link', { name: 'Criar imobiliária' })).toHaveAttribute(
       'href',
-      '/register/details?profile=imobiliaria',
+      '/register/details?profile=agency',
     )
   })
 
-  it('ADMIN: nÃ£o mostra a aÃ§Ã£o de troca de modalidade no menu de perfil', async () => {
+  it('OWNER: nÃ£o mostra a aÃ§Ã£o de troca de modalidade no menu de perfil', async () => {
     const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
-      data: { user: { name: 'Ana Admin', email: 'ana@example.com' }, role: 'ADMIN' },
+      data: { user: { name: 'Ana Admin', email: 'ana@example.com' }, role: 'OWNER' },
       status: 'authenticated',
     } as unknown as ReturnType<typeof useSession>)
 
@@ -173,7 +189,7 @@ describe('MarketplaceHeader', () => {
     await user.click(screen.getByRole('button', { name: /sair/i }))
 
     expect(clearClientSession).toHaveBeenCalledOnce()
-    expect(routerMock.replace).toHaveBeenCalledWith('/pt')
+    expect(routerMock.replace).toHaveBeenCalledWith('/')
     expect(routerMock.refresh).toHaveBeenCalledOnce()
   })
 })

@@ -12,8 +12,15 @@ import {
   getPlatformAdminResponseSchema,
   listPlatformAdminsResponseSchema,
 } from './schemas/list-platform-admins.schema'
-import { listTenantUsersResponseSchema } from './schemas/list-tenant-users.schema'
-import { listTenantsResponseSchema } from './schemas/list-tenants.schema'
+import {
+  listTenantUsersQuerySchema,
+  listTenantUsersResponseSchema,
+} from './schemas/list-tenant-users.schema'
+import {
+  getTenantResponseSchema,
+  listTenantsQuerySchema,
+  listTenantsResponseSchema,
+} from './schemas/list-tenants.schema'
 import {
   listPlatformPlansResponseSchema,
   platformPlanSchema,
@@ -57,6 +64,22 @@ const tenantIdParamsSchema = z.object({
 })
 
 export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
+  registry.registerPath({
+    method: 'post',
+    path: '/platform/logout',
+    tags: ['Platform'],
+    summary: 'Revoga o refresh token da sessão de plataforma',
+    request: {
+      body: { content: { 'application/json': { schema: refreshPlatformTokenRequestSchema } } },
+    },
+    responses: {
+      204: { description: 'Sessão revogada, inclusive se o token já estiver inválido.' },
+      400: {
+        description: 'Corpo da requisição inválido.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
   registry.register('AuthenticatedPlatformAdmin', authenticatedPlatformAdminSchema)
   registry.register('TenantSummary', tenantSummarySchema)
   registry.register('PlatformTenant', platformTenantSchema)
@@ -161,7 +184,7 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
     method: 'patch',
     path: '/platform/admins/{id}',
     tags: ['Platform'],
-    summary: 'Atualiza nome e/ou e-mail de um platform admin',
+    summary: 'Atualiza nome, e-mail, papel ou reativa um platform admin (papel ADMIN)',
     security: [{ bearerAuth: [] }],
     request: {
       params: platformAdminIdParamsSchema,
@@ -180,6 +203,10 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
         description: 'Access token de platform admin ausente, inválido ou expirado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
+      403: {
+        description: 'Só platform admins com o papel ADMIN podem executar esta ação.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
       404: {
         description: 'Platform admin não encontrado.',
         content: { 'application/json': { schema: errorResponseSchema } },
@@ -195,7 +222,7 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
     method: 'delete',
     path: '/platform/admins/{id}',
     tags: ['Platform'],
-    summary: 'Desativa um platform admin — soft delete',
+    summary: 'Desativa um platform admin — soft delete (papel ADMIN)',
     description: 'Um platform admin não pode desativar a própria conta por esta rota.',
     security: [{ bearerAuth: [] }],
     request: { params: platformAdminIdParamsSchema },
@@ -210,6 +237,10 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
       },
       401: {
         description: 'Access token de platform admin ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Só platform admins com o papel ADMIN podem executar esta ação.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       404: {
@@ -241,12 +272,19 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
     method: 'get',
     path: '/platform/tenants',
     tags: ['Platform'],
-    summary: 'Lista todos os tenants da plataforma',
+    summary: 'Lista os tenants da plataforma, paginados',
+    description:
+      'Busca por nome ou slug, filtros de situação e tipo de conta. `statusCounts` traz os totais por situação com a busca e o tipo aplicados.',
     security: [{ bearerAuth: [] }],
+    request: { query: listTenantsQuerySchema },
     responses: {
       200: {
-        description: 'Lista de tenants.',
+        description: 'Página de tenants.',
         content: { 'application/json': { schema: listTenantsResponseSchema } },
+      },
+      400: {
+        description: 'Parâmetros de busca inválidos.',
+        content: { 'application/json': { schema: errorResponseSchema } },
       },
       401: {
         description: 'Access token de platform admin ausente, inválido ou expirado.',
@@ -259,7 +297,7 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
     method: 'post',
     path: '/platform/tenants',
     tags: ['Platform'],
-    summary: 'Cria um novo tenant',
+    summary: 'Cria um novo tenant (papel ADMIN)',
     security: [{ bearerAuth: [] }],
     request: {
       body: { content: { 'application/json': { schema: createTenantRequestSchema } } },
@@ -275,6 +313,10 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
       },
       401: {
         description: 'Access token de platform admin ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Só platform admins com o papel ADMIN podem executar esta ação.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       409: {
@@ -433,16 +475,37 @@ export function registerPlatformOpenApi(registry: OpenAPIRegistry): void {
     method: 'get',
     path: '/platform/tenants/{id}/users',
     tags: ['Platform'],
-    summary: 'Lista todos os usuários de um tenant, incluindo contas ADMIN',
-    description:
-      'Diferente de GET /auth/users (spec 002), que nunca revela contas ADMIN — um platform admin ' +
-      'enxerga tudo.',
+    summary: 'Lista os usuários de um tenant, paginados',
+    description: 'Um platform admin enxerga todos os usuários do tenant, de qualquer papel.',
     security: [{ bearerAuth: [] }],
-    request: { params: tenantIdParamsSchema },
+    request: { params: tenantIdParamsSchema, query: listTenantUsersQuerySchema },
     responses: {
       200: {
         description: 'Lista de usuários do tenant.',
         content: { 'application/json': { schema: listTenantUsersResponseSchema } },
+      },
+      401: {
+        description: 'Access token de platform admin ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Tenant não encontrado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'get',
+    path: '/platform/tenants/{id}',
+    tags: ['Platform'],
+    summary: 'Consulta um tenant com a mensalidade calculada',
+    security: [{ bearerAuth: [] }],
+    request: { params: tenantIdParamsSchema },
+    responses: {
+      200: {
+        description: 'Tenant encontrado.',
+        content: { 'application/json': { schema: getTenantResponseSchema } },
       },
       401: {
         description: 'Access token de platform admin ausente, inválido ou expirado.',

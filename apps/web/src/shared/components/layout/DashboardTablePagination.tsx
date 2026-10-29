@@ -1,3 +1,4 @@
+import { styles } from '@shared/styles/dashboard-table-pagination.styles'
 import { Box, TablePagination } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
@@ -14,26 +15,7 @@ export function DashboardTablePagination({
   const t = useTranslations('common.dashboardPagination')
 
   return (
-    <Box
-      component="footer"
-      sx={{
-        mt: 'auto',
-        borderTop: 1,
-        borderColor: 'divider',
-        '& .MuiTablePagination-toolbar': {
-          minHeight: 58,
-          px: 2,
-        },
-        '& .MuiTablePagination-spacer': {
-          flex: 1,
-        },
-        '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-          m: 0,
-          fontSize: 13,
-          fontWeight: 500,
-        },
-      }}
-    >
+    <Box component="footer" sx={styles.box}>
       <TablePagination
         component="div"
         count={count}

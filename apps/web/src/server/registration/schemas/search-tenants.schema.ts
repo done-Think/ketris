@@ -5,8 +5,6 @@ export const searchTenantsQuerySchema = z.object({
   q: z.string().trim().min(1, 'Informe um termo de busca.'),
 })
 
-export type SearchTenantsQueryDTO = z.infer<typeof searchTenantsQuerySchema>
-
 const tenantSearchResultSchema = z
   .object({
     id: z.string(),

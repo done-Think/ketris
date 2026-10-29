@@ -1,44 +1,38 @@
+import type { Mailer } from '@server/shared/email/mailer.port'
+import { normalizeEmail } from '@server/shared/normalize-email'
+
+import type { RequestPasswordResetCodeInput } from '../../types/use-case-inputs'
 import {
   generatePasswordResetCode,
   hashPasswordResetCode,
   passwordResetCodeExpiryDate,
 } from '../../domain/password-reset-code'
 import { buildPasswordResetEmail } from '../password-reset-email'
-import type { AppLocale } from '@/i18n/types/locale.types'
-import type { Mailer } from '@server/shared/email/mailer.port'
-import type { PasswordResetCodeRepository } from '../ports/password-reset-code-repository.port'
+import type { EmailOwnershipCodeRepository } from '../ports/email-ownership-code-repository.port'
 import type { UserRepository } from '../ports/user-repository.port'
-
-export interface RequestPasswordResetCodeInput {
-  email: string
-  locale: AppLocale
-}
 
 export class RequestPasswordResetCodeUseCase {
   constructor(
-    private readonly userRepository: UserRepository,
-    private readonly passwordResetCodeRepository: PasswordResetCodeRepository,
+    private readonly users: UserRepository,
+    private readonly codes: EmailOwnershipCodeRepository,
     private readonly mailer: Mailer,
   ) {}
 
   async execute(input: RequestPasswordResetCodeInput): Promise<void> {
-    const user = await this.userRepository.findByEmail(input.email)
-
-    if (!user) return
-
+    const email = normalizeEmail(input.email)
+    const accounts = await this.users.findManyByEmail(email)
+    if (accounts.length === 0) return
     const code = generatePasswordResetCode()
-
-    await this.passwordResetCodeRepository.invalidateAllForUser(user.id)
-    await this.passwordResetCodeRepository.create({
-      userId: user.id,
-      tenantId: user.tenantId,
+    const stored = await this.codes.replace({
+      email,
       codeHash: hashPasswordResetCode(code),
       expiresAt: passwordResetCodeExpiryDate(),
     })
-
-    await this.mailer.send({
-      to: user.email,
-      ...(await buildPasswordResetEmail(code, input.locale)),
-    })
+    if (!stored) return
+    try {
+      await this.mailer.send({ to: email, ...(await buildPasswordResetEmail(code, input.locale)) })
+    } catch {
+      console.error('[auth] Password recovery email delivery failed.')
+    }
   }
 }

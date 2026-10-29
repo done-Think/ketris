@@ -1,37 +1,22 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { DeleteOpportunityInput } from '../../types/delete-opportunity.use-case.types'
+export type { DeleteOpportunityInput } from '../../types/delete-opportunity.use-case.types'
 
 import { OpportunityNotFoundError } from '../../domain/errors'
-import { assertAgentOwnsProperty } from '../authorization'
+import { assertOpportunityAccess, assertCrmAccess } from '../authorization'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../ports/property-lookup.port'
-
-export interface DeleteOpportunityInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  opportunityId: string
-}
 
 export class DeleteOpportunityUseCase {
-  constructor(
-    private readonly opportunityRepository: OpportunityRepository,
-    private readonly propertyLookup: PropertyLookupPort,
-  ) {}
+  constructor(private readonly opportunityRepository: OpportunityRepository) {}
 
   async execute(input: DeleteOpportunityInput): Promise<void> {
+    assertCrmAccess(input.actorRole)
     const opportunity = await this.opportunityRepository.findById(input.opportunityId)
 
     if (!opportunity || opportunity.tenantId !== input.actorTenantId) {
       throw new OpportunityNotFoundError()
     }
 
-    await assertAgentOwnsProperty(
-      this.propertyLookup,
-      input.actorTenantId,
-      opportunity.propertyId,
-      input.actorId,
-      input.actorPapel,
-    )
+    assertOpportunityAccess(opportunity, input.actorId, input.actorRole)
 
     await this.opportunityRepository.delete(opportunity.id)
   }

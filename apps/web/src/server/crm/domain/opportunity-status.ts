@@ -1,11 +1,13 @@
+import type { OpportunityResponseAction } from '../types/opportunity-status.types'
 import type { OpportunityStatus } from './opportunity.entity'
+export type { OpportunityResponseAction } from '../types/opportunity-status.types'
 
 const allowedTransitions: Record<OpportunityStatus, readonly OpportunityStatus[]> = {
-  RASCUNHO: ['ENVIADA', 'RECUSADA'],
-  ENVIADA: ['EM_NEGOCIACAO', 'ACEITA', 'RECUSADA'],
-  EM_NEGOCIACAO: ['ENVIADA', 'ACEITA', 'RECUSADA'],
-  ACEITA: [],
-  RECUSADA: ['EM_NEGOCIACAO'],
+  DRAFT: ['SENT', 'REJECTED'],
+  SENT: ['IN_NEGOTIATION', 'ACCEPTED', 'REJECTED'],
+  IN_NEGOTIATION: ['SENT', 'ACCEPTED', 'REJECTED'],
+  ACCEPTED: [],
+  REJECTED: ['IN_NEGOTIATION'],
 }
 
 export function canTransition(from: OpportunityStatus, to: OpportunityStatus): boolean {
@@ -18,12 +20,10 @@ export function allowedNextStatuses(from: OpportunityStatus): readonly Opportuni
   return allowedTransitions[from]
 }
 
-export type OpportunityResponseAction = 'ACEITAR' | 'RECUSAR' | 'SOLICITAR_INFORMACOES'
-
 const responseTargetStatus: Record<OpportunityResponseAction, OpportunityStatus> = {
-  ACEITAR: 'ACEITA',
-  RECUSAR: 'RECUSADA',
-  SOLICITAR_INFORMACOES: 'EM_NEGOCIACAO',
+  ACCEPT: 'ACCEPTED',
+  REJECT: 'REJECTED',
+  REQUEST_INFORMATION: 'IN_NEGOTIATION',
 }
 
 export function statusForResponse(action: OpportunityResponseAction): OpportunityStatus {
@@ -31,5 +31,5 @@ export function statusForResponse(action: OpportunityResponseAction): Opportunit
 }
 
 export function canRespond(status: OpportunityStatus): boolean {
-  return status === 'ENVIADA' || status === 'EM_NEGOCIACAO' || status === 'RECUSADA'
+  return status === 'SENT' || status === 'IN_NEGOTIATION' || status === 'REJECTED'
 }

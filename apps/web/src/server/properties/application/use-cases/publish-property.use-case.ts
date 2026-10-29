@@ -1,25 +1,15 @@
-import { ForbiddenError } from '@server/shared/errors'
+import type { PublishPropertyInput } from '../../types/use-case-inputs'
 
-import type { Papel } from '@server/auth/domain/user.entity'
-
-import { assertPropertyAccess } from '../authorization'
+import { assertCanEditProperties, assertPropertyAccess } from '../authorization'
 import { PropertyNotFoundError, PropertyPublishValidationError } from '../../domain/errors'
-import type { Property } from '../../types/property'
+import { getPublishMissingFields } from '../../domain/property-publication'
 import type { PropertyRepository } from '../ports/property-repository.port'
 
 export class PublishPropertyUseCase {
   constructor(private readonly propertyRepository: PropertyRepository) {}
 
-  async execute(input: {
-    actorTenantId: string
-    actorId: string
-    id: string
-    publishedAt?: Date
-    actorPapel: Papel
-  }) {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar imóveis.')
-    }
+  async execute(input: PublishPropertyInput) {
+    assertCanEditProperties(input.actorRole)
 
     const property = await this.propertyRepository.findByTenantAndId(input.actorTenantId, input.id)
 
@@ -27,7 +17,7 @@ export class PublishPropertyUseCase {
       throw new PropertyNotFoundError()
     }
 
-    assertPropertyAccess(property.responsavelId, input.actorId, input.actorPapel)
+    assertPropertyAccess(property, input.actorId, input.actorRole)
 
     const missingFields = getPublishMissingFields(property)
 
@@ -40,6 +30,7 @@ export class PublishPropertyUseCase {
       input.id,
       'PUBLISHED',
       input.publishedAt ?? new Date(),
+      input.actorId,
     )
 
     if (!publishedProperty) {
@@ -48,16 +39,4 @@ export class PublishPropertyUseCase {
 
     return publishedProperty
   }
-}
-
-function getPublishMissingFields(property: Property): string[] {
-  const missingFields: string[] = []
-
-  if (!property.titulo.trim()) missingFields.push('titulo')
-  if (!property.tipo.trim()) missingFields.push('tipo')
-  if (property.valores.valor <= 0) missingFields.push('valor')
-  if (!property.endereco) missingFields.push('endereco')
-  if (property.midias.length === 0) missingFields.push('midias')
-
-  return missingFields
 }

@@ -4,13 +4,14 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { ProfileModal } from '../../../components/layout/ProfileModal'
 
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
 }))
 
-function renderModal(role?: 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER') {
+function renderModal(role?: 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER') {
   const anchorRef = createRef<HTMLButtonElement>()
 
   return render(
@@ -44,8 +45,19 @@ describe('ProfileModal', () => {
         onClose={vi.fn()}
       />,
     )
-    expect(screen.getByText('Proprietário')).toBeInTheDocument()
+    expect(screen.getByText('Dono da imobiliária')).toBeInTheDocument()
     expect(screen.queryByText('Corretor parceiro')).not.toBeInTheDocument()
+
+    rerender(
+      <ProfileModal
+        open
+        anchorRef={createRef<HTMLButtonElement>()}
+        userProfile={{ name: 'Ana Silva', email: 'ana@ketris.dev', role: 'PROPERTY_OWNER' }}
+        actions={[]}
+        onClose={vi.fn()}
+      />,
+    )
+    expect(screen.getByText('Proprietário do imóvel')).toBeInTheDocument()
   })
 
   it('não quebra quando o papel não é informado', () => {

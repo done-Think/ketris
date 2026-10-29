@@ -1,5 +1,7 @@
 'use client'
 
+import { styles } from '@shared/styles/app-logo.styles'
+
 import { Box } from '@mui/material'
 
 import { Link } from '@/i18n/navigation'
@@ -25,16 +27,7 @@ export function AppLogo({ src, variant = 'solid', width, marginBottom, sx }: App
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box
-        component="img"
-        src={resolvedSrc}
-        alt="Ketris"
-        sx={{
-          display: 'block',
-          width: '100%',
-          height: 'auto',
-        }}
-      />
+      <Box component="img" src={resolvedSrc} alt="Ketris" sx={styles.box} />
     </Box>
   )
 }

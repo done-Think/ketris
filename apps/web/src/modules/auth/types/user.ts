@@ -1,45 +1,20 @@
-import type { Role } from './admin'
+import type {
+  AuthenticatedUserResponseDTO,
+  CreateUserRequestInput,
+  CreateUserResponseDTO,
+  ListUsersResponseDTO,
+  GetUserResponseDTO,
+  UpdateUserResponseDTO,
+  UpdateUserRequestDTO,
+  UploadAvatarResponseDTO,
+} from '@shared/types/generated/auth/http'
 
-export interface TenantUser {
-  id: string
-  tenantId: string
-  name: string
-  email: string
-  avatarUrl?: string | null
-  role: Role
-  active: boolean
-  pendingApproval: boolean
-}
-
-export interface CreateTenantUserPayload {
-  name: string
-  email: string
-  password: string
-  role: 'OWNER' | 'AGENT'
-}
-
-export interface CreateTenantUserResponse {
-  user: TenantUser
-}
-
-export interface ListUsersResponse {
-  users: TenantUser[]
-}
-
-export interface ApproveMembershipResponse {
-  user: TenantUser
-}
-
-export interface UpdateUserResponse {
-  user: TenantUser
-}
-
-export interface UploadAvatarResponse {
-  media: { url: string }
-}
-
-export type UpdateCurrentUserPayload = {
-  name: string
-  email: string
-  avatarUrl?: string | null
-}
+export type TenantUser = AuthenticatedUserResponseDTO
+export type CreateTenantUserPayload = CreateUserRequestInput
+export type CreateTenantUserResponse = CreateUserResponseDTO
+export type ListUsersResponse = ListUsersResponseDTO
+export type ApproveMembershipResponse = GetUserResponseDTO
+export type UpdateUserResponse = UpdateUserResponseDTO
+export type UploadAvatarResponse = UploadAvatarResponseDTO
+export type UpdateCurrentUserPayload = Required<Pick<UpdateUserRequestDTO, 'name'>> &
+  Pick<UpdateUserRequestDTO, 'phone' | 'creci' | 'avatarUrl'>

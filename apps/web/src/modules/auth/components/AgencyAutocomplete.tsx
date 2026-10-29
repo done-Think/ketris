@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Autocomplete, CircularProgress, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
+
+import { useDebouncedValue } from '@shared/hooks/use-debounced-value'
 
 import { useAgencySearch } from '../hooks/use-agency-search'
 import type { AgencyAutocompleteProps } from '../types/registration'
@@ -10,12 +12,7 @@ import type { AgencyAutocompleteProps } from '../types/registration'
 export function AgencyAutocomplete({ value, onChange }: AgencyAutocompleteProps) {
   const t = useTranslations('auth.registerDetails')
   const [inputValue, setInputValue] = useState('')
-  const [debouncedQuery, setDebouncedQuery] = useState('')
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setDebouncedQuery(inputValue), 300)
-    return () => clearTimeout(timeout)
-  }, [inputValue])
+  const debouncedQuery = useDebouncedValue(inputValue)
 
   const agenciesQuery = useAgencySearch(debouncedQuery)
   const options = agenciesQuery.data ?? []
@@ -32,6 +29,9 @@ export function AgencyAutocomplete({ value, onChange }: AgencyAutocompleteProps)
       isOptionEqualToValue={(option, selected) => option.id === selected.id}
       noOptionsText={t('agency.noOptions')}
       loadingText={t('agency.loading')}
+      openText={t('agency.open')}
+      closeText={t('agency.close')}
+      clearText={t('agency.clear')}
       renderInput={(params) => (
         <TextField
           {...params}

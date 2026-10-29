@@ -9,6 +9,7 @@ vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
 
   return {
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
     useRouter: () => ({ push: pushMock }),
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
       function MockLocalizedLink({ href = '', ...props }, ref) {
@@ -28,11 +29,13 @@ describe('RegistrationProfileScreen', () => {
     vi.useRealTimers()
   })
 
-  it('anima o progresso antes de abrir a segunda etapa', () => {
+  it('anima o progresso antes de abrir a segunda etapa', async () => {
     render(<RegistrationProfileScreen />)
 
     fireEvent.click(screen.getByRole('radio', { name: 'Corretor' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+    })
 
     expect(screen.getByRole('progressbar', { name: 'Etapa 2 de 3' })).toBeInTheDocument()
     expect(pushMock).not.toHaveBeenCalled()
@@ -43,7 +46,7 @@ describe('RegistrationProfileScreen', () => {
 
     expect(pushMock).toHaveBeenCalledWith({
       pathname: '/register/details',
-      query: { profile: 'corretor' },
+      query: { profile: 'broker' },
     })
   })
 })

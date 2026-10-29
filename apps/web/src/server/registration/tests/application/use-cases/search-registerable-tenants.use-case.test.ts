@@ -1,28 +1,15 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
-import type { TenantRepository } from '@server/platform/application/ports/tenant-repository.port'
-import type { TenantSummary } from '@server/platform/domain/tenant-summary.entity'
-
-import { RENTER_TENANT_SLUG } from '../../../application/use-cases/register-renter.use-case'
+import { RENTER_TENANT_SLUG } from '@server/shared/domain/system-tenants'
 import { SearchRegisterableTenantsUseCase } from '../../../application/use-cases/search-registerable-tenants.use-case'
-
-const results: TenantSummary[] = [
-  { id: 't1', nome: 'Imobiliária A', slug: 'imobiliaria-a', createdAt: new Date() },
-]
+import { createDeps, tenant } from './fixtures'
 
 describe('SearchRegisterableTenantsUseCase', () => {
-  it('busca tenants pelo nome, excluindo o tenant compartilhado de locatários', async () => {
-    const tenantRepository: TenantRepository = {
-      findBySlug: vi.fn(),
-      findById: vi.fn(),
-      create: vi.fn(),
-      searchByName: vi.fn().mockResolvedValue(results),
-    }
-    const useCase = new SearchRegisterableTenantsUseCase(tenantRepository)
-
-    const result = await useCase.execute({ query: 'Imobiliária' })
-
-    expect(tenantRepository.searchByName).toHaveBeenCalledWith('Imobiliária', [RENTER_TENANT_SLUG])
-    expect(result).toEqual(results)
+  it('searches agencies by name while excluding the shared renter tenant', async () => {
+    const { accounts } = createDeps()
+    expect(
+      await new SearchRegisterableTenantsUseCase(accounts).execute({ query: 'Imobiliária' }),
+    ).toEqual([tenant])
+    expect(accounts.searchByName).toHaveBeenCalledWith('Imobiliária', [RENTER_TENANT_SLUG])
   })
 })

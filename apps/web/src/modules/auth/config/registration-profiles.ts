@@ -1,34 +1,34 @@
 import type { RegistrationProfile, RegistrationProfileId } from '../types/registration'
 
 export const REGISTRATION_PROFILE_IDS = [
-  'proprietario',
-  'corretor',
-  'imobiliaria',
-  'construtora',
-  'locatario',
+  'owner',
+  'broker',
+  'agency',
+  'developer',
+  'renter',
 ] as const satisfies readonly RegistrationProfileId[]
 
-export const DEFAULT_REGISTRATION_PROFILE: RegistrationProfileId = 'proprietario'
+export const DEFAULT_REGISTRATION_PROFILE: RegistrationProfileId = 'owner'
 
 export const REGISTRATION_PROFILES: readonly RegistrationProfile[] = [
   {
-    id: 'proprietario',
+    id: 'owner',
     icon: 'owner',
   },
   {
-    id: 'corretor',
+    id: 'broker',
     icon: 'broker',
   },
   {
-    id: 'imobiliaria',
+    id: 'agency',
     icon: 'agency',
   },
   {
-    id: 'construtora',
+    id: 'developer',
     icon: 'developer',
   },
   {
-    id: 'locatario',
+    id: 'renter',
     icon: 'tenant',
   },
 ]

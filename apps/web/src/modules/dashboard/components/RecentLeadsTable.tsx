@@ -1,3 +1,4 @@
+import { leadSourceKey } from '@shared/config/lead-sources'
 import {
   Box,
   Chip,
@@ -13,52 +14,25 @@ import {
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { brand, supportColor } from '@shared/theme/tokens'
+import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
 
-import type {
-  DashboardRecentLeadStatus,
-  DashboardStatusStyle,
-  RecentLeadsTableProps,
-} from '../types/dashboard-overview'
-import { DashboardPanel } from './DashboardPanel'
-
-const statusStyles: Record<DashboardRecentLeadStatus, DashboardStatusStyle> = {
-  new: { bgcolor: brand.magenta[50], color: brand.magenta[600] },
-  inProgress: {
-    bgcolor: supportColor.infoSoft,
-    color: brand.semantic.info,
-  },
-  qualified: {
-    bgcolor: supportColor.warningSoft,
-    color: brand.semantic.warning,
-  },
-  pending: { bgcolor: brand.magenta[50], color: brand.magenta[600] },
-}
+import type { RecentLeadsTableProps } from '../types/dashboard-overview'
+import { getStatusChipStyles, styles } from '../styles/recent-leads-table.styles'
 
 export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps) {
   const t = useTranslations('dashboard.overview.recentLeads')
+  const sourceT = useTranslations('dashboard.leadSources')
 
   return (
     <DashboardPanel>
-      <Box sx={{ p: { xs: 2, md: 2.4 } }}>
-        <Typography
-          sx={{
-            color: brand.neutral[500],
-            fontSize: 11,
-            fontWeight: 900,
-            textTransform: 'uppercase',
-          }}
-        >
-          {t('title')}
-        </Typography>
+      <Box sx={styles.box}>
+        <Typography sx={styles.typography}>{t('title')}</Typography>
 
         {leads.length === 0 ? (
-          <Typography sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 700, mt: 1.6 }}>
-            {t('empty')}
-          </Typography>
+          <Typography sx={styles.typography2}>{t('empty')}</Typography>
         ) : (
-          <TableContainer sx={{ mt: 1.4 }}>
-            <Table size="small" sx={{ minWidth: 820 }}>
+          <TableContainer sx={styles.tableContainer}>
+            <Table size="small" sx={styles.table}>
               <TableHead>
                 <TableRow>
                   {[
@@ -69,16 +43,7 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
                     t('columns.origin'),
                     t('columns.actions'),
                   ].map((heading) => (
-                    <TableCell
-                      key={heading}
-                      sx={{
-                        borderBottom: 'none',
-                        color: brand.neutral[500],
-                        fontSize: 10,
-                        fontWeight: 900,
-                        textTransform: 'uppercase',
-                      }}
-                    >
+                    <TableCell key={heading} sx={styles.tableCell}>
                       {heading}
                     </TableCell>
                   ))}
@@ -87,54 +52,33 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
               <TableBody>
                 {leads.map((lead) => (
                   <TableRow key={lead.id}>
-                    <TableCell sx={{ borderBottom: 'none', py: 1.1 }}>
-                      <Typography
-                        sx={{ color: brand.graphite[500], fontSize: 13, fontWeight: 900 }}
-                      >
-                        {lead.name}
-                      </Typography>
+                    <TableCell sx={styles.tableCell2}>
+                      <Typography sx={styles.typography3}>{lead.name}</Typography>
                     </TableCell>
-                    <TableCell sx={{ borderBottom: 'none', py: 1.1 }}>
-                      <Typography sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 700 }}>
-                        {lead.interest}
-                      </Typography>
+                    <TableCell sx={styles.tableCell2}>
+                      <Typography sx={styles.typography4}>{lead.interest}</Typography>
                     </TableCell>
-                    <TableCell sx={{ borderBottom: 'none', py: 1.1 }}>
-                      <Typography
-                        sx={{
-                          color: brand.neutral[500],
-                          fontSize: 13,
-                          fontWeight: 700,
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {lead.budget}
-                      </Typography>
+                    <TableCell sx={styles.tableCell2}>
+                      <Typography sx={styles.typography5}>{lead.budget}</Typography>
                     </TableCell>
-                    <TableCell sx={{ borderBottom: 'none', py: 1.1 }}>
+                    <TableCell sx={styles.tableCell2}>
                       <Chip
                         label={t(`statuses.${lead.status}`)}
                         size="small"
-                        sx={{
-                          height: 22,
-                          bgcolor: statusStyles[lead.status].bgcolor,
-                          color: statusStyles[lead.status].color,
-                          fontSize: 10,
-                          fontWeight: 900,
-                        }}
+                        sx={getStatusChipStyles(lead.status)}
                       />
                     </TableCell>
-                    <TableCell sx={{ borderBottom: 'none', py: 1.1 }}>
-                      <Typography sx={{ color: brand.neutral[500], fontSize: 13, fontWeight: 700 }}>
-                        {lead.source}
+                    <TableCell sx={styles.tableCell2}>
+                      <Typography sx={styles.typography4}>
+                        {sourceT(leadSourceKey(lead.source))}
                       </Typography>
                     </TableCell>
-                    <TableCell sx={{ borderBottom: 'none', py: 1.1 }}>
+                    <TableCell sx={styles.tableCell2}>
                       <Stack direction="row" spacing={1.5}>
                         <MuiLink
                           href={`tel:${lead.phone.replace(/\D/g, '')}`}
                           underline="none"
-                          sx={{ color: brand.magenta[600], fontSize: 12, fontWeight: 900 }}
+                          sx={styles.muiLink}
                         >
                           {t('call')}
                         </MuiLink>
@@ -142,7 +86,7 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
                           component="button"
                           underline="none"
                           onClick={() => onLeadSelect(lead)}
-                          sx={{ color: brand.neutral[500], fontSize: 12, fontWeight: 700 }}
+                          sx={styles.muiLink2}
                         >
                           {t('details')}
                         </MuiLink>

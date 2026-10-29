@@ -3,10 +3,9 @@
 import { Box, Skeleton, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { radius, surface } from '@shared/theme/tokens'
-
 import type { SearchResultsListProps } from '../../types/search'
 import { SearchPropertyCard } from '../SearchPropertyCard'
+import { styles, getBoxStyles } from '../../styles/search-results-list.styles'
 
 export function SearchResultsList({
   properties,
@@ -18,17 +17,10 @@ export function SearchResultsList({
   const t = useTranslations('marketplace.searchResults.empty')
 
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns:
-          viewMode === 'grid' ? { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' } : '1fr',
-        gap: { xs: 2, xl: 2.5 },
-      }}
-    >
+    <Box sx={getBoxStyles({ viewMode })}>
       {isLoading ? (
         [0, 1, 2, 3].map((index) => (
-          <Skeleton key={index} variant="rounded" height={320} sx={{ borderRadius: 1.5 }} />
+          <Skeleton key={index} variant="rounded" height={320} sx={styles.skeleton} />
         ))
       ) : properties.length ? (
         properties.map((property) => (
@@ -41,22 +33,9 @@ export function SearchResultsList({
           />
         ))
       ) : (
-        <Box
-          sx={{
-            gridColumn: '1 / -1',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            px: 2,
-            py: 4,
-            textAlign: 'center',
-          }}
-        >
-          <Typography sx={{ fontWeight: 900, mb: 0.5 }}>{t('title')}</Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 700 }}>
-            {t('description')}
-          </Typography>
+        <Box sx={styles.box}>
+          <Typography sx={styles.typography}>{t('title')}</Typography>
+          <Typography sx={styles.typography2}>{t('description')}</Typography>
         </Box>
       )}
     </Box>

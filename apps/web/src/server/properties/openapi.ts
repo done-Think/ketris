@@ -3,12 +3,18 @@ import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
 import { errorResponseSchema } from '@server/shared/schemas/error-response.schema'
 
 import {
+  propertyOwnersQuerySchema,
   createPropertyRequestSchema,
   listPropertiesQuerySchema,
   updatePropertyRequestSchema,
 } from './schemas/property-input.schema'
 import {
   propertiesResponseSchema,
+  propertyOwnersResponseSchema,
+  propertyMediaUploadRequestSchema,
+  propertyMediaUploadResponseSchema,
+  propertyMediaKeyParamsSchema,
+  propertyMediaBinarySchema,
   propertyIdParamsSchema,
   propertyResponseSchema,
 } from './schemas/property.schema'
@@ -16,11 +22,34 @@ import {
 export function registerPropertiesOpenApi(registry: OpenAPIRegistry): void {
   registry.registerPath({
     method: 'get',
+    path: '/properties/owners',
+    tags: ['Properties'],
+    summary: 'Lista proprietários ativos do mesmo tenant',
+    security: [{ bearerAuth: [] }],
+    request: { query: propertyOwnersQuerySchema },
+    responses: {
+      200: {
+        description:
+          'Usuários PROPERTY_OWNER ativos do tenant, disponíveis à equipe da imobiliária.',
+        content: { 'application/json': { schema: propertyOwnersResponseSchema } },
+      },
+      401: {
+        description: 'Não autenticado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Papel sem permissão para listar proprietários.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+  registry.registerPath({
+    method: 'get',
     path: '/properties',
     tags: ['Properties'],
     summary: 'Lista imóveis do tenant autenticado',
     description:
-      'RENTER consulta somente imóveis com contrato ATIVO do mesmo tenant e vínculo explícito de LOCATARIO ao seu usuário, independentemente do status do anúncio.',
+      'RENTER consulta somente imóveis com contrato ACTIVE do mesmo tenant e vínculo explícito de RENTER ao seu usuário, independentemente do status do anúncio.',
     security: [{ bearerAuth: [] }],
     request: { query: listPropertiesQuerySchema },
     responses: {
@@ -115,10 +144,7 @@ export function registerPropertiesOpenApi(registry: OpenAPIRegistry): void {
     security: [{ bearerAuth: [] }],
     request: { params: propertyIdParamsSchema },
     responses: {
-      200: {
-        description: 'Imóvel inativado.',
-        content: { 'application/json': { schema: propertyResponseSchema } },
-      },
+      204: { description: 'Imóvel inativado. Dados, mídias e vínculos preservados.' },
       404: {
         description: 'Imóvel não encontrado neste tenant.',
         content: { 'application/json': { schema: errorResponseSchema } },
@@ -163,6 +189,69 @@ export function registerPropertiesOpenApi(registry: OpenAPIRegistry): void {
       },
       404: {
         description: 'Imóvel não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+  registry.registerPath({
+    method: 'post',
+    path: '/properties/media',
+    tags: ['Properties'],
+    summary: 'Envia uma imagem de imóvel',
+    description:
+      'Disponível para a equipe da imobiliária e proprietários. Aceita JPEG, PNG e WebP até 8 MiB.',
+    security: [{ bearerAuth: [] }],
+    request: {
+      body: {
+        required: true,
+        content: { 'multipart/form-data': { schema: propertyMediaUploadRequestSchema } },
+      },
+    },
+    responses: {
+      201: {
+        description: 'Imagem enviada.',
+        content: { 'application/json': { schema: propertyMediaUploadResponseSchema } },
+      },
+      400: {
+        description: 'Arquivo ausente, vazio, muito grande ou com formato não suportado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Papel sem permissão para gerenciar imóveis.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      503: {
+        description: 'Serviço de imagens indisponível (PROPERTY_MEDIA_STORAGE_UNAVAILABLE).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+  registry.registerPath({
+    method: 'get',
+    path: '/properties/media/{key}',
+    tags: ['Properties'],
+    summary: 'Consulta uma imagem pública de imóvel',
+    description:
+      'Serve somente chaves sob properties/. Outros prefixos e segmentos inválidos retornam 404 antes da consulta ao armazenamento.',
+    security: [],
+    request: { params: propertyMediaKeyParamsSchema },
+    responses: {
+      200: {
+        description: 'Conteúdo binário com cache público imutável por um ano.',
+        content: {
+          'image/jpeg': { schema: propertyMediaBinarySchema },
+          'image/png': { schema: propertyMediaBinarySchema },
+          'image/webp': { schema: propertyMediaBinarySchema },
+          'application/octet-stream': { schema: propertyMediaBinarySchema },
+        },
+      },
+      404: { description: 'Imagem inexistente ou chave fora do escopo permitido.' },
+      503: {
+        description: 'Serviço de imagens indisponível (PROPERTY_MEDIA_STORAGE_UNAVAILABLE).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

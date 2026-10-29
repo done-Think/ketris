@@ -1,24 +1,21 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import dayjs from 'dayjs'
+import { useDebouncedValue } from '@shared/hooks/use-debounced-value'
+import { useListState } from '@shared/hooks/use-list-state'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useLocale, useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
-import {
-  useCreateMaintenanceTicket,
-  useDeleteMaintenanceTicket,
-  useMaintenanceTicket,
-  useMaintenanceTickets,
-  useUpdateMaintenanceTicket,
-  useMaintenanceOptions,
-} from './use-maintenance'
+import { useState } from 'react'
 import type {
   MaintenanceCreateTicketFormValues,
   MaintenanceFilter,
   MaintenanceMetric,
-  MaintenanceStatus,
 } from '../types/maintenance'
+import type {
+  MaintenanceDashboardDialog,
+  MaintenanceDashboardFilters,
+  MaintenanceDashboardMenu,
+} from '../types/maintenance-dashboard'
 import {
   buildUpdateMaintenanceTicketPayload,
   mapMaintenancePriorityToApi,
@@ -26,70 +23,60 @@ import {
   mapMaintenanceTicketListItemFromApi,
   mapMaintenanceTicketToFormValues,
 } from '../utils/maintenance-adapter'
-import { errorMessage } from '../utils/error-message'
+import {
+  useCreateMaintenanceTicket,
+  useDeleteMaintenanceTicket,
+  useMaintenanceOptions,
+  useMaintenanceTicket,
+  useMaintenanceTickets,
+  useUpdateMaintenanceTicket,
+} from './use-maintenance'
+import { useMaintenanceErrorMessage } from './use-maintenance-error-message'
 
-const ticketsPerPage = 5
+const initialFilters: MaintenanceDashboardFilters = {
+  activeFilter: 'all',
+  search: '',
+  propertyFilter: 'all',
+  categoryFilter: 'all',
+  currentPage: 1,
+  rowsPerPage: 5,
+  archived: false,
+}
 
 export function useMaintenanceDashboard() {
+  const errorMessage = useMaintenanceErrorMessage()
   const t = useTranslations('dashboard.maintenance')
-
+  const formatter = useFormatter()
+  const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
-
   const { data: session } = useSession()
-
-  const tenantId = session?.tenantId
-
-  const [activeFilter, setActiveFilter] = useState<'all' | MaintenanceStatus | 'urgent'>('all')
-
-  const [search, setSearch] = useState('')
-
-  const [propertyFilter, setPropertyFilter] = useState('all')
-
-  const [currentPage, setCurrentPage] = useState(1)
-
-  const [rowsPerPage, setRowsPerPage] = useState(ticketsPerPage)
-
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-
-  const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false)
-
-  const [editingTicketId, setEditingTicketId] = useState<string | null>(null)
-
-  const [deletingTicketId, setDeletingTicketId] = useState<string | null>(null)
-
-  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
-
-  const [menuTicketId, setMenuTicketId] = useState<string | null>(null)
-
-  const [archived, setArchived] = useState(false)
-
-  const [linksOpen, setLinksOpen] = useState(false)
-
-  const ticketsQuery = useMaintenanceTickets(tenantId, {
+  const { filters, setFilter } = useListState(initialFilters)
+  const { activeFilter, propertyFilter, categoryFilter, currentPage, rowsPerPage, archived } =
+    filters
+  const search = useDebouncedValue(filters.search, 300)
+  const [dialog, openDialog] = useState<MaintenanceDashboardDialog>(null)
+  const [menu, setMenu] = useState<MaintenanceDashboardMenu | null>(null)
+  const editingTicketId = dialog?.kind === 'edit' ? dialog.ticketId : null
+  const deletingTicketId = dialog?.kind === 'delete' ? dialog.ticketId : null
+  const ticketsQuery = useMaintenanceTickets({
     archived,
+    locale: locale === 'en-US' || locale === 'es-ES' ? locale : 'pt-BR',
     status:
       activeFilter !== 'all' && activeFilter !== 'urgent'
         ? mapMaintenanceStatusToApi(activeFilter)
         : undefined,
     priority: activeFilter === 'urgent' ? mapMaintenancePriorityToApi('urgent') : undefined,
     propertyId: propertyFilter === 'all' ? undefined : propertyFilter,
+    category: categoryFilter === 'all' ? undefined : categoryFilter,
     search: search.trim() || undefined,
     page: currentPage,
     pageSize: rowsPerPage,
   })
-
-  const allTicketsQuery = useMaintenanceTickets(tenantId, { pageSize: 100, archived })
-
   const optionsQuery = useMaintenanceOptions()
-
-  const editTicketQuery = useMaintenanceTicket(tenantId, editingTicketId)
-
-  const createMutation = useCreateMaintenanceTicket(tenantId)
-
-  const updateMutation = useUpdateMaintenanceTicket(tenantId)
-
-  const deleteMutation = useDeleteMaintenanceTicket(tenantId)
-
+  const editTicketQuery = useMaintenanceTicket(editingTicketId)
+  const createMutation = useCreateMaintenanceTicket()
+  const updateMutation = useUpdateMaintenanceTicket()
+  const deleteMutation = useDeleteMaintenanceTicket()
   const properties = [
     ...new Map(
       (optionsQuery.data?.contracts ?? []).map((contract) => [
@@ -98,153 +85,120 @@ export function useMaintenanceDashboard() {
       ]),
     ).values(),
   ]
-
-  const pagedTickets = useMemo(
-    () => (ticketsQuery.data?.items ?? []).map(mapMaintenanceTicketListItemFromApi),
-    [ticketsQuery.data],
+  const pagedTickets = (ticketsQuery.data?.items ?? []).map((item) =>
+    mapMaintenanceTicketListItemFromApi(item, (value) =>
+      formatter.dateTime(new Date(value), 'short'),
+    ),
   )
-
-  const allTickets = useMemo(
-    () => (allTicketsQuery.data?.items ?? []).map(mapMaintenanceTicketListItemFromApi),
-    [allTicketsQuery.data],
-  )
-
-  const totalCount = ticketsQuery.data?.totalCount ?? 0
-
-  const metrics = useMemo<MaintenanceMetric[]>(() => {
-    const openCount = allTickets.filter((ticket) => ticket.status === 'open').length
-    const urgentCount = allTickets.filter((ticket) => ticket.priority === 'urgent').length
-    const resolvedItems = (allTicketsQuery.data?.items ?? []).filter((item) => item.resolvedAt)
-    const averageResolutionDays =
-      resolvedItems.length > 0
-        ? resolvedItems.reduce(
-            (total, item) =>
-              total + dayjs(item.resolvedAt).diff(dayjs(item.createdAt), 'day', true),
-            0,
-          ) / resolvedItems.length
-        : null
-
-    const result: MaintenanceMetric[] = [
-      { label: 'open', value: String(openCount) },
-      { label: 'urgent', value: String(urgentCount) },
-    ]
-
-    if (averageResolutionDays !== null) {
-      result.push({
-        label: 'averageResolution',
-        value: t('metrics.averageResolutionUnit', { days: averageResolutionDays.toFixed(1) }),
-      })
-    }
-
-    return result
-  }, [t, allTicketsQuery.data, allTickets])
-
+  const summary = ticketsQuery.data?.summary
+  const metrics: MaintenanceMetric[] = [
+    { label: 'open', value: formatter.number(summary?.byStatus.OPEN ?? 0) },
+    { label: 'urgent', value: formatter.number(summary?.urgentCount ?? 0) },
+  ]
+  if (summary?.averageResolutionDays !== null && summary?.averageResolutionDays !== undefined)
+    metrics.push({
+      label: 'averageResolution',
+      value: t('metrics.averageResolutionUnit', {
+        days: formatter.number(summary.averageResolutionDays, {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1,
+        }),
+      }),
+    })
+  const closeDialog = () => openDialog(null)
+  const closeMenu = () => setMenu(null)
+  function changeFilter<Key extends keyof MaintenanceDashboardFilters>(
+    key: Key,
+    value: MaintenanceDashboardFilters[Key],
+  ) {
+    setFilter(key, value)
+    setFilter('currentPage', 1)
+  }
   function getFilterCount(value: MaintenanceFilter['value']) {
-    return allTickets.filter(
-      (ticket) =>
-        value === 'all' ||
-        (value === 'urgent' ? ticket.priority === 'urgent' : ticket.status === value),
-    ).length
+    if (value === 'all') return summary?.totalCount ?? 0
+    if (value === 'urgent') return summary?.urgentCount ?? 0
+    return summary?.byStatus[mapMaintenanceStatusToApi(value)] ?? 0
   }
-
-  function handleActiveFilterChange(value: MaintenanceFilter['value']) {
-    setActiveFilter(value)
-    setCurrentPage(1)
-  }
-
-  function handlePropertyFilterChange(value: string) {
-    setPropertyFilter(value)
-    setCurrentPage(1)
-  }
-
   async function handleCreateTicket(values: MaintenanceCreateTicketFormValues) {
     try {
       await createMutation.mutateAsync(values)
       enqueueSnackbar(t('notifications.createSuccess'), { variant: 'success' })
-      setCurrentPage(1)
-      setIsCreateDialogOpen(false)
+      setFilter('currentPage', 1)
+      closeDialog()
       return true
     } catch (error) {
       enqueueSnackbar(errorMessage(error, t('notifications.createError')), { variant: 'error' })
       return false
     }
   }
-
-  function closeMenu() {
-    setMenuAnchor(null)
-    setMenuTicketId(null)
-  }
-
-  const initialValues =
-    editingTicketId && editTicketQuery.data
-      ? mapMaintenanceTicketToFormValues(editTicketQuery.data)
-      : undefined
-
   async function handleSaveTicket(values: MaintenanceCreateTicketFormValues) {
-    if (!editingTicketId) return
+    if (!editingTicketId) return false
     try {
       await updateMutation.mutateAsync({
         id: editingTicketId,
         payload: buildUpdateMaintenanceTicketPayload(values),
       })
       enqueueSnackbar(t('notifications.updateSuccess'), { variant: 'success' })
-      setEditingTicketId(null)
-      setIsCreateDialogOpen(false)
+      closeDialog()
       return true
     } catch (error) {
       enqueueSnackbar(errorMessage(error, t('notifications.updateError')), { variant: 'error' })
       return false
     }
   }
-
   async function handleDeleteTicket() {
-    if (!deletingTicketId) return
+    if (!deletingTicketId || deleteMutation.isPending) return
     try {
       await deleteMutation.mutateAsync(deletingTicketId)
       enqueueSnackbar(t('notifications.deleteSuccess'), { variant: 'success' })
+      closeDialog()
     } catch (error) {
       enqueueSnackbar(errorMessage(error, t('notifications.deleteError')), { variant: 'error' })
-    } finally {
-      setDeletingTicketId(null)
     }
   }
   return {
+    ...filters,
     t,
     session,
-    activeFilter,
-    search,
-    setSearch,
-    propertyFilter,
-    currentPage,
-    setCurrentPage,
-    rowsPerPage,
-    setRowsPerPage,
-    isCreateDialogOpen,
-    setIsCreateDialogOpen,
-    isFiltersDialogOpen,
-    setIsFiltersDialogOpen,
-    editingTicketId,
-    setEditingTicketId,
-    deletingTicketId,
-    setDeletingTicketId,
-    menuAnchor,
-    setMenuAnchor,
-    menuTicketId,
-    setMenuTicketId,
-    archived,
-    setArchived,
-    linksOpen,
-    setLinksOpen,
     properties,
     pagedTickets,
-    totalCount,
     metrics,
     getFilterCount,
-    handleActiveFilterChange,
-    handlePropertyFilterChange,
-    handleCreateTicket,
+    currentPage: ticketsQuery.data?.pagination?.page ?? currentPage,
+    totalCount: ticketsQuery.data?.totalCount ?? 0,
+    isLoading: ticketsQuery.isLoading,
+    isError: ticketsQuery.isError,
+    retry: ticketsQuery.refetch,
+    editingTicketId,
+    deletingTicketId,
+    menuAnchor: menu?.anchor ?? null,
+    menuTicketId: menu?.ticketId ?? null,
+    isCreateDialogOpen: dialog?.kind === 'create' || dialog?.kind === 'edit',
+    isFiltersDialogOpen: dialog?.kind === 'filters',
+    linksOpen: dialog?.kind === 'links',
+    providersOpen: dialog?.kind === 'providers',
+    initialValues:
+      editingTicketId && editTicketQuery.data
+        ? mapMaintenanceTicketToFormValues(editTicketQuery.data)
+        : undefined,
+    isEditLoading: editTicketQuery.isLoading,
+    isEditError: editTicketQuery.isError,
+    retryEdit: editTicketQuery.refetch,
+    isDeleting: deleteMutation.isPending,
+    setCurrentPage: (page: number) => setFilter('currentPage', page),
+    setRowsPerPage: (rows: number) => changeFilter('rowsPerPage', rows),
+    setSearch: (value: string) => changeFilter('search', value),
+    setArchived: (value: boolean) => changeFilter('archived', value),
+    handleActiveFilterChange: (value: MaintenanceFilter['value']) =>
+      changeFilter('activeFilter', value),
+    handlePropertyFilterChange: (value: string) => changeFilter('propertyFilter', value),
+    handleCategoryFilterChange: (value: MaintenanceDashboardFilters['categoryFilter']) =>
+      changeFilter('categoryFilter', value),
+    openDialog,
+    closeDialog,
     closeMenu,
-    initialValues,
+    openMenu: (anchor: HTMLElement, ticketId: string) => setMenu({ anchor, ticketId }),
+    handleCreateTicket,
     handleSaveTicket,
     handleDeleteTicket,
   }

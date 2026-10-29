@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 
-import type { Usuario } from '@prisma/client'
+import type { User } from '@prisma/client'
 import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
@@ -11,6 +11,7 @@ import { POST as CANCEL } from '../../events/[id]/cancel/route'
 import { POST as RESCHEDULE } from '../../events/[id]/reschedule/route'
 import { GET as GET_ONE, PATCH } from '../../events/[id]/route'
 import { GET as LIST, POST as CREATE } from '../../events/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 const RENTER_VIEW_KEYS = [
   'end',
@@ -18,6 +19,7 @@ const RENTER_VIEW_KEYS = [
   'kind',
   'propertyId',
   'propertyReference',
+  'propertyLabel',
   'responsibleName',
   'start',
   'status',
@@ -33,13 +35,13 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
 
   let agencyTenantId: string
   let otherAgencyTenantId: string
-  let staff: Usuario
-  let otherStaffSameTenant: Usuario
-  let otherTenantStaff: Usuario
-  let renterOwner: Usuario
-  let renterParticipant: Usuario
-  let renterOutsider: Usuario
-  let inactiveRenter: Usuario
+  let staff: User
+  let otherStaffSameTenant: User
+  let otherTenantStaff: User
+  let renterOwner: User
+  let renterParticipant: User
+  let renterOutsider: User
+  let inactiveRenter: User
 
   let staffToken: string
   let otherTenantStaffToken: string
@@ -52,9 +54,9 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
   let thirdPartyEventId: string
   let otherTenantEventId: string
 
-  async function createTenant(nome: string) {
+  async function createTenant(name: string) {
     const tenant = await prisma.tenant.create({
-      data: { nome, slug: `${nome.toLowerCase().replace(/\s+/g, '-')}-${suffix}` },
+      data: { name, slug: `${name.toLowerCase().replace(/\s+/g, '-')}-${suffix}` },
     })
     tenantIds.push(tenant.id)
     return tenant.id
@@ -62,66 +64,67 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
 
   function createUser(
     tenantId: string,
-    papel: Usuario['papel'],
+    role: User['role'],
     label: string,
-    overrides: Partial<Pick<Usuario, 'ativo'>> = {},
+    overrides: Partial<Pick<User, 'active'>> = {},
   ) {
-    return prisma.usuario.create({
+    return prisma.user.create({
       data: {
         tenantId,
-        nome: `${label} Agenda`,
+        name: `${label} Agenda`,
         email: `${label.toLowerCase()}-agenda-${suffix}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel,
+        passwordHash: 'hash-fake',
+        role,
         ...overrides,
       },
     })
   }
 
-  function sign(user: Usuario) {
+  function sign(user: User) {
     return tokenService.sign({
       id: user.id,
       tenantId: user.tenantId,
-      nome: user.nome,
+      name: user.name,
       email: user.email,
-      papel: user.papel,
-      ativo: user.ativo,
-      vinculoAprovadoEm: user.vinculoAprovadoEm,
+      role: user.role,
+      active: user.active,
+      membershipApprovedAt: user.membershipApprovedAt,
     })
   }
 
   function createEvent(data: {
     tenantId: string
-    responsavelId: string
-    titulo: string
-    inicio: string
-    donoUsuarioId?: string
+    responsibleId: string
+    title: string
+    start: string
+    ownerUserId?: string
     participantIds?: string[]
   }) {
-    const inicio = new Date(data.inicio)
+    const start = new Date(data.start)
 
-    return prisma.eventoAgenda.create({
+    return prisma.agendaEvent.create({
       data: {
         tenantId: data.tenantId,
-        responsavelId: data.responsavelId,
-        criadoPorId: data.responsavelId,
-        donoUsuarioId: data.donoUsuarioId ?? null,
-        titulo: data.titulo,
-        tipo: 'INSPECTION',
-        referenciaImovelLivre: 'Apto 12',
-        inicio,
-        fim: new Date(inicio.getTime() + 60 * 60_000),
-        participanteNome: 'Contato Interno',
-        participanteTelefone: '(11) 90000-1234',
-        notas: 'Nota interna da imobiliária',
-        participantes: data.participantIds
-          ? { create: data.participantIds.map((usuarioId) => ({ usuarioId })) }
+        responsibleId: data.responsibleId,
+        createdById: data.responsibleId,
+        ownerUserId: data.ownerUserId ?? null,
+        title: data.title,
+        type: 'INSPECTION',
+        freeFormPropertyReference: 'Apto 12',
+        start,
+        end: new Date(start.getTime() + 60 * 60_000),
+        participantName: 'Contato Interno',
+        participantPhone: '(11) 90000-1234',
+        notes: 'Nota interna da imobiliária',
+        participants: data.participantIds
+          ? { create: data.participantIds.map((userId) => ({ userId })) }
           : undefined,
       },
     })
   }
 
   function request(method: string, url: string, token: string, body?: unknown) {
+    if (url.endsWith('/cancel') && body === undefined) body = { reason: 'Cliente indisponível' }
     return new NextRequest(url, {
       method,
       ...(body ? { body: JSON.stringify(body) } : {}),
@@ -181,7 +184,7 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
     renterParticipant = await createUser(rentersTenantId, 'RENTER', 'LocatarioParticipante')
     renterOutsider = await createUser(rentersTenantId, 'RENTER', 'LocatarioTerceiro')
     inactiveRenter = await createUser(rentersTenantId, 'RENTER', 'LocatarioInativo', {
-      ativo: false,
+      active: false,
     })
 
     staffToken = await sign(staff)
@@ -193,35 +196,35 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
     ownedEventId = (
       await createEvent({
         tenantId: agencyTenantId,
-        responsavelId: staff.id,
-        titulo: 'Vistoria do dono',
-        inicio: '2031-03-03T13:00:00.000Z',
-        donoUsuarioId: renterOwner.id,
+        responsibleId: staff.id,
+        title: 'Vistoria do dono',
+        start: '2031-03-03T13:00:00.000Z',
+        ownerUserId: renterOwner.id,
       })
     ).id
     participatedEventId = (
       await createEvent({
         tenantId: agencyTenantId,
-        responsavelId: otherStaffSameTenant.id,
-        titulo: 'Vistoria com participante',
-        inicio: '2031-03-04T13:00:00.000Z',
+        responsibleId: otherStaffSameTenant.id,
+        title: 'Vistoria com participante',
+        start: '2031-03-04T13:00:00.000Z',
         participantIds: [renterParticipant.id],
       })
     ).id
     thirdPartyEventId = (
       await createEvent({
         tenantId: agencyTenantId,
-        responsavelId: staff.id,
-        titulo: 'Evento de terceiros',
-        inicio: '2031-03-05T13:00:00.000Z',
+        responsibleId: staff.id,
+        title: 'Evento de terceiros',
+        start: '2031-03-05T13:00:00.000Z',
       })
     ).id
     otherTenantEventId = (
       await createEvent({
         tenantId: otherAgencyTenantId,
-        responsavelId: otherTenantStaff.id,
-        titulo: 'Evento de outra imobiliária',
-        inicio: '2031-03-03T13:00:00.000Z',
+        responsibleId: otherTenantStaff.id,
+        title: 'Evento de outra imobiliária',
+        start: '2031-03-03T13:00:00.000Z',
       })
     ).id
   })
@@ -240,7 +243,7 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
       expect(status).toBe(200)
       expect(json.events.map((event: { id: string }) => event.id)).toEqual([ownedEventId])
       expect(Object.keys(json.events[0]).sort()).toEqual(RENTER_VIEW_KEYS)
-      expect(json.events[0].responsibleName).toBe(staff.nome)
+      expect(json.events[0].responsibleName).toBe(staff.name)
     })
 
     it('participante lista somente o evento em que participa', async () => {
@@ -299,7 +302,7 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
 
       const owned = json.events.find((event: { id: string }) => event.id === ownedEventId)
       expect(owned.notes).toBe('Nota interna da imobiliária')
-      expect(owned.owner).toEqual({ name: renterOwner.nome, email: renterOwner.email })
+      expect(owned.owner).toEqual({ name: renterOwner.name, email: renterOwner.email })
     })
   })
 
@@ -341,22 +344,18 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
 
       expect(status).toBe(404)
 
-      const stored = await prisma.eventoAgenda.findUniqueOrThrow({
+      const stored = await prisma.agendaEvent.findUniqueOrThrow({
         where: { id: ownedEventId },
-        include: { participantes: true },
+        include: { participants: true },
       })
-      expect(stored.donoUsuarioId).toBe(renterOwner.id)
-      expect(stored.participantes).toEqual([])
+      expect(stored.ownerUserId).toBe(renterOwner.id)
+      expect(stored.participants).toEqual([])
       expect((await getAs(renterOutsiderToken, ownedEventId)).status).toBe(404)
     })
   })
 
-  describe('gerenciamento continua bloqueado para RENTER', () => {
-    it('RENTER recebe 403 ao criar, editar, reagendar e cancelar, sem alterar o evento', async () => {
-      const create = await createAs(renterOwnerToken, {
-        title: 'Tentativa do locatário',
-        start: '2031-03-06T13:00:00.000Z',
-      })
+  describe('gerenciamento pelo RENTER', () => {
+    it('RENTER não altera evento criado pela equipe, mesmo sendo o dono vinculado', async () => {
       const update = await patchAs(renterOwnerToken, ownedEventId, { title: 'Alterado' })
       const reschedule = await RESCHEDULE(
         request(
@@ -376,14 +375,91 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
         context(ownedEventId),
       )
 
-      expect([create.status, update.status, reschedule.status, cancel.status]).toEqual([
-        403, 403, 403, 403,
-      ])
+      expect([update.status, reschedule.status, cancel.status]).toEqual([403, 403, 403])
 
-      const stored = await prisma.eventoAgenda.findUniqueOrThrow({ where: { id: ownedEventId } })
-      expect(stored.titulo).toBe('Vistoria do dono')
+      const stored = await prisma.agendaEvent.findUniqueOrThrow({ where: { id: ownedEventId } })
+      expect(stored.title).toBe('Vistoria do dono')
       expect(stored.status).toBe('CONFIRMED')
-      expect(stored.inicio.toISOString()).toBe('2031-03-03T13:00:00.000Z')
+      expect(stored.start.toISOString()).toBe('2031-03-03T13:00:00.000Z')
+    })
+
+    it('RENTER não cria evento com imóvel avulso, só com o imóvel do contrato', async () => {
+      const create = await createAs(renterOwnerToken, {
+        title: 'Tentativa do locatário',
+        start: '2031-03-06T13:00:00.000Z',
+      })
+
+      expect(create.status).toBe(409)
+    })
+
+    it('RENTER cria evento no imóvel que aluga, na agenda da imobiliária, e edita o que criou', async () => {
+      const property = await prisma.property.create({
+        data: {
+          tenantId: agencyTenantId,
+          responsibleId: staff.id,
+          title: 'Apto alugado',
+          purpose: 'RENT',
+          type: 'APARTMENT',
+          price: 1000,
+        },
+      })
+      const opportunity = await prisma.opportunity.create({
+        data: {
+          tenantId: agencyTenantId,
+          propertyId: property.id,
+          responsibleId: await propertyResponsibleId(prisma, property.id),
+          interestedName: renterOwner.name,
+          interestedEmail: renterOwner.email,
+          proposedValue: 1000,
+          status: 'ACCEPTED',
+        },
+      })
+      await prisma.contract.create({
+        data: {
+          tenantId: agencyTenantId,
+          propertyId: property.id,
+          sourceOpportunityId: opportunity.id,
+          code: randomUUID(),
+          amount: 1000,
+          dueDay: 5,
+          startDate: new Date('2026-01-01'),
+          endDate: new Date('2032-01-01'),
+          adjustmentIndex: 'IPCA',
+          guaranteeType: 'DEPOSIT',
+          status: 'ACTIVE',
+          parties: {
+            create: {
+              role: 'RENTER',
+              name: renterOwner.name,
+              cpf: '00000000000',
+              email: renterOwner.email,
+              userId: renterOwner.id,
+            },
+          },
+        },
+      })
+
+      const created = await createAs(renterOwnerToken, {
+        title: 'Vistoria pedida pelo locatário',
+        start: '2031-03-07T13:00:00.000Z',
+        propertyId: property.id,
+        propertyReference: undefined,
+      })
+
+      expect(created.status).toBe(201)
+      expect(created.json.event.tenantId).toBe(agencyTenantId)
+      expect(created.json.event.createdById).toBe(renterOwner.id)
+
+      const updated = await patchAs(renterOwnerToken, created.json.event.id, {
+        title: 'Vistoria remarcada pelo locatário',
+      })
+      expect(updated.status).toBe(200)
+      expect(updated.json.event.title).toBe('Vistoria remarcada pelo locatário')
+
+      const asStaff = await getAs(staffToken, created.json.event.id)
+      expect(asStaff.status).toBe(200)
+
+      await prisma.agendaEvent.delete({ where: { id: created.json.event.id } })
     })
   })
 
@@ -398,10 +474,10 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
 
       expect(status).toBe(201)
       expect(json.event.tenantId).toBe(agencyTenantId)
-      expect(json.event.owner).toEqual({ name: renterOwner.nome, email: renterOwner.email })
+      expect(json.event.owner).toEqual({ name: renterOwner.name, email: renterOwner.email })
       expect(json.event.participants).toEqual([
-        { name: renterParticipant.nome, email: renterParticipant.email },
-        { name: otherStaffSameTenant.nome, email: otherStaffSameTenant.email },
+        { name: renterParticipant.name, email: renterParticipant.email },
+        { name: otherStaffSameTenant.name, email: otherStaffSameTenant.email },
       ])
 
       const asOwner = await getAs(renterOwnerToken, json.event.id)
@@ -410,15 +486,18 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
       expect(asParticipant.status).toBe(200)
     })
 
-    it('ignora o tenantId enviado no corpo e usa o tenant autenticado', async () => {
+    it('rejeita tenantId forjado como campo desconhecido no corpo', async () => {
       const { status, json } = await createAs(staffToken, {
         title: 'Evento com tenant forjado',
         start: '2031-03-06T15:00:00.000Z',
         tenantId: otherAgencyTenantId,
       })
 
-      expect(status).toBe(201)
-      expect(json.event.tenantId).toBe(agencyTenantId)
+      expect(status).toBe(400)
+      expect(json.error.code).toBe('VALIDATION_ERROR')
+      expect(
+        await prisma.agendaEvent.count({ where: { title: 'Evento com tenant forjado' } }),
+      ).toBe(0)
     })
 
     it('rejeita com a MESMA resposta e-mail inexistente, usuário inativo e equipe de outro tenant', async () => {
@@ -445,8 +524,8 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
       }
 
       // Atomicidade na criação: nenhum dos eventos rejeitados foi gravado.
-      const created = await prisma.eventoAgenda.count({
-        where: { tenantId: agencyTenantId, titulo: { startsWith: 'Vínculo inválido' } },
+      const created = await prisma.agendaEvent.count({
+        where: { tenantId: agencyTenantId, title: { startsWith: 'Vínculo inválido' } },
       })
       expect(created).toBe(0)
     })
@@ -488,7 +567,7 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
         participantEmails: [renterOutsider.email],
       })
       expect(replace.json.event.participants).toEqual([
-        { name: renterOutsider.nome, email: renterOutsider.email },
+        { name: renterOutsider.name, email: renterOutsider.email },
       ])
       expect((await getAs(renterParticipantToken, eventId)).status).toBe(404)
 
@@ -515,7 +594,7 @@ describe('/api/agenda/events — leitura do RENTER por vínculo explícito (inte
       const stored = await getAs(staffToken, eventId)
       expect(stored.json.event.title).toBe('Evento atômico')
       expect(stored.json.event.participants).toEqual([
-        { name: renterParticipant.nome, email: renterParticipant.email },
+        { name: renterParticipant.name, email: renterParticipant.email },
       ])
     })
   })

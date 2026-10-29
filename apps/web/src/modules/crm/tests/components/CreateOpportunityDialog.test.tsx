@@ -1,36 +1,28 @@
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
+}))
+vi.mock('../../hooks/use-contacts', () => ({
+  useCrmContactOptions: () => ({ data: [], isFetching: false }),
+}))
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CreateOpportunityDialog } from '../../components/opportunity-detail/CreateOpportunityDialog'
 import { useCrmProperties } from '../../hooks/use-opportunities'
-import type { PublicPropertySummary } from '../../types/property'
+import { property } from '../fixtures/property'
 
 vi.mock('../../hooks/use-opportunities', () => ({
   useCrmProperties: vi.fn(),
+  useCrmResponsibles: (enabled: boolean) => ({
+    data: enabled
+      ? [
+          { id: 'owner-1', name: 'Gestora', role: 'OWNER' },
+          { id: 'agent-2', name: 'Bruno Corretor', role: 'AGENT' },
+        ]
+      : undefined,
+  }),
 }))
-
-const property: PublicPropertySummary = {
-  id: 'property-1',
-  title: 'Apartamento Jardins',
-  purpose: 'ALUGUEL',
-  propertyType: 'Apartamento',
-  price: 3500,
-  condoFee: null,
-  propertyTax: null,
-  bedrooms: 2,
-  bathrooms: 1,
-  parkingSpots: 1,
-  area: 70,
-  city: 'Sao Paulo',
-  neighborhood: 'Jardins',
-  latitude: null,
-  longitude: null,
-  brokerName: null,
-  brokerAvatarUrl: null,
-  coverUrl: null,
-  publishedAt: '2026-08-01T10:00:00.000Z',
-}
 
 describe('CreateOpportunityDialog', () => {
   beforeEach(() => {
@@ -45,7 +37,7 @@ describe('CreateOpportunityDialog', () => {
     render(
       <CreateOpportunityDialog
         open
-        tenantId="tenant-1"
+        canChooseResponsible={false}
         isPending={false}
         onClose={vi.fn()}
         onSave={vi.fn()}
@@ -63,7 +55,7 @@ describe('CreateOpportunityDialog', () => {
     render(
       <CreateOpportunityDialog
         open
-        tenantId="tenant-1"
+        canChooseResponsible={false}
         isPending={false}
         onClose={vi.fn()}
         onSave={onSave}
@@ -82,7 +74,7 @@ describe('CreateOpportunityDialog', () => {
     render(
       <CreateOpportunityDialog
         open
-        tenantId="tenant-1"
+        canChooseResponsible={false}
         isPending={false}
         onClose={vi.fn()}
         onSave={onSave}
@@ -98,11 +90,11 @@ describe('CreateOpportunityDialog', () => {
 
     expect(onSave.mock.calls[0]?.[0]).toEqual(
       expect.objectContaining({
-        propertyId: 'property-1',
+        property,
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
         proposedValue: '2500',
-        status: 'RASCUNHO',
+        status: 'DRAFT',
       }),
     )
   })
@@ -113,7 +105,7 @@ describe('CreateOpportunityDialog', () => {
     render(
       <CreateOpportunityDialog
         open
-        tenantId="tenant-1"
+        canChooseResponsible={false}
         isPending={false}
         onClose={onClose}
         onSave={vi.fn()}
@@ -122,5 +114,49 @@ describe('CreateOpportunityDialog', () => {
 
     await user.click(screen.getByRole('button', { name: 'Cancelar' }))
     expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('lets the OWNER pick another responsible, defaulting to themselves', async () => {
+    const user = userEvent.setup()
+    const onSave = vi.fn()
+    render(
+      <CreateOpportunityDialog
+        open
+        canChooseResponsible
+        isPending={false}
+        onClose={vi.fn()}
+        onSave={onSave}
+      />,
+    )
+
+    expect(
+      screen.getByRole('combobox', { name: 'Responsável pela oportunidade' }),
+    ).toHaveTextContent('Eu')
+    await user.click(screen.getByLabelText(/^Imóvel/))
+    await user.click(await screen.findByText(/Apartamento Jardins/))
+    await user.type(screen.getByLabelText(/^Nome/), 'Maria Silva')
+    await user.type(screen.getByLabelText(/^E-mail/), 'maria@example.com')
+    await user.type(screen.getByLabelText(/^Valor proposto/), '2500')
+    await user.click(screen.getByRole('combobox', { name: 'Responsável pela oportunidade' }))
+    await user.click(screen.getByRole('option', { name: 'Bruno Corretor' }))
+    await user.click(screen.getByRole('button', { name: 'Criar oportunidade' }))
+
+    expect(onSave.mock.calls[0]?.[0]).toEqual(expect.objectContaining({ responsibleId: 'agent-2' }))
+  })
+
+  it('hides the responsible field from agents', () => {
+    render(
+      <CreateOpportunityDialog
+        open
+        canChooseResponsible={false}
+        isPending={false}
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+      />,
+    )
+
+    expect(
+      screen.queryByRole('combobox', { name: 'Responsável pela oportunidade' }),
+    ).not.toBeInTheDocument()
   })
 })

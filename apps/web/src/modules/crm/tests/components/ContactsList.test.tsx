@@ -1,163 +1,85 @@
 import { ThemeProvider } from '@mui/material'
+import { theme } from '@shared/theme/theme'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-
-import { theme } from '@shared/theme/theme'
-
 import { ContactsList } from '../../components/ContactsList'
 import type { ContactsListProps } from '../../types/contact'
+import { getContactListFixtures } from '../fixtures/contact-list-fixtures'
 
-vi.mock('next-auth/react', () => ({
-  useSession: () => ({ data: { tenantId: 'tenant-1' }, status: 'authenticated' }),
-}))
-
+vi.mock('next-auth/react', () => ({ useSession: () => ({ data: { tenantId: 'tenant-1' } }) }))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 
-function renderContactsList(props: ContactsListProps = {}) {
+function renderList(props: ContactsListProps = {}) {
   return render(
     <ThemeProvider theme={theme}>
-      <ContactsList {...props} />
+      <ContactsList
+        contacts={getContactListFixtures('pt-BR').slice(0, 5)}
+        totalCount={6}
+        counts={{ ALL: 6, OWNER: 2, RENTER: 3, BROKER: 1 }}
+        {...props}
+      />
     </ThemeProvider>,
   )
 }
 
 describe('ContactsList', () => {
-  it('renders the contacts table with the shared dashboard pagination', () => {
-    renderContactsList()
-
+  it('renders the server page and global counts', () => {
+    renderList()
     const table = screen.getByRole('table', { name: 'Contatos do CRM' })
-
     expect(within(table).getAllByRole('row')).toHaveLength(6)
-    expect(screen.getByRole('heading', { name: 'Contatos' })).toBeVisible()
-    expect(screen.getByPlaceholderText('Buscar contato por nome, email, fone...')).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Novo Contato' })).toBeVisible()
-    expect(screen.getByText('Linhas por página')).toBeVisible()
     expect(screen.getByText('1-5 de 6')).toBeVisible()
-
-    ;['Nome', 'Tipo', 'Telefone', 'Email', 'Imóveis', 'Última interação', 'Ações'].forEach(
-      (heading) => expect(within(table).getByText(heading)).toBeInTheDocument(),
-    )
-
-    const ricardoRow = within(table).getByText('Ricardo Mendes').closest('tr')
-    expect(ricardoRow).not.toBeNull()
-    expect(within(ricardoRow!).getByText('Locatário')).toBeInTheDocument()
-    expect(within(ricardoRow!).getByText('(11) 98722-1200')).toBeInTheDocument()
-    expect(within(ricardoRow!).getByText('ricardo.mendes@email.com')).toBeInTheDocument()
-    expect(within(ricardoRow!).getByText('2')).toBeInTheDocument()
-    expect(within(ricardoRow!).getByText(/há 2 horas/i)).toBeInTheDocument()
-
-    expect(within(table).getByText('Heitor Prado')).toBeInTheDocument()
-    expect(within(table).queryByText('Ana Beatriz Ramos')).not.toBeInTheDocument()
+    expect(within(table).getByText('Ricardo Mendes')).toBeVisible()
+    expect(screen.getByRole('button', { name: /Proprietários/ })).toHaveTextContent('2')
   })
 
-  it('shows the requested contact-type distribution on the first page', () => {
-    renderContactsList()
-
-    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
-
-    expect(within(table).getAllByText('Locatário')).toHaveLength(3)
-    expect(within(table).getAllByText('Proprietário')).toHaveLength(1)
-    expect(within(table).getAllByText('Corretor')).toHaveLength(1)
-  })
-
-  it('filters contacts by normalized name, email, and phone', () => {
-    renderContactsList()
-
-    const search = screen.getByRole('textbox', { name: 'Buscar contatos' })
-    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
-
-    fireEvent.change(search, { target: { value: 'leticia' } })
-    expect(within(table).getByText('Letícia Ramos')).toBeInTheDocument()
-    expect(within(table).queryByText('Ricardo Mendes')).not.toBeInTheDocument()
-
-    fireEvent.change(search, { target: { value: 'grupojardins' } })
-    expect(within(table).getByText('Ana Beatriz Ramos')).toBeInTheDocument()
-
-    fireEvent.change(search, { target: { value: '98112' } })
-    expect(within(table).getByText('Heitor Prado')).toBeInTheDocument()
-  })
-
-  it('filters by contact type through the status pills', () => {
-    renderContactsList()
-
-    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
-
-    fireEvent.click(screen.getByRole('button', { name: /Proprietários/ }))
-
-    expect(within(table).getByText('Sandra Vasconcellos')).toBeInTheDocument()
-    expect(within(table).getByText('Ana Beatriz Ramos')).toBeInTheDocument()
-    expect(within(table).queryByText('Ricardo Mendes')).not.toBeInTheDocument()
-    expect(screen.getByText('1-2 de 2')).toBeVisible()
-  })
-
-  it('does not render contact selection checkboxes', () => {
-    renderContactsList()
-
-    expect(screen.queryAllByRole('checkbox')).toHaveLength(0)
-  })
-
-  it('renders exactly the three requested actions for each contact', () => {
-    renderContactsList()
-
-    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
-    const ricardoRow = within(table).getByText('Ricardo Mendes').closest('tr')
-
-    expect(ricardoRow).not.toBeNull()
-    expect(
-      within(ricardoRow!).getByRole('button', { name: 'Editar Ricardo Mendes' }),
-    ).toBeDisabled()
-    expect(
-      within(ricardoRow!).getByRole('button', { name: 'Ver interações de Ricardo Mendes' }),
-    ).toBeDisabled()
-    expect(
-      within(ricardoRow!).getByRole('button', { name: 'Mais opções para Ricardo Mendes' }),
-    ).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Novo Contato' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Go to previous page' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Go to next page' })).not.toBeDisabled()
-  })
-
-  it('delegates creation, actions, and pagination when integrations are provided', () => {
-    const onNewContact = vi.fn()
-    const onEditContact = vi.fn()
-    const onOpenInteractions = vi.fn()
-    const onOpenMoreOptions = vi.fn()
-    const onPageChange = vi.fn()
-
-    renderContactsList({
-      onNewContact,
-      onEditContact,
-      onOpenInteractions,
-      onOpenMoreOptions,
-      onPageChange,
+  it('delegates search, filter and pagination to the server list owner', () => {
+    const onSearchChange = vi.fn(),
+      onFilterChange = vi.fn(),
+      onPageChange = vi.fn()
+    renderList({ onSearchChange, onFilterChange, onPageChange })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Buscar contatos' }), {
+      target: { value: 'Letícia' },
     })
-
-    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
-    const ricardoRow = within(table).getByText('Ricardo Mendes').closest('tr')
-    expect(ricardoRow).not.toBeNull()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Novo Contato' }))
-    fireEvent.click(within(ricardoRow!).getByRole('button', { name: 'Editar Ricardo Mendes' }))
-    fireEvent.click(
-      within(ricardoRow!).getByRole('button', { name: 'Ver interações de Ricardo Mendes' }),
-    )
-    fireEvent.click(
-      within(ricardoRow!).getByRole('button', { name: 'Mais opções para Ricardo Mendes' }),
-    )
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Arquivar Ricardo Mendes' }))
+    fireEvent.click(screen.getByRole('button', { name: /Proprietários/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Go to next page' }))
-
-    expect(onNewContact).toHaveBeenCalledOnce()
-    expect(onEditContact).toHaveBeenCalledWith(expect.objectContaining({ name: 'Ricardo Mendes' }))
-    expect(onOpenInteractions).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Ricardo Mendes' }),
-    )
-    expect(onOpenMoreOptions).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Ricardo Mendes' }),
-    )
+    expect(onSearchChange).toHaveBeenCalledWith('Letícia')
+    expect(onFilterChange).toHaveBeenCalledWith('OWNER')
     expect(onPageChange).toHaveBeenCalledWith(2)
-    expect(screen.getByRole('button', { name: 'Go to previous page' })).toBeDisabled()
+  })
+
+  it('uses the controlled page directly when refreshed', () => {
+    const { rerender } = renderList()
+    rerender(
+      <ThemeProvider theme={theme}>
+        <ContactsList contacts={[getContactListFixtures('pt-BR')[5]]} totalCount={6} page={2} />
+      </ThemeProvider>,
+    )
+    expect(screen.getByText('6-6 de 6')).toBeVisible()
+    expect(screen.queryByText('Ricardo Mendes')).not.toBeInTheDocument()
+  })
+
+  it('keeps the empty state empty without fixtures', () => {
+    renderList({ contacts: [], totalCount: 0 })
+    expect(screen.queryByText('Ricardo Mendes')).not.toBeInTheDocument()
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('delegates creation, editing, interaction and archive actions', () => {
+    const onNewContact = vi.fn(),
+      onEditContact = vi.fn(),
+      onOpenInteractions = vi.fn(),
+      onOpenMoreOptions = vi.fn()
+    renderList({ onNewContact, onEditContact, onOpenInteractions, onOpenMoreOptions })
+    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
+    fireEvent.click(screen.getByRole('button', { name: 'Novo Contato' }))
+    fireEvent.click(within(table).getByRole('button', { name: 'Editar Ricardo Mendes' }))
+    fireEvent.click(within(table).getByRole('button', { name: 'Ver interações de Ricardo Mendes' }))
+    fireEvent.click(within(table).getByRole('button', { name: 'Mais opções para Ricardo Mendes' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Arquivar Ricardo Mendes' }))
+    expect(onNewContact).toHaveBeenCalledOnce()
+    for (const action of [onEditContact, onOpenInteractions, onOpenMoreOptions])
+      expect(action).toHaveBeenCalledWith(expect.objectContaining({ id: 'ricardo-mendes' }))
   })
 })

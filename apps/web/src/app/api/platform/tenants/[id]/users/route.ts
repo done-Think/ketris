@@ -1,21 +1,28 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-import { toAuthenticatedUserResponse } from '@server/auth/domain/user.entity'
+import { toAuthenticatedUserResponse } from '@server/auth/application/user-response'
 import { platformContainer } from '@server/platform/container'
 import { requirePlatformBearerAuth } from '@server/platform/require-platform-bearer-auth'
-import { withErrorHandling } from '@server/shared/http'
+import type { PlatformIdRouteContext } from '@server/platform/types/http'
+import { platformIdParamsSchema } from '@server/platform/schemas/route-params.schema'
+import { listTenantUsersQuerySchema } from '@server/platform/schemas/list-tenant-users.schema'
+import { parseQuery, parseRouteParams, withErrorHandling } from '@server/shared/http'
 
-interface RouteContext {
-  params: Promise<{ id: string }>
-}
+export const GET = withErrorHandling(
+  async (request: NextRequest, context: PlatformIdRouteContext) => {
+    await requirePlatformBearerAuth(request, platformContainer.tokenService)
+    const { id } = await parseRouteParams(context.params, platformIdParamsSchema)
 
-export const GET = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
-  await requirePlatformBearerAuth(request, platformContainer.tokenService)
+    const page = parseQuery(request, listTenantUsersQuerySchema)
+    const { items, ...meta } = await platformContainer.listTenantUsersUseCase.execute({
+      tenantId: id,
+      ...page,
+    })
 
-  const users = await platformContainer.listTenantUsersUseCase.execute({
-    tenantId: (await context.params).id,
-  })
-
-  return NextResponse.json({ users: users.map(toAuthenticatedUserResponse) }, { status: 200 })
-})
+    return NextResponse.json(
+      { users: items.map(toAuthenticatedUserResponse), ...meta },
+      { status: 200 },
+    )
+  },
+)

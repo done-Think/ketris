@@ -8,6 +8,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as crmStyles from '../../styles/archive-contact-dialog.styles'
 
 import type { ArchiveContactDialogProps } from '../../types/contact'
 
@@ -21,7 +22,7 @@ export function ArchiveContactDialog({
 
   return (
     <Dialog open={open} onClose={() => !isPending && onClose()}>
-      <DialogTitle sx={{ letterSpacing: 0 }}>{t('title')}</DialogTitle>
+      <DialogTitle sx={crmStyles.dialogTitleSx}>{t('title')}</DialogTitle>
       <DialogContent>
         <Typography color="text.secondary">{t('description')}</Typography>
       </DialogContent>

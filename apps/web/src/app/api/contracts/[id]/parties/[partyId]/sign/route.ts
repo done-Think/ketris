@@ -1,27 +1,34 @@
+import type { ContractPartyRouteContext } from '@server/contracts/types/route-context'
+import { contractPartyIdParamsSchema } from '@server/contracts/schemas/contract.schema'
 import type { NextRequest } from 'next/server'
+import { isIP } from 'node:net'
+import { getTrustedClientAddress } from '@server/security/client-key'
+import { signContractPartyRequestSchema } from '@server/contracts/schemas/contract-workflow.schema'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { contractsContainer } from '@server/contracts/container'
-import { withErrorHandling } from '@server/shared/http'
+import { parseJsonBody, parseRouteParams, withErrorHandling } from '@server/shared/http'
 
-interface RouteContext {
-  params: Promise<{ id: string; partyId: string }>
-}
+export const POST = withErrorHandling(
+  async (request: NextRequest, context: ContractPartyRouteContext) => {
+    const actor = await requireBearerAuth(request, authContainer.tokenService)
+    const body = await parseJsonBody(request, signContractPartyRequestSchema)
+    const address = getTrustedClientAddress(request.headers)
+    const { id, partyId } = await parseRouteParams(context.params, contractPartyIdParamsSchema)
 
-export const POST = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
-  const actor = await requireBearerAuth(request, authContainer.tokenService)
-  const { id, partyId } = await context.params
+    const contract = await contractsContainer.signContractPartyUseCase.execute({
+      actorTenantId: actor.tenantId,
+      actorId: actor.sub,
+      actorRole: actor.role,
+      contractId: id,
+      partyId,
+      documentId: body.documentId,
+      clientIp: isIP(address) ? address : null,
+      userAgent: request.headers.get('user-agent')?.slice(0, 512) ?? null,
+    })
 
-  const contract = await contractsContainer.signContractPartyUseCase.execute({
-    actorTenantId: actor.tenantId,
-    actorId: actor.sub,
-    actorPapel: actor.papel as Papel,
-    contractId: id,
-    partyId,
-  })
-
-  return NextResponse.json({ contract }, { status: 200 })
-})
+    return NextResponse.json({ contract }, { status: 200 })
+  },
+)

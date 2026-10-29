@@ -39,6 +39,15 @@ export class CannotDeactivateSelfError extends AppError {
   }
 }
 
+export class LastPlatformAdminError extends AppError {
+  constructor() {
+    super('A plataforma precisa manter ao menos um administrador ativo.', {
+      status: 409,
+      code: 'LAST_PLATFORM_ADMIN',
+    })
+  }
+}
+
 export class TenantSlugAlreadyInUseError extends AppError {
   constructor() {
     super('Já existe um tenant com este slug.', {

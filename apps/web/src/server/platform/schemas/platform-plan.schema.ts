@@ -17,7 +17,12 @@ export const platformPlanSchema = z
     includedUnits: z.number().int().openapi({ example: 10 }),
     extraUnitPrice: z.number().openapi({ example: 9.99 }),
     activeAccounts: z.number().int().openapi({ description: 'Contas ativas neste plano.' }),
+    createdAt: z.string().openapi({ description: 'ISO 8601' }),
     updatedAt: z.string().openapi({ description: 'ISO 8601' }),
+    updatedBy: z
+      .object({ id: z.string().nullable(), name: z.string() })
+      .nullable()
+      .openapi({ description: 'Quem alterou os valores por último; null antes da 1ª alteração.' }),
   })
   .openapi('PlatformPlan')
 
@@ -39,9 +44,8 @@ export const updatePlatformPlanRequestSchema = z
       example: 9.99,
     }),
   })
+  .strict()
   .openapi('UpdatePlatformPlanRequest')
-
-export type UpdatePlatformPlanRequestDTO = z.infer<typeof updatePlatformPlanRequestSchema>
 
 export const updatePlatformPlanResponseSchema = z
   .object({ plan: platformPlanSchema.omit({ activeAccounts: true }) })

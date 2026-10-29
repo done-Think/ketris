@@ -1,22 +1,83 @@
 import { ThemeProvider } from '@mui/material'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
 import { PlatformTenantsPage } from '../../components/PlatformTenantsPage'
+import type { PlatformTenant, TenantListQuery } from '../../types/tenant'
 
-const { useTenants, mutateAsync, enqueueSnackbar } = vi.hoisted(() => ({
-  useTenants: vi.fn(),
+const { useTenantsPage, mutateAsync, enqueueSnackbar, actor } = vi.hoisted(() => ({
+  useTenantsPage: vi.fn(),
   mutateAsync: vi.fn(),
   enqueueSnackbar: vi.fn(),
+  actor: { key: 'admin-1:ADMIN', enabled: true, canManage: true },
 }))
-vi.mock('../../hooks/use-tenants', () => ({ useTenants }))
-vi.mock('../../hooks/use-update-tenant-account', () => ({
+vi.mock('../../hooks/use-platform-actor', () => ({ usePlatformActor: () => actor }))
+vi.mock('../../hooks/use-tenants', () => ({
+  useTenantsPage,
   useUpdateTenantAccount: () => ({ mutateAsync, isPending: false }),
 }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
+
+const tenants: PlatformTenant[] = [
+  {
+    id: 'horizonte',
+    name: 'Imobiliária Horizonte',
+    slug: 'horizonte',
+    accountType: 'AGENCY',
+    status: 'ACTIVE',
+    canceledAt: null,
+    createdAt: '2026-09-01T12:00:00Z',
+    monthlyCharge: {
+      usageUnit: 'BROKERS',
+      usage: 4,
+      includedUnits: 10,
+      extraUnits: 0,
+      basePrice: 199.99,
+      extraAmount: 0,
+      total: 199.99,
+    },
+  },
+  {
+    id: 'roberto',
+    name: 'Roberto Lima',
+    slug: 'roberto',
+    accountType: 'BROKER',
+    status: 'TRIAL',
+    canceledAt: null,
+    createdAt: '2026-10-02T12:00:00Z',
+    monthlyCharge: {
+      usageUnit: 'PROPERTIES',
+      usage: 12,
+      includedUnits: 10,
+      extraUnits: 2,
+      basePrice: 99.99,
+      extraAmount: 19.98,
+      total: 119.97,
+    },
+  },
+]
+
+function serverPage(source: PlatformTenant[]) {
+  return ({ q, status, accountType, page, pageSize }: TenantListQuery) => {
+    const matches = source.filter(
+      (tenant) =>
+        (!q || tenant.name.toLowerCase().includes(q) || tenant.slug.includes(q)) &&
+        (!accountType || tenant.accountType === accountType),
+    )
+    const statusCounts = { TRIAL: 0, ACTIVE: 0, SUSPENDED: 0, CANCELED: 0 }
+    for (const tenant of matches) statusCounts[tenant.status] += 1
+    const visible = matches.filter((tenant) => !status || tenant.status === status)
+
+    return {
+      data: { tenants: visible, totalCount: visible.length, page, pageSize, statusCounts },
+      isPending: false,
+      isError: false,
+    }
+  }
+}
 
 function renderPage() {
   return render(
@@ -28,48 +89,8 @@ function renderPage() {
 
 describe('PlatformTenantsPage', () => {
   beforeEach(() => {
-    vi.mocked(useTenants).mockReturnValue({
-      data: [
-        {
-          id: 'horizonte',
-          name: 'Imobiliária Horizonte',
-          slug: 'horizonte',
-          accountType: 'AGENCY',
-          status: 'ACTIVE',
-          canceledAt: null,
-          createdAt: '2026-09-01T12:00:00Z',
-          monthlyCharge: {
-            usageUnit: 'BROKERS',
-            usage: 4,
-            includedUnits: 10,
-            extraUnits: 0,
-            basePrice: 199.99,
-            extraAmount: 0,
-            total: 199.99,
-          },
-        },
-        {
-          id: 'roberto',
-          name: 'Roberto Lima',
-          slug: 'roberto',
-          accountType: 'BROKER',
-          status: 'TRIAL',
-          canceledAt: null,
-          createdAt: '2026-10-02T12:00:00Z',
-          monthlyCharge: {
-            usageUnit: 'PROPERTIES',
-            usage: 12,
-            includedUnits: 10,
-            extraUnits: 2,
-            basePrice: 99.99,
-            extraAmount: 19.98,
-            total: 119.97,
-          },
-        },
-      ],
-      isLoading: false,
-      isError: false,
-    })
+    actor.canManage = true
+    vi.mocked(useTenantsPage).mockImplementation(serverPage(tenants))
   })
 
   it('lists the real tenants with links to their detail pages', () => {
@@ -130,6 +151,9 @@ describe('PlatformTenantsPage', () => {
 
     await user.click(screen.getByRole('tab', { name: /Em teste\s*1/ }))
 
+    expect(useTenantsPage).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: 'TRIAL', page: 1 }),
+    )
     expect(screen.getByRole('row', { name: /Roberto Lima/ })).toBeVisible()
     expect(screen.queryByRole('row', { name: /Imobiliária Horizonte/ })).not.toBeInTheDocument()
     expect(screen.getByText('1 conta')).toBeVisible()
@@ -139,19 +163,28 @@ describe('PlatformTenantsPage', () => {
     const user = userEvent.setup()
     renderPage()
 
-    await user.type(screen.getByLabelText('Buscar conta'), 'horiz')
+    await user.type(screen.getByLabelText('Buscar conta'), ' horiz ')
+    await waitFor(() =>
+      expect(screen.queryByRole('row', { name: /Roberto Lima/ })).not.toBeInTheDocument(),
+    )
     expect(screen.getByRole('row', { name: /Imobiliária Horizonte/ })).toBeVisible()
-    expect(screen.queryByRole('row', { name: /Roberto Lima/ })).not.toBeInTheDocument()
+    expect(useTenantsPage).toHaveBeenLastCalledWith(expect.objectContaining({ q: 'horiz' }))
 
     await user.clear(screen.getByLabelText('Buscar conta'))
     await user.type(screen.getByLabelText('Buscar conta'), 'roberto')
-    expect(screen.getByRole('row', { name: /Roberto Lima/ })).toBeVisible()
+    expect(await screen.findByRole('row', { name: /Roberto Lima/ })).toBeVisible()
 
     await user.clear(screen.getByLabelText('Buscar conta'))
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
     await user.click(screen.getByRole('combobox', { name: 'Tipo de conta' }))
     await user.click(await screen.findByRole('option', { name: 'Imobiliária' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('row', { name: /Roberto Lima/ })).not.toBeInTheDocument(),
+    )
     expect(screen.getByRole('row', { name: /Imobiliária Horizonte/ })).toBeVisible()
-    expect(screen.queryByRole('row', { name: /Roberto Lima/ })).not.toBeInTheDocument()
+    expect(useTenantsPage).toHaveBeenLastCalledWith(
+      expect.objectContaining({ q: undefined, accountType: 'AGENCY' }),
+    )
   })
 
   it('explains when no account matches and clears the filters', async () => {
@@ -159,11 +192,11 @@ describe('PlatformTenantsPage', () => {
     renderPage()
 
     await user.type(screen.getByLabelText('Buscar conta'), 'inexistente')
-    expect(screen.getByText('Nenhuma conta encontrada com esses filtros.')).toBeVisible()
+    expect(await screen.findByText('Nenhuma conta encontrada com esses filtros.')).toBeVisible()
 
     await user.click(screen.getByRole('button', { name: 'Limpar filtros' }))
     expect(screen.getByLabelText('Buscar conta')).toHaveValue('')
-    expect(screen.getAllByRole('row')).toHaveLength(3)
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
   })
 
   it('edits the account type and status of a tenant', async () => {
@@ -201,7 +234,7 @@ describe('PlatformTenantsPage', () => {
   })
 
   it('shows the empty state when there are no tenants', () => {
-    vi.mocked(useTenants).mockReturnValue({ data: [], isLoading: false, isError: false })
+    vi.mocked(useTenantsPage).mockImplementation(serverPage([]))
     renderPage()
 
     expect(screen.getByText('Nenhuma imobiliária cadastrada ainda.')).toBeVisible()
@@ -209,12 +242,7 @@ describe('PlatformTenantsPage', () => {
   })
 
   it('shows a loading indicator, not the empty state, while the tenants are pending', () => {
-    vi.mocked(useTenants).mockReturnValue({
-      data: undefined,
-      isPending: true,
-      isLoading: false,
-      isError: false,
-    })
+    vi.mocked(useTenantsPage).mockReturnValue({ data: undefined, isPending: true, isError: false })
     renderPage()
 
     expect(screen.getByRole('progressbar')).toBeVisible()
@@ -222,9 +250,38 @@ describe('PlatformTenantsPage', () => {
   })
 
   it('shows the load error instead of sample data when the request fails', () => {
-    vi.mocked(useTenants).mockReturnValue({ data: undefined, isLoading: false, isError: true })
+    vi.mocked(useTenantsPage).mockReturnValue({ data: undefined, isPending: false, isError: true })
     renderPage()
 
     expect(screen.getByText('Não foi possível carregar as imobiliárias.')).toBeVisible()
+  })
+
+  it('hides the creation and editing actions from admins without the ADMIN role', () => {
+    actor.canManage = false
+    renderPage()
+
+    expect(screen.queryByRole('link', { name: 'Nova conta' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Editar conta de Roberto Lima' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('row', { name: /Roberto Lima/ })).toBeVisible()
+  })
+
+  it('pages through the server results', async () => {
+    const user = userEvent.setup()
+    vi.mocked(useTenantsPage).mockImplementation((query: TenantListQuery) => ({
+      data: {
+        ...serverPage(tenants)(query).data,
+        totalCount: 45,
+      },
+      isPending: false,
+      isError: false,
+    }))
+    renderPage()
+
+    expect(screen.getByText('1-20 de 45')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: /next page/i }))
+
+    expect(useTenantsPage).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }))
   })
 })

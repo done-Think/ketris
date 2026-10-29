@@ -1,48 +1,42 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import { calendarDateInTimeZone } from '@server/shared/time-zone-calendar'
 
+import { withEffectiveStatus } from '../../domain/charge-status'
+import { assertCanEditCharge, changedChargeFields } from '../../domain/charge-workflow'
 import { ChargeNotFoundError } from '../../domain/errors'
-import type { Charge } from '../../domain/charge.entity'
-import type { ChargeStatus, ChargeType } from '../../types/charge'
+import type { Charge } from '../../types/charge-entity'
+import type { UpdateChargeInput } from '../../types/use-case-inputs'
 import { assertCanAccessFinance } from '../assert-can-access-finance'
 import type { ChargeRepository } from '../ports/charge-repository.port'
 
-export interface UpdateChargeInput {
-  actorTenantId: string
-  actorPapel: Papel
-  chargeId: string
-  description: string | null
-  type: ChargeType
-  amount: number
-  dueDate: Date
-  status: ChargeStatus
-}
-
 export class UpdateChargeUseCase {
-  constructor(private readonly chargeRepository: ChargeRepository) {}
+  constructor(
+    private readonly chargeRepository: ChargeRepository,
+    private readonly now: () => Date = () => new Date(),
+  ) {}
 
   async execute(input: UpdateChargeInput): Promise<Charge> {
-    assertCanAccessFinance(input.actorPapel)
+    assertCanAccessFinance(input.actorRole)
 
-    const existing = await this.chargeRepository.findById(input.actorTenantId, input.chargeId)
+    const current = await this.chargeRepository.findById(input.actorTenantId, input.chargeId)
+    if (!current) throw new ChargeNotFoundError()
 
-    if (!existing) {
-      throw new ChargeNotFoundError()
-    }
-
-    const hasRegisteredPayment = existing.paidAt !== null
-    const finalStatus =
-      input.status === 'PAGA' && !hasRegisteredPayment ? existing.status : input.status
-    const keepsPayment = finalStatus === 'PAGA'
-
-    return this.chargeRepository.update(input.actorTenantId, input.chargeId, {
+    const changes = {
       description: input.description,
       type: input.type,
       amount: input.amount,
       dueDate: input.dueDate,
-      status: finalStatus,
-      paymentMethod: keepsPayment ? existing.paymentMethod : null,
-      receiptUrl: keepsPayment ? existing.receiptUrl : null,
-      paidAt: keepsPayment ? existing.paidAt : null,
+    }
+    const changed = changedChargeFields(current, changes)
+    assertCanEditCharge(current, changed)
+
+    const today = calendarDateInTimeZone(this.now())
+    if (changed.length === 0) return withEffectiveStatus(current, today)
+
+    const updated = await this.chargeRepository.update(current, changes, changed, {
+      tenantId: input.actorTenantId,
+      actorId: input.actorId,
     })
+
+    return withEffectiveStatus(updated, today)
   }
 }

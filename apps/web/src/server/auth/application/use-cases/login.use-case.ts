@@ -1,29 +1,12 @@
-import {
-  AccountDeactivatedError,
-  InvalidCredentialsError,
-  MembershipPendingApprovalError,
-} from '../../domain/errors'
-import {
-  generateRefreshToken,
-  hashRefreshToken,
-  refreshTokenExpiryDate,
-} from '../../domain/refresh-token'
-import { toAuthenticatedUser, type AuthenticatedUser } from '../../domain/user.entity'
+import type { LoginOutput } from '../../types/use-case-outputs'
+import type { LoginInput } from '../../types/use-case-inputs'
+import { InvalidCredentialsError, TenantSelectionRequiredError } from '../../domain/errors'
+import { INVALID_CREDENTIAL_PASSWORD_HASH } from '../../domain/credential-timing'
+import { issueAuthenticatedSession } from '../issue-authenticated-session'
 import type { PasswordHasher } from '../ports/password-hasher.port'
 import type { RefreshTokenRepository } from '../ports/refresh-token-repository.port'
 import type { TokenService } from '../ports/token-service.port'
 import type { UserRepository } from '../ports/user-repository.port'
-
-export interface LoginInput {
-  email: string
-  password: string
-}
-
-export interface LoginOutput {
-  user: AuthenticatedUser
-  accessToken: string
-  refreshToken: string
-}
 
 export class LoginUseCase {
   constructor(
@@ -34,38 +17,35 @@ export class LoginUseCase {
   ) {}
 
   async execute(input: LoginInput): Promise<LoginOutput> {
-    const user = await this.userRepository.findByEmail(input.email)
-
-    if (!user) {
+    const candidates = await this.userRepository.findManyByEmail(input.email)
+    if (candidates.length === 0) {
+      await this.passwordHasher.compare(input.password, INVALID_CREDENTIAL_PASSWORD_HASH)
       throw new InvalidCredentialsError()
     }
-
-    const passwordMatches = await this.passwordHasher.compare(input.password, user.senhaHash)
-
-    if (!passwordMatches) {
+    const matches = await Promise.all(
+      candidates.map(async (user) => ({
+        user,
+        matches: await this.passwordHasher.compare(input.password, user.passwordHash),
+      })),
+    )
+    const matchingUsers = matches.filter((entry) => entry.matches).map((entry) => entry.user)
+    if (matchingUsers.length === 0) {
       throw new InvalidCredentialsError()
     }
-
-    if (!user.ativo) {
-      throw new AccountDeactivatedError()
+    if (matchingUsers.length > 1 && !input.tenantId) {
+      throw new TenantSelectionRequiredError(
+        matchingUsers.map((user) => ({
+          id: user.tenantId,
+          name: user.tenantName ?? user.tenantId,
+          slug: user.tenantSlug ?? user.tenantId,
+        })),
+      )
     }
+    const user = input.tenantId
+      ? matchingUsers.find((candidate) => candidate.tenantId === input.tenantId)
+      : matchingUsers[0]
+    if (!user) throw new InvalidCredentialsError()
 
-    if (user.papel === 'AGENT' && user.vinculoAprovadoEm === null) {
-      throw new MembershipPendingApprovalError()
-    }
-
-    const authenticatedUser = toAuthenticatedUser(user)
-    const accessToken = await this.tokenService.sign(authenticatedUser)
-
-    const refreshToken = generateRefreshToken()
-
-    await this.refreshTokenRepository.create({
-      userId: authenticatedUser.id,
-      tenantId: authenticatedUser.tenantId,
-      tokenHash: hashRefreshToken(refreshToken),
-      expiresAt: refreshTokenExpiryDate(),
-    })
-
-    return { user: authenticatedUser, accessToken, refreshToken }
+    return issueAuthenticatedSession(user, this.tokenService, this.refreshTokenRepository)
   }
 }

@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { useForm } from 'react-hook-form'
 
@@ -11,7 +12,7 @@ function Wrapper({ onValuesChange }: { onValuesChange: (mainValue: number) => vo
       mainValue: 0,
       rentalValue: 0,
       condominium: 0,
-      iptu: 0,
+      propertyTax: 0,
       negotiationTerm: '',
     } as CreateDashboardPropertyFormValues,
   })
@@ -29,35 +30,35 @@ function Wrapper({ onValuesChange }: { onValuesChange: (mainValue: number) => vo
 }
 
 describe('CreatePropertyValuesStepFields', () => {
-  it('keeps the integer part of a decimal currency value instead of concatenating the cents into it', () => {
+  it('preserves cents in a decimal currency value', async () => {
     let mainValue = 0
 
     render(<Wrapper onValuesChange={(value) => (mainValue = value)} />)
 
     const input = screen.getAllByRole('textbox')[0]
-    fireEvent.change(input, { target: { value: '1500,50' } })
+    await userEvent.type(input, '1500,50')
+
+    expect(mainValue).toBe(1500.5)
+  })
+
+  it('parses a value with a thousands separator typed by the user correctly', async () => {
+    let mainValue = 0
+
+    render(<Wrapper onValuesChange={(value) => (mainValue = value)} />)
+
+    const input = screen.getAllByRole('textbox')[0]
+    await userEvent.type(input, '1.500')
 
     expect(mainValue).toBe(1500)
   })
 
-  it('parses a value with a thousands separator typed by the user correctly', () => {
+  it('parses a plain integer currency value correctly', async () => {
     let mainValue = 0
 
     render(<Wrapper onValuesChange={(value) => (mainValue = value)} />)
 
     const input = screen.getAllByRole('textbox')[0]
-    fireEvent.change(input, { target: { value: '1.500' } })
-
-    expect(mainValue).toBe(1500)
-  })
-
-  it('parses a plain integer currency value correctly', () => {
-    let mainValue = 0
-
-    render(<Wrapper onValuesChange={(value) => (mainValue = value)} />)
-
-    const input = screen.getAllByRole('textbox')[0]
-    fireEvent.change(input, { target: { value: '6500' } })
+    await userEvent.type(input, '6500')
 
     expect(mainValue).toBe(6500)
   })

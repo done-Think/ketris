@@ -7,66 +7,67 @@ import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service
 import { prisma } from '@server/db/prisma'
 
 import { POST } from '../../../../opportunities/[id]/respond/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('POST /api/crm/opportunities/[id]/respond (integração)', () => {
   const tokenService = new JoseTokenService()
   let tenantId: string
   let otherTenantId: string
   let actorToken: string
-  let imovelId: string
+  let propertyId: string
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária CRM Respond', slug: `crm-respond-${randomUUID()}` },
+      data: { name: 'Imobiliária CRM Respond', slug: `crm-respond-${randomUUID()}` },
     })
     tenantId = tenant.id
 
     const other = await prisma.tenant.create({
-      data: { nome: 'Outra Imobiliária', slug: `crm-respond-other-${randomUUID()}` },
+      data: { name: 'Outra Imobiliária', slug: `crm-respond-other-${randomUUID()}` },
     })
     otherTenantId = other.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin',
+        name: 'Admin',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const responsavel = await prisma.usuario.create({
+    const responsible = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor',
+        name: 'Corretor',
         email: `corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
-    const imovel = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: responsavel.id,
-        titulo: 'Imóvel',
-        finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
-        valor: 2000,
+        responsibleId: responsible.id,
+        title: 'Imóvel',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2000,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        publishedAt: new Date(),
       },
     })
-    imovelId = imovel.id
+    propertyId = property.id
   })
 
   afterAll(async () => {
@@ -75,14 +76,17 @@ describe('POST /api/crm/opportunities/[id]/respond (integração)', () => {
     await prisma.$disconnect()
   })
 
-  async function createOpportunity(status: 'RASCUNHO' | 'ENVIADA' | 'ACEITA' = 'ENVIADA') {
-    return prisma.oportunidade.create({
+  async function createOpportunity(
+    status: 'DRAFT' | 'SENT' | 'IN_NEGOTIATION' | 'ACCEPTED' = 'SENT',
+  ) {
+    return prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId,
-        interessadoNome: 'Maria',
-        interessadoEmail: `maria-${randomUUID()}@exemplo.com`,
-        valorProposto: 2500,
+        propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
+        interestedName: 'Maria',
+        interestedEmail: `maria-${randomUUID()}@exemplo.com`,
+        proposedValue: 2500,
         status,
       },
     })
@@ -103,34 +107,35 @@ describe('POST /api/crm/opportunities/[id]/respond (integração)', () => {
     return { params: Promise.resolve({ id }) }
   }
 
-  it('ACEITAR move a oportunidade para ACEITA e persiste a atividade PROPOSTA_RESPONDIDA', async () => {
-    const opportunity = await createOpportunity('ENVIADA')
+  it('ACCEPT move a oportunidade para ACEITA e persiste a atividade PROPOSTA_RESPONDIDA', async () => {
+    const opportunity = await createOpportunity('SENT')
 
     const response = await POST(
-      buildRequest(opportunity.id, { action: 'ACEITAR' }, actorToken),
+      buildRequest(opportunity.id, { action: 'ACCEPT' }, actorToken),
       context(opportunity.id),
     )
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.opportunity.status).toBe('ACEITA')
-    expect(json.activity.type).toBe('PROPOSTA_RESPONDIDA')
-    expect(json.activity.newStatus).toBe('ACEITA')
+    expect(json.opportunity.status).toBe('ACCEPTED')
+    expect(json.activity.type).toBe('PROPOSAL_ANSWERED')
+    expect(json.activity.newStatus).toBe('ACCEPTED')
 
-    const persisted = await prisma.atividadeOportunidade.findUnique({
+    const persisted = await prisma.opportunityActivity.findUnique({
       where: { id: json.activity.id },
     })
     expect(persisted).not.toBeNull()
-    expect(persisted?.descricao).toBe('Proposta aceita.')
+    expect(persisted?.description).toBe('')
+    expect(persisted?.systemAction).toBe('ACCEPT')
   })
 
-  it('RECUSAR com mensagem customizada usa a mensagem como descrição da atividade', async () => {
-    const opportunity = await createOpportunity('ENVIADA')
+  it('REJECT com mensagem customizada usa a mensagem como descrição da atividade', async () => {
+    const opportunity = await createOpportunity('SENT')
 
     const response = await POST(
       buildRequest(
         opportunity.id,
-        { action: 'RECUSAR', message: 'Valor abaixo do mínimo aceito.' },
+        { action: 'REJECT', message: 'Valor abaixo do mínimo aceito.' },
         actorToken,
       ),
       context(opportunity.id),
@@ -138,27 +143,59 @@ describe('POST /api/crm/opportunities/[id]/respond (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.opportunity.status).toBe('RECUSADA')
+    expect(json.opportunity.status).toBe('REJECTED')
     expect(json.activity.description).toBe('Valor abaixo do mínimo aceito.')
   })
 
-  it('SOLICITAR_INFORMACOES move a oportunidade para EM_NEGOCIACAO', async () => {
-    const opportunity = await createOpportunity('ENVIADA')
+  it('REQUEST_INFORMATION move a oportunidade para EM_NEGOCIACAO', async () => {
+    const opportunity = await createOpportunity('SENT')
 
     const response = await POST(
-      buildRequest(opportunity.id, { action: 'SOLICITAR_INFORMACOES' }, actorToken),
+      buildRequest(opportunity.id, { action: 'REQUEST_INFORMATION' }, actorToken),
       context(opportunity.id),
     )
     const json = await response.json()
 
-    expect(json.opportunity.status).toBe('EM_NEGOCIACAO')
+    expect(json.opportunity.status).toBe('IN_NEGOTIATION')
+  })
+
+  it.each([
+    ['ACEITAR', 'ACCEPT', 'ACCEPTED'],
+    ['RECUSAR', 'REJECT', 'REJECTED'],
+    ['SOLICITAR_INFORMACOES', 'REQUEST_INFORMATION', 'IN_NEGOTIATION'],
+  ])('accepts legacy %s without rewriting stored history', async (legacy, action, status) => {
+    const opportunity = await createOpportunity('IN_NEGOTIATION')
+    const historical = await prisma.opportunityActivity.create({
+      data: {
+        opportunityId: opportunity.id,
+        type: 'PROPOSAL_ANSWERED',
+        systemAction: 'SOLICITAR_INFORMACOES',
+        description: 'Mensagem original: aceitar depois da visita.',
+        previousStatus: 'SENT',
+        newStatus: 'IN_NEGOTIATION',
+      },
+    })
+    const response = await POST(
+      buildRequest(opportunity.id, { action: legacy }, actorToken),
+      context(opportunity.id),
+    )
+    const json = await response.json()
+    expect(response.status).toBe(200)
+    expect(json.opportunity.status).toBe(status)
+    expect(json.activity.systemAction).toBe(action)
+    expect(await prisma.opportunityActivity.findUnique({ where: { id: historical.id } })).toEqual(
+      historical,
+    )
+    expect(
+      await prisma.opportunityActivity.findUnique({ where: { id: json.activity.id } }),
+    ).toMatchObject({ systemAction: action })
   })
 
   it('retorna 409 ao tentar responder um rascunho — ainda não foi enviado', async () => {
-    const opportunity = await createOpportunity('RASCUNHO')
+    const opportunity = await createOpportunity('DRAFT')
 
     const response = await POST(
-      buildRequest(opportunity.id, { action: 'ACEITAR' }, actorToken),
+      buildRequest(opportunity.id, { action: 'ACCEPT' }, actorToken),
       context(opportunity.id),
     )
     const json = await response.json()
@@ -168,10 +205,10 @@ describe('POST /api/crm/opportunities/[id]/respond (integração)', () => {
   })
 
   it('retorna 409 ao tentar responder uma oportunidade já aceita', async () => {
-    const opportunity = await createOpportunity('ACEITA')
+    const opportunity = await createOpportunity('ACCEPTED')
 
     const response = await POST(
-      buildRequest(opportunity.id, { action: 'RECUSAR' }, actorToken),
+      buildRequest(opportunity.id, { action: 'REJECT' }, actorToken),
       context(opportunity.id),
     )
 
@@ -179,7 +216,7 @@ describe('POST /api/crm/opportunities/[id]/respond (integração)', () => {
   })
 
   it('retorna 400 para uma action inválida', async () => {
-    const opportunity = await createOpportunity('ENVIADA')
+    const opportunity = await createOpportunity('SENT')
 
     const response = await POST(
       buildRequest(opportunity.id, { action: 'APROVAR' }, actorToken),
@@ -190,10 +227,10 @@ describe('POST /api/crm/opportunities/[id]/respond (integração)', () => {
   })
 
   it('retorna 401 sem Authorization header', async () => {
-    const opportunity = await createOpportunity('ENVIADA')
+    const opportunity = await createOpportunity('SENT')
 
     const response = await POST(
-      buildRequest(opportunity.id, { action: 'ACEITAR' }),
+      buildRequest(opportunity.id, { action: 'ACCEPT' }),
       context(opportunity.id),
     )
 

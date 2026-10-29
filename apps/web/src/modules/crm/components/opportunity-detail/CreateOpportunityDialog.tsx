@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
@@ -14,159 +13,188 @@ import {
   Select,
   TextField,
 } from '@mui/material'
-import { Controller, useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
+import { useMemo } from 'react'
+import { Controller, FormProvider, useForm, useWatch } from 'react-hook-form'
+import * as crmStyles from '../../styles/create-opportunity-dialog.styles'
+import { OpportunityTermsFields } from './OpportunityTermsFields'
 
 import { createOpportunityFormSchema } from '../../schemas/opportunity-schema'
 import type { CreateOpportunityFormValues } from '../../types/opportunity'
 import type { CreateOpportunityDialogProps } from '../../types/opportunity-detail'
-import type { PublicPropertySummary } from '../../types/property'
+import { useCrmResponsibles } from '../../hooks/use-opportunities'
 import { PropertyAutocomplete } from './PropertyAutocomplete'
 
 const emptyCreateOpportunityValues: CreateOpportunityFormValues = {
-  propertyId: '',
+  property: null,
+  contractTermMonths: '',
+  desiredStartDate: '',
+  guaranteeType: 'NONE',
+  specialConditions: [],
+  contact: null,
   leadName: '',
   leadEmail: '',
   leadPhone: '',
   proposedValue: '',
   notes: '',
-  status: 'RASCUNHO',
+  status: 'DRAFT',
+  responsibleId: '',
 }
 
-export function CreateOpportunityDialog({
+export function CreateOpportunityDialog(props: CreateOpportunityDialogProps) {
+  return props.open ? <CreateOpportunityDialogForm {...props} /> : null
+}
+
+function CreateOpportunityDialogForm({
   open,
-  tenantId,
+  canChooseResponsible,
   isPending,
   onClose,
   onSave,
 }: CreateOpportunityDialogProps) {
   const t = useTranslations('crm.opportunityDetail')
-  const [selectedProperty, setSelectedProperty] = useState<PublicPropertySummary | null>(null)
+  const responsibles = useCrmResponsibles(canChooseResponsible)
   const opportunityFormSchema = useMemo(
     () => createOpportunityFormSchema((key) => t(`errors.${key}`)),
     [t],
   )
+  const form = useForm<CreateOpportunityFormValues>({
+    defaultValues: emptyCreateOpportunityValues,
+    resolver: zodResolver(opportunityFormSchema),
+  })
   const {
     control,
     handleSubmit,
     register,
-    reset,
     formState: { errors },
-  } = useForm<CreateOpportunityFormValues>({
-    defaultValues: emptyCreateOpportunityValues,
-    resolver: zodResolver(opportunityFormSchema),
-  })
+  } = form
 
-  useEffect(() => {
-    if (open) {
-      reset(emptyCreateOpportunityValues)
-      setSelectedProperty(null)
-    }
-  }, [open, reset])
-
+  const selectedContact = useWatch({ control, name: 'contact' })
   return (
-    <Dialog open={open} onClose={() => !isPending && onClose()} fullWidth maxWidth="sm">
-      <Box component="form" noValidate onSubmit={handleSubmit(onSave)}>
-        <DialogTitle sx={{ letterSpacing: 0 }}>{t('createTitle')}</DialogTitle>
-        <DialogContent>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
-              gap: 2,
-              pt: 1,
-            }}
-          >
-            <Controller
-              control={control}
-              name="propertyId"
-              render={({ field }) => (
-                <Box sx={{ gridColumn: { sm: '1 / -1' } }}>
-                  <PropertyAutocomplete
-                    tenantId={tenantId}
-                    value={selectedProperty}
-                    onChange={(property) => {
-                      setSelectedProperty(property)
-                      field.onChange(property?.id ?? '')
-                    }}
-                    error={Boolean(errors.propertyId)}
-                    helperText={errors.propertyId?.message}
-                  />
-                </Box>
-              )}
-            />
-            <TextField
-              label={t('fields.name')}
-              required
-              error={Boolean(errors.leadName)}
-              helperText={errors.leadName?.message}
-              {...register('leadName')}
-            />
-            <TextField
-              label={t('fields.email')}
-              type="email"
-              required
-              error={Boolean(errors.leadEmail)}
-              helperText={errors.leadEmail?.message}
-              {...register('leadEmail')}
-            />
-            <TextField
-              label={t('fields.phone')}
-              error={Boolean(errors.leadPhone)}
-              helperText={errors.leadPhone?.message}
-              {...register('leadPhone')}
-            />
-            <TextField
-              label={t('fields.proposedValue')}
-              type="number"
-              required
-              slotProps={{ htmlInput: { min: 0, step: 100 } }}
-              error={Boolean(errors.proposedValue)}
-              helperText={errors.proposedValue?.message}
-              {...register('proposedValue')}
-            />
-            <Controller
-              control={control}
-              name="status"
-              render={({ field }) => (
-                <FormControl>
-                  <InputLabel id="create-opportunity-status-label">{t('fields.status')}</InputLabel>
-                  <Select
-                    labelId="create-opportunity-status-label"
-                    label={t('fields.status')}
-                    value={field.value}
-                    onChange={(event) =>
-                      field.onChange(event.target.value as CreateOpportunityFormValues['status'])
-                    }
-                    onBlur={field.onBlur}
-                    inputRef={field.ref}
-                  >
-                    <MenuItem value="RASCUNHO">{t('statuses.RASCUNHO')}</MenuItem>
-                    <MenuItem value="ENVIADA">{t('statuses.ENVIADA')}</MenuItem>
-                  </Select>
-                </FormControl>
-              )}
-            />
-            <TextField
-              label={t('fields.notes')}
-              multiline
-              minRows={3}
-              error={Boolean(errors.notes)}
-              helperText={errors.notes?.message}
-              sx={{ gridColumn: { sm: '1 / -1' } }}
-              {...register('notes')}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button disabled={isPending} onClick={onClose}>
-            {t('actions.cancel')}
-          </Button>
-          <Button type="submit" variant="contained" disabled={isPending}>
-            {isPending ? <CircularProgress size={20} /> : t('actions.createOpportunity')}
-          </Button>
-        </DialogActions>
-      </Box>
-    </Dialog>
+    <FormProvider {...form}>
+      <Dialog open={open} onClose={() => !isPending && onClose()} fullWidth maxWidth="sm">
+        <Box component="form" noValidate onSubmit={handleSubmit(onSave)}>
+          <DialogTitle sx={crmStyles.dialogTitleSx}>{t('createTitle')}</DialogTitle>
+          <DialogContent>
+            <Box sx={crmStyles.boxSx}>
+              <Controller
+                control={control}
+                name="property"
+                render={({ field }) => (
+                  <Box sx={crmStyles.boxSx2}>
+                    <PropertyAutocomplete
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={Boolean(errors.property)}
+                      helperText={errors.property?.message}
+                    />
+                  </Box>
+                )}
+              />
+              <TextField
+                label={t('fields.name')}
+                disabled={Boolean(selectedContact)}
+                required
+                error={Boolean(errors.leadName)}
+                helperText={errors.leadName?.message}
+                {...register('leadName')}
+              />
+              <TextField
+                label={t('fields.email')}
+                disabled={Boolean(selectedContact)}
+                type="email"
+                required
+                error={Boolean(errors.leadEmail)}
+                helperText={errors.leadEmail?.message}
+                {...register('leadEmail')}
+              />
+              <TextField
+                label={t('fields.phone')}
+                disabled={Boolean(selectedContact)}
+                error={Boolean(errors.leadPhone)}
+                helperText={errors.leadPhone?.message}
+                {...register('leadPhone')}
+              />
+              <TextField
+                label={t('fields.proposedValue')}
+                type="number"
+                required
+                slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
+                error={Boolean(errors.proposedValue)}
+                helperText={errors.proposedValue?.message}
+                {...register('proposedValue')}
+              />
+              <Controller
+                control={control}
+                name="status"
+                render={({ field }) => (
+                  <FormControl>
+                    <InputLabel id="create-opportunity-status-label">
+                      {t('fields.status')}
+                    </InputLabel>
+                    <Select
+                      labelId="create-opportunity-status-label"
+                      label={t('fields.status')}
+                      value={field.value}
+                      onChange={(event) =>
+                        field.onChange(event.target.value as CreateOpportunityFormValues['status'])
+                      }
+                      onBlur={field.onBlur}
+                      inputRef={field.ref}
+                    >
+                      <MenuItem value="DRAFT">{t('statuses.draft')}</MenuItem>
+                      <MenuItem value="SENT">{t('statuses.sent')}</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+              />
+              {canChooseResponsible && responsibles.data?.length ? (
+                <Controller
+                  control={control}
+                  name="responsibleId"
+                  render={({ field }) => (
+                    <TextField
+                      select
+                      label={t('responsible.label')}
+                      helperText={t('responsible.createHelper')}
+                      slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      inputRef={field.ref}
+                    >
+                      <MenuItem value="">{t('responsible.me')}</MenuItem>
+                      {responsibles.data.map((option) => (
+                        <MenuItem key={option.id} value={option.id}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+              ) : null}
+              <OpportunityTermsFields />
+              <TextField
+                label={t('fields.notes')}
+                multiline
+                minRows={3}
+                error={Boolean(errors.notes)}
+                helperText={errors.notes?.message}
+                sx={crmStyles.boxSx2}
+                {...register('notes')}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button disabled={isPending} onClick={onClose}>
+              {t('actions.cancel')}
+            </Button>
+            <Button type="submit" variant="contained" disabled={isPending}>
+              {isPending ? <CircularProgress size={20} /> : t('actions.createOpportunity')}
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
+    </FormProvider>
   )
 }

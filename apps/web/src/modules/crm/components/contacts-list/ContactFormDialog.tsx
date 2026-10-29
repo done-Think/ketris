@@ -1,4 +1,3 @@
-import { useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
@@ -15,22 +14,28 @@ import {
   Select,
   TextField,
 } from '@mui/material'
-import { Controller, useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
+import { useMemo } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import * as crmStyles from '../../styles/contact-form-dialog.styles'
 
 import { createContactFormSchema } from '../../schemas/contact-schema'
-import type { ContactFormValues } from '../../types/contact'
-import type { ContactFormDialogProps } from '../../types/contact'
+import type { ContactFormDialogProps, ContactFormValues } from '../../types/contact'
 
 const emptyContactFormValues: ContactFormValues = {
   name: '',
   email: '',
   phone: '',
-  type: 'LOCATARIO',
+  type: 'RENTER',
+  avatarUrl: '',
   notes: '',
 }
 
-export function ContactFormDialog({
+export function ContactFormDialog(props: ContactFormDialogProps) {
+  return props.open ? <ContactFormDialogForm {...props} /> : null
+}
+
+function ContactFormDialogForm({
   open,
   initialValues,
   isPending,
@@ -43,32 +48,20 @@ export function ContactFormDialog({
     control,
     handleSubmit,
     register,
-    reset,
     formState: { errors },
   } = useForm<ContactFormValues>({
-    defaultValues: emptyContactFormValues,
+    defaultValues: initialValues ?? emptyContactFormValues,
     resolver: zodResolver(contactFormSchema),
   })
-
-  useEffect(() => {
-    if (open) reset(initialValues ?? emptyContactFormValues)
-  }, [initialValues, open, reset])
 
   return (
     <Dialog open={open} onClose={() => !isPending && onClose()} fullWidth maxWidth="sm">
       <Box component="form" noValidate onSubmit={handleSubmit(onSave)}>
-        <DialogTitle sx={{ letterSpacing: 0 }}>
+        <DialogTitle sx={crmStyles.dialogTitleSx}>
           {initialValues ? t('editTitle') : t('createTitle')}
         </DialogTitle>
         <DialogContent>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
-              gap: 2,
-              pt: 1,
-            }}
-          >
+          <Box sx={crmStyles.boxSx}>
             <TextField
               label={t('fields.name')}
               required
@@ -106,13 +99,20 @@ export function ContactFormDialog({
                     onBlur={field.onBlur}
                     inputRef={field.ref}
                   >
-                    <MenuItem value="PROPRIETARIO">{t('types.PROPRIETARIO')}</MenuItem>
-                    <MenuItem value="LOCATARIO">{t('types.LOCATARIO')}</MenuItem>
-                    <MenuItem value="CORRETOR">{t('types.CORRETOR')}</MenuItem>
+                    <MenuItem value="OWNER">{t('types.OWNER')}</MenuItem>
+                    <MenuItem value="RENTER">{t('types.RENTER')}</MenuItem>
+                    <MenuItem value="BROKER">{t('types.BROKER')}</MenuItem>
                   </Select>
                   {errors.type?.message && <FormHelperText>{errors.type.message}</FormHelperText>}
                 </FormControl>
               )}
+            />
+            <TextField
+              label={t('fields.avatarUrl')}
+              type="url"
+              error={Boolean(errors.avatarUrl)}
+              helperText={errors.avatarUrl?.message}
+              {...register('avatarUrl')}
             />
             <TextField
               label={t('fields.notes')}
@@ -120,7 +120,7 @@ export function ContactFormDialog({
               minRows={3}
               error={Boolean(errors.notes)}
               helperText={errors.notes?.message}
-              sx={{ gridColumn: { sm: '1 / -1' } }}
+              sx={crmStyles.textFieldSx}
               {...register('notes')}
             />
           </Box>

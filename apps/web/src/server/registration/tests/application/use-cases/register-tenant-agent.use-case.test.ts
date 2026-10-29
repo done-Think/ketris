@@ -1,122 +1,70 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { EmailAlreadyInUseError } from '@server/auth/domain/errors'
-import type { User } from '@server/auth/domain/user.entity'
-import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
-import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
-import type { TenantRepository } from '@server/platform/application/ports/tenant-repository.port'
-import type { TenantSummary } from '@server/platform/domain/tenant-summary.entity'
-
-import { AgencyNotFoundError } from '../../../domain/errors'
 import { RegisterTenantAgentUseCase } from '../../../application/use-cases/register-tenant-agent.use-case'
+import {
+  AgencyNotFoundError,
+  RegistrationEmailAlreadyInUseError,
+  TermsAcceptanceRequiredError,
+} from '../../../domain/errors'
+import { account, createDeps, details, tenant } from './fixtures'
 
-const agency: TenantSummary = {
-  id: 'agency-1',
-  nome: 'Imobiliária Existente',
-  slug: 'imobiliaria-existente',
-  createdAt: new Date(),
-}
-
-const createdAgent: User = {
-  id: 'agent-1',
-  tenantId: agency.id,
-  nome: 'Novo Corretor',
-  email: 'corretor@ketris.dev',
-  senhaHash: 'hash-novo',
-  papel: 'AGENT',
-  ativo: true,
-  vinculoAprovadoEm: null,
-}
-
-function createDeps(overrides?: {
-  findById?: TenantRepository['findById']
-  findByEmail?: UserRepository['findByEmail']
-}) {
-  const tenantRepository: TenantRepository = {
-    findBySlug: vi.fn(),
-    findById: overrides?.findById ?? vi.fn().mockResolvedValue(agency),
-    create: vi.fn(),
-    searchByName: vi.fn(),
-  }
-  const userRepository: UserRepository = {
-    findById: vi.fn(),
-    findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
-    findManyByTenant: vi.fn(),
-    create: vi.fn().mockResolvedValue(createdAgent),
-    update: vi.fn(),
-    deactivate: vi.fn(),
-    approveMembership: vi.fn(),
-  }
-  const passwordHasher: PasswordHasher = {
-    compare: vi.fn(),
-    hash: vi.fn().mockResolvedValue('hash-novo'),
-  }
-
-  return { tenantRepository, userRepository, passwordHasher }
-}
+const input = { ...details, agencyId: tenant.id, creci: 'CRECI-123' }
 
 describe('RegisterTenantAgentUseCase', () => {
-  it('cria um AGENT pendente de aprovação na imobiliária escolhida, sem emitir token', async () => {
-    const deps = createDeps()
-    const useCase = new RegisterTenantAgentUseCase(
-      deps.tenantRepository,
-      deps.userRepository,
-      deps.passwordHasher,
-    )
+  it.each(['ACTIVE', 'TRIAL'] as const)(
+    'registers a pending agent with a draft broker profile in an %s agency',
+    async (status) => {
+      const { accounts, passwords } = createDeps()
+      vi.mocked(accounts.findTenantById).mockResolvedValueOnce({ ...tenant, status })
+      const result = await new RegisterTenantAgentUseCase(accounts, passwords).execute(input)
+      expect(accounts.findAccountByEmail).toHaveBeenCalledWith(tenant.id, details.email)
+      expect(accounts.createMember).toHaveBeenCalledWith({
+        tenantId: tenant.id,
+        name: details.fullName,
+        email: details.email,
+        passwordHash: 'test-hash',
+        role: 'AGENT',
+        pendingApproval: true,
+        phone: details.phone,
+        creci: input.creci,
+        termsAcceptedAt: expect.any(Date),
+        createBrokerProfile: true,
+      })
+      expect(result).toEqual({ email: account.email, tenantId: tenant.id, pendingApproval: true })
+    },
+  )
 
-    const result = await useCase.execute({
-      agencyId: agency.id,
-      fullName: 'Novo Corretor',
-      email: 'corretor@ketris.dev',
-      password: 'senha-longa-123',
-    })
-
-    expect(deps.userRepository.create).toHaveBeenCalledWith({
-      tenantId: agency.id,
-      nome: 'Novo Corretor',
-      email: 'corretor@ketris.dev',
-      senhaHash: 'hash-novo',
-      papel: 'AGENT',
-      vinculoAprovadoEm: null,
-    })
-    expect(result).toEqual({ email: createdAgent.email })
-  })
-
-  it('lança AgencyNotFoundError quando a imobiliária não existe', async () => {
-    const deps = createDeps({ findById: vi.fn().mockResolvedValue(null) })
-    const useCase = new RegisterTenantAgentUseCase(
-      deps.tenantRepository,
-      deps.userRepository,
-      deps.passwordHasher,
-    )
-
+  it.each([
+    null,
+    { ...tenant, accountType: 'INDIVIDUAL' as const },
+    { ...tenant, accountType: 'BROKER' as const },
+    { ...tenant, status: 'SUSPENDED' as const },
+    { ...tenant, status: 'CANCELED' as const },
+  ])('rejects missing or unavailable agencies before creating a membership', async (agency) => {
+    const { accounts, passwords } = createDeps()
+    vi.mocked(accounts.findTenantById).mockResolvedValueOnce(agency)
     await expect(
-      useCase.execute({
-        agencyId: 'inexistente',
-        fullName: 'Novo Corretor',
-        email: 'corretor@ketris.dev',
-        password: 'senha-longa-123',
-      }),
+      new RegisterTenantAgentUseCase(accounts, passwords).execute(input),
     ).rejects.toThrow(AgencyNotFoundError)
-    expect(deps.userRepository.create).not.toHaveBeenCalled()
+    expect(accounts.createMember).not.toHaveBeenCalled()
+    expect(passwords.hash).not.toHaveBeenCalled()
   })
 
-  it('lança EmailAlreadyInUseError quando já existe uma conta (em qualquer tenant) com esse e-mail', async () => {
-    const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue(createdAgent) })
-    const useCase = new RegisterTenantAgentUseCase(
-      deps.tenantRepository,
-      deps.userRepository,
-      deps.passwordHasher,
-    )
-
+  it('rejects an existing account within the chosen tenant', async () => {
+    const { accounts, passwords } = createDeps()
+    vi.mocked(accounts.findAccountByEmail).mockResolvedValueOnce(account)
     await expect(
-      useCase.execute({
-        agencyId: agency.id,
-        fullName: 'Novo Corretor',
-        email: createdAgent.email,
-        password: 'senha-longa-123',
-      }),
-    ).rejects.toThrow(EmailAlreadyInUseError)
-    expect(deps.userRepository.create).not.toHaveBeenCalled()
+      new RegisterTenantAgentUseCase(accounts, passwords).execute(input),
+    ).rejects.toThrow(RegistrationEmailAlreadyInUseError)
+    expect(accounts.createMember).not.toHaveBeenCalled()
+  })
+
+  it('requires terms acceptance before loading or mutating accounts', async () => {
+    const { accounts, passwords } = createDeps()
+    await expect(
+      new RegisterTenantAgentUseCase(accounts, passwords).execute({ ...input, acceptTerms: false }),
+    ).rejects.toThrow(TermsAcceptanceRequiredError)
+    expect(accounts.findTenantById).not.toHaveBeenCalled()
+    expect(accounts.createMember).not.toHaveBeenCalled()
   })
 })

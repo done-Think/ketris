@@ -1,36 +1,64 @@
-name: Deploy staging (migrate + seed)
+name: Staging release
 
 on:
-  push:
-    branches: [dev]
+  workflow_call:
+    secrets:
+      STAGING_DATABASE_URL:
+        required: true
+      CONTRACTS_DATA_ENCRYPTION_KEY:
+        required: true
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_AUTOMATION_BYPASS_SECRET:
+        required: false
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Digite RELEASE para publicar o commit atual da dev'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
 
 concurrency:
-  group: deploy-staging
+  group: ketris-staging-release
   cancel-in-progress: false
 
 jobs:
-  migrate-and-seed:
+  release:
+    if: github.ref == 'refs/heads/dev' && (github.event_name == 'push' || inputs.confirm == 'RELEASE')
     runs-on: ubuntu-latest
-    environment: staging
-
+    timeout-minutes: 45
+    environment:
+      name: staging
+      url: https://ketris-web-x9bk.vercel.app
     env:
       DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
-      PLATFORM_ADMIN_NAME: ${{ secrets.PLATFORM_ADMIN_NAME }}
-      PLATFORM_ADMIN_EMAIL: ${{ secrets.PLATFORM_ADMIN_EMAIL }}
-      PLATFORM_ADMIN_PASSWORD: ${{ secrets.PLATFORM_ADMIN_PASSWORD }}
-
+      CONTRACTS_DATA_ENCRYPTION_KEY: ${{ secrets.CONTRACTS_DATA_ENCRYPTION_KEY }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: npm
-
+      - name: Confere CI para a recuperação manual
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const {data} = await github.rest.actions.listWorkflowRuns({owner: context.repo.owner, repo: context.repo.repo, workflow_id: 'ci.yml', head_sha: context.sha, status: 'completed', per_page: 100});
+            if (!data.workflow_runs.some(run => run.conclusion === 'success' && run.head_branch === 'dev' && run.event === 'push')) {
+              core.setFailed('Successful CI on dev is required for this exact commit.');
+            }
       - run: npm ci
-
-      - name: Aplica as migrations pendentes no RDS de staging
-        run: npm run db:deploy -w @ketris/web
-
-      - name: Roda o seed (idempotente — ver prisma/seed.ts)
-        run: npm run db:seed -w @ketris/web
+      - name: Instala a CLI da Vercel com versão fixada
+        run: npm install --global --allow-scripts=esbuild vercel@65.5.0
+      - name: Prepara, migra, valida e promove o mesmo artefato
+        run: node scripts/staging-release.mjs

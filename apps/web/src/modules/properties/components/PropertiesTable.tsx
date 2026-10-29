@@ -1,40 +1,33 @@
 'use client'
 
+import { styles, getStatusChipStyles, getGridStyles } from '../styles/properties-table.styles'
+
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import { Box, Button, Chip, Stack, Typography } from '@mui/material'
-import type { GridColDef, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid'
+import type { GridColDef, GridRowParams } from '@mui/x-data-grid'
 import { DataGrid } from '@mui/x-data-grid'
 import { useTranslations } from 'next-intl'
 
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
-
-import { dashboardPropertyStatusStyles } from '../config/dashboard-property-ui'
-import type { DashboardProperty, PropertiesTableProps } from '../types/dashboard-property'
+import { dashboardPropertyStatusStyles } from '../styles/property-status.styles'
+import type {
+  DashboardProperty,
+  PropertiesTableProps,
+  PropertyIdentityCellProps,
+  PropertyStatusCellProps,
+  PropertiesEmptyOverlayProps,
+} from '../types/dashboard-property'
 import { PropertyRowActions } from './PropertyRowActions'
 
-function PropertyIdentityCell({ row }: GridRenderCellParams<DashboardProperty>) {
+function PropertyIdentityCell({ row }: PropertyIdentityCellProps) {
   return (
-    <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, height: '100%' }}>
-      {row.imageUrl ? (
-        <Box
-          component="img"
-          src={row.imageUrl}
-          alt=""
-          sx={{
-            width: 56,
-            height: 56,
-            borderRadius: `${radius.sm}px`,
-            objectFit: 'cover',
-            flexShrink: 0,
-          }}
-        />
-      ) : null}
-      <Box sx={{ minWidth: 0 }}>
-        <Typography noWrap sx={{ fontSize: 15, fontWeight: 900 }}>
+    <Stack direction="row" alignItems="center" spacing={2} sx={styles.stack}>
+      {row.imageUrl ? <Box component="img" src={row.imageUrl} alt="" sx={styles.box} /> : null}
+      <Box sx={styles.box2}>
+        <Typography noWrap sx={styles.typography}>
           {row.title}
         </Typography>
-        <Typography noWrap sx={{ color: 'text.secondary', fontSize: 13 }}>
+        <Typography noWrap sx={styles.typography2}>
           {row.address}
         </Typography>
       </Box>
@@ -42,33 +35,12 @@ function PropertyIdentityCell({ row }: GridRenderCellParams<DashboardProperty>) 
   )
 }
 
-function PropertyStatusCell({
-  row,
-  label,
-}: GridRenderCellParams<DashboardProperty> & { label: string }) {
+function PropertyStatusCell({ row, label }: PropertyStatusCellProps) {
   const status = dashboardPropertyStatusStyles[row.status]
 
   return (
-    <Box
-      sx={{
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Chip
-        label={label}
-        size="small"
-        sx={{
-          height: 30,
-          borderRadius: `${radius.full}px`,
-          bgcolor: status.bgcolor,
-          color: status.color,
-          fontSize: 13,
-          fontWeight: 900,
-        }}
-      />
+    <Box sx={styles.box3}>
+      <Chip label={label} size="small" sx={getStatusChipStyles(status)} />
     </Box>
   )
 }
@@ -77,44 +49,21 @@ function PropertiesEmptyOverlay({
   readOnly = false,
   emptyInventory,
   onCreateProperty,
-}: {
-  readOnly?: boolean
-  emptyInventory: boolean
-  onCreateProperty: () => void
-}) {
+}: PropertiesEmptyOverlayProps) {
   const t = useTranslations('properties.dashboard.table')
   const renterT = useTranslations('properties.dashboard.renter')
 
   return (
-    <Stack
-      alignItems="center"
-      justifyContent="center"
-      spacing={1.4}
-      sx={{
-        minHeight: 220,
-        px: 3,
-        textAlign: 'center',
-      }}
-    >
-      <Box
-        sx={{
-          width: 48,
-          height: 48,
-          borderRadius: `${radius.full}px`,
-          display: 'grid',
-          placeItems: 'center',
-          bgcolor: alpha.magenta[10],
-          color: brand.magenta[500],
-        }}
-      >
-        <HomeWorkOutlinedIcon sx={{ fontSize: iconSize.lg }} />
+    <Stack alignItems="center" justifyContent="center" spacing={1.4} sx={styles.stack2}>
+      <Box sx={styles.box4}>
+        <HomeWorkOutlinedIcon sx={styles.homeWorkOutlinedIcon} />
       </Box>
       <Box>
-        <Typography sx={{ fontSize: 16, fontWeight: 900, color: brand.graphite[500] }}>
+        <Typography sx={styles.typography3}>
           {emptyInventory ? (readOnly ? renterT('emptyTitle') : t('emptyTitle')) : t('noRows')}
         </Typography>
         {emptyInventory ? (
-          <Typography sx={{ mt: 0.5, color: brand.neutral[500], fontSize: 13 }}>
+          <Typography sx={styles.typography4}>
             {readOnly ? renterT('emptyDescription') : t('emptyDescription')}
           </Typography>
         ) : null}
@@ -122,21 +71,9 @@ function PropertiesEmptyOverlay({
       {emptyInventory && !readOnly ? (
         <Button
           variant="contained"
-          startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+          startIcon={<AddRoundedIcon sx={styles.addRoundedIcon} />}
           onClick={onCreateProperty}
-          sx={{
-            mt: 0.5,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: brand.magenta[500],
-            px: 2.2,
-            fontWeight: 900,
-            textTransform: 'none',
-            boxShadow: 'none',
-            '&:hover': {
-              bgcolor: brand.magenta[600],
-              boxShadow: 'none',
-            },
-          }}
+          sx={styles.button}
         >
           {t('emptyAction')}
         </Button>
@@ -149,12 +86,18 @@ export function PropertiesTable({
   readOnly = false,
   properties,
   totalCount,
+  inventoryCount,
+  sortModel,
+  onSortChange,
+  page,
+  pageSize,
+  onPaginationChange,
   onCreateProperty,
   onPropertySelect,
 }: PropertiesTableProps) {
   const t = useTranslations('properties.dashboard.table')
   const filterT = useTranslations('properties.dashboard.filters')
-  const emptyInventory = totalCount === 0
+  const emptyInventory = inventoryCount === 0
   const columns: GridColDef<DashboardProperty>[] = [
     {
       field: 'title',
@@ -240,17 +183,7 @@ export function PropertiesTable({
   ]
 
   return (
-    <Box
-      sx={{
-        bgcolor: surface.paper,
-        borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.propertyCard,
-        border: '1px solid',
-        borderColor: alpha.graphite[6],
-        width: '100%',
-        minWidth: 0,
-      }}
-    >
+    <Box sx={styles.box5}>
       <DataGrid
         autoHeight
         rows={properties}
@@ -266,8 +199,14 @@ export function PropertiesTable({
         disableColumnMenu
         disableColumnResize
         disableRowSelectionOnClick
+        sortingMode="server"
+        sortModel={sortModel}
+        onSortModelChange={onSortChange}
+        paginationMode="server"
+        paginationModel={{ page, pageSize }}
+        onPaginationModelChange={onPaginationChange}
+        rowCount={totalCount}
         pageSizeOptions={[5, 10, 25]}
-        initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
         localeText={{
           noRowsLabel: t('noRows'),
           footerTotalRows: t('totalRows'),
@@ -290,71 +229,7 @@ export function PropertiesTable({
           indexRelativeToCurrentPage % 2 === 1 ? 'properties-row-alt' : 'properties-row-base'
         }
         onRowClick={(params: GridRowParams<DashboardProperty>) => onPropertySelect(params.row.id)}
-        sx={{
-          border: 0,
-          minHeight: emptyInventory ? 360 : 'auto',
-          overflow: 'hidden',
-          borderRadius: `${radius.sm}px`,
-          '& .MuiDataGrid-main': {
-            overflow: 'hidden',
-          },
-          '& .MuiDataGrid-topContainer': {
-            bgcolor: surface.paper,
-          },
-          '& .MuiDataGrid-columnHeaders': {
-            bgcolor: surface.paper,
-            color: brand.neutral[500],
-            fontSize: 12,
-            fontWeight: 900,
-            textTransform: 'uppercase',
-            borderBottom: '1px solid',
-            borderColor: brand.neutral[100],
-          },
-          '& .MuiDataGrid-columnHeader': {
-            px: 1.5,
-          },
-          '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
-            outline: 'none',
-          },
-          '& .MuiDataGrid-columnSeparator': {
-            display: 'none',
-          },
-          '& .properties-status-cell': {
-            overflow: 'visible',
-          },
-          '& .MuiDataGrid-cell': {
-            px: 1.5,
-            borderTop: '1px solid',
-            borderBottom: '1px solid',
-            borderColor: alpha.graphite[8],
-            outline: 'none',
-          },
-          '& .MuiDataGrid-cell[data-field="title"]': {
-            borderLeft: 0,
-          },
-          '& .MuiDataGrid-cell[data-field="actions"]': {
-            borderRight: 0,
-          },
-          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
-            outline: 'none',
-          },
-          '& .MuiDataGrid-row': {
-            cursor: 'pointer',
-            borderRadius: 0,
-          },
-          '& .MuiDataGrid-row.properties-row-base': {
-            bgcolor: surface.paper,
-          },
-          '& .MuiDataGrid-row.properties-row-alt': {
-            bgcolor: surface.app,
-          },
-          '& .MuiDataGrid-row:hover': {
-            bgcolor: `${alpha.graphite[6]} !important`,
-          },
-          '& .MuiDataGrid-footerContainer': {
-            borderColor: brand.neutral[100],
-          },
-        }}
+        sx={getGridStyles(emptyInventory)}
       />
     </Box>
   )

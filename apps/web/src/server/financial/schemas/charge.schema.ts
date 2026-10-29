@@ -1,11 +1,28 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-export const chargeTypeSchema = z.enum(['A_RECEBER', 'A_PAGAR'])
+export const chargeTypeSchema = z.enum(['RECEIVABLE', 'PAYABLE'])
 
-export const chargeStatusSchema = z.enum(['PENDENTE', 'PAGA', 'ATRASADA', 'AGENDADA', 'CANCELADA'])
+export const chargeStatusSchema = z
+  .enum(['PENDING', 'PAID', 'OVERDUE', 'SCHEDULED', 'CANCELED'])
+  .openapi({
+    description:
+      'OVERDUE não é gravada: é calculada para PENDING ou SCHEDULED com vencimento antes de hoje (America/Sao_Paulo).',
+  })
 
-export const newChargeStatusSchema = z.enum(['PENDENTE', 'AGENDADA'])
+export const storedChargeStatusSchema = z.enum(['PENDING', 'PAID', 'SCHEDULED', 'CANCELED'])
+
+export const chargeReceiptSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    contentType: z.string(),
+    size: z.number().int(),
+    uploadedAt: z.string(),
+  })
+  .openapi('ChargeReceipt')
+
+export const newChargeStatusSchema = z.enum(['PENDING', 'SCHEDULED'])
 
 export const chargeSchema = z
   .object({
@@ -17,8 +34,10 @@ export const chargeSchema = z
     dueDate: z.string(),
     description: z.string().nullable(),
     paymentMethod: z.string().nullable(),
-    receiptUrl: z.string().nullable(),
     paidAt: z.string().nullable(),
+    cancelledAt: z.string().nullable(),
+    cancellationReason: z.string().nullable(),
+    receipt: chargeReceiptSchema.nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),
     contractId: z.string().nullable(),
@@ -47,12 +66,76 @@ export const chargeListItemSchema = z
   })
   .openapi('ChargeListItem')
 
-export const chargeIdParamsSchema = z.object({ id: z.string() }).openapi('ChargeIdParams')
+export const chargeIdParamsSchema = z
+  .object({ id: z.string().trim().min(1).max(64) })
+  .strict()
+  .openapi('ChargeIdParams')
+
+export const chargeReceiptParamsSchema = z
+  .object({ id: z.string().trim().min(1).max(64), receiptId: z.string().trim().min(1).max(64) })
+  .strict()
+  .openapi('ChargeReceiptParams')
+
+export const chargeAuditEventSchema = z
+  .object({
+    id: z.string(),
+    action: z.enum([
+      'CREATED',
+      'UPDATED',
+      'PAYMENT_REGISTERED',
+      'PAYMENT_REVERSED',
+      'CANCELLED',
+      'DELETED',
+    ]),
+    actorType: z.enum(['USER', 'SYSTEM']),
+    actorName: z.string().nullable(),
+    changedFields: z.array(z.string()),
+    fromStatus: storedChargeStatusSchema.nullable(),
+    toStatus: storedChargeStatusSchema.nullable(),
+    reason: z.string().nullable(),
+    receipt: chargeReceiptSchema.nullable(),
+    createdAt: z.string(),
+  })
+  .openapi('ChargeAuditEvent')
+
+export const chargeHistoryResponseSchema = z
+  .object({ events: z.array(chargeAuditEventSchema) })
+  .openapi('ChargeHistoryResponse')
+
+export const chargeReceiptUploadResponseSchema = z
+  .object({
+    uploadUrl: z.string(),
+    headers: z.record(z.string()),
+    uploadToken: z.string(),
+    expiresAt: z.string(),
+  })
+  .openapi('ChargeReceiptUploadResponse')
+
+export const chargeReceiptDownloadResponseSchema = z
+  .object({ url: z.string(), expiresAt: z.string() })
+  .openapi('ChargeReceiptDownloadResponse')
 
 export const chargeResponseSchema = z.object({ charge: chargeSchema }).openapi('ChargeResponse')
 
+export const chargeStatusCountsSchema = z
+  .object({
+    ALL: z.number().int(),
+    PENDING: z.number().int(),
+    OVERDUE: z.number().int(),
+    PAID: z.number().int(),
+    SCHEDULED: z.number().int(),
+    CANCELED: z.number().int(),
+  })
+  .openapi('ChargeStatusCounts', {
+    description: 'Contagem por status com os mesmos filtros da lista, exceto o próprio status.',
+  })
+
 export const chargesResponseSchema = z
-  .object({ items: z.array(chargeListItemSchema), totalCount: z.number() })
+  .object({
+    items: z.array(chargeListItemSchema),
+    totalCount: z.number(),
+    statusCounts: chargeStatusCountsSchema,
+  })
   .openapi('ChargesResponse')
 
 export const financialMonthlyTotalSchema = z

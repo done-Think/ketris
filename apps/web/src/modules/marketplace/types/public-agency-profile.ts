@@ -1,71 +1,14 @@
-export interface PublicAgencyListingSummary {
-  id: string
-  title: string
-  purpose: 'ALUGUEL' | 'VENDA' | 'AMBOS'
-  price: number
-  neighborhood: string | null
-  city: string | null
-  coverUrl: string | null
-}
+import type { components } from '@shared/types/generated/api'
+export type PublicAgencyListingSummary = components['schemas']['AgencyListingSummary']
 
-export interface PublicAgencyTeamHighlight {
-  usuarioId: string
-  name: string
-  avatarUrl: string | null
-  order: number
-}
+export type PublicAgencyTeamHighlight = components['schemas']['AgencyTeamHighlight']
 
-export interface PublicAgencyProfile {
-  id: string
-  displayName: string
-  headline: string | null
-  summary: string | null
-  legalCreci: string | null
-  headquarters: string | null
-  address: string | null
-  phone: string | null
-  email: string | null
-  coverage: string[]
-  segments: string[]
-  yearsInMarket: number | null
-  primaryColor: string | null
-  secondaryColor: string | null
-  backgroundColor: string | null
-  logoUrl: string | null
-  bannerUrl: string | null
-  status: 'DRAFT' | 'PUBLISHED'
-  publishedAt: string | null
-  stats: { activeListings: number; brokersCount: number; dealsClosed: number }
-  team: PublicAgencyTeamHighlight[]
-  featuredListings: PublicAgencyListingSummary[]
-}
+export type PublicAgencyProfile = components['schemas']['PublicAgencyProfile']
 
-export interface ListAgencyProfilesResponse {
-  agencies: PublicAgencyProfile[]
-}
+export type ListAgencyProfilesResponse = components['schemas']['ListAgenciesResponse']
 
-export interface AgencyProfileResponse {
-  agency: PublicAgencyProfile
-}
+export type AgencyProfileResponse = components['schemas']['GetAgencyProfileResponse']
 
-export interface OwnAgencyProfileResponse {
-  profile: PublicAgencyProfile | null
-}
+export type OwnAgencyProfileResponse = components['schemas']['OwnAgencyProfileResponse']
 
-export interface SaveAgencyProfileRequest {
-  displayName: string
-  headline: string | null
-  summary: string | null
-  legalCreci: string | null
-  headquarters: string | null
-  address: string | null
-  phone: string | null
-  email: string | null
-  coverage: string[]
-  segments: string[]
-  yearsInMarket: number | null
-  backgroundColor: string | null
-  logoUrl: string | null
-  bannerUrl: string | null
-  team: Array<{ usuarioId: string; order: number }>
-}
+export type SaveAgencyProfileRequest = components['schemas']['SaveAgencyProfileRequest']

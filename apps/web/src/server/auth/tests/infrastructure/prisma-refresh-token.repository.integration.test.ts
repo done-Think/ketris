@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { prisma } from '@server/db/prisma'
 
 import { PrismaRefreshTokenRepository } from '../../infrastructure/prisma-refresh-token.repository'
+import { PrismaPasswordResetAccountRepository } from '../../infrastructure/prisma-password-reset-account.repository'
 
 describe('PrismaRefreshTokenRepository (integração)', () => {
   const repository = new PrismaRefreshTokenRepository()
@@ -14,20 +15,20 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Refresh Token', slug: tenantSlug },
+      data: { name: 'Tenant Refresh Token', slug: tenantSlug },
     })
     tenantId = tenant.id
 
-    const usuario = await prisma.usuario.create({
+    const user = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Usuário Refresh Token',
+        name: 'Usuário Refresh Token',
         email: `usuario-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
-    userId = usuario.id
+    userId = user.id
   })
 
   afterAll(async () => {
@@ -88,5 +89,190 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
     const afterRevoke = await repository.findValidByTokenHash(tokenHash)
 
     expect(afterRevoke).toBeNull()
+  })
+
+  it('consumes a refresh token once across concurrent rotations', async () => {
+    const tokenHash = `old-${randomUUID()}`
+    await repository.create({
+      userId,
+      tenantId,
+      tokenHash,
+      expiresAt: new Date(Date.now() + 60_000),
+    })
+    const previous = (await repository.findValidByTokenHash(tokenHash))!
+    const replacements = Array.from({ length: 8 }, () => ({
+      userId,
+      tenantId,
+      tokenHash: `replacement-${randomUUID()}`,
+      expiresAt: new Date(Date.now() + 60_000),
+    }))
+
+    const results = await Promise.all(
+      replacements.map((replacement) =>
+        repository.rotate({ expectedSessionVersion: 0, previous, replacement }),
+      ),
+    )
+    expect(results.filter(Boolean)).toHaveLength(1)
+    expect(await repository.findValidByTokenHash(tokenHash)).toBeNull()
+    expect(
+      await prisma.refreshToken.count({
+        where: { tokenHash: { in: replacements.map((replacement) => replacement.tokenHash) } },
+      }),
+    ).toBe(1)
+  })
+
+  it('rolls back consumption when creating the replacement fails', async () => {
+    const tokenHash = `rollback-old-${randomUUID()}`
+    const collisionHash = `collision-${randomUUID()}`
+    const expiresAt = new Date(Date.now() + 60_000)
+    await repository.create({ userId, tenantId, tokenHash, expiresAt })
+    await repository.create({ userId, tenantId, tokenHash: collisionHash, expiresAt })
+    const previous = (await repository.findValidByTokenHash(tokenHash))!
+
+    await expect(
+      repository.rotate({
+        expectedSessionVersion: 0,
+        previous,
+        replacement: { userId, tenantId, tokenHash: collisionHash, expiresAt },
+      }),
+    ).rejects.toThrow()
+    expect(await repository.findValidByTokenHash(tokenHash)).toEqual(previous)
+  })
+
+  it('does not rotate tokens that expired after lookup or belong to another tenant', async () => {
+    const tokenHash = `guard-${randomUUID()}`
+    const expiresAt = new Date(Date.now() + 60_000)
+    await repository.create({ userId, tenantId, tokenHash, expiresAt })
+    const previous = (await repository.findValidByTokenHash(tokenHash))!
+    const replacement = { userId, tenantId, tokenHash: `new-${randomUUID()}`, expiresAt }
+
+    expect(
+      await repository.rotate({
+        expectedSessionVersion: 0,
+        previous: { ...previous, tenantId: 'foreign-tenant' },
+        replacement,
+      }),
+    ).toBe(false)
+    await prisma.refreshToken.update({
+      where: { id: previous.id },
+      data: { expiresAt: new Date(Date.now() - 60_000) },
+    })
+    expect(await repository.rotate({ expectedSessionVersion: 0, previous, replacement })).toBe(
+      false,
+    )
+    expect(await repository.findValidByTokenHash(replacement.tokenHash)).toBeNull()
+  })
+
+  it('checks the current account version and active state while holding its lock', async () => {
+    const tokenHash = `version-guard-${randomUUID()}`
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
+    await repository.create({
+      userId,
+      tenantId,
+      tokenHash,
+      expiresAt: new Date(Date.now() + 60_000),
+    })
+    const previous = (await repository.findValidByTokenHash(tokenHash))!
+    const replacement = {
+      userId,
+      tenantId,
+      tokenHash: `new-${randomUUID()}`,
+      expiresAt: new Date(Date.now() + 60_000),
+    }
+
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { sessionVersion: user.sessionVersion + 1 },
+      })
+      expect(
+        await repository.rotate({
+          previous,
+          replacement,
+          expectedSessionVersion: user.sessionVersion,
+        }),
+      ).toBe(false)
+      expect(await repository.findValidByTokenHash(tokenHash)).toEqual(previous)
+      await prisma.user.update({ where: { id: userId }, data: { active: false } })
+      expect(
+        await repository.rotate({
+          previous,
+          replacement,
+          expectedSessionVersion: user.sessionVersion + 1,
+        }),
+      ).toBe(false)
+      expect(await repository.findValidByTokenHash(replacement.tokenHash)).toBeNull()
+    } finally {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { active: user.active, sessionVersion: user.sessionVersion },
+      })
+    }
+  })
+
+  it('serializes refresh and password reset under a user-row barrier so no old-session descendant survives', async () => {
+    const tokenHash = `reset-race-${randomUUID()}`
+    await repository.create({
+      userId,
+      tenantId,
+      tokenHash,
+      expiresAt: new Date(Date.now() + 60_000),
+    })
+    const previous = (await repository.findValidByTokenHash(tokenHash))!
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
+    let signalLocked = () => {}
+    let releaseLock = () => {}
+    const locked = new Promise<void>((resolve) => {
+      signalLocked = resolve
+    })
+    const release = new Promise<void>((resolve) => {
+      releaseLock = resolve
+    })
+    const blocker = prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${userId} FOR UPDATE`
+      signalLocked()
+      await release
+    })
+
+    try {
+      await locked
+      const rotation = repository.rotate({
+        previous,
+        expectedSessionVersion: user.sessionVersion,
+        replacement: {
+          userId,
+          tenantId,
+          tokenHash: `raced-child-${randomUUID()}`,
+          expiresAt: new Date(Date.now() + 60_000),
+        },
+      })
+      const reset = new PrismaPasswordResetAccountRepository().resetPassword({
+        userId,
+        tenantId,
+        email: user.email,
+        sessionVersion: user.sessionVersion,
+        passwordHash: 'new-test-hash',
+      })
+      releaseLock()
+      await blocker
+      const [, changed] = await Promise.all([rotation, reset])
+      expect(changed).toBe(true)
+      expect(await prisma.refreshToken.count({ where: { userId, revokedAt: null } })).toBe(0)
+      expect(
+        await repository.rotate({
+          previous,
+          expectedSessionVersion: user.sessionVersion,
+          replacement: {
+            userId,
+            tenantId,
+            tokenHash: `stale-child-${randomUUID()}`,
+            expiresAt: new Date(Date.now() + 60_000),
+          },
+        }),
+      ).toBe(false)
+    } finally {
+      releaseLock()
+      await blocker
+    }
   })
 })

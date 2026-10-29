@@ -2,10 +2,12 @@ import type { Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
 
+import type { PublicPropertyRepository } from '../application/ports/public-property-repository.port'
 import type {
   PropertySearchFilters,
-  PublicPropertyRepository,
-} from '../application/ports/public-property-repository.port'
+  PropertySearchPage,
+  PropertySearchResult,
+} from '../types/property-search'
 import type {
   PropertyMedia,
   PublishedPropertyDetail,
@@ -13,103 +15,111 @@ import type {
 } from '../types/property'
 import type {
   DecimalLike,
-  ImovelDetailRow,
-  ImovelSummaryRow,
-  MidiaRow,
+  PropertyDetailRow,
+  PropertySummaryRow,
+  PropertyMediaRow,
 } from '../types/prisma-public-property-repository'
 
 function toNumber(value: DecimalLike | null): number | null {
   return value === null ? null : value.toNumber()
 }
 
-function toSummary(row: ImovelSummaryRow): PublishedPropertySummary {
+function toSummary(row: PropertySummaryRow): PublishedPropertySummary {
   return {
     id: row.id,
-    title: row.titulo,
-    purpose: row.finalidade,
-    propertyType: row.tipo,
-    price: row.valor.toNumber(),
-    condoFee: toNumber(row.condominio),
-    propertyTax: toNumber(row.iptu),
-    bedrooms: row.quartos,
-    bathrooms: row.banheiros,
-    parkingSpots: row.vagas,
-    area: toNumber(row.areaM2),
-    city: row.endereco?.cidade ?? null,
-    neighborhood: row.endereco?.bairro ?? null,
-    latitude: toNumber(row.endereco?.latitude ?? null),
-    longitude: toNumber(row.endereco?.longitude ?? null),
-    brokerName: row.responsavel?.nome ?? null,
-    brokerAvatarUrl: row.responsavel?.avatarUrl ?? null,
-    coverUrl: row.midias[0]?.url ?? null,
-    publishedAt: row.publicadoEm,
+    title: row.title,
+    purpose: row.purpose,
+    propertyType: row.type,
+    price: row.price.toNumber(),
+    condoFee: toNumber(row.condoFee),
+    propertyTax: toNumber(row.propertyTax),
+    bedrooms: row.bedrooms,
+    bathrooms: row.bathrooms,
+    parkingSpots: row.parkingSpots,
+    area: toNumber(row.areaSqm),
+    city: row.address?.city ?? null,
+    neighborhood: row.address?.neighborhood ?? null,
+    latitude: toNumber(row.address?.latitude ?? null),
+    longitude: toNumber(row.address?.longitude ?? null),
+    brokerName: row.responsible?.name ?? null,
+    brokerAvatarUrl: row.responsible?.avatarUrl ?? null,
+    coverUrl: row.media[0]?.url ?? null,
+    publishedAt: row.publishedAt,
   }
 }
 
-function toMedia(row: MidiaRow): PropertyMedia {
-  return { id: row.id, url: row.url, type: row.tipo, order: row.ordem }
+function toMedia(row: PropertyMediaRow): PropertyMedia {
+  return {
+    id: row.id,
+    url: row.url,
+    type: row.type === 'VIDEO' ? 'video' : row.type === 'FLOOR_PLAN' ? 'floorPlan' : 'photo',
+    order: row.position,
+  }
 }
 
-function toDetail(row: ImovelDetailRow): PublishedPropertyDetail {
+function toDetail(row: PropertyDetailRow): PublishedPropertyDetail {
   return {
     ...toSummary(row),
     tenantId: row.tenantId,
-    description: row.descricao,
-    address: row.endereco
+    description: row.description,
+    address: row.address
       ? {
-          street: row.endereco.logradouro,
-          number: row.endereco.numero,
-          complement: row.endereco.complemento,
-          neighborhood: row.endereco.bairro,
-          city: row.endereco.cidade,
-          state: row.endereco.estado,
-          zipCode: row.endereco.cep,
-          latitude: toNumber(row.endereco.latitude),
-          longitude: toNumber(row.endereco.longitude),
+          street: row.address.street,
+          number: row.address.number,
+          complement: row.address.complement,
+          neighborhood: row.address.neighborhood,
+          city: row.address.city,
+          state: row.address.state,
+          zipCode: row.address.zipCode,
+          latitude: toNumber(row.address.latitude),
+          longitude: toNumber(row.address.longitude),
         }
       : null,
-    media: row.midias.map(toMedia),
+    media: row.media.map(toMedia),
   }
 }
 
 const sortOrderBy: Record<
   NonNullable<PropertySearchFilters['sortBy']>,
-  Prisma.ImovelOrderByWithRelationInput
+  Prisma.PropertyOrderByWithRelationInput
 > = {
-  recent: { publicadoEm: 'desc' },
-  priceAsc: { valor: 'asc' },
-  priceDesc: { valor: 'desc' },
+  recent: { publishedAt: 'desc' },
+  priceAsc: { price: 'asc' },
+  priceDesc: { price: 'desc' },
 }
 
 export class PrismaPublicPropertyRepository implements PublicPropertyRepository {
-  async search(filters: PropertySearchFilters): Promise<PublishedPropertySummary[]> {
-    const where: Prisma.ImovelWhereInput = { status: 'PUBLISHED' }
+  async search(
+    filters: PropertySearchFilters,
+    { page, pageSize }: PropertySearchPage,
+  ): Promise<PropertySearchResult> {
+    const where: Prisma.PropertyWhereInput = { status: 'PUBLISHED' }
 
     if (filters.purpose) {
-      where.finalidade = filters.purpose === 'AMBOS' ? 'AMBOS' : { in: [filters.purpose, 'AMBOS'] }
+      where.purpose = filters.purpose === 'BOTH' ? 'BOTH' : { in: [filters.purpose, 'BOTH'] }
     }
-    if (filters.propertyType) where.tipo = { equals: filters.propertyType, mode: 'insensitive' }
-    if (filters.minBedrooms !== undefined) where.quartos = { gte: filters.minBedrooms }
-    if (filters.minArea !== undefined) where.areaM2 = { gte: filters.minArea }
-    if (filters.hasParking) where.vagas = { gt: 0 }
+    if (filters.propertyType) where.type = filters.propertyType
+    if (filters.minBedrooms !== undefined) where.bedrooms = { gte: filters.minBedrooms }
+    if (filters.minArea !== undefined) where.areaSqm = { gte: filters.minArea }
+    if (filters.hasParking) where.parkingSpots = { gt: 0 }
 
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-      where.valor = {
+      where.price = {
         ...(filters.minPrice !== undefined ? { gte: filters.minPrice } : {}),
         ...(filters.maxPrice !== undefined ? { lte: filters.maxPrice } : {}),
       }
     }
 
     if (filters.city) {
-      where.endereco = { is: { cidade: { equals: filters.city, mode: 'insensitive' } } }
+      where.address = { is: { city: { equals: filters.city, mode: 'insensitive' } } }
     }
 
     if (filters.location) {
-      where.endereco = {
+      where.address = {
         is: {
           OR: [
-            { bairro: { contains: filters.location, mode: 'insensitive' } },
-            { cidade: { contains: filters.location, mode: 'insensitive' } },
+            { neighborhood: { contains: filters.location, mode: 'insensitive' } },
+            { city: { contains: filters.location, mode: 'insensitive' } },
           ],
         },
       }
@@ -117,46 +127,54 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
 
     if (filters.q) {
       where.OR = [
-        { titulo: { contains: filters.q, mode: 'insensitive' } },
-        { descricao: { contains: filters.q, mode: 'insensitive' } },
+        { title: { contains: filters.q, mode: 'insensitive' } },
+        { description: { contains: filters.q, mode: 'insensitive' } },
       ]
     }
 
-    const imoveis = await prisma.imovel.findMany({
-      where,
-      orderBy: sortOrderBy[filters.sortBy ?? 'recent'],
-      select: {
-        id: true,
-        titulo: true,
-        finalidade: true,
-        tipo: true,
-        valor: true,
-        condominio: true,
-        iptu: true,
-        quartos: true,
-        banheiros: true,
-        vagas: true,
-        areaM2: true,
-        publicadoEm: true,
-        endereco: { select: { cidade: true, bairro: true, latitude: true, longitude: true } },
-        responsavel: { select: { nome: true, avatarUrl: true } },
-        midias: { orderBy: { ordem: 'asc' }, take: 1, select: { url: true } },
-      },
-    })
+    const [properties, totalCount] = await prisma.$transaction([
+      prisma.property.findMany({
+        where,
+        orderBy: [sortOrderBy[filters.sortBy ?? 'recent'], { id: 'asc' }],
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: {
+          id: true,
+          title: true,
+          purpose: true,
+          type: true,
+          price: true,
+          condoFee: true,
+          propertyTax: true,
+          bedrooms: true,
+          bathrooms: true,
+          parkingSpots: true,
+          areaSqm: true,
+          publishedAt: true,
+          address: { select: { city: true, neighborhood: true, latitude: true, longitude: true } },
+          responsible: { select: { name: true, avatarUrl: true } },
+          media: { orderBy: { position: 'asc' }, take: 1, select: { url: true } },
+        },
+      }),
+      prisma.property.count({ where }),
+    ])
 
-    return imoveis.map((imovel) => toSummary(imovel as unknown as ImovelSummaryRow))
+    return {
+      items: properties.map((property) => toSummary(property)),
+      totalCount,
+    }
   }
 
   async findPublishedById(id: string): Promise<PublishedPropertyDetail | null> {
-    const imovel = await prisma.imovel.findFirst({
+    const property = await prisma.property.findFirst({
       where: { id, status: 'PUBLISHED' },
       include: {
-        endereco: true,
-        responsavel: { select: { nome: true, avatarUrl: true } },
-        midias: { orderBy: { ordem: 'asc' } },
+        address: true,
+        responsible: { select: { name: true, avatarUrl: true } },
+        media: { orderBy: { position: 'asc' } },
       },
     })
 
-    return imovel ? toDetail(imovel as unknown as ImovelDetailRow) : null
+    return property ? toDetail(property) : null
   }
 }

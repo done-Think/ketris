@@ -1,14 +1,7 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-import { ForbiddenError } from '@server/shared/errors'
-
-import type { AgencyOverview } from '../../domain/agency-overview.entity'
+import { assertCanViewAgencyOverview } from '../../domain/agency-overview-access'
+import type { AgencyOverview, GetAgencyOverviewInput } from '../../types/agency-overview'
 import type { AgencyOverviewRepository } from '../ports/agency-overview-repository.port'
 import type { FinancialSummaryProvider } from '../ports/financial-summary-provider.port'
-
-export interface GetAgencyOverviewInput {
-  actorTenantId: string
-  actorPapel: Papel
-}
 
 export class GetAgencyOverviewUseCase {
   constructor(
@@ -17,11 +10,7 @@ export class GetAgencyOverviewUseCase {
   ) {}
 
   async execute(input: GetAgencyOverviewInput): Promise<AgencyOverview> {
-    if (input.actorPapel !== 'OWNER' && input.actorPapel !== 'ADMIN') {
-      throw new ForbiddenError(
-        'Apenas proprietários ou administradores podem ver a visão geral da agência.',
-      )
-    }
+    assertCanViewAgencyOverview(input.actorRole)
 
     const referenceDate = new Date()
 
@@ -46,7 +35,7 @@ export class GetAgencyOverviewUseCase {
       this.repository.getOccupancyPercentage(input.actorTenantId),
       this.financialSummaryProvider.execute({
         actorTenantId: input.actorTenantId,
-        actorPapel: input.actorPapel,
+        actorRole: input.actorRole,
       }),
       this.repository.getTopBrokers(input.actorTenantId),
       this.repository.getRecentActivities(input.actorTenantId),

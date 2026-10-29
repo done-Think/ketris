@@ -1,139 +1,183 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 
+import { financialQueryKeys } from '../config/financial-query-keys'
 import { financialService } from '../services/financial-service'
-import type { ChargeListFilters } from '../types/service'
 import type {
-  CreateChargeFormValues,
+  ChargeFormValues,
+  ChargeListRow,
   PaymentFormValues,
-  UpdateChargeFormValues,
+  ReasonFormValues,
 } from '../types/charge'
+import type { ApiCharge, ChargeListFilters } from '../types/service'
 import {
   buildCreateChargePayload,
-  buildRegisterPaymentPayload,
   buildUpdateChargePayload,
+  mapChargeFromApi,
+  mapHistoryEventFromApi,
 } from '../utils/charge-adapter'
 
-function normalizeFilters(filters: ChargeListFilters) {
-  return {
-    type: filters.type ?? null,
-    status: filters.status ?? null,
-    search: filters.search ?? null,
-    page: filters.page ?? null,
-    pageSize: filters.pageSize ?? null,
+function useFinancialScope() {
+  const { data: session } = useSession()
+  const tenantId = session?.tenantId ?? ''
+  const actorKey = `${session?.user?.id ?? ''}:${session?.role ?? ''}`
+
+  return { tenantId, actorKey, role: session?.role, enabled: Boolean(session?.tenantId) }
+}
+
+function keepPreviousInScope(tenantId: string, actorKey: string) {
+  return <T>(previous: T | undefined, previousQuery?: { queryKey: readonly unknown[] }) =>
+    previousQuery?.queryKey[1] === tenantId && previousQuery.queryKey.includes(actorKey)
+      ? previous
+      : undefined
+}
+
+function useInvalidateFinancial() {
+  const queryClient = useQueryClient()
+  const { tenantId, actorKey } = useFinancialScope()
+
+  return (charge?: ApiCharge) => {
+    if (charge) {
+      queryClient.setQueryData(
+        financialQueryKeys.chargeDetail(tenantId, actorKey, charge.id),
+        charge,
+      )
+    }
+    void queryClient.invalidateQueries({ queryKey: financialQueryKeys.tenant(tenantId) })
+    void queryClient.invalidateQueries({ queryKey: ['dashboard', tenantId] })
   }
 }
 
-export const financialQueryKeys = {
-  all: ['financial'] as const,
-  tenant: (tenantId: string) => [...financialQueryKeys.all, tenantId] as const,
-  charges: (tenantId: string) => [...financialQueryKeys.tenant(tenantId), 'charges'] as const,
-  chargesList: (tenantId: string, filters: ChargeListFilters = {}) =>
-    [...financialQueryKeys.charges(tenantId), 'list', normalizeFilters(filters)] as const,
-  chargeDetails: (tenantId: string) => [...financialQueryKeys.charges(tenantId), 'detail'] as const,
-  chargeDetail: (tenantId: string, chargeId: string) =>
-    [...financialQueryKeys.chargeDetails(tenantId), chargeId] as const,
-  summary: (tenantId: string) => [...financialQueryKeys.tenant(tenantId), 'summary'] as const,
-}
-
-export function useCharges(tenantId: string | null | undefined, filters: ChargeListFilters = {}) {
-  const { data: session } = useSession()
-  const scopedTenantId = tenantId ?? ''
+export function useCharges(filters: ChargeListFilters) {
+  const { tenantId, actorKey, enabled } = useFinancialScope()
 
   return useQuery({
-    queryKey: [
-      ...financialQueryKeys.chargesList(scopedTenantId, filters),
-      session?.user?.id,
-      session?.role,
-    ],
+    queryKey: financialQueryKeys.chargesList(tenantId, actorKey, filters),
     queryFn: () => financialService.listCharges(filters),
-    enabled: Boolean(tenantId),
+    enabled,
+    placeholderData: keepPreviousInScope(tenantId, actorKey),
   })
 }
 
-export function useCharge(
-  tenantId: string | null | undefined,
-  chargeId: string | null | undefined,
-) {
-  const { data: session } = useSession()
-  const scopedTenantId = tenantId ?? ''
-  const scopedChargeId = chargeId ?? ''
+export function useCharge(chargeId: string) {
+  const { tenantId, actorKey, enabled } = useFinancialScope()
 
   return useQuery({
-    queryKey: [
-      ...financialQueryKeys.chargeDetail(scopedTenantId, scopedChargeId),
-      session?.user?.id,
-      session?.role,
-    ],
-    queryFn: () => financialService.getCharge(scopedChargeId),
-    enabled: Boolean(tenantId) && Boolean(chargeId),
+    queryKey: financialQueryKeys.chargeDetail(tenantId, actorKey, chargeId),
+    queryFn: () => financialService.getCharge(chargeId),
+    select: mapChargeFromApi,
+    enabled: enabled && Boolean(chargeId),
   })
 }
 
-export function useCreateCharge(tenantId: string | null | undefined) {
-  const queryClient = useQueryClient()
-  const scopedTenantId = tenantId ?? ''
+export function useChargeHistory(chargeId: string) {
+  const { tenantId, actorKey, role, enabled } = useFinancialScope()
+
+  return useQuery({
+    queryKey: financialQueryKeys.chargeHistory(tenantId, actorKey, chargeId),
+    queryFn: () => financialService.getHistory(chargeId),
+    select: (data) => data.events.map(mapHistoryEventFromApi),
+    enabled: enabled && role === 'OWNER',
+  })
+}
+
+export function useFinancialSummary(month?: string) {
+  const { tenantId, actorKey, role, enabled } = useFinancialScope()
+
+  return useQuery({
+    queryKey: financialQueryKeys.summary(tenantId, actorKey, month ?? null),
+    queryFn: () => financialService.getSummary(month),
+    enabled: enabled && role === 'OWNER',
+    placeholderData: keepPreviousInScope(tenantId, actorKey),
+  })
+}
+
+export function useCreateCharge() {
+  const invalidate = useInvalidateFinancial()
 
   return useMutation({
-    mutationFn: (values: CreateChargeFormValues) =>
+    mutationFn: (values: ChargeFormValues) =>
       financialService.createCharge(buildCreateChargePayload(values)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: financialQueryKeys.charges(scopedTenantId) })
-      queryClient.invalidateQueries({ queryKey: financialQueryKeys.summary(scopedTenantId) })
-    },
+    onSuccess: (charge) => invalidate(charge),
   })
 }
 
-export function useUpdateCharge(tenantId: string | null | undefined) {
-  const queryClient = useQueryClient()
-  const scopedTenantId = tenantId ?? ''
+export function useUpdateCharge() {
+  const invalidate = useInvalidateFinancial()
 
   return useMutation({
-    mutationFn: ({ id, values }: { id: string; values: UpdateChargeFormValues }) =>
-      financialService.updateCharge(id, buildUpdateChargePayload(values)),
-    onSuccess: (charge) => {
-      queryClient.setQueryData(financialQueryKeys.chargeDetail(scopedTenantId, charge.id), charge)
-      queryClient.invalidateQueries({ queryKey: financialQueryKeys.charges(scopedTenantId) })
-      queryClient.invalidateQueries({ queryKey: financialQueryKeys.summary(scopedTenantId) })
-    },
+    mutationFn: ({ charge, values }: { charge: ChargeListRow; values: ChargeFormValues }) =>
+      financialService.updateCharge(charge.id, buildUpdateChargePayload(charge, values)),
+    onSuccess: (charge) => invalidate(charge),
   })
 }
 
-export function useDeleteCharge(tenantId: string | null | undefined) {
-  const queryClient = useQueryClient()
-  const scopedTenantId = tenantId ?? ''
+export function useDeleteCharge() {
+  const invalidate = useInvalidateFinancial()
 
   return useMutation({
     mutationFn: (chargeId: string) => financialService.deleteCharge(chargeId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: financialQueryKeys.charges(scopedTenantId) })
-      queryClient.invalidateQueries({ queryKey: financialQueryKeys.summary(scopedTenantId) })
-    },
+    onSuccess: () => invalidate(),
   })
 }
 
-export function useRegisterChargePayment(tenantId: string | null | undefined, chargeId: string) {
-  const queryClient = useQueryClient()
-  const scopedTenantId = tenantId ?? ''
+export function useCancelCharge() {
+  const invalidate = useInvalidateFinancial()
 
   return useMutation({
-    mutationFn: (values: PaymentFormValues) =>
-      financialService.registerPayment(chargeId, buildRegisterPaymentPayload(values)),
-    onSuccess: (charge) => {
-      queryClient.setQueryData(financialQueryKeys.chargeDetail(scopedTenantId, chargeId), charge)
-      queryClient.invalidateQueries({ queryKey: financialQueryKeys.charges(scopedTenantId) })
-      queryClient.invalidateQueries({ queryKey: financialQueryKeys.summary(scopedTenantId) })
-    },
+    mutationFn: ({ chargeId, values }: { chargeId: string; values: ReasonFormValues }) =>
+      financialService.cancelCharge(chargeId, { reason: values.reason.trim() }),
+    onSuccess: (charge) => invalidate(charge),
   })
 }
 
-export function useFinancialSummary(tenantId: string | null | undefined) {
-  const { data: session } = useSession()
-  const scopedTenantId = tenantId ?? ''
+export function useReverseChargePayment() {
+  const invalidate = useInvalidateFinancial()
 
-  return useQuery({
-    queryKey: [...financialQueryKeys.summary(scopedTenantId), session?.user?.id, session?.role],
-    queryFn: () => financialService.getSummary(),
-    enabled: Boolean(tenantId) && (session?.role === 'ADMIN' || session?.role === 'OWNER'),
+  return useMutation({
+    mutationFn: ({ chargeId, values }: { chargeId: string; values: ReasonFormValues }) =>
+      financialService.reversePayment(chargeId, { reason: values.reason.trim() }),
+    onSuccess: (charge) => invalidate(charge),
+  })
+}
+
+export function useRegisterChargePayment() {
+  const invalidate = useInvalidateFinancial()
+
+  return useMutation({
+    mutationFn: async ({ chargeId, values }: { chargeId: string; values: PaymentFormValues }) => {
+      const receiptUploadToken = values.receipt
+        ? await financialService.uploadReceipt(chargeId, values.receipt)
+        : undefined
+
+      return financialService.registerPayment(chargeId, {
+        paidAt: values.paymentDate,
+        paymentMethod: values.paymentMethod.trim(),
+        ...(receiptUploadToken ? { receiptUploadToken } : {}),
+      })
+    },
+    onSuccess: (charge) => invalidate(charge),
+  })
+}
+
+export function useDownloadChargeReceipt(chargeId: string) {
+  return useMutation({
+    mutationFn: (receiptId: string) => financialService.downloadReceipt(chargeId, receiptId),
+    onSuccess: ({ url }) => window.location.assign(url),
+  })
+}
+
+export function useExportCharges() {
+  return useMutation({
+    mutationFn: ({ month, locale }: { month: string; locale: string }) =>
+      financialService.exportCharges(month, locale),
+    onSuccess: (blob, { month }) => {
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `cobrancas-${month}.csv`
+      link.click()
+      URL.revokeObjectURL(url)
+    },
   })
 }

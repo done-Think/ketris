@@ -1,17 +1,17 @@
-import { describe, expect, it } from 'vitest'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
+import { describe, expect, it } from 'vitest'
+import { permissionsFor } from '../../../application/authorization'
+import { actOnTicket } from '../../../application/workflow'
 import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
 import type { MaintenanceAction } from '../../../types/maintenance-ticket'
-import { actOnTicket } from '../../../application/workflow'
-import { permissionsFor } from '../../../application/authorization'
 import {
   actor,
   admin,
   agent,
   owner,
   renter,
-  ticket,
   repository,
+  ticket,
 } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance provider', () => {
@@ -24,7 +24,7 @@ describe('Maintenance provider', () => {
     ).rejects.toBeInstanceOf(ForbiddenError)
   })
 
-  it.each(['ABERTO', 'EM_ANDAMENTO', 'AGUARDANDO_CONFIRMACAO', 'CONTESTADO'] as const)(
+  it.each(['OPEN', 'IN_PROGRESS', 'AWAITING_CONFIRMATION', 'DISPUTED'] as const)(
     'lets a linked renter define a provider in %s and audits previous and new values',
     async (status) => {
       const previous = { name: 'Previous provider' }
@@ -41,7 +41,7 @@ describe('Maintenance provider', () => {
         expect.anything(),
         { provider },
         expect.objectContaining({
-          type: 'PRESTADOR_ALTERADO',
+          type: 'PROVIDER_CHANGED',
           authorId: renter.actorId,
           details: { before: previous, after: provider },
         }),
@@ -49,7 +49,7 @@ describe('Maintenance provider', () => {
     },
   )
 
-  it.each(['RESOLVIDO', 'CANCELADO', 'FECHADO'] as const)(
+  it.each(['RESOLVED', 'CANCELED', 'CLOSED'] as const)(
     'blocks renter provider assignment in %s',
     async (status) => {
       const repo = repository({ status })
@@ -101,7 +101,7 @@ describe('Maintenance provider', () => {
     expect(requestRepo.mutate).toHaveBeenCalledWith(
       expect.anything(),
       {},
-      expect.objectContaining({ type: 'TROCA_SOLICITADA' }),
+      expect.objectContaining({ type: 'CHANGE_REQUESTED' }),
       expect.objectContaining({ kind: 'request', reason: 'Unreliable' }),
     )
     const pending = {
@@ -109,7 +109,7 @@ describe('Maintenance provider', () => {
       reason: 'Unreliable',
       requestedById: 'owner',
       requestedByName: 'Owner',
-      status: 'PENDENTE' as const,
+      status: 'PENDING' as const,
       decisionReason: null,
       decidedByName: null,
       decidedAt: null,

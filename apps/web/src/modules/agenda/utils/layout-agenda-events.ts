@@ -1,3 +1,4 @@
+import type { AgendaLayoutPlacement, AgendaLaidOutCard } from '../types/agenda-event'
 import dayjs from 'dayjs'
 import type { AgendaCalendarDay, AgendaEvent } from '../types/agenda-event'
 
@@ -24,10 +25,10 @@ export function buildAgendaEventSegments(days: AgendaCalendarDay[], events: Agen
   return result
 }
 
-export function layoutAgendaCards<T extends { id: string; top: number; height: number }>(
+export function layoutAgendaCards<T extends AgendaLayoutPlacement>(
   cards: T[],
-): (T & { lane: number; laneCount: number })[] {
-  const result: (T & { lane: number; laneCount: number })[] = []
+): AgendaLaidOutCard<T>[] {
+  const result: AgendaLaidOutCard<T>[] = []
   let group: (T & { lane: number })[] = []
   let laneEnds: number[] = []
   let groupEnd = -Infinity

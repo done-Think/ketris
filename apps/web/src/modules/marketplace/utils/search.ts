@@ -1,4 +1,5 @@
-import { searchFilterOrder, searchOptions } from '../config/search-filters'
+import { isMarketplacePropertyType } from '../config/property-types'
+import { priceLimit, searchOptions } from '../config/search-filters'
 import type { SearchState } from '../types/search'
 import { defaultLocale } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'
@@ -16,20 +17,28 @@ export const normalizeSearchText = (value: string) =>
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
 
-export function buildSearchHref({ selectedSearch, searchDraft, priceRange }: SearchState) {
-  const params = new URLSearchParams()
+export function buildSearchHref({ selectedSearch, searchDraft, priceRange, purpose }: SearchState) {
+  const query: Record<string, string> = {}
+  if (purpose) query.purpose = purpose
+  const location = searchDraft.location.trim() || selectedSearch.location
+  if (location) query[searchOptions.location.query] = location
+  if (isMarketplacePropertyType(selectedSearch.propertyType))
+    query[searchOptions.propertyType.query] = selectedSearch.propertyType
+  if (priceRange[0] > priceLimit.min || priceRange[1] < priceLimit.max)
+    query[searchOptions.priceRange.query] = `${priceRange[0]}-${priceRange[1]}`
 
-  searchFilterOrder.forEach((key) => {
-    const value =
-      key === 'priceRange'
-        ? `${priceRange[0]}-${priceRange[1]}`
-        : searchDraft[key].trim() || selectedSearch[key]
+  return { pathname: '/properties', query } as const
+}
 
-    params.set(searchOptions[key].query, value)
-  })
-
+export function parsePriceRange(value: string | undefined): {
+  min: number | null
+  max: number | null
+} {
+  const match = /^(\d+)-(\d+)$/.exec(value ?? '')
+  if (!match) return { min: null, max: null }
+  const [min, max] = [Number(match[1]), Number(match[2])]
   return {
-    pathname: '/properties',
-    query: Object.fromEntries(params.entries()),
-  } as const
+    min: min > priceLimit.min ? min : null,
+    max: max < priceLimit.max && max >= min ? max : null,
+  }
 }

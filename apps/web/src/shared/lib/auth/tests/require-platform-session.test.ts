@@ -9,7 +9,8 @@ vi.mock('next-auth', () => ({
   getServerSession: getServerSessionMock,
 }))
 
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   redirect: redirectMock,
 }))
 
@@ -40,11 +41,19 @@ describe('requirePlatformSession', () => {
   })
 
   it('redireciona para /platform/login quando a sessão é de um tenant (não é platform)', async () => {
-    getServerSessionMock.mockResolvedValueOnce({ scope: 'tenant', tenantId: 't1', role: 'ADMIN' })
+    getServerSessionMock.mockResolvedValueOnce({ scope: 'tenant', tenantId: 't1', role: 'OWNER' })
 
     const requirePlatformSession = await getRequirePlatformSession()
 
     await expect(requirePlatformSession('pt-BR')).rejects.toThrow('NEXT_REDIRECT')
     expect(redirectMock).toHaveBeenCalledWith('/pt/platform/login')
+  })
+  it('signals temporary unavailability instead of returning authority or redirecting to login', async () => {
+    getServerSessionMock.mockResolvedValueOnce({ authUnavailable: true })
+    const requireSession = await getRequirePlatformSession()
+    await expect(requireSession('pt-BR')).rejects.toMatchObject({
+      status: 503,
+      code: 'AUTH_UNAVAILABLE',
+    })
   })
 })

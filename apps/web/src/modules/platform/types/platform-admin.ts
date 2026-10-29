@@ -1,9 +1,12 @@
+import type { components } from '@shared/types/generated/api'
+import type { ReactNode } from 'react'
+
 import type { z } from 'zod'
 
 import type { createPlatformAdminSchema } from '../schemas/create-platform-admin-schema'
 import type { createUpdatePlatformAdminSchema } from '../schemas/update-platform-admin-schema'
 
-export type PlatformAdminRole = 'ADMIN' | 'ADMIN_AGENT' | 'AGENT'
+export type PlatformAdminRole = components['schemas']['AuthenticatedPlatformAdmin']['role']
 
 export type CreatePlatformAdminFormValues = z.infer<ReturnType<typeof createPlatformAdminSchema>>
 
@@ -11,41 +14,17 @@ export type UpdatePlatformAdminFormValues = z.infer<
   ReturnType<typeof createUpdatePlatformAdminSchema>
 >
 
-export interface PlatformAdminAccount {
-  id: string
-  name: string
-  email: string
-  role: PlatformAdminRole
-  active: boolean
-}
+export type PlatformAdminAccount = components['schemas']['AuthenticatedPlatformAdmin']
 
-export interface CreatePlatformAdminPayload {
-  name: string
-  email: string
-  password: string
-  role: PlatformAdminRole
-}
+export type CreatePlatformAdminPayload = components['schemas']['CreatePlatformAdminRequest']
 
-export interface UpdatePlatformAdminPayload {
-  name: string
-  email: string
-  role: PlatformAdminRole
-}
+export type UpdatePlatformAdminPayload = components['schemas']['UpdatePlatformAdminRequest']
 
-export interface PlatformAdminResponse {
-  admin: PlatformAdminAccount
-}
+export type PlatformAdminResponse = components['schemas']['GetPlatformAdminResponse']
 
-export interface ListPlatformAdminsResponse {
-  admins: PlatformAdminAccount[]
-}
+export type ListPlatformAdminsResponse = components['schemas']['ListPlatformAdminsResponse']
 
-export interface CreatePlatformAdminInput {
-  name: string
-  email: string
-  password: string
-  role: PlatformAdminRole
-}
+export type CreatePlatformAdminInput = CreatePlatformAdminPayload
 
 export interface UpdatePlatformAdminInput {
   id: string
@@ -60,11 +39,60 @@ export type CreatePlatformAdminDialogProps = {
 }
 
 export type EditPlatformAdminDialogProps = {
-  admin: PlatformAdminAccount | null
+  admin: PlatformAdminAccount
   onClose: () => void
 }
 
 export type CreatePlatformAdminFormProps = {
   onCancel?: () => void
   onSuccess?: () => void
+}
+
+export type PlatformAdminStatusFilter = 'all' | 'active' | 'inactive'
+
+export type PlatformAdminRoleFilter = 'all' | PlatformAdminRole
+
+export interface PlatformAdminsListState {
+  search: string
+  status: PlatformAdminStatusFilter
+  role: PlatformAdminRoleFilter
+  page: number
+}
+
+export type PlatformAdminAction =
+  | { type: 'create' }
+  | { type: 'edit'; admin: PlatformAdminAccount }
+  | { type: 'deactivate'; admin: PlatformAdminAccount }
+
+export interface PlatformAdminMenuState {
+  anchor: HTMLElement
+  admin: PlatformAdminAccount
+}
+
+export type AdminItemProps = {
+  admin: PlatformAdminAccount
+  onMenuOpen?: (anchor: HTMLElement, admin: PlatformAdminAccount) => void
+}
+
+export interface PlatformAdminsTableProps {
+  admins: PlatformAdminAccount[]
+  onMenuOpen?: (anchor: HTMLElement, admin: PlatformAdminAccount) => void
+}
+
+export interface PlatformAdminsFiltersProps {
+  filters: PlatformAdminsListState
+  onChange: (changes: Partial<PlatformAdminsListState>) => void
+}
+
+export interface PlatformAdminsEmptyStateProps {
+  actionLabel: string
+  description: string
+  icon: ReactNode
+  onAction?: () => void
+  title: string
+}
+
+export interface DeactivatePlatformAdminDialogProps {
+  admin: PlatformAdminAccount
+  onClose: () => void
 }

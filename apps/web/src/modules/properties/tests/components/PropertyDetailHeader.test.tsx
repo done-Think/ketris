@@ -6,17 +6,11 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
-import { useContracts } from '@modules/contracts/hooks/use-contracts'
-
 import { PropertyDetailHeader } from '../../components/PropertyDetailHeader'
 import type { DashboardProperty } from '../../types/dashboard-property'
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
-}))
-
-vi.mock('@modules/contracts/hooks/use-contracts', () => ({
-  useContracts: vi.fn(),
 }))
 
 vi.mocked(useSession).mockReturnValue({
@@ -25,21 +19,25 @@ vi.mocked(useSession).mockReturnValue({
   update: vi.fn(),
 } as unknown as ReturnType<typeof useSession>)
 
-vi.mocked(useContracts).mockReturnValue({
-  data: { items: [], totalCount: 0 },
-} as unknown as ReturnType<typeof useContracts>)
-
 const baseProperty: DashboardProperty = {
   id: 'property-1',
   responsibleUserId: 'user-1',
   apiStatus: 'DRAFT',
+  description: null,
+  listing: {
+    amenities: [],
+    negotiationTerms: null,
+    publishAfterReview: false,
+    allowWhatsappContact: false,
+    featured: false,
+  },
   title: 'Apartamento Jardins',
   address: 'Alameda Lorena, 1420',
   location: 'Jardins, São Paulo',
   type: 'Apartamento',
   purpose: 'Aluguel',
   price: 'R$ 6.500/mês',
-  status: 'Em análise',
+  status: 'inReview',
   broker: '',
   updatedAt: 'Há 2 horas',
   imageUrl: '',
@@ -51,13 +49,13 @@ const baseProperty: DashboardProperty = {
     parkingSpaces: '2',
     area: '95m²',
     condominium: 'R$ 1.200',
-    iptu: 'R$ 380/mês',
+    propertyTax: 'R$ 380/mês',
   },
   pricing: {
     rent: 'R$ 6.500/mês',
     sale: 'Não anunciado',
     condominium: 'R$ 1.200',
-    iptu: 'R$ 380/mês',
+    propertyTax: 'R$ 380/mês',
     administrationFee: 'Não informado',
     securityDeposit: 'Não informado',
     lastAdjustment: 'Não informado',
@@ -95,20 +93,40 @@ function renderHeader(overrides: Partial<Parameters<typeof PropertyDetailHeader>
 describe('PropertyDetailHeader', () => {
   it('does not request administrative contracts in a read-only property detail', () => {
     renderHeader({
-      property: { ...baseProperty, status: 'Alugado', apiStatus: 'RENTED' },
+      property: {
+        ...baseProperty,
+        status: 'rented',
+        apiStatus: 'RENTED',
+        description: null,
+        listing: {
+          amenities: [],
+          negotiationTerms: null,
+          publishAfterReview: false,
+          allowWhatsappContact: false,
+          featured: false,
+        },
+        activeContractId: 'contract-1',
+      },
       canManage: false,
     })
-    expect(useContracts).toHaveBeenLastCalledWith(undefined, {
-      propertyId: baseProperty.id,
-      status: 'ATIVO',
+    expect(screen.queryByRole('button', { name: /^Contrato$/ })).not.toBeInTheDocument()
+  })
+  it('shows the active contract from the property for a manager', () => {
+    renderHeader({
+      property: {
+        ...baseProperty,
+        status: 'rented',
+        apiStatus: 'RENTED',
+        activeContractId: 'contract-1',
+      },
     })
-    expect(screen.queryByRole('button', { name: /Contrato ativo/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Contrato$/ })).toBeVisible()
   })
   it('shows the manage actions and a Publicar button for a draft property when canManage is true', () => {
     renderHeader()
 
     expect(screen.getByRole('button', { name: /Editar/ })).toBeVisible()
-    expect(screen.getByRole('button', { name: /Excluir/ })).toBeVisible()
+    expect(screen.getByRole('button', { name: /Inativar/ })).toBeVisible()
     expect(screen.getByRole('button', { name: /Publicar/ })).toBeVisible()
   })
 
@@ -123,7 +141,7 @@ describe('PropertyDetailHeader', () => {
     renderHeader({ canManage: false })
 
     expect(screen.queryByRole('button', { name: /Editar/ })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Excluir/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Inativar/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Publicar/ })).not.toBeInTheDocument()
   })
 
@@ -131,7 +149,7 @@ describe('PropertyDetailHeader', () => {
     const { onEdit, onDeleteRequest } = renderHeader()
 
     await userEvent.click(screen.getByRole('button', { name: /Editar/ }))
-    await userEvent.click(screen.getByRole('button', { name: /Excluir/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Inativar/ }))
 
     expect(onEdit).toHaveBeenCalledOnce()
     expect(onDeleteRequest).toHaveBeenCalledOnce()

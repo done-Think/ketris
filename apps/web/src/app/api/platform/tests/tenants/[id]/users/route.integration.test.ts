@@ -17,41 +17,41 @@ describe('GET /api/platform/tenants/[id]/users (integração)', () => {
   beforeAll(async () => {
     const actor = await prisma.platformAdmin.create({
       data: {
-        nome: 'Ator Teste',
+        name: 'Ator Teste',
         email: `ator-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
+        passwordHash: 'hash-fake',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
       role: 'ADMIN',
-      ativo: true,
+      active: true,
     })
 
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant com Usuários', slug: `tenant-users-${randomUUID()}` },
+      data: { name: 'Tenant com Usuários', slug: `tenant-users-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    await prisma.usuario.create({
+    await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin do Tenant',
+        name: 'Admin do Tenant',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
-    await prisma.usuario.create({
+    await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Agente do Tenant',
+        name: 'Agente do Tenant',
         email: `agente-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
   })
@@ -78,7 +78,28 @@ describe('GET /api/platform/tenants/[id]/users (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.users).toHaveLength(2)
-    expect(json.users.some((user: { role: string }) => user.role === 'ADMIN')).toBe(true)
+    expect(json.users.some((user: { role: string }) => user.role === 'OWNER')).toBe(true)
+    expect(json).toMatchObject({ totalCount: 2, page: 1, pageSize: 20 })
+  })
+
+  it('pagina os usuários pela ordem de criação', async () => {
+    const pages = await Promise.all(
+      [1, 2].map(async (page) =>
+        (
+          await GET(
+            buildRequest(
+              `http://localhost/api/platform/tenants/${tenantId}/users?page=${page}&pageSize=1`,
+              actorToken,
+            ),
+            { params: Promise.resolve({ id: tenantId }) },
+          )
+        ).json(),
+      ),
+    )
+
+    expect(pages.map((page) => page.users.length)).toEqual([1, 1])
+    expect(pages[0].users[0].id).not.toBe(pages[1].users[0].id)
+    expect(pages[1]).toMatchObject({ totalCount: 2, page: 2, pageSize: 1 })
   })
 
   it('retorna 401 sem Authorization header', async () => {

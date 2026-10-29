@@ -1,3 +1,5 @@
+import { API_CONTRACT_HEADER, API_CONTRACT_VERSION } from '@shared/config/api-contract'
+
 export function getSwaggerUiHtml(): string {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -18,6 +20,10 @@ export function getSwaggerUiHtml(): string {
           dom_id: '#swagger-ui',
           presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
           layout: 'StandaloneLayout',
+          requestInterceptor: (request) => {
+            request.headers['${API_CONTRACT_HEADER}'] = '${API_CONTRACT_VERSION}'
+            return request
+          },
         })
       }
     </script>

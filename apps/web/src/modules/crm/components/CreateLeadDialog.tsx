@@ -1,6 +1,8 @@
 'use client'
 
-import { Fragment } from 'react'
+import * as crmStyles from '../styles/create-lead-dialog.styles'
+
+import { zodResolver } from '@hookform/resolvers/zod'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import {
@@ -17,20 +19,17 @@ import {
   Stepper,
   Typography,
 } from '@mui/material'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
-import { useEffect, useMemo } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
 import { useSnackbar } from 'notistack'
-
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
+import { Fragment, useMemo } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 
 import { createLeadSteps } from '../config/lead-creation'
+import { useLeadWizard } from '../hooks/use-lead-wizard'
 import { useCreateLead } from '../hooks/use-leads'
 import { createLeadDefaultValues, createLeadSchema } from '../schemas/create-lead-schema'
 import type { CreateLeadDialogProps, CreateLeadFormValues } from '../types/lead'
-import { errorMessage } from '../utils/error-message'
+import { extractErrorMessage } from '@shared/utils/error-message'
 import { CreateLeadContactStep } from './create-lead-dialog/CreateLeadContactStep'
 import { CreateLeadInterestStep } from './create-lead-dialog/CreateLeadInterestStep'
 import { CreateLeadReviewStep } from './create-lead-dialog/CreateLeadReviewStep'
@@ -39,50 +38,31 @@ function getNextStepIndex(activeStepIndex: number) {
   return Math.min(activeStepIndex + 1, createLeadSteps.length - 1)
 }
 
-function getPreviousStepIndex(activeStepIndex: number) {
-  return Math.max(activeStepIndex - 1, 0)
+export function CreateLeadDialog(props: CreateLeadDialogProps) {
+  return props.open ? <CreateLeadForm {...props} /> : null
 }
 
-export function CreateLeadDialog({ onClose, open }: CreateLeadDialogProps) {
+function CreateLeadForm({ onClose, open }: CreateLeadDialogProps) {
   const t = useTranslations('crm.leads')
   const { enqueueSnackbar } = useSnackbar()
-  const { data: session } = useSession()
-  const tenantId = session?.tenantId ?? ''
-  const createLead = useCreateLead(tenantId)
+  const createLead = useCreateLead()
   const leadSchema = useMemo(() => createLeadSchema((key) => t(`create.errors.${key}`)), [t])
-  const { control, handleSubmit, reset, setValue, trigger } = useForm<CreateLeadFormValues>({
+  const { control, handleSubmit, trigger } = useForm<CreateLeadFormValues>({
     defaultValues: createLeadDefaultValues,
     resolver: zodResolver(leadSchema),
   })
-  const activeStepIndex = useWatch({ control, name: 'activeStepIndex' })
-  const maxVisitedStepIndex = useWatch({ control, name: 'maxVisitedStepIndex' })
+  const wizard = useLeadWizard()
+  const { activeStepIndex, maxVisitedStepIndex } = wizard
   const formValues = useWatch({ control })
   const activeStep = createLeadSteps[activeStepIndex]
   const isReviewStep = activeStepIndex === createLeadSteps.length - 1
 
-  useEffect(() => {
-    if (!open) return
-
-    reset(createLeadDefaultValues)
-  }, [open, reset])
-
   const handleClose = () => {
-    reset(createLeadDefaultValues)
-    onClose()
+    if (!createLead.isPending) onClose()
   }
 
-  const goToStep = async (stepIndex: number) => {
-    if (stepIndex <= activeStepIndex || stepIndex <= maxVisitedStepIndex) {
-      setValue('activeStepIndex', stepIndex)
-      return
-    }
-
-    const isStepValid = await trigger(activeStep.fields)
-
-    if (!isStepValid) return
-
-    setValue('activeStepIndex', stepIndex)
-    setValue('maxVisitedStepIndex', Math.max(maxVisitedStepIndex, stepIndex))
+  const goToStep = (stepIndex: number) => {
+    if (stepIndex <= maxVisitedStepIndex) wizard.visit(stepIndex)
   }
 
   const handleNext = async () => {
@@ -92,12 +72,11 @@ export function CreateLeadDialog({ onClose, open }: CreateLeadDialogProps) {
 
     const nextStepIndex = getNextStepIndex(activeStepIndex)
 
-    setValue('activeStepIndex', nextStepIndex)
-    setValue('maxVisitedStepIndex', Math.max(maxVisitedStepIndex, nextStepIndex))
+    wizard.visit(nextStepIndex)
   }
 
   const handleBack = () => {
-    setValue('activeStepIndex', getPreviousStepIndex(activeStepIndex))
+    wizard.previous()
   }
 
   const handleCreateLead = (values: CreateLeadFormValues) => {
@@ -117,7 +96,7 @@ export function CreateLeadDialog({ onClose, open }: CreateLeadDialogProps) {
           handleClose()
         },
         onError: (error) => {
-          enqueueSnackbar(errorMessage(error, t('create.error')), { variant: 'error' })
+          enqueueSnackbar(extractErrorMessage(error, t('create.error')), { variant: 'error' })
         },
       },
     )
@@ -125,41 +104,37 @@ export function CreateLeadDialog({ onClose, open }: CreateLeadDialogProps) {
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-      <Box component="form" onSubmit={handleSubmit(handleCreateLead)}>
-        <DialogTitle sx={{ px: { xs: 2, md: 2.8 }, pb: 1.4, pt: 2.4 }}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit(handleCreateLead, (errors) => {
+          const firstInvalidStep = createLeadSteps.findIndex((step) =>
+            step.fields.some((field) => Boolean(errors[field])),
+          )
+          if (firstInvalidStep >= 0) wizard.visit(firstInvalidStep)
+        })}
+      >
+        <DialogTitle sx={crmStyles.dialogTitleSx}>
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ color: brand.magenta[600], fontSize: 13, fontWeight: 900 }}>
-                {t('create.eyebrow')}
-              </Typography>
-              <Typography sx={{ color: brand.graphite[500], fontSize: 24, fontWeight: 900 }}>
-                {t('create.title')}
-              </Typography>
+            <Box sx={crmStyles.boxSx}>
+              <Typography sx={crmStyles.typographySx}>{t('create.eyebrow')}</Typography>
+              <Typography sx={crmStyles.typographySx2}>{t('create.title')}</Typography>
             </Box>
             <IconButton aria-label={t('create.actions.close')} onClick={handleClose}>
-              <CloseRoundedIcon sx={{ fontSize: iconSize.lg }} />
+              <CloseRoundedIcon sx={crmStyles.closeRoundedIconSx} />
             </IconButton>
           </Stack>
         </DialogTitle>
 
-        <DialogContent sx={{ px: { xs: 2, md: 2.8 }, pb: 2 }}>
+        <DialogContent sx={crmStyles.dialogContentSx}>
           <Stack spacing={2}>
-            <Stepper activeStep={activeStepIndex} alternativeLabel sx={{ px: { xs: 0, md: 2 } }}>
+            <Stepper activeStep={activeStepIndex} alternativeLabel sx={crmStyles.stepperSx}>
               {createLeadSteps.map((step, index) => (
                 <Step key={step.key} completed={index < maxVisitedStepIndex}>
                   <StepLabel
                     onClick={() => {
                       void goToStep(index)
                     }}
-                    sx={{
-                      cursor: index <= maxVisitedStepIndex ? 'pointer' : 'default',
-                      '& .MuiStepLabel-label': {
-                        color:
-                          index <= maxVisitedStepIndex ? brand.magenta[700] : brand.neutral[500],
-                        fontSize: 12,
-                        fontWeight: 900,
-                      },
-                    }}
+                    sx={crmStyles.getStepLabelSx(index, maxVisitedStepIndex)}
                   >
                     {t(`create.steps.${step.labelKey}`)}
                   </StepLabel>
@@ -167,15 +142,7 @@ export function CreateLeadDialog({ onClose, open }: CreateLeadDialogProps) {
               ))}
             </Stepper>
 
-            <Box
-              sx={{
-                border: '1px solid',
-                borderColor: alpha.graphite[8],
-                borderRadius: `${radius.sm}px`,
-                bgcolor: surface.app,
-                p: { xs: 1.6, md: 2 },
-              }}
-            >
+            <Box sx={crmStyles.boxSx2}>
               {activeStep.key === 'contact' ? <CreateLeadContactStep control={control} /> : null}
               {activeStep.key === 'interest' ? <CreateLeadInterestStep control={control} /> : null}
               {activeStep.key === 'review' ? (
@@ -185,7 +152,7 @@ export function CreateLeadDialog({ onClose, open }: CreateLeadDialogProps) {
           </Stack>
         </DialogContent>
 
-        <DialogActions sx={{ px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 }}>
+        <DialogActions sx={crmStyles.dialogActionsSx}>
           <Button type="button" variant="outlined" color="secondary" onClick={handleClose}>
             {t('create.actions.cancel')}
           </Button>

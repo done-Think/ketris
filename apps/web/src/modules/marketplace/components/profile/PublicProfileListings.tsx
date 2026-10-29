@@ -6,18 +6,17 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
-import {
-  alpha,
-  componentText,
-  iconSize,
-  motion,
-  radius,
-  shadows,
-  surface,
-} from '@shared/theme/tokens'
 import type { PublicProfileListingsProps } from '../../types/profile-listings'
 import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { buildProfileListingHref } from '../../utils/property-links'
+import {
+  styles,
+  getBoxStyles,
+  getBoxStyles2,
+  getPlaceOutlinedIconStyles,
+  getTypographyStyles,
+  getBoxStyles3,
+} from '../../styles/public-profile-listings.styles'
 
 export function PublicProfileListings({
   accentColor,
@@ -29,103 +28,41 @@ export function PublicProfileListings({
 
   return (
     <>
-      <Typography variant="h5" sx={{ mb: 1.5 }}>
+      <Typography variant="h5" sx={styles.typography}>
         {t('title')}
       </Typography>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            md: 'repeat(2, minmax(0, 1fr))',
-            lg: 'repeat(3, minmax(0, 1fr))',
-          },
-          gap: { xs: 2, xl: 2.5 },
-        }}
-      >
+      <Box sx={styles.box}>
         {listings.map((listing) => (
           <Box
             key={listing.href}
             component={Link}
             href={buildProfileListingHref(listing.href, source)}
             aria-label={t('viewAriaLabel', { title: listing.title })}
-            sx={{
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-              boxShadow: shadows.propertyCard,
-              overflow: 'hidden',
-              color: 'inherit',
-              display: 'block',
-              textDecoration: 'none',
-              transition: motion.transition.card,
-              '&:hover': {
-                boxShadow: shadows.propertyCardHover,
-                transform: 'translateY(-2px)',
-              },
-              '&:focus-visible': {
-                outline: `2px solid ${accentColor}`,
-                outlineOffset: 3,
-              },
-            }}
+            sx={getBoxStyles({ accentColor })}
           >
-            <Box
-              sx={{
-                height: 190,
-                bgcolor: surface.app,
-                backgroundImage: listing.image ? `url("${listing.image}")` : undefined,
-                backgroundPosition: 'center',
-                backgroundSize: 'cover',
-              }}
-            />
-            <Box sx={{ p: 2 }}>
-              <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mb: 0.6 }}>
-                <PlaceOutlinedIcon sx={{ color: accentColor, fontSize: iconSize.xs }} />
-                <Typography sx={{ color: 'text.secondary', ...componentText.cardEyebrow }}>
+            <Box sx={getBoxStyles2({ listing })} />
+            <Box sx={styles.box2}>
+              <Stack direction="row" spacing={0.8} alignItems="center" sx={styles.stack}>
+                <PlaceOutlinedIcon sx={getPlaceOutlinedIconStyles({ accentColor })} />
+                <Typography sx={styles.typography2}>
                   {listing.location}
                   {listing.category ? ` / ${listing.category}` : ''}
                 </Typography>
               </Stack>
-              <Typography sx={{ ...componentText.cardTitle, mt: 0.6, mb: 0.8 }}>
-                {listing.title}
-              </Typography>
-              <Typography sx={{ color: accentColor, ...componentText.cardPrice, mb: 1.3 }}>
-                {listing.price}
-              </Typography>
-              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 1.6 }}>
+              <Typography sx={styles.typography3}>{listing.title}</Typography>
+              <Typography sx={getTypographyStyles({ accentColor })}>{listing.price}</Typography>
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={styles.stack2}>
                 {listing.details.map((detail) => (
                   <Chip
                     key={detail.key}
                     label={getPropertyFeatureLabel(detail, tDetail)}
                     size="small"
-                    sx={{
-                      height: 26,
-                      borderRadius: `${radius.sm}px`,
-                      bgcolor: alpha.graphite[6],
-                      fontSize: 11,
-                    }}
+                    sx={styles.chip}
                   />
                 ))}
               </Stack>
-              <Box
-                component="span"
-                sx={{
-                  bgcolor: accentColor,
-                  borderRadius: `${radius.sm}px`,
-                  color: surface.paper,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 0.8,
-                  minHeight: 36,
-                  px: 2,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  lineHeight: 1.25,
-                }}
-              >
-                <HomeWorkOutlinedIcon sx={{ fontSize: iconSize.sm }} />
+              <Box component="span" sx={getBoxStyles3({ accentColor })}>
+                <HomeWorkOutlinedIcon sx={styles.homeWorkOutlinedIcon} />
                 {t('viewProperty')}
               </Box>
             </Box>

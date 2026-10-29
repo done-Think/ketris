@@ -1,8 +1,12 @@
 import { getTranslations } from 'next-intl/server'
 
+import { publicMetadata } from '@/i18n/seo'
+
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { SearchResultsPage } from '@modules/marketplace'
+import { isMarketplacePropertyType } from '@modules/marketplace/config/property-types'
 import type { SearchResultPurpose } from '@modules/marketplace/types/search'
+import { parsePriceRange } from '@modules/marketplace/utils/search'
 import type { SearchResultsRoutePageProps } from '@modules/marketplace/types/search'
 
 function getSelectedPurpose(searchParams: SearchResultsRoutePageProps['searchParams']) {
@@ -31,6 +35,7 @@ export async function generateMetadata({
     getSelectedPurpose(resolvedSearchParams) === 'comprar' ? 'searchBuy' : 'searchRent'
 
   return {
+    ...publicMetadata(locale, '/properties'),
     title: t(`${metadataKey}.metadataTitle`),
     description: t(`${metadataKey}.metadataDescription`),
   }
@@ -46,5 +51,14 @@ export default async function PropertiesPage({
   const selectedPurpose: SearchResultPurpose = getSelectedPurpose(resolvedSearchParams)
   const selectedLocation = getSelectedLocation(resolvedSearchParams)
 
-  return <SearchResultsPage purpose={selectedPurpose} initialLocation={selectedLocation} />
+  const propertyType = resolvedSearchParams?.propertyType
+
+  return (
+    <SearchResultsPage
+      purpose={selectedPurpose}
+      initialLocation={selectedLocation}
+      initialPropertyType={isMarketplacePropertyType(propertyType) ? propertyType : null}
+      initialPriceRange={parsePriceRange(resolvedSearchParams?.priceRange)}
+    />
+  )
 }

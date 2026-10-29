@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
@@ -13,26 +13,25 @@ import {
   authLoginTextFieldSx,
   authPrimaryButtonSx,
   authTextFieldSx,
-} from '@modules/auth'
-import { RhfPasswordField, RhfTextField } from '@shared/components/form'
+  RhfPasswordField,
+  RhfTextField,
+} from '@shared/components/form'
 import { componentText } from '@shared/theme/tokens'
 
 import {
   createPlatformSignInSchema,
   type PlatformSignInFormValues,
 } from '../schemas/platform-sign-in-schema'
+import { styles } from '../styles/platform-sign-in-form.styles'
 
 export function PlatformSignInForm() {
   const t = useTranslations('platform.login')
+  const validation = useTranslations('validation')
   const formsT = useTranslations('platform.forms')
   const loginT = useTranslations('auth.login')
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
-  const hasAttemptedLocalAutoLogin = useRef(false)
-  const platformSignInSchema = useMemo(
-    () => createPlatformSignInSchema((key) => t(`errors.${key}`)),
-    [t],
-  )
+  const platformSignInSchema = useMemo(() => createPlatformSignInSchema(validation), [validation])
 
   const {
     control,
@@ -72,22 +71,10 @@ export function PlatformSignInForm() {
     [router, t],
   )
 
-  useEffect(() => {
-    const email = process.env.NEXT_PUBLIC_LOCAL_PLATFORM_EMAIL
-    const password = process.env.NEXT_PUBLIC_LOCAL_PLATFORM_PASSWORD
-    const isLocalDevelopment =
-      process.env.NODE_ENV === 'development' && window.location.hostname === 'localhost'
-
-    if (!isLocalDevelopment || !email || !password || hasAttemptedLocalAutoLogin.current) return
-
-    hasAttemptedLocalAutoLogin.current = true
-    void onSubmit({ email, password })
-  }, [onSubmit])
-
   return (
     <Box>
-      <Box sx={{ mb: { xs: 2, md: 3.25 }, textAlign: { xs: 'center', md: 'left' } }}>
-        <Typography variant="h3" component="h1" sx={{ mb: 0.5, ...componentText.authTitle }}>
+      <Box sx={styles.box}>
+        <Typography variant="h3" component="h1" sx={styles.typography}>
           {t('title')}
         </Typography>
         <Typography color="text.secondary" variant="body2" sx={componentText.authBody}>
@@ -131,7 +118,7 @@ export function PlatformSignInForm() {
           </AuthFormField>
 
           {formError ? (
-            <Alert severity="error" role="alert" sx={{ mt: 0.75 }}>
+            <Alert severity="error" role="alert" sx={styles.alert}>
               {formError}
             </Alert>
           ) : null}
@@ -152,12 +139,7 @@ export function PlatformSignInForm() {
         </Button>
       </Box>
 
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        textAlign="center"
-        sx={{ mt: { xs: 2.5, md: 3 }, ...componentText.authBody }}
-      >
+      <Typography variant="body2" color="text.secondary" textAlign="center" sx={styles.typography2}>
         {t('restrictedAccess')}
       </Typography>
     </Box>

@@ -1,92 +1,70 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { useLocale, useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
 
-import { getLocalizedPathname } from '@/i18n/locale-prefix'
+import type { AppLocale } from '@/i18n/types/locale.types'
+import { getApiErrorCode } from '@shared/utils/error-message'
+import { registrationService } from '../services/registration-service'
 import type { RegistrationDetailsFormValues } from '../types/registration'
-import type { RegisterErrorBody, RegisterResponseBody } from '../types/registration'
+import { useEstablishAuthSession } from './use-establish-auth-session'
 
 export function useRegister() {
   const t = useTranslations('auth.registerDetails')
-  const locale = useLocale()
-  const router = useRouter()
-  const [error, setError] = useState<string | null>(null)
-  const [pendingApproval, setPendingApproval] = useState(false)
-  const [pendingEmailVerification, setPendingEmailVerification] = useState<string | null>(null)
-  const pendingRedirect = useRef<string | null>(null)
-
-  function messageForErrorCode(code: string | undefined) {
-    if (code === 'AGENCY_NOT_FOUND') return t('errors.agencyNotFound')
-    if (code === 'EMAIL_ALREADY_IN_USE') return t('errors.emailAlreadyInUse')
-    if (code === 'RATE_LIMIT_EXCEEDED') return t('errors.rateLimited')
-
-    return t('errors.generic')
-  }
-
-  const register = async (values: RegistrationDetailsFormValues): Promise<boolean> => {
-    setError(null)
-    setPendingApproval(false)
-    setPendingEmailVerification(null)
-
-    let response: Response
-
-    try {
-      response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      })
-    } catch {
-      setError(t('errors.generic'))
-      return false
-    }
-
-    if (!response.ok) {
-      const body = (await response.json().catch(() => null)) as RegisterErrorBody | null
-      setError(messageForErrorCode(body?.error?.code))
-      return false
-    }
-
-    const body = (await response.json()) as RegisterResponseBody
-
-    if (body.outcome === 'PENDING_APPROVAL') {
-      setPendingApproval(true)
-      return true
-    }
-
-    try {
-      const result = await signIn('token-session', {
-        accessToken: body.accessToken,
-        refreshToken: body.refreshToken,
-        redirect: false,
-      })
-
-      if (!result || result.error) {
-        setError(t('errors.generic'))
-        return false
+  const locale = useLocale() as AppLocale
+  const completion = useEstablishAuthSession()
+  const mutation = useMutation({
+    mutationFn: (values: RegistrationDetailsFormValues) => {
+      if (!values.acceptTerms) throw new Error('TERMS_ACCEPTANCE_REQUIRED')
+      const details = {
+        fullName: values.fullName,
+        email: values.email,
+        password: values.password,
+        phone: values.phone,
+        acceptTerms: values.acceptTerms,
+        locale,
       }
-
-      const destination = body.user.role === 'RENTER' ? '/dashboard/finance/charges' : '/dashboard'
-      pendingRedirect.current = getLocalizedPathname(destination, locale)
-      setPendingEmailVerification(values.email)
+      return registrationService.register(
+        values.profile === 'broker'
+          ? {
+              ...details,
+              profile: values.profile,
+              creci: values.creci,
+              ...(values.agencyId ? { agencyId: values.agencyId } : {}),
+              ...(values.companyName?.trim() ? { companyName: values.companyName.trim() } : {}),
+            }
+          : values.profile === 'renter'
+            ? { ...details, profile: values.profile }
+            : {
+                ...details,
+                profile: values.profile,
+                ...(values.companyName?.trim() ? { companyName: values.companyName.trim() } : {}),
+              },
+      )
+    },
+  })
+  const code = getApiErrorCode(mutation.error)
+  const messages: Record<string, string> = {
+    AGENCY_NOT_FOUND: t('errors.agencyNotFound'),
+    EMAIL_ALREADY_IN_USE: t('errors.emailAlreadyInUse'),
+    RATE_LIMIT_EXCEEDED: t('errors.rateLimited'),
+    PASSWORD_TOO_LONG: t('errors.passwordTooLong'),
+  }
+  async function register(values: RegistrationDetailsFormValues): Promise<boolean> {
+    try {
+      await mutation.mutateAsync(values)
       return true
     } catch {
-      setError(t('errors.generic'))
       return false
     }
   }
-
-  function completeEmailVerification() {
-    setPendingEmailVerification(null)
-
-    if (pendingRedirect.current) {
-      router.replace(pendingRedirect.current)
-      router.refresh()
-    }
+  const pendingApproval = completion.data?.outcome === 'PENDING_APPROVAL'
+  return {
+    error: mutation.isError ? (code && messages[code]) || t('errors.generic') : null,
+    pendingApproval,
+    pendingEmailVerification: pendingApproval ? null : (mutation.data ?? null),
+    isPending: mutation.isPending,
+    register,
+    completeEmailVerification: completion.mutateAsync,
   }
-
-  return { error, pendingApproval, pendingEmailVerification, register, completeEmailVerification }
 }

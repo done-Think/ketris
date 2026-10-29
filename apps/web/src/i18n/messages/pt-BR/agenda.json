@@ -10,20 +10,20 @@
       "ticketScheduled": "Atendimento agendado"
     },
     "chargeStatuses": {
-      "PENDENTE": "Pendente",
-      "PAGA": "Paga",
-      "ATRASADA": "Atrasada",
-      "AGENDADA": "Agendada",
-      "CANCELADA": "Cancelada"
+      "PENDING": "Pendente",
+      "PAID": "Paga",
+      "OVERDUE": "Atrasada",
+      "SCHEDULED": "Agendada",
+      "CANCELED": "Cancelada"
     },
     "ticketStatuses": {
-      "ABERTO": "Aberto",
-      "EM_ANDAMENTO": "Em andamento",
-      "RESOLVIDO": "Resolvido",
-      "FECHADO": "Fechado",
-      "AGUARDANDO_CONFIRMACAO": "Aguardando confirmação",
-      "CONTESTADO": "Contestado",
-      "CANCELADO": "Cancelado"
+      "OPEN": "Aberto",
+      "IN_PROGRESS": "Em andamento",
+      "RESOLVED": "Resolvido",
+      "CLOSED": "Fechado",
+      "AWAITING_CONFIRMATION": "Aguardando confirmação",
+      "DISPUTED": "Contestado",
+      "CANCELED": "Cancelado"
     }
   },
   "dashboard": {
@@ -47,8 +47,10 @@
     "freeSlot": "Horário livre",
     "selectedDayLabel": "{day}, {date} de {month}",
     "creatorRoles": {
-      "agency": "imobiliária",
-      "colleague": "colega"
+      "OWNER": "gestor da imobiliária",
+      "AGENT": "corretor",
+      "PROPERTY_OWNER": "proprietário",
+      "RENTER": "locatário"
     },
     "createError": "Não foi possível criar o evento. Tente novamente.",
     "editSuccess": "{title} atualizado com sucesso.",
@@ -58,7 +60,7 @@
   },
   "eventForm": {
     "audiences": {
-      "LEGACY_TEAM": "Compartilhamento atual",
+      "SHARED_TEAM": "Compartilhado com a equipe",
       "ALL_AGENTS": "Todos os corretores",
       "ASSIGNED_AGENT": "Corretor específico"
     },
@@ -96,7 +98,8 @@
       "date": "Data",
       "time": "Horário",
       "duration": "Duração",
-      "notes": "Observações"
+      "notes": "Observações",
+      "currentProperty": "Imóvel vinculado ao evento"
     },
     "cancel": "Cancelar",
     "submit": "Criar evento",
@@ -112,13 +115,28 @@
       "titleRequired": "Informe o título do evento",
       "customPropertyRequired": "Informe o imóvel ou referência",
       "visitMinimumDuration": "Visitas devem ter duração mínima de 30 minutos",
-      "minimumAdvanceNotice": "Agende com pelo menos 3 horas de antecedência"
+      "minimumAdvanceNotice": "Agende com pelo menos 3 horas de antecedência",
+      "durationInteger": "Informe a duração em minutos inteiros",
+      "titleTooLong": "Use no máximo 200 caracteres no título",
+      "participantTooLong": "Use no máximo 200 caracteres no nome",
+      "phoneTooLong": "Use no máximo 32 caracteres no telefone",
+      "propertyReferenceTooLong": "Use no máximo 500 caracteres na referência",
+      "notesTooLong": "Use no máximo 10.000 caracteres nas notas"
     },
     "outsideHoursWarning": {
       "message": "O período deste evento está fora do horário comercial (08h–18h). Deseja continuar?",
       "continue": "Continuar",
-      "back": "Voltar"
-    }
+      "back": "Voltar",
+      "title": "Confirme o horário"
+    },
+    "propertyOpen": "Abrir imóveis",
+    "propertyClose": "Fechar imóveis",
+    "propertyClear": "Limpar imóvel",
+    "propertiesLoading": "Buscando imóveis…",
+    "propertiesEmpty": "Nenhum imóvel encontrado",
+    "propertiesError": "Não foi possível carregar os imóveis.",
+    "propertiesRetry": "Tentar novamente",
+    "propertiesMore": "Carregar mais imóveis"
   },
   "eventDetail": {
     "responsible": "Responsável: {name}",
@@ -135,7 +153,10 @@
       "title": "Excluir evento",
       "description": "Tem certeza que deseja excluir \"{title}\"? Essa ação não pode ser desfeita.",
       "confirm": "Excluir",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "reason": "Motivo do cancelamento",
+      "reasonRequired": "Informe o motivo do cancelamento",
+      "reasonTooLong": "Use no máximo 10.000 caracteres no motivo"
     },
     "errors": {
       "durationTooShort": "Informe ao menos 15 minutos",
@@ -149,5 +170,17 @@
       "visitMinimumDuration": "Visitas devem ter duração mínima de 30 minutos",
       "minimumAdvanceNotice": "Agende com pelo menos 3 horas de antecedência"
     }
+  },
+  "errors": {
+    "minimumAdvanceNotice": "Agende com pelo menos 3 horas de antecedência.",
+    "outsideBusinessHours": "Confirme o período fora do horário comercial para continuar.",
+    "visitMinimumDuration": "Visitas devem durar pelo menos 30 minutos.",
+    "userUnavailable": "Não foi possível vincular uma das pessoas ao evento.",
+    "cancellationReasonRequired": "Informe o motivo do cancelamento.",
+    "forbidden": "Você não tem permissão para alterar este evento.",
+    "notFound": "O evento ou um dos vínculos não está disponível. Atualize a agenda.",
+    "conflict": "O agendamento conflita com os dados atuais. Verifique o horário e os vínculos.",
+    "invalidFields": "Revise os campos informados antes de continuar.",
+    "rateLimit": "Muitas tentativas. Aguarde e tente novamente."
   }
 }

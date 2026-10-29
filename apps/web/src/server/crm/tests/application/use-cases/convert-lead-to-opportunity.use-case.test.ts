@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import type { LeadRepository } from '../../../application/ports/lead-repository.port'
+import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
+import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
+import { ConvertLeadToOpportunityUseCase } from '../../../application/use-cases/convert-lead-to-opportunity.use-case'
 import {
   LeadAlreadyConvertedError,
   LeadNotFoundError,
@@ -7,22 +11,18 @@ import {
 } from '../../../domain/errors'
 import type { Lead } from '../../../domain/lead.entity'
 import type { Opportunity } from '../../../domain/opportunity.entity'
-import type { LeadRepository } from '../../../application/ports/lead-repository.port'
-import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
-import { ConvertLeadToOpportunityUseCase } from '../../../application/use-cases/convert-lead-to-opportunity.use-case'
 
 const lead: Lead = {
   id: 'lead-1',
   tenantId: 'tenant-1',
-  responsavelId: 'agent-1',
+  responsibleId: 'agent-1',
   name: 'Maria Souza',
   phone: '(11) 99999-0000',
   email: 'maria@exemplo.com',
   interest: 'Apartamento',
   budget: 'Até R$ 3.000',
-  source: 'WhatsApp',
-  stage: 'VISITA_MARCADA',
+  source: 'WHATSAPP',
+  stage: 'VISIT_SCHEDULED',
   notes: 'Gostou muito da varanda.',
   opportunityId: null,
   createdAt: new Date('2026-09-21T00:00:00.000Z'),
@@ -40,7 +40,7 @@ function buildRepos(overrides?: {
     findById: vi.fn().mockResolvedValue(lead),
     markConverted: vi
       .fn()
-      .mockResolvedValue({ ...lead, stage: 'PROPOSTA', opportunityId: opportunity.id }),
+      .mockResolvedValue({ ...lead, stage: 'PROPOSAL', opportunityId: opportunity.id }),
     ...overrides?.lead,
   } as unknown as LeadRepository
 
@@ -51,7 +51,7 @@ function buildRepos(overrides?: {
 
   const propertyLookup = {
     existsForTenant: vi.fn().mockResolvedValue(true),
-    findResponsavelId: vi.fn().mockResolvedValue('agent-1'),
+    findResponsibleId: vi.fn().mockResolvedValue('agent-1'),
     ...overrides?.propertyLookup,
   } as unknown as PropertyLookupPort
 
@@ -70,7 +70,7 @@ describe('ConvertLeadToOpportunityUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'agent-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       leadId: 'lead-1',
       propertyId: 'property-1',
       proposedValue: 3000,
@@ -80,15 +80,20 @@ describe('ConvertLeadToOpportunityUseCase', () => {
       expect.objectContaining({
         tenantId: 'tenant-1',
         propertyId: 'property-1',
+        responsibleId: lead.responsibleId,
         leadName: lead.name,
         leadEmail: lead.email,
         leadPhone: lead.phone,
         proposedValue: 3000,
         notes: lead.notes,
-        status: 'RASCUNHO',
+        status: 'DRAFT',
       }),
     )
-    expect(leadRepository.markConverted).toHaveBeenCalledWith('lead-1', 'opportunity-1')
+    expect(leadRepository.markConverted).toHaveBeenCalledWith(
+      'lead-1',
+      'opportunity-1',
+      'maria@exemplo.com',
+    )
     expect(result.opportunity).toEqual(opportunity)
   })
 
@@ -106,7 +111,7 @@ describe('ConvertLeadToOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         leadId: 'lead-1',
         propertyId: 'property-1',
         proposedValue: 3000,
@@ -129,7 +134,7 @@ describe('ConvertLeadToOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         leadId: 'lead-1',
         propertyId: 'property-de-outro-tenant',
         proposedValue: 3000,
@@ -140,7 +145,7 @@ describe('ConvertLeadToOpportunityUseCase', () => {
 
   it('bloqueia AGENT convertendo com um imóvel do qual não é responsável', async () => {
     const { leadRepository, opportunityRepository, propertyLookup } = buildRepos({
-      propertyLookup: { findResponsavelId: vi.fn().mockResolvedValue('agent-2') },
+      propertyLookup: { findResponsibleId: vi.fn().mockResolvedValue('agent-2') },
     })
     const useCase = new ConvertLeadToOpportunityUseCase(
       leadRepository,
@@ -152,7 +157,7 @@ describe('ConvertLeadToOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         leadId: 'lead-1',
         propertyId: 'property-1',
         proposedValue: 3000,
@@ -173,7 +178,7 @@ describe('ConvertLeadToOpportunityUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-2',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         leadId: 'lead-1',
         propertyId: 'property-1',
         proposedValue: 3000,

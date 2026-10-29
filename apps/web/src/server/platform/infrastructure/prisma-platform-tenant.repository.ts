@@ -1,20 +1,19 @@
-import type { Tenant } from '@prisma/client'
+import type { Prisma, Tenant } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
 
-import type {
-  NewTenantStatusChange,
-  PlatformTenantRepository,
-} from '../application/ports/platform-tenant-repository.port'
-import type { PlatformTenant } from '../domain/platform-tenant.entity'
-import type { TenantUsage } from '../domain/platform-plan'
-import type { TenantAccount } from '../domain/tenant-account'
-import type { TenantStatusChange } from '../domain/tenant-status-history'
+import type { PlatformTenantRepository } from '../application/ports/platform-tenant-repository.port'
+import type { NewTenantStatusChange } from '../types/platform-tenant-repository'
+import type { PlatformTenant } from '../types/platform-tenant'
+import type { TenantUsage } from '../types/platform-plan'
+import type { TenantAccount } from '../types/tenant-account'
+import type { TenantStatusChange } from '../types/tenant-status-history'
+import type { TenantListQuery, TenantPage, TenantStatusCounts } from '../types/tenant-list'
 
 function toDomainPlatformTenant(tenant: Tenant): PlatformTenant {
   return {
     id: tenant.id,
-    nome: tenant.nome,
+    name: tenant.name,
     slug: tenant.slug,
     accountType: tenant.accountType,
     status: tenant.status,
@@ -23,7 +22,57 @@ function toDomainPlatformTenant(tenant: Tenant): PlatformTenant {
   }
 }
 
+function tenantWhere({
+  q,
+  status,
+  accountType,
+}: Pick<TenantListQuery, 'q' | 'status' | 'accountType'>): Prisma.TenantWhereInput {
+  const term = q?.trim()
+
+  return {
+    ...(status ? { status } : {}),
+    ...(accountType ? { accountType } : {}),
+    ...(term
+      ? {
+          OR: [
+            { name: { contains: term, mode: 'insensitive' } },
+            { slug: { contains: term.toLowerCase() } },
+          ],
+        }
+      : {}),
+  }
+}
+
 export class PrismaPlatformTenantRepository implements PlatformTenantRepository {
+  async findPage(query: TenantListQuery): Promise<TenantPage> {
+    const where = tenantWhere(query)
+    const [tenants, totalCount] = await Promise.all([
+      prisma.tenant.findMany({
+        where,
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+      prisma.tenant.count({ where }),
+    ])
+
+    return { items: tenants.map(toDomainPlatformTenant), totalCount }
+  }
+
+  async countByStatus(
+    query: Pick<TenantListQuery, 'q' | 'accountType'>,
+  ): Promise<TenantStatusCounts> {
+    const rows = await prisma.tenant.groupBy({
+      by: ['status'],
+      where: tenantWhere(query),
+      _count: { _all: true },
+    })
+    const counts: TenantStatusCounts = { TRIAL: 0, ACTIVE: 0, SUSPENDED: 0, CANCELED: 0 }
+    for (const row of rows) counts[row.status] = row._count._all
+
+    return counts
+  }
+
   async findMany(): Promise<PlatformTenant[]> {
     const tenants = await prisma.tenant.findMany({ orderBy: { createdAt: 'asc' } })
 
@@ -68,7 +117,6 @@ export class PrismaPlatformTenantRepository implements PlatformTenantRepository 
 
   async findStatusChanges(since: Date): Promise<TenantStatusChange[]> {
     const [lastBefore, fromSince] = await Promise.all([
-      // Uses the (tenantId, changedAt) index.
       prisma.$queryRaw<TenantStatusChange[]>`
         SELECT DISTINCT ON ("tenantId") "tenantId", "fromStatus", "toStatus", "changedAt"
         FROM "tenant_status_changes"
@@ -87,17 +135,17 @@ export class PrismaPlatformTenantRepository implements PlatformTenantRepository 
     )
   }
 
-  async countUsage(): Promise<Map<string, TenantUsage>> {
+  async countUsage(tenantIds?: string[]): Promise<Map<string, TenantUsage>> {
+    const scope = tenantIds ? { tenantId: { in: tenantIds } } : {}
     const [properties, brokers] = await Promise.all([
-      prisma.imovel.groupBy({
+      prisma.property.groupBy({
         by: ['tenantId'],
-        where: { status: { not: 'INACTIVE' } },
+        where: { ...scope, status: { not: 'INACTIVE' } },
         _count: { _all: true },
       }),
-      // Same definition as the agency dashboard's "active brokers".
-      prisma.usuario.groupBy({
+      prisma.user.groupBy({
         by: ['tenantId'],
-        where: { papel: { in: ['AGENT', 'OWNER'] }, ativo: true },
+        where: { ...scope, role: { in: ['AGENT', 'OWNER'] }, active: true },
         _count: { _all: true },
       }),
     ])

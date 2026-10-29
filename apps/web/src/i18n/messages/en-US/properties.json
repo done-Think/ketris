@@ -41,14 +41,14 @@
     },
     "filters": {
       "filterAriaLabel": "Filter properties by status",
-      "Todos": "All",
-      "Disponível": "Available",
-      "Alugado": "Rented",
-      "Ativo": "Active",
-      "Vendido": "Sold",
-      "Em análise": "Under review",
-      "Vencendo": "Expiring",
-      "Inativo": "Inactive"
+      "all": "All",
+      "available": "Available",
+      "rented": "Rented",
+      "active": "Active",
+      "sold": "Sold",
+      "inReview": "Under review",
+      "expiring": "Expiring",
+      "inactive": "Inactive"
     },
     "mapping": {
       "notAnnounced": "Not announced",
@@ -64,7 +64,9 @@
         "house": "House",
         "studio": "Studio",
         "penthouse": "Penthouse",
-        "commercial": "Commercial"
+        "commercial": "Commercial",
+        "loft": "Loft",
+        "other": "Other"
       },
       "activity": {
         "created": "Property registration completed",
@@ -123,13 +125,13 @@
       "parkingSpaces": "PARKING",
       "area": "AREA",
       "condominium": "CONDO FEE",
-      "iptu": "PROPERTY TAX"
+      "propertyTax": "PROPERTY TAX"
     },
     "pricing": {
       "rent": "RENT",
       "sale": "SALE",
       "condominium": "CONDO FEE",
-      "iptu": "PROPERTY TAX",
+      "propertyTax": "PROPERTY TAX",
       "administrationFee": "MANAGEMENT FEE",
       "securityDeposit": "GUARANTEE",
       "lastAdjustment": "LAST ADJUSTMENT"
@@ -141,21 +143,39 @@
       "history": "History"
     },
     "publish": "Publish",
-    "delete": "Delete",
+    "delete": "Deactivate",
     "publishSuccess": "Property published successfully.",
     "publishError": "Could not publish the property. Please try again.",
     "unpublishSuccess": "Property unpublished successfully.",
     "unpublishError": "Could not unpublish the property. Please try again.",
-    "deleteSuccess": "Property deleted successfully.",
-    "deleteError": "Could not delete the property. Please try again.",
+    "deleteSuccess": "Property deactivated successfully.",
+    "deleteError": "Could not deactivate the property. Please try again.",
     "deleteDialog": {
-      "title": "Delete property",
-      "description": "Are you sure you want to delete \"{title}\"? This action is permanent and cannot be undone. If the property has linked proposals or contracts, deletion will be blocked.",
-      "confirm": "Delete",
+      "title": "Deactivate property",
+      "description": "Deactivate \"{title}\"? The property will no longer be advertised. Its data, media, inquiries and contracts will be preserved.",
+      "confirm": "Deactivate",
       "cancel": "Cancel"
-    }
+    },
+    "mediaKinds": {
+      "photo": "Photo",
+      "floorPlan": "Floor plan",
+      "video": "Video"
+    },
+    "loadError": "Could not load the property. Please try again.",
+    "retry": "Try again",
+    "loading": "Loading property",
+    "description": "Description",
+    "amenities": "Amenities",
+    "negotiationTerms": "Negotiation terms"
   },
   "create": {
+    "coordinatesHint": "We will try to locate the property by its address when saving. If needed, enter both coordinates.",
+    "postalCode": {
+      "idle": "Enter the postal code and leave the field to fill in the address. Check the details before saving.",
+      "loading": "Looking up postal code…",
+      "notFound": "Postal code not found. Check the code or enter the address manually.",
+      "unavailable": "Postal code lookup is unavailable. You can enter the address manually."
+    },
     "title": "List property",
     "mobileTitle": "New Property",
     "back": "Back",
@@ -180,10 +200,14 @@
       "saleValue": "Sale value",
       "referenceValue": "Property reference value",
       "condominium": "Condo fee",
-      "iptu": "Monthly property tax",
+      "propertyTax": "Monthly property tax",
       "securityDeposit": "Guarantee",
       "commission": "Commission",
-      "commercialTerms": "Commercial terms"
+      "commercialTerms": "Commercial terms",
+      "owner": "Owner",
+      "complement": "Address complement",
+      "latitude": "Latitude (optional)",
+      "longitude": "Longitude (optional)"
     },
     "steps": {
       "ariaLabel": "Listing steps",
@@ -196,30 +220,32 @@
       "publishing": "Publishing"
     },
     "purposes": {
-      "Aluguel": "Rent",
-      "Venda": "Sale"
+      "RENT": "Rent",
+      "SALE": "Sale"
     },
     "propertyTypes": {
-      "Apartamento": "Apartment",
-      "Casa": "House",
-      "Studio": "Studio",
-      "Cobertura": "Penthouse",
-      "Comercial": "Commercial"
+      "apartment": "Apartment",
+      "house": "House",
+      "studio": "Studio",
+      "penthouse": "Penthouse",
+      "commercial": "Commercial",
+      "loft": "Loft",
+      "other": "Other"
     },
     "features": {
-      "Mobiliado": "Furnished",
-      "Varanda gourmet": "Gourmet balcony",
-      "Aceita pets": "Pet friendly",
-      "Portaria 24h": "24h concierge"
+      "furnished": "Furnished",
+      "gourmetBalcony": "Gourmet balcony",
+      "petFriendly": "Pet friendly",
+      "concierge24h": "24h concierge"
     },
     "mediaDropzone": "Drag images here or click to select",
     "mediaUploading": "Uploading...",
     "mediaRemove": "Remove image",
     "mediaUploadError": "Could not upload the image. Please try again.",
     "publishingOptions": {
-      "Publicar no marketplace após revisão": "Publish on the marketplace after review",
-      "Permitir contato por WhatsApp": "Allow WhatsApp contact",
-      "Destacar imóvel na listagem inicial": "Feature property in the initial listing"
+      "publishAfterReview": "Publish on the marketplace after review",
+      "allowWhatsappContact": "Allow WhatsApp contact",
+      "featured": "Feature property in the initial listing"
     },
     "createSuccess": "Property created successfully.",
     "createError": "Could not create the property. Please try again.",
@@ -234,13 +260,26 @@
       "cityRequired": "Enter the city",
       "stateRequired": "Enter the state",
       "zipCodeRequired": "Enter the ZIP code",
+      "zipCodeInvalid": "Enter a Brazilian postal code with 8 digits, such as 37502-330.",
       "numberInvalid": "Enter a valid value",
       "areaRequired": "Enter the usable area",
       "mainValueRequired": "Enter the main value",
       "negotiationTermRequired": "Enter the commercial terms",
       "rentalValueInvalid": "Enter a valid rental value",
-      "rentalValueRequired": "Enter the rental value"
-    }
+      "rentalValueRequired": "Enter the rental value",
+      "titleTooLong": "The title must contain at most 200 characters.",
+      "descriptionTooLong": "The description must contain at most 10,000 characters.",
+      "negotiationTermTooLong": "Negotiation terms must contain at most 2,000 characters.",
+      "latitudeInvalid": "Enter a latitude between -90 and 90.",
+      "longitudeInvalid": "Enter a longitude between -180 and 180.",
+      "integerRequired": "Enter a whole number"
+    },
+    "saveDraft": "Save draft",
+    "noOwner": "No linked owner",
+    "ownerUnavailable": "Owner unavailable",
+    "ownersLoadError": "Could not load owners.",
+    "mediaUploadFileError": "Could not upload \"{filename}\". Please try again.",
+    "mediaStorageUnavailableFileError": "The image service is unavailable. Could not upload \"{filename}\". Please try again later."
   },
   "edit": {
     "title": "Edit property",

@@ -20,90 +20,90 @@ describe('/api/agenda/events/{id} (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Agenda Detail', slug: `agenda-detail-${randomUUID()}` },
+      data: { name: 'Tenant Agenda Detail', slug: `agenda-detail-${randomUUID()}` },
     })
     tenantId = tenant.id
 
     const otherTenant = await prisma.tenant.create({
-      data: { nome: 'Other Agenda Detail', slug: `other-agenda-detail-${randomUUID()}` },
+      data: { name: 'Other Agenda Detail', slug: `other-agenda-detail-${randomUUID()}` },
     })
     otherTenantId = otherTenant.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor Agenda',
+        name: 'Corretor Agenda',
         email: `corretor-agenda-detail-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const renter = await prisma.usuario.create({
+    const renter = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Locatário Agenda',
+        name: 'Locatário Agenda',
         email: `locatario-agenda-detail-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'RENTER',
+        passwordHash: 'hash-fake',
+        role: 'RENTER',
       },
     })
     renterToken = await tokenService.sign({
       id: renter.id,
       tenantId: renter.tenantId,
-      nome: renter.nome,
+      name: renter.name,
       email: renter.email,
-      papel: renter.papel,
-      ativo: renter.ativo,
-      vinculoAprovadoEm: renter.vinculoAprovadoEm,
+      role: renter.role,
+      active: renter.active,
+      membershipApprovedAt: renter.membershipApprovedAt,
     })
 
-    const event = await prisma.eventoAgenda.create({
+    const event = await prisma.agendaEvent.create({
       data: {
         tenantId,
-        responsavelId: actor.id,
-        criadoPorId: actor.id,
-        titulo: 'Follow-up com cliente',
-        tipo: 'FOLLOW_UP',
-        referenciaImovelLivre: 'Apto fora da carteira',
-        inicio: new Date('2026-10-10T13:00:00.000Z'),
-        fim: new Date('2026-10-10T13:30:00.000Z'),
-        participanteNome: 'Ana',
-        participanteTelefone: '11999990000',
+        responsibleId: actor.id,
+        createdById: actor.id,
+        title: 'Follow-up com cliente',
+        type: 'FOLLOW_UP',
+        freeFormPropertyReference: 'Apto fora da carteira',
+        start: new Date('2026-10-10T13:00:00.000Z'),
+        end: new Date('2026-10-10T13:30:00.000Z'),
+        participantName: 'Ana',
+        participantPhone: '11999990000',
       },
     })
     eventId = event.id
 
-    const otherTenantActor = await prisma.usuario.create({
+    const otherTenantActor = await prisma.user.create({
       data: {
         tenantId: otherTenantId,
-        nome: 'Outro Corretor',
+        name: 'Outro Corretor',
         email: `outro-agenda-detail-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
-    const otherTenantEvent = await prisma.eventoAgenda.create({
+    const otherTenantEvent = await prisma.agendaEvent.create({
       data: {
         tenantId: otherTenantId,
-        responsavelId: otherTenantActor.id,
-        criadoPorId: otherTenantActor.id,
-        titulo: 'Evento de outro tenant',
-        referenciaImovelLivre: 'Externo',
-        inicio: new Date('2026-10-10T13:00:00.000Z'),
-        fim: new Date('2026-10-10T13:30:00.000Z'),
-        participanteNome: 'X',
-        participanteTelefone: '0',
+        responsibleId: otherTenantActor.id,
+        createdById: otherTenantActor.id,
+        title: 'Evento de outro tenant',
+        freeFormPropertyReference: 'Externo',
+        start: new Date('2026-10-10T13:00:00.000Z'),
+        end: new Date('2026-10-10T13:30:00.000Z'),
+        participantName: 'X',
+        participantPhone: '0',
       },
     })
     otherTenantEventId = otherTenantEvent.id

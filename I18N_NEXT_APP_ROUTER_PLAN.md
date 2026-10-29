@@ -1,3 +1,5 @@
+> Documento histórico. A política e a implementação atuais estão em [I18N_NEXT_INTL_DECISION.md](I18N_NEXT_INTL_DECISION.md), atualizadas em 27/10/2026. Exemplos antigos de prefixos e montagem manual de URLs não representam o código vigente.
+
 # Plano de Implementacao i18n - Ketris + Next.js App Router
 
 Data da revisao: 2026-08-20
@@ -440,8 +442,8 @@ Exemplo de direcao:
 ```ts
 export function createLoginSchema(t: (key: string) => string) {
   return z.object({
-    email: z.string().email(t("validation.email.invalid")),
-  });
+    email: z.string().email(t('validation.email.invalid')),
+  })
 }
 ```
 

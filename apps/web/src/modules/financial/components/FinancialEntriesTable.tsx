@@ -1,60 +1,27 @@
 'use client'
 
-import { Box, Chip, Typography } from '@mui/material'
-import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
+import { Box, Typography } from '@mui/material'
+import type { GridColDef } from '@mui/x-data-grid'
 import { DataGrid } from '@mui/x-data-grid'
-import { useLocale, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
-import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
-import type { AppLocale } from '@/i18n/types/locale.types'
-
-import { financialStatusStyles } from '../config/financial-status-styles'
+import { useFinancialFormat } from '../hooks/use-financial-format'
 import type { FinancialEntriesTableProps, FinancialEntry } from '../types/financial-entry'
-import { formatFinancialAmount } from '../utils/financial-display-currency'
-import { FinancialEntryDetailDialog } from './FinancialEntryDetailDialog'
+import { ChargeStatusChip } from './ChargeStatusChip'
+import { getAmountStyles, styles } from '../styles/financial-entries-table.styles'
 
-function FinancialStatusCell({
-  row,
-  label,
-}: GridRenderCellParams<FinancialEntry> & { label: string }) {
-  const status = financialStatusStyles[row.status]
-
-  return (
-    <Box
-      sx={{
-        transform: 'translateX(20px)',
-      }}
-    >
-      <Chip
-        label={label}
-        size="small"
-        sx={{
-          width: 'fit-content',
-          bgcolor: status.bgcolor,
-          color: status.color,
-          borderRadius: `${radius.full}px`,
-          fontSize: 10,
-          fontWeight: 900,
-        }}
-      />
-    </Box>
-  )
-}
-
-export function FinancialEntriesTable({ entries, exchangeRate }: FinancialEntriesTableProps) {
-  const locale = useLocale() as AppLocale
+export function FinancialEntriesTable({ entries, onOpen }: FinancialEntriesTableProps) {
   const t = useTranslations('dashboard.finance.table')
-  const statusT = useTranslations('dashboard.finance.statuses')
-  const [selectedEntry, setSelectedEntry] = useState<FinancialEntry | null>(null)
+  const format = useFinancialFormat()
   const formatCurrency = (value: number) =>
-    `${value > 0 ? '+' : '-'}${formatFinancialAmount(Math.abs(value), locale, exchangeRate, 0)}`
+    `${value >= 0 ? '+' : '-'}${format.currency(Math.abs(value))}`
   const columns: GridColDef<FinancialEntry>[] = [
     {
       field: 'date',
       headerName: t('date'),
       flex: 0.75,
       minWidth: 120,
+      valueFormatter: (value: string) => format.date(value),
     },
     {
       field: 'description',
@@ -76,24 +43,8 @@ export function FinancialEntriesTable({ entries, exchangeRate }: FinancialEntrie
       align: 'center',
       headerAlign: 'center',
       renderCell: ({ row }) => (
-        <Box
-          sx={{
-            display: 'flex',
-            width: '100%',
-            height: '100%',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Typography
-            sx={{
-              color: row.amountValue >= 0 ? brand.semantic.success : brand.semantic.error,
-              fontSize: 13,
-              fontWeight: 900,
-              lineHeight: 1,
-              textAlign: 'center',
-            }}
-          >
+        <Box sx={styles.amountCell}>
+          <Typography sx={getAmountStyles(row.amountValue)}>
             {formatCurrency(row.amountValue)}
           </Typography>
         </Box>
@@ -106,28 +57,17 @@ export function FinancialEntriesTable({ entries, exchangeRate }: FinancialEntrie
       minWidth: 120,
       cellClassName: 'financial-status-cell',
       headerClassName: 'financial-status-header',
-      renderCell: (params) => (
-        <FinancialStatusCell {...params} label={statusT(params.row.status)} />
+      renderCell: ({ row }) => (
+        <Box sx={styles.statusCell}>
+          <ChargeStatusChip status={row.status} />
+        </Box>
       ),
     },
   ]
 
   return (
-    <Box
-      sx={{
-        bgcolor: surface.paper,
-        border: '1px solid',
-        borderColor: alpha.graphite[6],
-        borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.propertyCard,
-        p: { xs: 1.6, md: 2.4 },
-        width: '100%',
-        minWidth: 0,
-      }}
-    >
-      <Typography sx={{ color: brand.graphite[500], fontSize: 18, fontWeight: 900, mb: 1.8 }}>
-        {t('title')}
-      </Typography>
+    <Box sx={styles.card}>
+      <Typography sx={styles.title}>{t('title')}</Typography>
       <DataGrid
         rows={entries}
         columns={columns}
@@ -136,58 +76,9 @@ export function FinancialEntriesTable({ entries, exchangeRate }: FinancialEntrie
         rowHeight={58}
         disableColumnMenu
         disableRowSelectionOnClick
-        onRowClick={(params) => setSelectedEntry(params.row)}
-        getRowClassName={(params) =>
-          params.row.id === selectedEntry?.id ? 'financial-entry-row--selected' : ''
-        }
+        onRowClick={(params) => onOpen(params.row.id)}
         localeText={{ noRowsLabel: t('noRows') }}
-        sx={{
-          border: 0,
-          '& .MuiDataGrid-columnHeaders': {
-            bgcolor: brand.neutral[50],
-            color: brand.neutral[500],
-            fontSize: 11,
-            fontWeight: 900,
-            textTransform: 'uppercase',
-          },
-          '& .MuiDataGrid-columnSeparator': {
-            display: 'none',
-          },
-          '& .financial-status-header .MuiDataGrid-columnHeaderTitleContainer': {
-            transform: 'translateX(20px)',
-          },
-          '& .MuiDataGrid-cell': {
-            borderBottom: 0,
-            color: brand.neutral[500],
-            fontSize: 13,
-            fontWeight: 700,
-            outline: 'none !important',
-          },
-          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
-            outline: 'none',
-          },
-          '& .MuiDataGrid-row': {
-            borderBottom: '1px solid',
-            borderColor: alpha.graphite[6],
-            cursor: 'pointer',
-            transition: motion.transition.bordered,
-          },
-          '& .MuiDataGrid-row.financial-entry-row--selected': {
-            bgcolor: alpha.magenta[6],
-          },
-          '& .MuiDataGrid-row:hover': {
-            bgcolor: brand.neutral[50],
-          },
-          '& .MuiDataGrid-row.financial-entry-row--selected:hover': {
-            bgcolor: alpha.magenta[8],
-          },
-        }}
-      />
-      <FinancialEntryDetailDialog
-        entry={selectedEntry}
-        open={Boolean(selectedEntry)}
-        onClose={() => setSelectedEntry(null)}
-        exchangeRate={exchangeRate}
+        sx={styles.dataGrid}
       />
     </Box>
   )

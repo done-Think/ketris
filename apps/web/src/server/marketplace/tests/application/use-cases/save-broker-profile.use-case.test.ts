@@ -27,7 +27,7 @@ function createDeps() {
   const brokerProfileRepository: BrokerProfileRepository = {
     findPublishedById: vi.fn(),
     listPublished: vi.fn(),
-    findByUsuarioId: vi.fn(),
+    findByUserId: vi.fn(),
     save: vi.fn().mockResolvedValue({} as BrokerProfile),
     setStatus: vi.fn(),
   }
@@ -40,7 +40,7 @@ describe('SaveBrokerProfileUseCase', () => {
     const deps = createDeps()
     const useCase = new SaveBrokerProfileUseCase(deps.brokerProfileRepository)
 
-    await useCase.execute({ actorId: 'usuario-1', actorPapel: 'AGENT', ...draft })
+    await useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT', ...draft })
 
     expect(deps.brokerProfileRepository.save).toHaveBeenCalledWith('usuario-1', draft)
   })
@@ -50,7 +50,7 @@ describe('SaveBrokerProfileUseCase', () => {
     const useCase = new SaveBrokerProfileUseCase(deps.brokerProfileRepository)
 
     await expect(
-      useCase.execute({ actorId: 'usuario-1', actorPapel: 'ADMIN', ...draft }),
+      useCase.execute({ actorId: 'usuario-1', actorRole: 'OWNER', ...draft }),
     ).rejects.toThrow(ForbiddenError)
     expect(deps.brokerProfileRepository.save).not.toHaveBeenCalled()
   })

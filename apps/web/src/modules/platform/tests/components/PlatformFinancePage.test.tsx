@@ -8,7 +8,7 @@ import { PlatformFinancePage } from '../../components/PlatformFinancePage'
 import type { ApiPlatformFinance } from '../../types/platform-finance'
 
 const { usePlatformFinance } = vi.hoisted(() => ({ usePlatformFinance: vi.fn() }))
-vi.mock('../../hooks/use-platform-finance', () => ({ usePlatformFinance }))
+vi.mock('../../hooks/use-platform-billing', () => ({ usePlatformFinance }))
 
 const createdAt = '2026-01-10T12:00:00.000Z'
 const finance: ApiPlatformFinance = {
@@ -18,6 +18,7 @@ const finance: ApiPlatformFinance = {
   trialAccounts: 1,
   suspendedAccounts: 2,
   canceledThisMonth: 1,
+  churnBaseAccounts: 4,
   churnRate: 0.25,
   byAccountType: [
     { accountType: 'INDIVIDUAL', activeAccounts: 0, mrr: 0 },

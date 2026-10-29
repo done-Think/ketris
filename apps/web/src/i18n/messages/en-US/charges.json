@@ -1,7 +1,4 @@
 {
-  "renter": {
-    "subtitle": "View charges for your contracts."
-  },
   "metadata": {
     "title": "Ketris | Charges",
     "description": "Manage receivables and payables.",
@@ -9,10 +6,17 @@
     "metadataDescription": "Manage receivables and payables."
   },
   "title": "Charges",
-  "subtitle": "Manage receivables and payables",
-  "searchPlaceholder": "Search tenant or property...",
+  "subtitle": "Manage receivable and payable charges",
+  "renter": {
+    "subtitle": "Check the charges of your contracts."
+  },
+  "searchPlaceholder": "Search tenant, property or code...",
   "newCharge": "New charge",
-  "tabs": { "receivable": "Receivable", "payable": "Payable" },
+  "filtersLabel": "Filter charges by status",
+  "tabs": {
+    "receivable": "Receivable",
+    "payable": "Payable"
+  },
   "kpis": {
     "receivable": "Receivable this month",
     "overdue": "Overdue",
@@ -33,131 +37,177 @@
     "amount": "Amount",
     "dueDate": "Due date",
     "status": "Status",
-    "actions": "Actions"
+    "actions": "Actions",
+    "empty": "No charges found."
   },
-  "actions": { "edit": "Edit", "archive": "Archive", "delete": "Delete" },
+  "actions": {
+    "view": "View details",
+    "edit": "Edit",
+    "cancel": "Cancel charge",
+    "delete": "Delete"
+  },
   "feedback": {
+    "created": "Charge created",
     "updated": "Charge updated",
-    "updateError": "Could not update the charge.",
-    "archived": "Charge archived",
-    "archiveError": "Could not archive the charge.",
+    "cancelled": "Charge cancelled",
     "deleted": "Charge deleted",
-    "deleteError": "Could not delete the charge."
+    "paymentRegistered": "Payment registered",
+    "paymentReversed": "Payment reversed"
   },
-  "pagination": { "summary": "Showing {from}-{to} of {total} charges" },
-  "createDialog": {
-    "title": "New charge",
+  "errors": {
+    "createFailed": "Could not create the charge.",
+    "updateFailed": "Could not update the charge.",
+    "cancelFailed": "Could not cancel the charge.",
+    "deleteFailed": "Could not delete the charge.",
+    "paymentFailed": "Could not register the payment.",
+    "reverseFailed": "Could not reverse the payment.",
+    "downloadFailed": "Could not download the receipt.",
+    "exportFailed": "Could not export the charges.",
+    "notFound": "Charge not found.",
+    "contractNotFound": "Contract not found.",
+    "alreadySettled": "This charge is already paid or cancelled.",
+    "notPaid": "Only a paid charge can have its payment reversed.",
+    "locked": "A paid or cancelled charge only allows changing the description.",
+    "hasMovement": "Only pending or scheduled charges without any movement can be deleted. Use \"Cancel charge\".",
+    "concurrentChange": "Someone else changed this charge. Reload and try again.",
+    "receiptNotFound": "Receipt not found.",
+    "receiptInvalid": "The uploaded file does not match the receipt.",
+    "receiptUnavailable": "Receipt service unavailable. Try later or register without a receipt.",
+    "receiptExpired": "The receipt upload expired. Try again.",
+    "validation": "Check the information provided.",
+    "forbidden": "You are not allowed to do this."
+  },
+  "formDialog": {
+    "createTitle": "New charge",
+    "editTitle": "Edit charge",
     "close": "Close",
     "cancel": "Cancel",
-    "submit": "Create charge",
-    "success": "Charge created",
-    "error": "Could not create the charge.",
-    "fields": {
-      "description": "Description",
-      "amount": "Amount",
-      "dueDate": "Due date",
-      "direction": "Type",
-      "status": "Status"
-    },
-    "directions": { "receivable": "Receivable", "payable": "Payable" },
-    "statuses": { "pending": "Pending", "scheduled": "Scheduled" },
-    "errors": {
-      "descriptionRequired": "Enter the description",
-      "amountPositive": "Amount must be greater than zero",
-      "dateInvalid": "Enter a valid date"
-    }
-  },
-  "editDialog": {
-    "paymentHint": "To mark as paid, register the payment in the details page.",
-    "title": "Edit charge",
-    "close": "Close",
-    "cancel": "Cancel",
+    "create": "Create charge",
     "save": "Save changes",
+    "createHint": "The status changes through the charge actions: register payment, reverse or cancel.",
+    "editHint": "To change the status, register a payment or cancel the charge.",
+    "lockedHint": "Paid or cancelled charge: only the description can be changed.",
     "fields": {
       "description": "Description",
       "amount": "Amount",
       "dueDate": "Due date",
       "direction": "Type",
-      "status": "Status"
+      "status": "Initial status"
+    },
+    "directions": {
+      "receivable": "Receivable",
+      "payable": "Payable"
+    },
+    "statuses": {
+      "pending": "Pending",
+      "scheduled": "Scheduled"
     },
     "errors": {
-      "descriptionRequired": "Enter the description",
-      "amountPositive": "Amount must be greater than zero",
+      "descriptionRequired": "Enter a description",
+      "descriptionTooLong": "Use up to 500 characters",
+      "amountPositive": "The amount must be greater than zero",
+      "amountTooHigh": "Amount above the limit",
       "dateInvalid": "Enter a valid date"
     }
   },
-  "archiveDialog": {
-    "title": "Archive charge?",
-    "description": "The charge will be marked as cancelled.",
-    "cancel": "Cancel",
-    "confirm": "Archive"
+  "reasonDialog": {
+    "cancel": {
+      "title": "Cancel charge",
+      "description": "The charge will be cancelled and cannot be reopened. The reason is kept in the history.",
+      "reason": "Cancellation reason",
+      "cancel": "Back",
+      "confirm": "Cancel charge"
+    },
+    "reverse": {
+      "title": "Reverse payment",
+      "description": "The charge goes back to pending. The payment and receipt stay in the history.",
+      "reason": "Reversal reason",
+      "cancel": "Back",
+      "confirm": "Reverse payment"
+    },
+    "errors": {
+      "reasonRequired": "Enter the reason (at least 3 characters)",
+      "reasonTooLong": "Use up to 500 characters"
+    }
   },
   "deleteDialog": {
     "title": "Delete charge?",
-    "description": "This action is permanent and cannot be undone.",
+    "description": "Only pending or scheduled charges without any movement can be deleted. The deletion is recorded in the history.",
     "cancel": "Cancel",
     "confirm": "Delete"
   },
-  "detailsDialog": {
-    "title": "Charge details",
-    "close": "Close"
+  "paymentDialog": {
+    "title": "Register payment",
+    "date": "Payment date",
+    "method": "Payment method",
+    "cancel": "Cancel",
+    "confirm": "Confirm payment",
+    "sending": "Sending...",
+    "attachReceipt": "Attach receipt",
+    "replaceReceipt": "Replace file",
+    "removeReceipt": "Remove",
+    "noReceiptSelected": "No receipt attached (optional)",
+    "receiptHint": "PDF, JPG or PNG up to 10 MB.",
+    "errors": {
+      "dateInvalid": "Enter a valid date",
+      "paymentMethodRequired": "Enter the payment method",
+      "paymentMethodTooLong": "Use up to 100 characters",
+      "receiptType": "Upload a PDF, JPG or PNG",
+      "receiptSize": "The file must be up to 10 MB"
+    }
   },
   "details": {
     "missing": "Charge not found.",
-    "noReceipt": "This charge has no receipt.",
-    "demoDocument": "Demonstration document — not valid for payment.",
-    "closeDocument": "Close document",
-    "back": "Back to charges",
-    "summary": "Rent — March 2025",
-    "duplicate": "Issue duplicate",
-    "duplicateSuccess": "Demonstration duplicate prepared locally",
+    "loadFailed": "Could not load the charge.",
+    "retry": "Try again",
+    "back": "Back to Charges",
     "registerPayment": "Register payment",
-    "paymentSuccess": "Payment registered",
-    "paymentError": "Could not register the payment.",
+    "reversePayment": "Reverse payment",
+    "cancelCharge": "Cancel charge",
     "detailsTitle": "Charge details",
     "receiptTitle": "Receipt",
-    "linkingTitle": "Linking",
+    "linkingTitle": "Links",
     "historyTitle": "History",
-    "receivable": "Monthly rent",
-    "payable": "Payment",
     "notPaid": "Not paid",
     "notAvailable": "—",
+    "noReceipt": "No receipt attached.",
+    "receiptMeta": "Uploaded on {date} · {size}",
+    "downloadReceipt": "Download {name}",
+    "contract": "CONTRACT",
+    "property": "PROPERTY",
+    "tenant": "TENANT",
+    "directions": {
+      "receivable": "Receivable",
+      "payable": "Payable"
+    },
     "fields": {
       "type": "Type",
-      "competence": "Competence",
+      "description": "Description",
+      "competence": "Period",
       "amount": "Amount",
       "dueDate": "Due date",
       "payment": "Payment",
       "method": "Method",
-      "fees": "Fees/Interest"
+      "cancelledAt": "Cancelled on",
+      "cancellationReason": "Cancellation reason"
     },
-    "receiptFile": "pix_receipt_040325.pdf",
-    "receiptMeta": "Uploaded on 03/04/2025 at 14:15 · 142 KB",
-    "viewReceipt": "View receipt",
-    "receiptPreview": "Demonstration receipt preview available locally.",
-    "contract": "CONTRACT",
-    "property": "PROPERTY",
-    "tenant": "TENANT",
-    "address": "1420 Alameda Lorena - Jardins, São Paulo - SP",
-    "contact": "bruno.oliveira@email.com",
     "history": {
-      "updated": "Charge updated",
-      "generated": "Charge generated",
-      "generatedDate": "02/25/2025 at 09:00",
-      "issued": "Bill issued",
-      "issuedDate": "02/25/2025 at 09:30",
-      "received": "Payment received"
-    },
-    "paymentDialog": {
-      "title": "Register payment",
-      "date": "Payment date",
-      "method": "Payment method",
-      "cancel": "Cancel",
-      "confirm": "Confirm payment"
-    },
-    "errors": {
-      "dateInvalid": "Enter a valid date",
-      "paymentMethodRequired": "Enter the payment method"
+      "CREATED": "Charge created",
+      "UPDATED": "Charge edited",
+      "PAYMENT_REGISTERED": "Payment registered",
+      "PAYMENT_REVERSED": "Payment reversed",
+      "CANCELLED": "Charge cancelled",
+      "DELETED": "Charge deleted",
+      "system": "System",
+      "changed": "Changed: {fields}",
+      "reason": "Reason: {reason}",
+      "empty": "No recorded events.",
+      "fields": {
+        "description": "description",
+        "type": "type",
+        "amount": "amount",
+        "dueDate": "due date"
+      }
     }
   }
 }

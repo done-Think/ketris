@@ -1,3 +1,12 @@
+import type {
+  AgendaEventResponseDTO,
+  RenterAgendaEventResponseDTO,
+  AgendaEventsResponseDTO,
+  CreateAgendaEventRequestInput,
+  RescheduleAgendaEventRequestInput,
+  UpdateAgendaEventRequestInput,
+} from '@shared/types/generated/agenda/http'
+import type { LocalizedHref } from '@shared/types/localized-href'
 import type { Dayjs } from 'dayjs'
 import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
@@ -7,16 +16,16 @@ import type { DashboardNotificationItem } from '@shared/types/dashboard-notifica
 import type { buildAgendaEventFormSchema } from '../schemas/agenda-event-form-schema'
 import type { AgendaOrganizationItem } from './agenda-organization'
 
-export type AgendaEventStatus = 'Confirmada' | 'Pendente' | 'Reagendar'
+export type AgendaEventStatus = AgendaEventResponseDTO['status']
 
 export type AgendaEventTone = 'primary' | 'info' | 'warning'
-export type AgendaEventAudience = 'LEGACY_TEAM' | 'ALL_AGENTS' | 'ASSIGNED_AGENT'
+export type AgendaEventAudience = AgendaEventResponseDTO['audience']
 export interface AgendaAgentOption {
   id: string
   name: string
 }
 
-export type AgendaEventCreatorRole = 'colleague' | 'agency'
+export type AgendaEventCreatorRole = NonNullable<AgendaEventResponseDTO['createdBy']>['role']
 
 export type AgendaEventVisualKind = 'followUp' | 'inspection' | 'meeting' | 'signature' | 'visit'
 
@@ -30,7 +39,7 @@ export type AgendaEvent = {
   durationMinutes: number
   title: string
   property: string
-  propertyHref: string
+  propertyHref: LocalizedHref
   propertyId: string | null
   apiKind: AgendaEventApiKind | null
   participant: string
@@ -41,6 +50,7 @@ export type AgendaEvent = {
   tone: AgendaEventTone
   kind?: AgendaEventVisualKind
   createdBy?: string
+  createdById?: string | null
   createdByRole?: AgendaEventCreatorRole
 }
 
@@ -90,7 +100,7 @@ export interface BuildAgendaEventFormSchemaOptions {
 }
 
 export type AgendaPropertyOption = {
-  href: string
+  href: LocalizedHref
   id: string
   label: string
 }
@@ -100,7 +110,7 @@ export type CancelAgendaEventDialogProps = {
   isPending: boolean
   title: string
   onClose: () => void
-  onConfirm: () => void
+  onConfirm: (values: CancelAgendaEventValues) => void | Promise<void>
 }
 
 export type AgendaEventFormFieldsProps = {
@@ -128,7 +138,7 @@ export type AgendaEventDetailDialogProps = {
   minDate: string
   open: boolean
   onClose: () => void
-  onDelete: () => Promise<boolean>
+  onDelete: (reason: string) => Promise<boolean>
   onEdit: (values: AgendaEventFormValues) => Promise<boolean>
   propertyOptions: AgendaPropertyOption[]
 }
@@ -168,90 +178,56 @@ export type AgendaWeekCalendarProps = {
 }
 
 export type AgendaBuildNotificationsOptions = {
+  currentUserId?: string
   events: AgendaEvent[]
-  t: (key: string, values?: Record<string, string | number>) => string
+  t: (key: TranslationKey<'agenda.dashboard'>, values?: Record<string, string | number>) => string
   today: Dayjs
 }
 
-export type AgendaEventApiStatus = 'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED'
-
-export type AgendaEventApiKind =
-  'VISIT' | 'FOLLOW_UP' | 'MEETING' | 'INSPECTION' | 'SIGNATURE' | 'OTHER'
-
-export interface AgendaEventApi {
-  audience?: AgendaEventAudience
-  internal?: boolean
-  responsibleName?: string
-  id: string
-  tenantId: string
-  responsibleId: string
-  createdById: string | null
-  propertyId: string | null
-  propertyReference: string | null
-  title: string
-  kind: AgendaEventApiKind | null
-  status: AgendaEventApiStatus
+export type AgendaEventApiStatus = AgendaEventResponseDTO['status']
+export type AgendaEventApiKind = NonNullable<AgendaEventResponseDTO['kind']>
+export type AgendaEventApi = AgendaEventResponseDTO
+export type AgendaEventResponse = { event: AgendaEventResponseDTO }
+export type RenterAgendaEventApi = RenterAgendaEventResponseDTO
+export type AgendaEventReadApi = AgendaEventsResponseDTO['events'][number]
+export type AgendaEventsResponse = AgendaEventsResponseDTO
+export type CreateAgendaEventPayload = Omit<CreateAgendaEventRequestInput, 'start'> & {
   start: string
-  end: string
-  participantName: string
-  participantPhone: string
-  notes: string | null
-  createdAt: string
-  updatedAt: string
 }
-
-export interface AgendaEventResponse {
-  event: AgendaEventApi
-}
-
-export type RenterAgendaEventApi = Pick<
-  AgendaEventApi,
-  'id' | 'propertyId' | 'propertyReference' | 'title' | 'kind' | 'status' | 'start' | 'end'
-> & {
-  responsibleName: string
-}
-
-export type AgendaEventReadApi = AgendaEventApi | RenterAgendaEventApi
-
-export interface AgendaEventsResponse {
-  events: AgendaEventReadApi[]
-}
-
-export interface CreateAgendaEventPayload {
-  outsideBusinessHoursConfirmed?: boolean
-  audience?: AgendaEventAudience
-  internal?: boolean
-  responsibleId?: string
-  propertyId?: string
-  propertyReference?: string
-  title: string
-  kind?: AgendaEventApiKind
+export type RescheduleAgendaEventPayload = Omit<RescheduleAgendaEventRequestInput, 'start'> & {
   start: string
-  durationMinutes: number
-  participantName: string
-  participantPhone: string
-  notes?: string
 }
-
-export interface RescheduleAgendaEventPayload {
-  outsideBusinessHoursConfirmed?: boolean
-  start: string
-  durationMinutes?: number
-}
-
-export interface UpdateAgendaEventPayload {
-  outsideBusinessHoursConfirmed?: boolean
+export type UpdateAgendaEventPayload = Omit<UpdateAgendaEventRequestInput, 'start'> & {
   start?: string
-  durationMinutes?: number
-  audience?: AgendaEventAudience
-  internal?: boolean
-  responsibleId?: string
-  title?: string
-  kind?: AgendaEventApiKind | null
-  status?: AgendaEventApiStatus
-  propertyId?: string | null
-  propertyReference?: string | null
-  participantName?: string
-  participantPhone?: string
-  notes?: string | null
 }
+
+export type CancelAgendaEventValues = z.infer<
+  ReturnType<typeof import('../schemas/cancel-agenda-event-schema').buildCancelAgendaEventSchema>
+>
+export type CancelAgendaEventPayload =
+  import('@shared/types/generated/agenda/http').CancelAgendaEventRequestDTO
+export interface CancelAgendaEventMutationInput {
+  id: string
+  payload: CancelAgendaEventPayload
+}
+export interface AgendaLayoutPlacement {
+  id: string
+  top: number
+  height: number
+}
+export type AgendaLaidOutCard<T extends AgendaLayoutPlacement = AgendaCalendarCard> = T & {
+  lane: number
+  laneCount: number
+}
+
+export interface AgendaPropertyFieldProps {
+  control: Control<AgendaEventFormValues>
+  internal: boolean
+  propertyOptions: AgendaPropertyOption[]
+}
+
+export interface AgendaEventMutationInput<TPayload> {
+  id: string
+  payload: TPayload
+}
+import type { TranslationKey } from '@/i18n/types/messages.types'

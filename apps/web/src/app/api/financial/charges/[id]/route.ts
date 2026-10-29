@@ -2,55 +2,58 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { financialContainer } from '@server/financial/container'
+import { toChargeResponse } from '@server/financial/application/charge-response'
 import { updateChargeRequestSchema } from '@server/financial/schemas/charge-input.schema'
-import { parseJsonBody, withErrorHandling } from '@server/shared/http'
+import { chargeIdParamsSchema } from '@server/financial/schemas/charge.schema'
+import type { ChargeRouteContext } from '@server/financial/types/http'
+import { parseJsonBody, parseRouteParams, withErrorHandling } from '@server/shared/http'
 
-interface RouteContext {
-  params: Promise<{ id: string }>
-}
-
-export const GET = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
+export const GET = withErrorHandling(async (request: NextRequest, context: ChargeRouteContext) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
+  const { id } = await parseRouteParams(context.params, chargeIdParamsSchema)
 
   const charge = await financialContainer.getChargeUseCase.execute({
     actorId: actor.sub,
-    actorPapel: actor.papel as Papel,
+    actorRole: actor.role,
     actorTenantId: actor.tenantId,
-    chargeId: (await context.params).id,
+    chargeId: id,
   })
 
-  return NextResponse.json({ charge }, { status: 200 })
+  return NextResponse.json({ charge: toChargeResponse(charge) }, { status: 200 })
 })
 
-export const PATCH = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
-  const actor = await requireBearerAuth(request, authContainer.tokenService)
-  const body = await parseJsonBody(request, updateChargeRequestSchema)
+export const PATCH = withErrorHandling(
+  async (request: NextRequest, context: ChargeRouteContext) => {
+    const actor = await requireBearerAuth(request, authContainer.tokenService)
+    const { id } = await parseRouteParams(context.params, chargeIdParamsSchema)
+    const body = await parseJsonBody(request, updateChargeRequestSchema)
 
-  const charge = await financialContainer.updateChargeUseCase.execute({
-    actorTenantId: actor.tenantId,
-    actorPapel: actor.papel as Papel,
-    chargeId: (await context.params).id,
-    description: body.description ?? null,
-    type: body.type,
-    amount: body.amount,
-    dueDate: body.dueDate,
-    status: body.status,
-  })
+    const charge = await financialContainer.updateChargeUseCase.execute({
+      actorId: actor.sub,
+      actorTenantId: actor.tenantId,
+      actorRole: actor.role,
+      chargeId: id,
+      ...body,
+    })
 
-  return NextResponse.json({ charge }, { status: 200 })
-})
+    return NextResponse.json({ charge: toChargeResponse(charge) }, { status: 200 })
+  },
+)
 
-export const DELETE = withErrorHandling(async (request: NextRequest, context: RouteContext) => {
-  const actor = await requireBearerAuth(request, authContainer.tokenService)
+export const DELETE = withErrorHandling(
+  async (request: NextRequest, context: ChargeRouteContext) => {
+    const actor = await requireBearerAuth(request, authContainer.tokenService)
+    const { id } = await parseRouteParams(context.params, chargeIdParamsSchema)
 
-  await financialContainer.deleteChargeUseCase.execute({
-    actorTenantId: actor.tenantId,
-    actorPapel: actor.papel as Papel,
-    chargeId: (await context.params).id,
-  })
+    await financialContainer.deleteChargeUseCase.execute({
+      actorId: actor.sub,
+      actorTenantId: actor.tenantId,
+      actorRole: actor.role,
+      chargeId: id,
+    })
 
-  return new NextResponse(null, { status: 204 })
-})
+    return new NextResponse(null, { status: 204 })
+  },
+)

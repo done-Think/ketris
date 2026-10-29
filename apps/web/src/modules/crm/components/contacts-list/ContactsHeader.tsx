@@ -2,13 +2,13 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { Box, InputAdornment, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as crmStyles from '../../styles/contacts-header.styles'
 
 import {
   DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
 } from '@shared/components/layout'
-import { alpha, brand, dashboardLayout, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { ContactsHeaderProps } from '../../types/contact'
 
@@ -16,39 +16,19 @@ export function ContactsHeader({ search, onSearchChange, onNewContact }: Contact
   const t = useTranslations('crm.contacts')
 
   const actions = (
-    <Stack
-      direction={{ xs: 'column', sm: 'row' }}
-      spacing={1.2}
-      sx={{
-        width: '100%',
-        alignItems: { xs: 'stretch', sm: 'center' },
-        [dashboardLayout.desktopMediaQuery]: { width: 'auto' },
-      }}
-    >
+    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2} sx={crmStyles.stackSx}>
       <TextField
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
         placeholder={t('searchPlaceholder')}
         size="small"
-        sx={{
-          width: { xs: '100%', sm: 268 },
-          '& .MuiInputBase-root': {
-            height: { xs: 40, sm: 32 },
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            color: brand.graphite[500],
-            fontSize: 12,
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: alpha.graphite[8],
-          },
-        }}
+        sx={crmStyles.textFieldSx}
         slotProps={{
           htmlInput: { 'aria-label': t('searchAriaLabel') },
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: iconSize.sm }} />
+                <SearchRoundedIcon sx={crmStyles.searchRoundedIconSx} />
               </InputAdornment>
             ),
           },
@@ -56,23 +36,15 @@ export function ContactsHeader({ search, onSearchChange, onNewContact }: Contact
       />
 
       <DashboardHeaderActionButton
-        startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+        startIcon={<AddRoundedIcon sx={crmStyles.addRoundedIconSx} />}
         disabled={!onNewContact}
         onClick={onNewContact}
-        sx={{
-          '&.Mui-disabled': {
-            bgcolor: brand.magenta[500],
-            color: surface.lightText,
-            opacity: 1,
-          },
-        }}
+        sx={crmStyles.dashboardHeaderActionButtonSx}
       >
         {t('newContact')}
       </DashboardHeaderActionButton>
 
-      <Box
-        sx={{ display: { xs: 'none' }, [dashboardLayout.desktopMediaQuery]: { display: 'block' } }}
-      >
+      <Box sx={crmStyles.boxSx}>
         <DashboardNotificationsButton />
       </Box>
     </Stack>
@@ -83,7 +55,7 @@ export function ContactsHeader({ search, onSearchChange, onNewContact }: Contact
       title={t('title')}
       subtitle={t('subtitle')}
       actions={actions}
-      sx={{ mb: 2.2 }}
+      sx={crmStyles.dashboardPageHeaderSx}
     />
   )
 }

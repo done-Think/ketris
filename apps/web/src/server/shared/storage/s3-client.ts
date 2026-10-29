@@ -5,9 +5,13 @@ let cachedClient: S3Client | null = null
 export function hasUploadsStorageConfig(): boolean {
   return Boolean(
     process.env.AWS_REGION &&
-    process.env.AWS_ACCESS_KEY_ID &&
-    process.env.AWS_SECRET_ACCESS_KEY &&
-    process.env.S3_BUCKET_NAME,
+    process.env.S3_BUCKET_NAME &&
+    (process.env.NODE_ENV === 'production' ||
+      (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) ||
+      process.env.AWS_PROFILE ||
+      process.env.AWS_WEB_IDENTITY_TOKEN_FILE ||
+      process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI ||
+      process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI),
   )
 }
 
@@ -21,16 +25,12 @@ export function getS3Client(): S3Client {
   }
 
   const region = process.env.AWS_REGION
-  const accessKeyId = process.env.AWS_ACCESS_KEY_ID
-  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
-
-  if (!region || !accessKeyId || !secretAccessKey) {
-    throw new Error(
-      'Credenciais da AWS não configuradas (AWS_REGION/AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY).',
-    )
+  if (!region) {
+    throw new Error('AWS_REGION não configurado.')
   }
 
-  cachedClient = new S3Client({ region, credentials: { accessKeyId, secretAccessKey } })
+  // The SDK chain supports temporary session tokens, profiles and workload roles.
+  cachedClient = new S3Client({ region })
 
   return cachedClient
 }

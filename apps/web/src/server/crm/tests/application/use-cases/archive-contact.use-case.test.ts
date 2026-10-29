@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { ContactNotFoundError } from '../../../domain/errors'
-import type { Contact } from '../../../domain/contact.entity'
 import type { ContactRepository } from '../../../application/ports/contact-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
 import { ArchiveContactUseCase } from '../../../application/use-cases/archive-contact.use-case'
+import type { Contact } from '../../../domain/contact.entity'
+import { ContactNotFoundError } from '../../../domain/errors'
 
 const contact: Contact = {
   id: 'contato-1',
@@ -12,7 +12,7 @@ const contact: Contact = {
   name: 'Carlos',
   email: 'carlos@exemplo.com',
   phone: null,
-  type: 'PROPRIETARIO',
+  type: 'OWNER',
   avatarUrl: null,
   notes: null,
   lastInteraction: null,
@@ -37,7 +37,7 @@ describe('ArchiveContactUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorRole: 'OWNER',
       contactId: 'contato-1',
     })
 
@@ -55,7 +55,7 @@ describe('ArchiveContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'ADMIN',
+        actorRole: 'OWNER',
         contactId: 'contato-1',
       }),
     ).rejects.toThrow(ContactNotFoundError)
@@ -75,7 +75,7 @@ describe('ArchiveContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         contactId: 'contato-1',
       }),
     ).rejects.toThrow(ContactNotFoundError)

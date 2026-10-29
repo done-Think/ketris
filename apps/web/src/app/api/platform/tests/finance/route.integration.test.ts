@@ -20,18 +20,18 @@ describe('GET /api/platform/finance (integração)', () => {
   beforeAll(async () => {
     const actor = await prisma.platformAdmin.create({
       data: {
-        nome: 'Ator Financeiro',
+        name: 'Ator Financeiro',
         email: `ator-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
+        passwordHash: 'hash-fake',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
       role: 'ADMIN',
-      ativo: true,
+      active: true,
     })
   })
 
@@ -61,7 +61,7 @@ describe('GET /api/platform/finance (integração)', () => {
     for (const status of ['ACTIVE', 'TRIAL'] as const) {
       const tenant = await prisma.tenant.create({
         data: {
-          nome: `Corretor ${status}`,
+          name: `Corretor ${status}`,
           slug: `corretor-financeiro-${randomUUID()}`,
           accountType: 'BROKER',
           status,
@@ -115,7 +115,7 @@ describe('GET /api/platform/finance (integração)', () => {
     const create = async (data: { status: 'ACTIVE' | 'CANCELED'; canceledAt?: Date }) => {
       const tenant = await prisma.tenant.create({
         data: {
-          nome: 'Imobiliária Churn',
+          name: 'Imobiliária Churn',
           slug: `imobiliaria-churn-${randomUUID()}`,
           createdAt: beforeMonth,
           ...data,

@@ -1,5 +1,7 @@
 'use client'
 
+import { styles } from '../../styles/agenda-dashboard-header.styles'
+
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
@@ -11,7 +13,6 @@ import {
   DashboardNotificationsButton,
   DashboardPageHeader,
 } from '@shared/components/layout'
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
 
 import type { AgendaDashboardHeaderProps } from '../../types/agenda-event'
 
@@ -29,35 +30,20 @@ export function AgendaDashboardHeader({
   const t = useTranslations('agenda.dashboard')
 
   const actions = (
-    <Stack direction="row" alignItems="center" spacing={1.2} sx={{ flexWrap: 'wrap' }}>
+    <Stack direction="row" alignItems="center" spacing={1.2} sx={styles.stack}>
       <Tooltip title={t('previousWeek')}>
         <span>
           <IconButton
             aria-label={t('previousWeek')}
             disabled={disablePreviousWeek}
             onClick={onPreviousWeek}
-            sx={{
-              display: { xs: 'none', md: 'inline-flex' },
-              width: 36,
-              height: 36,
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-            }}
+            sx={styles.iconButton}
           >
-            <ChevronLeftRoundedIcon sx={{ fontSize: iconSize.sm }} />
+            <ChevronLeftRoundedIcon sx={styles.chevronLeftRoundedIcon} />
           </IconButton>
         </span>
       </Tooltip>
-      <Typography
-        sx={{
-          display: { xs: 'none', md: 'block' },
-          color: brand.graphite[500],
-          fontSize: 14,
-          fontWeight: 800,
-        }}
-      >
+      <Typography sx={styles.typography}>
         {t('weekRange', { end: weekRange.endLabel, start: weekRange.startLabel })}
       </Typography>
       <Tooltip title={t('nextWeek')}>
@@ -66,48 +52,29 @@ export function AgendaDashboardHeader({
             aria-label={t('nextWeek')}
             disabled={disableNextWeek}
             onClick={onNextWeek}
-            sx={{
-              display: { xs: 'none', md: 'inline-flex' },
-              width: 36,
-              height: 36,
-              border: '1px solid',
-              borderColor: alpha.graphite[8],
-              borderRadius: `${radius.sm}px`,
-              bgcolor: surface.paper,
-            }}
+            sx={styles.iconButton2}
           >
-            <ChevronRightRoundedIcon sx={{ fontSize: iconSize.sm }} />
+            <ChevronRightRoundedIcon sx={styles.chevronRightRoundedIcon} />
           </IconButton>
         </span>
       </Tooltip>
       {!readOnly && (
         <>
           <Tooltip title={t('newEvent')}>
-            <IconButton
-              aria-label={t('newEvent')}
-              onClick={onNewEvent}
-              sx={{
-                display: { xs: 'inline-flex', md: 'none' },
-                width: 44,
-                height: 44,
-                bgcolor: brand.magenta[500],
-                color: surface.paper,
-                '&:hover': { bgcolor: brand.magenta[600] },
-              }}
-            >
-              <AddRoundedIcon sx={{ fontSize: iconSize.xl }} />
+            <IconButton aria-label={t('newEvent')} onClick={onNewEvent} sx={styles.iconButton3}>
+              <AddRoundedIcon sx={styles.addRoundedIcon} />
             </IconButton>
           </Tooltip>
           <DashboardHeaderActionButton
-            startIcon={<AddRoundedIcon sx={{ fontSize: iconSize.sm }} />}
+            startIcon={<AddRoundedIcon sx={styles.addRoundedIcon2} />}
             onClick={onNewEvent}
-            sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+            sx={styles.dashboardHeaderActionButton}
           >
             {t('newEvent')}
           </DashboardHeaderActionButton>
         </>
       )}
-      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+      <Box sx={styles.box}>
         <DashboardNotificationsButton
           notifications={notifications}
           onNotificationSelect={onNotificationSelect}

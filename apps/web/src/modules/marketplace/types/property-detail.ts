@@ -15,7 +15,7 @@ export type MarketplacePropertyDetail = PropertyCardData & {
   mapCenter: {
     latitude: number
     longitude: number
-  }
+  } | null
   brokerPhone: string
   brokerEmail: string
 }

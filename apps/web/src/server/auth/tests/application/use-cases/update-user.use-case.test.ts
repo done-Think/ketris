@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { EmailAlreadyInUseError, UserNotFoundError } from '../../../domain/errors'
+import { EmailConfirmationRequiredError, UserNotFoundError } from '../../../domain/errors'
 import type { User } from '../../../domain/user.entity'
 import type { UserRepository } from '../../../application/ports/user-repository.port'
 import { UpdateUserUseCase } from '../../../application/use-cases/update-user.use-case'
@@ -8,12 +8,12 @@ import { UpdateUserUseCase } from '../../../application/use-cases/update-user.us
 const owner: User = {
   id: 'owner-1',
   tenantId: 'tenant-1',
-  nome: 'Proprietário',
+  name: 'Proprietário',
   email: 'owner@ketris.dev',
-  senhaHash: 'hash-fake',
-  papel: 'OWNER',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-fake',
+  role: 'OWNER',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 function createDeps(overrides?: {
@@ -22,11 +22,13 @@ function createDeps(overrides?: {
   update?: UserRepository['update']
 }) {
   const userRepository: UserRepository = {
+    findManyByEmail: vi.fn(),
+
     findById: overrides?.findById ?? vi.fn().mockResolvedValue(owner),
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
     create: vi.fn(),
-    update: overrides?.update ?? vi.fn().mockResolvedValue({ ...owner, nome: 'Atualizado' }),
+    update: overrides?.update ?? vi.fn().mockResolvedValue({ ...owner, name: 'Atualizado' }),
     deactivate: vi.fn(),
     approveMembership: vi.fn(),
   }
@@ -35,32 +37,37 @@ function createDeps(overrides?: {
 }
 
 describe('UpdateUserUseCase', () => {
-  it('atualiza nome/email/papel quando o ator é ADMIN e o alvo existe no tenant', async () => {
+  it('atualiza nome/email/papel quando o ator é OWNER e o alvo existe no tenant', async () => {
     const deps = createDeps()
     const useCase = new UpdateUserUseCase(deps.userRepository)
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'admin-1',
-      actorPapel: 'ADMIN',
+      actorRole: 'OWNER',
       userId: owner.id,
-      nome: 'Atualizado',
+      name: 'Atualizado',
+      phone: '(35) 98888-7777',
+      creci: '12345',
     })
 
-    expect(result.nome).toBe('Atualizado')
+    expect(result.name).toBe('Atualizado')
     expect(deps.userRepository.update).toHaveBeenCalledWith(owner.id, {
-      nome: 'Atualizado',
-      email: undefined,
+      auditActor: { kind: 'USER', id: 'admin-1' },
+      name: 'Atualizado',
+      tenantId: 'tenant-1',
+      phone: '(35) 98888-7777',
+      creci: '12345',
       avatarUrl: undefined,
-      papel: undefined,
+      role: undefined,
     })
   })
 
-  it('permite que um ADMIN atualize o próprio perfil sem alterar o papel', async () => {
-    const admin: User = { ...owner, id: 'admin-1', papel: 'ADMIN' }
+  it('permite que um OWNER atualize o próprio perfil sem alterar o papel', async () => {
+    const admin: User = { ...owner, id: 'admin-1', role: 'OWNER' }
     const deps = createDeps({
       findById: vi.fn().mockResolvedValue(admin),
-      update: vi.fn().mockResolvedValue({ ...admin, nome: 'Admin atualizado' }),
+      update: vi.fn().mockResolvedValue({ ...admin, name: 'Admin atualizado' }),
     })
     const useCase = new UpdateUserUseCase(deps.userRepository)
 
@@ -68,22 +75,25 @@ describe('UpdateUserUseCase', () => {
       useCase.execute({
         actorId: admin.id,
         actorTenantId: admin.tenantId,
-        actorPapel: admin.papel,
+        actorRole: admin.role,
         userId: admin.id,
-        nome: 'Admin atualizado',
-        avatarUrl: 'https://cdn.ketris.dev/avatar.webp',
+        name: 'Admin atualizado',
+        avatarUrl: `/api/auth/media/avatars/${admin.tenantId}/${admin.id}/avatar.webp`,
       }),
-    ).resolves.toMatchObject({ nome: 'Admin atualizado' })
+    ).resolves.toMatchObject({ name: 'Admin atualizado' })
 
     expect(deps.userRepository.update).toHaveBeenCalledWith(admin.id, {
-      nome: 'Admin atualizado',
-      email: undefined,
-      avatarUrl: 'https://cdn.ketris.dev/avatar.webp',
-      papel: undefined,
+      auditActor: { kind: 'USER', id: 'admin-1' },
+      name: 'Admin atualizado',
+      tenantId: 'tenant-1',
+      phone: undefined,
+      creci: undefined,
+      avatarUrl: `/api/auth/media/avatars/${admin.tenantId}/${admin.id}/avatar.webp`,
+      role: undefined,
     })
   })
 
-  it('lança ForbiddenError quando o ator não é ADMIN', async () => {
+  it('lança ForbiddenError quando o ator não é OWNER', async () => {
     const deps = createDeps()
     const useCase = new UpdateUserUseCase(deps.userRepository)
 
@@ -91,15 +101,15 @@ describe('UpdateUserUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         userId: owner.id,
-        nome: 'X',
+        name: 'X',
       }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
     expect(deps.userRepository.update).not.toHaveBeenCalled()
   })
 
-  it('lança UserNotFoundError quando o alvo não existe, é de outro tenant, ou é ADMIN', async () => {
+  it('lança UserNotFoundError quando o alvo não existe, é de outro tenant', async () => {
     const deps = createDeps({ findById: vi.fn().mockResolvedValue(null) })
     const useCase = new UpdateUserUseCase(deps.userRepository)
 
@@ -107,14 +117,14 @@ describe('UpdateUserUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'admin-1',
-        actorPapel: 'ADMIN',
+        actorRole: 'OWNER',
         userId: 'x',
-        nome: 'X',
+        name: 'X',
       }),
     ).rejects.toThrow(UserNotFoundError)
   })
 
-  it('lança EmailAlreadyInUseError quando o novo e-mail já pertence a outro usuário (em qualquer tenant)', async () => {
+  it('exige confirmação antes de alterar e-mail mesmo para gestão', async () => {
     const deps = createDeps({
       findByEmail: vi.fn().mockResolvedValue({ ...owner, id: 'outro-id' }),
     })
@@ -124,11 +134,11 @@ describe('UpdateUserUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'admin-1',
-        actorPapel: 'ADMIN',
+        actorRole: 'OWNER',
         userId: owner.id,
         email: 'em-uso@ketris.dev',
       }),
-    ).rejects.toThrow(EmailAlreadyInUseError)
+    ).rejects.toThrow(EmailConfirmationRequiredError)
     expect(deps.userRepository.update).not.toHaveBeenCalled()
   })
 
@@ -139,11 +149,49 @@ describe('UpdateUserUseCase', () => {
     await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'admin-1',
-      actorPapel: 'ADMIN',
+      actorRole: 'OWNER',
       userId: owner.id,
       email: owner.email,
     })
 
     expect(deps.userRepository.findByEmail).not.toHaveBeenCalled()
+  })
+  it('permite atualizar telefone/CRECI próprios de um corretor sem mudar papel ou e-mail', async () => {
+    const agent: User = { ...owner, id: 'agent-1', role: 'AGENT' }
+    const deps = createDeps({ findById: vi.fn().mockResolvedValue(agent) })
+    await new UpdateUserUseCase(deps.userRepository).execute({
+      actorId: agent.id,
+      actorTenantId: agent.tenantId,
+      actorRole: agent.role,
+      userId: agent.id,
+      phone: '(35) 98888-7777',
+      creci: '12345',
+    })
+    expect(deps.userRepository.update).toHaveBeenCalledWith(
+      agent.id,
+      expect.objectContaining({
+        tenantId: agent.tenantId,
+        phone: '(35) 98888-7777',
+        creci: '12345',
+      }),
+    )
+    expect(deps.userRepository.update).not.toHaveBeenCalledWith(
+      agent.id,
+      expect.objectContaining({ email: expect.anything() }),
+    )
+  })
+
+  it('rejeita alteração direta do próprio e-mail com conflito sem gravar', async () => {
+    const deps = createDeps()
+    await expect(
+      new UpdateUserUseCase(deps.userRepository).execute({
+        actorId: owner.id,
+        actorTenantId: owner.tenantId,
+        actorRole: owner.role,
+        userId: owner.id,
+        email: 'new@example.com',
+      }),
+    ).rejects.toMatchObject({ code: 'EMAIL_CONFIRMATION_REQUIRED', status: 409 })
+    expect(deps.userRepository.update).not.toHaveBeenCalled()
   })
 })

@@ -1,54 +1,19 @@
-export type Papel = 'ADMIN' | 'OWNER' | 'AGENT' | 'RENTER'
+import type { UserAccessState } from '../types/user-access'
 
-export type NonAdminPapel = Exclude<Papel, 'ADMIN' | 'RENTER'>
+export type UserRole = 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER'
 
-export interface User {
-  id: string
-  tenantId: string
-  nome: string
-  email: string
-  senhaHash: string
-  avatarUrl?: string | null
-  papel: Papel
-  ativo: boolean
-  vinculoAprovadoEm: Date | null
-}
+export type TenantMemberRole = Exclude<UserRole, 'RENTER'>
 
-export type AuthenticatedUser = Omit<User, 'senhaHash'>
-
-export function toAuthenticatedUser(user: User): AuthenticatedUser {
-  return {
-    id: user.id,
-    tenantId: user.tenantId,
-    nome: user.nome,
-    email: user.email,
-    avatarUrl: user.avatarUrl ?? null,
-    papel: user.papel,
-    ativo: user.ativo,
-    vinculoAprovadoEm: user.vinculoAprovadoEm,
-  }
-}
-
-export type AuthenticatedUserResponse = {
+export interface User extends UserAccessState {
   id: string
   tenantId: string
   name: string
   email: string
-  avatarUrl: string | null
-  role: Papel
+  phone?: string | null
+  creci?: string | null
+  passwordHash: string
+  avatarUrl?: string | null
+  role: UserRole
   active: boolean
-  pendingApproval: boolean
-}
-
-export function toAuthenticatedUserResponse(user: AuthenticatedUser): AuthenticatedUserResponse {
-  return {
-    id: user.id,
-    tenantId: user.tenantId,
-    name: user.nome,
-    email: user.email,
-    avatarUrl: user.avatarUrl ?? null,
-    role: user.papel,
-    active: user.ativo,
-    pendingApproval: user.vinculoAprovadoEm === null,
-  }
+  membershipApprovedAt: Date | null
 }

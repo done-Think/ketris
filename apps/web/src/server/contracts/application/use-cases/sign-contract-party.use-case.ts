@@ -1,5 +1,4 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
+import type { SignContractPartyInput } from '../../types/use-case-inputs'
 import { resolveContractManageScope } from '../../domain/contract-access-rules'
 import {
   ContractNotFoundError,
@@ -9,19 +8,11 @@ import {
 import type { Contract } from '../../domain/contract.entity'
 import type { ContractRepository } from '../ports/contract-repository.port'
 
-export interface SignContractPartyInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  contractId: string
-  partyId: string
-}
-
 export class SignContractPartyUseCase {
   constructor(private readonly contractRepository: ContractRepository) {}
 
   async execute(input: SignContractPartyInput): Promise<Contract> {
-    const scope = resolveContractManageScope(input.actorId, input.actorPapel)
+    const scope = resolveContractManageScope(input.actorId, input.actorRole)
     const contract = await this.contractRepository.findById(input.contractId, {
       kind: 'tenant',
       tenantId: input.actorTenantId,
@@ -38,7 +29,7 @@ export class SignContractPartyUseCase {
       throw new ContractPartyNotFoundError()
     }
 
-    if (party.signatureStatus === 'ASSINADA') {
+    if (party.signatureStatus === 'SIGNED') {
       throw new ContractPartyAlreadySignedError()
     }
 
@@ -47,6 +38,8 @@ export class SignContractPartyUseCase {
       input.contractId,
       input.partyId,
       input.actorId,
+      { documentId: input.documentId, clientIp: input.clientIp, userAgent: input.userAgent },
+      scope,
     )
   }
 }

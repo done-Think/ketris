@@ -4,7 +4,6 @@ import { Alert, Box, Button } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import { SiteFooter } from '@shared/components/layout'
-import { surface } from '@shared/theme/tokens'
 
 import { getMarketplaceNavigationItemIdByPurpose } from '../config/navigation'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
@@ -20,73 +19,39 @@ import { SearchResultsList } from './search-results/SearchResultsList'
 import { SearchResultsMapPanel } from './search-results/SearchResultsMapPanel'
 import { SearchResultsPagination } from './search-results/SearchResultsPagination'
 import { SearchResultsToolbar } from './search-results/SearchResultsToolbar'
+import { styles } from '../styles/search-results-page.styles'
 
-export function SearchResultsPage({ initialLocation = '', purpose }: SearchResultsPageProps) {
+export function SearchResultsPage(props: SearchResultsPageProps) {
+  const { purpose } = props
   const t = useTranslations('marketplace')
   const errorT = useTranslations('marketplace.searchResults.error')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
-  const results = useSearchResults({ purpose, initialLocation })
+  const results = useSearchResults(props)
   const activeItemId = getMarketplaceNavigationItemIdByPurpose(purpose)
   const purposeLabel = purpose === 'comprar' ? t('navigation.buy') : t('navigation.rent')
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        maxWidth: '100vw',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        overflowX: 'clip',
-        bgcolor: surface.app,
-      }}
-    >
+    <Box sx={styles.box}>
       <MarketplaceHeader activeItemId={activeItemId} />
 
-      <Box
-        component="main"
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.08fr) minmax(430px, 0.92fr)' },
-          minHeight: 'calc(100vh - 60px)',
-        }}
-      >
-        <Box
-          sx={{
-            px: { xs: 2, sm: 3, xl: 5 },
-            py: { xs: 2, md: 3 },
-            minWidth: 0,
-          }}
-        >
+      <Box component="main" sx={styles.box2}>
+        <Box sx={styles.box3}>
           <MarketplaceBreadcrumbs
             items={[{ label: t('navigation.home'), href: '/' }, { label: purposeLabel }]}
           />
           <SearchResultsFilters
-            locationQuery={results.locationQuery}
+            locationQuery={results.filters.location}
             setLocationQuery={results.setLocationQuery}
           />
           <SearchResultsToolbar
             filtersControl={
               <SearchResultsFilterButton
-                areaFilterIndex={results.areaFilterIndex}
-                bedroomFilterIndex={results.bedroomFilterIndex}
-                customMaxPrice={results.customMaxPrice}
-                customMinArea={results.customMinArea}
-                maxPrice={results.maxPrice}
-                minArea={results.minArea}
-                onlyWithParking={results.onlyWithParking}
-                priceFilterIndex={results.priceFilterIndex}
-                propertyTypeFilter={results.propertyTypeFilter}
-                setAreaFilterIndex={results.setAreaFilterIndex}
-                setBedroomFilterIndex={results.setBedroomFilterIndex}
-                setCustomMaxPrice={results.setCustomMaxPrice}
-                setCustomMinArea={results.setCustomMinArea}
-                setOnlyWithParking={results.setOnlyWithParking}
-                setPriceFilterIndex={results.setPriceFilterIndex}
-                setPropertyTypeFilter={results.setPropertyTypeFilter}
+                filters={results.filters}
+                activeFiltersCount={results.activeFiltersCount}
+                onApply={results.applyFilters}
               />
             }
-            resultCount={results.filteredResults.length}
+            resultCount={results.resultCount}
             setSortOption={results.setSortOption}
             setViewMode={results.setViewMode}
             sortOption={results.sortOption}
@@ -95,7 +60,7 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
           {results.isError ? (
             <Alert
               severity="error"
-              sx={{ mb: 2 }}
+              sx={styles.alert}
               action={
                 <Button color="inherit" size="small" onClick={() => results.refetch()}>
                   {errorT('retry')}
@@ -123,7 +88,7 @@ export function SearchResultsPage({ initialLocation = '', purpose }: SearchResul
           properties={results.paginatedResults}
           selectedPropertyId={results.selectedPropertyId}
           setSelectedPropertyId={results.setSelectedPropertyId}
-          searchQuery={results.locationQuery}
+          searchQuery={results.filters.location}
         />
       </Box>
 

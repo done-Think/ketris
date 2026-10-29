@@ -1,4 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import {
+  maintenanceTicketListItemFixture,
+  maintenancePermissionsFixture,
+  maintenanceTicketFixture,
+} from '../fixtures/maintenance-ticket'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -9,10 +14,10 @@ import { MaintenanceDashboardPage } from '../../components/MaintenanceDashboardP
 import {
   useCreateMaintenanceTicket,
   useDeleteMaintenanceTicket,
+  useMaintenanceOptions,
   useMaintenanceTicket,
   useMaintenanceTickets,
   useUpdateMaintenanceTicket,
-  useMaintenanceOptions,
 } from '../../hooks/use-maintenance'
 import type { ApiMaintenanceTicket, ApiMaintenanceTicketListItem } from '../../types/service'
 
@@ -42,58 +47,58 @@ vi.mock('@modules/properties/hooks/use-properties', () => ({
 }))
 
 const listItems: ApiMaintenanceTicketListItem[] = [
-  {
+  maintenanceTicketListItemFixture({
     id: 'MNT-0089',
     propertyId: 'p1',
     propertyTitle: 'Apt Jardins 3q',
-    category: 'Hidráulica',
-    priority: 'URGENTE',
-    status: 'EM_ANDAMENTO',
+    category: 'PLUMBING',
+    priority: 'URGENT',
+    status: 'IN_PROGRESS',
     title: 'Vazamento na cozinha',
     openedByName: 'Bruno Oliveira',
     resolvedAt: null,
     createdAt: '2025-02-20T00:00:00.000Z',
     updatedAt: '2025-02-20T00:00:00.000Z',
-  },
-  {
+  }),
+  maintenanceTicketListItemFixture({
     id: 'MNT-0088',
     propertyId: 'p2',
     propertyTitle: 'Studio Pinheiros',
-    category: 'Elétrica',
-    priority: 'ALTA',
-    status: 'ABERTO',
+    category: 'ELECTRICAL',
+    priority: 'HIGH',
+    status: 'OPEN',
     title: 'Tomada com defeito',
     openedByName: 'Mariana Souza',
     resolvedAt: null,
     createdAt: '2025-02-19T00:00:00.000Z',
     updatedAt: '2025-02-19T00:00:00.000Z',
-  },
-  {
+  }),
+  maintenanceTicketListItemFixture({
     id: 'MNT-0087',
     propertyId: 'p3',
     propertyTitle: 'Casa Vila Madalena',
-    category: 'Estrutural',
-    priority: 'ALTA',
-    status: 'EM_ANDAMENTO',
+    category: 'STRUCTURAL',
+    priority: 'HIGH',
+    status: 'IN_PROGRESS',
     title: 'Rachadura na parede',
     openedByName: 'Felipe Neto',
     resolvedAt: null,
     createdAt: '2025-02-18T00:00:00.000Z',
     updatedAt: '2025-02-18T00:00:00.000Z',
-  },
-  {
+  }),
+  maintenanceTicketListItemFixture({
     id: 'MNT-0086',
     propertyId: 'p4',
     propertyTitle: 'Cobertura Moema',
-    category: 'Pintura',
+    category: 'PAINTING',
     priority: 'NORMAL',
-    status: 'RESOLVIDO',
+    status: 'RESOLVED',
     title: 'Pintura descascando',
     openedByName: 'Aline Santos',
     resolvedAt: '2025-02-16T00:00:00.000Z',
     createdAt: '2025-02-15T00:00:00.000Z',
     updatedAt: '2025-02-16T00:00:00.000Z',
-  },
+  }),
 ]
 
 const properties = [
@@ -103,14 +108,14 @@ const properties = [
   { id: 'p4', title: 'Cobertura Moema' },
 ]
 
-const fullTicket: ApiMaintenanceTicket = {
+const fullTicket: ApiMaintenanceTicket = maintenanceTicketFixture({
   contractId: 'c-p1',
   id: 'MNT-0089',
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
-  category: 'Hidráulica',
-  priority: 'URGENTE',
-  status: 'EM_ANDAMENTO',
+  category: 'PLUMBING',
+  priority: 'URGENT',
+  status: 'IN_PROGRESS',
   title: 'Vazamento na cozinha',
   description: 'Vazamento embaixo da pia da cozinha.',
   openedById: 'user-1',
@@ -120,7 +125,7 @@ const fullTicket: ApiMaintenanceTicket = {
   updatedAt: '2025-02-20T00:00:00.000Z',
   activities: [],
   attachments: [],
-}
+})
 
 function mockDefaults() {
   vi.mocked(useSession).mockReturnValue({
@@ -129,11 +134,12 @@ function mockDefaults() {
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)
 
-  vi.mocked(useMaintenanceTickets).mockImplementation((_tenantId, filters = {}) => {
+  vi.mocked(useMaintenanceTickets).mockImplementation((filters = {}) => {
     const filtered = listItems.filter(
       (item) =>
         (!filters.status || item.status === filters.status) &&
         (!filters.priority || item.priority === filters.priority) &&
+        (!filters.category || item.category === filters.category) &&
         (!filters.propertyId || item.propertyId === filters.propertyId) &&
         (!filters.search ||
           item.title.toLocaleLowerCase().includes(filters.search.toLocaleLowerCase())),
@@ -141,15 +147,30 @@ function mockDefaults() {
 
     return {
       data: {
-        items: filtered.map((item) => ({ ...item, permissions: { edit: true, delete: true } })),
+        items: filtered.map((item) => ({
+          ...item,
+          permissions: maintenancePermissionsFixture({ edit: true, delete: true }),
+        })),
         totalCount: filtered.length,
+        pagination: {
+          page: filters.page ?? 1,
+          pageSize: filters.pageSize ?? 5,
+          totalCount: filtered.length,
+          pageCount: 1,
+        },
+        summary: {
+          totalCount: 4,
+          urgentCount: 1,
+          byStatus: { OPEN: 1, IN_PROGRESS: 2, RESOLVED: 1 },
+          averageResolutionDays: 1,
+        },
       },
       isLoading: false,
     } as unknown as ReturnType<typeof useMaintenanceTickets>
   })
 
   vi.mocked(useMaintenanceTicket).mockImplementation(
-    (_tenantId, ticketId) =>
+    (ticketId) =>
       ({
         data: ticketId === fullTicket.id ? fullTicket : undefined,
         isLoading: false,
@@ -207,7 +228,7 @@ describe('MaintenanceDashboardPage', () => {
       data: {
         items: listItems.map((item) => ({
           ...item,
-          permissions: { edit: false, delete: false },
+          permissions: maintenancePermissionsFixture({ edit: false, delete: false }),
         })),
         totalCount: listItems.length,
       },
@@ -232,13 +253,13 @@ describe('MaintenanceDashboardPage', () => {
   it.each([
     {
       role: 'AGENT',
-      permissions: { edit: true, delete: false },
+      permissions: maintenancePermissionsFixture({ edit: true, delete: false }),
       allowedAction: 'Editar chamado',
       hiddenAction: 'Excluir chamado',
     },
     {
-      role: 'ADMIN',
-      permissions: { edit: false, delete: true },
+      role: 'OWNER',
+      permissions: maintenancePermissionsFixture({ edit: false, delete: true }),
       allowedAction: 'Excluir chamado',
       hiddenAction: 'Editar chamado',
     },
@@ -275,9 +296,9 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.getAllByText('Em andamento').length).toBeGreaterThan(0)
   })
 
-  it('shows the links and archive controls only to an ADMIN session role', () => {
+  it('shows the links and archive controls only to an OWNER session role', () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', role: 'ADMIN' },
+      data: { tenantId: 'tenant-1', role: 'OWNER' },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -298,7 +319,7 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.queryByRole('button', { name: 'Arquivados' })).not.toBeInTheDocument()
   })
 
-  it('computes the open and urgent metric cards from the loaded tickets', () => {
+  it('computes the open and urgent metric cards from server-wide summaries', () => {
     render(<MaintenanceDashboardPage />)
 
     const openCard = screen.getByText('Abertos').closest('div')!.parentElement!
@@ -307,7 +328,7 @@ describe('MaintenanceDashboardPage', () => {
     const urgentCard = screen.getByText('Urgentes').closest('div')!.parentElement!
     expect(urgentCard).toHaveTextContent('1')
 
-    expect(screen.getByText('1.0 dias')).toBeVisible()
+    expect(screen.getByText('1,0 dias')).toBeVisible()
   })
 
   it('filters tickets by property', async () => {
@@ -332,6 +353,22 @@ describe('MaintenanceDashboardPage', () => {
     expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
   })
 
+  it('filters by category through the shared controls and preserves global metrics', async () => {
+    const user = userEvent.setup()
+    render(<MaintenanceDashboardPage />)
+    await user.click(screen.getByRole('button', { name: 'Filtros' }))
+    const dialog = screen.getByRole('dialog', { name: 'Filtros' })
+    await user.click(within(dialog).getByLabelText('Filtrar por categoria'))
+    await user.click(await screen.findByRole('option', { name: 'Elétrica' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Fechar filtros' }))
+    expect(screen.getByText('MNT-0088')).toBeVisible()
+    expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
+    expect(useMaintenanceTickets).toHaveBeenLastCalledWith(
+      expect.objectContaining({ category: 'ELECTRICAL', page: 1 }),
+    )
+    expect(screen.getByText('1,0 dias')).toBeVisible()
+  })
+
   it('creates a ticket through the mutation and closes the dialog on success', async () => {
     const user = userEvent.setup()
     render(<MaintenanceDashboardPage />)
@@ -349,7 +386,7 @@ describe('MaintenanceDashboardPage', () => {
 
     await waitFor(() =>
       expect(createMutation.mutateAsync).toHaveBeenCalledWith(
-        expect.objectContaining({ propertyId: 'p1', category: 'Hidráulica' }),
+        expect.objectContaining({ contractId: 'c-p1', category: 'PLUMBING' }),
       ),
     )
     await waitFor(() => {

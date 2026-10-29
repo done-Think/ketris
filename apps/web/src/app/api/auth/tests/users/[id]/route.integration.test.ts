@@ -19,38 +19,38 @@ describe('/api/auth/users/[id] (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Users Id', slug: tenantSlug },
+      data: { name: 'Tenant Users Id', slug: tenantSlug },
     })
     tenantId = tenant.id
 
-    const admin = await prisma.usuario.create({
+    const admin = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin Teste',
+        name: 'Admin Teste',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     adminId = admin.id
 
-    const agent = await prisma.usuario.create({
+    const agent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Agente Teste',
+        name: 'Agente Teste',
         email: `agent-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
 
-    const target = await prisma.usuario.create({
+    const target = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Alvo Teste',
+        name: 'Alvo Teste',
         email: `alvo-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     targetId = target.id
@@ -58,21 +58,21 @@ describe('/api/auth/users/[id] (integração)', () => {
     adminToken = await tokenService.sign({
       id: admin.id,
       tenantId: admin.tenantId,
-      nome: admin.nome,
+      name: admin.name,
       email: admin.email,
-      papel: admin.papel,
-      ativo: admin.ativo,
-      vinculoAprovadoEm: admin.vinculoAprovadoEm,
+      role: admin.role,
+      active: admin.active,
+      membershipApprovedAt: admin.membershipApprovedAt,
     })
 
     agentToken = await tokenService.sign({
       id: agent.id,
       tenantId: agent.tenantId,
-      nome: agent.nome,
+      name: agent.name,
       email: agent.email,
-      papel: agent.papel,
-      ativo: agent.ativo,
-      vinculoAprovadoEm: agent.vinculoAprovadoEm,
+      role: agent.role,
+      active: agent.active,
+      membershipApprovedAt: agent.membershipApprovedAt,
     })
   })
 
@@ -97,7 +97,7 @@ describe('/api/auth/users/[id] (integração)', () => {
   }
 
   describe('GET', () => {
-    it('retorna 200 com o usuário quando o ator é ADMIN', async () => {
+    it('retorna 200 com o usuário quando o ator é OWNER', async () => {
       const response = await GET(
         buildRequest('GET', targetId, undefined, adminToken),
         context(targetId),
@@ -119,18 +119,16 @@ describe('/api/auth/users/[id] (integração)', () => {
       expect(json.error.code).toBe('USER_NOT_FOUND')
     })
 
-    it('retorna 404 quando o id é de um ADMIN (invisível pela rota geral)', async () => {
+    it('retorna o outro OWNER do mesmo tenant para o dono autenticado', async () => {
       const response = await GET(
         buildRequest('GET', adminId, undefined, adminToken),
         context(adminId),
       )
-      const json = await response.json()
 
-      expect(response.status).toBe(404)
-      expect(json.error.code).toBe('USER_NOT_FOUND')
+      expect(response.status).toBe(200)
     })
 
-    it('retorna 403 quando o ator não é ADMIN', async () => {
+    it('retorna 403 quando o ator não é OWNER', async () => {
       const response = await GET(
         buildRequest('GET', targetId, undefined, agentToken),
         context(targetId),
@@ -143,7 +141,7 @@ describe('/api/auth/users/[id] (integração)', () => {
   })
 
   describe('PATCH', () => {
-    it('atualiza nome e role quando o ator é ADMIN', async () => {
+    it('atualiza nome e role quando o ator é OWNER', async () => {
       const response = await PATCH(
         buildRequest('PATCH', targetId, { name: 'Alvo Renomeado', role: 'OWNER' }, adminToken),
         context(targetId),
@@ -166,7 +164,7 @@ describe('/api/auth/users/[id] (integração)', () => {
       expect(json.error.code).toBe('VALIDATION_ERROR')
     })
 
-    it('retorna 403 quando o ator não é ADMIN', async () => {
+    it('retorna 403 quando o ator não é OWNER', async () => {
       const response = await PATCH(
         buildRequest('PATCH', targetId, { name: 'X' }, agentToken),
         context(targetId),
@@ -180,13 +178,13 @@ describe('/api/auth/users/[id] (integração)', () => {
 
   describe('DELETE', () => {
     it('desativa o usuário (soft delete) e retorna active: false', async () => {
-      const toDeactivate = await prisma.usuario.create({
+      const toDeactivate = await prisma.user.create({
         data: {
           tenantId,
-          nome: 'Para Desativar',
+          name: 'Para Desativar',
           email: `desativar-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
-          papel: 'AGENT',
+          passwordHash: 'hash-fake',
+          role: 'AGENT',
         },
       })
 
@@ -199,11 +197,11 @@ describe('/api/auth/users/[id] (integração)', () => {
       expect(response.status).toBe(200)
       expect(json.user.active).toBe(false)
 
-      const stillExists = await prisma.usuario.findUnique({ where: { id: toDeactivate.id } })
+      const stillExists = await prisma.user.findUnique({ where: { id: toDeactivate.id } })
       expect(stillExists).not.toBeNull()
     })
 
-    it('retorna 400 quando o ADMIN tenta desativar a própria conta', async () => {
+    it('retorna 400 quando o OWNER tenta desativar a própria conta', async () => {
       const response = await DELETE(
         buildRequest('DELETE', adminId, undefined, adminToken),
         context(adminId),
@@ -214,7 +212,7 @@ describe('/api/auth/users/[id] (integração)', () => {
       expect(json.error.code).toBe('CANNOT_DEACTIVATE_SELF')
     })
 
-    it('retorna 403 quando o ator não é ADMIN', async () => {
+    it('retorna 403 quando o ator não é OWNER', async () => {
       const response = await DELETE(
         buildRequest('DELETE', targetId, undefined, agentToken),
         context(targetId),

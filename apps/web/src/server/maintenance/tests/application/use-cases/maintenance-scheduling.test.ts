@@ -1,16 +1,16 @@
-import { describe, expect, it } from 'vitest'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
-import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
+import { describe, expect, it } from 'vitest'
 import { CreateMaintenanceTicketUseCase } from '../../../application/use-cases/create-maintenance-ticket.use-case'
 import { UpdateMaintenanceTicketUseCase } from '../../../application/use-cases/update-maintenance-ticket.use-case'
 import { actOnTicket, updateTicket } from '../../../application/workflow'
+import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
 import {
   actor,
   admin,
-  renter,
   contract,
-  ticket,
+  renter,
   repository,
+  ticket,
 } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance scheduling', () => {
@@ -22,7 +22,7 @@ describe('Maintenance scheduling', () => {
         ...renter,
         contractId: contract.id,
         title: 'Leak',
-        category: 'Plumbing',
+        category: 'PLUMBING',
         description: 'Leak',
         priority: 'NORMAL',
         scheduledAt,
@@ -35,7 +35,7 @@ describe('Maintenance scheduling', () => {
       expect.anything(),
       expect.objectContaining({ scheduledAt }),
       expect.objectContaining({
-        type: 'EDICAO',
+        type: 'EDIT',
         details: { before: { scheduledAt: null }, after: { scheduledAt } },
       }),
     )
@@ -58,7 +58,7 @@ describe('Maintenance scheduling', () => {
       expect.anything(),
       { scheduledAt: new Date(scheduledAt) },
       expect.objectContaining({
-        type: 'EDICAO',
+        type: 'EDIT',
         authorId: renter.actorId,
         details: {
           before: { scheduledAt: null },
@@ -78,7 +78,7 @@ describe('Maintenance scheduling', () => {
     ).rejects.toBeInstanceOf(MaintenanceTicketNotFoundError)
     await expect(
       actOnTicket(
-        repository({ status: 'RESOLVIDO', provider: { name: 'Provider' } }),
+        repository({ status: 'RESOLVED', provider: { name: 'Provider' } }),
         renter,
         ticket.id,
         { action: 'schedule', scheduledAt },

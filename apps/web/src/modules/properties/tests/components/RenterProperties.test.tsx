@@ -6,10 +6,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { PropertiesDashboardPage } from '../../components/PropertiesDashboardPage'
 import { PropertyDetailDashboardPage } from '../../components/PropertyDetailDashboardPage'
-import { dashboardProperties } from '../../data/dashboard-properties'
-import { useContracts } from '@modules/contracts/hooks/use-contracts'
+import { dashboardProperties } from '../fixtures/dashboard-properties'
 import {
-  useProperties,
+  usePropertyPage as useProperties,
   useProperty,
   usePublishProperty,
   useUnpublishProperty,
@@ -18,17 +17,17 @@ import {
 import type { Property } from '../../types/property'
 
 vi.mock('next-auth/react', () => ({ useSession: vi.fn() }))
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   notFound: vi.fn(() => {
     throw new Error('NOT_FOUND')
   }),
 }))
-vi.mock('@modules/contracts/hooks/use-contracts', () => ({ useContracts: vi.fn() }))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 vi.mock('../../hooks/use-properties', () => ({
-  useProperties: vi.fn(),
+  usePropertyPage: vi.fn(),
   useProperty: vi.fn(),
   usePublishProperty: vi.fn(),
   useUnpublishProperty: vi.fn(),
@@ -39,10 +38,20 @@ const property: Property = {
   id: 'rental-1',
   tenantId: 'tenant-1',
   responsibleUserId: 'renter-1',
+  ownerUserId: null,
+  responsibleName: 'Corretor responsável',
+  activeContractId: null,
+  listing: {
+    amenities: [],
+    negotiationTerms: null,
+    publishAfterReview: false,
+    allowWhatsappContact: false,
+    featured: false,
+  },
   title: 'My rented apartment',
   description: 'Apartment',
   purpose: 'RENT',
-  type: 'apartamento',
+  type: 'apartment',
   status: 'RENTED',
   publishedAt: null,
   createdAt: '2026-01-01T00:00:00Z',
@@ -62,13 +71,13 @@ const property: Property = {
     {
       id: 'photo-1',
       url: '/test-rental.png',
-      type: 'foto',
+      type: 'photo',
       order: 0,
       createdAt: '2026-01-01T00:00:00Z',
     },
   ],
   values: { price: 1000, rentalPrice: null, condoFee: 200, propertyTax: 50 },
-  characteristics: { bedrooms: 2, bathrooms: 1, parkingSpots: 1, areaM2: 60 },
+  characteristics: { bedrooms: 2, bathrooms: 1, parkingSpots: 1, areaSqm: 60 },
 }
 
 beforeEach(() => {
@@ -79,7 +88,11 @@ beforeEach(() => {
     update: vi.fn(),
   } as unknown as ReturnType<typeof useSession>)
   vi.mocked(useProperties).mockReturnValue({
-    data: [property],
+    data: {
+      properties: [property],
+      pagination: { page: 1, pageSize: 5, total: 1, totalPages: 1 },
+      counts: { DRAFT: 0, PUBLISHED: 0, RENTED: 1, SOLD: 0, INACTIVE: 0 },
+    },
     isLoading: false,
     isError: false,
   } as unknown as ReturnType<typeof useProperties>)
@@ -88,9 +101,6 @@ beforeEach(() => {
     isLoading: false,
     isError: false,
   } as unknown as ReturnType<typeof useProperty>)
-  vi.mocked(useContracts).mockReturnValue({ data: { items: [] } } as unknown as ReturnType<
-    typeof useContracts
-  >)
   vi.mocked(usePublishProperty).mockReturnValue({
     mutateAsync: vi.fn(),
     isPending: false,
@@ -121,7 +131,11 @@ describe('Renter properties', () => {
 
   it('explains an empty rental list without asking the renter to create property records', () => {
     vi.mocked(useProperties).mockReturnValue({
-      data: [],
+      data: {
+        properties: [],
+        pagination: { page: 1, pageSize: 5, total: 0, totalPages: 0 },
+        counts: { DRAFT: 0, PUBLISHED: 0, RENTED: 0, SOLD: 0, INACTIVE: 0 },
+      },
       isLoading: false,
       isError: false,
     } as unknown as ReturnType<typeof useProperties>)
@@ -130,23 +144,31 @@ describe('Renter properties', () => {
     expect(screen.queryByRole('button', { name: /Novo Imóvel/ })).not.toBeInTheDocument()
   })
 
-  it('shows a loading state and never substitutes fixtures after a failed list request', () => {
-    vi.mocked(useProperties).mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      isError: false,
-    } as unknown as ReturnType<typeof useProperties>)
-    const { rerender } = render(<PropertiesDashboardPage />)
-    expect(screen.getByRole('progressbar', { name: 'Carregando seus imóveis' })).toBeVisible()
-    vi.mocked(useProperties).mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      isError: true,
-    } as unknown as ReturnType<typeof useProperties>)
-    rerender(<PropertiesDashboardPage />)
-    expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível carregar seus imóveis.')
-    expect(screen.queryByText(dashboardProperties[0].title)).not.toBeInTheDocument()
-  })
+  it.each(['RENTER', 'PROPERTY_OWNER', 'OWNER', 'AGENT'])(
+    'shows loading and errors without fixtures for %s',
+    (role) => {
+      vi.mocked(useSession).mockReturnValue({
+        data: { scope: 'tenant', tenantId: 'tenant-1', role, user: { id: 'user-1' } },
+        status: 'authenticated',
+        update: vi.fn(),
+      } as unknown as ReturnType<typeof useSession>)
+      vi.mocked(useProperties).mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        isError: false,
+      } as unknown as ReturnType<typeof useProperties>)
+      const { rerender } = render(<PropertiesDashboardPage />)
+      expect(screen.getByRole('progressbar', { name: 'Carregando seus imóveis' })).toBeVisible()
+      vi.mocked(useProperties).mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+      } as unknown as ReturnType<typeof useProperties>)
+      rerender(<PropertiesDashboardPage />)
+      expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível carregar seus imóveis.')
+      expect(screen.queryByText(dashboardProperties[0].title)).not.toBeInTheDocument()
+    },
+  )
 
   it('allows only data and media tabs and does not fetch administrative contracts', async () => {
     const user = userEvent.setup()
@@ -157,10 +179,9 @@ describe('Renter properties', () => {
     ).toBeVisible()
     expect(
       screen.queryByRole('button', {
-        name: /Editar|Excluir|Publicar|Despublicar|Histórico|Valores/,
+        name: /Editar|Inativar|Publicar|Despublicar|Histórico|Valores/,
       }),
     ).not.toBeInTheDocument()
-    expect(useContracts).toHaveBeenLastCalledWith(undefined, expect.anything())
     const buttons = screen.getAllByRole('button')
     expect(buttons).toHaveLength(2)
     await user.click(buttons[1])
@@ -172,6 +193,7 @@ describe('Renter properties', () => {
       data: undefined,
       isLoading: false,
       isError: true,
+      error: { isAxiosError: true, response: { status: 404 } },
     } as unknown as ReturnType<typeof useProperty>)
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
@@ -183,4 +205,22 @@ describe('Renter properties', () => {
       consoleError.mockRestore()
     }
   })
+  it.each([401, 500, undefined])(
+    'shows a retryable error instead of a 404 for status %s',
+    async (status) => {
+      const refetch = vi.fn()
+      vi.mocked(useProperty).mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        error: status ? { isAxiosError: true, response: { status } } : new Error('Network error'),
+        refetch,
+      } as unknown as ReturnType<typeof useProperty>)
+      render(<PropertyDetailDashboardPage propertyId={property.id} />)
+      expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível carregar o imóvel.')
+      expect(notFound).not.toHaveBeenCalled()
+      await userEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+      expect(refetch).toHaveBeenCalledOnce()
+    },
+  )
 })

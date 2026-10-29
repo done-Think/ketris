@@ -1,56 +1,32 @@
+import type {
+  ContactDTO,
+  ContactListItemDTO,
+  CreateContactRequestDTO,
+  ListContactsQueryDTO,
+  PatchContactRequestDTO,
+} from '@shared/types/generated/crm/dto'
 import type { z } from 'zod'
 
 import type { createContactFormSchema } from '../schemas/contact-schema'
 
-export type ContactType = 'Proprietário' | 'Locatário' | 'Corretor'
+export type ContactType = ContactDTO['type']
 export type ContactFilterKey = 'all' | 'owners' | 'tenants' | 'brokers'
 
 export type ContactFormValues = z.infer<ReturnType<typeof createContactFormSchema>>
 
-export type ApiContactType = 'PROPRIETARIO' | 'LOCATARIO' | 'CORRETOR'
+export type ApiContactType = ContactDTO['type']
 
-export interface ApiContact {
-  id: string
-  tenantId: string
-  name: string
-  email: string
-  phone: string | null
-  type: ApiContactType
-  avatarUrl: string | null
-  notes: string | null
-  lastInteraction: string | null
-  archivedAt: string | null
-  createdAt: string
-  updatedAt: string
-}
+export type ApiContact = ContactDTO
 
-export interface ApiContactListItem extends ApiContact {
-  propertyCount: number
-}
+export type ApiContactListItem = ContactListItemDTO
 
-export interface ContactFilters {
-  type?: ApiContactType
-  q?: string
+export type ContactFilters = Omit<ListContactsQueryDTO, 'includeArchived'> & {
   includeArchived?: boolean
 }
 
-export interface CreateContactPayload {
-  name: string
-  email: string
-  phone?: string | null
-  type?: ApiContactType
-  avatarUrl?: string | null
-  notes?: string | null
-}
+export type CreateContactPayload = CreateContactRequestDTO
 
-export interface UpdateContactPayload {
-  name?: string
-  email?: string
-  phone?: string | null
-  type?: ApiContactType
-  avatarUrl?: string | null
-  notes?: string | null
-}
+export type UpdateContactPayload = PatchContactRequestDTO
 
 export interface UpdateContactInput {
   id: string
@@ -75,9 +51,19 @@ export type ContactsPageResult = {
   totalCount: number
 }
 
-export type ContactFilter = 'Todos' | 'Proprietários' | 'Locatários' | 'Corretores'
+export type ContactFilter = 'ALL' | 'OWNER' | 'RENTER' | 'BROKER'
 
 export type ContactsListProps = {
+  search?: string
+  activeFilter?: ContactFilter
+  counts?: Partial<Record<ContactFilter, number>>
+  rowsPerPage?: number
+  onSearchChange?: (value: string) => void
+  onFilterChange?: (value: ContactFilter) => void
+  onRowsPerPageChange?: (value: number) => void
+  isLoading?: boolean
+  error?: boolean
+  onRetry?: () => void
   contacts?: readonly ContactListItem[]
   totalCount?: number
   page?: number
@@ -117,7 +103,7 @@ export type ContactsHeaderProps = {
 
 export type ContactsStatusFiltersProps = {
   activeFilter: ContactFilter
-  contacts: readonly ContactListItem[]
+  counts: Partial<Record<ContactFilter, number>>
   onFilterChange: (filter: ContactFilter) => void
 }
 

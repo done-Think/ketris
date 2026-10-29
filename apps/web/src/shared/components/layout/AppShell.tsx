@@ -1,50 +1,49 @@
 'use client'
 
+import { styles } from '@shared/styles/app-shell.styles'
+
 import { useEffect, useMemo, useState } from 'react'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import { Box, Drawer, IconButton, Stack, Tooltip } from '@mui/material'
 import { useSession } from 'next-auth/react'
-import { useLocale, useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
-import { getLocalizedPathname } from '@/i18n/locale-prefix'
-import { usePathname } from '@/i18n/navigation'
-import { CrmAccessBoundary } from '@modules/crm/components/CrmAccessBoundary'
+import { usePathname, useRouter } from '@/i18n/navigation'
 import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
+import { TenantSessionBoundary } from '@shared/components/layout/TenantSessionBoundary'
 import { AppLogo } from '@shared/components/ui'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
-import {
-  alpha,
-  brand,
-  dashboardLayout,
-  iconSize,
-  radius,
-  shadows,
-  surface,
-} from '@shared/theme/tokens'
+import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
+
 import type { AppShellProps } from '@shared/types/app-shell'
 import { getInitials } from '@shared/utils/get-initials'
 import { useSidebarPreferencesStore } from '@shared/stores/sidebar-preferences-store'
+import { useRetainedAuthContent } from '@shared/hooks/use-retained-auth-content'
 import { appShellNavigationItems } from './app-shell-navigation-items'
-import { AppShellSidebar, sidebarCollapsedWidth, sidebarExpandedWidth } from './AppShellSidebar'
+import { AppShellSidebar } from './AppShellSidebar'
 import { DashboardNotificationsButton } from './DashboardNotificationsButton'
 
 export function AppShell({ children, allowLocalDashboardPreview = false }: AppShellProps) {
   const t = useTranslations('common.appShell')
-  const locale = useLocale()
   const pathname = usePathname()
   const router = useRouter()
   const { data: session, status } = useSession()
+  const restrictedAccess =
+    session?.scope === 'tenant' ? getRestrictedRoleAccess(session.role) : null
   const isRenter = session?.scope === 'tenant' && session.role === 'RENTER'
-  const isRenterRoute =
-    pathname === '/dashboard/agenda' ||
-    /^\/dashboard\/(?:finance\/charges|maintenance)(?:\/[^/]+)?\/?$/.test(pathname) ||
-    /^\/dashboard\/properties(?:\/(?!new(?:\/|$))[^/]+)?\/?$/.test(pathname)
+  const retainRenterLayout = useRetainedAuthContent(
+    isRenter,
+    session?.authUnavailable === true,
+    status === 'loading',
+  )
+  const isRestrictedRouteBlocked = Boolean(
+    restrictedAccess && !restrictedAccess.isAllowedPathname(pathname),
+  )
   useEffect(() => {
-    if (isRenter && !isRenterRoute) {
-      router.replace(getLocalizedPathname('/dashboard/finance/charges', locale))
+    if (restrictedAccess && isRestrictedRouteBlocked) {
+      router.replace(restrictedAccess.home)
     }
-  }, [isRenter, isRenterRoute, locale, router])
+  }, [restrictedAccess, isRestrictedRouteBlocked, router])
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
   const sidebarCollapsed = useSidebarPreferencesStore((state) => state.isCollapsed)
@@ -57,20 +56,16 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const userContext = session?.user?.email ?? t('defaultUserContext')
   const userInitials = useMemo(() => getInitials(userName), [userName])
   const visibleItems = useMemo(() => {
-    if (isRenter)
-      return appShellNavigationItems.filter(
-        (item) =>
-          item.href === '/dashboard/finance/charges' ||
-          item.href === '/dashboard/maintenance' ||
-          item.href === '/dashboard/agenda' ||
-          item.href === '/dashboard/properties',
+    if (restrictedAccess)
+      return appShellNavigationItems.filter((item) =>
+        restrictedAccess.navigationHrefs.includes(item.href),
       )
     if (isLocalDashboardPreview) return appShellNavigationItems
 
     return appShellNavigationItems.filter(
       (item) => !item.roles || (session?.role && item.roles.includes(session.role)),
     )
-  }, [isLocalDashboardPreview, isRenter, session])
+  }, [isLocalDashboardPreview, restrictedAccess, session])
   const activeTargetPath = useMemo(() => {
     if (isPersonalProfileRoute) return null
 
@@ -94,25 +89,15 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     setIsSigningOut(true)
     setMobileOpen(false)
     await clearClientSession()
-    router.replace(getLocalizedPathname('/', locale))
+    router.replace('/')
     router.refresh()
   }
 
-  if (isRenter && !isRenterRoute) return null
+  if (isRestrictedRouteBlocked) return null
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: surface.app }}>
-      <Box
-        sx={{
-          display: { xs: 'none' },
-          [dashboardLayout.desktopMediaQuery]: { display: 'block' },
-          position: 'fixed',
-          inset: '0 auto 0 0',
-          width: sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth,
-          zIndex: 10,
-          transition: 'width 180ms ease',
-        }}
-      >
+    <Box sx={styles.box}>
+      <Box sx={styles.box2(sidebarCollapsed)}>
         <AppShellSidebar
           collapsed={sidebarCollapsed}
           showCollapseControl
@@ -123,13 +108,13 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           userContext={userContext}
           userInitials={userInitials}
           userImage={session?.user?.image ?? undefined}
-          canEditProfile={!!session?.user?.id && !isRenter}
+          canEditProfile={!!session?.user?.id && (restrictedAccess?.canEditProfile ?? true)}
           isPersonalProfileRoute={isPersonalProfileRoute}
           isSigningOut={isSigningOut}
           onNavItemClick={() => setMobileOpen(false)}
           onEditProfile={() => {
             setMobileOpen(false)
-            router.push(getLocalizedPathname('/dashboard/profile', locale))
+            router.push('/dashboard/profile')
           }}
           onToggleCollapsed={toggleSidebarCollapsed}
           onLogoutToMarketplace={handleLogoutToMarketplace}
@@ -141,50 +126,18 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        sx={{
-          display: { xs: 'flex' },
-          [dashboardLayout.desktopMediaQuery]: { display: 'none' },
-          position: 'fixed',
-          inset: '0 0 auto 0',
-          zIndex: 20,
-          height: 64,
-          minHeight: 64,
-          maxHeight: 64,
-          overflow: 'hidden',
-          px: 2,
-          bgcolor: surface.paper,
-          color: brand.graphite[500],
-          boxShadow: shadows.crmMobileHeader,
-        }}
+        sx={styles.stack}
       >
-        <AppLogo
-          src={ketrisLogoFooter}
-          width={42}
-          sx={{
-            height: 42,
-            overflow: 'hidden',
-            '& img': {
-              width: 112,
-              maxWidth: 'none',
-            },
-          }}
-        />
+        <AppLogo src={ketrisLogoFooter} width={42} sx={styles.appLogo} />
         <Stack direction="row" alignItems="center" spacing={1}>
           <DashboardNotificationsButton placement="navigationHeader" />
           <Tooltip title={t('openNavigation')}>
             <IconButton
               aria-label={t('openNavigation')}
               onClick={() => setMobileOpen(true)}
-              sx={{
-                width: 42,
-                height: 42,
-                border: '1px solid',
-                borderColor: alpha.graphite[8],
-                borderRadius: `${radius.sm}px`,
-                color: brand.graphite[500],
-              }}
+              sx={styles.iconButton}
             >
-              <MenuRoundedIcon sx={{ fontSize: iconSize.xl }} />
+              <MenuRoundedIcon sx={styles.menuRoundedIcon} />
             </IconButton>
           </Tooltip>
         </Stack>
@@ -194,7 +147,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         ModalProps={{ keepMounted: true }}
-        PaperProps={{ sx: { width: sidebarExpandedWidth, border: 0 } }}
+        PaperProps={{ sx: styles.paper }}
       >
         <AppShellSidebar
           collapsed={false}
@@ -206,38 +159,24 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           userContext={userContext}
           userInitials={userInitials}
           userImage={session?.user?.image ?? undefined}
-          canEditProfile={!!session?.user?.id && !isRenter}
+          canEditProfile={!!session?.user?.id && (restrictedAccess?.canEditProfile ?? true)}
           isPersonalProfileRoute={isPersonalProfileRoute}
           isSigningOut={isSigningOut}
           onNavItemClick={() => setMobileOpen(false)}
           onEditProfile={() => {
             setMobileOpen(false)
-            router.push(getLocalizedPathname('/dashboard/profile', locale))
+            router.push('/dashboard/profile')
           }}
           onToggleCollapsed={toggleSidebarCollapsed}
           onLogoutToMarketplace={handleLogoutToMarketplace}
         />
       </Drawer>
 
-      <Box
-        component="main"
-        sx={{
-          width: '100%',
-          minWidth: 0,
-          ml: 0,
-          transition: 'margin-left 180ms ease, width 180ms ease',
-          pt: '64px',
-          [dashboardLayout.desktopMediaQuery]: {
-            width: `calc(100% - ${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px)`,
-            ml: `${sidebarCollapsed ? sidebarCollapsedWidth : sidebarExpandedWidth}px`,
-            pt: 0,
-          },
-        }}
-      >
-        {isRenter || isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
+      <Box component="main" sx={styles.box3(sidebarCollapsed)}>
+        {retainRenterLayout || isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
           children
         ) : (
-          <CrmAccessBoundary>{children}</CrmAccessBoundary>
+          <TenantSessionBoundary>{children}</TenantSessionBoundary>
         )}
       </Box>
     </Box>

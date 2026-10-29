@@ -19,23 +19,24 @@ describe('POST /api/auth/password-reset-codes/verify (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Verify Code', slug: tenantSlug },
+      data: { name: 'Tenant Verify Code', slug: tenantSlug },
     })
     tenantId = tenant.id
 
-    const usuario = await prisma.usuario.create({
+    const user = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Verifica Código',
+        name: 'Verifica Código',
         email,
-        senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
-    userId = usuario.id
+    userId = user.id
   })
 
   afterAll(async () => {
+    await prisma.emailOwnershipCode.deleteMany({ where: { email } })
     await prisma.tenant.delete({ where: { id: tenantId } })
     await prisma.$disconnect()
   })
@@ -49,15 +50,14 @@ describe('POST /api/auth/password-reset-codes/verify (integração)', () => {
   }
 
   async function seedActiveCode(overrides?: { attempts?: number; expiresAt?: Date }) {
-    await prisma.passwordResetCode.updateMany({
-      where: { userId, consumedAt: null },
+    await prisma.emailOwnershipCode.updateMany({
+      where: { email, consumedAt: null },
       data: { consumedAt: new Date() },
     })
 
-    return prisma.passwordResetCode.create({
+    return prisma.emailOwnershipCode.create({
       data: {
-        userId,
-        tenantId,
+        email,
         codeHash: hashPasswordResetCode(validCode),
         attempts: overrides?.attempts ?? 0,
         expiresAt: overrides?.expiresAt ?? new Date(Date.now() + 10 * 60_000),
@@ -76,7 +76,7 @@ describe('POST /api/auth/password-reset-codes/verify (integração)', () => {
 
     const passwordResetTokenService = new JosePasswordResetTokenService()
     const userIdFromToken = await passwordResetTokenService.verify(json.resetToken)
-    expect(userIdFromToken).toBe(userId)
+    expect(userIdFromToken).toEqual({ userId, sessionVersion: 0 })
 
     const resetResponse = await resetPassword(
       new NextRequest('http://localhost/api/auth/reset-password', {
@@ -101,7 +101,7 @@ describe('POST /api/auth/password-reset-codes/verify (integração)', () => {
     expect(response.status).toBe(401)
     expect(json.error.code).toBe('INVALID_RESET_CODE')
 
-    const updated = await prisma.passwordResetCode.findUniqueOrThrow({ where: { id: code.id } })
+    const updated = await prisma.emailOwnershipCode.findUniqueOrThrow({ where: { id: code.id } })
     expect(updated.attempts).toBe(1)
   })
 
@@ -141,5 +141,61 @@ describe('POST /api/auth/password-reset-codes/verify (integração)', () => {
 
     expect(response.status).toBe(400)
     expect(json.error.code).toBe('VALIDATION_ERROR')
+  })
+  it('proves mailbox ownership before listing duplicate accounts and resets only the selected account', async () => {
+    const other = await prisma.tenant.create({
+      data: { name: 'Other verified account', slug: `other-${randomUUID()}` },
+    })
+    const second = await prisma.user.create({
+      data: {
+        tenantId: other.id,
+        name: 'Same mailbox',
+        email,
+        passwordHash: 'original-second-hash',
+        role: 'OWNER',
+        emailVerifiedAt: null,
+      },
+    })
+    try {
+      await seedActiveCode()
+      const invalid = await verifyCode(buildRequest({ email, code: '000000' }))
+      expect(invalid.status).toBe(401)
+      expect(await invalid.json()).not.toHaveProperty('tenants')
+      const selection = await verifyCode(buildRequest({ email, code: validCode }))
+      const options = await selection.json()
+      expect(options.outcome).toBe('SELECT_TENANT')
+      expect(options.tenants).toHaveLength(2)
+      expect(options).not.toHaveProperty('resetToken')
+      const active = await prisma.emailOwnershipCode.count({ where: { email, consumedAt: null } })
+      expect(active).toBe(1)
+      const original = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
+      const response = await verifyCode(
+        buildRequest({ email, code: validCode, tenantId: other.id }),
+      )
+      const { resetToken } = await response.json()
+      const reset = await resetPassword(
+        new NextRequest('http://localhost/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            password: 'new-selected-password',
+            resetToken,
+            tenantId: other.id,
+          }),
+        }),
+      )
+      expect(reset.status).toBe(204)
+      expect((await prisma.user.findUniqueOrThrow({ where: { id: userId } })).passwordHash).toBe(
+        original.passwordHash,
+      )
+      const updated = await prisma.user.findUniqueOrThrow({ where: { id: second.id } })
+      expect(updated.passwordHash).not.toBe('original-second-hash')
+      expect(updated.emailVerifiedAt).toBeNull()
+      const replay = await verifyCode(buildRequest({ email, code: validCode, tenantId: other.id }))
+      expect(replay.status).toBe(401)
+    } finally {
+      await prisma.tenant.delete({ where: { id: other.id } })
+    }
   })
 })

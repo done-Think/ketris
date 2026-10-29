@@ -21,7 +21,7 @@ const draft = {
   backgroundColor: null,
   logoUrl: null,
   bannerUrl: null,
-  team: [{ usuarioId: 'usuario-1', order: 0 }],
+  team: [{ userId: 'usuario-1', order: 0 }],
 }
 
 function createDeps() {
@@ -38,13 +38,18 @@ function createDeps() {
 }
 
 describe('SaveAgencyProfileUseCase', () => {
-  it('salva o perfil do próprio tenant quando o ator é ADMIN/OWNER', async () => {
+  it('salva o perfil do próprio tenant quando o ator é OWNER', async () => {
     const deps = createDeps()
     const useCase = new SaveAgencyProfileUseCase(deps.agencyProfileRepository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN', ...draft })
+    await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorRole: 'OWNER',
+      actorId: 'owner-1',
+      ...draft,
+    })
 
-    expect(deps.agencyProfileRepository.save).toHaveBeenCalledWith('tenant-1', draft)
+    expect(deps.agencyProfileRepository.save).toHaveBeenCalledWith('tenant-1', draft, 'owner-1')
   })
 
   it('lança ForbiddenError quando o ator é AGENT', async () => {
@@ -52,7 +57,7 @@ describe('SaveAgencyProfileUseCase', () => {
     const useCase = new SaveAgencyProfileUseCase(deps.agencyProfileRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT', ...draft }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'AGENT', ...draft }),
     ).rejects.toThrow(ForbiddenError)
     expect(deps.agencyProfileRepository.save).not.toHaveBeenCalled()
   })

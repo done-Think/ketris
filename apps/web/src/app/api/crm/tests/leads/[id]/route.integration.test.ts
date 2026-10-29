@@ -17,32 +17,32 @@ describe('/api/crm/leads/[id] (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária CRM Lead Detail', slug: `crm-lead-detail-${randomUUID()}` },
+      data: { name: 'Imobiliária CRM Lead Detail', slug: `crm-lead-detail-${randomUUID()}` },
     })
     tenantId = tenant.id
 
     async function createAgent() {
-      const usuario = await prisma.usuario.create({
+      const user = await prisma.user.create({
         data: {
           tenantId,
-          nome: 'Corretor',
+          name: 'Corretor',
           email: `corretor-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
-          papel: 'AGENT',
+          passwordHash: 'hash-fake',
+          role: 'AGENT',
         },
       })
 
       const token = await tokenService.sign({
-        id: usuario.id,
-        tenantId: usuario.tenantId,
-        nome: usuario.nome,
-        email: usuario.email,
-        papel: usuario.papel,
-        ativo: usuario.ativo,
-        vinculoAprovadoEm: usuario.vinculoAprovadoEm,
+        id: user.id,
+        tenantId: user.tenantId,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        active: user.active,
+        membershipApprovedAt: user.membershipApprovedAt,
       })
 
-      return { usuario, token }
+      return { user, token }
     }
 
     const agentA = await createAgent()
@@ -54,12 +54,12 @@ describe('/api/crm/leads/[id] (integração)', () => {
     const lead = await prisma.lead.create({
       data: {
         tenantId,
-        responsavelId: agentA.usuario.id,
-        nome: 'Lead do Corretor A',
-        telefone: '(11) 90000-0001',
-        interesse: 'Apartamento 2 quartos',
-        orcamento: 'Até R$ 3.000',
-        origem: 'WhatsApp',
+        responsibleId: agentA.user.id,
+        name: 'Lead do Corretor A',
+        phone: '(11) 90000-0001',
+        interest: 'Apartamento 2 quartos',
+        budget: 'Até R$ 3.000',
+        source: 'WHATSAPP',
       },
     })
     leadId = lead.id
@@ -112,7 +112,7 @@ describe('/api/crm/leads/[id] (integração)', () => {
   describe('PATCH', () => {
     it('atualiza o estágio do lead', async () => {
       const response = await PATCH(
-        buildPatchRequest(leadId, { stage: 'EM_CONTATO' }, agentAToken),
+        buildPatchRequest(leadId, { stage: 'IN_CONTACT' }, agentAToken),
         {
           params: Promise.resolve({ id: leadId }),
         },
@@ -120,7 +120,7 @@ describe('/api/crm/leads/[id] (integração)', () => {
       const json = await response.json()
 
       expect(response.status).toBe(200)
-      expect(json.lead.stage).toBe('EM_CONTATO')
+      expect(json.lead.stage).toBe('IN_CONTACT')
     })
 
     it('retorna 400 quando nenhum campo é informado', async () => {
@@ -132,7 +132,7 @@ describe('/api/crm/leads/[id] (integração)', () => {
     })
 
     it('outro corretor não consegue atualizar um lead que não é seu', async () => {
-      const response = await PATCH(buildPatchRequest(leadId, { stage: 'PROPOSTA' }, agentBToken), {
+      const response = await PATCH(buildPatchRequest(leadId, { stage: 'PROPOSAL' }, agentBToken), {
         params: Promise.resolve({ id: leadId }),
       })
       const json = await response.json()

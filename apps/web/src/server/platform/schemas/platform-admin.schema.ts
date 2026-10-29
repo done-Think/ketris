@@ -8,5 +8,10 @@ export const authenticatedPlatformAdminSchema = z
     email: z.string().email(),
     role: z.enum(['ADMIN', 'ADMIN_AGENT', 'AGENT']),
     active: z.boolean(),
+    createdAt: z.string().openapi({ description: 'ISO 8601' }),
+    lastAccessAt: z
+      .string()
+      .nullable()
+      .openapi({ description: 'ISO 8601 do último login; null se nunca entrou.' }),
   })
   .openapi('AuthenticatedPlatformAdmin')

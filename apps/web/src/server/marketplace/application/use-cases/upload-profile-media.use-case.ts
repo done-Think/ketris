@@ -1,23 +1,10 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
 import { ProfileMediaValidationError } from '../../domain/errors'
 import { assertAgencyProfileAccess, assertBrokerProfileAccess } from '../authorization'
 import type { ProfileMediaStoragePort } from '../ports/profile-media-storage.port'
-
-export type ProfileMediaTarget = 'broker-avatar' | 'broker-banner' | 'agency-logo' | 'agency-banner'
+import type { UploadProfileMediaUseCaseInput } from '../../types/use-case-inputs'
 
 const allowedContentTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const maxFileSizeBytes = 8 * 1024 * 1024
-
-export interface UploadProfileMediaUseCaseInput {
-  actorId: string
-  actorTenantId: string
-  actorPapel: Papel
-  target: ProfileMediaTarget
-  filename: string
-  contentType: string
-  body: Buffer
-}
 
 function buildKeyPrefix(input: UploadProfileMediaUseCaseInput): string {
   switch (input.target) {
@@ -37,9 +24,9 @@ export class UploadProfileMediaUseCase {
 
   async execute(input: UploadProfileMediaUseCaseInput) {
     if (input.target === 'broker-avatar' || input.target === 'broker-banner') {
-      assertBrokerProfileAccess(input.actorPapel)
+      assertBrokerProfileAccess(input.actorRole)
     } else {
-      assertAgencyProfileAccess(input.actorPapel)
+      assertAgencyProfileAccess(input.actorRole)
     }
 
     if (input.body.byteLength === 0) {

@@ -1,18 +1,18 @@
-import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
-import { describe, expect, it } from 'vitest'
 import { prisma } from '@server/db/prisma'
-import { GET as getTicket, PATCH } from '../../tickets/[id]/route'
-import { POST as addNote } from '../../tickets/[id]/notes/route'
+import { describe, expect, it } from 'vitest'
 import { GET as listActivities } from '../../tickets/[id]/activities/route'
+import { POST as addNote } from '../../tickets/[id]/notes/route'
+import { GET as getTicket, PATCH } from '../../tickets/[id]/route'
+import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
 
 describe('/api/maintenance resolution (database integration)', () => {
   const env = setupMaintenanceIntegration()
   const { request, context, create, action } = env
   it('lets only the linked renter contest a pending resolution and records the audit', async () => {
     const id = await create(env.fixture.owner.token)
-    await prisma.chamadoManutencao.update({
+    await prisma.maintenanceTicket.update({
       where: { id },
-      data: { status: 'AGUARDANDO_CONFIRMACAO' },
+      data: { status: 'AWAITING_CONFIRMATION' },
     })
     const pending = await getTicket(
       request(`tickets/${id}`, 'GET', env.fixture.renter.token),
@@ -36,7 +36,7 @@ describe('/api/maintenance resolution (database integration)', () => {
       reason: 'Still leaking',
     })
     expect(response.status).toBe(200)
-    expect((await response.json()).ticket).toMatchObject({ status: 'CONTESTADO', resolvedAt: null })
+    expect((await response.json()).ticket).toMatchObject({ status: 'DISPUTED', resolvedAt: null })
     const history = await listActivities(
       request(`tickets/${id}/activities`, 'GET', env.fixture.renter.token),
       context(id),
@@ -44,10 +44,10 @@ describe('/api/maintenance resolution (database integration)', () => {
     expect((await history.json()).activities).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          type: 'MUDANCA_STATUS',
+          type: 'STATUS_CHANGE',
           authorId: env.fixture.renter.id,
           message: 'Still leaking',
-          details: { before: 'AGUARDANDO_CONFIRMACAO', after: 'CONTESTADO' },
+          details: { before: 'AWAITING_CONFIRMATION', after: 'DISPUTED' },
         }),
       ]),
     )
@@ -56,35 +56,35 @@ describe('/api/maintenance resolution (database integration)', () => {
     ).toBe(403)
   })
 
-  it.each(['ABERTO', 'EM_ANDAMENTO', 'RESOLVIDO', 'CANCELADO', 'FECHADO'] as const)(
+  it.each(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CANCELED', 'CLOSED'] as const)(
     'rejects renter contestation in %s',
     async (status) => {
       const id = await create()
-      await prisma.chamadoManutencao.update({ where: { id }, data: { status } })
+      await prisma.maintenanceTicket.update({ where: { id }, data: { status } })
       expect(
         (await action(id, env.fixture.renter.token, { action: 'contest', reason: 'Denied' }))
           .status,
-      ).toBe(['RESOLVIDO', 'CANCELADO', 'FECHADO'].includes(status) ? 409 : 403)
+      ).toBe(['RESOLVED', 'CANCELED', 'CLOSED'].includes(status) ? 409 : 403)
     },
   )
 
   it('rejects renter contestation of archived tickets', async () => {
     const id = await create()
-    await prisma.chamadoManutencao.update({
+    await prisma.maintenanceTicket.update({
       where: { id },
-      data: { status: 'AGUARDANDO_CONFIRMACAO', excluidoEm: new Date() },
+      data: { status: 'AWAITING_CONFIRMATION', deletedAt: new Date() },
     })
     expect(
       (await action(id, env.fixture.renter.token, { action: 'contest', reason: 'Denied' })).status,
     ).toBe(404)
   })
 
-  it.each(['ABERTO', 'EM_ANDAMENTO', 'AGUARDANDO_CONFIRMACAO', 'CONTESTADO'] as const)(
+  it.each(['OPEN', 'IN_PROGRESS', 'AWAITING_CONFIRMATION', 'DISPUTED'] as const)(
     'lets the linked renter finish %s directly and preserves the ticket history and original data',
     async (status) => {
       const id = await create(env.fixture.admin.token)
-      await prisma.chamadoManutencao.update({ where: { id }, data: { status } })
-      const before = await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id } })
+      await prisma.maintenanceTicket.update({ where: { id }, data: { status } })
+      const before = await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id } })
       const detail = await getTicket(
         request(`tickets/${id}`, 'GET', env.fixture.renter.token),
         context(id),
@@ -100,21 +100,26 @@ describe('/api/maintenance resolution (database integration)', () => {
       for (const user of [env.fixture.admin, env.fixture.agent, env.fixture.owner]) {
         expect((await action(id, user.token, { action: 'finish' })).status).toBe(403)
       }
-      const response = await action(id, env.fixture.renter.token, {
-        action: 'finish',
-        title: 'Overwrite',
-        description: 'Overwrite',
-      })
+      expect(
+        (
+          await action(id, env.fixture.renter.token, {
+            action: 'finish',
+            title: 'Overwrite',
+            description: 'Overwrite',
+          })
+        ).status,
+      ).toBe(400)
+      const response = await action(id, env.fixture.renter.token, { action: 'finish' })
       expect(response.status).toBe(200)
       const body = await response.json()
       expect(body.ticket).toMatchObject({
-        status: 'RESOLVIDO',
-        title: before.titulo,
-        description: before.descricao,
-        propertyId: before.imovelId,
-        contractId: before.contratoId,
-        category: before.categoria,
-        priority: before.prioridade,
+        status: 'RESOLVED',
+        title: before.title,
+        description: before.description,
+        propertyId: before.propertyId,
+        contractId: before.contractId,
+        category: before.category,
+        priority: before.priority,
         permissions: {
           finish: false,
           edit: false,
@@ -129,22 +134,22 @@ describe('/api/maintenance resolution (database integration)', () => {
         expect.arrayContaining([
           expect.objectContaining({ message: 'Chamado aberto.' }),
           expect.objectContaining({
-            type: 'MUDANCA_STATUS',
+            type: 'STATUS_CHANGE',
             authorId: env.fixture.renter.id,
             details: {
               before: status,
-              after: 'RESOLVIDO',
+              after: 'RESOLVED',
               resolvedAt: body.ticket.resolvedAt,
               previousCompletionRole: null,
             },
           }),
         ]),
       )
-      const stored = await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id } })
+      const stored = await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id } })
       expect(stored).toMatchObject({
-        concluidoPorId: env.fixture.renter.id,
-        concluidoPorPapel: 'RENTER',
-        resolvidoEm: new Date(body.ticket.resolvedAt),
+        completedById: env.fixture.renter.id,
+        completedByRole: 'RENTER',
+        resolvedAt: new Date(body.ticket.resolvedAt),
       })
       expect((await action(id, env.fixture.renter.token, { action: 'finish' })).status).toBe(409)
       expect(
@@ -159,7 +164,7 @@ describe('/api/maintenance resolution (database integration)', () => {
         (
           await action(id, env.fixture.renter.token, {
             action: 'reopen',
-            status: 'ABERTO',
+            status: 'OPEN',
             reason: 'Problem returned',
           })
         ).status,
@@ -168,26 +173,26 @@ describe('/api/maintenance resolution (database integration)', () => {
     },
   )
 
-  it.each(['RESOLVIDO', 'CANCELADO', 'FECHADO'] as const)(
+  it.each(['RESOLVED', 'CANCELED', 'CLOSED'] as const)(
     'blocks renter finalization of %s tickets',
     async (status) => {
       const id = await create()
-      await prisma.chamadoManutencao.update({ where: { id }, data: { status } })
+      await prisma.maintenanceTicket.update({ where: { id }, data: { status } })
       expect((await action(id, env.fixture.renter.token, { action: 'finish' })).status).toBe(409)
     },
   )
 
   it('blocks renter finalization of archived and legacy tickets', async () => {
     const archived = await create()
-    await prisma.chamadoManutencao.update({
+    await prisma.maintenanceTicket.update({
       where: { id: archived },
-      data: { excluidoEm: new Date() },
+      data: { deletedAt: new Date() },
     })
     expect((await action(archived, env.fixture.renter.token, { action: 'finish' })).status).toBe(
       404,
     )
     const legacy = await create()
-    await prisma.chamadoManutencao.update({ where: { id: legacy }, data: { contratoId: null } })
+    await prisma.maintenanceTicket.update({ where: { id: legacy }, data: { contractId: null } })
     expect((await action(legacy, env.fixture.renter.token, { action: 'finish' })).status).toBe(404)
   })
 
@@ -206,7 +211,7 @@ describe('/api/maintenance resolution (database integration)', () => {
     expect((await action(id, env.fixture.agent.token, { action: 'complete' })).status).toBe(200)
     const resolved = await action(id, env.fixture.owner.token, { action: 'confirm' })
     expect(resolved.status).toBe(200)
-    expect((await resolved.json()).ticket.status).toBe('RESOLVIDO')
+    expect((await resolved.json()).ticket.status).toBe('RESOLVED')
     expect(
       (
         await addNote(
@@ -216,7 +221,7 @@ describe('/api/maintenance resolution (database integration)', () => {
       ).status,
     ).toBe(409)
     expect(
-      (await action(id, env.fixture.admin.token, { action: 'reopen', status: 'EM_ANDAMENTO' }))
+      (await action(id, env.fixture.admin.token, { action: 'reopen', status: 'IN_PROGRESS' }))
         .status,
     ).toBe(200)
   })

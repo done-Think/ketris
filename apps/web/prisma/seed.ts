@@ -1,9 +1,11 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 
 import { getDatabaseUrl } from '../src/server/db/database-url'
+import { createPostgresAdapter } from '../src/server/db/postgres-adapter'
+import { protectLegacyContractCpfs } from '../src/server/contracts/infrastructure/protect-legacy-contract-cpfs'
 import { seedContacts, seedOpportunities, seedProperties, seedTenants } from './seed-data'
+import { seedPublicProfiles } from './seed-public-profiles'
 
 // Seed de desenvolvimento local: várias imobiliárias, corretores autônomos, proprietários
 // independentes, construtoras e locatários, além do platform admin — dataset suficiente para
@@ -21,11 +23,13 @@ import { seedContacts, seedOpportunities, seedProperties, seedTenants } from './
 const SALT_ROUNDS = 10
 
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: getDatabaseUrl() }),
+  adapter: createPostgresAdapter({ connectionString: getDatabaseUrl() }),
 })
 
 async function main() {
-  const senhaHash = await bcrypt.hash('trocar-em-desenvolvimento', SALT_ROUNDS)
+  const protectedCount = await protectLegacyContractCpfs(prisma)
+  console.log(`Proteção de CPFs concluída: ${protectedCount} registros atualizados.`)
+  const passwordHash = await bcrypt.hash('trocar-em-desenvolvimento', SALT_ROUNDS)
 
   const tenantIdByEmail = new Map<string, string>()
   const userIdByEmail = new Map<string, string>()
@@ -34,37 +38,55 @@ async function main() {
   for (const seedTenant of seedTenants) {
     const tenant = await prisma.tenant.upsert({
       where: { slug: seedTenant.slug },
-      update: { nome: seedTenant.name, accountType: seedTenant.accountType },
+      update: { name: seedTenant.name, accountType: seedTenant.accountType },
       create: {
-        nome: seedTenant.name,
+        name: seedTenant.name,
         slug: seedTenant.slug,
         accountType: seedTenant.accountType,
-        corPrimaria: seedTenant.corPrimaria,
-        corSecundaria: seedTenant.corSecundaria,
+        primaryColor: seedTenant.primaryColor,
+        secondaryColor: seedTenant.secondaryColor,
       },
     })
     tenantIdBySlug.set(seedTenant.slug, tenant.id)
 
     for (const member of seedTenant.members) {
-      const user = await prisma.usuario.upsert({
-        where: { email: member.email },
-        update: {
-          tenantId: tenant.id,
-          nome: member.name,
-          papel: member.role,
-          avatarUrl: member.avatarUrl,
-          senhaHash,
-          ativo: true,
-          vinculoAprovadoEm: new Date(),
-        },
-        create: {
-          tenantId: tenant.id,
-          nome: member.name,
-          email: member.email,
-          avatarUrl: member.avatarUrl,
-          senhaHash,
-          papel: member.role,
-        },
+      const user = await prisma.$transaction(async (tx) => {
+        const previous = await tx.user.findUnique({
+          where: { tenantId_email: { tenantId: tenant.id, email: member.email } },
+          select: { id: true },
+        })
+        const saved = await tx.user.upsert({
+          where: { tenantId_email: { tenantId: tenant.id, email: member.email } },
+          update: {
+            tenantId: tenant.id,
+            name: member.name,
+            role: member.role,
+            avatarUrl: member.avatarUrl,
+            passwordHash,
+            active: true,
+            membershipApprovedAt: new Date(),
+          },
+          create: {
+            tenantId: tenant.id,
+            name: member.name,
+            email: member.email,
+            avatarUrl: member.avatarUrl,
+            passwordHash,
+            role: member.role,
+          },
+        })
+        await tx.userAuditEvent.create({
+          data: {
+            userId: saved.id,
+            tenantId: tenant.id,
+            action: previous ? 'UPDATED' : 'CREATED',
+            actorType: 'SYSTEM',
+            changedFields: previous
+              ? ['name', 'role', 'avatarUrl', 'password', 'active', 'pendingApproval']
+              : [],
+          },
+        })
+        return saved
       })
       tenantIdByEmail.set(member.email, tenant.id)
       userIdByEmail.set(member.email, user.id)
@@ -77,53 +99,57 @@ async function main() {
   )
 
   for (const [index, property] of seedProperties.entries()) {
-    const responsavelId = userIdByEmail.get(property.responsavelEmail)
-    const tenantId = tenantIdByEmail.get(property.responsavelEmail)
+    const responsibleId = userIdByEmail.get(property.responsibleEmail)
+    const tenantId = tenantIdByEmail.get(property.responsibleEmail)
 
-    if (!responsavelId || !tenantId) {
+    if (!responsibleId || !tenantId) {
       throw new Error(
-        `Imóvel "${property.id}" referencia responsavelEmail "${property.responsavelEmail}" que não existe em seedTenants`,
+        `Imóvel "${property.id}" referencia responsavelEmail "${property.responsibleEmail}" que não existe em seedTenants`,
       )
     }
 
-    await prisma.imovel.upsert({
+    const ownerId = property.ownerEmail ? (userIdByEmail.get(property.ownerEmail) ?? null) : null
+
+    await prisma.property.upsert({
       where: { id: `seed-imovel-${property.id}` },
       update: {
         tenantId,
-        responsavelId,
+        responsibleId,
+        ownerId,
         status: property.status ?? 'PUBLISHED',
-        publicadoEm: property.status === 'DRAFT' ? null : new Date(),
+        publishedAt: property.status === 'DRAFT' ? null : new Date(),
       },
       create: {
         id: `seed-imovel-${property.id}`,
         tenantId,
-        responsavelId,
-        titulo: property.title,
-        descricao: property.description,
-        finalidade: property.purpose,
-        tipo: property.category,
-        quartos: property.bedrooms,
-        banheiros: property.bathrooms,
-        vagas: property.parking,
-        areaM2: property.areaM2,
-        valor: property.price,
+        responsibleId,
+        ownerId,
+        title: property.title,
+        description: property.description,
+        purpose: property.purpose,
+        type: property.category,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        parkingSpots: property.parking,
+        areaSqm: property.areaSqm,
+        price: property.price,
         status: property.status ?? 'PUBLISHED',
-        publicadoEm: property.status === 'DRAFT' ? null : new Date(),
-        endereco: {
+        publishedAt: property.status === 'DRAFT' ? null : new Date(),
+        address: {
           create: {
-            logradouro: `Rua ${property.neighborhood}`,
-            numero: String(100 + index),
-            complemento: null,
-            bairro: property.neighborhood,
-            cidade: property.city,
-            estado: 'SP',
-            cep: '01000-000',
+            street: `Rua ${property.neighborhood}`,
+            number: String(100 + index),
+            complement: null,
+            neighborhood: property.neighborhood,
+            city: property.city,
+            state: 'SP',
+            zipCode: '01000-000',
             latitude: property.latitude,
             longitude: property.longitude,
           },
         },
-        midias: {
-          create: property.images.map((url, order) => ({ url, tipo: 'foto', ordem: order })),
+        media: {
+          create: property.images.map((url, order) => ({ url, type: 'PHOTO', position: order })),
         },
       },
     })
@@ -140,18 +166,18 @@ async function main() {
   const contactByLegacyId = new Map<string, string>()
 
   for (const contact of seedContacts) {
-    const record = await prisma.contato.upsert({
+    const record = await prisma.contact.upsert({
       where: { tenantId_email: { tenantId: mainTenantId, email: contact.email } },
       update: {},
       create: {
         id: `seed-contato-${contact.id}`,
         tenantId: mainTenantId,
-        nome: contact.name,
+        name: contact.name,
         email: contact.email,
-        telefone: contact.phone,
-        tipo: contact.type,
+        phone: contact.phone,
+        type: contact.type,
         avatarUrl: contact.avatarUrl,
-        ultimaInteracao: new Date(Date.now() - contact.hoursSinceLastInteraction * 3_600_000),
+        lastInteraction: new Date(Date.now() - contact.hoursSinceLastInteraction * 3_600_000),
       },
     })
     contactByLegacyId.set(contact.id, record.id)
@@ -160,50 +186,60 @@ async function main() {
   console.log(`Seed concluído — ${seedContacts.length} contatos do crm`)
 
   for (const opportunity of seedOpportunities) {
-    const record = await prisma.oportunidade.upsert({
+    const property = await prisma.property.findUniqueOrThrow({
+      where: { id: `seed-imovel-${opportunity.propertyId}` },
+      select: { responsibleId: true },
+    })
+    const record = await prisma.opportunity.upsert({
       where: { id: opportunity.id },
       update: {},
       create: {
         id: opportunity.id,
         tenantId: mainTenantId,
-        imovelId: `seed-imovel-${opportunity.propertyId}`,
-        contatoId: opportunity.contactId ? contactByLegacyId.get(opportunity.contactId) : null,
-        interessadoNome: opportunity.leadName,
-        interessadoEmail: opportunity.leadEmail,
-        valorProposto: opportunity.proposedValue,
+        propertyId: `seed-imovel-${opportunity.propertyId}`,
+        responsibleId: property.responsibleId,
+        contactId: opportunity.contactId ? contactByLegacyId.get(opportunity.contactId) : null,
+        interestedName: opportunity.leadName,
+        interestedEmail: opportunity.leadEmail,
+        proposedValue: opportunity.proposedValue,
         status: opportunity.status,
-        arquivadaEm: opportunity.status === 'RECUSADA' ? new Date() : null,
+        archivedAt: opportunity.status === 'REJECTED' ? new Date() : null,
       },
     })
 
-    await prisma.atividadeOportunidade.upsert({
+    await prisma.opportunityActivity.upsert({
       where: { id: `${opportunity.id}-criada` },
       update: {},
       create: {
         id: `${opportunity.id}-criada`,
-        oportunidadeId: record.id,
-        tipo: 'NOTA',
-        descricao: 'Oportunidade criada a partir do marketplace.',
+        opportunityId: record.id,
+        type: 'NOTE',
+        description: 'Oportunidade criada a partir do marketplace.',
       },
     })
 
-    if (opportunity.status !== 'RASCUNHO') {
-      await prisma.atividadeOportunidade.upsert({
+    if (opportunity.status !== 'DRAFT') {
+      await prisma.opportunityActivity.upsert({
         where: { id: `${opportunity.id}-status` },
         update: {},
         create: {
           id: `${opportunity.id}-status`,
-          oportunidadeId: record.id,
-          tipo: 'MUDANCA_STATUS',
-          descricao: `Status atualizado para ${opportunity.status}.`,
-          statusAnterior: 'RASCUNHO',
-          statusNovo: opportunity.status,
+          opportunityId: record.id,
+          type: 'STATUS_CHANGE',
+          description: `Status atualizado para ${opportunity.status}.`,
+          previousStatus: 'DRAFT',
+          newStatus: opportunity.status,
         },
       })
     }
   }
 
   console.log(`Seed concluído — ${seedOpportunities.length} oportunidades do crm`)
+
+  const publicProfiles = await seedPublicProfiles(prisma)
+  console.log(
+    `Seed concluído — ${publicProfiles.brokers} perfis de corretores e ${publicProfiles.agencies} perfis de imobiliárias, preservando perfis existentes`,
+  )
 
   const platformAdminCount = await prisma.platformAdmin.count()
 
@@ -214,14 +250,18 @@ async function main() {
 
   // `.env.example` traz essas chaves como placeholders vazios (não ausentes) — usar `||` em vez
   // de `??` para que uma string vazia também caia no fallback, não só `undefined`.
-  const platformAdminNome = process.env.PLATFORM_ADMIN_NAME || 'Admin Ketris'
+  const platformAdminName = process.env.PLATFORM_ADMIN_NAME || 'Admin Ketris'
   const platformAdminEmail = process.env.PLATFORM_ADMIN_EMAIL || 'platform-admin@ketris.dev'
   const platformAdminPassword = process.env.PLATFORM_ADMIN_PASSWORD || 'trocar-em-desenvolvimento'
 
-  const platformAdminSenhaHash = await bcrypt.hash(platformAdminPassword, SALT_ROUNDS)
+  const platformAdminPasswordHash = await bcrypt.hash(platformAdminPassword, SALT_ROUNDS)
 
   const platformAdmin = await prisma.platformAdmin.create({
-    data: { nome: platformAdminNome, email: platformAdminEmail, senhaHash: platformAdminSenhaHash },
+    data: {
+      name: platformAdminName,
+      email: platformAdminEmail,
+      passwordHash: platformAdminPasswordHash,
+    },
   })
 
   console.log(`Platform admin criado: ${platformAdmin.email}`)

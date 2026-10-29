@@ -8,10 +8,11 @@ import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 export const POST = withErrorHandling(async (request: NextRequest) => {
   const body = await parseJsonBody(request, verifyPasswordResetCodeSchema)
 
-  const { resetToken } = await authContainer.verifyPasswordResetCodeUseCase.execute({
+  const result = await authContainer.verifyPasswordResetCodeUseCase.execute({
     email: body.email,
     code: body.code,
+    tenantId: body.tenantId,
   })
 
-  return NextResponse.json({ resetToken }, { status: 200 })
+  return NextResponse.json(result, { status: 200 })
 })

@@ -16,27 +16,27 @@ describe('POST /api/auth/login (integração)', () => {
   let tenantId: string
 
   beforeAll(async () => {
-    const tenant = await prisma.tenant.create({ data: { nome: 'Tenant Login', slug: tenantSlug } })
+    const tenant = await prisma.tenant.create({ data: { name: 'Tenant Login', slug: tenantSlug } })
     tenantId = tenant.id
 
-    await prisma.usuario.create({
+    await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Login Teste',
+        name: 'Login Teste',
         email,
-        senhaHash: await bcrypt.hash(password, 10),
-        papel: 'ADMIN',
+        passwordHash: await bcrypt.hash(password, 10),
+        role: 'OWNER',
       },
     })
 
-    await prisma.usuario.create({
+    await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Login Desativado',
+        name: 'Login Desativado',
         email: deactivatedEmail,
-        senhaHash: await bcrypt.hash(password, 10),
-        papel: 'AGENT',
-        ativo: false,
+        passwordHash: await bcrypt.hash(password, 10),
+        role: 'AGENT',
+        active: false,
       },
     })
   })
@@ -65,11 +65,13 @@ describe('POST /api/auth/login (integração)', () => {
       name: 'Login Teste',
       email,
       avatarUrl: null,
-      role: 'ADMIN',
+      phone: null,
+      creci: null,
+      role: 'OWNER',
       active: true,
       pendingApproval: false,
     })
-    expect(json.user).not.toHaveProperty('senhaHash')
+    expect(json.user).not.toHaveProperty('passwordHash')
     expect(json.user).not.toHaveProperty('nome')
     expect(json.user).not.toHaveProperty('papel')
     expect(json.user).not.toHaveProperty('ativo')

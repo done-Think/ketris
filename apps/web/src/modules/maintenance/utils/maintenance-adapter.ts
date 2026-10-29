@@ -1,57 +1,59 @@
 import { formatDate } from '@shared/lib/utils/format'
 import dayjs from 'dayjs'
+import type { MaintenanceDateFormatter } from '../types/formatters'
 
+import type {
+  MaintenanceCreateTicketFormValues,
+  MaintenanceTicketFormValues,
+  MaintenancePriority,
+  MaintenanceScheduleFormValues,
+  MaintenanceStatus,
+  MaintenanceTicket,
+} from '../types/maintenance'
 import type {
   ApiMaintenanceTicket,
   ApiMaintenanceTicketListItem,
   ApiMaintenanceTicketPriority,
   ApiMaintenanceTicketStatus,
   CreateMaintenanceTicketPayload,
-  UpdateMaintenanceTicketPayload,
   MaintenanceAction,
+  UpdateMaintenanceTicketPayload,
 } from '../types/service'
-import type {
-  MaintenanceCreateTicketFormValues,
-  MaintenancePriority,
-  MaintenanceStatus,
-  MaintenanceTicket,
-  MaintenanceScheduleFormValues,
-} from '../types/maintenance'
 
-const statusFromApiMap: Record<ApiMaintenanceTicketStatus, MaintenanceStatus> = {
-  ABERTO: 'open',
-  EM_ANDAMENTO: 'inProgress',
-  RESOLVIDO: 'resolved',
-  FECHADO: 'closed',
-  AGUARDANDO_CONFIRMACAO: 'pendingConfirmation',
-  CONTESTADO: 'contested',
-  CANCELADO: 'cancelled',
+export const maintenanceStatusFromApiMap: Record<ApiMaintenanceTicketStatus, MaintenanceStatus> = {
+  OPEN: 'open',
+  IN_PROGRESS: 'inProgress',
+  RESOLVED: 'resolved',
+  CLOSED: 'closed',
+  AWAITING_CONFIRMATION: 'pendingConfirmation',
+  DISPUTED: 'contested',
+  CANCELED: 'cancelled',
 }
 
 const statusToApiMap: Record<MaintenanceStatus, ApiMaintenanceTicketStatus> = {
-  open: 'ABERTO',
-  inProgress: 'EM_ANDAMENTO',
-  resolved: 'RESOLVIDO',
-  closed: 'FECHADO',
-  pendingConfirmation: 'AGUARDANDO_CONFIRMACAO',
-  contested: 'CONTESTADO',
-  cancelled: 'CANCELADO',
+  open: 'OPEN',
+  inProgress: 'IN_PROGRESS',
+  resolved: 'RESOLVED',
+  closed: 'CLOSED',
+  pendingConfirmation: 'AWAITING_CONFIRMATION',
+  contested: 'DISPUTED',
+  cancelled: 'CANCELED',
 }
 
 const priorityFromApiMap: Record<ApiMaintenanceTicketPriority, MaintenancePriority> = {
   NORMAL: 'normal',
-  ALTA: 'high',
-  URGENTE: 'urgent',
+  HIGH: 'high',
+  URGENT: 'urgent',
 }
 
 const priorityToApiMap: Record<MaintenancePriority, ApiMaintenanceTicketPriority> = {
   normal: 'NORMAL',
-  high: 'ALTA',
-  urgent: 'URGENTE',
+  high: 'HIGH',
+  urgent: 'URGENT',
 }
 
 export function mapMaintenanceStatusFromApi(status: ApiMaintenanceTicketStatus): MaintenanceStatus {
-  return statusFromApiMap[status]
+  return maintenanceStatusFromApiMap[status]
 }
 
 export function mapMaintenanceStatusToApi(status: MaintenanceStatus): ApiMaintenanceTicketStatus {
@@ -72,6 +74,7 @@ export function mapMaintenancePriorityToApi(
 
 export function mapMaintenanceTicketListItemFromApi(
   item: ApiMaintenanceTicketListItem,
+  format: MaintenanceDateFormatter = formatDate,
 ): MaintenanceTicket {
   return {
     id: item.id,
@@ -81,13 +84,16 @@ export function mapMaintenanceTicketListItemFromApi(
     category: item.category,
     priority: mapMaintenancePriorityFromApi(item.priority),
     tenant: item.openedByName,
-    openedAt: formatDate(item.createdAt),
+    openedAt: format(item.createdAt),
     status: mapMaintenanceStatusFromApi(item.status),
     title: item.title,
   }
 }
 
-export function mapMaintenanceTicketFromApi(ticket: ApiMaintenanceTicket): MaintenanceTicket {
+export function mapMaintenanceTicketFromApi(
+  ticket: ApiMaintenanceTicket,
+  format: MaintenanceDateFormatter = formatDate,
+): MaintenanceTicket {
   return {
     id: ticket.id,
     propertyId: ticket.propertyId,
@@ -95,7 +101,7 @@ export function mapMaintenanceTicketFromApi(ticket: ApiMaintenanceTicket): Maint
     category: ticket.category,
     priority: mapMaintenancePriorityFromApi(ticket.priority),
     tenant: ticket.openedByName,
-    openedAt: formatDate(ticket.createdAt),
+    openedAt: format(ticket.createdAt),
     status: mapMaintenanceStatusFromApi(ticket.status),
     title: ticket.title,
     description: ticket.description,
@@ -104,7 +110,7 @@ export function mapMaintenanceTicketFromApi(ticket: ApiMaintenanceTicket): Maint
 
 export function mapMaintenanceTicketToFormValues(
   ticket: ApiMaintenanceTicket,
-): MaintenanceCreateTicketFormValues {
+): MaintenanceTicketFormValues {
   return {
     contractId: ticket.contractId ?? '',
     propertyId: ticket.propertyId,
@@ -120,7 +126,6 @@ export function buildCreateMaintenanceTicketPayload(
 ): CreateMaintenanceTicketPayload {
   return {
     contractId: values.contractId ?? '',
-    propertyId: values.propertyId,
     category: values.category,
     priority: mapMaintenancePriorityToApi(values.priority),
     title: values.title,
@@ -133,7 +138,6 @@ export function buildUpdateMaintenanceTicketPayload(
 ): UpdateMaintenanceTicketPayload {
   return {
     contractId: values.contractId || undefined,
-    propertyId: values.propertyId,
     category: values.category,
     priority: mapMaintenancePriorityToApi(values.priority),
     title: values.title,

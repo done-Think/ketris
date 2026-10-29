@@ -1,9 +1,13 @@
+import type { LeadSource } from '@shared/types/lead-source'
 import type { ReactNode } from 'react'
-import type { Dayjs } from 'dayjs'
 
-import type { AgendaEventApi } from '@modules/agenda/types/agenda-event'
-import type { Lead } from '@modules/crm/types/lead'
-import type { Opportunity } from '@modules/crm/types/opportunity'
+import type { ApiDashboardMetrics } from './service'
+
+export type DashboardActivityProperty = {
+  title: string
+  address: string | null
+  price: number
+}
 
 export type DashboardMetricTone = 'success' | 'danger'
 
@@ -19,11 +23,8 @@ export type DashboardMetricGridProps = {
 }
 
 export type BuildDashboardMetricsParams = {
-  leads: Lead[]
-  opportunities: Opportunity[]
-  monthEvents: AgendaEventApi[]
-  today: Dayjs
-  t: (key: string, values?: Record<string, string | number>) => string
+  metrics: ApiDashboardMetrics
+  t: (key: TranslationKey<'dashboard.overview'>, values?: Record<string, string | number>) => string
 }
 
 export type DashboardActivityAccent = 'magenta' | 'info' | 'warning'
@@ -39,6 +40,7 @@ export type DashboardUpcomingActivity = {
   notes: string
   propertyId: string | null
   propertyReference: string | null
+  property: DashboardActivityProperty | null
 }
 
 export type DashboardRecentLeadStatus = 'new' | 'inProgress' | 'qualified' | 'pending'
@@ -54,13 +56,15 @@ export type DashboardRecentLead = {
   phone: string
   interest: string
   budget: string
-  source: string
+  source: LeadSource
   status: DashboardRecentLeadStatus
   notes: string
 }
 
-export type DashboardPanelProps = {
-  children: ReactNode
+export type DashboardOverviewView = {
+  metrics: ApiDashboardMetrics
+  recentLeads: DashboardRecentLead[]
+  upcomingActivities: DashboardUpcomingActivity[]
 }
 
 export type ContactInfoCardProps = {
@@ -71,7 +75,6 @@ export type ContactInfoCardProps = {
 
 export type ActivityDetailModalProps = {
   activity: DashboardUpcomingActivity | null
-  tenantId: string | null | undefined
   onClose: () => void
 }
 
@@ -94,3 +97,4 @@ export type UpcomingActivitiesPanelProps = {
   activities: DashboardUpcomingActivity[]
   onActivitySelect: (activity: DashboardUpcomingActivity) => void
 }
+import type { TranslationKey } from '@/i18n/types/messages.types'

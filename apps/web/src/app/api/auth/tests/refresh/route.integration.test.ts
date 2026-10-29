@@ -17,17 +17,17 @@ describe('POST /api/auth/refresh (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Refresh', slug: tenantSlug },
+      data: { name: 'Tenant Refresh', slug: tenantSlug },
     })
     tenantId = tenant.id
 
-    await prisma.usuario.create({
+    await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Refresh Teste',
+        name: 'Refresh Teste',
         email,
-        senhaHash: await bcrypt.hash(password, 10),
-        papel: 'ADMIN',
+        passwordHash: await bcrypt.hash(password, 10),
+        role: 'OWNER',
       },
     })
   })
@@ -70,17 +70,15 @@ describe('POST /api/auth/refresh (integração)', () => {
   it('rotação: o refresh token usado uma vez não pode ser reutilizado (retorna 401)', async () => {
     const refreshToken = await loginAndGetRefreshToken()
 
-    const primeira = await refresh(
+    const first = await refresh(buildRequest('http://localhost/api/auth/refresh', { refreshToken }))
+    expect(first.status).toBe(200)
+
+    const second = await refresh(
       buildRequest('http://localhost/api/auth/refresh', { refreshToken }),
     )
-    expect(primeira.status).toBe(200)
+    const json = await second.json()
 
-    const segunda = await refresh(
-      buildRequest('http://localhost/api/auth/refresh', { refreshToken }),
-    )
-    const json = await segunda.json()
-
-    expect(segunda.status).toBe(401)
+    expect(second.status).toBe(401)
     expect(json.error.code).toBe('INVALID_REFRESH_TOKEN')
   })
 

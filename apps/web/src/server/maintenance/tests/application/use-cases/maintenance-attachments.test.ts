@@ -1,12 +1,12 @@
-import { describe, expect, it, vi } from 'vitest'
 import { ConflictError } from '@server/shared/errors'
-import {
-  MaintenanceTicketNotFoundError,
-  MaintenanceAttachmentValidationError,
-} from '../../../domain/errors'
-import { UploadMaintenanceTicketAttachmentUseCase } from '../../../application/use-cases/upload-maintenance-ticket-attachment.use-case'
+import { describe, expect, it, vi } from 'vitest'
 import { permissionsFor } from '../../../application/authorization'
-import { admin, renter, ticket, repository } from '../../fixtures/maintenance-ticket'
+import { UploadMaintenanceTicketAttachmentUseCase } from '../../../application/use-cases/upload-maintenance-ticket-attachment.use-case'
+import {
+  MaintenanceAttachmentValidationError,
+  MaintenanceTicketNotFoundError,
+} from '../../../domain/errors'
+import { admin, renter, repository, ticket } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance attachments', () => {
   it('blocks attachment uploads before storage access when unauthorized or terminal', async () => {
@@ -20,7 +20,7 @@ describe('Maintenance attachments', () => {
     }
     await expect(
       new UploadMaintenanceTicketAttachmentUseCase(
-        repository({ status: 'RESOLVIDO' }),
+        repository({ status: 'RESOLVED' }),
         storage,
       ).execute(input),
     ).rejects.toBeInstanceOf(ConflictError)

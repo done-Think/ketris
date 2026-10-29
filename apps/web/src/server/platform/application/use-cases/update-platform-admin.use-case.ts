@@ -2,22 +2,12 @@ import {
   PlatformAdminEmailAlreadyInUseError,
   PlatformAdminNotFoundError,
 } from '../../domain/errors'
-import {
-  toAuthenticatedPlatformAdmin,
-  type AuthenticatedPlatformAdmin,
-  type PlatformAdminRole,
-} from '../../domain/platform-admin.entity'
+import { toAuthenticatedPlatformAdmin } from '../../domain/platform-admin.entity'
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
-
-export interface UpdatePlatformAdminInput {
-  platformAdminId: string
-  nome?: string
-  email?: string
-  role?: PlatformAdminRole
-  ativo?: true
-}
-
-export type UpdatePlatformAdminOutput = AuthenticatedPlatformAdmin
+import type {
+  UpdatePlatformAdminInput,
+  UpdatePlatformAdminOutput,
+} from '../../types/use-case-inputs'
 
 export class UpdatePlatformAdminUseCase {
   constructor(private readonly platformAdminRepository: PlatformAdminRepository) {}
@@ -37,12 +27,13 @@ export class UpdatePlatformAdminUseCase {
       }
     }
 
-    const updated = await this.platformAdminRepository.update(input.platformAdminId, {
-      nome: input.nome,
-      email: input.email,
-      role: input.role,
-      ativo: input.ativo,
-    })
+    const updated = await this.platformAdminRepository.update(
+      input.platformAdminId,
+      { name: input.name, email: input.email, role: input.role, active: input.active },
+      input.actorId,
+    )
+
+    if (!updated) throw new PlatformAdminNotFoundError()
 
     return toAuthenticatedPlatformAdmin(updated)
   }

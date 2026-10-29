@@ -6,6 +6,8 @@ import { notFound } from 'next/navigation'
 import { locale as getRootLocale } from 'next/root-params'
 
 import { defaultTimeZone } from '@/i18n/formats'
+import { getSiteOrigin } from '@/i18n/seo'
+import { selectMessages } from '@/i18n/message-selection'
 import { isAppLocale, locales } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { LocaleLayoutProps } from '@/i18n/types/route.types'
@@ -33,6 +35,7 @@ export async function generateMetadata({ params }: LocaleLayoutProps): Promise<M
   const t = await getTranslations({ locale, namespace: 'common.metadata' })
 
   return {
+    metadataBase: new URL(getSiteOrigin()),
     title: t('title'),
     description: t('description'),
     icons: {
@@ -49,7 +52,7 @@ export async function generateMetadata({ params }: LocaleLayoutProps): Promise<M
 export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
   const { locale: routeLocale } = await params
   const locale = getValidatedLocale(routeLocale)
-  const messages = await getMessages({ locale })
+  const messages = selectMessages(await getMessages({ locale }), [])
 
   return (
     <html

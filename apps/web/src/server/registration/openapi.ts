@@ -15,21 +15,20 @@ export function registerRegistrationOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Registration'],
     summary: 'Cadastro público — cria uma conta nova na Ketris',
     description:
-      'Rota pública, sem autenticação. O comportamento depende do perfil escolhido: ' +
-      'proprietário/imobiliária/construtora (e corretor sem agencyId) criam um tenant novo e já ' +
-      'retornam sessão logada; corretor com agencyId cria um vínculo pendente de aprovação do ' +
-      'ADMIN da imobiliária escolhida (nenhuma sessão é criada); locatário entra no tenant ' +
-      'compartilhado de locatários e já retorna sessão logada.',
+      'Rota pública, sem autenticação. Proprietário/imobiliária/construtora e corretor autônomo criam um tenant; locatário entra no tenant compartilhado. ' +
+      'Corretor com agencyId solicita vínculo a uma imobiliária AGENCY ACTIVE/TRIAL. Toda conta nova precisa confirmar o e-mail por código antes de receber sessão; ' +
+      'o vínculo do corretor também exige aprovação da gestão. A resposta contém email, tenantId e emailSent, sem tokens. ' +
+      'Se o envio falhar, a conta é preservada e emailSent=false permite solicitar outro código. Telefone, CRECI e aceite/data são persistidos.',
     request: {
       body: { content: { 'application/json': { schema: registerRequestSchema } } },
     },
     responses: {
       201: {
-        description: 'Conta criada e sessão iniciada.',
+        description: 'Conta criada, aguardando confirmação de e-mail.',
         content: { 'application/json': { schema: registerResponseSchema } },
       },
       202: {
-        description: 'Vínculo criado, aguardando aprovação do administrador da imobiliária.',
+        description: 'Vínculo criado, aguardando confirmação de e-mail e aprovação da gestão.',
         content: { 'application/json': { schema: registerResponseSchema } },
       },
       400: {
@@ -51,11 +50,9 @@ export function registerRegistrationOpenApi(registry: OpenAPIRegistry): void {
     method: 'get',
     path: '/tenants/search',
     tags: ['Registration'],
-    summary: 'Busca imobiliárias/construtoras cadastradas, para o cadastro de corretor',
+    summary: 'Busca imobiliárias elegíveis para novos vínculos de corretor',
     description:
-      'Rota pública, sem autenticação. Busca por nome (case-insensitive), excluindo o tenant ' +
-      'compartilhado de locatários. Usada pelo autocomplete de "escolher minha imobiliária" no ' +
-      'cadastro de corretor.',
+      'Rota pública. Busca por nome sem distinguir maiúsculas/minúsculas, limitada a 20 tenants AGENCY com status ACTIVE ou TRIAL. Usada no cadastro de corretor.',
     request: { query: searchTenantsQuerySchema },
     responses: {
       200: {

@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  groupStatusChangesByTenant,
-  statusAt,
-  type TenantStatusChange,
-} from '../../domain/tenant-status-history'
+import { groupStatusChangesByTenant, statusAt } from '../../domain/tenant-status-history'
+import type { TenantStatusChange } from '../../types/tenant-status-history'
 
 const tenant = { status: 'ACTIVE' as const, createdAt: new Date('2026-01-10T12:00:00.000Z') }
 

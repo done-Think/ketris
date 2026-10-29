@@ -77,3 +77,57 @@ export class GuarantorPartyRequiredError extends AppError {
     })
   }
 }
+
+export class ContractEditingLockedError extends AppError {
+  constructor() {
+    super('O contrato não pode ser editado após a primeira assinatura ou após seu encerramento.', {
+      status: 409,
+      code: 'CONTRACT_EDITING_LOCKED',
+    })
+  }
+}
+
+export class ContractTransitionNotAllowedError extends AppError {
+  constructor() {
+    super('O estado atual do contrato não permite essa operação.', {
+      status: 409,
+      code: 'CONTRACT_TRANSITION_NOT_ALLOWED',
+    })
+  }
+}
+
+export class ContractDocumentNotFoundError extends AppError {
+  constructor() {
+    super('Documento do contrato não encontrado.', {
+      status: 404,
+      code: 'CONTRACT_DOCUMENT_NOT_FOUND',
+    })
+  }
+}
+
+export class ContractDocumentOutdatedError extends AppError {
+  constructor() {
+    super('Envie um novo PDF após alterar os dados do contrato.', {
+      status: 409,
+      code: 'CONTRACT_DOCUMENT_OUTDATED',
+    })
+  }
+}
+
+export class ContractEvidenceRequiredError extends AppError {
+  constructor() {
+    super('Selecione um PDF comprobatório enviado ao contrato.', {
+      status: 409,
+      code: 'CONTRACT_EVIDENCE_REQUIRED',
+    })
+  }
+}
+
+export class ContractDocumentInvalidError extends AppError {
+  constructor() {
+    super('O arquivo não corresponde a um PDF válido com os dados informados.', {
+      status: 400,
+      code: 'CONTRACT_DOCUMENT_INVALID',
+    })
+  }
+}

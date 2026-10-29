@@ -1,0 +1,1473 @@
+// Schema Prisma da Ketris — fonte de verdade do modelo de dados.
+// Entidades derivadas de specs/001-mvp-loop-imovel-pagamento/data-model.md, com Tenant/User/Endereco/Midia
+// adicionados como suporte necessário (auth, multi-tenancy, mídia de imóvel). Ver ADR-0001
+// (docs/adr/0001-bff-banco-orm.md) para o racional de PostgreSQL + Prisma + multi-tenancy por coluna.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Tenant & Usuário
+// ---------------------------------------------------------------------------
+
+model Tenant {
+  id            String            @id @default(cuid())
+  name          String
+  slug          String            @unique
+  // White-label: cores do tema sobrescrevem primary/secondary do MUI em runtime (docs/stack.md).
+  primaryColor   String?
+  secondaryColor String?
+  // Tipo de conta define o plano cobrado pela plataforma (ver PlatformPlan); a situação define se
+  // a conta entra no MRR. Não há gateway de pagamento: os dois são mantidos pelo super admin.
+  accountType   TenantAccountType @default(AGENCY)
+  status        TenantStatus      @default(ACTIVE)
+  canceledAt    DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  users                      User[]
+  properties                       Property[]
+  opportunities                 Opportunity[]
+  leads                         Lead[]
+  contracts                     Contract[]
+  charges                     Charge[]
+  chargeAuditEvents             ChargeAuditEvent[]
+  chargeReceipts          ChargeReceipt[]
+  contacts                      Contact[]
+  agendaEvents                 AgendaEvent[]
+  maintenanceTickets            MaintenanceTicket[]
+  maintenanceProviders         MaintenanceProvider[]
+  maintenanceProviderActivities MaintenanceProviderActivity[]
+  publicProfile                 AgencyPublicProfile?
+  statusChanges                 TenantStatusChange[]
+
+  crmAuditEvents         CrmAuditEvent[]
+  teamInvitations         TeamInvitation[]
+  brokerGoals          BrokerGoal[]
+  portfolioTransfers PortfolioTransfer[]
+
+  @@map("tenants")
+}
+
+enum TenantAccountType {
+  INDIVIDUAL
+  BROKER
+  AGENCY
+}
+
+enum TenantStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELED
+}
+
+// Histórico das mudanças de situação do tenant, base do churn mensal. É só de inclusão: reativar um
+// tenant cancelado registra uma nova mudança em vez de reescrever o passado, então o churn de um mês
+// já fechado não muda depois. Tenant.canceledAt fica apenas para exibição do cancelamento atual.
+model TenantStatusChange {
+  id          String       @id @default(cuid())
+  tenantId    String
+  fromStatus  TenantStatus
+  toStatus    TenantStatus
+  changedAt   DateTime     @default(now())
+  changedById String?
+
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  changedBy PlatformAdmin? @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, changedAt])
+  @@index([changedById])
+  @@map("tenant_status_changes")
+}
+
+// Tabela de preços da plataforma, uma linha por tipo de conta, editada pelo super admin.
+// includedUnits conta imóveis (pessoa física e corretor) ou corretores ativos (imobiliária);
+// cada unidade acima disso custa extraUnitPrice.
+model PlatformPlan {
+  accountType    TenantAccountType @id
+  monthlyPrice   Decimal           @db.Decimal(12, 2)
+  includedUnits  Int
+  extraUnitPrice Decimal           @db.Decimal(12, 2)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  updatedById    String?
+  updatedByName  String?
+
+  updatedBy PlatformAdmin?       @relation("PlatformPlanUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  changes   PlatformPlanChange[]
+
+  @@index([updatedById])
+  @@map("platform_plans")
+}
+
+model PlatformPlanChange {
+  id                     String            @id @default(cuid())
+  accountType            TenantAccountType
+  previousMonthlyPrice   Decimal           @db.Decimal(12, 2)
+  previousIncludedUnits  Int
+  previousExtraUnitPrice Decimal           @db.Decimal(12, 2)
+  monthlyPrice           Decimal           @db.Decimal(12, 2)
+  includedUnits          Int
+  extraUnitPrice         Decimal           @db.Decimal(12, 2)
+  changedAt              DateTime          @default(now())
+  changedById            String?
+  changedByName          String
+
+  plan      PlatformPlan   @relation(fields: [accountType], references: [accountType], onDelete: Cascade)
+  changedBy PlatformAdmin? @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([accountType, changedAt])
+  @@index([changedById])
+  @@map("platform_plan_changes")
+}
+
+enum UserRole {
+  OWNER
+  AGENT
+  RENTER
+  PROPERTY_OWNER
+}
+
+enum UserAuditAction {
+  CREATED
+  UPDATED
+  MEMBERSHIP_APPROVED
+  DEACTIVATED
+}
+
+enum UserAuditActorType {
+  USER
+  PLATFORM_ADMIN
+  SELF_REGISTRATION
+  SYSTEM
+}
+
+model UserAuditEvent {
+  id                   String             @id @default(cuid())
+  tenantId             String
+  userId               String
+  action               UserAuditAction
+  actorType            UserAuditActorType
+  actorUserId          String?
+  actorPlatformAdminId String?
+  changedFields        String[]           @default([])
+  createdAt            DateTime           @default(now())
+  user                 User            @relation("UserAuditTarget", fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  actorUser            User?           @relation("UserAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorPlatformAdmin   PlatformAdmin?     @relation(fields: [actorPlatformAdminId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, userId, createdAt])
+  @@index([actorUserId])
+  @@index([actorPlatformAdminId])
+  @@map("auth_user_audit_events")
+}
+
+model User {
+  id                String       @id @default(cuid())
+  tenantId          String
+  name              String
+  email             String
+  phone          String?
+  creci             String?
+  emailVerifiedAt DateTime?    @default(now())
+  sessionVersion      Int          @default(0)
+  termsAcceptedAt   DateTime?
+  passwordHash         String
+  avatarUrl         String?
+  role             UserRole @default(AGENT)
+  active             Boolean      @default(true)
+  membershipApprovedAt DateTime?    @default(now())
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  tenant                       Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsibleProperties           Property[]                           @relation("PropertyResponsible")
+  ownedProperties          Property[]                           @relation("PropertyOwner")
+  contractParties               ContractParty[]
+  responsibleTickets          MaintenanceTicket[]                @relation("TicketResponsible")
+  refreshTokens                RefreshToken[]
+  passwordResetCodes      PasswordResetCode[]
+  emailVerificationCodes      EmailVerificationCode[]
+  auditEvents                  UserAuditEvent[]                   @relation("UserAuditTarget")
+  authoredAuditEvents          UserAuditEvent[]                   @relation("UserAuditActor")
+  responsibleAgendaEvents     AgendaEvent[]                     @relation("AgendaEventResponsible")
+  createdAgendaEvents         AgendaEvent[]                     @relation("AgendaEventCreatedBy")
+  ownedAgendaEvents            AgendaEvent[]                     @relation("AgendaEventOwner")
+  agendaParticipations          AgendaEventParticipant[]
+  registeredSignatures       ContractSignature[]                       @relation("ContractSignatureRegistradaBy")
+  activatedContracts            Contract[]                         @relation("ContractActivatedBy")
+  responsibleLeads             Lead[]                             @relation("LeadResponsible")
+  responsibleOpportunities     Opportunity[]                     @relation("OpportunityResponsible")
+  publicProfile                BrokerPublicProfile?
+  receivedHighlights           AgencyProfileHighlight[]
+  agendaAuditEvents            AgendaEventAudit[]
+  canceledAgendaEvents      AgendaEvent[]                     @relation("AgendaEventCanceledBy")
+  createdContracts             Contract[]                         @relation("ContractCreatedBy")
+  canceledContracts          Contract[]                         @relation("ContractCanceledBy")
+  closedContracts          Contract[]                         @relation("ContractClosedBy")
+  uploadedContractDocuments   ContractDocument[]
+  contractAuditEvents          ContractAuditEvent[]
+  paidCharges               Charge[]                         @relation("ChargePaidBy")
+  canceledCharges          Charge[]                         @relation("ChargeCanceledBy")
+  createdCharges             Charge[]                         @relation("ChargeCriadaBy")
+  uploadedChargeReceipts ChargeReceipt[]              @relation("ChargeReceiptSentBy")
+  chargeAuditEvents            ChargeAuditEvent[]                 @relation("ChargeAuditActor")
+  openedTickets              MaintenanceTicket[]                @relation("TicketOpenedBy")
+  completedTickets           MaintenanceTicket[]                @relation("TicketCompletedBy")
+  deletedTickets            MaintenanceTicket[]                @relation("TicketDeletedBy")
+  ticketActivities            MaintenanceTicketActivity[]       @relation("ActivityTicketAuthor")
+  requestedProviderChanges   ProviderChangeRequest[]        @relation("ChangeProviderRequester")
+  decidedProviderChanges     ProviderChangeRequest[]        @relation("ChangeProviderDecidedBy")
+  createdProviders           MaintenanceProvider[]              @relation("ProviderCreatedBy")
+  updatedProviders       MaintenanceProvider[]              @relation("ProviderAtualizadoBy")
+  providerActivities          MaintenanceProviderActivity[]     @relation("ActivityProviderAuthor")
+  opportunityActivities       OpportunityActivity[]            @relation("OpportunityActivityAuthor")
+  teamInvitation                TeamInvitation?                     @relation("TeamInvitationUser")
+  createdTeamInvitations        TeamInvitation[]                    @relation("TeamInvitationCreatedBy")
+  goals                        BrokerGoal[]                     @relation("BrokerGoalUser")
+  definedGoals               BrokerGoal[]                     @relation("BrokerGoalDefinidaBy")
+  sourceTransfers         PortfolioTransfer[]            @relation("PortfolioTransferSource")
+  targetTransfers        PortfolioTransfer[]            @relation("PortfolioTransferTarget")
+  authoredTransfers          PortfolioTransfer[]            @relation("PortfolioTransferAuthor")
+
+  @@unique([tenantId, email])
+  @@unique([id, tenantId])
+  @@index([email])
+  @@index([tenantId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  tenantId  String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+
+  user User @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetCode {
+  id         String    @id @default(cuid())
+  codeHash   String
+  userId     String
+  tenantId   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+
+  user User @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@map("password_reset_codes")
+}
+
+enum EmailVerificationPurpose {
+  SIGNUP
+  EMAIL_CHANGE
+}
+
+model EmailVerificationCode {
+  id          String                   @id @default(cuid())
+  userId      String
+  tenantId    String
+  targetEmail String
+  purpose     EmailVerificationPurpose
+  codeHash    String
+  attempts    Int                      @default(0)
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @default(now()) @updatedAt
+
+  user User @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@index([userId, tenantId, purpose, createdAt])
+  @@map("email_verification_codes")
+}
+
+model EmailOwnershipCode {
+  id         String    @id @default(cuid())
+  email      String
+  codeHash   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+
+  @@index([email, createdAt])
+  @@map("email_ownership_codes")
+}
+
+model AuthRateLimitBucket {
+  key       String   @id
+  count     Int
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([resetAt])
+  @@map("auth_rate_limit_buckets")
+}
+
+// ---------------------------------------------------------------------------
+// Platform Admin — identidade separada de Tenant/Usuario, ver ADR-0003
+// (docs/adr/0003-platform-admin-identidade-separada.md). Deliberadamente sem tenantId em nenhum
+// model desta seção: é o único papel que opera fora do boundary multi-tenant.
+// ---------------------------------------------------------------------------
+
+enum PlatformAdminRole {
+  ADMIN
+  ADMIN_AGENT
+  AGENT
+}
+
+model PlatformAdmin {
+  id             String            @id @default(cuid())
+  name           String
+  email          String            @unique
+  passwordHash      String
+  role           PlatformAdminRole @default(ADMIN)
+  active          Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  lastAccessAt DateTime?
+
+  refreshTokens       PlatformAdminRefreshToken[]
+  tenantStatusChanges TenantStatusChange[]
+  userAuditEvents     UserAuditEvent[]
+  updatedPlans        PlatformPlan[]              @relation("PlatformPlanUpdatedBy")
+  planChanges         PlatformPlanChange[]
+
+  @@map("platform_admins")
+}
+
+model PlatformAdminRefreshToken {
+  id              String    @id @default(cuid())
+  tokenHash       String    @unique
+  platformAdminId String
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  createdAt       DateTime  @default(now())
+
+  platformAdmin PlatformAdmin @relation(fields: [platformAdminId], references: [id], onDelete: Cascade)
+
+  @@index([platformAdminId])
+  @@map("platform_admin_refresh_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// Imóvel (módulo `properties`)
+// ---------------------------------------------------------------------------
+
+enum PropertyPurpose {
+  RENT
+  SALE
+  BOTH
+}
+
+enum PropertyStatus {
+  DRAFT
+  PUBLISHED
+  RENTED
+  SOLD
+  INACTIVE
+
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  STUDIO
+  PENTHOUSE
+  COMMERCIAL
+  LOFT
+  OTHER
+}
+
+enum PropertyAmenity {
+  FURNISHED
+  GOURMET_BALCONY
+  PET_FRIENDLY
+  CONCIERGE_24H
+}
+
+model Property {
+  id                     String             @id @default(cuid())
+  tenantId               String
+  responsibleId          String
+  ownerId         String?
+  title                 String
+  description              String?
+  purpose             PropertyPurpose
+  type                   PropertyType
+  bedrooms                Int?
+  bathrooms              Int?
+  parkingSpots                  Int?
+  areaSqm                 Decimal?           @db.Decimal(10, 2)
+  price                  Decimal            @db.Decimal(12, 2)
+  rentalPrice           Decimal?           @db.Decimal(12, 2)
+  condoFee             Decimal?           @db.Decimal(10, 2)
+  propertyTax                   Decimal?           @db.Decimal(10, 2)
+  amenities            PropertyAmenity[] @default([])
+  negotiationTerms    String?
+  publishAfterReview    Boolean            @default(false)
+  allowWhatsappContact Boolean            @default(false)
+  featured               Boolean            @default(false)
+  status                 PropertyStatus       @default(DRAFT)
+  publishedAt            DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsible        User             @relation("PropertyResponsible", fields: [responsibleId], references: [id])
+  owner       User?            @relation("PropertyOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  address           PropertyAddress?
+  media             PropertyMedia[]
+  opportunities      Opportunity[]
+  contracts          Contract[]
+  agendaEvents      AgendaEvent[]
+  maintenanceTickets MaintenanceTicket[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, ownerId])
+  @@map("properties")
+}
+
+model PropertyAddress {
+  id          String   @id @default(cuid())
+  propertyId    String   @unique
+  street  String
+  number      String
+  complement String?
+  neighborhood      String
+  city      String
+  state      String
+  zipCode         String
+  latitude    Decimal? @db.Decimal(9, 6)
+  longitude   Decimal? @db.Decimal(9, 6)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_addresses")
+}
+
+model PropertyMedia {
+  id        String   @id @default(cuid())
+  propertyId  String
+  url       String
+  type      String   @default("foto")
+  position     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@map("property_media")
+}
+
+// ---------------------------------------------------------------------------
+// Perfil Público (módulo `marketplace`) — página pública de corretor/imobiliária,
+// editada pelo próprio usuário/tenant no dashboard. Sem registro = não aparece no
+// diretório público (ver PerfilPublicoStatus).
+// ---------------------------------------------------------------------------
+
+enum PublicProfileStatus {
+  DRAFT
+  PUBLISHED
+
+}
+
+model BrokerPublicProfile {
+  id              String              @id @default(cuid())
+  userId       String              @unique
+  displayName     String
+  headline        String?
+  bio             String?
+  creci           String?
+  phone        String?
+  region          String?
+  neighborhoods         String[]            @default([])
+  specialties  String[]            @default([])
+  availability String?
+  primaryColor     String?
+  secondaryColor   String?
+  backgroundColor        String?
+  avatarUrl       String?
+  bannerUrl       String?
+  status          PublicProfileStatus @default(DRAFT)
+  publishedAt     DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("broker_public_profiles")
+}
+
+model AgencyPublicProfile {
+  id            String              @id @default(cuid())
+  tenantId      String              @unique
+  displayName   String
+  headline      String?
+  summary        String?
+  legalCreci    String?
+  headquarters          String?
+  address      String?
+  phone      String?
+  email         String?
+  coverage     String[]            @default([])
+  segments     String[]            @default([])
+  yearsInMarket Int?
+  backgroundColor      String?
+  logoUrl       String?
+  bannerUrl     String?
+  status        PublicProfileStatus @default(DRAFT)
+  publishedAt   DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  tenant    Tenant                             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  highlights AgencyProfileHighlight[]
+
+  @@map("agency_public_profiles")
+}
+
+// Equipe em destaque na página pública da imobiliária — vínculo real por usuário
+// (antes era texto livre casado por nome, no mock de frontend).
+model AgencyProfileHighlight {
+  id        String @id @default(cuid())
+  profileId  String
+  userId String
+  position     Int    @default(0)
+
+  profile  AgencyPublicProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  user User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, userId])
+  @@index([userId])
+  @@map("agency_profile_highlights")
+}
+
+// ---------------------------------------------------------------------------
+// Oportunidade / Proposta (módulo `crm`)
+// ---------------------------------------------------------------------------
+
+enum ContractGuarantee {
+  GUARANTOR
+  DEPOSIT
+  SURETY_BOND
+  NONE
+}
+
+enum OpportunityStatus {
+  DRAFT
+  SENT
+  IN_NEGOTIATION
+  ACCEPTED
+  REJECTED
+}
+
+model Opportunity {
+  id                  String             @id @default(cuid())
+  tenantId            String
+  propertyId            String
+  responsibleId       String
+  interestedName     String
+  interestedEmail    String
+  interestedPhone String?
+  proposedValue       Decimal            @db.Decimal(12, 2)
+  contractTermMonths  Int?
+  desiredStart    DateTime?
+  contractGuarantee  ContractGuarantee @default(NONE)
+  specialConditions  String[]           @default([])
+  notes         String?
+  status              OpportunityStatus @default(DRAFT)
+  archivedAt         DateTime?
+  // Vínculo opcional: a oportunidade nasce do marketplace sem conta de usuário (data-model.md),
+  // e só é associada a um Contato quando o corretor identifica o interessado na base.
+  contactId           String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  tenant      Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  // Restrict (não Cascade): excluir um imóvel nunca pode apagar oportunidades de tabela junto —
+  // isso é decidido explicitamente pela camada de aplicação (ver PropertyRepository.hasLinkedRecords).
+  property      Property                  @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  responsible User                 @relation("OpportunityResponsible", fields: [responsibleId, tenantId], references: [id, tenantId])
+  contract    Contract?
+  contact     Contact?                @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  activities  OpportunityActivity[]
+  lead        Lead?
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, archivedAt])
+  @@index([propertyId])
+  @@index([contactId])
+  @@index([tenantId, responsibleId])
+  @@map("opportunities")
+}
+
+enum LeadSource {
+  MARKETPLACE
+  WHATSAPP
+  INSTAGRAM
+  WEBSITE
+  REFERRAL
+  OTHER
+}
+
+enum LeadStage {
+  NEW
+  IN_CONTACT
+  VISIT_SCHEDULED
+  PROPOSAL
+}
+
+// Contato bruto, ainda não qualificado com um imóvel específico nem valor proposto — por isso não
+// é uma Oportunidade ainda. Vira uma quando o corretor converte (ver ConvertLeadToOpportunityUseCase).
+model Lead {
+  id                String      @id @default(cuid())
+  tenantId          String
+  responsibleId     String
+  name              String
+  phone          String
+  email             String?
+  interest         String
+  budget         String
+  source            LeadSource
+  stage           LeadStage @default(NEW)
+  firstContactAt DateTime?
+  notes       String?
+  opportunityId    String?     @unique
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsible  User       @relation("LeadResponsible", fields: [responsibleId], references: [id])
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, stage])
+  @@map("leads")
+}
+
+// ---------------------------------------------------------------------------
+// Contato / Atividade (módulo `crm`)
+// ---------------------------------------------------------------------------
+
+enum ContactType {
+  OWNER
+  RENTER
+  BROKER
+}
+
+// Agenda de relacionamento do tenant. Independente de `Usuario`: um contato é alguém com quem o
+// tenant se relaciona (proprietário, locatário, corretor parceiro), não alguém que loga no sistema.
+model Contact {
+  createdById     String?
+  id              String      @id @default(cuid())
+  tenantId        String
+  name            String
+  email           String
+  phone        String?
+  type            ContactType @default(RENTER)
+  avatarUrl       String?
+  notes     String?
+  lastInteraction DateTime?
+  archivedAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  opportunities Opportunity[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId, createdById])
+  @@index([tenantId])
+  @@index([tenantId, type])
+  @@index([tenantId, archivedAt])
+  @@map("contacts")
+}
+
+enum OpportunityActivityType {
+  NOTE
+  STATUS_CHANGE
+  CONTACT_MADE
+  PROPOSAL_ANSWERED
+}
+
+// Timeline da oportunidade. Registro append-only: alimenta o painel de atividades do CRM e serve
+// de trilha de auditoria de quem respondeu o quê e quando.
+model OpportunityActivity {
+  id             String                    @id @default(cuid())
+  opportunityId String
+  type           OpportunityActivityType
+  description      String
+  systemAction   String?
+  // Autor é opcional porque atividades também nascem de eventos do sistema (ex.: proposta recebida
+  // pelo marketplace, sem usuário autenticado por trás).
+  authorId        String?
+  authorName      String?
+  previousStatus OpportunityStatus?
+  newStatus     OpportunityStatus?
+  createdAt      DateTime                  @default(now())
+
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  author        User?     @relation("OpportunityActivityAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([authorId])
+  @@index([opportunityId])
+  @@index([opportunityId, createdAt])
+  @@map("opportunity_activities")
+}
+
+// ---------------------------------------------------------------------------
+// Contrato / Assinatura (módulo `contracts`)
+// ---------------------------------------------------------------------------
+
+enum ContractStatus {
+  DRAFT
+  IN_REVIEW
+  AWAITING_SIGNATURE
+  SIGNED
+  ACTIVE
+  CLOSED
+  CANCELED
+}
+
+enum ContractType {
+  RESIDENTIAL
+  COMMERCIAL
+  SEASONAL
+}
+
+enum AdjustmentIndex {
+  IPCA
+  IGPM
+  INPC
+}
+
+enum GuaranteeType {
+  GUARANTOR
+  DEPOSIT
+  SURETY_BOND
+  CAPITALIZATION_BOND
+}
+
+model Contract {
+  id                   String         @id @default(cuid())
+  tenantId             String
+  propertyId             String
+  sourceOpportunityId String         @unique // FR-014: contrato sempre nasce de uma oportunidade aceita
+  code               String
+  type                 ContractType   @default(RESIDENTIAL)
+  amount                Decimal        @db.Decimal(12, 2)
+  dueDay        Int
+  startDate           DateTime
+  endDate              DateTime
+  adjustmentIndex       AdjustmentIndex
+  guaranteeType         GuaranteeType
+  notes          String?
+  status               ContractStatus @default(DRAFT)
+  activatedAt            DateTime?
+  // Quem registrou a última assinatura, que ativou o contrato.
+  activatedById         String?
+  createdById          String?
+  canceledAt          DateTime?
+  canceledById       String?
+  cancellationReason   String?
+  closedAt          DateTime?
+  closedById       String?
+  closureReason   String?
+  dataRevision         Int            @default(0)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  tenant             Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  activatedBy         User?             @relation("ContractActivatedBy", fields: [activatedById], references: [id], onDelete: SetNull)
+  createdBy          User?             @relation("ContractCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  canceledBy       User?             @relation("ContractCanceledBy", fields: [canceledById], references: [id], onDelete: SetNull)
+  closedBy       User?             @relation("ContractClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
+  // Restrict (não Cascade): um contrato nunca pode desaparecer junto com o imóvel excluído.
+  property             Property               @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  sourceOpportunity Opportunity         @relation(fields: [sourceOpportunityId], references: [id])
+  parties             ContractParty[]
+  charges          Charge[]
+  documents         ContractDocument[]
+  maintenanceTickets MaintenanceTicket[]
+  auditEvents        ContractAuditEvent[]
+
+  @@unique([id, tenantId])
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("contracts")
+}
+
+model ContractDocument {
+  id              String    @id @default(cuid())
+  contractId      String
+  name            String
+  url             String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt
+  objectKey       String?
+  sha256          String?
+  sizeBytes    Int?
+  contractRevision Int?
+  uploadedById    String?
+
+  contract    Contract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  uploadedBy  User?     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  signatures ContractSignature[]
+
+  @@index([contractId])
+  @@map("contract_documents")
+}
+
+enum ContractPartyRole {
+  LANDLORD
+  RENTER
+  GUARANTOR
+}
+
+model ContractParty {
+  id         String             @id @default(cuid())
+  contractId String
+  role      ContractPartyRole
+  name       String
+  cpf        String
+  email      String
+  phone   String?
+  userId  String?
+  createdAt  DateTime?          @default(now())
+  updatedAt  DateTime?          @updatedAt
+
+  contract   Contract    @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  signature ContractSignature?
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([contractId])
+  @@index([userId])
+  @@map("contract_parties")
+}
+
+enum SignatureStatus {
+  PENDING
+  SIGNED
+}
+
+enum SignatureMethod {
+  MANUAL
+  PROVIDER
+}
+
+model ContractSignature {
+  id                String                    @id @default(cuid())
+  contractPartyId   String                    @unique // uma assinatura por parte do contrato
+  status            SignatureStatus          @default(PENDING)
+  signedAt        DateTime?
+  // Usuário da imobiliária que registrou a assinatura no sistema.
+  signedById     String?
+  method            SignatureMethod?
+  documentId       String?
+  documentSha256   String?
+  registeredIp        String?
+  registeredUserAgent String?
+  createdAt         DateTime?                 @default(now())
+  updatedAt         DateTime?                 @updatedAt
+
+  contractParty ContractParty      @relation(fields: [contractPartyId], references: [id], onDelete: Cascade)
+  signedBy   User?           @relation("ContractSignatureRegistradaBy", fields: [signedById], references: [id], onDelete: SetNull)
+  document     ContractDocument? @relation(fields: [documentId], references: [id], onDelete: NoAction)
+
+  @@map("contract_signatures")
+}
+
+enum ContractAuditAction {
+  CREATED
+  UPDATED
+  MANUAL_SIGNATURE_REGISTERED
+  DOCUMENT_UPLOADED
+  CANCELLED
+  CLOSED
+}
+
+enum ContractAuditActorType {
+  USER
+  SYSTEM
+}
+
+model ContractAuditEvent {
+  id            String                 @id @default(cuid())
+  tenantId      String
+  contractId    String
+  actorUserId   String?
+  actorType     ContractAuditActorType @default(USER)
+  action        ContractAuditAction
+  changedFields String[]               @default([])
+  fromStatus    ContractStatus?
+  toStatus      ContractStatus?
+  reason        String?
+  documentId    String?
+  createdAt     DateTime               @default(now())
+
+  contract Contract @relation(fields: [contractId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  actor    User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, contractId, createdAt])
+  @@index([actorUserId])
+  @@map("contract_audit_events")
+}
+
+// ---------------------------------------------------------------------------
+// Evento de agenda (módulo `agenda`)
+// ---------------------------------------------------------------------------
+
+enum AgendaEventStatus {
+  CONFIRMED
+  PENDING
+  RESCHEDULE
+  CANCELLED
+}
+
+enum AgendaEventType {
+  VISIT
+  FOLLOW_UP
+  MEETING
+  INSPECTION
+  SIGNATURE
+  OTHER
+}
+
+// Papéis de pessoa no evento (não presumir que coincidam):
+// - responsavelId: quem responde pelo evento na imobiliária (staff do tenant do evento).
+// - criadoPorId: auditoria de quem criou o registro; não concede acesso.
+// - donoUsuarioId: dono explícito do evento para fins de acesso de leitura (pode ser um
+//   RENTER do tenant compartilhado de locatários ou staff do tenant do evento).
+// - participantes (EventoAgendaParticipante): usuários com acesso de leitura ao evento.
+// participanteNome/participanteTelefone são apenas dados de exibição para a equipe e não
+// identificam nem autorizam nenhum usuário.
+enum AgendaEventAudience {
+  SHARED_TEAM
+  ALL_AGENTS
+  ASSIGNED_AGENT
+}
+
+enum AgendaAuditAction {
+  CREATED
+  UPDATED
+  RESCHEDULED
+  CANCELLED
+}
+
+model AgendaEventAudit {
+  id                 String            @id @default(cuid())
+  tenantId           String
+  eventId            String
+  actorUserId        String?
+  action             AgendaAuditAction
+  changedFields      String[]          @default([])
+  cancellationReason String?
+  createdAt          DateTime          @default(now())
+  event              AgendaEvent      @relation(fields: [eventId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  actor              User?          @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, eventId, createdAt])
+  @@index([actorUserId])
+  @@map("agenda_event_audit")
+}
+
+model AgendaEvent {
+  id                    String              @id @default(cuid())
+  tenantId              String
+  responsibleId         String
+  createdById           String?
+  ownerUserId         String?
+  propertyId              String?
+  freeFormPropertyReference String?
+  title                String
+  type                  AgendaEventType?
+  audience               AgendaEventAudience @default(SHARED_TEAM)
+  internal               Boolean             @default(false)
+  status                AgendaEventStatus  @default(CONFIRMED)
+  start                DateTime
+  end                   DateTime
+  participantName      String
+  participantPhone  String
+  notes                 String?
+  canceledAt           DateTime?
+  canceledById        String?
+  cancellationReason    String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  responsible User  @relation("AgendaEventResponsible", fields: [responsibleId], references: [id], onDelete: NoAction)
+  createdBy   User? @relation("AgendaEventCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  ownerUser User? @relation("AgendaEventOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  property      Property?  @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  canceledBy  User?                   @relation("AgendaEventCanceledBy", fields: [canceledById], references: [id], onDelete: SetNull)
+  auditEvents   AgendaEventAudit[]
+  participants AgendaEventParticipant[]
+
+  @@unique([id, tenantId])
+  @@index([tenantId])
+  @@index([tenantId, start])
+  @@index([responsibleId])
+  @@index([ownerUserId])
+  @@index([propertyId])
+  @@map("agenda_events")
+}
+
+model AgendaEventParticipant {
+  id        String   @id @default(cuid())
+  eventId  String
+  userId String
+  createdAt DateTime @default(now())
+
+  event  AgendaEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([userId])
+  @@map("agenda_event_participants")
+}
+
+// ---------------------------------------------------------------------------
+// Cobrança (módulo `financial`)
+// ---------------------------------------------------------------------------
+
+enum ChargeType {
+  RECEIVABLE
+  PAYABLE
+}
+
+enum ChargeStatus {
+  PENDING
+  PAID
+  SCHEDULED
+  CANCELED
+}
+
+enum ChargeAuditAction {
+  CREATED
+  UPDATED
+  PAYMENT_REGISTERED
+  PAYMENT_REVERSED
+  CANCELLED
+  DELETED
+}
+
+enum ChargeAuditActorType {
+  USER
+  SYSTEM
+}
+
+model Charge {
+  id                 String         @id @default(cuid())
+  tenantId           String
+  // Opcional: cobranças avulsas (contas a pagar de fornecedor, sem contrato de locação por trás)
+  // não têm contrato — ver módulo `financial`.
+  contractId         String?
+  code             String
+  // Só usado quando contratoId é nulo (cobrança avulsa) — identifica o fornecedor/finalidade sem
+  // depender de contrato/imóvel.
+  description          String?
+  type               ChargeType   @default(RECEIVABLE)
+  amount              Decimal        @db.Decimal(12, 2)
+  dueDate         DateTime
+  paymentMethod     String?
+  status             ChargeStatus @default(PENDING)
+  paidAt             DateTime?
+  paidById          String?
+  currentReceiptId String?        @unique
+  canceledAt        DateTime?
+  canceledById     String?
+  cancellationReason String?
+  createdById        String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  tenant           Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  // NoAction (não Cascade): o banco recusa apagar um contrato que tenha cobranças.
+  contract         Contract?             @relation(fields: [contractId], references: [id], onDelete: NoAction)
+  paidBy          User?              @relation("ChargePaidBy", fields: [paidById], references: [id], onDelete: SetNull)
+  canceledBy     User?              @relation("ChargeCanceledBy", fields: [canceledById], references: [id], onDelete: SetNull)
+  createdBy        User?              @relation("ChargeCriadaBy", fields: [createdById], references: [id], onDelete: SetNull)
+  currentReceipt ChargeReceipt?  @relation("ChargeReceiptCurrent", fields: [currentReceiptId], references: [id], onDelete: SetNull)
+  receipts     ChargeReceipt[] @relation("ChargeReceipts")
+  auditEvents      ChargeAuditEvent[]
+
+  @@unique([tenantId, code])
+  @@unique([id, tenantId])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+  @@index([contractId])
+  @@map("charges")
+}
+
+model ChargeReceipt {
+  id           String   @id @default(cuid())
+  tenantId     String
+  chargeId   String
+  objectKey    String   @unique
+  fileName  String
+  contentType String
+  sizeBytes Int
+  sha256       String
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  charge   Charge  @relation("ChargeReceipts", fields: [chargeId, tenantId], references: [id, tenantId], onDelete: NoAction)
+  uploadedBy User?  @relation("ChargeReceiptSentBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+  currentForCharge    Charge? @relation("ChargeReceiptCurrent")
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, chargeId])
+  @@map("charge_receipts")
+}
+
+model ChargeAuditEvent {
+  id            String               @id @default(cuid())
+  tenantId      String
+  chargeId      String?
+  chargeCode    String
+  actorUserId   String?
+  actorType     ChargeAuditActorType @default(USER)
+  action        ChargeAuditAction
+  changedFields String[]             @default([])
+  fromStatus    ChargeStatus?
+  toStatus      ChargeStatus?
+  reason        String?
+  receiptId     String?
+  snapshot      Json?
+  createdAt     DateTime             @default(now())
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  charge Charge? @relation(fields: [chargeId], references: [id], onDelete: SetNull)
+  actor  User?  @relation("ChargeAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, chargeId, createdAt])
+  @@index([actorUserId])
+  @@map("charge_audit_events")
+}
+
+// ---------------------------------------------------------------------------
+// Chamados de manutenção (módulo `maintenance`)
+// ---------------------------------------------------------------------------
+
+enum MaintenanceTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  AWAITING_CONFIRMATION
+  DISPUTED
+  CANCELED
+}
+
+enum MaintenanceCategory {
+  PLUMBING
+  ELECTRICAL
+  STRUCTURAL
+  PAINTING
+  OTHER
+}
+
+enum MaintenancePriority {
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model MaintenanceTicket {
+  id                   String                      @id @default(cuid())
+  tenantId             String
+  propertyId             String
+  contractId           String?
+  responsibleId        String?
+  providerId          String?
+  providerName        String?
+  providerPhone    String?
+  providerEmail       String?
+  providerNotes String?
+  completedById       String?
+  completedByRole    UserRole?
+  deletedAt           DateTime?
+  deletedById        String?
+  category            MaintenanceCategory
+  priority           MaintenancePriority @default(NORMAL)
+  status               MaintenanceTicketStatus     @default(OPEN)
+  title               String
+  description            String
+  openedById          String?
+  openedByName        String
+  resolvedAt          DateTime?
+  serviceAt        DateTime?
+  createdAt            DateTime                    @default(now())
+  updatedAt            DateTime                    @updatedAt
+
+  tenant            Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  property            Property                       @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  contract          Contract?                    @relation(fields: [contractId], references: [id], onDelete: Restrict)
+  responsible       User?                     @relation("TicketResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  provider         MaintenanceProvider?         @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  changeRequests ProviderChangeRequest[]
+  activities        MaintenanceTicketActivity[]
+  attachments            MaintenanceTicketAttachment[]
+  openedBy         User?                     @relation("TicketOpenedBy", fields: [openedById], references: [id], onDelete: SetNull)
+  completedBy      User?                     @relation("TicketCompletedBy", fields: [completedById], references: [id], onDelete: SetNull)
+  deletedBy       User?                     @relation("TicketDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([openedById])
+  @@index([completedById])
+  @@index([deletedById])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([propertyId])
+  @@index([tenantId, deletedAt])
+  @@index([contractId])
+  @@index([responsibleId])
+  @@index([tenantId, serviceAt])
+  @@index([providerId])
+  @@map("maintenance_tickets")
+}
+
+enum MaintenanceTicketActivityType {
+  NOTE
+  STATUS_CHANGE
+  ATTACHMENT_ADDED
+  EDIT
+  RESPONSIBLE_CHANGED
+  PROVIDER_CHANGED
+  CHANGE_REQUESTED
+  CHANGE_DECIDED
+  DELETION
+  RESTORATION
+}
+
+// Timeline do chamado, mesmo padrão append-only de AtividadeOportunidade — autor opcional/denormalizado
+// porque nem toda atividade nasce de uma sessão autenticada (ex.: mudança automática de status).
+model MaintenanceTicketActivity {
+  systemAction String?
+  id           String                         @id @default(cuid())
+  ticketId    String
+  type         MaintenanceTicketActivityType
+  message     String
+  authorId      String?
+  authorName    String?
+  details     Json?
+  createdAt    DateTime                       @default(now())
+
+  ticket MaintenanceTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author   User?          @relation("ActivityTicketAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([authorId])
+  @@index([ticketId])
+  @@index([ticketId, createdAt])
+  @@map("maintenance_ticket_activities")
+}
+
+enum ProviderChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ProviderChangeRequest {
+  id                   String                          @id @default(cuid())
+  ticketId            String
+  justification        String
+  requesterId        String?
+  requesterName      String
+  status               ProviderChangeRequestStatus @default(PENDING)
+  decisionJustification String?
+  decidedById        String?
+  decidedByName      String?
+  decidedAt           DateTime?
+  createdAt            DateTime                        @default(now())
+  ticket              MaintenanceTicket               @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  requester          User?                        @relation("ChangeProviderRequester", fields: [requesterId], references: [id], onDelete: SetNull)
+  decidedBy          User?                        @relation("ChangeProviderDecidedBy", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([requesterId])
+  @@index([decidedById])
+  @@index([ticketId, status])
+  @@map("provider_change_requests")
+}
+
+model MaintenanceTicketAttachment {
+  uploadId  String?  @unique
+  id        String   @id @default(cuid())
+  ticketId String
+  name      String
+  url       String
+  createdAt DateTime @default(now())
+
+  ticket MaintenanceTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@map("maintenance_ticket_attachments")
+}
+
+model CrmAuditEvent {
+  id            String       @id @default(cuid())
+  tenantId      String
+  entityType    String
+  entityId      String
+  actorUserId   String?
+  actorRole     UserRole
+  action        String
+  changedFields String[]     @default([])
+  createdAt     DateTime     @default(now())
+  tenant        Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, entityType, entityId, createdAt])
+  @@map("crm_audit_events")
+}
+
+model MaintenanceProvider {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  phone    String?
+  email       String?
+  notes String?
+  fingerprint String
+  active       Boolean  @default(true)
+  createdById String?
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant     Tenant                         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tickets   MaintenanceTicket[]
+  activities MaintenanceProviderActivity[]
+  createdBy  User?                       @relation("ProviderCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy  User?                       @relation("ProviderAtualizadoBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, fingerprint])
+  @@index([createdById])
+  @@index([updatedById])
+  @@index([tenantId, active, name])
+  @@map("maintenance_providers")
+}
+
+model MaintenanceProviderActivity {
+  id            String       @id @default(cuid())
+  tenantId      String
+  providerId   String
+  actorUserId   String?
+  actorRole     UserRole
+  action        String
+  changedFields String[]     @default([])
+  createdAt     DateTime     @default(now())
+
+  tenant    Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider MaintenanceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  actorUser User?            @relation("ActivityProviderAuthor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([tenantId, providerId, createdAt])
+  @@map("maintenance_provider_activities")
+}
+
+enum PortfolioTransferReason {
+  MANUAL
+  DEACTIVATION
+}
+
+model TeamInvitation {
+  id            String    @id @default(cuid())
+  tenantId      String
+  userId     String
+  tokenHash     String    @unique
+  expiresAt      DateTime
+  sentAt     DateTime  @default(now())
+  acceptedAt      DateTime?
+  createdById   String?
+  createdByName String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User  @relation("TeamInvitationUser", fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  createdBy User? @relation("TeamInvitationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+  @@index([createdById])
+  @@map("team_invitations")
+}
+
+model BrokerGoal {
+  id              String   @id @default(cuid())
+  tenantId        String
+  userId       String
+  monthlySales   Int
+  definedById   String?
+  definedByName String
+  createdAt       DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user     User  @relation("BrokerGoalUser", fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  definedBy User? @relation("BrokerGoalDefinidaBy", fields: [definedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, userId, createdAt])
+  @@index([definedById])
+  @@map("broker_goals")
+}
+
+model PortfolioTransfer {
+  id              String                      @id @default(cuid())
+  tenantId        String
+  reason          PortfolioTransferReason
+  sourceId        String?
+  sourceName      String
+  targetId       String?
+  targetName     String
+  authorId         String?
+  authorName       String
+  propertyIds       String[]                    @default([])
+  leadIds         String[]                    @default([])
+  eventIds       String[]                    @default([])
+  opportunityIds String[]                    @default([])
+  createdAt       DateTime                    @default(now())
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source  User? @relation("PortfolioTransferSource", fields: [sourceId], references: [id], onDelete: SetNull)
+  target User? @relation("PortfolioTransferTarget", fields: [targetId], references: [id], onDelete: SetNull)
+  author   User? @relation("PortfolioTransferAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([sourceId])
+  @@index([targetId])
+  @@index([authorId])
+  @@map("portfolio_transfers")
+}

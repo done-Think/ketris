@@ -30,7 +30,7 @@ describe('GetAgendaEventUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorUserId: 'agent-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       id: 'event-1',
     })
 
@@ -48,7 +48,7 @@ describe('GetAgendaEventUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'renters-tenant',
       actorUserId: 'renter-1',
-      actorPapel: 'RENTER',
+      actorRole: 'RENTER',
       id: 'event-1',
     })
 
@@ -60,9 +60,9 @@ describe('GetAgendaEventUseCase', () => {
   })
 
   it.each([
-    { actorPapel: 'AGENT' as const, reason: 'evento inexistente ou de outro tenant' },
-    { actorPapel: 'RENTER' as const, reason: 'evento sem vínculo com o locatário' },
-  ])('lança AgendaEventNotFoundError (404) para $actorPapel: $reason', async ({ actorPapel }) => {
+    { actorRole: 'AGENT' as const, reason: 'evento inexistente ou de outro tenant' },
+    { actorRole: 'RENTER' as const, reason: 'evento sem vínculo com o locatário' },
+  ])('lança AgendaEventNotFoundError (404) para $actorPapel: $reason', async ({ actorRole }) => {
     const deps = createDeps({ findByScopeAndId: vi.fn().mockResolvedValue(null) })
     const useCase = new GetAgendaEventUseCase(deps.agendaEventRepository)
 
@@ -70,7 +70,7 @@ describe('GetAgendaEventUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorUserId: 'user-1',
-        actorPapel,
+        actorRole,
         id: 'event-x',
       }),
     ).rejects.toThrow(AgendaEventNotFoundError)

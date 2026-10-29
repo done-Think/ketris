@@ -1,11 +1,31 @@
+import { readFileSync } from 'node:fs'
 import { withSentryConfig } from '@sentry/nextjs'
 import createNextIntlPlugin from 'next-intl/plugin'
+
+const configuredBuildWorkers = process.env.KETRIS_BUILD_WORKERS
+  ? Number(process.env.KETRIS_BUILD_WORKERS)
+  : undefined
+if (
+  configuredBuildWorkers !== undefined &&
+  (!Number.isInteger(configuredBuildWorkers) || configuredBuildWorkers < 1)
+) {
+  throw new Error('KETRIS_BUILD_WORKERS deve ser um inteiro positivo.')
+}
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return JSON.parse(
+      readFileSync(new URL('./src/i18n/route-redirects.json', import.meta.url), 'utf8'),
+    )
+  },
+  experimental: {
+    ...(configuredBuildWorkers ? { cpus: configuredBuildWorkers } : {}),
+    ...(process.env.KETRIS_BUILD_LOW_MEMORY === '1' ? { webpackMemoryOptimizations: true } : {}),
+  },
   serverExternalPackages: ['swagger-ui-dist'],
   images: {
     remotePatterns: [],
@@ -17,7 +37,11 @@ const nextConfig = {
       '*.webm': { type: 'asset' },
     },
   },
-  webpack(config) {
+  webpack(config, { dev }) {
+    if (dev && config.cache && typeof config.cache === 'object') {
+      config.cache.version = `${config.cache.version ?? ''}:rsc-non-negative-timings-v1`
+    }
+
     config.infrastructureLogging = {
       ...(config.infrastructureLogging ?? {}),
       level: 'error',
@@ -50,6 +74,7 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   widenClientFileUpload: true,
 
   sourcemaps: {
+    disable: process.env.KETRIS_BUILD_LOW_MEMORY === '1' && !process.env.SENTRY_AUTH_TOKEN,
     deleteSourcemapsAfterUpload: true,
   },
 

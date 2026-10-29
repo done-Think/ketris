@@ -2,40 +2,23 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { contractsContainer } from '@server/contracts/container'
 import {
   createContractRequestSchema,
   listContractsQuerySchema,
 } from '@server/contracts/schemas/contract-input.schema'
-import { parseJsonBody, RequestValidationError, withErrorHandling } from '@server/shared/http'
+import { parseJsonBody, parseQuery, withErrorHandling } from '@server/shared/http'
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
-  const parsed = listContractsQuerySchema.safeParse(
-    Object.fromEntries(request.nextUrl.searchParams),
-  )
-
-  if (!parsed.success) {
-    throw new RequestValidationError(
-      parsed.error.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
-    )
-  }
+  const query = parseQuery(request, listContractsQuerySchema)
 
   const result = await contractsContainer.listContractsUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel as Papel,
-    status: parsed.data.status,
-    type: parsed.data.type,
-    propertyId: parsed.data.propertyId,
-    search: parsed.data.search,
-    page: parsed.data.page,
-    pageSize: parsed.data.pageSize,
+    actorRole: actor.role,
+    ...query,
   })
 
   return NextResponse.json(result, { status: 200 })
@@ -48,8 +31,9 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const contract = await contractsContainer.createContractFromOpportunityUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel as Papel,
+    actorRole: actor.role,
     opportunityId: body.opportunityId,
+    amount: body.amount,
     type: body.type,
     dueDay: body.dueDay,
     startDate: body.startDate,

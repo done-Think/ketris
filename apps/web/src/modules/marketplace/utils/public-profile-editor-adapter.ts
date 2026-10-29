@@ -2,7 +2,7 @@ import type { BrokerProfile } from '../types/broker'
 import type { PublicProfileEditorFormValues } from '../types/profile-editor'
 import type { PublicBrokerProfile } from '../types/public-broker-profile'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { PropertyText } from './property-presentation'
+import type { PropertyText } from '../types/property-presentation'
 import { formatCompactCurrency } from './search-results'
 
 export const emptyValues: PublicProfileEditorFormValues = {
@@ -102,7 +102,7 @@ export function toPreviewProfile(
       title: listing.title,
       location: [listing.neighborhood, listing.city].filter(Boolean).join(', '),
       price:
-        listing.purpose === 'ALUGUEL'
+        listing.purpose === 'RENT'
           ? t('monthly', { price: formatCompactCurrency(listing.price, locale) })
           : formatCompactCurrency(listing.price, locale),
       href: `/properties/${listing.id}`,

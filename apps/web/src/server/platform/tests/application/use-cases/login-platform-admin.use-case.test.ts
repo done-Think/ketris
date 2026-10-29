@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
 
 import { InvalidPlatformCredentialsError } from '../../../domain/errors'
-import type { PlatformAdmin } from '../../../domain/platform-admin.entity'
+import type { PlatformAdmin } from '../../../types/platform-admin'
 import type { PlatformAdminRepository } from '../../../application/ports/platform-admin-repository.port'
 import type { PlatformRefreshTokenRepository } from '../../../application/ports/platform-refresh-token-repository.port'
 import type { PlatformTokenService } from '../../../application/ports/platform-token-service.port'
@@ -11,11 +11,13 @@ import { LoginPlatformAdminUseCase } from '../../../application/use-cases/login-
 
 const admin: PlatformAdmin = {
   id: 'platform-admin-1',
-  nome: 'Dono Ketris',
+  name: 'Dono Ketris',
   email: 'dono@ketris.dev',
-  senhaHash: 'hash-fake',
+  passwordHash: 'hash-fake',
   role: 'ADMIN',
-  ativo: true,
+  active: true,
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  lastAccessAt: null,
 }
 
 function createDeps(overrides?: {
@@ -29,6 +31,7 @@ function createDeps(overrides?: {
     create: vi.fn(),
     update: vi.fn(),
     deactivate: vi.fn(),
+    recordAccess: vi.fn(),
   }
   const passwordHasher: PasswordHasher = {
     compare: overrides?.compare ?? vi.fn().mockResolvedValue(true),
@@ -39,6 +42,7 @@ function createDeps(overrides?: {
     verify: vi.fn(),
   }
   const refreshTokenRepository: PlatformRefreshTokenRepository = {
+    rotate: vi.fn().mockResolvedValue(true),
     create: vi.fn().mockResolvedValue(undefined),
     findValidByTokenHash: vi.fn(),
     revokeById: vi.fn(),
@@ -67,14 +71,20 @@ describe('LoginPlatformAdminUseCase', () => {
     expect(result.accessToken).toBe('jwt-fake')
     expect(typeof result.refreshToken).toBe('string')
     expect(result.refreshToken.length).toBeGreaterThan(32)
-    expect(result.admin).toEqual({
+    expect(result.admin).toMatchObject({
       id: admin.id,
-      nome: admin.nome,
+      name: admin.name,
       email: admin.email,
       role: admin.role,
-      ativo: admin.ativo,
+      active: admin.active,
+      createdAt: admin.createdAt,
     })
-    expect(result.admin).not.toHaveProperty('senhaHash')
+    expect(result.admin).not.toHaveProperty('passwordHash')
+    expect(deps.platformAdminRepository.recordAccess).toHaveBeenCalledWith(
+      admin.id,
+      result.admin.lastAccessAt,
+    )
+    expect(result.admin.lastAccessAt).toBeInstanceOf(Date)
   })
 
   it('persiste o hash do refresh token com platformAdminId/expiresAt', async () => {
@@ -106,15 +116,17 @@ describe('LoginPlatformAdminUseCase', () => {
     await expect(useCase.execute({ email: admin.email, password: 'senha-errada' })).rejects.toThrow(
       InvalidPlatformCredentialsError,
     )
+    expect(deps.platformAdminRepository.recordAccess).not.toHaveBeenCalled()
   })
 
   it('lança InvalidPlatformCredentialsError quando o admin está desativado', async () => {
-    const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue({ ...admin, ativo: false }) })
+    const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue({ ...admin, active: false }) })
     const useCase = buildUseCase(deps)
 
     await expect(
       useCase.execute({ email: admin.email, password: 'senha-correta' }),
     ).rejects.toThrow(InvalidPlatformCredentialsError)
     expect(deps.passwordHasher.compare).not.toHaveBeenCalled()
+    expect(deps.platformAdminRepository.recordAccess).not.toHaveBeenCalled()
   })
 })

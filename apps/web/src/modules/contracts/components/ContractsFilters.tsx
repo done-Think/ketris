@@ -1,10 +1,8 @@
+import { dashboardFilterSelectSx, styles } from '../styles/contracts-filters.styles'
 import { MenuItem, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useWatch } from 'react-hook-form'
-
 import { DashboardStatusFilterButton } from '@shared/components/layout'
-import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
-
 import { contractFilterTabs, contractTypeFilterOptions } from '../config/contract-ui'
 import type { ContractsFiltersFormValues, ContractsFiltersProps } from '../types/contract'
 
@@ -19,17 +17,7 @@ export function ContractsFilters({ control, filterCounts, setValue }: ContractsF
     contractFilterTabs[0].label
 
   return (
-    <Stack
-      direction="row"
-      spacing={0.8}
-      useFlexGap
-      flexWrap="wrap"
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        mb: 1.8,
-      }}
-    >
+    <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={styles.stack}>
       <TextField
         select
         size="small"
@@ -40,7 +28,7 @@ export function ContractsFilters({ control, filterCounts, setValue }: ContractsF
           if (selectedTab) {
             setValue('status', selectedTab.status, { shouldDirty: true })
             setValue('period', selectedTab.period, { shouldDirty: true })
-            setValue('type', 'Todos', { shouldDirty: true })
+            setValue('type', 'ALL', { shouldDirty: true })
           }
         }}
         sx={dashboardFilterSelectSx}
@@ -63,12 +51,9 @@ export function ContractsFilters({ control, filterCounts, setValue }: ContractsF
             onClick={() => {
               setValue('status', tab.status, { shouldDirty: true })
               setValue('period', tab.period, { shouldDirty: true })
-              setValue('type', 'Todos', { shouldDirty: true })
+              setValue('type', 'ALL', { shouldDirty: true })
             }}
-            sx={{
-              display: { xs: 'none', sm: 'inline-flex' },
-              transition: motion.transition.bordered,
-            }}
+            sx={styles.dashboardStatusFilterButton}
           >
             {t(tab.label)}
           </DashboardStatusFilterButton>
@@ -84,63 +69,25 @@ export function ContractsFilters({ control, filterCounts, setValue }: ContractsF
             shouldDirty: true,
           })
         }
-        sx={{
-          width: { xs: '100%', sm: 180 },
-          ml: { sm: 'auto' },
-          '& .MuiInputBase-root': {
-            height: { xs: 40, sm: 32 },
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            color: brand.graphite[500],
-            fontSize: 12,
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: alpha.graphite[8],
-          },
-        }}
+        sx={styles.textField}
         SelectProps={{
           inputProps: { 'aria-label': tType('label') },
         }}
       >
         {contractTypeFilterOptions.map((option) => (
           <MenuItem key={option} value={option}>
-            {tType(option)}
+            {tType(
+              option === 'ALL'
+                ? 'ALL'
+                : option === 'RESIDENTIAL'
+                  ? 'residential'
+                  : option === 'COMMERCIAL'
+                    ? 'commercial'
+                    : 'shortTerm',
+            )}
           </MenuItem>
         ))}
       </TextField>
     </Stack>
   )
-}
-
-const dashboardFilterSelectSx = {
-  width: { xs: '100%', sm: 160 },
-  display: { xs: 'block', sm: 'none' },
-  '& .MuiOutlinedInput-root': {
-    minHeight: 46,
-    borderRadius: `${radius.sm}px`,
-    bgcolor: surface.paper,
-    color: brand.graphite[500],
-    fontSize: 14,
-    fontWeight: 800,
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'transparent',
-      borderWidth: 0,
-    },
-  },
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'transparent',
-    borderWidth: 0,
-  },
-  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'transparent',
-  },
-  '& .MuiSelect-select': {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  '& .MuiMenu-paper': {
-    mt: 0.6,
-    borderRadius: `${radius.sm}px`,
-    boxShadow: shadows.popover,
-  },
 }

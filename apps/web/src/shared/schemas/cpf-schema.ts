@@ -26,6 +26,6 @@ export function isValidCpf(value: string): boolean {
   return digits === `${base}${firstCheckDigit}${secondCheckDigit}`
 }
 
-export function createCpfSchema(t: SchemaMessageTranslator) {
+export function createCpfSchema(t: SchemaMessageTranslator<'cpfInvalid' | 'cpfRequired'>) {
   return z.string().trim().min(1, t('cpfRequired')).refine(isValidCpf, t('cpfInvalid'))
 }

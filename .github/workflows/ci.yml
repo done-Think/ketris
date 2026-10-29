@@ -3,11 +3,13 @@ name: CI
 on:
   pull_request:
   push:
+    # Working branches are validated through their PR, avoiding a second run per push.
     branches: [dev, main]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Once a dev release starts, another push must not interrupt its migration/promotion.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/dev' }}
 
 jobs:
   quality:
@@ -26,7 +28,7 @@ jobs:
         ports:
           - 55432:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U ketris -d ketris"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
@@ -38,19 +40,37 @@ jobs:
       AUTH_TOKEN_SECRET: ci-auth-token-secret
       PLATFORM_TOKEN_SECRET: ci-platform-token-secret
       PASSWORD_RESET_TOKEN_SECRET: ci-password-reset-token-secret
+      CONTRACTS_DATA_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: npm
 
       - run: npm ci
 
+      - name: Testa as garantias da publicação de staging
+        run: node --test scripts/tests/staging-release.test.mjs
+
+      - name: Verifica nomes em inglês e exceções de compatibilidade
+        run: npm run check:english-names
+
+      - name: Confere o contrato OpenAPI e os tipos gerados do frontend
+        run: npm run api:check
+
       - name: Aplica as migrations no Postgres efêmero
         run: npm run db:deploy -w @ketris/web
+
+      - name: Valida a conta de smoke no schema real em database descartável
+        run: node --test scripts/tests/staging-release-db.test.mjs
+
+      - name: Ensaia renome e recuperação em databases descartáveis
+        env:
+          RENAME_REHEARSAL_SERVER_URL: postgresql://ketris:ketris@127.0.0.1:55432/postgres
+        run: npm run db:rehearse-english-rename
 
       - name: Typecheck
         run: npm run typecheck -w @ketris/web
@@ -63,3 +83,95 @@ jobs:
 
       - name: Testes de integração
         run: npm run test:integration -w @ketris/web
+
+  auth-e2e:
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ketris
+          POSTGRES_PASSWORD: ketris
+          POSTGRES_DB: ketris
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U ketris -d ketris"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ketris:ketris@localhost:55432/ketris?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: ''
+      NEXTAUTH_SECRET: ci-nextauth-secret
+      AUTH_TOKEN_SECRET: ci-auth-token-secret
+      PLATFORM_TOKEN_SECRET: ci-platform-token-secret
+      PASSWORD_RESET_TOKEN_SECRET: ci-password-reset-token-secret
+      CONTRACTS_DATA_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      AUTH_RATE_LIMIT_MAX: '1000'
+      API_RATE_LIMIT_MAX: '20000'
+      MARKETPLACE_INQUIRY_RATE_LIMIT_MAX: '1000'
+      AUTH_E2E_MAILBOX_PORT: '3101'
+      CONTRACTS_E2E_STORAGE_PORT: '3102'
+      AWS_ENDPOINT_URL_S3: http://127.0.0.1:3102
+      S3_BUCKET_NAME: contracts-private-e2e
+      KETRIS_E2E_ISOLATED_DB: '1'
+      AWS_ENDPOINT_URL: http://127.0.0.1:3101
+      AWS_ENDPOINT_URL_SES: http://127.0.0.1:3101
+      AWS_IGNORE_CONFIGURED_ENDPOINT_URLS: 'false'
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ci-local-only
+      AWS_SECRET_ACCESS_KEY: ci-local-only
+      SES_FROM_EMAIL: auth-ci@example.test
+      KETRIS_BUILD_WORKERS: '1'
+      KETRIS_BUILD_LOW_MEMORY: '1'
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run db:deploy -w @ketris/web
+      - name: Valida os tipos dos testes de navegador
+        run: npm exec -- tsc --noEmit -p apps/web/cypress/tsconfig.json
+      - name: Build de produção
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run build -w @ketris/web
+      - name: Executa os fluxos dos módulos com dados locais isolados
+        shell: bash
+        run: |
+          npm run start -w @ketris/web -- --hostname localhost > /tmp/auth-next.log 2>&1 &
+          auth_server_pid=$!
+          trap 'kill "$auth_server_pid" 2>/dev/null || true' EXIT
+          node --input-type=module <<'JS'
+          let ready = false
+          for (let attempt = 0; attempt < 60; attempt++) {
+            try {
+              const response = await fetch('http://localhost:3000/api/auth/csrf')
+              if (response.ok) { ready = true; break }
+            } catch {}
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+          }
+          if (!ready) throw new Error('O servidor de teste Auth não iniciou.')
+          JS
+          npm exec -w @ketris/web -- cypress run --browser electron --config baseUrl=http://localhost:3000 --spec 'cypress/e2e/auth/**/*.cy.ts,cypress/e2e/agenda/**/*.cy.ts,cypress/e2e/contracts/**/*.cy.ts,cypress/e2e/crm/**/*.cy.ts,cypress/e2e/maintenance/**/*.cy.ts,cypress/e2e/financial/**/*.cy.ts,cypress/e2e/properties/**/*.cy.ts,cypress/e2e/marketplace/**/*.cy.ts,cypress/e2e/platform/**/*.cy.ts,cypress/e2e/team/**/*.cy.ts,cypress/e2e/login.cy.ts'
+
+  release-staging:
+    needs: [quality, auth-e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/deploy-staging.yml
+    secrets:
+      STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+      CONTRACTS_DATA_ENCRYPTION_KEY: ${{ secrets.CONTRACTS_DATA_ENCRYPTION_KEY }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}

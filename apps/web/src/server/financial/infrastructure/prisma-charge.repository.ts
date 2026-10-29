@@ -1,190 +1,269 @@
 import type { Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
-import { nextSequentialCode } from '@server/shared/sequential-code'
+import { calendarMonthDateRange } from '@server/shared/time-zone-calendar'
+import type { CalendarMonth } from '@server/shared/types/time-zone-calendar'
 
+import type { ChargeRepository } from '../application/ports/charge-repository.port'
+import { ChargeConcurrentChangeError } from '../domain/errors'
 import type {
-  Charge,
+  ChargeAuditEvent,
+  ChargeChanges,
   ChargeListFilters,
   ChargeListResult,
+  ChargeMutationActor,
   ChargePaymentData,
-  ChargeUpdateData,
-  FinancialSummary,
+  ChargeStatusCounts,
   FinancialMonthlyTotal,
+  FinancialSummaryTotals,
   NewCharge,
-} from '../domain/charge.entity'
+  StoredCharge,
+  StoredChargeListItem,
+} from '../types/charge-entity'
+import type { ChargeEditableField, ChargeStatus } from '../types/charge'
+import type { StoredChargeReceiptFile } from '../types/charge-receipt'
 import type { ChargeReadScope } from '../types/charge-read-scope'
-import type { ChargeRepository } from '../application/ports/charge-repository.port'
-import type { CobrancaWithRelations } from '../types/prisma-charge-repository'
+import type { ChargeWithRelations } from '../types/prisma-charge-repository'
+import { insertCharge, recordChargeAudit } from './charge-writes'
 
-function buildPropertyAddress(
-  endereco: { logradouro: string; bairro: string; cidade: string } | null,
-): string | null {
-  if (!endereco) return null
+const openStatuses = ['PENDING', 'SCHEDULED'] as const
+const countedStatuses = [undefined, 'PENDING', 'OVERDUE', 'PAID', 'SCHEDULED', 'CANCELED'] as const
 
-  const parts = [endereco.logradouro, endereco.bairro, endereco.cidade].filter(Boolean)
-
-  return parts.length > 0 ? parts.join(', ') : null
-}
-
-function toDomainCharge(cobranca: CobrancaWithRelations): Charge {
-  const payer = cobranca.contrato?.partes[0] ?? null
-
-  return {
-    id: cobranca.id,
-    tenantId: cobranca.tenantId,
-    code: cobranca.codigo,
-    type: cobranca.tipo,
-    status: cobranca.status,
-    amount: cobranca.valor.toNumber(),
-    dueDate: cobranca.vencimento,
-    description: cobranca.descricao,
-    paymentMethod: cobranca.formaPagamento,
-    receiptUrl: cobranca.comprovanteUrl,
-    paidAt: cobranca.pagoEm,
-    createdAt: cobranca.createdAt,
-    updatedAt: cobranca.updatedAt,
-    contractId: cobranca.contratoId,
-    contractCode: cobranca.contrato?.codigo ?? null,
-    propertyId: cobranca.contrato?.imovel.id ?? null,
-    propertyTitle: cobranca.contrato?.imovel.titulo ?? null,
-    propertyAddress: cobranca.contrato
-      ? buildPropertyAddress(cobranca.contrato.imovel.endereco)
-      : null,
-    payerName: payer?.nome ?? null,
-    payerEmail: payer?.email ?? null,
-  }
-}
-
-function generateChargeCode(tx: Prisma.TransactionClient): Promise<string> {
-  return nextSequentialCode(tx, 'cobrancas', `COB-${new Date().getFullYear()}-`)
-}
+const receiptSelect = {
+  id: true,
+  fileName: true,
+  contentType: true,
+  sizeBytes: true,
+  createdAt: true,
+} as const
 
 const chargeInclude = {
-  contrato: {
+  currentReceipt: { select: receiptSelect },
+  contract: {
     include: {
-      imovel: {
+      property: {
         select: {
           id: true,
-          titulo: true,
-          endereco: { select: { logradouro: true, bairro: true, cidade: true } },
+          title: true,
+          address: { select: { street: true, neighborhood: true, city: true } },
         },
       },
-      partes: { where: { papel: 'LOCATARIO' as const }, select: { nome: true, email: true } },
+      parties: { where: { role: 'RENTER' as const }, select: { name: true, email: true } },
     },
   },
 } as const
 
-function monthRange(referenceDate: Date, monthsBack: number) {
-  const start = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - monthsBack, 1)
-  const end = new Date(referenceDate.getFullYear(), referenceDate.getMonth() + 1, 1)
-
-  return { start, end }
+const fieldColumns: Record<ChargeEditableField, string> = {
+  description: 'description',
+  type: 'type',
+  amount: 'amount',
+  dueDate: 'dueDate',
 }
 
-function chargeReadWhere(scope: ChargeReadScope): Prisma.CobrancaWhereInput {
+function buildPropertyAddress(
+  address: { street: string; neighborhood: string; city: string } | null,
+): string | null {
+  if (!address) return null
+
+  const parts = [address.street, address.neighborhood, address.city].filter(Boolean)
+
+  return parts.length > 0 ? parts.join(', ') : null
+}
+
+function toStoredCharge(charge: ChargeWithRelations): StoredCharge {
+  const payer = charge.contract?.parties[0] ?? null
+  const receipt = charge.currentReceipt
+
+  return {
+    id: charge.id,
+    tenantId: charge.tenantId,
+    code: charge.code,
+    type: charge.type,
+    storedStatus: charge.status,
+    amount: charge.amount.toNumber(),
+    dueDate: charge.dueDate,
+    description: charge.description,
+    paymentMethod: charge.paymentMethod,
+    paidAt: charge.paidAt,
+    paidById: charge.paidById,
+    cancelledAt: charge.canceledAt,
+    cancellationReason: charge.cancellationReason,
+    receipt: receipt
+      ? {
+          id: receipt.id,
+          name: receipt.fileName,
+          contentType: receipt.contentType,
+          size: receipt.sizeBytes,
+          uploadedAt: receipt.createdAt,
+        }
+      : null,
+    createdAt: charge.createdAt,
+    updatedAt: charge.updatedAt,
+    contractId: charge.contractId,
+    contractCode: charge.contract?.code ?? null,
+    propertyId: charge.contract?.property.id ?? null,
+    propertyTitle: charge.contract?.property.title ?? null,
+    propertyAddress: charge.contract
+      ? buildPropertyAddress(charge.contract.property.address)
+      : null,
+    payerName: payer?.name ?? null,
+    payerEmail: payer?.email ?? null,
+  }
+}
+
+function monthRange(month: CalendarMonth, monthsBack: number) {
+  return {
+    start: calendarMonthDateRange(month, -monthsBack).start,
+    end: calendarMonthDateRange(month).end,
+  }
+}
+
+function chargeReadWhere(scope: ChargeReadScope): Prisma.ChargeWhereInput {
   if (scope.kind === 'renter') {
     return {
-      tipo: 'A_RECEBER',
-      contrato: {
-        partes: {
+      type: 'RECEIVABLE',
+      contract: {
+        parties: {
           some: {
-            papel: 'LOCATARIO',
-            usuarioId: scope.userId,
-            usuario: { ativo: true, papel: 'RENTER' },
+            role: 'RENTER',
+            userId: scope.userId,
+            user: { active: true, role: 'RENTER' },
           },
         },
       },
     }
   }
 
+  if (scope.kind === 'propertyOwner') {
+    return { tenantId: scope.tenantId, contract: { property: { ownerId: scope.ownerId } } }
+  }
+
   return { tenantId: scope.tenantId }
+}
+
+function statusWhere(status: ChargeStatus | undefined, today: Date): Prisma.ChargeWhereInput {
+  if (!status) return {}
+  if (status === 'OVERDUE') return { status: { in: [...openStatuses] }, dueDate: { lt: today } }
+  if (status === 'PENDING' || status === 'SCHEDULED') return { status, dueDate: { gte: today } }
+  return { status }
+}
+
+function searchWhere(search: string | undefined): Prisma.ChargeWhereInput {
+  if (!search) return {}
+
+  return {
+    OR: [
+      { code: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+      { contract: { property: { title: { contains: search, mode: 'insensitive' } } } },
+      {
+        contract: {
+          parties: {
+            some: { role: 'RENTER', name: { contains: search, mode: 'insensitive' } },
+          },
+        },
+      },
+    ],
+  }
+}
+
+function snapshotOf(charge: StoredCharge): Prisma.InputJsonValue {
+  return {
+    code: charge.code,
+    type: charge.type,
+    status: charge.storedStatus,
+    amount: charge.amount,
+    dueDate: charge.dueDate.toISOString(),
+    description: charge.description,
+    contractId: charge.contractId,
+  }
+}
+
+async function guardedUpdate(
+  tx: Prisma.TransactionClient,
+  current: StoredCharge,
+  data: Prisma.ChargeUncheckedUpdateManyInput,
+): Promise<void> {
+  const result = await tx.charge.updateMany({
+    where: {
+      id: current.id,
+      tenantId: current.tenantId,
+      status: current.storedStatus,
+      updatedAt: current.updatedAt,
+    },
+    data,
+  })
+  if (result.count !== 1) throw new ChargeConcurrentChangeError()
 }
 
 export class PrismaChargeRepository implements ChargeRepository {
   async findContractSummary(tenantId: string, contractId: string): Promise<{ id: string } | null> {
-    const contrato = await prisma.contrato.findFirst({
-      where: { tenantId, id: contractId },
-      select: { id: true },
-    })
-
-    return contrato
+    return prisma.contract.findFirst({ where: { tenantId, id: contractId }, select: { id: true } })
   }
 
-  async create(input: NewCharge): Promise<Charge> {
-    const cobranca = await prisma.$transaction(async (tx) =>
-      tx.cobranca.create({
-        data: {
-          tenantId: input.tenantId,
-          contratoId: input.contractId,
-          codigo: await generateChargeCode(tx),
-          descricao: input.description,
-          tipo: input.type,
-          valor: input.amount,
-          vencimento: input.dueDate,
-          status: input.status,
-        },
-        include: chargeInclude,
+  async create(input: NewCharge, actor: ChargeMutationActor): Promise<StoredCharge> {
+    const created = await prisma.$transaction((tx) =>
+      insertCharge(tx, {
+        tenantId: input.tenantId,
+        contractId: input.contractId,
+        description: input.description,
+        type: input.type,
+        amount: input.amount,
+        dueDate: input.dueDate,
+        status: input.status,
+        createdById: actor.actorId,
       }),
     )
 
-    return toDomainCharge(cobranca)
+    return this.require(input.tenantId, created.id)
   }
 
-  async findMany(filters: ChargeListFilters): Promise<ChargeListResult> {
+  async findMany(filters: ChargeListFilters): Promise<ChargeListResult<StoredChargeListItem>> {
     const page = filters.page && filters.page > 0 ? Math.floor(filters.page) : 1
     const pageSize = filters.pageSize && filters.pageSize > 0 ? Math.floor(filters.pageSize) : 10
-    const search = filters.search?.trim()
-
-    const where = {
-      AND: [chargeReadWhere(filters.scope)],
-      tipo: filters.type,
-      status: filters.status,
-      ...(search
+    const base: Prisma.ChargeWhereInput[] = [
+      chargeReadWhere(filters.scope),
+      searchWhere(filters.search?.trim()),
+      filters.type ? { type: filters.type } : {},
+      filters.dueMonth
         ? {
-            OR: [
-              { codigo: { contains: search, mode: 'insensitive' as const } },
-              { descricao: { contains: search, mode: 'insensitive' as const } },
-              {
-                contrato: {
-                  imovel: { titulo: { contains: search, mode: 'insensitive' as const } },
-                },
-              },
-              {
-                contrato: {
-                  partes: {
-                    some: {
-                      papel: 'LOCATARIO' as const,
-                      nome: { contains: search, mode: 'insensitive' as const },
-                    },
-                  },
-                },
-              },
-            ],
+            dueDate: {
+              gte: calendarMonthDateRange(filters.dueMonth).start,
+              lt: calendarMonthDateRange(filters.dueMonth).end,
+            },
           }
-        : {}),
+        : {},
+    ]
+    const where: Prisma.ChargeWhereInput = {
+      AND: [...base, statusWhere(filters.status, filters.today)],
     }
+    const countFor = (status?: ChargeStatus) =>
+      prisma.charge.count({ where: { AND: [...base, statusWhere(status, filters.today)] } })
 
-    const [cobrancas, totalCount] = await Promise.all([
-      prisma.cobranca.findMany({
+    const [charges, totalCount, ...counts] = await Promise.all([
+      prisma.charge.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { updatedAt: 'desc' },
+        orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
         include: chargeInclude,
       }),
-      prisma.cobranca.count({ where }),
+      prisma.charge.count({ where }),
+      ...countedStatuses.map((status) => countFor(status)),
     ])
+    const statusCounts = Object.fromEntries(
+      countedStatuses.map((status, index) => [status ?? 'ALL', counts[index]]),
+    ) as ChargeStatusCounts
 
     return {
-      items: cobrancas.map((cobranca) => {
-        const charge = toDomainCharge(cobranca)
+      items: charges.map((row) => {
+        const charge = toStoredCharge(row)
 
         return {
           id: charge.id,
           code: charge.code,
           type: charge.type,
-          status: charge.status,
+          storedStatus: charge.storedStatus,
           amount: charge.amount,
           dueDate: charge.dueDate,
           description: charge.description,
@@ -195,72 +274,292 @@ export class PrismaChargeRepository implements ChargeRepository {
         }
       }),
       totalCount,
+      statusCounts,
     }
   }
 
-  async findById(tenantId: string, chargeId: string): Promise<Charge | null> {
+  async findForExport(tenantId: string, month: CalendarMonth): Promise<StoredCharge[]> {
+    const range = calendarMonthDateRange(month)
+    const rows = await prisma.charge.findMany({
+      where: { tenantId, dueDate: { gte: range.start, lt: range.end } },
+      orderBy: [{ dueDate: 'asc' }, { code: 'asc' }],
+      include: chargeInclude,
+    })
+
+    return rows.map(toStoredCharge)
+  }
+
+  findById(tenantId: string, chargeId: string): Promise<StoredCharge | null> {
     return this.findReadableById({ kind: 'tenant', tenantId }, chargeId)
   }
 
-  async findReadableById(scope: ChargeReadScope, chargeId: string): Promise<Charge | null> {
-    const cobranca = await prisma.cobranca.findFirst({
+  async findReadableById(scope: ChargeReadScope, chargeId: string): Promise<StoredCharge | null> {
+    const charge = await prisma.charge.findFirst({
       where: { ...chargeReadWhere(scope), id: chargeId },
       include: chargeInclude,
     })
 
-    return cobranca ? toDomainCharge(cobranca) : null
+    return charge ? toStoredCharge(charge) : null
   }
 
-  async update(tenantId: string, chargeId: string, patch: ChargeUpdateData): Promise<Charge> {
-    await prisma.cobranca.findFirstOrThrow({ where: { tenantId, id: chargeId } })
+  async hasMovement(tenantId: string, chargeId: string): Promise<boolean> {
+    const [events, receipts] = await Promise.all([
+      prisma.chargeAuditEvent.count({
+        where: {
+          tenantId,
+          chargeId,
+          action: { in: ['PAYMENT_REGISTERED', 'PAYMENT_REVERSED', 'CANCELLED'] },
+        },
+      }),
+      prisma.chargeReceipt.count({ where: { tenantId, chargeId: chargeId } }),
+    ])
 
-    const cobranca = await prisma.cobranca.update({
-      where: { id: chargeId },
-      data: {
-        descricao: patch.description,
-        tipo: patch.type,
-        valor: patch.amount,
-        vencimento: patch.dueDate,
-        status: patch.status,
-        formaPagamento: patch.paymentMethod,
-        comprovanteUrl: patch.receiptUrl,
-        pagoEm: patch.paidAt,
-      },
-      include: chargeInclude,
+    return events > 0 || receipts > 0
+  }
+
+  async update(
+    current: StoredCharge,
+    changes: ChargeChanges,
+    changedFields: ChargeEditableField[],
+    actor: ChargeMutationActor,
+  ): Promise<StoredCharge> {
+    await prisma.$transaction(async (tx) => {
+      await guardedUpdate(tx, current, {
+        ...(changedFields.includes('description')
+          ? { description: changes.description ?? null }
+          : {}),
+        ...(changedFields.includes('type') ? { type: changes.type } : {}),
+        ...(changedFields.includes('amount') ? { amount: changes.amount } : {}),
+        ...(changedFields.includes('dueDate') ? { dueDate: changes.dueDate } : {}),
+      })
+      await recordChargeAudit(tx, {
+        tenantId: current.tenantId,
+        chargeId: current.id,
+        chargeCode: current.code,
+        actorUserId: actor.actorId,
+        action: 'UPDATED',
+        changedFields: changedFields.map((field) => fieldColumns[field]),
+        snapshot: snapshotOf(current),
+      })
     })
 
-    return toDomainCharge(cobranca)
-  }
-
-  async delete(tenantId: string, chargeId: string): Promise<void> {
-    await prisma.cobranca.findFirstOrThrow({ where: { tenantId, id: chargeId } })
-
-    await prisma.cobranca.delete({ where: { id: chargeId } })
+    return this.require(current.tenantId, current.id)
   }
 
   async registerPayment(
-    tenantId: string,
-    chargeId: string,
+    current: StoredCharge,
     payment: ChargePaymentData,
-  ): Promise<Charge> {
-    await prisma.cobranca.findFirstOrThrow({ where: { tenantId, id: chargeId } })
-
-    const cobranca = await prisma.cobranca.update({
-      where: { id: chargeId },
-      data: {
-        status: 'PAGA',
-        pagoEm: payment.paidAt,
-        formaPagamento: payment.paymentMethod,
-        comprovanteUrl: payment.receiptUrl,
-      },
-      include: chargeInclude,
+    actor: ChargeMutationActor,
+  ): Promise<StoredCharge> {
+    await prisma.$transaction(async (tx) => {
+      const receipt = payment.receipt
+        ? await tx.chargeReceipt.create({
+            data: {
+              id: payment.receipt.id,
+              tenantId: current.tenantId,
+              chargeId: current.id,
+              objectKey: payment.receipt.objectKey,
+              fileName: payment.receipt.name,
+              contentType: payment.receipt.contentType,
+              sizeBytes: payment.receipt.size,
+              sha256: payment.receipt.sha256,
+              uploadedById: actor.actorId,
+            },
+            select: { id: true },
+          })
+        : null
+      await guardedUpdate(tx, current, {
+        status: 'PAID',
+        paidAt: payment.paidAt,
+        paidById: actor.actorId,
+        paymentMethod: payment.paymentMethod,
+        currentReceiptId: receipt?.id ?? null,
+      })
+      await recordChargeAudit(tx, {
+        tenantId: current.tenantId,
+        chargeId: current.id,
+        chargeCode: current.code,
+        actorUserId: actor.actorId,
+        action: 'PAYMENT_REGISTERED',
+        fromStatus: current.storedStatus,
+        toStatus: 'PAID',
+        receiptId: receipt?.id ?? null,
+        snapshot: {
+          paidAt: payment.paidAt.toISOString(),
+          paymentMethod: payment.paymentMethod,
+        },
+      })
     })
 
-    return toDomainCharge(cobranca)
+    return this.require(current.tenantId, current.id)
   }
 
-  async getSummary(tenantId: string, referenceDate: Date): Promise<FinancialSummary> {
-    const currentMonth = monthRange(referenceDate, 0)
+  async reversePayment(
+    current: StoredCharge,
+    reason: string,
+    actor: ChargeMutationActor,
+  ): Promise<StoredCharge> {
+    await prisma.$transaction(async (tx) => {
+      await guardedUpdate(tx, current, {
+        status: 'PENDING',
+        paidAt: null,
+        paidById: null,
+        paymentMethod: null,
+        currentReceiptId: null,
+      })
+      await recordChargeAudit(tx, {
+        tenantId: current.tenantId,
+        chargeId: current.id,
+        chargeCode: current.code,
+        actorUserId: actor.actorId,
+        action: 'PAYMENT_REVERSED',
+        fromStatus: 'PAID',
+        toStatus: 'PENDING',
+        reason,
+        receiptId: current.receipt?.id ?? null,
+        snapshot: {
+          paidAt: current.paidAt?.toISOString() ?? null,
+          paymentMethod: current.paymentMethod,
+        },
+      })
+    })
+
+    return this.require(current.tenantId, current.id)
+  }
+
+  async cancel(
+    current: StoredCharge,
+    reason: string,
+    actor: ChargeMutationActor,
+  ): Promise<StoredCharge> {
+    await prisma.$transaction(async (tx) => {
+      await guardedUpdate(tx, current, {
+        status: 'CANCELED',
+        canceledAt: new Date(),
+        canceledById: actor.actorId,
+        cancellationReason: reason,
+      })
+      await recordChargeAudit(tx, {
+        tenantId: current.tenantId,
+        chargeId: current.id,
+        chargeCode: current.code,
+        actorUserId: actor.actorId,
+        action: 'CANCELLED',
+        fromStatus: current.storedStatus,
+        toStatus: 'CANCELED',
+        reason,
+      })
+    })
+
+    return this.require(current.tenantId, current.id)
+  }
+
+  async delete(current: StoredCharge, actor: ChargeMutationActor): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      await recordChargeAudit(tx, {
+        tenantId: current.tenantId,
+        chargeId: current.id,
+        chargeCode: current.code,
+        actorUserId: actor.actorId,
+        action: 'DELETED',
+        fromStatus: current.storedStatus,
+        snapshot: snapshotOf(current),
+      })
+      const result = await tx.charge.deleteMany({
+        where: {
+          id: current.id,
+          tenantId: current.tenantId,
+          status: current.storedStatus,
+          updatedAt: current.updatedAt,
+        },
+      })
+      if (result.count !== 1) throw new ChargeConcurrentChangeError()
+    })
+  }
+
+  async listHistory(tenantId: string, chargeId: string): Promise<ChargeAuditEvent[]> {
+    const rows = await prisma.chargeAuditEvent.findMany({
+      where: { tenantId, chargeId },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      include: { actor: { select: { name: true } } },
+    })
+    const receiptIds = rows.flatMap((row) => (row.receiptId ? [row.receiptId] : []))
+    const receipts = receiptIds.length
+      ? await prisma.chargeReceipt.findMany({
+          where: { tenantId, chargeId: chargeId, id: { in: receiptIds } },
+          select: receiptSelect,
+        })
+      : []
+    const receiptById = new Map(receipts.map((receipt) => [receipt.id, receipt]))
+
+    return rows.map((row) => {
+      const receipt = row.receiptId ? receiptById.get(row.receiptId) : undefined
+
+      return {
+        id: row.id,
+        action: row.action,
+        actorType: row.actorType,
+        actorName: row.actor?.name ?? null,
+        changedFields: row.changedFields,
+        fromStatus: row.fromStatus,
+        toStatus: row.toStatus,
+        reason: row.reason,
+        receipt: receipt
+          ? {
+              id: receipt.id,
+              name: receipt.fileName,
+              contentType: receipt.contentType,
+              size: receipt.sizeBytes,
+              uploadedAt: receipt.createdAt,
+            }
+          : null,
+        createdAt: row.createdAt,
+      }
+    })
+  }
+
+  async findReceipt(
+    scope: ChargeReadScope,
+    chargeId: string,
+    receiptId: string,
+    includeHistory: boolean,
+  ): Promise<StoredChargeReceiptFile | null> {
+    const receipt = await prisma.chargeReceipt.findFirst({
+      where: {
+        id: receiptId,
+        chargeId: chargeId,
+        charge: {
+          ...chargeReadWhere(scope),
+          ...(includeHistory ? {} : { currentReceiptId: receiptId }),
+        },
+      },
+    })
+
+    return receipt
+      ? {
+          id: receipt.id,
+          tenantId: receipt.tenantId,
+          chargeId: receipt.chargeId,
+          objectKey: receipt.objectKey,
+          name: receipt.fileName,
+          contentType: receipt.contentType,
+          size: receipt.sizeBytes,
+          sha256: receipt.sha256,
+        }
+      : null
+  }
+
+  async getSummary(
+    tenantId: string,
+    month: CalendarMonth,
+    today: Date,
+  ): Promise<FinancialSummaryTotals> {
+    const currentMonth = monthRange(month, 0)
+    const receivable = {
+      tenantId,
+      type: 'RECEIVABLE' as const,
+      status: { not: 'CANCELED' as const },
+    }
 
     const [
       monthlyReceivableAggregate,
@@ -271,87 +570,65 @@ export class PrismaChargeRepository implements ChargeRepository {
       rentedPropertiesCount,
       listedPropertiesCount,
     ] = await Promise.all([
-      prisma.cobranca.aggregate({
-        _sum: { valor: true },
+      prisma.charge.aggregate({
+        _sum: { amount: true },
+        where: { ...receivable, dueDate: { gte: currentMonth.start, lt: currentMonth.end } },
+      }),
+      prisma.charge.aggregate({
+        _sum: { amount: true },
         where: {
           tenantId,
-          tipo: 'A_RECEBER',
-          vencimento: { gte: currentMonth.start, lt: currentMonth.end },
-          status: { in: ['PENDENTE', 'PAGA'] },
+          type: 'RECEIVABLE',
+          status: { in: [...openStatuses] },
+          dueDate: { lt: today },
         },
       }),
-      prisma.cobranca.aggregate({
-        _sum: { valor: true },
-        where: { tenantId, tipo: 'A_RECEBER', status: 'ATRASADA' },
-      }),
-      prisma.cobranca.aggregate({
-        _sum: { valor: true },
-        where: { tenantId, tipo: 'A_RECEBER', status: { not: 'CANCELADA' } },
-      }),
-      prisma.cobranca.findMany({
+      prisma.charge.aggregate({ _sum: { amount: true }, where: receivable }),
+      prisma.charge.findMany({
         where: {
-          tenantId,
-          tipo: 'A_RECEBER',
-          vencimento: { gte: monthRange(referenceDate, 5).start, lt: currentMonth.end },
+          ...receivable,
+          dueDate: { gte: monthRange(month, 5).start, lt: currentMonth.end },
         },
-        select: { valor: true, vencimento: true },
+        select: { amount: true, dueDate: true },
       }),
-      prisma.cobranca.findMany({
-        where: { tenantId, tipo: 'A_RECEBER', status: 'PENDENTE' },
-        orderBy: { vencimento: 'asc' },
+      prisma.charge.findMany({
+        where: { tenantId, type: 'RECEIVABLE', status: 'PENDING' },
+        orderBy: [{ dueDate: 'asc' }, { id: 'asc' }],
         take: 5,
         include: chargeInclude,
       }),
-      prisma.imovel.count({
-        where: { tenantId, finalidade: { in: ['ALUGUEL', 'AMBOS'] }, status: 'RENTED' },
+      prisma.property.count({
+        where: { tenantId, purpose: { in: ['RENT', 'BOTH'] }, status: 'RENTED' },
       }),
-      prisma.imovel.count({
+      prisma.property.count({
         where: {
           tenantId,
-          finalidade: { in: ['ALUGUEL', 'AMBOS'] },
+          purpose: { in: ['RENT', 'BOTH'] },
           status: { in: ['PUBLISHED', 'RENTED'] },
         },
       }),
     ])
 
-    const monthlyReceivable = monthlyReceivableAggregate._sum.valor?.toNumber() ?? 0
-    const overdueTotal = overdueAggregate._sum.valor?.toNumber() ?? 0
-    const totalReceivable = totalReceivableAggregate._sum.valor?.toNumber() ?? 0
+    const monthlyReceivable = monthlyReceivableAggregate._sum.amount?.toNumber() ?? 0
+    const overdueTotal = overdueAggregate._sum.amount?.toNumber() ?? 0
+    const totalReceivable = totalReceivableAggregate._sum.amount?.toNumber() ?? 0
     const defaultRatePercentage = totalReceivable > 0 ? (overdueTotal / totalReceivable) * 100 : 0
     const occupancyRatePercentage =
       listedPropertiesCount > 0 ? (rentedPropertiesCount / listedPropertiesCount) * 100 : 0
 
     const monthlySeries: FinancialMonthlyTotal[] = Array.from({ length: 6 }, (_, index) => {
-      const date = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - (5 - index), 1)
-      return { year: date.getFullYear(), month: date.getMonth() + 1, total: 0 }
+      const date = calendarMonthDateRange(month, index - 5).start
+      return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, total: 0 }
     })
 
     for (const row of seriesRows) {
       const bucket = monthlySeries.find(
         (entry) =>
-          entry.year === row.vencimento.getFullYear() &&
-          entry.month === row.vencimento.getMonth() + 1,
+          entry.year === row.dueDate.getUTCFullYear() &&
+          entry.month === row.dueDate.getUTCMonth() + 1,
       )
-      if (bucket) {
-        bucket.total += row.valor.toNumber()
-      }
+      if (bucket) bucket.total += row.amount.toNumber()
     }
-
-    const upcomingDues = upcomingRows.map((cobranca) => {
-      const charge = toDomainCharge(cobranca)
-
-      return {
-        id: charge.id,
-        code: charge.code,
-        description: charge.description,
-        payerName: charge.payerName,
-        propertyId: charge.propertyId,
-        propertyTitle: charge.propertyTitle,
-        dueDate: charge.dueDate,
-        amount: charge.amount,
-        status: charge.status,
-      }
-    })
 
     return {
       monthlyReceivable,
@@ -359,7 +636,27 @@ export class PrismaChargeRepository implements ChargeRepository {
       defaultRatePercentage,
       occupancyRatePercentage,
       monthlySeries,
-      upcomingDues,
+      upcomingDues: upcomingRows.map((row) => {
+        const charge = toStoredCharge(row)
+
+        return {
+          id: charge.id,
+          code: charge.code,
+          description: charge.description,
+          payerName: charge.payerName,
+          propertyId: charge.propertyId,
+          propertyTitle: charge.propertyTitle,
+          dueDate: charge.dueDate,
+          amount: charge.amount,
+          storedStatus: charge.storedStatus,
+        }
+      }),
     }
+  }
+
+  private async require(tenantId: string, chargeId: string): Promise<StoredCharge> {
+    const charge = await this.findById(tenantId, chargeId)
+    if (!charge) throw new ChargeConcurrentChangeError()
+    return charge
   }
 }

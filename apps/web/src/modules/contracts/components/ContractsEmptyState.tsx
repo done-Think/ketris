@@ -1,63 +1,32 @@
+import { styles } from '../styles/contracts-empty-state.styles'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import { Box, Button, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
-
-import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
-
 import type { ContractsEmptyStateProps } from '../types/contract'
 
 export function ContractsEmptyState({ onCreateContract }: ContractsEmptyStateProps) {
   const t = useTranslations('contracts.emptyState')
 
   return (
-    <Stack
-      alignItems="center"
-      justifyContent="center"
-      spacing={1.6}
-      sx={{
-        minHeight: 320,
-        border: '1px solid',
-        borderColor: alpha.graphite[6],
-        borderRadius: `${radius.sm}px`,
-        bgcolor: surface.paper,
-        textAlign: 'center',
-        px: 2,
-      }}
-    >
-      <Box
-        sx={{
-          width: 54,
-          height: 54,
-          borderRadius: radius.full,
-          bgcolor: alpha.magenta[8],
-          color: brand.magenta[500],
-          display: 'grid',
-          placeItems: 'center',
-        }}
-      >
-        <DescriptionOutlinedIcon sx={{ fontSize: iconSize.xl }} />
+    <Stack alignItems="center" justifyContent="center" spacing={1.6} sx={styles.stack}>
+      <Box sx={styles.box}>
+        <DescriptionOutlinedIcon sx={styles.descriptionOutlinedIcon} />
       </Box>
       <Box>
-        <Typography sx={{ color: brand.graphite[500], fontSize: 18, fontWeight: 900, mb: 0.6 }}>
-          {t('title')}
-        </Typography>
-        <Typography sx={{ color: brand.neutral[500], fontSize: 14 }}>{t('description')}</Typography>
+        <Typography sx={styles.typography}>{t('title')}</Typography>
+        <Typography sx={styles.typography2}>{t('description')}</Typography>
       </Box>
-      <Button
-        variant="contained"
-        startIcon={<AddRoundedIcon />}
-        onClick={onCreateContract}
-        sx={{
-          borderRadius: `${radius.sm}px`,
-          boxShadow: shadows.none,
-          mt: 0.6,
-          textTransform: 'none',
-          fontWeight: 900,
-        }}
-      >
-        {t('cta')}
-      </Button>
+      {onCreateContract ? (
+        <Button
+          variant="contained"
+          startIcon={<AddRoundedIcon />}
+          onClick={onCreateContract}
+          sx={styles.button}
+        >
+          {t('cta')}
+        </Button>
+      ) : null}
     </Stack>
   )
 }

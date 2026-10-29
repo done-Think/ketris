@@ -23,59 +23,59 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
     vi.setSystemTime(new Date('2026-10-01T09:00:00.000Z'))
 
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Agenda Cancel', slug: `agenda-cancel-${randomUUID()}` },
+      data: { name: 'Tenant Agenda Cancel', slug: `agenda-cancel-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor Agenda',
+        name: 'Corretor Agenda',
         email: `corretor-agenda-cancel-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const renter = await prisma.usuario.create({
+    const renter = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Locatário Agenda',
+        name: 'Locatário Agenda',
         email: `locatario-agenda-cancel-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'RENTER',
+        passwordHash: 'hash-fake',
+        role: 'RENTER',
       },
     })
     renterToken = await tokenService.sign({
       id: renter.id,
       tenantId: renter.tenantId,
-      nome: renter.nome,
+      name: renter.name,
       email: renter.email,
-      papel: renter.papel,
-      ativo: renter.ativo,
-      vinculoAprovadoEm: renter.vinculoAprovadoEm,
+      role: renter.role,
+      active: renter.active,
+      membershipApprovedAt: renter.membershipApprovedAt,
     })
 
-    const event = await prisma.eventoAgenda.create({
+    const event = await prisma.agendaEvent.create({
       data: {
         tenantId,
-        responsavelId: actor.id,
-        criadoPorId: actor.id,
-        titulo: 'Evento para cancelar',
-        referenciaImovelLivre: 'Apto teste',
-        inicio: slotStart,
-        fim: new Date(slotStart.getTime() + 30 * 60_000),
-        participanteNome: 'Ana',
-        participanteTelefone: '11999990000',
+        responsibleId: actor.id,
+        createdById: actor.id,
+        title: 'Evento para cancelar',
+        freeFormPropertyReference: 'Apto teste',
+        start: slotStart,
+        end: new Date(slotStart.getTime() + 30 * 60_000),
+        participantName: 'Ana',
+        participantPhone: '11999990000',
       },
     })
     eventId = event.id
@@ -90,7 +90,8 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
   function buildRequest(id: string, token = actorToken): NextRequest {
     return new NextRequest(`http://localhost/api/agenda/events/${id}/cancel`, {
       method: 'POST',
-      headers: { authorization: `Bearer ${token}` },
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ reason: 'Cliente indisponível' }),
     })
   }
 
@@ -98,12 +99,10 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
     return { params: Promise.resolve({ id }) }
   }
 
-  it('retorna 403 quando um RENTER tenta cancelar', async () => {
+  it('retorna 404 quando um RENTER tenta cancelar evento ao qual não está vinculado', async () => {
     const response = await POST(buildRequest(eventId, renterToken), context(eventId))
-    const json = await response.json()
 
-    expect(response.status).toBe(403)
-    expect(json.error.code).toBe('FORBIDDEN')
+    expect(response.status).toBe(404)
   })
 
   it('cancela o evento (soft — status vira CANCELLED)', async () => {
@@ -113,7 +112,7 @@ describe('/api/agenda/events/{id}/cancel (integração)', () => {
     expect(response.status).toBe(200)
     expect(json.event.status).toBe('CANCELLED')
 
-    const persisted = await prisma.eventoAgenda.findUniqueOrThrow({ where: { id: eventId } })
+    const persisted = await prisma.agendaEvent.findUniqueOrThrow({ where: { id: eventId } })
     expect(persisted.status).toBe('CANCELLED')
   })
 

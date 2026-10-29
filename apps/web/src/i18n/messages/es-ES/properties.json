@@ -41,14 +41,14 @@
     },
     "filters": {
       "filterAriaLabel": "Filtrar propiedades por estado",
-      "Todos": "Todos",
-      "Disponível": "Disponible",
-      "Alugado": "Alquilado",
-      "Ativo": "Activo",
-      "Vendido": "Vendido",
-      "Em análise": "En revisión",
-      "Vencendo": "Por vencer",
-      "Inativo": "Inactivo"
+      "all": "Todos",
+      "available": "Disponible",
+      "rented": "Alquilado",
+      "active": "Activo",
+      "sold": "Vendido",
+      "inReview": "En revisión",
+      "expiring": "Por vencer",
+      "inactive": "Inactivo"
     },
     "mapping": {
       "notAnnounced": "No anunciado",
@@ -64,7 +64,9 @@
         "house": "Casa",
         "studio": "Studio",
         "penthouse": "Ático",
-        "commercial": "Comercial"
+        "commercial": "Comercial",
+        "loft": "Loft",
+        "other": "Otro"
       },
       "activity": {
         "created": "Registro del inmueble completado",
@@ -123,13 +125,13 @@
       "parkingSpaces": "PLAZAS",
       "area": "ÁREA",
       "condominium": "GASTOS COMUNES",
-      "iptu": "IMPUESTO"
+      "propertyTax": "IMPUESTO"
     },
     "pricing": {
       "rent": "ALQUILER",
       "sale": "VENTA",
       "condominium": "GASTOS COMUNES",
-      "iptu": "IMPUESTO",
+      "propertyTax": "IMPUESTO",
       "administrationFee": "TASA DE ADMINISTRACIÓN",
       "securityDeposit": "GARANTÍA",
       "lastAdjustment": "ÚLTIMO AJUSTE"
@@ -141,21 +143,39 @@
       "history": "Historial"
     },
     "publish": "Publicar",
-    "delete": "Eliminar",
+    "delete": "Desactivar",
     "publishSuccess": "Inmueble publicado correctamente.",
     "publishError": "No fue posible publicar el inmueble. Inténtalo de nuevo.",
     "unpublishSuccess": "Inmueble despublicado correctamente.",
     "unpublishError": "No fue posible despublicar el inmueble. Inténtalo de nuevo.",
-    "deleteSuccess": "Inmueble eliminado correctamente.",
-    "deleteError": "No fue posible eliminar el inmueble. Inténtalo de nuevo.",
+    "deleteSuccess": "Inmueble desactivado correctamente.",
+    "deleteError": "No se pudo desactivar el inmueble. Inténtelo de nuevo.",
     "deleteDialog": {
-      "title": "Eliminar inmueble",
-      "description": "¿Seguro que deseas eliminar \"{title}\"? Esta acción es permanente y no se puede deshacer. Si el inmueble tiene propuestas o contratos vinculados, la eliminación será bloqueada.",
-      "confirm": "Eliminar",
+      "title": "Desactivar inmueble",
+      "description": "¿Desea desactivar \"{title}\"? El inmueble dejará de anunciarse. Sus datos, archivos, propuestas y contratos se conservarán.",
+      "confirm": "Desactivar",
       "cancel": "Cancelar"
-    }
+    },
+    "mediaKinds": {
+      "photo": "Foto",
+      "floorPlan": "Plano",
+      "video": "Vídeo"
+    },
+    "loadError": "No se pudo cargar el inmueble. Inténtelo de nuevo.",
+    "retry": "Intentar de nuevo",
+    "loading": "Cargando inmueble",
+    "description": "Descripción",
+    "amenities": "Comodidades",
+    "negotiationTerms": "Condiciones de negociación"
   },
   "create": {
+    "coordinatesHint": "Intentaremos localizar el inmueble por su dirección al guardar. Si es necesario, introduce ambas coordenadas.",
+    "postalCode": {
+      "idle": "Introduce el código postal y sal del campo para completar la dirección. Revisa los datos antes de guardar.",
+      "loading": "Consultando código postal…",
+      "notFound": "Código postal no encontrado. Revisa el código o introduce la dirección manualmente.",
+      "unavailable": "La consulta del código postal no está disponible. Puedes introducir la dirección manualmente."
+    },
     "title": "Publicar inmueble",
     "mobileTitle": "Nuevo inmueble",
     "back": "Volver",
@@ -180,10 +200,14 @@
       "saleValue": "Valor de venta",
       "referenceValue": "Valor de referencia del inmueble",
       "condominium": "Gastos comunes",
-      "iptu": "Impuesto mensual",
+      "propertyTax": "Impuesto mensual",
       "securityDeposit": "Garantía",
       "commission": "Comisión",
-      "commercialTerms": "Condición comercial"
+      "commercialTerms": "Condición comercial",
+      "owner": "Propietario",
+      "complement": "Complemento",
+      "latitude": "Latitud (opcional)",
+      "longitude": "Longitud (opcional)"
     },
     "steps": {
       "ariaLabel": "Etapas del registro",
@@ -196,30 +220,32 @@
       "publishing": "Publicación"
     },
     "purposes": {
-      "Aluguel": "Alquiler",
-      "Venda": "Venta"
+      "RENT": "Alquiler",
+      "SALE": "Venta"
     },
     "propertyTypes": {
-      "Apartamento": "Apartamento",
-      "Casa": "Casa",
-      "Studio": "Studio",
-      "Cobertura": "Ático",
-      "Comercial": "Comercial"
+      "apartment": "Apartamento",
+      "house": "Casa",
+      "studio": "Studio",
+      "penthouse": "Ático",
+      "commercial": "Comercial",
+      "loft": "Loft",
+      "other": "Otro"
     },
     "features": {
-      "Mobiliado": "Amueblado",
-      "Varanda gourmet": "Balcón gourmet",
-      "Aceita pets": "Acepta mascotas",
-      "Portaria 24h": "Conserjería 24h"
+      "furnished": "Amueblado",
+      "gourmetBalcony": "Balcón gourmet",
+      "petFriendly": "Acepta mascotas",
+      "concierge24h": "Conserjería 24h"
     },
     "mediaDropzone": "Arrastra imágenes aquí o haz clic para seleccionar",
     "mediaUploading": "Enviando...",
     "mediaRemove": "Eliminar imagen",
     "mediaUploadError": "No se pudo enviar la imagen. Inténtalo de nuevo.",
     "publishingOptions": {
-      "Publicar no marketplace após revisão": "Publicar en el marketplace tras revisión",
-      "Permitir contato por WhatsApp": "Permitir contacto por WhatsApp",
-      "Destacar imóvel na listagem inicial": "Destacar inmueble en la lista inicial"
+      "publishAfterReview": "Publicar en el marketplace tras revisión",
+      "allowWhatsappContact": "Permitir contacto por WhatsApp",
+      "featured": "Destacar inmueble en la lista inicial"
     },
     "createSuccess": "Inmueble creado con éxito.",
     "createError": "No se pudo crear el inmueble. Inténtalo de nuevo.",
@@ -234,13 +260,26 @@
       "cityRequired": "Indica la ciudad",
       "stateRequired": "Indica el estado",
       "zipCodeRequired": "Indica el código postal",
+      "zipCodeInvalid": "Introduce un código postal brasileño de 8 dígitos, como 37502-330.",
       "numberInvalid": "Indica un valor válido",
       "areaRequired": "Indica el área útil",
       "mainValueRequired": "Indica el valor principal",
       "negotiationTermRequired": "Indica la condición comercial",
       "rentalValueInvalid": "Indica un valor de alquiler válido",
-      "rentalValueRequired": "Indica el valor del alquiler"
-    }
+      "rentalValueRequired": "Indica el valor del alquiler",
+      "titleTooLong": "El título debe tener como máximo 200 caracteres.",
+      "descriptionTooLong": "La descripción debe tener como máximo 10.000 caracteres.",
+      "negotiationTermTooLong": "La condición comercial debe tener como máximo 2.000 caracteres.",
+      "latitudeInvalid": "Introduzca una latitud entre -90 y 90.",
+      "longitudeInvalid": "Introduzca una longitud entre -180 y 180.",
+      "integerRequired": "Indica un número entero"
+    },
+    "saveDraft": "Guardar borrador",
+    "noOwner": "Sin propietario vinculado",
+    "ownerUnavailable": "Propietario no disponible",
+    "ownersLoadError": "No se pudieron cargar los propietarios.",
+    "mediaUploadFileError": "No se pudo subir \"{filename}\". Inténtelo de nuevo.",
+    "mediaStorageUnavailableFileError": "El servicio de imágenes no está disponible. No se pudo subir \"{filename}\". Inténtelo más tarde."
   },
   "edit": {
     "title": "Editar inmueble",

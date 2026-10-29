@@ -1,7 +1,7 @@
 import { prisma } from '@server/db/prisma'
 
 import type { DatabaseHealthProbe } from '../application/ports/system-health.port'
-import type { DatabaseHealth } from '../domain/system-health.entity'
+import type { DatabaseHealth } from '../types/system-health'
 
 const TIMEOUT_MS = 3_000
 

@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest'
-
-import type { Papel } from '@server/auth/domain/user.entity'
-
+import type { UserRole } from '@server/auth/domain/user.entity'
 import {
   resolveContractManageScope,
   resolveContractReadScope,
@@ -9,8 +7,8 @@ import {
 import { ContractRenterForbiddenError } from '../../domain/errors'
 
 describe('resolveContractManageScope', () => {
-  it.each(['ADMIN', 'OWNER'] as const)('libera todos os contratos do tenant para %s', (papel) => {
-    expect(resolveContractManageScope('user-1', papel)).toEqual({})
+  it.each(['OWNER'] as const)('libera todos os contratos do tenant para %s', (role) => {
+    expect(resolveContractManageScope('user-1', role)).toEqual({})
   })
 
   it('limita o AGENT aos contratos dos imóveis pelos quais ele é responsável', () => {
@@ -18,12 +16,12 @@ describe('resolveContractManageScope', () => {
   })
 
   it('bloqueia com 403 um papel desconhecido, em vez de liberar o tenant inteiro', () => {
-    const unknownPapel = 'MANAGER' as unknown as Papel
+    const unknownRole = 'MANAGER' as unknown as UserRole
 
-    expect(() => resolveContractManageScope('user-1', unknownPapel)).toThrow(
+    expect(() => resolveContractManageScope('user-1', unknownRole)).toThrow(
       expect.objectContaining({ status: 403, code: 'FORBIDDEN' }),
     )
-    expect(() => resolveContractManageScope('user-1', unknownPapel)).not.toThrow(
+    expect(() => resolveContractManageScope('user-1', unknownRole)).not.toThrow(
       ContractRenterForbiddenError,
     )
   })
@@ -39,8 +37,8 @@ describe('resolveContractManageScope', () => {
 })
 
 describe('resolveContractReadScope', () => {
-  it.each(['ADMIN', 'OWNER'] as const)('libera a leitura do tenant inteiro para %s', (papel) => {
-    expect(resolveContractReadScope('tenant-1', 'user-1', papel)).toEqual({
+  it.each(['OWNER'] as const)('libera a leitura do tenant inteiro para %s', (role) => {
+    expect(resolveContractReadScope('tenant-1', 'user-1', role)).toEqual({
       kind: 'tenant',
       tenantId: 'tenant-1',
     })
@@ -61,10 +59,21 @@ describe('resolveContractReadScope', () => {
     })
   })
 
-  it('bloqueia com 403 um papel desconhecido', () => {
-    const unknownPapel = 'MANAGER' as unknown as Papel
+  it('limita o PROPERTY_OWNER aos contratos dos imóveis dele, só para leitura', () => {
+    expect(resolveContractReadScope('tenant-1', 'owner-1', 'PROPERTY_OWNER')).toEqual({
+      kind: 'propertyOwner',
+      tenantId: 'tenant-1',
+      ownerId: 'owner-1',
+    })
+    expect(() => resolveContractManageScope('owner-1', 'PROPERTY_OWNER')).toThrow(
+      expect.objectContaining({ status: 403 }),
+    )
+  })
 
-    expect(() => resolveContractReadScope('tenant-1', 'user-1', unknownPapel)).toThrow(
+  it('bloqueia com 403 um papel desconhecido', () => {
+    const unknownRole = 'MANAGER' as unknown as UserRole
+
+    expect(() => resolveContractReadScope('tenant-1', 'user-1', unknownRole)).toThrow(
       expect.objectContaining({ status: 403, code: 'FORBIDDEN' }),
     )
   })

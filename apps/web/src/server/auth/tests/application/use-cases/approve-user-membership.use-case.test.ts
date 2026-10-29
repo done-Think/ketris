@@ -8,24 +8,29 @@ function buildUser(overrides: Partial<User> = {}): User {
   return {
     id: 'agent-1',
     tenantId: 'tenant-1',
-    nome: 'Corretor Pendente',
+    name: 'Corretor Pendente',
     email: 'corretor@ketris.dev',
-    senhaHash: 'hash',
-    papel: 'AGENT',
-    ativo: true,
-    vinculoAprovadoEm: null,
+    passwordHash: 'hash',
+    role: 'AGENT',
+    active: true,
+    membershipApprovedAt: null,
     ...overrides,
   }
 }
 
 describe('ApproveUserMembershipUseCase', () => {
-  it('lança ForbiddenError quando o ator não é ADMIN', async () => {
+  it('lança ForbiddenError quando o ator não é o dono da imobiliária', async () => {
     const userRepository = {} as unknown as UserRepository
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 't1', actorPapel: 'OWNER', userId: 'agent-1' }),
-    ).rejects.toThrow('Apenas administradores podem aprovar vínculos.')
+      useCase.execute({
+        actorId: 'admin-1',
+        actorTenantId: 't1',
+        actorRole: 'AGENT',
+        userId: 'agent-1',
+      }),
+    ).rejects.toThrow('Apenas a gestão da imobiliária pode aprovar vínculos.')
   })
 
   it('lança UserNotFoundError quando o alvo não existe', async () => {
@@ -35,7 +40,12 @@ describe('ApproveUserMembershipUseCase', () => {
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 't1', actorPapel: 'ADMIN', userId: 'inexistente' }),
+      useCase.execute({
+        actorId: 'admin-1',
+        actorTenantId: 't1',
+        actorRole: 'OWNER',
+        userId: 'inexistente',
+      }),
     ).rejects.toThrow('Usuário não encontrado.')
   })
 
@@ -46,25 +56,17 @@ describe('ApproveUserMembershipUseCase', () => {
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 't1', actorPapel: 'ADMIN', userId: 'agent-1' }),
-    ).rejects.toThrow('Usuário não encontrado.')
-  })
-
-  it('lança UserNotFoundError (opaco) quando o alvo é um ADMIN', async () => {
-    const userRepository = {
-      findById: vi
-        .fn()
-        .mockResolvedValue(buildUser({ papel: 'ADMIN', vinculoAprovadoEm: new Date() })),
-    } as unknown as UserRepository
-    const useCase = new ApproveUserMembershipUseCase(userRepository)
-
-    await expect(
-      useCase.execute({ actorTenantId: 't1', actorPapel: 'ADMIN', userId: 'agent-1' }),
+      useCase.execute({
+        actorId: 'admin-1',
+        actorTenantId: 't1',
+        actorRole: 'OWNER',
+        userId: 'agent-1',
+      }),
     ).rejects.toThrow('Usuário não encontrado.')
   })
 
   it('aprova o vínculo pendente', async () => {
-    const approved = buildUser({ vinculoAprovadoEm: new Date() })
+    const approved = buildUser({ membershipApprovedAt: new Date() })
     const userRepository = {
       findById: vi.fn().mockResolvedValue(buildUser()),
       approveMembership: vi.fn().mockResolvedValue(approved),
@@ -72,29 +74,34 @@ describe('ApproveUserMembershipUseCase', () => {
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     const result = await useCase.execute({
+      actorId: 'admin-1',
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorRole: 'OWNER',
       userId: 'agent-1',
     })
 
-    expect(userRepository.approveMembership).toHaveBeenCalledWith('agent-1')
-    expect(result.vinculoAprovadoEm).not.toBeNull()
+    expect(userRepository.approveMembership).toHaveBeenCalledWith('agent-1', 'tenant-1', {
+      kind: 'USER',
+      id: 'admin-1',
+    })
+    expect(result.membershipApprovedAt).not.toBeNull()
   })
 
   it('é idempotente — aprovar de novo não chama o repositório nem lança erro', async () => {
     const userRepository = {
-      findById: vi.fn().mockResolvedValue(buildUser({ vinculoAprovadoEm: new Date() })),
+      findById: vi.fn().mockResolvedValue(buildUser({ membershipApprovedAt: new Date() })),
       approveMembership: vi.fn(),
     } as unknown as UserRepository
     const useCase = new ApproveUserMembershipUseCase(userRepository)
 
     const result = await useCase.execute({
+      actorId: 'admin-1',
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorRole: 'OWNER',
       userId: 'agent-1',
     })
 
     expect(userRepository.approveMembership).not.toHaveBeenCalled()
-    expect(result.vinculoAprovadoEm).not.toBeNull()
+    expect(result.membershipApprovedAt).not.toBeNull()
   })
 })

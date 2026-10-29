@@ -6,67 +6,68 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
 
-import { DELETE, GET, PATCH, PUT } from '../../../opportunities/[id]/route'
+import { DELETE, GET, PATCH } from '../../../opportunities/[id]/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/crm/opportunities/[id] (integração)', () => {
   const tokenService = new JoseTokenService()
   let tenantId: string
   let otherTenantId: string
   let actorToken: string
-  let imovelId: string
+  let propertyId: string
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária CRM Opportunity Detail', slug: `crm-op-id-${randomUUID()}` },
+      data: { name: 'Imobiliária CRM Opportunity Detail', slug: `crm-op-id-${randomUUID()}` },
     })
     tenantId = tenant.id
 
     const other = await prisma.tenant.create({
-      data: { nome: 'Outra Imobiliária', slug: `crm-op-id-other-${randomUUID()}` },
+      data: { name: 'Outra Imobiliária', slug: `crm-op-id-other-${randomUUID()}` },
     })
     otherTenantId = other.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin',
+        name: 'Admin',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const responsavel = await prisma.usuario.create({
+    const responsible = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor',
+        name: 'Corretor',
         email: `corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
-    const imovel = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: responsavel.id,
-        titulo: 'Imóvel',
-        finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
-        valor: 2000,
+        responsibleId: responsible.id,
+        title: 'Imóvel',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2000,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        publishedAt: new Date(),
       },
     })
-    imovelId = imovel.id
+    propertyId = property.id
   })
 
   afterAll(async () => {
@@ -77,17 +78,18 @@ describe('/api/crm/opportunities/[id] (integração)', () => {
 
   async function createOpportunity(
     overrides: Partial<{
-      status: 'RASCUNHO' | 'ENVIADA' | 'EM_NEGOCIACAO' | 'ACEITA' | 'RECUSADA'
+      status: 'DRAFT' | 'SENT' | 'IN_NEGOTIATION' | 'ACCEPTED' | 'REJECTED'
     }> = {},
   ) {
-    return prisma.oportunidade.create({
+    return prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId,
-        interessadoNome: 'Maria',
-        interessadoEmail: `maria-${randomUUID()}@exemplo.com`,
-        valorProposto: 2500,
-        status: overrides.status ?? 'ENVIADA',
+        propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
+        interestedName: 'Maria',
+        interestedEmail: `maria-${randomUUID()}@exemplo.com`,
+        proposedValue: 2500,
+        status: overrides.status ?? 'SENT',
       },
     })
   }
@@ -125,35 +127,36 @@ describe('/api/crm/opportunities/[id] (integração)', () => {
     })
 
     it('retorna 404 (opaco) para uma oportunidade de outro tenant', async () => {
-      const responsavel = await prisma.usuario.create({
+      const responsible = await prisma.user.create({
         data: {
           tenantId: otherTenantId,
-          nome: 'Corretor Outro',
+          name: 'Corretor Outro',
           email: `corretor-outro-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
-          papel: 'AGENT',
+          passwordHash: 'hash-fake',
+          role: 'AGENT',
         },
       })
-      const imovelOutro = await prisma.imovel.create({
+      const otherProperty = await prisma.property.create({
         data: {
           tenantId: otherTenantId,
-          responsavelId: responsavel.id,
-          titulo: 'Imóvel Outro',
-          finalidade: 'ALUGUEL',
-          tipo: 'apartamento',
-          valor: 1500,
+          responsibleId: responsible.id,
+          title: 'Imóvel Outro',
+          purpose: 'RENT',
+          type: 'APARTMENT',
+          price: 1500,
           status: 'PUBLISHED',
-          publicadoEm: new Date(),
+          publishedAt: new Date(),
         },
       })
-      const opportunity = await prisma.oportunidade.create({
+      const opportunity = await prisma.opportunity.create({
         data: {
           tenantId: otherTenantId,
-          imovelId: imovelOutro.id,
-          interessadoNome: 'De Outro Tenant',
-          interessadoEmail: `outro-${randomUUID()}@exemplo.com`,
-          valorProposto: 1500,
-          status: 'ENVIADA',
+          propertyId: otherProperty.id,
+          responsibleId: await propertyResponsibleId(prisma, otherProperty.id),
+          interestedName: 'De Outro Tenant',
+          interestedEmail: `outro-${randomUUID()}@exemplo.com`,
+          proposedValue: 1500,
+          status: 'SENT',
         },
       })
 
@@ -178,36 +181,36 @@ describe('/api/crm/opportunities/[id] (integração)', () => {
 
   describe('PATCH', () => {
     it('atualiza campos e permite uma transição de status válida', async () => {
-      const opportunity = await createOpportunity({ status: 'ENVIADA' })
+      const opportunity = await createOpportunity({ status: 'SENT' })
 
       const response = await PATCH(
         buildRequest(opportunity.id, {
           method: 'PATCH',
           token: actorToken,
-          body: JSON.stringify({ status: 'EM_NEGOCIACAO' }),
+          body: JSON.stringify({ status: 'IN_NEGOTIATION' }),
         }),
         context(opportunity.id),
       )
       const json = await response.json()
 
       expect(response.status).toBe(200)
-      expect(json.opportunity.status).toBe('EM_NEGOCIACAO')
+      expect(json.opportunity.status).toBe('IN_NEGOTIATION')
 
-      const activities = await prisma.atividadeOportunidade.findMany({
-        where: { oportunidadeId: opportunity.id },
+      const activities = await prisma.opportunityActivity.findMany({
+        where: { opportunityId: opportunity.id },
       })
       expect(activities).toHaveLength(1)
-      expect(activities[0]?.tipo).toBe('MUDANCA_STATUS')
+      expect(activities[0]?.type).toBe('STATUS_CHANGE')
     })
 
     it('retorna 409 para uma transição de status inválida (ACEITA é terminal)', async () => {
-      const opportunity = await createOpportunity({ status: 'ACEITA' })
+      const opportunity = await createOpportunity({ status: 'ACCEPTED' })
 
       const response = await PATCH(
         buildRequest(opportunity.id, {
           method: 'PATCH',
           token: actorToken,
-          body: JSON.stringify({ status: 'ENVIADA' }),
+          body: JSON.stringify({ status: 'SENT' }),
         }),
         context(opportunity.id),
       )
@@ -216,10 +219,10 @@ describe('/api/crm/opportunities/[id] (integração)', () => {
       expect(response.status).toBe(409)
       expect(json.error.code).toBe('INVALID_STATUS_TRANSITION')
 
-      const reloaded = await prisma.oportunidade.findUniqueOrThrow({
+      const reloaded = await prisma.opportunity.findUniqueOrThrow({
         where: { id: opportunity.id },
       })
-      expect(reloaded.status).toBe('ACEITA')
+      expect(reloaded.status).toBe('ACCEPTED')
     })
 
     it('retorna 400 com corpo vazio', async () => {
@@ -238,36 +241,6 @@ describe('/api/crm/opportunities/[id] (integração)', () => {
     })
   })
 
-  describe('PUT', () => {
-    it('substitui a oportunidade, redefinindo campos opcionais omitidos', async () => {
-      const opportunity = await createOpportunity()
-      await prisma.oportunidade.update({
-        where: { id: opportunity.id },
-        data: { observacoes: 'Nota antiga', condicoesEspeciais: ['aceita animais'] },
-      })
-
-      const response = await PUT(
-        buildRequest(opportunity.id, {
-          method: 'PUT',
-          token: actorToken,
-          body: JSON.stringify({
-            leadName: 'Maria Atualizada',
-            leadEmail: opportunity.interessadoEmail,
-            proposedValue: 3000,
-            status: 'ENVIADA',
-          }),
-        }),
-        context(opportunity.id),
-      )
-      const json = await response.json()
-
-      expect(response.status).toBe(200)
-      expect(json.opportunity.leadName).toBe('Maria Atualizada')
-      expect(json.opportunity.notes).toBeNull()
-      expect(json.opportunity.specialConditions).toEqual([])
-    })
-  })
-
   describe('DELETE', () => {
     it('sem permanent: arquiva (soft delete) e retorna 200 com archivedAt preenchido', async () => {
       const opportunity = await createOpportunity()
@@ -281,10 +254,10 @@ describe('/api/crm/opportunities/[id] (integração)', () => {
       expect(response.status).toBe(200)
       expect(json.opportunity.archivedAt).not.toBeNull()
 
-      const reloaded = await prisma.oportunidade.findUniqueOrThrow({
+      const reloaded = await prisma.opportunity.findUniqueOrThrow({
         where: { id: opportunity.id },
       })
-      expect(reloaded.arquivadaEm).not.toBeNull()
+      expect(reloaded.archivedAt).not.toBeNull()
     })
 
     it('com permanent=true: remove o registro do banco e retorna 204', async () => {
@@ -297,7 +270,7 @@ describe('/api/crm/opportunities/[id] (integração)', () => {
 
       expect(response.status).toBe(204)
 
-      const reloaded = await prisma.oportunidade.findUnique({ where: { id: opportunity.id } })
+      const reloaded = await prisma.opportunity.findUnique({ where: { id: opportunity.id } })
       expect(reloaded).toBeNull()
     })
   })

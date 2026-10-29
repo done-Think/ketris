@@ -5,8 +5,18 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
+import { calendarMonthInTimeZone } from '@server/shared/time-zone-calendar'
 
 import { GET } from '../../overview/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
+
+// Instante em horário de São Paulo (UTC-3, sem horário de verão desde 2019): os meses do
+// dashboard seguem esse fuso, qualquer que seja o fuso da máquina que roda o teste.
+const saoPaulo = (year: number, month: number, day: number, hour = 0, minute = 0, second = 0) =>
+  new Date(Date.UTC(year, month, day, hour + 3, minute, second))
+// Data de calendário (vencimento, início de contrato): gravada às 00:00 UTC.
+const calendarDate = (year: number, month: number, day: number) =>
+  new Date(Date.UTC(year, month, day))
 
 describe('/api/agency-dashboard/overview (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -22,29 +32,29 @@ describe('/api/agency-dashboard/overview (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Agency Dashboard', slug: `agency-dashboard-${randomUUID()}` },
+      data: { name: 'Tenant Agency Dashboard', slug: `agency-dashboard-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    async function createUserAndToken(papel: 'OWNER' | 'ADMIN' | 'AGENT' | 'RENTER', ativo = true) {
-      const user = await prisma.usuario.create({
+    async function createUserAndToken(role: 'OWNER' | 'AGENT' | 'RENTER', active = true) {
+      const user = await prisma.user.create({
         data: {
           tenantId,
-          nome: `Usuário ${papel} ${randomUUID()}`,
-          email: `${papel.toLowerCase()}-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
-          papel,
-          ativo,
+          name: `Usuário ${role} ${randomUUID()}`,
+          email: `${role.toLowerCase()}-${randomUUID()}@ketris.dev`,
+          passwordHash: 'hash-fake',
+          role,
+          active,
         },
       })
       const token = await tokenService.sign({
         id: user.id,
         tenantId: user.tenantId,
-        nome: user.nome,
+        name: user.name,
         email: user.email,
-        papel: user.papel,
-        ativo: user.ativo,
-        vinculoAprovadoEm: user.vinculoAprovadoEm,
+        role: user.role,
+        active: user.active,
+        membershipApprovedAt: user.membershipApprovedAt,
       })
 
       return { user, token }
@@ -53,80 +63,77 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     const owner = await createUserAndToken('OWNER')
     ownerToken = owner.token
 
-    const admin = await createUserAndToken('ADMIN')
+    const admin = await createUserAndToken('OWNER')
     adminToken = admin.token
 
     const agent = await createUserAndToken('AGENT')
     agentToken = agent.token
     brokerId = agent.user.id
-    brokerName = agent.user.nome
+    brokerName = agent.user.name
 
     const renter = await createUserAndToken('RENTER')
     renterToken = renter.token
 
     await createUserAndToken('AGENT', false)
 
-    const currentDate = new Date()
-    const currentYear = currentDate.getFullYear()
-    const currentMonth = currentDate.getMonth()
-    const currentMonthDate = (day: number) => new Date(currentYear, currentMonth, day)
+    const { year: currentYear, month: currentMonth } = calendarMonthInTimeZone(new Date())
 
-    await prisma.imovel.create({
+    await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: brokerId,
-        titulo: 'Apartamento Publicado',
-        finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
-        valor: 2000,
+        responsibleId: brokerId,
+        title: 'Apartamento Publicado',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2000,
         status: 'PUBLISHED',
       },
     })
 
-    const rentedProperty = await prisma.imovel.create({
+    const rentedProperty = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: brokerId,
-        titulo: 'Apartamento Batel',
-        finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
-        valor: 3000,
+        responsibleId: brokerId,
+        title: 'Apartamento Batel',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 3000,
         status: 'RENTED',
-        endereco: {
+        address: {
           create: {
-            logradouro: 'Rua das Flores',
-            numero: '100',
-            bairro: 'Batel',
-            cidade: 'Curitiba',
-            estado: 'PR',
-            cep: '80420-000',
+            street: 'Rua das Flores',
+            number: '100',
+            neighborhood: 'Batel',
+            city: 'Curitiba',
+            state: 'PR',
+            zipCode: '80420-000',
           },
         },
       },
     })
     propertyWithAddressId = rentedProperty.id
 
-    const soldProperty = await prisma.imovel.create({
+    const soldProperty = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: brokerId,
-        titulo: 'Casa Vendida Sem Endereço',
-        finalidade: 'VENDA',
-        tipo: 'casa',
-        valor: 2000,
+        responsibleId: brokerId,
+        title: 'Casa Vendida Sem Endereço',
+        purpose: 'SALE',
+        type: 'HOUSE',
+        price: 2000,
         status: 'SOLD',
       },
     })
     propertyWithoutAddressId = soldProperty.id
 
-    await prisma.imovel.create({
+    await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: brokerId,
-        titulo: 'Casa Rascunho',
-        finalidade: 'VENDA',
-        tipo: 'casa',
-        valor: 1000,
+        responsibleId: brokerId,
+        title: 'Casa Rascunho',
+        purpose: 'SALE',
+        type: 'HOUSE',
+        price: 1000,
         status: 'DRAFT',
       },
     })
@@ -134,55 +141,56 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     await prisma.lead.create({
       data: {
         tenantId,
-        responsavelId: brokerId,
-        nome: 'Lead Recente',
-        telefone: '41999990000',
-        interesse: 'Apartamento 2 quartos',
-        orcamento: '2000-3000',
-        origem: 'Portal Ketris',
+        responsibleId: brokerId,
+        name: 'Lead Recente',
+        phone: '41999990000',
+        interest: 'Apartamento 2 quartos',
+        budget: '2000-3000',
+        source: 'OTHER',
       },
     })
 
     await prisma.lead.create({
       data: {
         tenantId,
-        responsavelId: brokerId,
-        nome: 'Lead Antigo',
-        telefone: '41999990001',
-        interesse: 'Casa',
-        orcamento: '1000-2000',
-        origem: 'Indicação',
-        createdAt: new Date(new Date().getFullYear(), new Date().getMonth() - 2, 10),
+        responsibleId: brokerId,
+        name: 'Lead Antigo',
+        phone: '41999990001',
+        interest: 'Casa',
+        budget: '1000-2000',
+        source: 'REFERRAL',
+        createdAt: saoPaulo(currentYear, currentMonth - 2, 10, 12),
       },
     })
 
-    async function activateContract(imovelId: string, valor: number, ativadoEm: Date) {
-      const opportunity = await prisma.oportunidade.create({
+    async function activateContract(propertyId: string, price: number, activatedAt: Date) {
+      const opportunity = await prisma.opportunity.create({
         data: {
           tenantId,
-          imovelId,
-          interessadoNome: 'Interessado Teste',
-          interessadoEmail: `interessado-${randomUUID()}@example.com`,
-          valorProposto: valor,
-          status: 'ACEITA',
+          propertyId,
+          responsibleId: await propertyResponsibleId(prisma, propertyId),
+          interestedName: 'Interessado Teste',
+          interestedEmail: `interessado-${randomUUID()}@example.com`,
+          proposedValue: price,
+          status: 'ACCEPTED',
         },
       })
 
-      return prisma.contrato.create({
+      return prisma.contract.create({
         data: {
           tenantId,
-          imovelId,
-          oportunidadeOrigemId: opportunity.id,
-          codigo: `CTR-${randomUUID()}`,
-          tipo: 'RESIDENCIAL',
-          valor,
-          diaVencimento: 5,
-          dataInicio: currentMonthDate(1),
-          dataFim: new Date(currentYear + 1, currentMonth, 1),
-          indiceReajuste: 'IGPM',
-          tipoGarantia: 'CAUCAO',
-          status: 'ATIVO',
-          ativadoEm,
+          propertyId,
+          sourceOpportunityId: opportunity.id,
+          code: `CTR-${randomUUID()}`,
+          type: 'RESIDENTIAL',
+          amount: price,
+          dueDay: 5,
+          startDate: calendarDate(currentYear, currentMonth, 1),
+          endDate: calendarDate(currentYear + 1, currentMonth, 1),
+          adjustmentIndex: 'IGPM',
+          guaranteeType: 'DEPOSIT',
+          status: 'ACTIVE',
+          activatedAt,
         },
       })
     }
@@ -190,32 +198,36 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     const contractWithAddress = await activateContract(
       propertyWithAddressId,
       3000,
-      currentMonthDate(20),
+      saoPaulo(currentYear, currentMonth, 20, 12),
     )
-    await activateContract(propertyWithoutAddressId, 2000, currentMonthDate(10))
+    await activateContract(
+      propertyWithoutAddressId,
+      2000,
+      saoPaulo(currentYear, currentMonth, 10, 12),
+    )
 
-    await prisma.cobranca.create({
+    await prisma.charge.create({
       data: {
         tenantId,
-        contratoId: contractWithAddress.id,
-        codigo: `COB-${randomUUID()}`,
-        tipo: 'A_RECEBER',
-        valor: 1500,
-        vencimento: currentMonthDate(25),
-        status: 'PENDENTE',
+        contractId: contractWithAddress.id,
+        code: `COB-${randomUUID()}`,
+        type: 'RECEIVABLE',
+        amount: 1500,
+        dueDate: calendarDate(currentYear, currentMonth, 25),
+        status: 'PENDING',
       },
     })
 
-    await prisma.eventoAgenda.create({
+    await prisma.agendaEvent.create({
       data: {
         tenantId,
-        responsavelId: brokerId,
-        titulo: 'Visita agendada ao Apartamento Batel',
-        tipo: 'VISIT',
-        inicio: new Date('2026-09-28T14:00:00.000Z'),
-        fim: new Date('2026-09-28T15:00:00.000Z'),
-        participanteNome: 'Cliente Interessado',
-        participanteTelefone: '41988887777',
+        responsibleId: brokerId,
+        title: 'Visita agendada ao Apartamento Batel',
+        type: 'VISIT',
+        start: new Date('2026-09-28T14:00:00.000Z'),
+        end: new Date('2026-09-28T15:00:00.000Z'),
+        participantName: 'Cliente Interessado',
+        participantPhone: '41988887777',
       },
     })
   })
@@ -256,7 +268,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(response.status).toBe(403)
   })
 
-  it('retorna 200 para ADMIN', async () => {
+  it('retorna 200 para OWNER', async () => {
     const response = await GET(buildRequest(adminToken))
 
     expect(response.status).toBe(200)
@@ -269,16 +281,15 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(response.status).toBe(200)
 
     expect(json.kpis.portfolioCount).toBe(4)
-    expect(json.kpis.activeBrokersCount).toBe(2)
+    expect(json.kpis.activeBrokersCount).toBe(3)
     expect(json.kpis.receivedLeadsThisMonth).toBe(1)
     expect(json.kpis.monthlyReceivable).toBe(1500)
     expect(json.kpis.occupancyPercentage).toBe(67)
 
-    const currentYear = new Date().getFullYear()
-    const currentMonth = new Date().getMonth() + 1
+    const { year: currentYear, month: currentMonth } = calendarMonthInTimeZone(new Date())
     const currentMonthEntry = json.revenueSeries.find(
       (entry: { year: number; month: number }) =>
-        entry.year === currentYear && entry.month === currentMonth,
+        entry.year === currentYear && entry.month === currentMonth + 1,
     )
     expect(currentMonthEntry?.total).toBe(1500)
     expect(json.revenueSeries.every((entry: unknown) => !('target' in (entry as object)))).toBe(
@@ -321,43 +332,43 @@ describe('/api/agency-dashboard/overview (integração)', () => {
   it('não mistura dados de outra imobiliária, em nenhum dos dois sentidos', async () => {
     const before = await (await GET(buildRequest(ownerToken))).json()
     const otherTenant = await prisma.tenant.create({
-      data: { nome: 'Outra Imobiliária', slug: `outra-imobiliaria-${randomUUID()}` },
+      data: { name: 'Outra Imobiliária', slug: `outra-imobiliaria-${randomUUID()}` },
     })
 
     try {
       const [otherOwner, otherBroker] = await Promise.all(
-        (['OWNER', 'AGENT'] as const).map((papel) =>
-          prisma.usuario.create({
+        (['OWNER', 'AGENT'] as const).map((role) =>
+          prisma.user.create({
             data: {
               tenantId: otherTenant.id,
-              nome: `Outro ${papel}`,
-              email: `outro-${papel.toLowerCase()}-${randomUUID()}@ketris.dev`,
-              senhaHash: 'hash-fake',
-              papel,
+              name: `Outro ${role}`,
+              email: `outro-${role.toLowerCase()}-${randomUUID()}@ketris.dev`,
+              passwordHash: 'hash-fake',
+              role,
             },
           }),
         ),
       )
-      await prisma.imovel.create({
+      await prisma.property.create({
         data: {
           tenantId: otherTenant.id,
-          responsavelId: otherBroker.id,
-          titulo: 'Imóvel da Outra Imobiliária',
-          finalidade: 'VENDA',
-          tipo: 'casa',
-          valor: 900000,
+          responsibleId: otherBroker.id,
+          title: 'Imóvel da Outra Imobiliária',
+          purpose: 'SALE',
+          type: 'HOUSE',
+          price: 900000,
           status: 'SOLD',
         },
       })
       await prisma.lead.create({
         data: {
           tenantId: otherTenant.id,
-          responsavelId: otherBroker.id,
-          nome: 'Lead da Outra Imobiliária',
-          telefone: '41988880000',
-          interesse: 'Casa',
-          orcamento: '900000',
-          origem: 'Portal Ketris',
+          responsibleId: otherBroker.id,
+          name: 'Lead da Outra Imobiliária',
+          phone: '41988880000',
+          interest: 'Casa',
+          budget: '900000',
+          source: 'OTHER',
         },
       })
 
@@ -369,11 +380,11 @@ describe('/api/agency-dashboard/overview (integração)', () => {
       const otherOwnerToken = await tokenService.sign({
         id: otherOwner.id,
         tenantId: otherOwner.tenantId,
-        nome: otherOwner.nome,
+        name: otherOwner.name,
         email: otherOwner.email,
-        papel: otherOwner.papel,
-        ativo: otherOwner.ativo,
-        vinculoAprovadoEm: otherOwner.vinculoAprovadoEm,
+        role: otherOwner.role,
+        active: otherOwner.active,
+        membershipApprovedAt: otherOwner.membershipApprovedAt,
       })
       const other = await (await GET(buildRequest(otherOwnerToken))).json()
       expect(other.kpis).toMatchObject({
@@ -392,49 +403,49 @@ describe('/api/agency-dashboard/overview (integração)', () => {
   })
 
   it('retorna os dados de comparação com o mês anterior', async () => {
-    const now = new Date()
-    const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const previousMonthDate = (day: number) => new Date(now.getFullYear(), now.getMonth() - 1, day)
+    const { year, month } = calendarMonthInTimeZone(new Date())
+    const previousMonthStart = saoPaulo(year, month - 1, 1)
+    const previousMonthDate = (day: number) => calendarDate(year, month - 1, day)
 
-    await prisma.imovel.create({
+    await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: brokerId,
-        titulo: 'Casa Cadastrada Há Dois Meses',
-        finalidade: 'VENDA',
-        tipo: 'casa',
-        valor: 1000,
+        responsibleId: brokerId,
+        title: 'Casa Cadastrada Há Dois Meses',
+        purpose: 'SALE',
+        type: 'HOUSE',
+        price: 1000,
         status: 'DRAFT',
-        createdAt: new Date(now.getFullYear(), now.getMonth() - 2, 5),
+        createdAt: saoPaulo(year, month - 2, 5),
       },
     })
 
     await prisma.lead.create({
       data: {
         tenantId,
-        responsavelId: brokerId,
-        nome: 'Lead Do Mês Passado',
-        telefone: '41999990002',
-        interesse: 'Apartamento',
-        orcamento: '1000-2000',
-        origem: 'Portal Ketris',
+        responsibleId: brokerId,
+        name: 'Lead Do Mês Passado',
+        phone: '41999990002',
+        interest: 'Apartamento',
+        budget: '1000-2000',
+        source: 'OTHER',
         createdAt: previousMonthStart,
       },
     })
 
-    for (const [valor, status] of [
-      [1000, 'PAGA'],
-      [400, 'PENDENTE'],
-      [999, 'CANCELADA'],
-      [700, 'ATRASADA'],
+    for (const [price, status] of [
+      [1000, 'PAID'],
+      [400, 'PENDING'],
+      [999, 'CANCELED'],
+      [700, 'SCHEDULED'],
     ] as const) {
-      await prisma.cobranca.create({
+      await prisma.charge.create({
         data: {
           tenantId,
-          codigo: `COB-${randomUUID()}`,
-          tipo: 'A_RECEBER',
-          valor,
-          vencimento: previousMonthDate(10),
+          code: `COB-${randomUUID()}`,
+          type: 'RECEIVABLE',
+          amount: price,
+          dueDate: previousMonthDate(10),
           status,
         },
       })
@@ -449,7 +460,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(json.kpis.receivedLeadsThisMonth).toBe(1)
     expect(json.kpis.receivedLeadsPreviousPeriod).toBe(1)
     expect(json.kpis.monthlyReceivable).toBe(1500)
-    expect(json.kpis.monthlyReceivablePreviousMonth).toBe(1400)
+    expect(json.kpis.monthlyReceivablePreviousMonth).toBe(2100)
   })
 
   describe('limites dos períodos de comparação (relógio em 13/01/2027 14:00)', () => {
@@ -458,16 +469,16 @@ describe('/api/agency-dashboard/overview (integração)', () => {
 
     async function createTenantWithOwner(label: string) {
       const tenant = await prisma.tenant.create({
-        data: { nome: `Tenant ${label}`, slug: `agency-dashboard-${label}-${randomUUID()}` },
+        data: { name: `Tenant ${label}`, slug: `agency-dashboard-${label}-${randomUUID()}` },
       })
       tenantIds.push(tenant.id)
-      const owner = await prisma.usuario.create({
+      const owner = await prisma.user.create({
         data: {
           tenantId: tenant.id,
-          nome: `Owner ${label}`,
+          name: `Owner ${label}`,
           email: `owner-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
-          papel: 'OWNER',
+          passwordHash: 'hash-fake',
+          role: 'OWNER',
         },
       })
 
@@ -476,66 +487,66 @@ describe('/api/agency-dashboard/overview (integração)', () => {
 
     async function seedComparisonData(tenantId: string, ownerId: string) {
       for (const [index, createdAt] of [
-        new Date(2026, 11, 1, 0, 0),
-        new Date(2026, 11, 13, 13, 59),
-        new Date(2026, 11, 13, 14, 0),
-        new Date(2026, 11, 20),
-        new Date(2026, 10, 30, 23, 59),
-        new Date(2027, 0, 2),
-        new Date(2027, 0, 13, 13, 0),
+        saoPaulo(2026, 11, 1, 0, 0),
+        saoPaulo(2026, 11, 13, 13, 59),
+        saoPaulo(2026, 11, 13, 14, 0),
+        saoPaulo(2026, 11, 20),
+        saoPaulo(2026, 10, 30, 23, 59),
+        saoPaulo(2027, 0, 2),
+        saoPaulo(2027, 0, 13, 13, 0),
       ].entries()) {
         await prisma.lead.create({
           data: {
             tenantId,
-            responsavelId: ownerId,
-            nome: `Lead ${index}`,
-            telefone: '41999990000',
-            interesse: 'Apartamento',
-            orcamento: '1000-2000',
-            origem: 'Portal Ketris',
+            responsibleId: ownerId,
+            name: `Lead ${index}`,
+            phone: '41999990000',
+            interest: 'Apartamento',
+            budget: '1000-2000',
+            source: 'OTHER',
             createdAt,
           },
         })
       }
 
       for (const [index, createdAt] of [
-        new Date(2027, 0, 1, 0, 0),
-        new Date(2026, 11, 31, 23, 59, 59),
-        new Date(2027, 0, 10),
+        saoPaulo(2027, 0, 1, 0, 0),
+        saoPaulo(2026, 11, 31, 23, 59, 59),
+        saoPaulo(2027, 0, 10),
       ].entries()) {
-        await prisma.imovel.create({
+        await prisma.property.create({
           data: {
             tenantId,
-            responsavelId: ownerId,
-            titulo: `Imóvel ${index}`,
-            finalidade: 'VENDA',
-            tipo: 'casa',
-            valor: 1000,
+            responsibleId: ownerId,
+            title: `Imóvel ${index}`,
+            purpose: 'SALE',
+            type: 'HOUSE',
+            price: 1000,
             status: 'DRAFT',
             createdAt,
           },
         })
       }
 
-      for (const [valor, tipo, status, vencimento] of [
-        [100, 'A_RECEBER', 'PAGA', new Date(2026, 11, 1, 0, 0)],
-        [200, 'A_RECEBER', 'PENDENTE', new Date(2026, 11, 31, 23, 59)],
-        [4000, 'A_RECEBER', 'PENDENTE', new Date(2027, 0, 1, 0, 0)],
-        [8000, 'A_RECEBER', 'PAGA', new Date(2026, 10, 30, 23, 59)],
-        [16000, 'A_PAGAR', 'PAGA', new Date(2026, 11, 15)],
-        [32000, 'A_RECEBER', 'AGENDADA', new Date(2026, 11, 15)],
-        [64000, 'A_RECEBER', 'ATRASADA', new Date(2026, 11, 15)],
-        [128000, 'A_RECEBER', 'CANCELADA', new Date(2026, 11, 15)],
+      for (const [price, type, status, dueDate] of [
+        [100, 'RECEIVABLE', 'PAID', calendarDate(2026, 11, 1)],
+        [200, 'RECEIVABLE', 'PENDING', calendarDate(2026, 11, 31)],
+        [4000, 'RECEIVABLE', 'PENDING', calendarDate(2027, 0, 1)],
+        [8000, 'RECEIVABLE', 'PAID', calendarDate(2026, 10, 30)],
+        [16000, 'PAYABLE', 'PAID', calendarDate(2026, 11, 15)],
+        [32000, 'RECEIVABLE', 'SCHEDULED', calendarDate(2026, 11, 15)],
+        [64000, 'RECEIVABLE', 'PENDING', calendarDate(2026, 11, 15)],
+        [128000, 'RECEIVABLE', 'CANCELED', calendarDate(2026, 11, 15)],
       ] as const) {
-        await prisma.cobranca.create({
-          data: { tenantId, codigo: `COB-${randomUUID()}`, tipo, valor, vencimento, status },
+        await prisma.charge.create({
+          data: { tenantId, code: `COB-${randomUUID()}`, type, amount: price, dueDate, status },
         })
       }
     }
 
     beforeAll(async () => {
       vi.useFakeTimers({ toFake: ['Date'] })
-      vi.setSystemTime(new Date(2027, 0, 13, 14, 0))
+      vi.setSystemTime(saoPaulo(2027, 0, 13, 14, 0))
 
       const { tenant, owner } = await createTenantWithOwner('frozen')
       await seedComparisonData(tenant.id, owner.id)
@@ -547,11 +558,11 @@ describe('/api/agency-dashboard/overview (integração)', () => {
       frozenOwnerToken = await tokenService.sign({
         id: owner.id,
         tenantId: owner.tenantId,
-        nome: owner.nome,
+        name: owner.name,
         email: owner.email,
-        papel: owner.papel,
-        ativo: owner.ativo,
-        vinculoAprovadoEm: owner.vinculoAprovadoEm,
+        role: owner.role,
+        active: owner.active,
+        membershipApprovedAt: owner.membershipApprovedAt,
       })
     })
 
@@ -574,11 +585,11 @@ describe('/api/agency-dashboard/overview (integração)', () => {
       expect(json.kpis.newPropertiesThisMonth).toBe(2)
     })
 
-    it('soma no mês anterior só cobranças a receber pendentes ou pagas com vencimento em dezembro', async () => {
+    it('soma no mês anterior as cobranças a receber não canceladas com vencimento em dezembro', async () => {
       const json = await (await GET(buildRequest(frozenOwnerToken))).json()
 
       expect(json.kpis.monthlyReceivable).toBe(4000)
-      expect(json.kpis.monthlyReceivablePreviousMonth).toBe(300)
+      expect(json.kpis.monthlyReceivablePreviousMonth).toBe(96300)
     })
   })
 })

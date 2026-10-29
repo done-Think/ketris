@@ -1,18 +1,29 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { PlatformAdmin } from '../../../domain/platform-admin.entity'
+import type { PlatformAdmin } from '../../../types/platform-admin'
 import type { PlatformAdminRepository } from '../../../application/ports/platform-admin-repository.port'
 import { ListPlatformAdminsUseCase } from '../../../application/use-cases/list-platform-admins.use-case'
 
 const admins: PlatformAdmin[] = [
-  { id: 'p1', nome: 'Dono', email: 'dono@ketris.dev', senhaHash: 'h1', role: 'ADMIN', ativo: true },
+  {
+    id: 'p1',
+    name: 'Dono',
+    email: 'dono@ketris.dev',
+    passwordHash: 'h1',
+    role: 'ADMIN',
+    active: true,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    lastAccessAt: new Date('2026-10-27T12:00:00.000Z'),
+  },
   {
     id: 'p2',
-    nome: 'Sócio',
+    name: 'Sócio',
     email: 'socio@ketris.dev',
-    senhaHash: 'h2',
+    passwordHash: 'h2',
     role: 'AGENT',
-    ativo: true,
+    active: true,
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    lastAccessAt: null,
   },
 ]
 
@@ -25,12 +36,13 @@ describe('ListPlatformAdminsUseCase', () => {
       create: vi.fn(),
       update: vi.fn(),
       deactivate: vi.fn(),
+      recordAccess: vi.fn(),
     }
     const useCase = new ListPlatformAdminsUseCase(platformAdminRepository)
 
     const result = await useCase.execute()
 
     expect(result).toHaveLength(2)
-    expect(result.every((admin) => !('senhaHash' in admin))).toBe(true)
+    expect(result.every((admin) => !('passwordHash' in admin))).toBe(true)
   })
 })

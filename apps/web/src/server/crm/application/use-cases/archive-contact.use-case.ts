@@ -1,19 +1,16 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type {
+  ArchiveContactInput,
+  ArchiveContactOutput,
+} from '../../types/archive-contact.use-case.types'
+export type {
+  ArchiveContactInput,
+  ArchiveContactOutput,
+} from '../../types/archive-contact.use-case.types'
 
-import type { Contact } from '../../domain/contact.entity'
 import { ContactNotFoundError } from '../../domain/errors'
-import { assertAgentOwnsContact } from '../authorization'
+import { assertAgentOwnsContact, assertCrmAccess } from '../authorization'
 import type { ContactRepository } from '../ports/contact-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
-
-export interface ArchiveContactInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  contactId: string
-}
-
-export type ArchiveContactOutput = Contact
 
 export class ArchiveContactUseCase {
   constructor(
@@ -22,6 +19,7 @@ export class ArchiveContactUseCase {
   ) {}
 
   async execute(input: ArchiveContactInput): Promise<ArchiveContactOutput> {
+    assertCrmAccess(input.actorRole)
     const contact = await this.contactRepository.findById(input.contactId)
 
     if (!contact || contact.tenantId !== input.actorTenantId) {
@@ -33,7 +31,8 @@ export class ArchiveContactUseCase {
       input.actorTenantId,
       contact.id,
       input.actorId,
-      input.actorPapel,
+      input.actorRole,
+      contact.createdById,
     )
 
     return this.contactRepository.archive(contact.id)

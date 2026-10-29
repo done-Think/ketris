@@ -1,5 +1,6 @@
 import { Box, MenuItem } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as crmStyles from '../../styles/create-lead-interest-step.styles'
 
 import { RhfTextField } from '@shared/components/form'
 
@@ -10,7 +11,7 @@ export function CreateLeadInterestStep({ control }: CreateLeadInterestStepProps)
   const t = useTranslations('crm.leads')
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.4 }}>
+    <Box sx={crmStyles.boxSx}>
       <RhfTextField control={control} name="interest" label={t('create.fields.interest')} />
       <RhfTextField control={control} name="budget" label={t('create.fields.budget')} />
       <RhfTextField
@@ -18,7 +19,7 @@ export function CreateLeadInterestStep({ control }: CreateLeadInterestStepProps)
         name="source"
         label={t('create.fields.source')}
         select
-        sx={{ gridColumn: { md: '1 / -1' } }}
+        sx={crmStyles.rhfTextFieldSx}
       >
         {leadSourceOptions.map((option) => (
           <MenuItem key={option.value} value={option.value}>

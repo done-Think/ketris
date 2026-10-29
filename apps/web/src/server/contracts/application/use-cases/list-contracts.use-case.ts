@@ -1,14 +1,7 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
+import type { ListContractsInput } from '../../types/use-case-inputs'
 import { resolveContractReadScope } from '../../domain/contract-access-rules'
-import type { ContractListFilters, ContractListResult } from '../../domain/contract.entity'
+import type { ContractListResult } from '../../types/contract-entity'
 import type { ContractRepository } from '../ports/contract-repository.port'
-
-export interface ListContractsInput extends ContractListFilters {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-}
 
 export class ListContractsUseCase {
   constructor(private readonly contractRepository: ContractRepository) {}
@@ -16,10 +9,10 @@ export class ListContractsUseCase {
   async execute({
     actorTenantId,
     actorId,
-    actorPapel,
+    actorRole,
     ...filters
   }: ListContractsInput): Promise<ContractListResult> {
-    const scope = resolveContractReadScope(actorTenantId, actorId, actorPapel)
+    const scope = resolveContractReadScope(actorTenantId, actorId, actorRole)
 
     return this.contractRepository.findMany(filters, scope)
   }

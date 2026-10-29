@@ -94,12 +94,64 @@
       "currentPasswordIncorrect": "Senha atual incorreta.",
       "passwordTooShort": "A senha deve ter pelo menos 8 caracteres.",
       "passwordConfirmationRequired": "Confirme a nova senha.",
-      "passwordMismatch": "As senhas não coincidem"
+      "passwordMismatch": "As senhas não coincidem",
+      "creciRequired": "Informe seu CRECI.",
+      "codeInvalid": "Código inválido ou expirado.",
+      "emailRequired": "Informe seu e-mail.",
+      "nameTooLong": "Use no máximo 200 caracteres.",
+      "phoneTooLong": "Use no máximo 32 caracteres.",
+      "creciTooLong": "Use no máximo 32 caracteres.",
+      "emailTooLong": "Use no máximo 254 caracteres.",
+      "passwordTooLong": "A senha deve ter no máximo 72 bytes. Use menos caracteres."
+    },
+    "loading": "Carregando perfil",
+    "retry": "Tentar novamente",
+    "loadError": "Não foi possível carregar seu perfil.",
+    "creci": "CRECI",
+    "changeEmail": "Alterar e-mail",
+    "permissionError": "Você não tem permissão para alterar este perfil.",
+    "newEmail": "Novo e-mail",
+    "emailChangeExplanation": "Seu e-mail atual será mantido até a confirmação do novo endereço. Após confirmar, entre novamente em sua conta.",
+    "emailChangeSent": "Enviamos um código para {email}. Ele é válido por 10 minutos.",
+    "emailChangeCode": "Código de confirmação",
+    "emailChangeConfirm": "Confirmar e entrar novamente",
+    "emailChangeSend": "Enviar código",
+    "emailChangeRateLimit": "Aguarde antes de solicitar outro código.",
+    "emailAlreadyInUse": "Este e-mail já está em uso.",
+    "emailChangeError": "Não foi possível alterar o e-mail. Tente novamente.",
+    "emailChange": {
+      "public": {
+        "title": "Confirme seu novo e-mail",
+        "description": "Digite o código de seis dígitos enviado ao novo endereço. Seu e-mail atual será mantido até a confirmação.",
+        "codeLabel": "Código de confirmação",
+        "confirm": "Confirmar novo e-mail",
+        "login": "Ir para entrar",
+        "invalidLink": "Este link de confirmação é inválido. Peça uma nova solicitação de alteração de e-mail.",
+        "codeInvalid": "Código inválido ou expirado. Confira os seis dígitos ou peça uma nova solicitação.",
+        "emailInUse": "Este e-mail já está em uso nesta conta. Peça uma nova alteração com outro endereço.",
+        "error": "Não foi possível confirmar o novo e-mail. Tente novamente.",
+        "success": "E-mail confirmado. Para acessar esta conta novamente, entre usando o novo endereço.",
+        "emailLinkLabel": "Confirmar meu novo e-mail",
+        "emailInstructions": "Abra o link de confirmação e digite os seis dígitos. Você não precisa estar conectado. Este código expira em {minutes} minutos."
+      }
     }
   },
   "roleGuard": {
     "loadingSession": "Carregando sessão",
     "restrictedTitle": "Acesso restrito",
     "restrictedDescription": "Você não tem permissão para ver esta página. Redirecionando para o painel."
-  }
+  },
+  "tenantSessionBoundary": {
+    "loadingSession": "Carregando sessão",
+    "restrictedTitle": "Acesso restrito ao CRM",
+    "restrictedDescription": "Entre com uma conta vinculada a um tenant para visualizar as oportunidades.",
+    "signIn": "Entrar no Ketris"
+  },
+  "authUnavailable": {
+    "title": "Autenticação temporariamente indisponível",
+    "description": "Não foi possível confirmar sua sessão. Seu trabalho foi preservado. Tente novamente para continuar.",
+    "retry": "Tentar novamente",
+    "retrying": "Verificando sessão…"
+  },
+  "perMonth": "/mês"
 }

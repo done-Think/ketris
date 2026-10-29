@@ -1,8 +1,8 @@
 import { MenuItem, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as maintenanceStyles from '../styles/maintenance-status-filters.styles'
 
 import { DashboardStatusFilterButton } from '@shared/components/layout'
-import { alpha, radius, shadows, surface, brand } from '@shared/theme/tokens'
 
 import type { MaintenanceFilter, MaintenanceStatusFiltersProps } from '../types/maintenance'
 import { MaintenanceFilterOptionLabel } from './MaintenanceFilterOptionLabel'
@@ -36,34 +36,7 @@ export function MaintenanceStatusFilters({
         size="small"
         value={activeFilter}
         onChange={(event) => onChange(event.target.value as MaintenanceFilter['value'])}
-        sx={{
-          display: isDesktop ? { xs: 'flex', md: 'none' } : 'flex',
-          width: isColumn ? '100%' : { xs: '100%', sm: 160 },
-          '& .MuiOutlinedInput-root': {
-            minHeight: 46,
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            color: brand.graphite[500],
-            fontSize: 14,
-            fontWeight: 800,
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'transparent',
-              borderWidth: 0,
-            },
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'transparent',
-            borderWidth: 0,
-          },
-          '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'transparent',
-          },
-          '& .MuiSelect-select': {
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.8,
-          },
-        }}
+        sx={maintenanceStyles.extraStyleSx2(isDesktop, isColumn)}
         SelectProps={{
           inputProps: { 'aria-label': t('filterDialog.title') },
           renderValue: () => (
@@ -75,11 +48,7 @@ export function MaintenanceStatusFilters({
           ),
           MenuProps: {
             PaperProps: {
-              sx: {
-                mt: 0.6,
-                borderRadius: `${radius.sm}px`,
-                boxShadow: shadows.popover,
-              },
+              sx: maintenanceStyles.extraStyleSx1,
             },
           },
         }}
@@ -88,17 +57,7 @@ export function MaintenanceStatusFilters({
           const active = activeFilter === value
 
           return (
-            <MenuItem
-              key={value}
-              value={value}
-              sx={{
-                minHeight: 42,
-                bgcolor: active ? alpha.magenta[8] : 'transparent',
-                '&:hover': {
-                  bgcolor: alpha.magenta[8],
-                },
-              }}
-            >
+            <MenuItem key={value} value={value} sx={maintenanceStyles.getMenuItemSx(active)}>
               <MaintenanceFilterOptionLabel
                 active={active}
                 count={getFilterCount(value)}
@@ -118,7 +77,7 @@ export function MaintenanceStatusFilters({
           spacing={0.8}
           useFlexGap
           flexWrap="wrap"
-          sx={{ display: { xs: 'none', md: 'flex' } }}
+          sx={maintenanceStyles.stackSx}
         >
           {maintenanceFilterValues.map((value) => {
             const active = activeFilter === value

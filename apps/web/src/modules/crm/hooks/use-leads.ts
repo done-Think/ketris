@@ -1,20 +1,28 @@
+import { useTenantSessionScope } from '@shared/hooks/use-tenant-session-scope'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { crmService } from '../services/crm-service'
-import type { ConvertLeadPayload, CreateLeadPayload, LeadApiStage } from '../types/lead'
+import type {
+  ConvertLeadPayload,
+  CreateLeadPayload,
+  LeadApiStage,
+  LeadListFilters,
+} from '../types/lead'
 import { crmQueryKeys } from './use-opportunities'
 
-export function useLeads(tenantId: string | null | undefined) {
-  const scopedTenantId = tenantId ?? ''
-
+export function useLeads(filters: LeadListFilters = {}) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   return useQuery({
-    queryKey: crmQueryKeys.leadsList(scopedTenantId),
-    queryFn: () => crmService.listLeads(),
-    enabled: Boolean(tenantId),
+    queryKey: crmQueryKeys.leadsList(tenantId, filters, scope.actorKey),
+    queryFn: () => crmService.listLeads(filters),
+    enabled: scope.enabled,
   })
 }
 
-export function useCreateLead(tenantId: string) {
+export function useCreateLead() {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -25,7 +33,9 @@ export function useCreateLead(tenantId: string) {
   })
 }
 
-export function useUpdateLeadStage(tenantId: string) {
+export function useUpdateLeadStage() {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -37,7 +47,9 @@ export function useUpdateLeadStage(tenantId: string) {
   })
 }
 
-export function useConvertLeadToOpportunity(tenantId: string) {
+export function useConvertLeadToOpportunity() {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -47,5 +59,15 @@ export function useConvertLeadToOpportunity(tenantId: string) {
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.leadsTenant(tenantId) })
       queryClient.invalidateQueries({ queryKey: crmQueryKeys.lists(tenantId) })
     },
+  })
+}
+
+export function useLead(leadId: string | null) {
+  const scope = useTenantSessionScope()
+  const tenantId = scope.tenantId
+  return useQuery({
+    queryKey: [...crmQueryKeys.leadsTenant(tenantId), 'detail', leadId, scope.actorKey],
+    queryFn: () => crmService.getLead(leadId!),
+    enabled: scope.enabled && Boolean(leadId),
   })
 }

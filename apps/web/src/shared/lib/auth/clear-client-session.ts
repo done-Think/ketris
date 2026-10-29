@@ -1,17 +1,19 @@
 'use client'
 
 import { getSession, signOut } from 'next-auth/react'
+import { httpClient } from '@shared/lib/api/http-client'
 
 export async function clearClientSession(): Promise<void> {
   try {
     const session = await getSession()
 
-    if (session?.scope === 'tenant' && session.refreshToken) {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: session.refreshToken }),
-      })
+    if (session?.scope && session.refreshToken) {
+      const endpoint = session.scope === 'platform' ? '/platform/logout' : '/auth/logout'
+      await httpClient.post(
+        endpoint,
+        { refreshToken: session.refreshToken },
+        { skipUnauthorizedHandling: true },
+      )
     }
   } catch {}
 

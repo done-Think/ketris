@@ -11,7 +11,7 @@ const validLeadValues = {
   email: 'ana@ketris.com',
   interest: 'Apartamento 3 quartos nos Jardins',
   budget: 'R$ 4.5M',
-  source: 'Marketplace',
+  source: 'MARKETPLACE',
 }
 
 describe('createLeadSchema', () => {
@@ -19,8 +19,8 @@ describe('createLeadSchema', () => {
     expect(schema.safeParse(validLeadValues).success).toBe(true)
   })
 
-  it('rejects an empty email', () => {
-    expect(schema.safeParse({ ...validLeadValues, email: '' }).success).toBe(false)
+  it('accepts an empty email until conversion', () => {
+    expect(schema.safeParse({ ...validLeadValues, email: '' }).success).toBe(true)
   })
 
   it('rejects an invalid email', () => {

@@ -1,7 +1,7 @@
-import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
 import { describe, expect, it } from 'vitest'
-import { GET } from '../../tickets/route'
 import { GET as getTicket, PATCH } from '../../tickets/[id]/route'
+import { GET } from '../../tickets/route'
+import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
 
 describe('/api/maintenance scheduling (database integration)', () => {
   const env = setupMaintenanceIntegration()
@@ -70,7 +70,7 @@ describe('/api/maintenance scheduling (database integration)', () => {
     expect((await detail.json()).ticket.activities).toContainEqual(
       expect.objectContaining({
         authorId: env.fixture.renter.id,
-        type: 'EDICAO',
+        type: 'EDIT',
         details: {
           before: { scheduledAt: null },
           after: { scheduledAt },

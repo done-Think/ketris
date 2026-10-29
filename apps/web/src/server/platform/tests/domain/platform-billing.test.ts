@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import { calculateChurnRate, summarizeBilling } from '../../domain/platform-billing'
-import type { MonthlyCharge } from '../../domain/platform-plan'
-import type { ChargedPlatformTenant } from '../../domain/platform-tenant.entity'
-import type { TenantAccountType, TenantStatus } from '../../domain/tenant-account'
-import {
-  groupStatusChangesByTenant,
-  type TenantStatusChange,
-} from '../../domain/tenant-status-history'
+import type { MonthlyCharge } from '../../types/platform-plan'
+import type { ChargedPlatformTenant } from '../../types/platform-tenant'
+import type { TenantAccountType, TenantStatus } from '../../types/tenant-account'
+import { groupStatusChangesByTenant } from '../../domain/tenant-status-history'
+import type { TenantStatusChange } from '../../types/tenant-status-history'
 
 // Instants are UTC; São Paulo is UTC-3, so October 2026 there runs from 2026-10-01T03:00Z
 // (inclusive) to 2026-11-01T03:00Z (exclusive).
@@ -36,7 +34,7 @@ function tenant(
 
   return {
     id,
-    nome: `Tenant ${id}`,
+    name: `Tenant ${id}`,
     slug: `tenant-${id}`,
     accountType: options.accountType ?? 'AGENCY',
     status,

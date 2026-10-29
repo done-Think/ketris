@@ -18,7 +18,7 @@ describe('Login (API)', () => {
     cy.request('POST', '/api/auth/login', { email, password }).then((response) => {
       expect(response.status).to.eq(200)
       expect(response.body.user.email).to.eq(email)
-      expect(response.body.user).to.not.have.property('senhaHash')
+      expect(response.body.user).to.not.have.property('passwordHash')
       expect(response.body.accessToken).to.be.a('string')
       expect(response.body.refreshToken).to.be.a('string')
     })

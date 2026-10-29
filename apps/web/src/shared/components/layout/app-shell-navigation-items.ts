@@ -10,6 +10,7 @@ import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
 
+import { agencyStaffRoles } from '@server/auth/domain/roles'
 import type { AppShellNavItem } from '@shared/types/app-shell'
 
 export const appShellNavigationItems: readonly AppShellNavItem[] = [
@@ -17,19 +18,34 @@ export const appShellNavigationItems: readonly AppShellNavItem[] = [
     labelKey: 'dashboard',
     href: '/dashboard',
     icon: BarChartOutlinedIcon,
-    roles: ['ADMIN', 'OWNER'],
+    roles: ['OWNER'],
   },
-  { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon },
-  { labelKey: 'contacts', href: '/crm/contacts', icon: PeopleOutlineIcon },
-  { labelKey: 'leads', href: '/dashboard/leads', icon: PeopleAltOutlinedIcon },
+  { labelKey: 'pipeline', href: '/crm', icon: ViewKanbanOutlinedIcon, roles: agencyStaffRoles },
+  {
+    labelKey: 'contacts',
+    href: '/crm/contacts',
+    icon: PeopleOutlineIcon,
+    roles: agencyStaffRoles,
+  },
+  {
+    labelKey: 'leads',
+    href: '/dashboard/leads',
+    icon: PeopleAltOutlinedIcon,
+    roles: agencyStaffRoles,
+  },
   {
     labelKey: 'team',
     href: '/dashboard/team',
     icon: PeopleAltOutlinedIcon,
-    roles: ['ADMIN', 'OWNER'],
+    roles: ['OWNER'],
   },
   { labelKey: 'properties', href: '/dashboard/properties', icon: HomeWorkOutlinedIcon },
-  { labelKey: 'contracts', href: '/dashboard/contracts', icon: DescriptionOutlinedIcon },
+  {
+    labelKey: 'contracts',
+    href: '/dashboard/contracts',
+    icon: DescriptionOutlinedIcon,
+    roles: ['OWNER', 'AGENT', 'PROPERTY_OWNER'],
+  },
   {
     labelKey: 'publicProfile',
     href: '/dashboard/public-profile',
@@ -40,25 +56,25 @@ export const appShellNavigationItems: readonly AppShellNavItem[] = [
     labelKey: 'agencyPublicProfile',
     href: '/dashboard/public-profile/agency',
     icon: PaletteOutlinedIcon,
-    roles: ['ADMIN', 'OWNER'],
+    roles: ['OWNER'],
   },
   { labelKey: 'agenda', href: '/dashboard/agenda', icon: CalendarTodayOutlinedIcon },
   {
     labelKey: 'maintenance',
     href: '/dashboard/maintenance',
     icon: BuildOutlinedIcon,
-    roles: ['ADMIN', 'OWNER', 'RENTER'],
+    roles: ['OWNER', 'AGENT', 'RENTER', 'PROPERTY_OWNER'],
   },
   {
     labelKey: 'finance',
     href: '/dashboard/finance',
     icon: InsertChartOutlinedRoundedIcon,
-    roles: ['ADMIN', 'OWNER'],
+    roles: ['OWNER'],
   },
   {
     labelKey: 'charges',
     href: '/dashboard/finance/charges',
     icon: ReceiptLongOutlinedIcon,
-    roles: ['ADMIN', 'OWNER', 'RENTER'],
+    roles: ['OWNER', 'RENTER', 'PROPERTY_OWNER'],
   },
 ]

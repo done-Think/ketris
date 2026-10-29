@@ -6,13 +6,13 @@ import type { PasswordHasher } from '@server/auth/application/ports/password-has
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 
 import { TenantNotFoundError } from '../../../domain/errors'
-import type { TenantSummary } from '../../../domain/tenant-summary.entity'
+import type { TenantSummary } from '../../../types/tenant-summary'
 import type { TenantRepository } from '../../../application/ports/tenant-repository.port'
 import { CreateTenantAdminUseCase } from '../../../application/use-cases/create-tenant-admin.use-case'
 
 const tenant: TenantSummary = {
   id: 't1',
-  nome: 'Imobiliária A',
+  name: 'Imobiliária A',
   slug: 'imobiliaria-a',
   createdAt: new Date(),
 }
@@ -20,12 +20,12 @@ const tenant: TenantSummary = {
 const createdAdmin: User = {
   id: 'u1',
   tenantId: 't1',
-  nome: 'Admin da Imobiliária',
+  name: 'Admin da Imobiliária',
   email: 'admin@imobiliaria-a.dev',
-  senhaHash: 'hash-novo',
-  papel: 'ADMIN',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-novo',
+  role: 'OWNER',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 function createDeps(overrides?: {
@@ -39,6 +39,8 @@ function createDeps(overrides?: {
     searchByName: vi.fn(),
   }
   const userRepository: UserRepository = {
+    findManyByEmail: vi.fn(),
+
     findById: vi.fn(),
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
@@ -66,18 +68,19 @@ describe('CreateTenantAdminUseCase', () => {
 
     const result = await useCase.execute({
       tenantId: tenant.id,
-      nome: 'Admin da Imobiliária',
+      name: 'Admin da Imobiliária',
       email: 'admin@imobiliaria-a.dev',
       password: 'senha-longa-123',
     })
 
-    expect(result.papel).toBe('ADMIN')
+    expect(result.role).toBe('OWNER')
     expect(deps.userRepository.create).toHaveBeenCalledWith({
+      auditActor: { kind: 'SYSTEM' },
       tenantId: tenant.id,
-      nome: 'Admin da Imobiliária',
+      name: 'Admin da Imobiliária',
       email: 'admin@imobiliaria-a.dev',
-      senhaHash: 'hash-novo',
-      papel: 'ADMIN',
+      passwordHash: 'hash-novo',
+      role: 'OWNER',
     })
   })
 
@@ -92,7 +95,7 @@ describe('CreateTenantAdminUseCase', () => {
     await expect(
       useCase.execute({
         tenantId: 'inexistente',
-        nome: 'X',
+        name: 'X',
         email: 'x@x.dev',
         password: 'senha-longa-123',
       }),
@@ -100,7 +103,7 @@ describe('CreateTenantAdminUseCase', () => {
     expect(deps.userRepository.create).not.toHaveBeenCalled()
   })
 
-  it('lança EmailAlreadyInUseError quando o e-mail já existe em qualquer tenant', async () => {
+  it('lança EmailAlreadyInUseError quando o e-mail já existe no tenant escolhido', async () => {
     const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue(createdAdmin) })
     const useCase = new CreateTenantAdminUseCase(
       deps.tenantRepository,
@@ -111,7 +114,7 @@ describe('CreateTenantAdminUseCase', () => {
     await expect(
       useCase.execute({
         tenantId: tenant.id,
-        nome: 'X',
+        name: 'X',
         email: createdAdmin.email,
         password: 'senha-longa-123',
       }),
@@ -130,7 +133,7 @@ describe('CreateTenantAdminUseCase', () => {
     await expect(
       useCase.execute({
         tenantId: tenant.id,
-        nome: 'Segundo Admin',
+        name: 'Segundo Admin',
         email: 'segundo@imobiliaria-a.dev',
         password: 'senha-longa-123',
       }),

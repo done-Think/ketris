@@ -3,6 +3,9 @@ import { getSession, signOut } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { clearClientSession } from '../clear-client-session'
+import { httpClient } from '@shared/lib/api/http-client'
+
+vi.mock('@shared/lib/api/http-client', () => ({ httpClient: { post: vi.fn() } }))
 
 vi.mock('next-auth/react', () => ({
   getSession: vi.fn(),
@@ -18,7 +21,7 @@ describe('clearClientSession', () => {
     vi.clearAllMocks()
     vi.mocked(signOut).mockResolvedValue(undefined as never)
     vi.mocked(getSession).mockResolvedValue(null)
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true } as Response))
+    vi.mocked(httpClient.post).mockResolvedValue(undefined)
     localStorage.setItem('some-key', 'some-value')
     sessionStorage.setItem('other-key', 'other-value')
   })
@@ -38,24 +41,25 @@ describe('clearClientSession', () => {
 
     await clearClientSession()
 
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/auth/logout',
-      expect.objectContaining({
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: 'refresh-fake' }),
-      }),
+    expect(httpClient.post).toHaveBeenCalledWith(
+      '/auth/logout',
+      { refreshToken: 'refresh-fake' },
+      { skipUnauthorizedHandling: true },
     )
   })
 
-  it('não tenta revogar quando a sessão é de plataforma (refresh token vive noutro repositório)', async () => {
+  it('revoga o refresh token de plataforma no endpoint do mesmo escopo', async () => {
     vi.mocked(getSession).mockResolvedValue(
       mockSession({ scope: 'platform', refreshToken: 'refresh-fake' }),
     )
 
     await clearClientSession()
 
-    expect(fetch).not.toHaveBeenCalled()
+    expect(httpClient.post).toHaveBeenCalledWith(
+      '/platform/logout',
+      { refreshToken: 'refresh-fake' },
+      { skipUnauthorizedHandling: true },
+    )
     expect(signOut).toHaveBeenCalledWith({ redirect: false })
   })
 
@@ -64,7 +68,7 @@ describe('clearClientSession', () => {
 
     await clearClientSession()
 
-    expect(fetch).not.toHaveBeenCalled()
+    expect(httpClient.post).not.toHaveBeenCalled()
   })
 
   it('não tenta revogar quando não há sessão', async () => {
@@ -72,7 +76,7 @@ describe('clearClientSession', () => {
 
     await clearClientSession()
 
-    expect(fetch).not.toHaveBeenCalled()
+    expect(httpClient.post).not.toHaveBeenCalled()
     expect(signOut).toHaveBeenCalledWith({ redirect: false })
   })
 
@@ -87,7 +91,7 @@ describe('clearClientSession', () => {
     vi.mocked(getSession).mockResolvedValue(
       mockSession({ scope: 'tenant', refreshToken: 'refresh-fake' }),
     )
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')))
+    vi.mocked(httpClient.post).mockRejectedValueOnce(new Error('network down'))
 
     await expect(clearClientSession()).resolves.toBeUndefined()
     expect(signOut).toHaveBeenCalledWith({ redirect: false })

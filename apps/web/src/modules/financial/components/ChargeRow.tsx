@@ -1,9 +1,7 @@
-import { type MouseEvent, useState } from 'react'
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import {
   Button,
-  Chip,
   IconButton,
   Menu,
   MenuItem,
@@ -13,121 +11,90 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 
-import { alpha, brand, iconSize, radius, surface } from '@shared/theme/tokens'
-import { formatCurrency } from '@shared/lib/utils/format'
-
+import { useFinancialFormat } from '../hooks/use-financial-format'
+import { getChargeRowStyles, styles } from '../styles/charge-row.styles'
 import type { ChargeRowProps } from '../types/charge'
-import { chargeStatusColors as statusColors } from './charge-status-colors'
+import { isLockedCharge } from '../utils/charge-adapter'
+import { ChargeStatusChip } from './ChargeStatusChip'
 
 export function ChargeRow({
-  readOnly = false,
   charge,
-  locale,
   zebra,
-  labels,
-  onEdit,
-  onArchive,
-  onDelete,
+  readOnly,
   onView,
+  onEdit,
+  onCancel,
+  onDelete,
 }: ChargeRowProps) {
+  const t = useTranslations('charges')
+  const format = useFinancialFormat()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const style = statusColors[charge.status]
+  const locked = isLockedCharge(charge)
+  const choose = (action: () => void) => () => {
+    setAnchor(null)
+    action()
+  }
+
   return (
-    <TableRow
-      sx={{
-        height: 58,
-        bgcolor: zebra ? surface.app : surface.paper,
-        '&:hover': { bgcolor: alpha.graphite[6] },
-      }}
-    >
+    <TableRow sx={getChargeRowStyles(zebra)}>
       <TableCell>
         <Button
-          aria-label={`${labels.view} ${charge.code}`}
+          aria-label={`${t('actions.view')} ${charge.code}`}
           onClick={onView}
           variant="text"
-          sx={{ minWidth: 0, p: 0, color: brand.graphite[500], fontSize: 15.5, fontWeight: 900 }}
+          sx={styles.code}
         >
           {charge.code}
         </Button>
       </TableCell>
-      <TableCell>{charge.tenant}</TableCell>
+      <TableCell>{charge.payer}</TableCell>
       <TableCell>
-        <Typography noWrap sx={{ color: 'text.secondary', fontSize: 14 }}>
+        <Typography noWrap sx={styles.property}>
           {charge.property}
         </Typography>
       </TableCell>
       <TableCell>
-        <Typography sx={{ fontWeight: 800, fontSize: 15.5 }}>
-          {formatCurrency(charge.amount)}
-        </Typography>
+        <Typography sx={styles.amount}>{format.currency(charge.amount)}</Typography>
       </TableCell>
       <TableCell>
-        <Typography sx={{ color: 'text.secondary', fontSize: 15.5 }}>
-          {new Intl.DateTimeFormat(locale).format(new Date(`${charge.dueDate}T12:00:00`))}
-        </Typography>
+        <Typography sx={styles.dueDate}>{format.date(charge.dueDate)}</Typography>
       </TableCell>
       <TableCell>
-        <Chip
-          label={labels.status}
-          size="small"
-          sx={{
-            height: 30,
-            bgcolor: style.bg,
-            color: style.color,
-            borderRadius: `${radius.full}px`,
-            fontWeight: 900,
-            fontSize: 13,
-          }}
-        />
+        <ChargeStatusChip status={charge.status} />
       </TableCell>
       <TableCell>
         <Stack direction="row" justifyContent="center" alignItems="center">
-          <Tooltip title={labels.view}>
+          <Tooltip title={t('actions.view')}>
             <IconButton
-              aria-label={`${labels.view} ${charge.code}`}
+              aria-label={`${t('actions.view')} ${charge.code}`}
               onClick={onView}
               size="small"
-              sx={{ color: brand.neutral[500], '&:hover': { color: 'primary.main' } }}
+              sx={styles.iconButton}
             >
-              <VisibilityOutlinedIcon sx={{ fontSize: iconSize.md }} />
+              <VisibilityOutlinedIcon sx={styles.icon} />
             </IconButton>
           </Tooltip>
-          {!readOnly && (
+          {readOnly ? null : (
             <>
               <IconButton
-                aria-label={`${labels.actions} ${charge.code}`}
-                onClick={(event: MouseEvent<HTMLButtonElement>) => setAnchor(event.currentTarget)}
+                aria-label={`${t('table.actions')} ${charge.code}`}
+                onClick={(event) => setAnchor(event.currentTarget)}
                 size="small"
-                sx={{ color: brand.neutral[500], '&:hover': { color: 'primary.main' } }}
+                sx={styles.iconButton}
               >
-                <MoreVertRoundedIcon sx={{ fontSize: iconSize.md }} />
+                <MoreVertRoundedIcon sx={styles.icon} />
               </IconButton>
               <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
-                <MenuItem
-                  onClick={() => {
-                    onEdit()
-                    setAnchor(null)
-                  }}
-                >
-                  {labels.edit}
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    onArchive()
-                    setAnchor(null)
-                  }}
-                >
-                  {labels.archive}
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    onDelete()
-                    setAnchor(null)
-                  }}
-                >
-                  {labels.delete}
-                </MenuItem>
+                <MenuItem onClick={choose(onEdit)}>{t('actions.edit')}</MenuItem>
+                {locked ? null : (
+                  <MenuItem onClick={choose(onCancel)}>{t('actions.cancel')}</MenuItem>
+                )}
+                {locked ? null : (
+                  <MenuItem onClick={choose(onDelete)}>{t('actions.delete')}</MenuItem>
+                )}
               </Menu>
             </>
           )}

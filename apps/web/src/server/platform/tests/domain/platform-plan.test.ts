@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  calculateMonthlyCharge,
-  isBillableTenant,
-  usageUnitFor,
-  type PlatformPlan,
-} from '../../domain/platform-plan'
+import { calculateMonthlyCharge, isBillableTenant, usageUnitFor } from '../../domain/platform-plan'
+import type { PlatformPlan } from '../../types/platform-plan'
 
 const updatedAt = new Date('2026-10-15T00:00:00.000Z')
 const individual: PlatformPlan = {
@@ -13,7 +9,9 @@ const individual: PlatformPlan = {
   monthlyPrice: 49.99,
   includedUnits: 10,
   extraUnitPrice: 9.99,
+  createdAt: updatedAt,
   updatedAt,
+  updatedBy: null,
 }
 const broker: PlatformPlan = { ...individual, accountType: 'BROKER', monthlyPrice: 99.99 }
 const agency: PlatformPlan = {
@@ -21,7 +19,9 @@ const agency: PlatformPlan = {
   monthlyPrice: 199.99,
   includedUnits: 10,
   extraUnitPrice: 19.99,
+  createdAt: updatedAt,
   updatedAt,
+  updatedBy: null,
 }
 
 describe('calculateMonthlyCharge', () => {

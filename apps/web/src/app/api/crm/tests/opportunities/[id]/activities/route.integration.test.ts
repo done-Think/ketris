@@ -7,6 +7,7 @@ import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service
 import { prisma } from '@server/db/prisma'
 
 import { GET, POST } from '../../../../opportunities/[id]/activities/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/crm/opportunities/[id]/activities (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -16,65 +17,66 @@ describe('/api/crm/opportunities/[id]/activities (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária CRM Activities', slug: `crm-act-${randomUUID()}` },
+      data: { name: 'Imobiliária CRM Activities', slug: `crm-act-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin',
+        name: 'Admin',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const responsavel = await prisma.usuario.create({
+    const responsible = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor',
+        name: 'Corretor',
         email: `corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
-    const imovel = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: responsavel.id,
-        titulo: 'Imóvel',
-        finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
-        valor: 2000,
+        responsibleId: responsible.id,
+        title: 'Imóvel',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2000,
         status: 'PUBLISHED',
-        publicadoEm: new Date(),
+        publishedAt: new Date(),
       },
     })
 
-    const opportunity = await prisma.oportunidade.create({
+    const opportunity = await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId: imovel.id,
-        interessadoNome: 'Maria',
-        interessadoEmail: `maria-${randomUUID()}@exemplo.com`,
-        valorProposto: 2500,
-        status: 'ENVIADA',
+        propertyId: property.id,
+        responsibleId: await propertyResponsibleId(prisma, property.id),
+        interestedName: 'Maria',
+        interestedEmail: `maria-${randomUUID()}@exemplo.com`,
+        proposedValue: 2500,
+        status: 'SENT',
       },
     })
     opportunityId = opportunity.id
 
-    await prisma.atividadeOportunidade.create({
-      data: { oportunidadeId: opportunityId, tipo: 'NOTA', descricao: 'Nota inicial de fixture.' },
+    await prisma.opportunityActivity.create({
+      data: { opportunityId: opportunityId, type: 'NOTE', description: 'Nota inicial de fixture.' },
     })
   })
 
@@ -127,7 +129,7 @@ describe('/api/crm/opportunities/[id]/activities (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(201)
-    expect(json.activity.type).toBe('NOTA')
+    expect(json.activity.type).toBe('NOTE')
     expect(json.activity.description).toBe('Ligou para confirmar a visita.')
 
     const listResponse = await GET(buildGetRequest(actorToken), context())

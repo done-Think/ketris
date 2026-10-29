@@ -1,179 +1,95 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
-import { EmailAlreadyInUseError } from '@server/auth/domain/errors'
-import type { User } from '@server/auth/domain/user.entity'
-import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
-import type { RefreshTokenRepository } from '@server/auth/application/ports/refresh-token-repository.port'
-import type { TokenService } from '@server/auth/application/ports/token-service.port'
-import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
-import type { TenantSummary } from '@server/platform/domain/tenant-summary.entity'
-
-import type { RegistrationRepository } from '../../../application/ports/registration-repository.port'
 import { RegisterTenantOwnerUseCase } from '../../../application/use-cases/register-tenant-owner.use-case'
-
-const tenant: TenantSummary = {
-  id: 'tenant-1',
-  nome: 'Imobiliária Nova',
-  slug: 'imobiliaria-nova',
-  createdAt: new Date(),
-}
-
-const user: User = {
-  id: 'user-1',
-  tenantId: 'tenant-1',
-  nome: 'Dona da Imobiliária',
-  email: 'dona@ketris.dev',
-  senhaHash: 'hash-novo',
-  papel: 'ADMIN',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
-}
-
-function createDeps(overrides?: {
-  createTenantWithAdmin?: RegistrationRepository['createTenantWithAdmin']
-  findByEmail?: UserRepository['findByEmail']
-}) {
-  const registrationRepository: RegistrationRepository = {
-    createTenantWithAdmin:
-      overrides?.createTenantWithAdmin ?? vi.fn().mockResolvedValue({ tenant, user }),
-  }
-  const userRepository: UserRepository = {
-    findById: vi.fn(),
-    findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
-    findManyByTenant: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    deactivate: vi.fn(),
-    approveMembership: vi.fn(),
-  }
-  const passwordHasher: PasswordHasher = {
-    compare: vi.fn(),
-    hash: vi.fn().mockResolvedValue('hash-novo'),
-  }
-  const tokenService: TokenService = {
-    sign: vi.fn().mockResolvedValue('jwt-fake'),
-    verify: vi.fn(),
-  }
-  const refreshTokenRepository: RefreshTokenRepository = {
-    create: vi.fn().mockResolvedValue(undefined),
-    findValidByTokenHash: vi.fn(),
-    revokeById: vi.fn(),
-    revokeAllForUser: vi.fn(),
-  }
-
-  return {
-    registrationRepository,
-    userRepository,
-    passwordHasher,
-    tokenService,
-    refreshTokenRepository,
-  }
-}
+import { TermsAcceptanceRequiredError } from '../../../domain/errors'
+import { account, createDeps, details } from './fixtures'
 
 describe('RegisterTenantOwnerUseCase', () => {
-  it('cria o tenant e o admin, e já retorna sessão logada', async () => {
-    const deps = createDeps()
-    const useCase = new RegisterTenantOwnerUseCase(
-      deps.registrationRepository,
-      deps.userRepository,
-      deps.passwordHasher,
-      deps.tokenService,
-      deps.refreshTokenRepository,
-    )
-
-    const result = await useCase.execute({
-      profile: 'imobiliaria',
-      fullName: 'Dona da Imobiliária',
-      companyName: 'Imobiliária Nova',
-      email: 'dona@ketris.dev',
-      password: 'senha-longa-123',
+  it('creates the tenant owner with contact and acceptance metadata and waits for email confirmation', async () => {
+    const { accounts, passwords } = createDeps()
+    const result = await new RegisterTenantOwnerUseCase(accounts, passwords).execute({
+      ...details,
+      profile: 'agency',
+      companyName: '  Imobiliária Nova  ',
     })
-
-    expect(deps.passwordHasher.hash).toHaveBeenCalledWith('senha-longa-123')
-    expect(deps.registrationRepository.createTenantWithAdmin).toHaveBeenCalledWith({
+    expect(passwords.hash).toHaveBeenCalledWith(details.password)
+    expect(accounts.createTenantWithAdmin).toHaveBeenCalledWith({
       tenantName: 'Imobiliária Nova',
-      adminName: 'Dona da Imobiliária',
-      email: 'dona@ketris.dev',
-      senhaHash: 'hash-novo',
+      adminName: details.fullName,
+      email: details.email,
+      passwordHash: 'test-hash',
       accountType: 'AGENCY',
       status: 'TRIAL',
+      phone: details.phone,
+      creci: undefined,
+      termsAcceptedAt: expect.any(Date),
+      createBrokerProfile: false,
     })
-    expect(result.user.papel).toBe('ADMIN')
-    expect(result.accessToken).toBe('jwt-fake')
-    expect(typeof result.refreshToken).toBe('string')
-    expect(deps.refreshTokenRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: user.id, tenantId: user.tenantId }),
-    )
+    expect(result).toEqual({
+      email: account.email,
+      tenantId: account.tenantId,
+      pendingApproval: false,
+    })
   })
 
   it.each([
-    ['proprietario', 'INDIVIDUAL'],
-    ['corretor', 'BROKER'],
-    ['imobiliaria', 'AGENCY'],
-    ['construtora', 'AGENCY'],
-  ] as const)('cria o tenant do perfil %s como %s, em teste', async (profile, accountType) => {
-    const deps = createDeps()
-    const useCase = new RegisterTenantOwnerUseCase(
-      deps.registrationRepository,
-      deps.userRepository,
-      deps.passwordHasher,
-      deps.tokenService,
-      deps.refreshTokenRepository,
-    )
-
-    await useCase.execute({
+    ['owner', 'INDIVIDUAL'],
+    ['broker', 'BROKER'],
+    ['agency', 'AGENCY'],
+    ['developer', 'AGENCY'],
+  ] as const)('creates profile %s as %s in trial', async (profile, accountType) => {
+    const { accounts, passwords } = createDeps()
+    await new RegisterTenantOwnerUseCase(accounts, passwords).execute({
+      ...details,
       profile,
-      fullName: 'Pessoa Nova',
-      email: 'nova@ketris.dev',
-      password: 'senha-longa-123',
+      creci: 'CRECI-123',
     })
-
-    expect(deps.registrationRepository.createTenantWithAdmin).toHaveBeenCalledWith(
-      expect.objectContaining({ accountType, status: 'TRIAL' }),
-    )
-  })
-
-  it('usa o próprio nome como nome do tenant quando não há companyName (autônomo/proprietário)', async () => {
-    const deps = createDeps()
-    const useCase = new RegisterTenantOwnerUseCase(
-      deps.registrationRepository,
-      deps.userRepository,
-      deps.passwordHasher,
-      deps.tokenService,
-      deps.refreshTokenRepository,
-    )
-
-    await useCase.execute({
-      profile: 'corretor',
-      fullName: 'Corretor Autônomo',
-      email: 'corretor@ketris.dev',
-      password: 'senha-longa-123',
-    })
-
-    expect(deps.registrationRepository.createTenantWithAdmin).toHaveBeenCalledWith(
-      expect.objectContaining({ tenantName: 'Corretor Autônomo' }),
-    )
-  })
-
-  it('rejeita quando o e-mail já está em uso em qualquer tenant', async () => {
-    const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue(user) })
-    const useCase = new RegisterTenantOwnerUseCase(
-      deps.registrationRepository,
-      deps.userRepository,
-      deps.passwordHasher,
-      deps.tokenService,
-      deps.refreshTokenRepository,
-    )
-
-    await expect(
-      useCase.execute({
-        profile: 'proprietario',
-        fullName: 'Outra Pessoa',
-        email: 'dona@ketris.dev',
-        password: 'senha-longa-123',
+    expect(accounts.createTenantWithAdmin).toHaveBeenCalledWith(
+      expect.objectContaining({
+        accountType,
+        status: 'TRIAL',
+        creci: 'CRECI-123',
+        createBrokerProfile: profile === 'broker',
       }),
-    ).rejects.toBeInstanceOf(EmailAlreadyInUseError)
+    )
+  })
 
-    expect(deps.registrationRepository.createTenantWithAdmin).not.toHaveBeenCalled()
+  it.each([undefined, '   '])(
+    'uses the owner name when companyName is blank (%s)',
+    async (companyName) => {
+      const { accounts, passwords } = createDeps()
+      await new RegisterTenantOwnerUseCase(accounts, passwords).execute({
+        ...details,
+        profile: 'broker',
+        companyName,
+      })
+      expect(accounts.createTenantWithAdmin).toHaveBeenCalledWith(
+        expect.objectContaining({ tenantName: details.fullName }),
+      )
+    },
+  )
+
+  it('allows the same email in a newly created tenant without a global account lookup', async () => {
+    const { accounts, passwords } = createDeps()
+    await expect(
+      new RegisterTenantOwnerUseCase(accounts, passwords).execute({
+        ...details,
+        profile: 'owner',
+      }),
+    ).resolves.toMatchObject({ email: account.email })
+    expect(accounts.findAccountByEmail).not.toHaveBeenCalled()
+  })
+
+  it('requires terms acceptance before hashing or creating accounts', async () => {
+    const { accounts, passwords } = createDeps()
+    await expect(
+      new RegisterTenantOwnerUseCase(accounts, passwords).execute({
+        ...details,
+        profile: 'owner',
+        acceptTerms: false,
+      }),
+    ).rejects.toThrow(TermsAcceptanceRequiredError)
+    expect(passwords.hash).not.toHaveBeenCalled()
+    expect(accounts.createTenantWithAdmin).not.toHaveBeenCalled()
   })
 })

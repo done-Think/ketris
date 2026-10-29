@@ -1,4 +1,4 @@
-import type { DatabaseHealth, ErrorTrackingHealth } from '../../domain/system-health.entity'
+import type { DatabaseHealth, ErrorTrackingHealth } from '../../types/system-health'
 
 export interface DatabaseHealthProbe {
   check(): Promise<DatabaseHealth>

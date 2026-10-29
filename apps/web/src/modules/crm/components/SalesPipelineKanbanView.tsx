@@ -1,76 +1,28 @@
 'use client'
 
+import * as crmStyles from '../styles/sales-pipeline-kanban-view.styles'
+
+import { CrmPipelineColumn } from './sales-pipeline-board/CrmPipelineColumn'
+
 import { Box } from '@mui/material'
-import { useLocale, useTranslations } from 'next-intl'
-import type { AppLocale } from '@/i18n/types/locale.types'
+import { useTranslations } from 'next-intl'
 
 import { salesPipelineStages } from '../config/sales-pipeline-stages'
 import type { SalesPipelineKanbanViewProps } from '../types/sales-pipeline'
-import { getOpportunityStageId, getProjectedTotals } from '../utils/sales-pipeline'
-import { PipelineStageColumn } from './sales-pipeline-board/PipelineStageColumn'
 
-export function SalesPipelineKanbanView({
-  visibleOpportunities,
-  propertiesById,
-  isPipelineLoading,
-  hasPipelineError,
-}: SalesPipelineKanbanViewProps) {
-  const locale = useLocale() as AppLocale
+export function SalesPipelineKanbanView({ search, selectedStageId }: SalesPipelineKanbanViewProps) {
   const t = useTranslations('crm.pipeline')
-
   return (
-    <Box
-      aria-label={t('boardAriaLabel')}
-      sx={{
-        mt: { xs: 2.25, lg: 1.5 },
-        mx: { xs: -2, sm: -3, lg: -3.5 },
-        pl: { xs: 2, sm: 3, lg: 3.5 },
-        pr: { xs: 2, sm: 3, lg: 1.75 },
-        pb: { xs: 1, md: 0.25 },
-        display: { md: 'flex' },
-        flex: { md: 1 },
-        minHeight: { md: 0 },
-        overflowX: 'auto',
-        scrollSnapType: { xs: 'x proximity', lg: 'none' },
-        scrollbarWidth: 'thin',
-      }}
-    >
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: 'repeat(5, 264px)',
-            sm: 'repeat(5, 280px)',
-            lg: 'repeat(5, minmax(0, 1fr))',
-          },
-          gridTemplateRows: { md: 'minmax(0, 1fr)' },
-          gap: { xs: 2, lg: 1.75 },
-          flex: { md: 1 },
-          minWidth: { xs: 'max-content', lg: 0 },
-        }}
-      >
-        {salesPipelineStages.map((stage) => {
-          const opportunities = visibleOpportunities.filter(
-            (opportunity) => getOpportunityStageId(opportunity) === stage.id,
-          )
-          const projectedTotals = getProjectedTotals(
-            opportunities.filter((opportunity) => opportunity.status !== 'RECUSADA'),
-            propertiesById,
-            locale,
-          )
-
-          return (
-            <PipelineStageColumn
-              key={stage.id}
-              stage={stage}
-              opportunities={opportunities}
-              projectedTotals={projectedTotals}
-              isPipelineLoading={isPipelineLoading}
-              hasPipelineError={hasPipelineError}
-              propertiesById={propertiesById}
-            />
-          )
-        })}
+    <Box aria-label={t('boardAriaLabel')} sx={crmStyles.boxSx}>
+      <Box sx={crmStyles.boxSx2}>
+        {salesPipelineStages.map((stage) => (
+          <CrmPipelineColumn
+            key={stage.id}
+            stage={stage}
+            search={search}
+            visible={!selectedStageId || selectedStageId === stage.id}
+          />
+        ))}
       </Box>
     </Box>
   )

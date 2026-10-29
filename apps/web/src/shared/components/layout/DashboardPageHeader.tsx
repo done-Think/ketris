@@ -1,6 +1,7 @@
+import { styles } from '@shared/styles/dashboard-page-header.styles'
 import { Box, Stack, Typography } from '@mui/material'
 
-import { brand, dashboardLayout } from '@shared/theme/tokens'
+import { dashboardLayout } from '@shared/theme/tokens'
 import type { DashboardPageHeaderProps } from '@shared/types/dashboard-page-header'
 
 export function DashboardPageHeader({ actions, subtitle, sx, title }: DashboardPageHeaderProps) {
@@ -24,37 +25,14 @@ export function DashboardPageHeader({ actions, subtitle, sx, title }: DashboardP
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
       ]}
     >
-      <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Typography
-          component="h1"
-          sx={{
-            color: brand.graphite[500],
-            fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif',
-            fontSize: { xs: 26, sm: 30 },
-            fontWeight: 700,
-            lineHeight: 1.15,
-          }}
-        >
+      <Box sx={styles.box}>
+        <Typography component="h1" sx={styles.typography}>
           {title}
         </Typography>
-        {subtitle ? (
-          <Typography sx={{ color: brand.neutral[500], fontSize: { xs: 13, sm: 14 } }}>
-            {subtitle}
-          </Typography>
-        ) : null}
+        {subtitle ? <Typography sx={styles.typography2}>{subtitle}</Typography> : null}
       </Box>
 
-      {actions ? (
-        <Box
-          sx={{
-            flexShrink: 0,
-            width: '100%',
-            [dashboardLayout.desktopMediaQuery]: { width: 'auto' },
-          }}
-        >
-          {actions}
-        </Box>
-      ) : null}
+      {actions ? <Box sx={styles.box2}>{actions}</Box> : null}
     </Stack>
   )
 }

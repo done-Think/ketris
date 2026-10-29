@@ -1,28 +1,39 @@
-import type { Papel, User } from '../../domain/user.entity'
+import type { UserAuditActor } from '../../types/user-audit'
+import type { UserRole, User } from '../../domain/user.entity'
 
 export interface NewUser {
+  auditActor?: UserAuditActor
   tenantId: string
-  nome: string
+  name: string
   email: string
-  senhaHash: string
-  papel: Papel
-  vinculoAprovadoEm?: Date | null
+  passwordHash: string
+  role: UserRole
+  phone?: string | null
+  creci?: string | null
+  termsAcceptedAt?: Date
+  emailVerifiedAt?: Date | null
+  membershipApprovedAt?: Date | null
 }
 
 export interface UserUpdate {
-  nome?: string
+  auditActor?: UserAuditActor
+  name?: string
   email?: string
   avatarUrl?: string | null
-  papel?: Papel
-  senhaHash?: string
+  role?: UserRole
+  passwordHash?: string
+  phone?: string | null
+  creci?: string | null
+  tenantId?: string
 }
 
 export interface UserRepository {
   findById(id: string): Promise<User | null>
-  findByEmail(email: string): Promise<User | null>
+  findByEmail(email: string, tenantId?: string): Promise<User | null>
+  findManyByEmail(email: string): Promise<User[]>
   findManyByTenant(tenantId: string): Promise<User[]>
   create(user: NewUser): Promise<User>
   update(id: string, changes: UserUpdate): Promise<User>
-  deactivate(id: string): Promise<User>
-  approveMembership(id: string): Promise<User>
+  deactivate(id: string, tenantId?: string, actor?: UserAuditActor): Promise<User>
+  approveMembership(id: string, tenantId?: string, actor?: UserAuditActor): Promise<User>
 }

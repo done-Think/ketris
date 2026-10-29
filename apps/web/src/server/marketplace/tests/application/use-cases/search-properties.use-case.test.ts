@@ -7,8 +7,8 @@ import { SearchPropertiesUseCase } from '../../../application/use-cases/search-p
 const summary: PublishedPropertySummary = {
   id: 'imovel-1',
   title: 'Apartamento no centro',
-  purpose: 'ALUGUEL',
-  propertyType: 'apartamento',
+  purpose: 'RENT',
+  propertyType: 'APARTMENT',
   price: 2500,
   condoFee: 400,
   propertyTax: 100,
@@ -28,7 +28,7 @@ const summary: PublishedPropertySummary = {
 
 function createDeps(search?: PublicPropertyRepository['search']) {
   const propertyRepository: PublicPropertyRepository = {
-    search: search ?? vi.fn().mockResolvedValue([summary]),
+    search: search ?? vi.fn().mockResolvedValue({ items: [summary], totalCount: 1 }),
     findPublishedById: vi.fn(),
   }
 
@@ -36,31 +36,32 @@ function createDeps(search?: PublicPropertyRepository['search']) {
 }
 
 describe('SearchPropertiesUseCase', () => {
-  it('encaminha os filtros ao repositório e retorna a lista de resumos', async () => {
-    const search = vi.fn().mockResolvedValue([summary])
+  it('separa filtros e página ao consultar o repositório e devolve a página pedida', async () => {
+    const search = vi.fn().mockResolvedValue({ items: [summary], totalCount: 31 })
     const deps = createDeps(search)
     const useCase = new SearchPropertiesUseCase(deps.propertyRepository)
 
     const result = await useCase.execute({
-      purpose: 'ALUGUEL',
+      purpose: 'RENT',
       city: 'Curitiba',
       maxPrice: 3000,
+      page: 3,
+      pageSize: 12,
     })
 
-    expect(search).toHaveBeenCalledWith({
-      purpose: 'ALUGUEL',
-      city: 'Curitiba',
-      maxPrice: 3000,
-    })
-    expect(result).toEqual([summary])
+    expect(search).toHaveBeenCalledWith(
+      { purpose: 'RENT', city: 'Curitiba', maxPrice: 3000 },
+      { page: 3, pageSize: 12 },
+    )
+    expect(result).toEqual({ items: [summary], totalCount: 31, page: 3, pageSize: 12 })
   })
 
-  it('retorna lista vazia quando o repositório não encontra imóveis', async () => {
-    const deps = createDeps(vi.fn().mockResolvedValue([]))
+  it('retorna página vazia quando o repositório não encontra imóveis', async () => {
+    const deps = createDeps(vi.fn().mockResolvedValue({ items: [], totalCount: 0 }))
     const useCase = new SearchPropertiesUseCase(deps.propertyRepository)
 
-    const result = await useCase.execute({})
+    const result = await useCase.execute({ page: 1, pageSize: 12 })
 
-    expect(result).toEqual([])
+    expect(result).toEqual({ items: [], totalCount: 0, page: 1, pageSize: 12 })
   })
 })

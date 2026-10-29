@@ -1,19 +1,12 @@
 import type { Opportunity, OpportunityStatus } from './opportunity'
-import type {
-  ProposalManagementFilterId,
-  ProposalManagementListItem,
-  ProposalManagementPage,
-  ProposalManagementSummary,
-} from './proposal-management'
-import type { PublicPropertySummary } from './property'
+import type { CrmPropertySummary } from './property'
 
 export type SalesPipelineStageId =
   'prospecting' | 'qualification' | 'proposal' | 'negotiation' | 'closed'
 
 export type SalesPipelineStage = {
   id: SalesPipelineStageId
-  label: string
-  labelKey: string
+  labelKey: SalesPipelineStageId
   statuses: readonly OpportunityStatus[]
   color: string
   softColor: string
@@ -44,26 +37,23 @@ export type SalesPipelineToolbarProps = {
 export type PipelineStageColumnProps = {
   stage: SalesPipelineStage
   opportunities: readonly Opportunity[]
+  totalCount?: number
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
+  onLoadMore?: () => void
   projectedTotals: readonly SalesPipelineProjectedTotal[]
   isPipelineLoading: boolean
   hasPipelineError: boolean
-  propertiesById: ReadonlyMap<string, PublicPropertySummary>
+  propertiesById: ReadonlyMap<string, CrmPropertySummary>
 }
 
 export type SalesPipelineKanbanViewProps = {
-  visibleOpportunities: readonly Opportunity[]
-  propertiesById: ReadonlyMap<string, PublicPropertySummary>
-  isPipelineLoading: boolean
-  hasPipelineError: boolean
+  search: string
+  selectedStageId: SalesPipelineStageId | null
 }
 
-export type SalesPipelineListViewProps = {
-  proposalStatus: ProposalManagementFilterId
-  proposalSummary: ProposalManagementSummary
-  onStatusChange: (status: ProposalManagementFilterId) => void
-  proposalPageResult: ProposalManagementPage
-  proposalRowsPerPage: number
-  onPageChange: (page: number) => void
-  onRowsPerPageChange: (rowsPerPage: number) => void
-  onViewProposal: (proposal: ProposalManagementListItem) => void
+export interface CrmPipelineColumnProps {
+  search: string
+  stage: SalesPipelineStage
+  visible: boolean
 }

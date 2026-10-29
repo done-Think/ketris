@@ -1,19 +1,36 @@
 import { z } from 'zod'
 
+import { maintenanceCategories } from '@shared/lib/utils/maintenance-categories'
+
 import type { SchemaMessageTranslator } from '@shared/types'
 
-export function createMaintenanceTicketSchema(t: SchemaMessageTranslator) {
+export function createMaintenanceTicketSchema(
+  t: SchemaMessageTranslator<
+    | 'categoryRequired'
+    | 'contractRequired'
+    | 'descriptionRequired'
+    | 'descriptionTooLong'
+    | 'priorityRequired'
+    | 'titleRequired'
+    | 'titleTooLong'
+  >,
+) {
   return z.object({
     contractId: z.string().min(1, t('contractRequired')),
-    propertyId: z.string().min(1, t('propertyRequired')),
-    category: z.string().min(1, t('categoryRequired')),
+    category: z.enum(maintenanceCategories, { message: t('categoryRequired') }),
     priority: z.enum(['normal', 'high', 'urgent'], { message: t('priorityRequired') }),
-    title: z.string().trim().min(1, t('titleRequired')),
-    description: z.string().trim().min(1, t('descriptionRequired')),
+    title: z.string().trim().min(1, t('titleRequired')).max(200, t('titleTooLong')),
+    description: z
+      .string()
+      .trim()
+      .min(1, t('descriptionRequired'))
+      .max(10000, t('descriptionTooLong')),
   })
 }
 
-export function createMaintenanceScheduleSchema(t: SchemaMessageTranslator) {
+export function createMaintenanceScheduleSchema(
+  t: SchemaMessageTranslator<'invalid' | 'required'>,
+) {
   return z.object({
     scheduledDate: z
       .string()

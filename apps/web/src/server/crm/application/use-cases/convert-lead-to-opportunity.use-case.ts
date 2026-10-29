@@ -1,28 +1,23 @@
-import type { Papel } from '@server/auth/domain/user.entity'
 import { ForbiddenError } from '@server/shared/errors'
+import type {
+  ConvertLeadToOpportunityInput,
+  ConvertLeadToOpportunityOutput,
+} from '../../types/convert-lead-to-opportunity.use-case.types'
+export type {
+  ConvertLeadToOpportunityInput,
+  ConvertLeadToOpportunityOutput,
+} from '../../types/convert-lead-to-opportunity.use-case.types'
 
-import { LeadAlreadyConvertedError, LeadNotFoundError } from '../../domain/errors'
-import type { Lead } from '../../domain/lead.entity'
-import type { Opportunity } from '../../domain/opportunity.entity'
-import { OpportunityPropertyNotFoundError } from '../../domain/errors'
-import { assertLeadAccess } from '../authorization'
+import {
+  LeadAlreadyConvertedError,
+  LeadEmailRequiredError,
+  LeadNotFoundError,
+  OpportunityPropertyNotFoundError,
+} from '../../domain/errors'
+import { assertCrmAccess, assertLeadAccess } from '../authorization'
 import type { LeadRepository } from '../ports/lead-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
 import type { PropertyLookupPort } from '../ports/property-lookup.port'
-
-export interface ConvertLeadToOpportunityInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  leadId: string
-  propertyId: string
-  proposedValue: number
-}
-
-export interface ConvertLeadToOpportunityOutput {
-  lead: Lead
-  opportunity: Opportunity
-}
 
 export class ConvertLeadToOpportunityUseCase {
   constructor(
@@ -32,13 +27,14 @@ export class ConvertLeadToOpportunityUseCase {
   ) {}
 
   async execute(input: ConvertLeadToOpportunityInput): Promise<ConvertLeadToOpportunityOutput> {
+    assertCrmAccess(input.actorRole)
     const lead = await this.leadRepository.findById(input.leadId)
 
     if (!lead || lead.tenantId !== input.actorTenantId) {
       throw new LeadNotFoundError()
     }
 
-    assertLeadAccess(lead.responsavelId, input.actorId, input.actorPapel)
+    assertLeadAccess(lead.responsibleId, input.actorId, input.actorRole)
 
     if (lead.opportunityId) {
       throw new LeadAlreadyConvertedError()
@@ -51,29 +47,33 @@ export class ConvertLeadToOpportunityUseCase {
 
     if (!ownsProperty) throw new OpportunityPropertyNotFoundError()
 
-    if (input.actorPapel === 'AGENT') {
-      const responsavelId = await this.propertyLookup.findResponsavelId(
+    if (input.actorRole === 'AGENT') {
+      const responsibleId = await this.propertyLookup.findResponsibleId(
         input.actorTenantId,
         input.propertyId,
       )
 
-      if (responsavelId !== input.actorId) {
+      if (responsibleId !== input.actorId) {
         throw new ForbiddenError('Você só pode criar oportunidades para os próprios imóveis.')
       }
     }
 
+    const email = (input.email ?? lead.email)?.trim().toLowerCase()
+    if (!email) throw new LeadEmailRequiredError()
+
     const opportunity = await this.opportunityRepository.create({
       tenantId: input.actorTenantId,
       propertyId: input.propertyId,
+      responsibleId: lead.responsibleId,
       leadName: lead.name,
-      leadEmail: lead.email ?? '',
+      leadEmail: email,
       leadPhone: lead.phone,
       proposedValue: input.proposedValue,
       notes: lead.notes,
-      status: 'RASCUNHO',
+      status: 'DRAFT',
     })
 
-    const convertedLead = await this.leadRepository.markConverted(lead.id, opportunity.id)
+    const convertedLead = await this.leadRepository.markConverted(lead.id, opportunity.id, email)
 
     return { lead: convertedLead, opportunity }
   }

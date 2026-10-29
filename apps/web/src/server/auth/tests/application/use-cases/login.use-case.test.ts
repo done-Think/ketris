@@ -4,6 +4,7 @@ import {
   AccountDeactivatedError,
   InvalidCredentialsError,
   MembershipPendingApprovalError,
+  TenantAccessBlockedError,
 } from '../../../domain/errors'
 import type { User } from '../../../domain/user.entity'
 import type { PasswordHasher } from '../../../application/ports/password-hasher.port'
@@ -15,12 +16,12 @@ import { LoginUseCase } from '../../../application/use-cases/login.use-case'
 const user: User = {
   id: 'user-1',
   tenantId: 'tenant-1',
-  nome: 'Ana Agente',
+  name: 'Ana Agente',
   email: 'ana@ketris.dev',
-  senhaHash: 'hash-fake',
-  papel: 'AGENT',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-fake',
+  role: 'AGENT',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 function createDeps(overrides?: {
@@ -28,6 +29,11 @@ function createDeps(overrides?: {
   compare?: PasswordHasher['compare']
 }) {
   const userRepository: UserRepository = {
+    findManyByEmail: async (email) => {
+      const current = await userRepository.findByEmail(email)
+      return current ? [current] : []
+    },
+
     findById: vi.fn().mockResolvedValue(user),
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(user),
     findManyByTenant: vi.fn(),
@@ -45,6 +51,7 @@ function createDeps(overrides?: {
     verify: vi.fn(),
   }
   const refreshTokenRepository: RefreshTokenRepository = {
+    rotate: vi.fn().mockResolvedValue(true),
     create: vi.fn().mockResolvedValue(undefined),
     findValidByTokenHash: vi.fn(),
     revokeById: vi.fn(),
@@ -64,6 +71,84 @@ function buildUseCase(deps: ReturnType<typeof createDeps>): LoginUseCase {
 }
 
 describe('LoginUseCase', () => {
+  it('returns only tenants whose accounts match the supplied password and does not issue a session before selection', async () => {
+    const deps = createDeps()
+    const second = { ...user, id: 'user-2', tenantId: 'tenant-2', tenantName: 'Outra' }
+    const unrelated = {
+      ...user,
+      id: 'user-3',
+      tenantId: 'tenant-3',
+      passwordHash: 'another-password',
+    }
+    vi.spyOn(deps.userRepository, 'findManyByEmail').mockResolvedValue([user, second, unrelated])
+    vi.mocked(deps.passwordHasher.compare).mockImplementation(
+      async (_password, hash) => hash !== 'another-password',
+    )
+    const promise = buildUseCase(deps).execute({ email: user.email, password: 'correct' })
+    await expect(promise).rejects.toMatchObject({
+      code: 'TENANT_SELECTION_REQUIRED',
+      tenants: [
+        { id: user.tenantId, name: user.tenantId, slug: user.tenantId },
+        { id: 'tenant-2', name: 'Outra', slug: 'tenant-2' },
+      ],
+    })
+    expect(deps.tokenService.sign).not.toHaveBeenCalled()
+    expect(deps.refreshTokenRepository.create).not.toHaveBeenCalled()
+  })
+
+  it('issues a session only for the selected account after checking its credentials again', async () => {
+    const deps = createDeps()
+    const second = { ...user, id: 'user-2', tenantId: 'tenant-2' }
+    vi.spyOn(deps.userRepository, 'findManyByEmail').mockResolvedValue([user, second])
+    const result = await buildUseCase(deps).execute({
+      email: user.email,
+      password: 'correct',
+      tenantId: 'tenant-2',
+    })
+    expect(result.user.id).toBe('user-2')
+    expect(result.user.tenantId).toBe('tenant-2')
+    expect(deps.refreshTokenRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'user-2', tenantId: 'tenant-2' }),
+    )
+  })
+
+  it('does not offer tenant selection when only one account matches the password', async () => {
+    const deps = createDeps()
+    vi.spyOn(deps.userRepository, 'findManyByEmail').mockResolvedValue([
+      user,
+      { ...user, id: 'other', tenantId: 'other', passwordHash: 'different' },
+    ])
+    vi.mocked(deps.passwordHasher.compare).mockImplementation(
+      async (_password, hash) => hash === user.passwordHash,
+    )
+    await expect(
+      buildUseCase(deps).execute({ email: user.email, password: 'correct' }),
+    ).resolves.toMatchObject({ user: { tenantId: user.tenantId } })
+  })
+
+  it('rejects a selected tenant outside the accounts matching the supplied password', async () => {
+    const deps = createDeps()
+    await expect(
+      buildUseCase(deps).execute({
+        email: user.email,
+        password: 'correct',
+        tenantId: 'other-tenant',
+      }),
+    ).rejects.toThrow(InvalidCredentialsError)
+    expect(deps.tokenService.sign).not.toHaveBeenCalled()
+  })
+
+  it.each(['SUSPENDED', 'CANCELED'] as const)(
+    'does not create a session for a tenant with status %s',
+    async (tenantStatus) => {
+      const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue({ ...user, tenantStatus }) })
+      await expect(
+        buildUseCase(deps).execute({ email: user.email, password: 'correct' }),
+      ).rejects.toThrow(TenantAccessBlockedError)
+      expect(deps.tokenService.sign).not.toHaveBeenCalled()
+    },
+  )
+
   it('retorna usuário autenticado (sem senhaHash), access token e refresh token em credenciais válidas', async () => {
     const deps = createDeps()
     const useCase = buildUseCase(deps)
@@ -76,14 +161,14 @@ describe('LoginUseCase', () => {
     expect(result.user).toEqual({
       id: user.id,
       tenantId: user.tenantId,
-      nome: user.nome,
+      name: user.name,
       email: user.email,
       avatarUrl: null,
-      papel: user.papel,
-      ativo: user.ativo,
-      vinculoAprovadoEm: user.vinculoAprovadoEm,
+      role: user.role,
+      active: user.active,
+      membershipApprovedAt: user.membershipApprovedAt,
     })
-    expect(result.user).not.toHaveProperty('senhaHash')
+    expect(result.user).not.toHaveProperty('passwordHash')
     expect(deps.tokenService.sign).toHaveBeenCalledWith(result.user)
   })
 
@@ -125,7 +210,7 @@ describe('LoginUseCase', () => {
 
   it('lança AccountDeactivatedError quando o usuário está desativado (ativo: false), mas só após confirmar a senha', async () => {
     const deps = createDeps({
-      findByEmail: vi.fn().mockResolvedValue({ ...user, ativo: false }),
+      findByEmail: vi.fn().mockResolvedValue({ ...user, active: false }),
     })
     const useCase = buildUseCase(deps)
 
@@ -138,7 +223,7 @@ describe('LoginUseCase', () => {
 
   it('lança InvalidCredentialsError (não AccountDeactivatedError) quando a senha está errada numa conta desativada', async () => {
     const deps = createDeps({
-      findByEmail: vi.fn().mockResolvedValue({ ...user, ativo: false }),
+      findByEmail: vi.fn().mockResolvedValue({ ...user, active: false }),
       compare: vi.fn().mockResolvedValue(false),
     })
     const useCase = buildUseCase(deps)
@@ -150,7 +235,7 @@ describe('LoginUseCase', () => {
 
   it('lança MembershipPendingApprovalError quando um AGENT ainda não foi aprovado pelo tenant', async () => {
     const deps = createDeps({
-      findByEmail: vi.fn().mockResolvedValue({ ...user, vinculoAprovadoEm: null }),
+      findByEmail: vi.fn().mockResolvedValue({ ...user, membershipApprovedAt: null }),
     })
     const useCase = buildUseCase(deps)
 
@@ -162,7 +247,7 @@ describe('LoginUseCase', () => {
 
   it('lança InvalidCredentialsError (não MembershipPendingApprovalError) quando a senha está errada num AGENT pendente', async () => {
     const deps = createDeps({
-      findByEmail: vi.fn().mockResolvedValue({ ...user, vinculoAprovadoEm: null }),
+      findByEmail: vi.fn().mockResolvedValue({ ...user, membershipApprovedAt: null }),
       compare: vi.fn().mockResolvedValue(false),
     })
     const useCase = buildUseCase(deps)
@@ -172,9 +257,11 @@ describe('LoginUseCase', () => {
     )
   })
 
-  it('não bloqueia ADMIN/OWNER sem vinculoAprovadoEm (a checagem só se aplica a AGENT)', async () => {
+  it('não bloqueia OWNER sem vinculoAprovadoEm (a checagem só se aplica a AGENT)', async () => {
     const deps = createDeps({
-      findByEmail: vi.fn().mockResolvedValue({ ...user, papel: 'ADMIN', vinculoAprovadoEm: null }),
+      findByEmail: vi
+        .fn()
+        .mockResolvedValue({ ...user, role: 'OWNER', membershipApprovedAt: null }),
     })
     const useCase = buildUseCase(deps)
 
@@ -184,8 +271,8 @@ describe('LoginUseCase', () => {
   })
 
   it('não vaza qual campo (e-mail ou senha) estava errado — mesma mensagem em ambos os casos', async () => {
-    const semUsuario = buildUseCase(createDeps({ findByEmail: vi.fn().mockResolvedValue(null) }))
-    const senhaErrada = buildUseCase(createDeps({ compare: vi.fn().mockResolvedValue(false) }))
+    const semUser = buildUseCase(createDeps({ findByEmail: vi.fn().mockResolvedValue(null) }))
+    const wrongPassword = buildUseCase(createDeps({ compare: vi.fn().mockResolvedValue(false) }))
 
     const capture = async (promise: Promise<unknown>): Promise<Error> => {
       try {
@@ -197,8 +284,8 @@ describe('LoginUseCase', () => {
     }
 
     const [erro1, erro2] = await Promise.all([
-      capture(semUsuario.execute({ email: 'x@x.com', password: 'x' })),
-      capture(senhaErrada.execute({ email: user.email, password: 'x' })),
+      capture(semUser.execute({ email: 'x@x.com', password: 'x' })),
+      capture(wrongPassword.execute({ email: user.email, password: 'x' })),
     ])
 
     expect(erro1.message).toBe(erro2.message)

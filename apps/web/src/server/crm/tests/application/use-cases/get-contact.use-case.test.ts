@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { ContactNotFoundError } from '../../../domain/errors'
-import type { Contact } from '../../../domain/contact.entity'
 import type { ContactRepository } from '../../../application/ports/contact-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
 import { GetContactUseCase } from '../../../application/use-cases/get-contact.use-case'
+import type { Contact } from '../../../domain/contact.entity'
+import { ContactNotFoundError } from '../../../domain/errors'
 
 const contact: Contact = {
   id: 'contato-1',
@@ -12,7 +12,7 @@ const contact: Contact = {
   name: 'Carlos',
   email: 'carlos@exemplo.com',
   phone: null,
-  type: 'PROPRIETARIO',
+  type: 'OWNER',
   avatarUrl: null,
   notes: null,
   lastInteraction: null,
@@ -28,7 +28,7 @@ function createOpportunityRepository(existsForAgent?: OpportunityRepository['exi
 }
 
 describe('GetContactUseCase', () => {
-  it('retorna o contato quando pertence ao tenant do ator (ADMIN)', async () => {
+  it('retorna o contato quando pertence ao tenant do ator (OWNER)', async () => {
     const findById = vi.fn().mockResolvedValue(contact)
     const repository = { findById } as unknown as ContactRepository
     const useCase = new GetContactUseCase(repository, createOpportunityRepository())
@@ -36,7 +36,7 @@ describe('GetContactUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'user-1',
-      actorPapel: 'ADMIN',
+      actorRole: 'OWNER',
       contactId: 'contato-1',
     })
 
@@ -52,7 +52,7 @@ describe('GetContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel: 'ADMIN',
+        actorRole: 'OWNER',
         contactId: 'contato-1',
       }),
     ).rejects.toThrow(ContactNotFoundError)
@@ -67,7 +67,7 @@ describe('GetContactUseCase', () => {
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'agent-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       contactId: 'contato-1',
     })
 
@@ -87,7 +87,7 @@ describe('GetContactUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         contactId: 'contato-1',
       }),
     ).rejects.toThrow(ContactNotFoundError)

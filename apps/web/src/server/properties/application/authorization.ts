@@ -1,14 +1,24 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import { isAgencyManager, isAgencyStaff, isPropertyOwner } from '@server/auth/domain/roles'
+import type { UserRole } from '@server/auth/domain/user.entity'
+import { ForbiddenError } from '@server/shared/errors'
 
 import { PropertyNotFoundError } from '../domain/errors'
+import type { PropertyAccessTarget } from '../types/property'
+
+export function assertCanEditProperties(actorRole: UserRole): void {
+  if (!isAgencyStaff(actorRole) && !isPropertyOwner(actorRole)) {
+    throw new ForbiddenError('Só a equipe da imobiliária e o proprietário gerenciam imóveis.')
+  }
+}
 
 export function assertPropertyAccess(
-  responsavelId: string,
+  property: PropertyAccessTarget,
   actorId: string,
-  actorPapel: Papel,
+  actorRole: UserRole,
 ): void {
-  if (actorPapel === 'ADMIN' || actorPapel === 'OWNER') return
-  if (actorPapel === 'AGENT' && responsavelId === actorId) return
+  if (isAgencyManager(actorRole)) return
+  if (actorRole === 'AGENT' && property.responsibleId === actorId) return
+  if (isPropertyOwner(actorRole) && property.ownerId === actorId) return
 
   throw new PropertyNotFoundError()
 }

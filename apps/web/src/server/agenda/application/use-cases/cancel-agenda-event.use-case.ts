@@ -1,34 +1,50 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import {
+  prepareAgendaPropertySummary,
+  withPreparedAgendaPropertySummary,
+} from '../with-agenda-property-summaries'
+import type { AgendaPropertyCatalog } from '../ports/agenda-property-catalog.port'
+import type { CancelAgendaEventInput } from '../../types/use-case-inputs'
 
-import { assertCanManageAgenda, assertCanManageAgendaEvent } from '../../domain/agenda-access-rules'
-import { AgendaEventNotFoundError } from '../../domain/errors'
+import { assertCanManageAgendaEvent } from '../../domain/agenda-access-rules'
+import {
+  findManageableAgendaEvent,
+  manageableAgendaEventTenantId,
+} from '../find-manageable-agenda-event'
+import {
+  AgendaEventNotFoundError,
+  AgendaCancellationReasonRequiredError,
+} from '../../domain/errors'
 import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
 
-export interface CancelAgendaEventInput {
-  actorTenantId: string
-  actorPapel: Papel
-  actorUserId?: string
-  id: string
-}
-
 export class CancelAgendaEventUseCase {
-  constructor(private readonly agendaEventRepository: AgendaEventRepository) {}
+  constructor(
+    private readonly agendaEventRepository: AgendaEventRepository,
+    private readonly propertyCatalog?: AgendaPropertyCatalog,
+  ) {}
 
   async execute(input: CancelAgendaEventInput) {
-    assertCanManageAgenda(input.actorPapel)
-    const existing = await this.agendaEventRepository.findByTenantAndId(
-      input.actorTenantId,
-      input.id,
-    )
+    const existing = await findManageableAgendaEvent(this.agendaEventRepository, input, input.id)
     if (!existing) throw new AgendaEventNotFoundError()
-    assertCanManageAgendaEvent(input.actorPapel, input.actorUserId, existing)
+    assertCanManageAgendaEvent(input.actorRole, input.actorUserId, existing)
 
-    const event = await this.agendaEventRepository.cancel(input.actorTenantId, input.id)
+    if (!input.reason?.trim()) throw new AgendaCancellationReasonRequiredError()
+
+    const propertySummary = await prepareAgendaPropertySummary(
+      this.propertyCatalog,
+      input,
+      existing.propertyId,
+    )
+
+    const event = await this.agendaEventRepository.cancel(
+      manageableAgendaEventTenantId(input, existing),
+      input.id,
+      { reason: input.reason.trim(), actorUserId: input.actorUserId },
+    )
 
     if (!event) {
       throw new AgendaEventNotFoundError()
     }
 
-    return event
+    return withPreparedAgendaPropertySummary(event, propertySummary)
   }
 }

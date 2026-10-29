@@ -1,30 +1,22 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { GetLeadInput, GetLeadOutput } from '../../types/get-lead.use-case.types'
+export type { GetLeadInput, GetLeadOutput } from '../../types/get-lead.use-case.types'
 
-import type { Lead } from '../../domain/lead.entity'
 import { LeadNotFoundError } from '../../domain/errors'
-import { assertLeadAccess } from '../authorization'
+import { assertCrmAccess, assertLeadAccess } from '../authorization'
 import type { LeadRepository } from '../ports/lead-repository.port'
-
-export interface GetLeadInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  leadId: string
-}
-
-export type GetLeadOutput = Lead
 
 export class GetLeadUseCase {
   constructor(private readonly leadRepository: LeadRepository) {}
 
   async execute(input: GetLeadInput): Promise<GetLeadOutput> {
+    assertCrmAccess(input.actorRole)
     const lead = await this.leadRepository.findById(input.leadId)
 
     if (!lead || lead.tenantId !== input.actorTenantId) {
       throw new LeadNotFoundError()
     }
 
-    assertLeadAccess(lead.responsavelId, input.actorId, input.actorPapel)
+    assertLeadAccess(lead.responsibleId, input.actorId, input.actorRole)
 
     return lead
   }

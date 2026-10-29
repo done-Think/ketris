@@ -1,20 +1,16 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type {
+  UpdateContactInput,
+  UpdateContactOutput,
+} from '../../types/update-contact.use-case.types'
+export type {
+  UpdateContactInput,
+  UpdateContactOutput,
+} from '../../types/update-contact.use-case.types'
 
-import type { Contact, ContactUpdate } from '../../domain/contact.entity'
 import { ContactEmailAlreadyExistsError, ContactNotFoundError } from '../../domain/errors'
-import { assertAgentOwnsContact } from '../authorization'
+import { assertAgentOwnsContact, assertCrmAccess } from '../authorization'
 import type { ContactRepository } from '../ports/contact-repository.port'
 import type { OpportunityRepository } from '../ports/opportunity-repository.port'
-
-export interface UpdateContactInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-  contactId: string
-  changes: ContactUpdate
-}
-
-export type UpdateContactOutput = Contact
 
 export class UpdateContactUseCase {
   constructor(
@@ -23,6 +19,7 @@ export class UpdateContactUseCase {
   ) {}
 
   async execute(input: UpdateContactInput): Promise<UpdateContactOutput> {
+    assertCrmAccess(input.actorRole)
     const contact = await this.contactRepository.findById(input.contactId)
 
     if (!contact || contact.tenantId !== input.actorTenantId) {
@@ -34,7 +31,8 @@ export class UpdateContactUseCase {
       input.actorTenantId,
       contact.id,
       input.actorId,
-      input.actorPapel,
+      input.actorRole,
+      contact.createdById,
     )
 
     const changes = { ...input.changes }
@@ -52,6 +50,8 @@ export class UpdateContactUseCase {
       }
     }
 
-    return this.contactRepository.update(contact.id, changes)
+    const updated = await this.contactRepository.update(contact.id, changes)
+    await this.opportunityRepository.syncContactDetails(input.actorTenantId, contact.id, updated)
+    return updated
   }
 }

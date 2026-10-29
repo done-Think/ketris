@@ -1,134 +1,164 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import {
+  prepareAgendaPropertySummary,
+  withPreparedAgendaPropertySummary,
+} from '../with-agenda-property-summaries'
+import type { AgendaPropertyCatalog } from '../ports/agenda-property-catalog.port'
+import type { UpdateAgendaEventInput } from '../../types/use-case-inputs'
+import { isAgencyManager, isPropertyOwner } from '@server/auth/domain/roles'
+
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
-import { PropertyNotFoundError } from '@server/properties/domain/errors'
-import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
+import { AgendaPropertyNotFoundError } from '../../domain/errors'
+import type { AgendaPropertyLookup } from '../ports/agenda-property-lookup.port'
 
-import { assertCanManageAgenda, assertCanManageAgendaEvent } from '../../domain/agenda-access-rules'
+import { assertCanManageAgendaEvent } from '../../domain/agenda-access-rules'
+import {
+  findManageableAgendaEvent,
+  manageableAgendaEventTenantId,
+} from '../find-manageable-agenda-event'
 import { validateAgendaResponsible } from '../validate-agenda-responsible'
 import { validateAgendaSchedule } from '../validate-agenda-schedule'
 import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-scheduling'
 import { normalizeAgendaEventLinks } from '../../domain/agenda-event-links'
-import { AgendaEventNotFoundError, AgendaVisitMinimumDurationError } from '../../domain/errors'
-import type { AgendaEventChanges, AgendaEventLinks } from '../../domain/agenda-event.entity'
-import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
+import {
+  AgendaEventNotFoundError,
+  AgendaCancellationReasonRequiredError,
+  AgendaRenterLinksForbiddenError,
+  AgendaRenterPropertyRequiredError,
+  AgendaVisitMinimumDurationError,
+} from '../../domain/errors'
 
-export interface UpdateAgendaEventInput extends AgendaEventChanges, AgendaEventLinks {
-  outsideBusinessHoursConfirmed?: boolean
-  durationMinutes?: number
-  actorTenantId: string
-  actorPapel: Papel
-  actorUserId?: string
-  id: string
-}
+import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
 
 export class UpdateAgendaEventUseCase {
   constructor(
     private readonly agendaEventRepository: AgendaEventRepository,
-    private readonly propertyRepository: PropertyRepository,
+    private readonly propertyRepository: AgendaPropertyLookup,
     private readonly userRepository: UserRepository,
+    private readonly propertyCatalog?: AgendaPropertyCatalog,
   ) {}
 
   async execute(input: UpdateAgendaEventInput) {
-    assertCanManageAgenda(input.actorPapel)
-    const existing = await this.agendaEventRepository.findByTenantAndId(
-      input.actorTenantId,
-      input.id,
-    )
+    const existing = await findManageableAgendaEvent(this.agendaEventRepository, input, input.id)
     if (!existing) throw new AgendaEventNotFoundError()
-    assertCanManageAgendaEvent(input.actorPapel, input.actorUserId, existing)
+    assertCanManageAgendaEvent(input.actorRole, input.actorUserId, existing)
     if (
-      input.actorPapel !== 'ADMIN' &&
-      ((input.destino !== undefined && input.destino !== (existing.destino ?? 'LEGACY_TEAM')) ||
-        (input.interno !== undefined && input.interno !== Boolean(existing.interno)) ||
-        (input.responsavelId !== undefined && input.responsavelId !== existing.responsavelId))
+      !isAgencyManager(input.actorRole) &&
+      ((input.audience !== undefined && input.audience !== (existing.audience ?? 'SHARED_TEAM')) ||
+        (input.internal !== undefined && input.internal !== Boolean(existing.internal)) ||
+        (input.responsibleId !== undefined && input.responsibleId !== existing.responsibleId))
     )
       throw new ForbiddenError()
 
-    const destino = input.destino ?? existing.destino ?? 'LEGACY_TEAM'
-    const interno = input.interno ?? existing.interno ?? false
-    const responsavelId = input.responsavelId ?? existing.responsavelId
+    const audience = input.audience ?? existing.audience ?? 'SHARED_TEAM'
+    const internal = input.internal ?? existing.internal ?? false
+    const responsibleId = input.responsibleId ?? existing.responsibleId
     if (
-      input.responsavelId !== undefined ||
-      (input.destino !== undefined && destino === 'ASSIGNED_AGENT')
+      input.responsibleId !== undefined ||
+      (input.audience !== undefined && audience === 'ASSIGNED_AGENT')
     ) {
       await validateAgendaResponsible(
         this.userRepository,
-        input.actorTenantId,
-        responsavelId,
-        destino === 'ASSIGNED_AGENT',
+        manageableAgendaEventTenantId(input, existing),
+        responsibleId,
+        audience === 'ASSIGNED_AGENT',
       )
     }
     if (
-      interno &&
-      (destino === 'LEGACY_TEAM' || input.donoEmail || input.participanteEmails?.length)
+      internal &&
+      (audience === 'SHARED_TEAM' || input.ownerEmail || input.participantEmails?.length)
     ) {
       throw new ConflictError('Eventos internos são destinados apenas à equipe da imobiliária.')
     }
     if (
-      !interno &&
-      ((input.participanteNome ?? existing.participanteNome).trim().length < 2 ||
-        !(input.participanteTelefone ?? existing.participanteTelefone).trim() ||
-        (destino !== 'LEGACY_TEAM' &&
-          !(input.imovelId !== undefined ? input.imovelId : existing.imovelId) &&
-          !(input.referenciaImovelLivre !== undefined
-            ? input.referenciaImovelLivre
-            : existing.referenciaImovelLivre)))
+      !internal &&
+      ((input.participantName ?? existing.participantName).trim().length < 2 ||
+        !(input.participantPhone ?? existing.participantPhone).trim() ||
+        (audience !== 'SHARED_TEAM' &&
+          !(input.propertyId !== undefined ? input.propertyId : existing.propertyId) &&
+          !(input.freeFormPropertyReference !== undefined
+            ? input.freeFormPropertyReference
+            : existing.freeFormPropertyReference)))
     )
       throw new ConflictError('Informe imóvel, cliente e telefone para eventos com cliente.')
 
-    if (input.imovelId) {
-      const property = await this.propertyRepository.findByTenantAndId(
-        input.actorTenantId,
-        input.imovelId,
-      )
+    if (input.actorRole === 'RENTER') {
+      if (input.ownerEmail || input.participantEmails?.length) {
+        throw new AgendaRenterLinksForbiddenError()
+      }
+      if (input.freeFormPropertyReference) throw new AgendaRenterPropertyRequiredError()
+    }
 
-      if (!property) {
-        throw new PropertyNotFoundError()
+    if (input.propertyId) {
+      const property =
+        input.actorRole === 'RENTER'
+          ? await this.propertyRepository.findRentedProperty(
+              input.actorUserId ?? '',
+              input.propertyId,
+            )
+          : await this.propertyRepository.findAccessibleProperty(
+              manageableAgendaEventTenantId(input, existing),
+              input.propertyId,
+              isPropertyOwner(input.actorRole) ? input.actorUserId : undefined,
+            )
+
+      if (!property || property.tenantId !== manageableAgendaEventTenantId(input, existing)) {
+        throw new AgendaPropertyNotFoundError()
       }
     }
 
     const schedule =
-      input.inicio !== undefined ||
+      input.start !== undefined ||
       input.durationMinutes !== undefined ||
-      input.responsavelId !== undefined
+      input.responsibleId !== undefined
         ? await validateAgendaSchedule(this.agendaEventRepository, existing, input)
         : undefined
-    if (!schedule && input.tipo === 'VISIT') {
-      const durationMinutes = (existing.fim.getTime() - existing.inicio.getTime()) / 60_000
+    if (!schedule && input.type === 'VISIT') {
+      const durationMinutes = (existing.end.getTime() - existing.start.getTime()) / 60_000
 
       if (durationMinutes < AGENDA_MINIMUM_VISIT_MINUTES) {
         throw new AgendaVisitMinimumDurationError()
       }
     }
 
+    if (input.status === 'CANCELLED' && !input.cancellationReason?.trim())
+      throw new AgendaCancellationReasonRequiredError()
+
+    const propertySummary = await prepareAgendaPropertySummary(
+      this.propertyCatalog,
+      input,
+      input.propertyId === undefined ? existing.propertyId : input.propertyId,
+    )
+
     const event = await this.agendaEventRepository.update(
-      input.actorTenantId,
+      manageableAgendaEventTenantId(input, existing),
       input.id,
       {
         ...schedule,
-        titulo: input.titulo,
-        tipo: input.tipo,
-        destino: input.destino,
-        interno: input.interno,
-        responsavelId: input.responsavelId,
+        title: input.title,
+        type: input.type,
+        audience: input.audience,
+        internal: input.internal,
+        responsibleId: input.responsibleId,
         status: input.status,
-        imovelId: input.imovelId,
-        referenciaImovelLivre: input.referenciaImovelLivre,
-        participanteNome: input.participanteNome,
-        participanteTelefone: input.participanteTelefone,
-        notas: input.notas,
+        cancellationReason: input.cancellationReason,
+        propertyId: input.propertyId,
+        freeFormPropertyReference: input.freeFormPropertyReference,
+        participantName: input.participantName,
+        participantPhone: input.participantPhone,
+        notes: input.notes,
       },
       normalizeAgendaEventLinks({
-        donoEmail: interno ? null : input.donoEmail,
-        participanteEmails: interno ? [] : input.participanteEmails,
+        ownerEmail: internal ? null : input.ownerEmail,
+        participantEmails: internal ? [] : input.participantEmails,
       }),
+      input.actorUserId,
     )
 
     if (!event) {
       throw new AgendaEventNotFoundError()
     }
 
-    return event
+    return withPreparedAgendaPropertySummary(event, propertySummary)
   }
 }

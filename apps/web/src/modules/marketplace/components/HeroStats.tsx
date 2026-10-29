@@ -1,17 +1,32 @@
+'use client'
+
 import { Stack, Typography } from '@mui/material'
-import { useLocale, useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
-import { alpha, componentText } from '@shared/theme/tokens'
+import { useMarketplaceStats } from '../hooks/use-marketplace-stats'
+import { styles } from '../styles/hero-stats.styles'
+import type { MarketplaceStats } from '../types/public-property'
 
-const heroStats = [
-  { value: 2500, labelKey: 'activeProperties' },
-  { value: 180, labelKey: 'partnerBrokers' },
-  { value: 45, labelKey: 'servedCities' },
-] as const
+const statLabels = {
+  publishedProperties: 'activeProperties',
+  publishedBrokers: 'partnerBrokers',
+  servedCities: 'servedCities',
+} as const
+const statKeys = [
+  'publishedProperties',
+  'publishedBrokers',
+  'servedCities',
+] as const satisfies readonly (keyof MarketplaceStats)[]
 
 export function HeroStats() {
-  const locale = useLocale()
+  const format = useFormatter()
   const t = useTranslations('marketplace.home.hero.stats')
+  const { data: stats } = useMarketplaceStats()
+
+  if (!stats) return null
+
+  const items = statKeys.filter((key) => stats[key] > 0)
+  if (!items.length) return null
 
   return (
     <Stack
@@ -19,22 +34,12 @@ export function HeroStats() {
       spacing={{ xs: 1.5, sm: 3, xl: 5 }}
       justifyContent={{ sm: 'center', lg: 'flex-start' }}
       alignItems={{ sm: 'center', lg: 'baseline' }}
-      sx={{
-        mt: { sm: 3.2, xl: 5 },
-        display: { xs: 'none', sm: 'flex' },
-        width: '100%',
-        maxWidth: { sm: 620, xl: 760 },
-        transform: { sm: 'translateY(20px)', lg: 'none' },
-      }}
+      sx={styles.list}
     >
-      {heroStats.map((stat) => (
-        <Stack key={stat.labelKey} direction="row" alignItems="baseline" spacing={1}>
-          <Typography sx={{ color: 'primary.main', ...componentText.heroStatValue }}>
-            {new Intl.NumberFormat(locale).format(stat.value)}+
-          </Typography>
-          <Typography sx={{ color: alpha.white[78], ...componentText.heroStatLabel }}>
-            {t(stat.labelKey)}
-          </Typography>
+      {items.map((key) => (
+        <Stack key={key} direction="row" alignItems="baseline" spacing={1}>
+          <Typography sx={styles.value}>{format.number(stats[key])}</Typography>
+          <Typography sx={styles.label}>{t(statLabels[key], { count: stats[key] })}</Typography>
         </Stack>
       ))}
     </Stack>

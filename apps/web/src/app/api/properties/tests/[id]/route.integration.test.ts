@@ -9,6 +9,7 @@ import { prisma } from '@server/db/prisma'
 import { DELETE, GET, PATCH } from '../../[id]/route'
 import { POST as publish } from '../../[id]/publish/route'
 import { POST as unpublish } from '../../[id]/unpublish/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/properties/{id} (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -25,159 +26,161 @@ describe('/api/properties/{id} (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Property Detail', slug: `property-detail-${randomUUID()}` },
+      data: { name: 'Tenant Property Detail', slug: `property-detail-${randomUUID()}` },
     })
     tenantId = tenant.id
 
     const otherTenant = await prisma.tenant.create({
-      data: { nome: 'Other Property Detail', slug: `other-property-detail-${randomUUID()}` },
+      data: { name: 'Other Property Detail', slug: `other-property-detail-${randomUUID()}` },
     })
     otherTenantId = otherTenant.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor',
+        name: 'Corretor',
         email: `corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const completeProperty = await prisma.imovel.create({
+    const completeProperty = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: actor.id,
-        titulo: 'Casa completa',
-        finalidade: 'VENDA',
-        tipo: 'casa',
-        quartos: 3,
-        banheiros: 2,
-        vagas: 2,
-        areaM2: 120,
-        valor: 650000,
+        responsibleId: actor.id,
+        title: 'Casa completa',
+        purpose: 'SALE',
+        type: 'HOUSE',
+        bedrooms: 3,
+        bathrooms: 2,
+        parkingSpots: 2,
+        areaSqm: 120,
+        price: 650000,
         status: 'DRAFT',
-        endereco: {
+        address: {
           create: {
-            logradouro: 'Rua das Flores',
-            numero: '42',
-            bairro: 'Mercês',
-            cidade: 'Curitiba',
-            estado: 'PR',
-            cep: '80510000',
+            street: 'Rua das Flores',
+            number: '42',
+            neighborhood: 'Mercês',
+            city: 'Curitiba',
+            state: 'PR',
+            zipCode: '80510000',
           },
         },
-        midias: {
-          create: [{ url: 'https://cdn.ketris.dev/complete/photo.jpg', tipo: 'foto', ordem: 0 }],
+        media: {
+          create: [
+            { url: 'https://cdn.ketris.dev/complete/photo.jpg', type: 'PHOTO', position: 0 },
+          ],
         },
       },
     })
     completePropertyId = completeProperty.id
 
-    const incompleteProperty = await prisma.imovel.create({
+    const incompleteProperty = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: actor.id,
-        titulo: 'Sem mídia',
-        finalidade: 'ALUGUEL',
-        tipo: 'studio',
-        valor: 1800,
+        responsibleId: actor.id,
+        title: 'Sem mídia',
+        purpose: 'RENT',
+        type: 'STUDIO',
+        price: 1800,
         status: 'DRAFT',
       },
     })
     incompletePropertyId = incompleteProperty.id
 
-    const otherActor = await prisma.usuario.create({
+    const otherActor = await prisma.user.create({
       data: {
         tenantId: otherTenantId,
-        nome: 'Outro Corretor',
+        name: 'Outro Corretor',
         email: `outro-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
-    const otherProperty = await prisma.imovel.create({
+    const otherProperty = await prisma.property.create({
       data: {
         tenantId: otherTenantId,
-        responsavelId: otherActor.id,
-        titulo: 'Imóvel de outro tenant',
-        finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
-        valor: 2000,
+        responsibleId: otherActor.id,
+        title: 'Imóvel de outro tenant',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2000,
         status: 'DRAFT',
       },
     })
     otherTenantPropertyId = otherProperty.id
 
-    const otherAgentSameTenant = await prisma.usuario.create({
+    const otherAgentSameTenant = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Outro Corretor da Mesma Imobiliária',
+        name: 'Outro Corretor da Mesma Imobiliária',
         email: `outro-corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     otherAgentToken = await tokenService.sign({
       id: otherAgentSameTenant.id,
       tenantId: otherAgentSameTenant.tenantId,
-      nome: otherAgentSameTenant.nome,
+      name: otherAgentSameTenant.name,
       email: otherAgentSameTenant.email,
-      papel: otherAgentSameTenant.papel,
-      ativo: otherAgentSameTenant.ativo,
-      vinculoAprovadoEm: otherAgentSameTenant.vinculoAprovadoEm,
+      role: otherAgentSameTenant.role,
+      active: otherAgentSameTenant.active,
+      membershipApprovedAt: otherAgentSameTenant.membershipApprovedAt,
     })
 
-    const admin = await prisma.usuario.create({
+    const admin = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin da Imobiliária',
+        name: 'Admin da Imobiliária',
         email: `admin-imobiliaria-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
     adminToken = await tokenService.sign({
       id: admin.id,
       tenantId: admin.tenantId,
-      nome: admin.nome,
+      name: admin.name,
       email: admin.email,
-      papel: admin.papel,
-      ativo: admin.ativo,
-      vinculoAprovadoEm: admin.vinculoAprovadoEm,
+      role: admin.role,
+      active: admin.active,
+      membershipApprovedAt: admin.membershipApprovedAt,
     })
 
-    const ownedByActorProperty = await prisma.imovel.create({
+    const ownedByActorProperty = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: actor.id,
-        titulo: 'Casa do corretor dono',
-        finalidade: 'VENDA',
-        tipo: 'casa',
-        valor: 500000,
+        responsibleId: actor.id,
+        title: 'Casa do corretor dono',
+        purpose: 'SALE',
+        type: 'HOUSE',
+        price: 500000,
         status: 'DRAFT',
-        endereco: {
+        address: {
           create: {
-            logradouro: 'Rua do Dono',
-            numero: '10',
-            bairro: 'Centro',
-            cidade: 'Curitiba',
-            estado: 'PR',
-            cep: '80010000',
+            street: 'Rua do Dono',
+            number: '10',
+            neighborhood: 'Centro',
+            city: 'Curitiba',
+            state: 'PR',
+            zipCode: '80010000',
           },
         },
-        midias: {
-          create: [{ url: 'https://cdn.ketris.dev/owned/photo.jpg', tipo: 'foto', ordem: 0 }],
+        media: {
+          create: [{ url: 'https://cdn.ketris.dev/owned/photo.jpg', type: 'PHOTO', position: 0 }],
         },
       },
     })
@@ -236,13 +239,62 @@ describe('/api/properties/{id} (integração)', () => {
 
   it('atualiza imóvel do tenant do ator', async () => {
     const response = await PATCH(
-      buildRequest('PATCH', completePropertyId, { titulo: 'Casa atualizada' }),
+      buildRequest('PATCH', completePropertyId, { title: 'Casa atualizada' }),
       context(completePropertyId),
     )
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.property.titulo).toBe('Casa atualizada')
+    expect(json.property.title).toBe('Casa atualizada')
+  })
+
+  it('preserva IDs e datas de mídia ao reordenar, atualizar e remover itens', async () => {
+    const original = await prisma.propertyMedia.findFirstOrThrow({
+      where: { propertyId: completePropertyId },
+    })
+    const addedUrl = `/api/properties/media/properties/${tenantId}/new-property-photo.jpg`
+    const response = await PATCH(
+      buildRequest('PATCH', completePropertyId, {
+        media: [
+          { url: addedUrl, type: 'photo', position: 0 },
+          { url: original.url, type: 'floorPlan', position: 1 },
+        ],
+      }),
+      context(completePropertyId),
+    )
+    expect(response.status).toBe(200)
+    const retained = await prisma.propertyMedia.findUniqueOrThrow({ where: { id: original.id } })
+    expect(retained.createdAt).toEqual(original.createdAt)
+    expect(retained.type).toBe('FLOOR_PLAN')
+    expect(retained.position).toBe(1)
+    const added = await prisma.propertyMedia.findFirstOrThrow({
+      where: { propertyId: completePropertyId, url: addedUrl },
+    })
+    expect(added.id).not.toBe(original.id)
+
+    const media = [{ url: original.url, type: 'photo', position: 0 }]
+    expect(
+      (
+        await PATCH(
+          buildRequest('PATCH', completePropertyId, { media: media }),
+          context(completePropertyId),
+        )
+      ).status,
+    ).toBe(200)
+    expect(await prisma.propertyMedia.findUnique({ where: { id: added.id } })).toBeNull()
+    const remaining = await prisma.propertyMedia.findUniqueOrThrow({ where: { id: original.id } })
+    expect(remaining.createdAt).toEqual(original.createdAt)
+    expect(
+      (
+        await PATCH(
+          buildRequest('PATCH', completePropertyId, { media: media }),
+          context(completePropertyId),
+        )
+      ).status,
+    ).toBe(200)
+    expect(
+      (await prisma.propertyMedia.findUniqueOrThrow({ where: { id: original.id } })).updatedAt,
+    ).toEqual(remaining.updatedAt)
   })
 
   it('publica imóvel completo', async () => {
@@ -254,7 +306,7 @@ describe('/api/properties/{id} (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.property.status).toBe('PUBLISHED')
-    expect(json.property.publicadoEm).toBeTruthy()
+    expect(json.property.publishedAt).toBeTruthy()
   })
 
   it('bloqueia publicação de imóvel incompleto', async () => {
@@ -269,6 +321,9 @@ describe('/api/properties/{id} (integração)', () => {
   })
 
   it('despublica imóvel publicado', async () => {
+    const beforeUnpublish = await prisma.property.findUniqueOrThrow({
+      where: { id: completePropertyId },
+    })
     const response = await unpublish(
       buildRequest('POST', completePropertyId),
       context(completePropertyId),
@@ -277,10 +332,10 @@ describe('/api/properties/{id} (integração)', () => {
 
     expect(response.status).toBe(200)
     expect(json.property.status).toBe('INACTIVE')
-    expect(json.property.publicadoEm).toBeNull()
+    expect(json.property.publishedAt).toBe(beforeUnpublish.publishedAt?.toISOString())
   })
 
-  it('exclui o imóvel definitivamente pelo DELETE quando não há vínculos', async () => {
+  it('inativa o imóvel pelo DELETE e preserva seus dados', async () => {
     const response = await DELETE(
       buildRequest('DELETE', incompletePropertyId),
       context(incompletePropertyId),
@@ -288,29 +343,30 @@ describe('/api/properties/{id} (integração)', () => {
 
     expect(response.status).toBe(204)
 
-    const afterDelete = await prisma.imovel.findUnique({ where: { id: incompletePropertyId } })
-    expect(afterDelete).toBeNull()
+    const afterDelete = await prisma.property.findUnique({ where: { id: incompletePropertyId } })
+    expect(afterDelete?.status).toBe('INACTIVE')
   })
 
-  it('bloqueia a exclusão quando o imóvel tem uma proposta vinculada', async () => {
-    const propertyWithOpportunity = await prisma.imovel.create({
+  it('inativa o imóvel mesmo com uma proposta vinculada', async () => {
+    const propertyWithOpportunity = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: actorId,
-        titulo: 'Imóvel com proposta',
-        finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
-        valor: 2500,
+        responsibleId: actorId,
+        title: 'Imóvel com proposta',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2500,
         status: 'DRAFT',
       },
     })
-    await prisma.oportunidade.create({
+    await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId: propertyWithOpportunity.id,
-        interessadoNome: 'Interessado Teste',
-        interessadoEmail: 'interessado-teste@example.com',
-        valorProposto: 2500,
+        propertyId: propertyWithOpportunity.id,
+        responsibleId: await propertyResponsibleId(prisma, propertyWithOpportunity.id),
+        interestedName: 'Interessado Teste',
+        interestedEmail: 'interessado-teste@example.com',
+        proposedValue: 2500,
       },
     })
 
@@ -318,15 +374,15 @@ describe('/api/properties/{id} (integração)', () => {
       buildRequest('DELETE', propertyWithOpportunity.id),
       context(propertyWithOpportunity.id),
     )
-    const json = await response.json()
+    expect(response.status).toBe(204)
 
-    expect(response.status).toBe(409)
-    expect(json.error.code).toBe('PROPERTY_HAS_LINKED_RECORDS')
-
-    const stillExists = await prisma.imovel.findUnique({
+    const stillExists = await prisma.property.findUnique({
       where: { id: propertyWithOpportunity.id },
     })
-    expect(stillExists).not.toBeNull()
+    expect(stillExists?.status).toBe('INACTIVE')
+    expect(
+      await prisma.opportunity.count({ where: { propertyId: propertyWithOpportunity.id } }),
+    ).toBe(1)
   })
 
   describe('permissões: dono, admin da imobiliária e outro corretor', () => {
@@ -355,7 +411,7 @@ describe('/api/properties/{id} (integração)', () => {
         buildRequest(
           'PATCH',
           ownedByActorPropertyId,
-          { titulo: 'Tentativa indevida' },
+          { title: 'Tentativa indevida' },
           otherAgentToken,
         ),
         context(ownedByActorPropertyId),
@@ -366,13 +422,13 @@ describe('/api/properties/{id} (integração)', () => {
 
     it('permite que o admin da imobiliária edite o imóvel de outro corretor', async () => {
       const response = await PATCH(
-        buildRequest('PATCH', ownedByActorPropertyId, { titulo: 'Editado pelo admin' }, adminToken),
+        buildRequest('PATCH', ownedByActorPropertyId, { title: 'Editado pelo admin' }, adminToken),
         context(ownedByActorPropertyId),
       )
       const json = await response.json()
 
       expect(response.status).toBe(200)
-      expect(json.property.titulo).toBe('Editado pelo admin')
+      expect(json.property.title).toBe('Editado pelo admin')
     })
 
     it('retorna 404 quando outro corretor da mesma imobiliária tenta publicar o imóvel', async () => {
@@ -413,7 +469,10 @@ describe('/api/properties/{id} (integração)', () => {
       expect(response.status).toBe(404)
     })
 
-    it('permite que o próprio corretor responsável exclua seu imóvel definitivamente', async () => {
+    it('permite que o próprio corretor responsável inative seu imóvel', async () => {
+      const beforeInactivation = await prisma.property.findUniqueOrThrow({
+        where: { id: ownedByActorPropertyId },
+      })
       const response = await DELETE(
         buildRequest('DELETE', ownedByActorPropertyId, undefined, actorToken),
         context(ownedByActorPropertyId),
@@ -421,8 +480,12 @@ describe('/api/properties/{id} (integração)', () => {
 
       expect(response.status).toBe(204)
 
-      const afterDelete = await prisma.imovel.findUnique({ where: { id: ownedByActorPropertyId } })
-      expect(afterDelete).toBeNull()
+      const afterDelete = await prisma.property.findUnique({
+        where: { id: ownedByActorPropertyId },
+      })
+      expect(afterDelete?.status).toBe('INACTIVE')
+      expect(afterDelete?.publishedAt).toEqual(beforeInactivation.publishedAt)
+      expect(afterDelete?.createdAt).toEqual(beforeInactivation.createdAt)
     })
   })
 })

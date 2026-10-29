@@ -1,9 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { signIn } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { registrationService } from '../../services/registration-service'
+import { authService } from '../../services/auth-service'
 import { RegistrationDetailsScreen } from '../../components/RegistrationDetailsScreen'
 
 const routerMock = { replace: vi.fn(), refresh: vi.fn() }
@@ -12,24 +14,32 @@ vi.mock('next-auth/react', () => ({
   signIn: vi.fn(),
 }))
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => routerMock,
-}))
-
-function mockResponse(status: number, body: unknown) {
+vi.mock('@/i18n/navigation', async () => {
+  const React = await import('react')
   return {
-    ok: status >= 200 && status < 300,
-    status,
-    json: () => Promise.resolve(body),
-  } as Response
-}
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+    useRouter: () => routerMock,
+    Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
+      function MockLink(props, ref) {
+        return React.createElement('a', { ...props, ref })
+      },
+    ),
+  }
+})
+
+vi.mock('../../services/registration-service', () => ({
+  registrationService: { register: vi.fn(), searchAgencies: vi.fn().mockResolvedValue([]) },
+}))
+vi.mock('../../services/auth-service', () => ({
+  authService: { confirmSignupCode: vi.fn(), requestSignupCode: vi.fn() },
+}))
 
 function renderScreen() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <RegistrationDetailsScreen profile="corretor" />
+      <RegistrationDetailsScreen profile="broker" />
     </QueryClientProvider>,
   )
 }
@@ -48,39 +58,50 @@ async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>) {
 describe('RegistrationDetailsScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(registrationService.register).mockResolvedValue({
+      outcome: 'PENDING_EMAIL_VERIFICATION',
+      email: 'corretor@ketris.dev',
+      tenantId: 't1',
+      emailSent: true,
+    })
   })
 
   it('troca pra tela de confirmação quando o cadastro fica pendente de aprovação', async () => {
     const user = userEvent.setup()
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          mockResponse(202, { outcome: 'PENDING_APPROVAL', email: 'corretor@ketris.dev' }),
-        ),
-    )
+    vi.mocked(authService.confirmSignupCode).mockResolvedValue({
+      outcome: 'PENDING_APPROVAL',
+      email: 'corretor@ketris.dev',
+    })
 
     renderScreen()
     await fillAndSubmit(user)
 
+    expect(await screen.findByText('Confirme seu e-mail')).toBeInTheDocument()
+    await user.type(screen.getAllByLabelText(/Código de verificação/)[0], '123456')
+    await user.click(screen.getByRole('button', { name: /^Confirmar$/ }))
     expect(await screen.findByText('Cadastro enviado!')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Criar conta' })).not.toBeInTheDocument()
   }, 20000)
 
   it('pede confirmação de e-mail antes de redirecionar quando o cadastro é concluído', async () => {
     const user = userEvent.setup()
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        mockResponse(201, {
-          outcome: 'REGISTERED',
-          user: { role: 'ADMIN' },
-          accessToken: 'access-fake',
-          refreshToken: 'refresh-fake',
-        }),
-      ),
-    )
+    vi.mocked(authService.confirmSignupCode).mockResolvedValue({
+      outcome: 'REGISTERED',
+      user: {
+        id: 'u1',
+        tenantId: 't1',
+        name: 'Ana',
+        email: 'corretor@ketris.dev',
+        role: 'OWNER',
+        active: true,
+        avatarUrl: null,
+        pendingApproval: false,
+        phone: null,
+        creci: null,
+      },
+      accessToken: 'access-fake',
+      refreshToken: 'refresh-fake',
+    })
     vi.mocked(signIn).mockResolvedValue({ error: null, ok: true, status: 200, url: null })
 
     renderScreen()
@@ -94,15 +115,15 @@ describe('RegistrationDetailsScreen', () => {
     await user.type(codeBoxes[0], '123456')
     await user.click(screen.getByRole('button', { name: 'Confirmar' }))
 
-    expect(routerMock.replace).toHaveBeenCalledWith('/pt/dashboard')
+    await waitFor(() => expect(routerMock.replace).toHaveBeenCalledWith('/dashboard'))
   }, 20000)
 
   it('mostra a mensagem de erro sem trocar de tela quando o cadastro falha', async () => {
     const user = userEvent.setup()
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(mockResponse(409, { error: { code: 'EMAIL_ALREADY_IN_USE' } })),
-    )
+    vi.mocked(registrationService.register).mockRejectedValue({
+      isAxiosError: true,
+      response: { data: { error: { code: 'EMAIL_ALREADY_IN_USE' } } },
+    })
 
     renderScreen()
     await fillAndSubmit(user)

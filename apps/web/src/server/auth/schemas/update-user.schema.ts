@@ -1,17 +1,31 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-import { authenticatedUserResponseSchema, nonAdminPapelSchema } from './user.schema'
+import { authenticatedUserResponseSchema, tenantMemberRoleSchema } from './user.schema'
 
 export const updateUserRequestSchema = z
   .object({
-    name: z.string().min(1, 'Nome é obrigatório.').optional(),
-    email: z.string().email('E-mail inválido.').optional(),
+    name: z.string().trim().min(1, 'Nome é obrigatório.').max(200).optional(),
+    email: z.string().trim().max(254).email('E-mail inválido.').optional(),
+    phone: z
+      .string()
+      .trim()
+      .max(32)
+      .refine((value) => {
+        const digits = value.replace(/\D/g, '')
+        return digits.length === 10 || digits.length === 11
+      }, 'Telefone inválido.')
+      .nullable()
+      .optional(),
+    creci: z.string().trim().max(32).nullable().optional(),
     avatarUrl: z.string().min(1).nullable().optional(),
-    role: nonAdminPapelSchema.optional(),
+    role: tenantMemberRoleSchema.optional(),
   })
+  .strict()
   .refine(
     (data) =>
+      data.phone !== undefined ||
+      data.creci !== undefined ||
       data.name !== undefined ||
       data.email !== undefined ||
       data.avatarUrl !== undefined ||
@@ -21,8 +35,6 @@ export const updateUserRequestSchema = z
     },
   )
   .openapi('UpdateUserRequest')
-
-export type UpdateUserRequestDTO = z.infer<typeof updateUserRequestSchema>
 
 export const updateUserResponseSchema = z
   .object({

@@ -1,12 +1,13 @@
 'use client'
 
+import { getStyles } from '../styles/verification-code-field.styles'
+
 import { useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import type { ClipboardEvent, KeyboardEvent } from 'react'
 import { Box, Typography } from '@mui/material'
-import { alpha as muiAlpha } from '@mui/material/styles'
-import { Controller, type FieldValues } from 'react-hook-form'
 
-import { brand, radius, surface } from '@shared/theme/tokens'
+import { Controller, type FieldValues } from 'react-hook-form'
 
 import type { VerificationCodeFieldProps } from '../types/verification-code'
 
@@ -18,6 +19,7 @@ export function VerificationCodeField<TFieldValues extends FieldValues>({
   label,
   disabled,
 }: VerificationCodeFieldProps<TFieldValues>) {
+  const t = useTranslations('auth.verificationCode')
   const inputRefs = useRef<Array<HTMLInputElement | null>>([])
 
   return (
@@ -25,6 +27,7 @@ export function VerificationCodeField<TFieldValues extends FieldValues>({
       control={control}
       name={name}
       render={({ field, fieldState }) => {
+        const styles = getStyles(Boolean(fieldState.error))
         const value: string = field.value ?? ''
         const digits = Array.from({ length: CODE_LENGTH }, (_, index) => value[index] ?? '')
 
@@ -98,10 +101,7 @@ export function VerificationCodeField<TFieldValues extends FieldValues>({
 
         return (
           <Box>
-            <Box
-              role="group"
-              sx={{ display: 'flex', gap: { xs: 0.75, sm: 1.25 }, justifyContent: 'center' }}
-            >
+            <Box role="group" sx={styles.box}>
               {digits.map((digit, index) => (
                 <Box
                   key={index}
@@ -114,7 +114,7 @@ export function VerificationCodeField<TFieldValues extends FieldValues>({
                   maxLength={1}
                   disabled={disabled}
                   autoComplete={index === 0 ? 'one-time-code' : 'off'}
-                  aria-label={`${label} — dígito ${index + 1} de ${CODE_LENGTH}`}
+                  aria-label={t('digitLabel', { label, position: index + 1, total: CODE_LENGTH })}
                   aria-invalid={Boolean(fieldState.error)}
                   value={digit}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -125,33 +125,13 @@ export function VerificationCodeField<TFieldValues extends FieldValues>({
                     handleKeyDown(index, event)
                   }
                   onFocus={(event: React.FocusEvent<HTMLInputElement>) => event.target.select()}
-                  sx={{
-                    width: { xs: 32, sm: 48 },
-                    height: { xs: 36, sm: 52 },
-                    textAlign: 'center',
-                    fontSize: { xs: 15, sm: 20 },
-                    fontWeight: 600,
-                    fontFamily: 'inherit',
-                    color: brand.graphite[500],
-                    borderRadius: `${radius.sm}px`,
-                    border: `1px solid ${fieldState.error ? brand.semantic.error : brand.neutral[100]}`,
-                    bgcolor: surface.paper,
-                    outline: 'none',
-                    transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
-                    '&:focus': {
-                      borderColor: brand.magenta[500],
-                      boxShadow: `0 0 0 3px ${muiAlpha(brand.magenta[500], 0.15)}`,
-                    },
-                  }}
+                  sx={styles.box2}
                 />
               ))}
             </Box>
 
             {fieldState.error?.message ? (
-              <Typography
-                variant="body2"
-                sx={{ color: brand.semantic.error, textAlign: 'center', mt: 0.75 }}
-              >
+              <Typography variant="body2" sx={styles.typography}>
                 {fieldState.error.message}
               </Typography>
             ) : null}

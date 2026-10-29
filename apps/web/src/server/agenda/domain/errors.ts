@@ -1,15 +1,17 @@
 import { AppError, ConflictError, ForbiddenError, NotFoundError } from '@server/shared/errors'
 
-export class AgendaRenterForbiddenError extends ForbiddenError {
+export class AgendaRenterPropertyRequiredError extends ConflictError {
   constructor() {
-    super('Locatários não podem gerenciar a agenda.')
+    super('Escolha o imóvel do seu contrato de locação para agendar o evento.')
   }
 }
 
-/**
- * Same status, code and message for every reason (unknown e-mail, inactive user, staff from
- * another tenant), so the response never reveals whether or why an account can't be linked.
- */
+export class AgendaRenterLinksForbiddenError extends ForbiddenError {
+  constructor() {
+    super('Locatários não vinculam outras pessoas a eventos da agenda.')
+  }
+}
+
 export class AgendaEventUserLinkUnavailableError extends AppError {
   constructor(email: string) {
     super(`Não foi possível vincular o e-mail ${email} a este evento.`, {
@@ -70,5 +72,20 @@ export class AgendaOutsideBusinessHoursError extends AppError {
 export class AgendaPropertyVisitConflictError extends ConflictError {
   constructor() {
     super('Já existe uma visita reservada para este imóvel nesse período.')
+  }
+}
+
+export class AgendaPropertyNotFoundError extends NotFoundError {
+  constructor() {
+    super('Imóvel não encontrado.')
+  }
+}
+
+export class AgendaCancellationReasonRequiredError extends AppError {
+  constructor() {
+    super('Informe o motivo do cancelamento.', {
+      status: 400,
+      code: 'AGENDA_CANCELLATION_REASON_REQUIRED',
+    })
   }
 }

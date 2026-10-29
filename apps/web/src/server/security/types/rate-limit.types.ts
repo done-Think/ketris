@@ -1,3 +1,5 @@
+import type { Prisma } from '@prisma/client'
+
 export interface RateLimitPolicy {
   name: string
   limit: number
@@ -19,5 +21,13 @@ export interface RateLimitResult {
 }
 
 export interface RateLimitStore {
-  consume(input: RateLimitInput): RateLimitResult
+  consume(input: RateLimitInput): RateLimitResult | Promise<RateLimitResult>
 }
+
+export interface StoredRateLimitBucket {
+  count: number
+  resetAt: Date
+  observedAt: Date
+}
+
+export type RateLimitDatabase = Pick<Prisma.TransactionClient, '$queryRaw' | '$executeRaw'>

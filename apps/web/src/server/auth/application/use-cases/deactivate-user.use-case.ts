@@ -1,28 +1,26 @@
+import type { DeactivateUserOutput } from '../../types/use-case-outputs'
+import type { DeactivateUserInput } from '../../types/use-case-inputs'
+import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
-import { CannotDeactivateSelfError, UserNotFoundError } from '../../domain/errors'
-import { toAuthenticatedUser, type AuthenticatedUser, type Papel } from '../../domain/user.entity'
-import type { RefreshTokenRepository } from '../ports/refresh-token-repository.port'
+import {
+  CannotDeactivateSelfError,
+  PortfolioTransferRequiredError,
+  UserNotFoundError,
+} from '../../domain/errors'
+import { toAuthenticatedUser } from '../authenticated-user'
+import type { UserPortfolioReader } from '../ports/user-portfolio-reader.port'
 import type { UserRepository } from '../ports/user-repository.port'
-
-export interface DeactivateUserInput {
-  actorId: string
-  actorTenantId: string
-  actorPapel: Papel
-  userId: string
-}
-
-export type DeactivateUserOutput = AuthenticatedUser
 
 export class DeactivateUserUseCase {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly refreshTokenRepository: RefreshTokenRepository,
+    private readonly portfolioReader: UserPortfolioReader,
   ) {}
 
   async execute(input: DeactivateUserInput): Promise<DeactivateUserOutput> {
-    if (input.actorPapel !== 'ADMIN') {
-      throw new ForbiddenError('Apenas administradores podem desativar usuários.')
+    if (!isAgencyManager(input.actorRole)) {
+      throw new ForbiddenError('Apenas a gestão da imobiliária pode desativar usuários.')
     }
 
     if (input.actorId === input.userId) {
@@ -31,12 +29,18 @@ export class DeactivateUserUseCase {
 
     const target = await this.userRepository.findById(input.userId)
 
-    if (!target || target.tenantId !== input.actorTenantId || target.papel === 'ADMIN') {
+    if (!target || target.tenantId !== input.actorTenantId) {
       throw new UserNotFoundError()
     }
 
-    const deactivated = await this.userRepository.deactivate(input.userId)
-    await this.refreshTokenRepository.revokeAllForUser(input.userId)
+    if (await this.portfolioReader.hasPortfolio(input.actorTenantId, input.userId)) {
+      throw new PortfolioTransferRequiredError()
+    }
+
+    const deactivated = await this.userRepository.deactivate(input.userId, input.actorTenantId, {
+      kind: 'USER',
+      id: input.actorId,
+    })
 
     return toAuthenticatedUser(deactivated)
   }

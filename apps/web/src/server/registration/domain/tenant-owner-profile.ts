@@ -1,21 +1,19 @@
-import type { TenantAccountType, TenantStatus } from '@server/platform/domain/tenant-account'
+import type {
+  RegistrationAccountType,
+  RegistrationTenantStatus,
+  TenantOwnerProfile,
+} from '../types/account'
+export type { TenantOwnerProfile } from '../types/account'
 
-// Sign-up profiles that create their own tenant (an agency's broker or a renter joins one instead).
-export type TenantOwnerProfile = 'proprietario' | 'corretor' | 'imobiliaria' | 'construtora'
-
-// There is no builder plan yet, so a construtora is billed as an agency until the platform admin
-// reclassifies it on the tenant screen.
-const ACCOUNT_TYPE_BY_PROFILE: Record<TenantOwnerProfile, TenantAccountType> = {
-  proprietario: 'INDIVIDUAL',
-  corretor: 'BROKER',
-  imobiliaria: 'AGENCY',
-  construtora: 'AGENCY',
+const ACCOUNT_TYPE_BY_PROFILE: Record<TenantOwnerProfile, RegistrationAccountType> = {
+  owner: 'INDIVIDUAL',
+  broker: 'BROKER',
+  agency: 'AGENCY',
+  developer: 'AGENCY',
 }
 
-// A self-registered tenant has not paid anything yet: it starts in trial, outside the MRR and the
-// churn base, until the platform admin activates it.
-export const SELF_REGISTERED_TENANT_STATUS: TenantStatus = 'TRIAL'
+export const SELF_REGISTERED_TENANT_STATUS: RegistrationTenantStatus = 'TRIAL'
 
-export function accountTypeForProfile(profile: TenantOwnerProfile): TenantAccountType {
+export function accountTypeForProfile(profile: TenantOwnerProfile): RegistrationAccountType {
   return ACCOUNT_TYPE_BY_PROFILE[profile]
 }

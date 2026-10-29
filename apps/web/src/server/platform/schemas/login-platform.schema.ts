@@ -5,15 +5,20 @@ import { authenticatedPlatformAdminSchema } from './platform-admin.schema'
 
 export const loginPlatformRequestSchema = z
   .object({
-    email: z.string().email('E-mail inválido.').openapi({ example: 'alysson@ketris.dev' }),
+    email: z
+      .string()
+      .trim()
+      .max(254, 'E-mail inválido.')
+      .email('E-mail inválido.')
+      .openapi({ example: 'alysson@ketris.dev' }),
     password: z
       .string()
       .min(1, 'Senha é obrigatória.')
+      .max(128, 'Senha muito longa.')
       .openapi({ example: 'trocar-em-desenvolvimento' }),
   })
+  .strict()
   .openapi('LoginPlatformRequest')
-
-export type LoginPlatformRequestDTO = z.infer<typeof loginPlatformRequestSchema>
 
 export const loginPlatformResponseSchema = z
   .object({

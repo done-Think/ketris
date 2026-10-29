@@ -1,19 +1,22 @@
 import { z } from 'zod'
 
 import type { SchemaMessageTranslator } from '@shared/types'
+import type { TranslationKey } from '@/i18n/types/messages.types'
+
+type ProfileValidationKey = TranslationKey<'marketplace.agencyProfileEditor.errors'>
 
 const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
 const INTERNAL_MARKETPLACE_MEDIA_PATH = /^\/api\/marketplace\/media\/.+/
 
 const createRequiredTextSchema = (
-  t: SchemaMessageTranslator,
-  requiredKey: string,
+  t: SchemaMessageTranslator<ProfileValidationKey>,
+  requiredKey: ProfileValidationKey,
   requirePublishFields: boolean,
 ) => (requirePublishFields ? z.string().min(1, t(requiredKey)) : z.string())
 
 const createHexColorSchema = (
-  t: SchemaMessageTranslator,
-  requiredKey: string,
+  t: SchemaMessageTranslator<ProfileValidationKey>,
+  requiredKey: ProfileValidationKey,
   requirePublishFields: boolean,
 ) => {
   if (!requirePublishFields) {
@@ -33,8 +36,8 @@ const createHexColorSchema = (
 }
 
 const createUrlSchema = (
-  t: SchemaMessageTranslator,
-  requiredKey: string,
+  t: SchemaMessageTranslator<ProfileValidationKey>,
+  requiredKey: ProfileValidationKey,
   requirePublishFields: boolean,
 ) => {
   const isValidMediaUrl = (value: string) =>
@@ -57,12 +60,12 @@ const createUrlSchema = (
 }
 
 export const agencyTeamMemberFieldSchema = z.object({
-  usuarioId: z.string(),
+  userId: z.string(),
   name: z.string(),
 })
 
 function createAgencyPublicProfileEditorObjectSchema(
-  t: SchemaMessageTranslator,
+  t: SchemaMessageTranslator<ProfileValidationKey>,
   options?: { requirePublishFields?: boolean },
 ) {
   const requirePublishFields = options?.requirePublishFields ?? false
@@ -89,7 +92,7 @@ function createAgencyPublicProfileEditorObjectSchema(
 }
 
 export function createAgencyPublicProfileEditorSchema(
-  t: SchemaMessageTranslator,
+  t: SchemaMessageTranslator<ProfileValidationKey>,
   options?: { requirePublishFields?: boolean },
 ) {
   const schema = createAgencyPublicProfileEditorObjectSchema(t, options)

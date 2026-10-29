@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 
-import { UnauthorizedError } from '@server/shared/errors'
+import { AppError, UnauthorizedError } from '@server/shared/errors'
+import { isAuthenticationError } from '@server/security/authentication-errors'
 
 import type { AccessTokenPayload, TokenService } from './application/ports/token-service.port'
 
@@ -17,7 +18,11 @@ export async function requireBearerAuth(
 
   try {
     return await tokenService.verify(token)
-  } catch {
-    throw new UnauthorizedError()
+  } catch (error) {
+    if (isAuthenticationError(error)) {
+      if (error instanceof AppError) throw error
+      throw new UnauthorizedError()
+    }
+    throw error
   }
 }

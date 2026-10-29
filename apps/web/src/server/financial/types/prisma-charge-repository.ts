@@ -1,12 +1,16 @@
-import type { Cobranca, Contrato, Imovel, ParteContrato } from '@prisma/client'
+import type { Charge, ChargeReceipt, Contract, Property, ContractParty } from '@prisma/client'
 
-export type CobrancaWithRelations = Cobranca & {
-  contrato:
-    | (Contrato & {
-        imovel: Pick<Imovel, 'id' | 'titulo'> & {
-          endereco: { logradouro: string; bairro: string; cidade: string } | null
+export type ChargeWithRelations = Charge & {
+  currentReceipt: Pick<
+    ChargeReceipt,
+    'id' | 'fileName' | 'contentType' | 'sizeBytes' | 'createdAt'
+  > | null
+  contract:
+    | (Contract & {
+        property: Pick<Property, 'id' | 'title'> & {
+          address: { street: string; neighborhood: string; city: string } | null
         }
-        partes: Pick<ParteContrato, 'nome' | 'email'>[]
+        parties: Pick<ContractParty, 'name' | 'email'>[]
       })
     | null
 }

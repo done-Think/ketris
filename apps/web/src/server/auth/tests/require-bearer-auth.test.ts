@@ -30,7 +30,7 @@ describe('requireBearerAuth', () => {
   it('lança UnauthorizedError quando o token é inválido/expirado', async () => {
     const tokenService: TokenService = {
       sign: vi.fn(),
-      verify: vi.fn().mockRejectedValue(new Error('token expirado')),
+      verify: vi.fn().mockRejectedValue(new UnauthorizedError()),
     }
 
     await expect(
@@ -39,7 +39,7 @@ describe('requireBearerAuth', () => {
   })
 
   it('retorna o payload quando o token é válido', async () => {
-    const payload = { sub: 'user-1', tenantId: 'tenant-1', papel: 'ADMIN' }
+    const payload = { sub: 'user-1', tenantId: 'tenant-1', role: 'OWNER' }
     const tokenService: TokenService = {
       sign: vi.fn(),
       verify: vi.fn().mockResolvedValue(payload),
@@ -52,5 +52,12 @@ describe('requireBearerAuth', () => {
 
     expect(result).toEqual(payload)
     expect(tokenService.verify).toHaveBeenCalledWith('token-valido')
+  })
+  it('propagates infrastructure errors so the BFF can return 500 without ending the session', async () => {
+    const error = new Error('database unavailable')
+    const tokens: TokenService = { sign: vi.fn(), verify: vi.fn().mockRejectedValue(error) }
+    await expect(
+      requireBearerAuth(buildRequest({ authorization: 'Bearer valid-signature' }), tokens),
+    ).rejects.toBe(error)
   })
 })

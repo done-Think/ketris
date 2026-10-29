@@ -16,9 +16,9 @@ describe('DeletePropertyDialog', () => {
       />,
     )
 
-    expect(screen.getByRole('heading', { name: 'Excluir imóvel' })).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Inativar imóvel' })).toBeVisible()
     expect(screen.getByText(/Apartamento Jardins/)).toBeVisible()
-    expect(screen.getByText(/permanente/)).toBeVisible()
+    expect(screen.getByText(/preservados/)).toBeVisible()
   })
 
   it('calls onConfirm and onClose from their respective buttons', async () => {
@@ -35,7 +35,7 @@ describe('DeletePropertyDialog', () => {
       />,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Excluir' }))
+    await user.click(screen.getByRole('button', { name: 'Inativar' }))
     expect(onConfirm).toHaveBeenCalledOnce()
 
     await user.click(screen.getByRole('button', { name: 'Cancelar' }))

@@ -1,10 +1,10 @@
-import type { UploadMaintenanceTicketAttachmentInput } from '../../types/use-case-inputs'
 import { MaintenanceAttachmentValidationError } from '../../domain/errors'
-import type { MaintenanceAttachment } from '../../types/maintenance-ticket'
-import { loadTicket } from '../workflow'
-import { assertPermission } from '../authorization'
 import type { MaintenanceAttachmentStoragePort } from '../../types/maintenance-attachment-storage'
-import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket-repository'
+import type { MaintenanceAttachment } from '../../types/maintenance-ticket'
+import type { UploadMaintenanceTicketAttachmentInput } from '../../types/use-case-inputs'
+import { assertPermission } from '../authorization'
+import type { MaintenanceTicketRepository } from '../ports/maintenance-ticket-repository.port'
+import { loadTicket } from '../workflow'
 
 const allowedContentTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const maxFileSizeBytes = 8 * 1024 * 1024

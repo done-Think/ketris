@@ -1,12 +1,23 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
+import { crmDateSchema } from './crm-date.schema'
+import {
+  crmEmailSchema,
+  crmNameSchema,
+  crmNotesSchema,
+  crmPhoneSchema,
+  crmProposedValueSchema,
+  crmShortTextSchema,
+} from './crm-input.schema'
+import { crmGroupsSchema, crmListQuerySchema, crmPaginationSchema } from './pagination.schema'
+import { crmPropertySummarySchema } from './property.schema'
 
 export const opportunityStatusSchema = z
-  .enum(['RASCUNHO', 'ENVIADA', 'EM_NEGOCIACAO', 'ACEITA', 'RECUSADA'])
+  .enum(['DRAFT', 'SENT', 'IN_NEGOTIATION', 'ACCEPTED', 'REJECTED'])
   .openapi('OpportunityStatus')
 
 export const guaranteeTypeSchema = z
-  .enum(['FIADOR', 'CAUCAO', 'SEGURO_FIANCA', 'NENHUMA'])
+  .enum(['GUARANTOR', 'DEPOSIT', 'SURETY_BOND', 'NONE'])
   .openapi('GuaranteeType')
 
 export const opportunitySchema = z
@@ -14,6 +25,9 @@ export const opportunitySchema = z
     id: z.string(),
     tenantId: z.string(),
     propertyId: z.string(),
+    responsibleId: z.string(),
+    responsibleName: z.string(),
+    property: crmPropertySummarySchema.optional(),
     contactId: z.string().nullable(),
     leadName: z.string(),
     leadEmail: z.string().email(),
@@ -26,13 +40,23 @@ export const opportunitySchema = z
     notes: z.string().nullable(),
     status: opportunityStatusSchema,
     archivedAt: z.coerce.date().nullable(),
-    createdAt: z.coerce.date(),
-    updatedAt: z.coerce.date(),
+    createdAt: crmDateSchema,
+    updatedAt: crmDateSchema,
   })
   .openapi('Opportunity')
 
 export const listOpportunitiesQuerySchema = z
   .object({
+    ...crmListQuerySchema.shape,
+    summaryScope: z.enum(['all', 'results']).optional(),
+    sortBy: z
+      .enum(['name', 'property', 'proposedValue', 'status', 'createdAt', 'updatedAt'])
+      .optional(),
+    statuses: z
+      .string()
+      .transform((value) => value.split(','))
+      .pipe(z.array(opportunityStatusSchema))
+      .optional(),
     status: opportunityStatusSchema.optional(),
     contactId: z.string().optional(),
     includeArchived: z
@@ -40,44 +64,36 @@ export const listOpportunitiesQuerySchema = z
       .transform((value) => value === 'true')
       .optional(),
   })
+  .strict()
   .openapi('ListOpportunitiesQuery')
 
 export const listOpportunitiesResponseSchema = z
-  .object({ opportunities: z.array(opportunitySchema) })
+  .object({
+    opportunities: z.array(opportunitySchema),
+    pagination: crmPaginationSchema,
+    groups: crmGroupsSchema,
+  })
   .openapi('ListOpportunitiesResponse')
 
 export const opportunityResponseSchema = z
   .object({ opportunity: opportunitySchema })
   .openapi('OpportunityResponse')
 
-const leadName = z.string().min(1, 'Nome é obrigatório.')
-const leadEmail = z.string().email('E-mail inválido.')
-const leadPhone = z.string().min(1).nullable()
-const proposedValue = z.number().positive('Valor proposto deve ser positivo.')
-const contractTermMonths = z.number().int().positive().nullable()
-const desiredStartDate = z.coerce.date().nullable()
-const specialConditions = z.array(z.string().min(1))
-const notes = z.string().min(1).nullable()
+const leadName = crmNameSchema
+const leadEmail = crmEmailSchema
+const leadPhone = crmPhoneSchema.nullable()
+const proposedValue = crmProposedValueSchema
+const contractTermMonths = z.number().int().positive().max(2_147_483_647).nullable()
+const desiredStartDate = crmDateSchema.nullable()
+const specialConditions = z.array(crmShortTextSchema)
+const notes = crmNotesSchema.nullable()
 const contactId = z.string().min(1).nullable()
 
 export const createOpportunityRequestSchema = z
   .object({
     propertyId: z.string().min(1, 'Imóvel é obrigatório.'),
+    responsibleId: z.string().min(1).max(64).optional(),
     contactId: z.string().min(1).optional(),
-    leadName,
-    leadEmail,
-    leadPhone: leadPhone.optional(),
-    proposedValue,
-    notes: notes.optional(),
-    status: z.enum(['RASCUNHO', 'ENVIADA']).optional(),
-  })
-  .openapi('CreateOpportunityRequest')
-
-export type CreateOpportunityRequestDTO = z.infer<typeof createOpportunityRequestSchema>
-
-export const putOpportunityRequestSchema = z
-  .object({
-    contactId: contactId.optional(),
     leadName,
     leadEmail,
     leadPhone: leadPhone.optional(),
@@ -87,9 +103,10 @@ export const putOpportunityRequestSchema = z
     guaranteeType: guaranteeTypeSchema.optional(),
     specialConditions: specialConditions.optional(),
     notes: notes.optional(),
-    status: opportunityStatusSchema,
+    status: z.enum(['DRAFT', 'SENT']).optional(),
   })
-  .openapi('PutOpportunityRequest')
+  .strict()
+  .openapi('CreateOpportunityRequest')
 
 export const patchOpportunityRequestSchema = z
   .object({
@@ -105,10 +122,16 @@ export const patchOpportunityRequestSchema = z
     notes: notes.optional(),
     status: opportunityStatusSchema.optional(),
   })
+  .strict()
   .refine((data) => Object.values(data).some((value) => value !== undefined), {
     message: 'Informe ao menos um campo para atualizar.',
   })
   .openapi('PatchOpportunityRequest')
+
+export const assignOpportunityResponsibleRequestSchema = z
+  .object({ responsibleId: z.string().min(1).max(64) })
+  .strict()
+  .openapi('AssignOpportunityResponsibleRequest')
 
 export const deleteOpportunityQuerySchema = z
   .object({
@@ -117,7 +140,13 @@ export const deleteOpportunityQuerySchema = z
       .transform((value) => value === 'true')
       .optional(),
   })
+  .strict()
   .openapi('DeleteOpportunityQuery')
 
-export type PutOpportunityRequestDTO = z.infer<typeof putOpportunityRequestSchema>
-export type PatchOpportunityRequestDTO = z.infer<typeof patchOpportunityRequestSchema>
+export const opportunityResponsibleSchema = z
+  .object({ id: z.string(), name: z.string(), role: z.enum(['OWNER', 'AGENT']) })
+  .openapi('OpportunityResponsible')
+
+export const listOpportunityResponsiblesResponseSchema = z
+  .object({ responsibles: z.array(opportunityResponsibleSchema) })
+  .openapi('ListOpportunityResponsiblesResponse')

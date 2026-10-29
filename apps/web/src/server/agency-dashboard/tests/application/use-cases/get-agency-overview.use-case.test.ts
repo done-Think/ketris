@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { ChargeRepository } from '@server/financial/application/ports/charge-repository.port'
 import { GetFinancialSummaryUseCase } from '@server/financial/application/use-cases/get-financial-summary.use-case'
 
-import type { AgencyActivity, AgencyTopBroker } from '../../../domain/agency-overview.entity'
+import type { AgencyActivity, AgencyTopBroker } from '../../../types/agency-overview'
 import type { AgencyOverviewRepository } from '../../../application/ports/agency-overview-repository.port'
 import type { FinancialSummaryProvider } from '../../../application/ports/financial-summary-provider.port'
 import { GetAgencyOverviewUseCase } from '../../../application/use-cases/get-agency-overview.use-case'
@@ -66,9 +66,9 @@ function createFinancialSummaryProvider(
 }
 
 describe('GetAgencyOverviewUseCase', () => {
-  it.each(['ADMIN', 'OWNER'] as const)(
+  it.each(['OWNER'] as const)(
     'combines the real financial summary use case for %s',
-    async (actorPapel) => {
+    async (actorRole) => {
       const getSummary = vi.fn().mockResolvedValue({
         monthlyReceivable: 8500,
         overdueTotal: 0,
@@ -83,9 +83,15 @@ describe('GetAgencyOverviewUseCase', () => {
         findMany: vi.fn(),
         findById: vi.fn(),
         findReadableById: vi.fn(),
+        hasMovement: vi.fn(),
         update: vi.fn(),
-        delete: vi.fn(),
         registerPayment: vi.fn(),
+        reversePayment: vi.fn(),
+        cancel: vi.fn(),
+        delete: vi.fn(),
+        listHistory: vi.fn(),
+        findReceipt: vi.fn(),
+        findForExport: vi.fn(),
         getSummary,
       }
       const useCase = new GetAgencyOverviewUseCase(
@@ -93,11 +99,11 @@ describe('GetAgencyOverviewUseCase', () => {
         new GetFinancialSummaryUseCase(chargeRepository),
       )
 
-      const overview = await useCase.execute({ actorTenantId: 'tenant-1', actorPapel })
+      const overview = await useCase.execute({ actorTenantId: 'tenant-1', actorRole })
 
       expect(overview.kpis.monthlyReceivable).toBe(8500)
       expect(overview.revenueSeries).toEqual([{ year: 2026, month: 9, total: 8500 }])
-      expect(getSummary).toHaveBeenCalledWith('tenant-1', expect.any(Date))
+      expect(getSummary).toHaveBeenCalledWith('tenant-1', expect.any(Object), expect.any(Date))
     },
   )
 
@@ -108,7 +114,7 @@ describe('GetAgencyOverviewUseCase', () => {
     )
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'AGENT' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'AGENT' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
   })
 
@@ -119,7 +125,7 @@ describe('GetAgencyOverviewUseCase', () => {
     )
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'RENTER' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'RENTER' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
   })
 
@@ -128,7 +134,7 @@ describe('GetAgencyOverviewUseCase', () => {
     const financialSummaryProvider = createFinancialSummaryProvider()
     const useCase = new GetAgencyOverviewUseCase(repository, financialSummaryProvider)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' })
+    const result = await useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER' })
 
     expect(result).toEqual({
       kpis: {
@@ -148,16 +154,16 @@ describe('GetAgencyOverviewUseCase', () => {
     })
     expect(financialSummaryProvider.execute).toHaveBeenCalledWith({
       actorTenantId: 'tenant-1',
-      actorPapel: 'OWNER',
+      actorRole: 'OWNER',
     })
   })
 
-  it('permite ADMIN e delega o mesmo tenant do ator para todas as fontes', async () => {
+  it('permite OWNER e delega o mesmo tenant do ator para todas as fontes', async () => {
     const repository = createRepository()
     const financialSummaryProvider = createFinancialSummaryProvider()
     const useCase = new GetAgencyOverviewUseCase(repository, financialSummaryProvider)
 
-    await useCase.execute({ actorTenantId: 'tenant-2', actorPapel: 'ADMIN' })
+    await useCase.execute({ actorTenantId: 'tenant-2', actorRole: 'OWNER' })
 
     expect(repository.getPortfolioCount).toHaveBeenCalledWith('tenant-2')
     expect(repository.getActiveBrokersCount).toHaveBeenCalledWith('tenant-2')
@@ -176,7 +182,7 @@ describe('GetAgencyOverviewUseCase', () => {
     expect(repository.getRecentActivities).toHaveBeenCalledWith('tenant-2')
     expect(financialSummaryProvider.execute).toHaveBeenCalledWith({
       actorTenantId: 'tenant-2',
-      actorPapel: 'ADMIN',
+      actorRole: 'OWNER',
     })
   })
 
@@ -184,7 +190,7 @@ describe('GetAgencyOverviewUseCase', () => {
     const repository = createRepository()
     const useCase = new GetAgencyOverviewUseCase(repository, createFinancialSummaryProvider())
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER' })
 
     const referenceDate = vi.mocked(repository.getReceivedLeadsThisMonth).mock.calls[0][1]
     expect(vi.mocked(repository.getReceivedLeadsPreviousPeriod).mock.calls[0][1]).toBe(

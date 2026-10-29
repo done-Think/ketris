@@ -1,32 +1,19 @@
-export type PlatformAdminRole = 'ADMIN' | 'ADMIN_AGENT' | 'AGENT'
-
-export interface PlatformAdmin {
-  id: string
-  nome: string
-  email: string
-  senhaHash: string
-  role: PlatformAdminRole
-  ativo: boolean
-}
-
-export type AuthenticatedPlatformAdmin = Omit<PlatformAdmin, 'senhaHash'>
+import type {
+  AuthenticatedPlatformAdmin,
+  AuthenticatedPlatformAdminResponse,
+  PlatformAdmin,
+} from '../types/platform-admin'
 
 export function toAuthenticatedPlatformAdmin(admin: PlatformAdmin): AuthenticatedPlatformAdmin {
   return {
     id: admin.id,
-    nome: admin.nome,
+    name: admin.name,
     email: admin.email,
     role: admin.role,
-    ativo: admin.ativo,
+    active: admin.active,
+    createdAt: admin.createdAt,
+    lastAccessAt: admin.lastAccessAt,
   }
-}
-
-export interface AuthenticatedPlatformAdminResponse {
-  id: string
-  name: string
-  email: string
-  role: PlatformAdminRole
-  active: boolean
 }
 
 export function toAuthenticatedPlatformAdminResponse(
@@ -34,9 +21,11 @@ export function toAuthenticatedPlatformAdminResponse(
 ): AuthenticatedPlatformAdminResponse {
   return {
     id: admin.id,
-    name: admin.nome,
+    name: admin.name,
     email: admin.email,
     role: admin.role,
-    active: admin.ativo,
+    active: admin.active,
+    createdAt: admin.createdAt.toISOString(),
+    lastAccessAt: admin.lastAccessAt?.toISOString() ?? null,
   }
 }

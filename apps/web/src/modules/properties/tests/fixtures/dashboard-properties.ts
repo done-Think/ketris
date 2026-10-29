@@ -1,0 +1,590 @@
+import type {
+  DashboardProperty,
+  DashboardPropertyMappingOptions,
+} from '../../types/dashboard-property'
+import type { PropertyType } from '../../types/property'
+
+const apartmentMedia = [
+  {
+    url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=82',
+    label: 'Sala integrada',
+    kind: 'photo',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=900&q=82',
+    label: 'Cozinha planejada',
+    kind: 'photo',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=82',
+    label: 'Suíte principal',
+    kind: 'photo',
+  },
+] as const
+
+export const dashboardProperties: DashboardProperty[] = [
+  {
+    id: 'apt-jardins-3q',
+    title: 'Apt Jardins 3q',
+    address: 'Alameda Lorena, 1420',
+    location: 'Jardins, São Paulo',
+    type: 'Apartamento',
+    purpose: 'Aluguel',
+    price: 'R$ 6.500/mês',
+    status: 'rented',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'RENTED',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
+    broker: 'Roberto Souza',
+    updatedAt: 'Há 2 horas',
+    imageUrl:
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=160&q=80',
+    heroImageUrl:
+      'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1280&q=84',
+    media: [...apartmentMedia, { ...apartmentMedia[0], label: 'Planta baixa', kind: 'floorPlan' }],
+    summary: {
+      bedrooms: '3',
+      bathrooms: '2',
+      parkingSpaces: '2',
+      area: '95m²',
+      condominium: 'R$ 1.200',
+      propertyTax: 'R$ 380/mês',
+    },
+    pricing: {
+      rent: 'R$ 6.500/mês',
+      sale: 'Não anunciado',
+      condominium: 'R$ 1.200',
+      propertyTax: 'R$ 380/mês',
+      administrationFee: '8% sobre aluguel',
+      securityDeposit: '3 aluguéis',
+      lastAdjustment: 'R$ 300 há 5 dias',
+    },
+    participants: [
+      {
+        name: 'Carlos Eduardo',
+        role: 'Proprietário',
+        initials: 'CE',
+        imageUrl:
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=96&q=80',
+      },
+      {
+        name: 'Roberto Souza',
+        role: 'Corretor',
+        initials: 'RS',
+        imageUrl:
+          'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=96&q=80',
+      },
+      { name: 'Lopes Jardins', role: 'Imobiliária', initials: 'LJ' },
+    ],
+    activityHistory: [
+      { label: 'Contrato ativo vinculado', date: 'há 2 horas', tone: 'success' },
+      { label: 'Fotos atualizadas', date: 'há 1 dia', tone: 'accent' },
+      { label: 'Visita agendada com João Silva', date: 'há 3 dias', tone: 'info' },
+      { label: 'Ajuste de preço para R$ 6.500', date: 'há 5 dias', tone: 'warning' },
+      { label: 'Cadastro do imóvel efetuado', date: 'há 1 semana', tone: 'neutral' },
+    ],
+  },
+  {
+    id: 'studio-pinheiros',
+    title: 'Studio Pinheiros',
+    address: 'Rua Teodoro Sampaio, 840',
+    location: 'Pinheiros, São Paulo',
+    type: 'Studio',
+    purpose: 'Aluguel',
+    price: 'R$ 3.200/mês',
+    status: 'rented',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'RENTED',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
+    broker: 'Ana Paula',
+    updatedAt: 'Há 1 dia',
+    imageUrl:
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=160&q=80',
+    heroImageUrl:
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1280&q=84',
+    media: [
+      {
+        url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=82',
+        label: 'Ambiente principal',
+        kind: 'photo',
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=82',
+        label: 'Quarto mobiliado',
+        kind: 'photo',
+      },
+      { ...apartmentMedia[1], label: 'Tour em vídeo', kind: 'video' },
+    ],
+    summary: {
+      bedrooms: '1',
+      bathrooms: '1',
+      parkingSpaces: '1',
+      area: '42m²',
+      condominium: 'R$ 680',
+      propertyTax: 'R$ 180/mês',
+    },
+    pricing: {
+      rent: 'R$ 3.200/mês',
+      sale: 'Não anunciado',
+      condominium: 'R$ 680',
+      propertyTax: 'R$ 180/mês',
+      administrationFee: '7% sobre aluguel',
+      securityDeposit: 'Seguro fiança',
+      lastAdjustment: 'Sem reajuste recente',
+    },
+    participants: [
+      { name: 'Marina Costa', role: 'Proprietária', initials: 'MC' },
+      { name: 'Ana Paula', role: 'Corretora', initials: 'AP' },
+    ],
+    activityHistory: [
+      { label: 'Contrato marcado como alugado', date: 'há 1 dia', tone: 'info' },
+      { label: 'Proposta aprovada', date: 'há 4 dias', tone: 'success' },
+      { label: 'Cadastro do imóvel efetuado', date: 'há 2 semanas', tone: 'neutral' },
+    ],
+  },
+  {
+    id: 'cobertura-itaim',
+    title: 'Cobertura Itaim',
+    address: 'Rua Tabapuã, 1100',
+    location: 'Itaim Bibi, São Paulo',
+    type: 'Cobertura',
+    purpose: 'Venda',
+    price: 'R$ 4.500.000',
+    status: 'active',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'SOLD',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
+    broker: 'Roberto Souza',
+    updatedAt: 'Há 3 dias',
+    imageUrl:
+      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=160&q=80',
+    heroImageUrl:
+      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1280&q=84',
+    media: [
+      {
+        url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=82',
+        label: 'Living social',
+        kind: 'photo',
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=900&q=82',
+        label: 'Área gourmet',
+        kind: 'photo',
+      },
+      { ...apartmentMedia[2], label: 'Planta duplex', kind: 'floorPlan' },
+    ],
+    summary: {
+      bedrooms: '4',
+      bathrooms: '5',
+      parkingSpaces: '4',
+      area: '240m²',
+      condominium: 'R$ 3.900',
+      propertyTax: 'R$ 1.450/mês',
+    },
+    pricing: {
+      rent: 'Não anunciado',
+      sale: 'R$ 4.500.000',
+      condominium: 'R$ 3.900',
+      propertyTax: 'R$ 1.450/mês',
+      administrationFee: '2% na venda',
+      securityDeposit: 'Não aplicável',
+      lastAdjustment: 'Preço validado há 3 dias',
+    },
+    participants: [
+      { name: 'Helena Prado', role: 'Proprietária', initials: 'HP' },
+      { name: 'Roberto Souza', role: 'Corretor', initials: 'RS' },
+    ],
+    activityHistory: [
+      { label: 'Imóvel ativado para venda', date: 'há 3 dias', tone: 'success' },
+      { label: 'Fotos atualizadas', date: 'há 6 dias', tone: 'accent' },
+      { label: 'Cadastro do imóvel efetuado', date: 'há 3 semanas', tone: 'neutral' },
+    ],
+  },
+  {
+    id: 'casa-alto-pinheiros',
+    title: 'Casa Alto de Pinheiros',
+    address: 'Rua Cerro Corá, 450',
+    location: 'Alto de Pinheiros, São Paulo',
+    type: 'Casa',
+    purpose: 'Venda',
+    price: 'R$ 3.800.000',
+    status: 'inReview',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'DRAFT',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
+    broker: 'Marcos Lima',
+    updatedAt: 'Há 5 dias',
+    imageUrl:
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=160&q=80',
+    heroImageUrl:
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1280&q=84',
+    media: [
+      {
+        url: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=82',
+        label: 'Fachada e jardim',
+        kind: 'photo',
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=82',
+        label: 'Área externa',
+        kind: 'photo',
+      },
+      { ...apartmentMedia[0], label: 'Planta térrea', kind: 'floorPlan' },
+    ],
+    summary: {
+      bedrooms: '4',
+      bathrooms: '4',
+      parkingSpaces: '3',
+      area: '310m²',
+      condominium: 'Isento',
+      propertyTax: 'R$ 980/mês',
+    },
+    pricing: {
+      rent: 'Não anunciado',
+      sale: 'R$ 3.800.000',
+      condominium: 'Isento',
+      propertyTax: 'R$ 980/mês',
+      administrationFee: '2% na venda',
+      securityDeposit: 'Não aplicável',
+      lastAdjustment: 'Em análise documental',
+    },
+    participants: [
+      { name: 'Paulo Mendes', role: 'Proprietário', initials: 'PM' },
+      { name: 'Marcos Lima', role: 'Corretor', initials: 'ML' },
+    ],
+    activityHistory: [
+      { label: 'Documentação enviada para análise', date: 'há 5 dias', tone: 'warning' },
+      { label: 'Cadastro do imóvel efetuado', date: 'há 2 semanas', tone: 'neutral' },
+    ],
+  },
+  {
+    id: 'studio-bela-vista',
+    title: 'Studio Bela Vista',
+    address: 'Avenida Nove de Julho, 2100',
+    location: 'Bela Vista, São Paulo',
+    type: 'Studio',
+    purpose: 'Aluguel',
+    price: 'R$ 2.400/mês',
+    status: 'expiring',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'PUBLISHED',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
+    broker: 'Ana Paula',
+    updatedAt: 'Há 1 semana',
+    imageUrl:
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=160&q=80',
+    heroImageUrl:
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1280&q=84',
+    media: [
+      {
+        url: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=82',
+        label: 'Dormitório',
+        kind: 'photo',
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=82',
+        label: 'Studio integrado',
+        kind: 'photo',
+      },
+      { ...apartmentMedia[1], label: 'Vídeo de apresentação', kind: 'video' },
+    ],
+    summary: {
+      bedrooms: '1',
+      bathrooms: '1',
+      parkingSpaces: '0',
+      area: '34m²',
+      condominium: 'R$ 520',
+      propertyTax: 'R$ 140/mês',
+    },
+    pricing: {
+      rent: 'R$ 2.400/mês',
+      sale: 'Não anunciado',
+      condominium: 'R$ 520',
+      propertyTax: 'R$ 140/mês',
+      administrationFee: '7% sobre aluguel',
+      securityDeposit: '2 aluguéis',
+      lastAdjustment: 'Publicação vence em 7 dias',
+    },
+    participants: [
+      { name: 'Renata Ferraz', role: 'Proprietária', initials: 'RF' },
+      { name: 'Ana Paula', role: 'Corretora', initials: 'AP' },
+    ],
+    activityHistory: [
+      { label: 'Publicação próxima do vencimento', date: 'há 1 semana', tone: 'warning' },
+      { label: 'Cadastro do imóvel efetuado', date: 'há 1 mês', tone: 'neutral' },
+    ],
+  },
+  {
+    id: 'apt-moema-2q',
+    title: 'Apt Moema 2q',
+    address: 'Alameda dos Maracatins, 320',
+    location: 'Moema, São Paulo',
+    type: 'Apartamento',
+    purpose: 'Aluguel',
+    price: 'R$ 4.800/mês',
+    status: 'inactive',
+    responsibleUserId: 'mock-user-id',
+    apiStatus: 'INACTIVE',
+    description: null,
+    listing: {
+      amenities: [],
+      negotiationTerms: null,
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    },
+    broker: 'Clara G.',
+    updatedAt: 'Há 2 semanas',
+    imageUrl:
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=160&q=80',
+    heroImageUrl:
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1280&q=84',
+    media: [
+      {
+        url: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=82',
+        label: 'Sala principal',
+        kind: 'photo',
+      },
+      {
+        url: 'https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=900&q=82',
+        label: 'Cozinha e jantar',
+        kind: 'photo',
+      },
+      { ...apartmentMedia[2], label: 'Fotos arquivadas', kind: 'photo' },
+    ],
+    summary: {
+      bedrooms: '2',
+      bathrooms: '2',
+      parkingSpaces: '1',
+      area: '78m²',
+      condominium: 'R$ 940',
+      propertyTax: 'R$ 260/mês',
+    },
+    pricing: {
+      rent: 'R$ 4.800/mês',
+      sale: 'Não anunciado',
+      condominium: 'R$ 940',
+      propertyTax: 'R$ 260/mês',
+      administrationFee: '8% sobre aluguel',
+      securityDeposit: 'Cadastro pausado',
+      lastAdjustment: 'Inativado há 2 semanas',
+    },
+    participants: [
+      { name: 'Clara G.', role: 'Corretora', initials: 'CG' },
+      { name: 'Vila Nova Prime', role: 'Imobiliária', initials: 'VN' },
+    ],
+    activityHistory: [
+      { label: 'Imóvel marcado como inativo', date: 'há 2 semanas', tone: 'error' },
+      { label: 'Cadastro do imóvel efetuado', date: 'há 2 meses', tone: 'neutral' },
+    ],
+  },
+]
+
+export function getDashboardPropertyById(propertyId: string) {
+  return dashboardProperties.find((property) => property.id === propertyId)
+}
+
+function translateMonthlyValue(value: string, monthlySuffix: string) {
+  return value.replaceAll('/mês', monthlySuffix)
+}
+
+function translatePlaceholder(value: string, options: DashboardPropertyMappingOptions) {
+  const { notAnnounced, notInformed } = options.messages
+  const {
+    exempt,
+    notApplicable,
+    insuranceDeposit,
+    registrationPaused,
+    noRecentAdjustment,
+    underDocumentaryReview,
+  } = options.messages.pricingDetails
+  const knownValues: Record<string, string> = {
+    'Não anunciado': notAnnounced,
+    'Não informado': notInformed,
+    Isento: exempt,
+    'Não aplicável': notApplicable,
+    'Seguro fiança': insuranceDeposit,
+    'Cadastro pausado': registrationPaused,
+    'Sem reajuste recente': noRecentAdjustment,
+    'Em análise documental': underDocumentaryReview,
+  }
+
+  return translateMonthlyValue(knownValues[value] ?? value, options.messages.monthlySuffix)
+}
+
+function translateRelativeDate(value: string, locale: string) {
+  const match = value.match(/^(há|Há|em) (\d+) (hora|horas|dia|dias|semana|semanas|mês|meses)$/)
+
+  if (!match) return value
+
+  const [, prefix, amount, unit] = match
+  const unitMap = {
+    hora: 'hour',
+    horas: 'hour',
+    dia: 'day',
+    dias: 'day',
+    semana: 'week',
+    semanas: 'week',
+    mês: 'month',
+    meses: 'month',
+  } as const
+  const sign = prefix.toLowerCase() === 'em' ? 1 : -1
+  const formatted = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(
+    sign * Number(amount),
+    unitMap[unit as keyof typeof unitMap],
+  )
+
+  return prefix === 'Há' ? formatted.charAt(0).toUpperCase() + formatted.slice(1) : formatted
+}
+
+function translateAdministrationFee(value: string, options: DashboardPropertyMappingOptions) {
+  const rentMatch = value.match(/^(\d+)% sobre aluguel$/)
+  if (rentMatch) return options.messages.pricingDetails.feeOnRent.replace('{percent}', rentMatch[1])
+
+  const saleMatch = value.match(/^(\d+)% na venda$/)
+  if (saleMatch) return options.messages.pricingDetails.feeOnSale.replace('{percent}', saleMatch[1])
+
+  return value
+}
+
+function translateSecurityDeposit(value: string, options: DashboardPropertyMappingOptions) {
+  const installmentsMatch = value.match(/^(\d+) aluguéis$/)
+  if (installmentsMatch) {
+    return options.messages.pricingDetails.installmentsDeposit.replace(
+      '{count}',
+      installmentsMatch[1],
+    )
+  }
+
+  return translatePlaceholder(value, options)
+}
+
+function translateLastAdjustment(value: string, options: DashboardPropertyMappingOptions) {
+  const { priceValidated, listingExpires, deactivated } = options.messages.pricingDetails
+
+  const priceWithDateMatch = value.match(/^(R\$ [\d.,]+) (há .+)$/)
+  if (priceWithDateMatch) {
+    return `${priceWithDateMatch[1]} ${translateRelativeDate(priceWithDateMatch[2], options.locale)}`
+  }
+
+  const priceValidatedMatch = value.match(/^Preço validado (há .+)$/)
+  if (priceValidatedMatch) {
+    return `${priceValidated} ${translateRelativeDate(priceValidatedMatch[1], options.locale)}`
+  }
+
+  const listingExpiresMatch = value.match(/^Publicação vence (em .+)$/)
+  if (listingExpiresMatch) {
+    return `${listingExpires} ${translateRelativeDate(listingExpiresMatch[1], options.locale)}`
+  }
+
+  const deactivatedMatch = value.match(/^Inativado (há .+)$/)
+  if (deactivatedMatch) {
+    return `${deactivated} ${translateRelativeDate(deactivatedMatch[1], options.locale)}`
+  }
+
+  return translatePlaceholder(value, options)
+}
+
+function translateActivityLabel(value: string, options: DashboardPropertyMappingOptions) {
+  const { activity } = options.messages
+
+  const priceAdjustmentMatch = value.match(/^Ajuste de preço para (.+)$/)
+  if (priceAdjustmentMatch) {
+    return activity.priceAdjustment.replace('{price}', priceAdjustmentMatch[1])
+  }
+
+  const visitScheduledMatch = value.match(/^Visita agendada com (.+)$/)
+  if (visitScheduledMatch) {
+    return activity.visitScheduled.replace('{name}', visitScheduledMatch[1])
+  }
+
+  const knownLabels: Record<string, string> = {
+    'Cadastro do imóvel efetuado': activity.created,
+    'Contrato ativo vinculado': activity.contractLinked,
+    'Fotos atualizadas': activity.photosUpdated,
+    'Contrato marcado como alugado': activity.markedAsRented,
+    'Proposta aprovada': activity.proposalApproved,
+    'Imóvel ativado para venda': activity.activatedForSale,
+    'Documentação enviada para análise': activity.documentationSubmitted,
+    'Publicação próxima do vencimento': activity.listingExpiringSoon,
+    'Imóvel marcado como inativo': activity.markedAsInactive,
+  }
+
+  return knownLabels[value] ?? value
+}
+
+export function localizeDashboardPropertyFixture(
+  property: DashboardProperty,
+  options: DashboardPropertyMappingOptions,
+): DashboardProperty {
+  const isRent = property.purpose === 'Aluguel'
+  const propertyTypes: Record<string, PropertyType> = {
+    Apartamento: 'apartment',
+    Casa: 'house',
+    Cobertura: 'penthouse',
+    Studio: 'studio',
+  }
+
+  return {
+    ...property,
+    type: options.messages.propertyTypes[propertyTypes[property.type] ?? 'other'],
+    purpose: isRent ? options.messages.purposes.rent : options.messages.purposes.sale,
+    price: translatePlaceholder(property.price, options),
+    updatedAt: translateRelativeDate(property.updatedAt, options.locale),
+    summary: {
+      ...property.summary,
+      condominium: translatePlaceholder(property.summary.condominium, options),
+      propertyTax: translatePlaceholder(property.summary.propertyTax, options),
+    },
+    pricing: {
+      ...property.pricing,
+      rent: translatePlaceholder(property.pricing.rent, options),
+      sale: translatePlaceholder(property.pricing.sale, options),
+      condominium: translatePlaceholder(property.pricing.condominium, options),
+      propertyTax: translatePlaceholder(property.pricing.propertyTax, options),
+      administrationFee: translateAdministrationFee(property.pricing.administrationFee, options),
+      securityDeposit: translateSecurityDeposit(property.pricing.securityDeposit, options),
+      lastAdjustment: translateLastAdjustment(property.pricing.lastAdjustment, options),
+    },
+    activityHistory: property.activityHistory.map((entry) => ({
+      ...entry,
+      label: translateActivityLabel(entry.label, options),
+      date: translateRelativeDate(entry.date, options.locale),
+    })),
+  }
+}

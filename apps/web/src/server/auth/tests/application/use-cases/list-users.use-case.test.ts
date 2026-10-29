@@ -1,76 +1,75 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type { User } from '../../../domain/user.entity'
-import type { UserRepository } from '../../../application/ports/user-repository.port'
+import type { UserListRepository } from '../../../application/ports/user-list-repository.port'
 import { ListUsersUseCase } from '../../../application/use-cases/list-users.use-case'
 
 const admin: User = {
   id: 'admin-1',
   tenantId: 'tenant-1',
-  nome: 'Admin',
+  name: 'Admin',
   email: 'admin@ketris.dev',
-  senhaHash: 'hash-fake',
-  papel: 'ADMIN',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-fake',
+  role: 'OWNER',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 const owner: User = {
   id: 'owner-1',
   tenantId: 'tenant-1',
-  nome: 'Proprietário',
+  name: 'Proprietário',
   email: 'owner@ketris.dev',
-  senhaHash: 'hash-fake',
-  papel: 'OWNER',
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-fake',
+  role: 'OWNER',
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 
 const agent: User = {
   id: 'agent-1',
   tenantId: 'tenant-1',
-  nome: 'Agente',
+  name: 'Agente',
   email: 'agent@ketris.dev',
-  senhaHash: 'hash-fake',
-  papel: 'AGENT',
-  ativo: false,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash-fake',
+  role: 'AGENT',
+  active: false,
+  membershipApprovedAt: new Date(),
 }
 
-function createDeps(findManyByTenant?: UserRepository['findManyByTenant']) {
-  const userRepository: UserRepository = {
-    findById: vi.fn(),
-    findByEmail: vi.fn(),
-    findManyByTenant: findManyByTenant ?? vi.fn().mockResolvedValue([admin, owner, agent]),
-    create: vi.fn(),
-    update: vi.fn(),
-    deactivate: vi.fn(),
-    approveMembership: vi.fn(),
+function createDeps() {
+  const userRepository: UserListRepository = {
+    findPageByTenant: vi
+      .fn()
+      .mockResolvedValue({ users: [admin, owner, agent], total: 3, page: 1, pageSize: 25 }),
   }
 
   return { userRepository }
 }
 
 describe('ListUsersUseCase', () => {
-  it('lista os usuários do tenant sem incluir administradores', async () => {
+  it('lista todos os usuários do tenant', async () => {
     const deps = createDeps()
     const useCase = new ListUsersUseCase(deps.userRepository)
 
-    const result = await useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'ADMIN' })
+    const result = await useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER' })
 
-    expect(result).toHaveLength(2)
-    expect(result.every((user) => user.papel !== 'ADMIN')).toBe(true)
-    expect(result.map((user) => user.id)).toEqual([owner.id, agent.id])
-    expect(result.every((user) => !('senhaHash' in user))).toBe(true)
+    expect(result.users.map((user) => user.id)).toEqual([admin.id, owner.id, agent.id])
+    expect(result.users.every((user) => !('passwordHash' in user))).toBe(true)
+    expect(deps.userRepository.findPageByTenant).toHaveBeenCalledWith('tenant-1', {
+      page: 1,
+      pageSize: 25,
+      pendingApproval: undefined,
+    })
   })
 
-  it('lança ForbiddenError quando o ator não é ADMIN', async () => {
+  it('lança ForbiddenError quando o ator não é o dono da imobiliária', async () => {
     const deps = createDeps()
     const useCase = new ListUsersUseCase(deps.userRepository)
 
     await expect(
-      useCase.execute({ actorTenantId: 'tenant-1', actorPapel: 'OWNER' }),
+      useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'AGENT' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
-    expect(deps.userRepository.findManyByTenant).not.toHaveBeenCalled()
+    expect(deps.userRepository.findPageByTenant).not.toHaveBeenCalled()
   })
 })

@@ -1,18 +1,11 @@
-import type { TenantSummary } from '@server/platform/domain/tenant-summary.entity'
-import type { TenantRepository } from '@server/platform/application/ports/tenant-repository.port'
-
-import { RENTER_TENANT_SLUG } from './register-renter.use-case'
-
-export interface SearchRegisterableTenantsInput {
-  query: string
-}
-
-export type SearchRegisterableTenantsOutput = TenantSummary[]
+import { RENTER_TENANT_SLUG } from '@server/shared/domain/system-tenants'
+import type { SearchRegisterableTenantsInput } from '../../types/use-case-inputs'
+import type { SearchRegisterableTenantsOutput } from '../../types/use-case-outputs'
+import type { RegistrationRepository } from '../ports/registration-repository.port'
 
 export class SearchRegisterableTenantsUseCase {
-  constructor(private readonly tenantRepository: TenantRepository) {}
-
+  constructor(private readonly accounts: RegistrationRepository) {}
   execute(input: SearchRegisterableTenantsInput): Promise<SearchRegisterableTenantsOutput> {
-    return this.tenantRepository.searchByName(input.query, [RENTER_TENANT_SLUG])
+    return this.accounts.searchByName(input.query, [RENTER_TENANT_SLUG])
   }
 }

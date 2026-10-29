@@ -14,6 +14,7 @@ import {
 } from '../../charges/[id]/route'
 import { GET, POST } from '../../charges/route'
 import { GET as getSummary } from '../../summary/route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/financial/charges (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -22,112 +23,115 @@ describe('/api/financial/charges (integração)', () => {
   let renterToken: string
   let agentToken: string
   let contractId: string
+  let actorId: string
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Financial', slug: `financial-${randomUUID()}` },
+      data: { name: 'Tenant Financial', slug: `financial-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Proprietário',
+        name: 'Proprietário',
         email: `proprietario-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'OWNER',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
+    actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const agent = await prisma.usuario.create({
+    const agent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor',
+        name: 'Corretor',
         email: `corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
     agentToken = await tokenService.sign({
       id: agent.id,
       tenantId: agent.tenantId,
-      nome: agent.nome,
+      name: agent.name,
       email: agent.email,
-      papel: agent.papel,
-      ativo: agent.ativo,
-      vinculoAprovadoEm: agent.vinculoAprovadoEm,
+      role: agent.role,
+      active: agent.active,
+      membershipApprovedAt: agent.membershipApprovedAt,
     })
 
-    const renter = await prisma.usuario.create({
+    const renter = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Locatário Teste',
+        name: 'Locatário Teste',
         email: `locatario-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'RENTER',
+        passwordHash: 'hash-fake',
+        role: 'RENTER',
       },
     })
     renterToken = await tokenService.sign({
       id: renter.id,
       tenantId: renter.tenantId,
-      nome: renter.nome,
+      name: renter.name,
       email: renter.email,
-      papel: renter.papel,
-      ativo: renter.ativo,
-      vinculoAprovadoEm: renter.vinculoAprovadoEm,
+      role: renter.role,
+      active: renter.active,
+      membershipApprovedAt: renter.membershipApprovedAt,
     })
 
-    const property = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: actor.id,
-        titulo: 'Apartamento Batel',
-        finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
-        valor: 2500,
+        responsibleId: actor.id,
+        title: 'Apartamento Batel',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2500,
         status: 'RENTED',
       },
     })
 
-    const opportunity = await prisma.oportunidade.create({
+    const opportunity = await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId: property.id,
-        interessadoNome: 'Mariana Souza',
-        interessadoEmail: 'mariana@example.com',
-        valorProposto: 2500,
-        status: 'ACEITA',
+        propertyId: property.id,
+        responsibleId: await propertyResponsibleId(prisma, property.id),
+        interestedName: 'Mariana Souza',
+        interestedEmail: 'mariana@example.com',
+        proposedValue: 2500,
+        status: 'ACCEPTED',
       },
     })
 
-    const contract = await prisma.contrato.create({
+    const contract = await prisma.contract.create({
       data: {
         tenantId,
-        imovelId: property.id,
-        oportunidadeOrigemId: opportunity.id,
-        codigo: `CTR-${randomUUID()}`,
-        tipo: 'RESIDENCIAL',
-        valor: 2500,
-        diaVencimento: 5,
-        dataInicio: new Date('2026-10-01'),
-        dataFim: new Date('2027-10-01'),
-        indiceReajuste: 'IGPM',
-        tipoGarantia: 'CAUCAO',
-        status: 'ATIVO',
-        partes: {
+        propertyId: property.id,
+        sourceOpportunityId: opportunity.id,
+        code: `CTR-${randomUUID()}`,
+        type: 'RESIDENTIAL',
+        amount: 2500,
+        dueDay: 5,
+        startDate: new Date('2026-10-01'),
+        endDate: new Date('2027-10-01'),
+        adjustmentIndex: 'IGPM',
+        guaranteeType: 'DEPOSIT',
+        status: 'ACTIVE',
+        parties: {
           create: [
             {
-              papel: 'LOCATARIO',
-              nome: 'Mariana Souza',
+              role: 'RENTER',
+              name: 'Mariana Souza',
               cpf: '22222222222',
               email: 'mariana@example.com',
             },
@@ -169,10 +173,10 @@ describe('/api/financial/charges (integração)', () => {
         'POST',
         {
           description: 'Conta de luz',
-          type: 'A_PAGAR',
+          type: 'PAYABLE',
           amount: 180,
           dueDate: '2026-10-12',
-          status: 'PENDENTE',
+          status: 'PENDING',
         },
         renterToken,
       ),
@@ -188,7 +192,7 @@ describe('/api/financial/charges (integração)', () => {
       buildRequest(
         'http://localhost/api/financial/charges',
         'POST',
-        { type: 'A_PAGAR', amount: 180, dueDate: '2026-10-12', status: 'PENDENTE' },
+        { type: 'PAYABLE', amount: 180, dueDate: '2026-10-12', status: 'PENDING' },
         actorToken,
       ),
     )
@@ -203,10 +207,10 @@ describe('/api/financial/charges (integração)', () => {
         'POST',
         {
           contractId: 'contract-missing',
-          type: 'A_RECEBER',
+          type: 'RECEIVABLE',
           amount: 2500,
           dueDate: '2026-11-05',
-          status: 'PENDENTE',
+          status: 'PENDING',
         },
         actorToken,
       ),
@@ -227,10 +231,10 @@ describe('/api/financial/charges (integração)', () => {
         'POST',
         {
           description: 'Conta de luz',
-          type: 'A_PAGAR',
+          type: 'PAYABLE',
           amount: 180.5,
           dueDate: '2026-10-12',
-          status: 'PENDENTE',
+          status: 'PENDING',
         },
         actorToken,
       ),
@@ -242,7 +246,11 @@ describe('/api/financial/charges (integração)', () => {
     expect(json.charge.contractId).toBeNull()
     expect(json.charge.description).toBe('Conta de luz')
     expect(json.charge.amount).toBe(180.5)
-    expect(json.charge.status).toBe('PENDENTE')
+    expect(json.charge.status).toBe(
+      new Date('2026-10-12T00:00:00.000Z') < new Date(new Date().toISOString().slice(0, 10))
+        ? 'OVERDUE'
+        : 'PENDING',
+    )
 
     avulsaChargeId = json.charge.id
   })
@@ -252,7 +260,7 @@ describe('/api/financial/charges (integração)', () => {
       buildRequest(
         'http://localhost/api/financial/charges',
         'POST',
-        { contractId, type: 'A_RECEBER', amount: 2500, dueDate: '2026-11-05', status: 'PENDENTE' },
+        { contractId, type: 'RECEIVABLE', amount: 2500, dueDate: '2026-11-05', status: 'PENDING' },
         actorToken,
       ),
     )
@@ -304,20 +312,20 @@ describe('/api/financial/charges (integração)', () => {
   ])('protege leituras e bloqueia alterações de %s sem alterar nada', async (role, token) => {
     const url = `http://localhost/api/financial/charges/${avulsaChargeId}`
     const params = { params: Promise.resolve({ id: avulsaChargeId }) }
-    const body = {
+    const patchBody = {
       description: 'Alterada sem permissão',
-      type: 'A_PAGAR',
+      type: 'PAYABLE',
       amount: 1,
       dueDate: '2026-10-15',
-      status: 'PENDENTE',
     }
-    const before = await prisma.cobranca.findUniqueOrThrow({ where: { id: avulsaChargeId } })
+    const body = { ...patchBody, status: 'PENDING' }
+    const before = await prisma.charge.findUniqueOrThrow({ where: { id: avulsaChargeId } })
 
     const responses = [
       await GET(buildRequest('http://localhost/api/financial/charges', 'GET', undefined, token())),
       await POST(buildRequest('http://localhost/api/financial/charges', 'POST', body, token())),
       await getCharge(buildRequest(url, 'GET', undefined, token()), params),
-      await patchCharge(buildRequest(url, 'PATCH', body, token()), params),
+      await patchCharge(buildRequest(url, 'PATCH', patchBody, token()), params),
       await registerPayment(
         buildRequest(
           `${url}/payment`,
@@ -336,9 +344,7 @@ describe('/api/financial/charges (integração)', () => {
     if (role === 'RENTER') {
       expect(await responses[0].json()).toMatchObject({ items: [], totalCount: 0 })
     }
-    expect(await prisma.cobranca.findUniqueOrThrow({ where: { id: avulsaChargeId } })).toEqual(
-      before,
-    )
+    expect(await prisma.charge.findUniqueOrThrow({ where: { id: avulsaChargeId } })).toEqual(before)
   })
 
   it('retorna 404 ao consultar cobrança de outro tenant/id inexistente', async () => {
@@ -350,18 +356,26 @@ describe('/api/financial/charges (integração)', () => {
     expect(response.status).toBe(404)
   })
 
-  it('edita a cobrança sem marcar como paga (edição direta de status ignora PAGA sem pagamento)', async () => {
+  it('recusa trocar o status pela edição', async () => {
     const response = await patchCharge(
       buildRequest(
         `http://localhost/api/financial/charges/${avulsaChargeId}`,
         'PATCH',
-        {
-          description: 'Conta de luz - atualizada',
-          type: 'A_PAGAR',
-          amount: 200,
-          dueDate: '2026-10-15',
-          status: 'PAGA',
-        },
+        { status: 'PAID' },
+        actorToken,
+      ),
+      { params: Promise.resolve({ id: avulsaChargeId }) },
+    )
+
+    expect(response.status).toBe(400)
+  })
+
+  it('edita a cobrança em aberto e registra no histórico', async () => {
+    const response = await patchCharge(
+      buildRequest(
+        `http://localhost/api/financial/charges/${avulsaChargeId}`,
+        'PATCH',
+        { description: 'Conta de luz - atualizada', amount: 200, dueDate: '2099-10-15' },
         actorToken,
       ),
       { params: Promise.resolve({ id: avulsaChargeId }) },
@@ -369,13 +383,21 @@ describe('/api/financial/charges (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.charge.description).toBe('Conta de luz - atualizada')
-    expect(json.charge.amount).toBe(200)
-    expect(json.charge.status).toBe('PENDENTE')
-    expect(json.charge.paidAt).toBeNull()
+    expect(json.charge).toMatchObject({
+      description: 'Conta de luz - atualizada',
+      amount: 200,
+      status: 'PENDING',
+      paidAt: null,
+    })
+    const events = await prisma.chargeAuditEvent.findMany({
+      where: { chargeId: avulsaChargeId },
+      orderBy: { createdAt: 'asc' },
+    })
+    expect(events.map((event) => event.action)).toEqual(['CREATED', 'UPDATED'])
+    expect(events[1].changedFields).toEqual(['description', 'amount', 'dueDate'])
   })
 
-  it('registra o pagamento da cobrança avulsa', async () => {
+  it('registra o pagamento da cobrança avulsa com quem deu baixa', async () => {
     const response = await registerPayment(
       buildRequest(
         `http://localhost/api/financial/charges/${avulsaChargeId}/payment`,
@@ -388,9 +410,12 @@ describe('/api/financial/charges (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.charge.status).toBe('PAGA')
+    expect(json.charge.status).toBe('PAID')
     expect(json.charge.paymentMethod).toBe('Boleto')
     expect(json.charge.paidAt).not.toBeNull()
+    expect(json.charge.receipt).toBeNull()
+    const stored = await prisma.charge.findUniqueOrThrow({ where: { id: avulsaChargeId } })
+    expect(stored.paidById).toBe(actorId)
   })
 
   it('retorna 409 ao tentar pagar uma cobrança já paga', async () => {
@@ -409,29 +434,42 @@ describe('/api/financial/charges (integração)', () => {
     expect(json.error.code).toBe('CHARGE_ALREADY_SETTLED')
   })
 
-  it('edita a cobrança paga para outro status e limpa os dados de pagamento', async () => {
-    const response = await patchCharge(
+  it('trava o valor da cobrança paga, mas deixa corrigir a descrição', async () => {
+    const url = `http://localhost/api/financial/charges/${avulsaChargeId}`
+    const params = { params: Promise.resolve({ id: avulsaChargeId }) }
+
+    const locked = await patchCharge(
+      buildRequest(url, 'PATCH', { amount: 999 }, actorToken),
+      params,
+    )
+    expect(locked.status).toBe(409)
+    expect((await locked.json()).error.code).toBe('CHARGE_LOCKED')
+
+    const described = await patchCharge(
+      buildRequest(url, 'PATCH', { description: 'Conta de luz de outubro' }, actorToken),
+      { params: Promise.resolve({ id: avulsaChargeId }) },
+    )
+    expect(described.status).toBe(200)
+    expect((await described.json()).charge).toMatchObject({
+      status: 'PAID',
+      amount: 200,
+      description: 'Conta de luz de outubro',
+    })
+  })
+
+  it('não exclui cobrança que já teve pagamento', async () => {
+    const response = await deleteCharge(
       buildRequest(
         `http://localhost/api/financial/charges/${avulsaChargeId}`,
-        'PATCH',
-        {
-          description: 'Conta de luz - atualizada',
-          type: 'A_PAGAR',
-          amount: 200,
-          dueDate: '2026-10-15',
-          status: 'CANCELADA',
-        },
+        'DELETE',
+        undefined,
         actorToken,
       ),
       { params: Promise.resolve({ id: avulsaChargeId }) },
     )
-    const json = await response.json()
 
-    expect(response.status).toBe(200)
-    expect(json.charge.status).toBe('CANCELADA')
-    expect(json.charge.paymentMethod).toBeNull()
-    expect(json.charge.receiptUrl).toBeNull()
-    expect(json.charge.paidAt).toBeNull()
+    expect(response.status).toBe(409)
+    expect((await response.json()).error.code).toBe('CHARGE_HAS_MOVEMENT')
   })
 
   it('retorna 403 quando um RENTER tenta excluir cobrança', async () => {
@@ -462,51 +500,55 @@ describe('/api/financial/charges (integração)', () => {
     expect(response.status).toBe(404)
   })
 
-  it('exclui permanentemente a cobrança avulsa', async () => {
-    const response = await deleteCharge(
+  it('exclui cobrança sem movimento e guarda o registro da exclusão', async () => {
+    const created = await POST(
       buildRequest(
-        `http://localhost/api/financial/charges/${avulsaChargeId}`,
-        'DELETE',
-        undefined,
+        'http://localhost/api/financial/charges',
+        'POST',
+        {
+          description: 'Lançada por engano',
+          type: 'PAYABLE',
+          amount: 50,
+          dueDate: '2099-01-01',
+          status: 'SCHEDULED',
+        },
         actorToken,
       ),
-      { params: Promise.resolve({ id: avulsaChargeId }) },
     )
+    const { charge } = await created.json()
+    const url = `http://localhost/api/financial/charges/${charge.id}`
+
+    const response = await deleteCharge(buildRequest(url, 'DELETE', undefined, actorToken), {
+      params: Promise.resolve({ id: charge.id }),
+    })
 
     expect(response.status).toBe(204)
-
-    const confirmResponse = await getCharge(
-      buildRequest(
-        `http://localhost/api/financial/charges/${avulsaChargeId}`,
-        'GET',
-        undefined,
-        actorToken,
-      ),
-      { params: Promise.resolve({ id: avulsaChargeId }) },
-    )
-
-    expect(confirmResponse.status).toBe(404)
+    expect(await prisma.charge.findUnique({ where: { id: charge.id } })).toBeNull()
+    const deleted = await prisma.chargeAuditEvent.findFirstOrThrow({
+      where: { tenantId, chargeCode: charge.code, action: 'DELETED' },
+    })
+    expect(deleted).toMatchObject({ chargeId: null, actorUserId: actorId, fromStatus: 'SCHEDULED' })
   })
 
-  async function createToken(papel: 'OWNER' | 'ADMIN') {
-    const user = await prisma.usuario.create({
+  async function createToken(role: 'OWNER' | 'OWNER') {
+    const user = await prisma.user.create({
       data: {
         tenantId,
-        nome: `Usuário ${papel}`,
-        email: `${papel.toLowerCase()}-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel,
+        name: `Usuário ${role}`,
+        email: `${role.toLowerCase()}-${randomUUID()}@ketris.dev`,
+        passwordHash: 'hash-fake',
+        role,
       },
     })
 
     return tokenService.sign({
       id: user.id,
       tenantId: user.tenantId,
-      nome: user.nome,
+      name: user.name,
       email: user.email,
-      papel: user.papel,
-      ativo: user.ativo,
-      vinculoAprovadoEm: user.vinculoAprovadoEm,
+      role: user.role,
+      active: user.active,
+      membershipApprovedAt: user.membershipApprovedAt,
     })
   }
 
@@ -525,13 +567,13 @@ describe('/api/financial/charges (integração)', () => {
     expect(json.occupancyRatePercentage).toBe(100)
   })
 
-  it('libera o resumo financeiro para ADMIN', async () => {
+  it('libera o resumo financeiro para OWNER', async () => {
     const response = await getSummary(
       buildRequest(
         'http://localhost/api/financial/summary',
         'GET',
         undefined,
-        await createToken('ADMIN'),
+        await createToken('OWNER'),
       ),
     )
 

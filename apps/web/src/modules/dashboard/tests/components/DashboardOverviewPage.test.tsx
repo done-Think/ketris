@@ -1,201 +1,92 @@
-import { ThemeProvider } from '@mui/material'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
-import dayjs from 'dayjs'
+import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Papel } from '@server/auth/domain/user.entity'
-import { theme } from '@shared/theme/theme'
-
-import { useAgencyOverview } from '@modules/agency-dashboard/hooks/use-agency-dashboard'
-import type { ApiAgencyOverview } from '@modules/agency-dashboard/types/service'
-import type { AgendaEventApi } from '@modules/agenda/types/agenda-event'
+import type { UserRole } from '@shared/types/user-role'
 
 import { DashboardOverviewPage } from '../../components/DashboardOverviewPage'
+import { dashboardService } from '../../services/dashboard-service'
+import { apiAgencyOverview, apiDashboardOverview } from '../fixtures/dashboard'
+import { renderWithProviders } from '../fixtures/render'
 
-let papel: Papel = 'ADMIN'
+const { session } = vi.hoisted(() => ({
+  session: { tenantId: 'tenant-1', role: 'OWNER' as UserRole, user: { id: 'user-1' } },
+}))
 
 vi.mock('next-auth/react', () => ({
-  useSession: () => ({
-    data: { tenantId: 'tenant-1', role: papel, user: { id: 'agent-1' } },
-    status: 'authenticated',
-  }),
+  useSession: () => ({ data: session, status: 'authenticated' }),
 }))
 vi.mock('@shared/components/layout', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@shared/components/layout')>()),
   DashboardNotificationsButton: () => null,
 }))
-vi.mock('@modules/crm/hooks/use-leads', () => ({ useLeads: () => ({ data: [] }) }))
-vi.mock('@modules/crm/hooks/use-opportunities', () => ({
-  useOpportunities: () => ({ data: [] }),
-  useCrmProperty: () => ({ data: undefined }),
+vi.mock('../../services/dashboard-service', () => ({
+  dashboardService: { getOverview: vi.fn(), getAgencyOverview: vi.fn() },
 }))
 
-function agendaEvent(id: string, responsibleId: string, title: string): AgendaEventApi {
-  const start = dayjs().add(1, 'hour')
-
-  return {
-    id,
-    tenantId: 'tenant-1',
-    responsibleId,
-    createdById: null,
-    propertyId: null,
-    propertyReference: null,
-    title,
-    kind: 'VISIT',
-    status: 'CONFIRMED',
-    start: start.toISOString(),
-    end: start.add(1, 'hour').toISOString(),
-    participantName: 'Cliente',
-    participantPhone: '',
-    notes: null,
-    createdAt: start.toISOString(),
-    updatedAt: start.toISOString(),
-  }
+function renderPage(role: UserRole) {
+  session.role = role
+  return renderWithProviders(<DashboardOverviewPage />)
 }
 
-vi.mock('@modules/agenda/hooks/use-agenda-events', () => ({
-  useAgendaEvents: () => ({
-    data: [
-      agendaEvent('own', 'agent-1', 'Visita do próprio corretor'),
-      agendaEvent('team', 'agent-2', 'Visita de outro corretor'),
-      {
-        ...agendaEvent('collective', 'agent-2', 'Visita coletiva da equipe'),
-        audience: 'ALL_AGENTS',
-      },
-      {
-        ...agendaEvent('own-collective', 'agent-1', 'Visita coletiva sob minha responsabilidade'),
-        audience: 'ALL_AGENTS',
-      },
-      {
-        ...agendaEvent('cancelled-collective', 'agent-2', 'Visita coletiva cancelada'),
-        audience: 'ALL_AGENTS',
-        status: 'CANCELLED',
-      },
-      {
-        ...agendaEvent('cancelled', 'agent-1', 'Visita cancelada'),
-        status: 'CANCELLED',
-      },
-      {
-        id: 'limited',
-        propertyId: null,
-        propertyReference: null,
-        responsibleName: 'Corretor',
-        title: 'Evento com dados limitados',
-        kind: 'VISIT',
-        status: 'CONFIRMED',
-        start: dayjs().add(1, 'hour').toISOString(),
-        end: dayjs().add(2, 'hour').toISOString(),
-      },
-    ],
-  }),
-}))
-
-const overview: ApiAgencyOverview = {
-  kpis: {
-    portfolioCount: 42,
-    newPropertiesThisMonth: 2,
-    activeBrokersCount: 7,
-    receivedLeadsThisMonth: 9,
-    receivedLeadsPreviousPeriod: 5,
-    monthlyReceivable: 12000,
-    monthlyReceivablePreviousMonth: 10000,
-    overdueTotal: 450,
-    occupancyPercentage: 80,
-  },
-  revenueSeries: [],
-  topBrokers: [],
-  recentActivities: [
-    {
-      id: 'activity-1',
-      type: 'LEAD',
-      brokerName: 'Bruna',
-      detail: 'Carlos',
-      occurredAt: '2026-10-20T12:00:00.000Z',
-    },
-  ],
-}
-
-vi.mock('@modules/agency-dashboard/hooks/use-agency-dashboard', () => ({
-  useAgencyOverview: vi.fn((tenantId: string | null | undefined) => ({
-    data: tenantId ? overview : undefined,
-  })),
-}))
-
-function renderPage(role: Papel) {
-  papel = role
-
-  return render(
-    <QueryClientProvider client={new QueryClient()}>
-      <ThemeProvider theme={theme}>
-        <DashboardOverviewPage />
-      </ThemeProvider>
-    </QueryClientProvider>,
-  )
+function metricValue(label: string) {
+  return within(screen.getByText(label).parentElement!)
 }
 
 describe('DashboardOverviewPage', () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it.each(['ADMIN', 'OWNER'] as const)(
-    'mostra os números da imobiliária e a agenda da equipe para %s',
-    (role) => {
-      renderPage(role)
-
-      expect(useAgencyOverview).toHaveBeenCalledWith('tenant-1')
-      expect(screen.getByText('Imóveis na carteira')).toBeInTheDocument()
-      expect(screen.getByText('42')).toBeInTheDocument()
-      expect(screen.getByText('Corretores ativos')).toBeInTheDocument()
-      expect(screen.getByText('Faturamento')).toBeInTheDocument()
-      expect(screen.getByText('Em atraso')).toBeInTheDocument()
-      expect(screen.getByText('Top Corretores')).toBeInTheDocument()
-      expect(screen.getByText('Atividade Recente')).toBeInTheDocument()
-      expect(screen.getByText('Leads ativos')).toBeInTheDocument()
-      expect(screen.getByText('Visita do próprio corretor')).toBeInTheDocument()
-      expect(screen.getByText('Visita de outro corretor')).toBeInTheDocument()
-      expect(screen.getByText('Visita coletiva da equipe')).toBeInTheDocument()
-      expect(screen.getByText('Visita coletiva sob minha responsabilidade')).toBeInTheDocument()
-      expect(screen.queryByText('Visita coletiva cancelada')).not.toBeInTheDocument()
-      expect(screen.queryByText('Visita cancelada')).not.toBeInTheDocument()
-      expect(screen.queryByText('Evento com dados limitados')).not.toBeInTheDocument()
-      expect(
-        within(screen.getByText('Visitas mês').parentElement!).getByText('4'),
-      ).toBeInTheDocument()
-    },
-  )
-
-  it('mostra ao corretor só o trabalho dele, sem pedir os dados da imobiliária', () => {
-    renderPage('AGENT')
-
-    // The agency overview is never requested (the API would answer 403).
-    expect(useAgencyOverview).toHaveBeenCalledWith(null)
-    expect(useAgencyOverview).not.toHaveBeenCalledWith('tenant-1')
-    expect(screen.queryByText('Imóveis na carteira')).not.toBeInTheDocument()
-    expect(screen.queryByText('Faturamento')).not.toBeInTheDocument()
-    expect(screen.queryByText('Em atraso')).not.toBeInTheDocument()
-    expect(screen.queryByText('Top Corretores')).not.toBeInTheDocument()
-    expect(screen.queryByText('Atividade Recente')).not.toBeInTheDocument()
-
-    expect(screen.getByText('Leads ativos')).toBeInTheDocument()
-    expect(screen.getByText('Próximas atividades')).toBeInTheDocument()
-    expect(screen.getByText('Visita do próprio corretor')).toBeInTheDocument()
-    expect(screen.queryByText('Visita de outro corretor')).not.toBeInTheDocument()
-    expect(screen.queryByText('Visita cancelada')).not.toBeInTheDocument()
-    expect(screen.queryByText('Evento com dados limitados')).not.toBeInTheDocument()
-    expect(
-      within(screen.getByText('Visitas mês').parentElement!).getByText('1'),
-    ).toBeInTheDocument()
+  beforeEach(() => {
+    vi.mocked(dashboardService.getOverview).mockReset().mockResolvedValue(apiDashboardOverview)
+    vi.mocked(dashboardService.getAgencyOverview).mockReset().mockResolvedValue(apiAgencyOverview)
   })
 
-  it('mostra eventos coletivos ao corretor sem contabilizá-los nas visitas individuais', () => {
+  it('mostra os números do endpoint agregado para o corretor, sem os da imobiliária', async () => {
     renderPage('AGENT')
 
-    expect(screen.getByText('Visita coletiva da equipe')).toBeInTheDocument()
-    expect(screen.getByText('Visita coletiva sob minha responsabilidade')).toBeInTheDocument()
-    expect(screen.queryByText('Visita coletiva cancelada')).not.toBeInTheDocument()
-    expect(screen.queryByText('Visita de outro corretor')).not.toBeInTheDocument()
-    expect(
-      within(screen.getByText('Visitas mês').parentElement!).getByText('1'),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('Visita ao apartamento Batel')).toBeInTheDocument()
+    expect(metricValue('Leads ativos').getByText('6')).toBeInTheDocument()
+    expect(metricValue('Visitas mês').getByText('4')).toBeInTheDocument()
+    expect(metricValue('Propostas').getByText('3')).toBeInTheDocument()
+    expect(screen.getByText('Carlos Lima')).toBeInTheDocument()
+    expect(dashboardService.getAgencyOverview).not.toHaveBeenCalled()
+    expect(screen.queryByText('Imóveis na carteira')).not.toBeInTheDocument()
+  })
+
+  it('mostra também os números da imobiliária para o OWNER', async () => {
+    renderPage('OWNER')
+
+    expect(await screen.findByText('42')).toBeInTheDocument()
+    expect(screen.getByText('Imóveis na carteira')).toBeInTheDocument()
+    expect(screen.getByText('Top Corretores')).toBeInTheDocument()
+    expect(screen.getByText('Bruna recebeu o lead Carlos')).toBeInTheDocument()
+    expect(dashboardService.getAgencyOverview).toHaveBeenCalledTimes(1)
+  })
+
+  it('mostra os cards zerados enquanto o endpoint carrega', () => {
+    vi.mocked(dashboardService.getOverview).mockReturnValue(new Promise(() => undefined))
+    renderPage('AGENT')
+
+    expect(metricValue('Leads ativos').getByText('0')).toBeInTheDocument()
+    expect(screen.getByText('Nenhuma atividade agendada.')).toBeInTheDocument()
+  })
+
+  it('abre o detalhe da atividade com o imóvel que veio do próprio endpoint', async () => {
+    renderPage('AGENT')
+
+    await userEvent.click(await screen.findByText('Visita ao apartamento Batel'))
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Imóvel da visita')).toBeInTheDocument()
+    expect(within(dialog).getByText('Rua Bispo, 10 - Batel, Curitiba')).toBeInTheDocument()
+  })
+
+  it('abre e fecha o detalhe do lead', async () => {
+    renderPage('AGENT')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Detalhes' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Detalhes do lead')).toBeInTheDocument()
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Fechar' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 })

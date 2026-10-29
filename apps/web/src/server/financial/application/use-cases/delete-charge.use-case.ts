@@ -1,27 +1,24 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
+import { assertCanDeleteCharge } from '../../domain/charge-workflow'
 import { ChargeNotFoundError } from '../../domain/errors'
+import type { GetChargeInput } from '../../types/use-case-inputs'
 import { assertCanAccessFinance } from '../assert-can-access-finance'
 import type { ChargeRepository } from '../ports/charge-repository.port'
-
-export interface DeleteChargeInput {
-  actorTenantId: string
-  actorPapel: Papel
-  chargeId: string
-}
 
 export class DeleteChargeUseCase {
   constructor(private readonly chargeRepository: ChargeRepository) {}
 
-  async execute(input: DeleteChargeInput): Promise<void> {
-    assertCanAccessFinance(input.actorPapel)
+  async execute(input: GetChargeInput): Promise<void> {
+    assertCanAccessFinance(input.actorRole)
 
-    const existing = await this.chargeRepository.findById(input.actorTenantId, input.chargeId)
+    const current = await this.chargeRepository.findById(input.actorTenantId, input.chargeId)
+    if (!current) throw new ChargeNotFoundError()
 
-    if (!existing) {
-      throw new ChargeNotFoundError()
-    }
+    const hasMovement = await this.chargeRepository.hasMovement(input.actorTenantId, current.id)
+    assertCanDeleteCharge(current, hasMovement)
 
-    await this.chargeRepository.delete(input.actorTenantId, input.chargeId)
+    await this.chargeRepository.delete(current, {
+      tenantId: input.actorTenantId,
+      actorId: input.actorId,
+    })
   }
 }

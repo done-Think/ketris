@@ -16,7 +16,7 @@ function createStorage(overrides?: Partial<PropertyMediaStoragePort>): PropertyM
 
 const baseInput = {
   actorTenantId: 'tenant-1',
-  actorPapel: 'AGENT' as const,
+  actorRole: 'AGENT' as const,
   filename: 'photo.jpg',
   contentType: 'image/jpeg',
   body: Buffer.from('fake-image-bytes'),
@@ -42,8 +42,8 @@ describe('UploadPropertyMediaUseCase', () => {
     const storage = createStorage()
     const useCase = new UploadPropertyMediaUseCase(storage)
 
-    await expect(useCase.execute({ ...baseInput, actorPapel: 'RENTER' })).rejects.toThrow(
-      'Locatários não podem gerenciar imóveis.',
+    await expect(useCase.execute({ ...baseInput, actorRole: 'RENTER' })).rejects.toThrow(
+      'Só a equipe da imobiliária e o proprietário gerenciam imóveis.',
     )
     expect(storage.upload).not.toHaveBeenCalled()
   })

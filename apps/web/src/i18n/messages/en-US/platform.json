@@ -63,7 +63,6 @@
       "collapseNavigation": "Collapse navigation",
       "expandNavigation": "Expand navigation",
       "collapseMenu": "Collapse menu",
-      "admin": "SUPER ADMIN",
       "overview": "Overview",
       "tenants": "Tenants",
       "users": "Users",
@@ -88,14 +87,6 @@
       },
       "churn": {
         "label": "Churn (month)"
-      },
-      "uptime": {
-        "label": "Platform uptime"
-      },
-      "indicators": {
-        "growth": "+15%",
-        "stable": "Stable",
-        "normal": "Normal"
       }
     },
     "growth": {
@@ -140,10 +131,10 @@
       "emptyDescription": "Add the administrator alongside so the account can start using the platform.",
       "pendingApproval": "Awaiting approval",
       "roles": {
-        "ADMIN": "Administrator",
-        "OWNER": "Owner",
+        "OWNER": "Agency owner",
         "AGENT": "Broker",
-        "RENTER": "Renter"
+        "RENTER": "Renter",
+        "PROPERTY_OWNER": "Property owner"
       }
     },
     "account": {
@@ -237,16 +228,12 @@
     "name": "Name",
     "email": "Email",
     "role": "Role",
-    "administrator": "Administrator",
-    "unavailable": "Unavailable",
     "loadError": "Unable to load administrators.",
     "emptyTitle": "No administrators",
     "emptyDescription": "There are no platform administrators yet.",
     "noResultsTitle": "No users found",
     "noResultsDescription": "No administrators match the selected filters.",
     "clearFilters": "Clear filters",
-    "editUnavailable": "Edit (coming soon)",
-    "passwordUnavailable": "Change password (coming soon)",
     "deactivate": "Deactivate",
     "activate": "Activate",
     "editRegistration": "Edit registration",
@@ -267,7 +254,8 @@
       "lastAccess": "Last access",
       "createdAt": "Created at",
       "actions": "Actions"
-    }
+    },
+    "neverAccessed": "Never signed in"
   },
   "forms": {
     "name": "Name",
@@ -298,7 +286,8 @@
     },
     "namePlaceholder": "E.g. Horizon Real Estate",
     "slugLabel": "Identifier (slug)",
-    "slugPlaceholder": "horizon-real-estate"
+    "slugPlaceholder": "horizon-real-estate",
+    "administrator": "Administrator"
   },
   "table": {
     "first": "First page",
@@ -376,7 +365,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "updateSuccess": "Plan updated.",
-    "updateError": "Unable to update the plan."
+    "updateError": "Unable to update the plan.",
+    "updatedBy": "Changed by {name} on {date}"
   },
   "finance": {
     "title": "Finance",
@@ -451,6 +441,10 @@
     "submit": "Create account",
     "cancel": "Cancel",
     "createSuccess": "Account {name} created.",
-    "createError": "Unable to create the account. Please try again."
+    "createError": "Unable to create the account. Please try again.",
+    "forbidden": "Only administrators with the Admin role can create accounts."
+  },
+  "errors": {
+    "lastPlatformAdmin": "Keep at least one active administrator on the platform."
   }
 }

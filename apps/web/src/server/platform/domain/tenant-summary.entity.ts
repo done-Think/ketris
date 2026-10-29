@@ -1,21 +1,9 @@
-export interface TenantSummary {
-  id: string
-  nome: string
-  slug: string
-  createdAt: Date
-}
-
-export interface TenantSummaryResponse {
-  id: string
-  name: string
-  slug: string
-  createdAt: Date
-}
+import type { TenantSummary, TenantSummaryResponse } from '../types/tenant-summary'
 
 export function toTenantSummaryResponse(tenant: TenantSummary): TenantSummaryResponse {
   return {
     id: tenant.id,
-    name: tenant.nome,
+    name: tenant.name,
     slug: tenant.slug,
     createdAt: tenant.createdAt,
   }

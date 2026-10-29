@@ -4,23 +4,23 @@ export const contractsFiltersSchema = z.object({
   searchQuery: z.string().default(''),
   status: z
     .enum([
-      'Todos',
-      'Rascunho',
-      'Em revisão',
-      'Aguardando assinatura',
-      'Assinado',
-      'Ativo',
-      'Encerrado',
-      'Cancelado',
+      'ALL',
+      'DRAFT',
+      'IN_REVIEW',
+      'AWAITING_SIGNATURE',
+      'SIGNED',
+      'ACTIVE',
+      'CLOSED',
+      'CANCELED',
     ])
-    .default('Todos'),
-  type: z.enum(['Todos', 'Residencial', 'Comercial', 'Temporada']).default('Todos'),
-  period: z.enum(['Todos', 'Vencem este mês', 'Vencem em 90 dias']).default('Todos'),
+    .default('ALL'),
+  type: z.enum(['ALL', 'RESIDENTIAL', 'COMMERCIAL', 'SEASONAL']).default('ALL'),
+  period: z.enum(['ALL', 'THIS_MONTH', 'NEXT_90_DAYS']).default('ALL'),
 })
 
 export const contractsFiltersDefaultValues = {
   searchQuery: '',
-  status: 'Todos',
-  type: 'Todos',
-  period: 'Todos',
+  status: 'ALL',
+  type: 'ALL',
+  period: 'ALL',
 } satisfies z.infer<typeof contractsFiltersSchema>

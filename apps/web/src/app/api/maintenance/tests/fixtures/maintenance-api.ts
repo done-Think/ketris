@@ -1,20 +1,16 @@
-import type { MaintenanceTicketStatus } from '@server/maintenance/types/maintenance-ticket'
-import { randomUUID } from 'node:crypto'
-import { NextRequest } from 'next/server'
-import { afterAll, beforeAll, expect, vi } from 'vitest'
-import type { UploadMaintenanceAttachmentInput } from '@server/maintenance/types/maintenance-attachment-storage'
+import type { UserRole } from '@server/auth/domain/user.entity'
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
-import type { Papel } from '@server/auth/domain/user.entity'
-import { POST } from '../../tickets/route'
+import type { UploadMaintenanceAttachmentInput } from '@server/maintenance/types/maintenance-attachment-storage'
+import type { MaintenanceTicketStatus } from '@server/maintenance/types/maintenance-ticket'
+import { NextRequest } from 'next/server'
+import { randomUUID } from 'node:crypto'
+import { afterAll, beforeAll, expect } from 'vitest'
 import { POST as act } from '../../tickets/[id]/actions/route'
+import { POST } from '../../tickets/route'
+import { uploadToStorage } from './maintenance-storage'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
-const { uploadToStorage } = vi.hoisted(() => ({ uploadToStorage: vi.fn() }))
-vi.mock('@server/maintenance/infrastructure/s3-maintenance-attachment-storage', () => ({
-  S3MaintenanceAttachmentStorage: class {
-    upload = uploadToStorage
-  },
-}))
 export function setupMaintenanceIntegration() {
   const tokenService = new JoseTokenService()
 
@@ -26,73 +22,74 @@ export function setupMaintenanceIntegration() {
 
   async function createFixture() {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Maintenance Test', slug: `maintenance-${randomUUID()}` },
+      data: { name: 'Maintenance Test', slug: `maintenance-${randomUUID()}` },
     })
     tenantIds.push(tenant.id)
-    async function user(role: Papel) {
-      const user = await prisma.usuario.create({
+    async function user(role: UserRole) {
+      const user = await prisma.user.create({
         data: {
           tenantId: tenant.id,
-          nome: role,
+          name: role,
           email: `${randomUUID()}@maintenance.test`,
-          senhaHash: 'test-hash',
-          papel: role,
+          passwordHash: 'test-hash',
+          role: role,
         },
       })
       return { ...user, token: await tokenService.sign(user) }
     }
-    const admin = await user('ADMIN'),
+    const admin = await user('OWNER'),
       agent = await user('AGENT'),
-      owner = await user('OWNER'),
+      owner = await user('PROPERTY_OWNER'),
       renter = await user('RENTER'),
       unrelated = await user('RENTER'),
-      unrelatedOwner = await user('OWNER'),
+      unrelatedOwner = await user('PROPERTY_OWNER'),
       unrelatedAgent = await user('AGENT')
-    const property = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId: tenant.id,
-        responsavelId: agent.id,
-        proprietarioId: owner.id,
-        titulo: 'Test Property',
-        finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
-        valor: 2500,
+        responsibleId: agent.id,
+        ownerId: owner.id,
+        title: 'Test Property',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2500,
       },
     })
-    const opportunity = await prisma.oportunidade.create({
+    const opportunity = await prisma.opportunity.create({
       data: {
         tenantId: tenant.id,
-        imovelId: property.id,
-        interessadoNome: renter.nome,
-        interessadoEmail: renter.email,
-        valorProposto: 2500,
-        status: 'ACEITA',
+        propertyId: property.id,
+        responsibleId: await propertyResponsibleId(prisma, property.id),
+        interestedName: renter.name,
+        interestedEmail: renter.email,
+        proposedValue: 2500,
+        status: 'ACCEPTED',
       },
     })
-    const contract = await prisma.contrato.create({
+    const contract = await prisma.contract.create({
       data: {
         tenantId: tenant.id,
-        imovelId: property.id,
-        oportunidadeOrigemId: opportunity.id,
-        codigo: `TEST-${randomUUID()}`,
-        valor: 2500,
-        diaVencimento: 5,
-        dataInicio: new Date('2026-01-01'),
-        dataFim: new Date('2027-01-01'),
-        indiceReajuste: 'IPCA',
-        tipoGarantia: 'CAUCAO',
-        status: 'ATIVO',
-        partes: {
+        propertyId: property.id,
+        sourceOpportunityId: opportunity.id,
+        code: `TEST-${randomUUID()}`,
+        amount: 2500,
+        dueDay: 5,
+        startDate: new Date('2026-01-01'),
+        endDate: new Date('2027-01-01'),
+        adjustmentIndex: 'IPCA',
+        guaranteeType: 'DEPOSIT',
+        status: 'ACTIVE',
+        parties: {
           create: {
-            papel: 'LOCATARIO',
-            nome: renter.nome,
+            role: 'RENTER',
+            name: renter.name,
             cpf: '00000000000',
             email: renter.email,
-            usuarioId: renter.id,
+            userId: renter.id,
           },
         },
       },
-      include: { partes: true },
+      include: { parties: true },
     })
     return {
       tenant,
@@ -119,7 +116,7 @@ export function setupMaintenanceIntegration() {
 
   afterAll(async () => {
     for (const tenantId of tenantIds) {
-      await prisma.solicitacaoTrocaPrestador.deleteMany({ where: { chamado: { tenantId } } })
+      await prisma.providerChangeRequest.deleteMany({ where: { ticket: { tenantId } } })
       await prisma.tenant.delete({ where: { id: tenantId } })
     }
     await prisma.$disconnect()
@@ -141,7 +138,7 @@ export function setupMaintenanceIntegration() {
   const payload = {
     title: 'Leak',
     description: 'Kitchen leak',
-    category: 'Plumbing',
+    category: 'PLUMBING',
     priority: 'NORMAL',
   }
 
@@ -166,68 +163,69 @@ export function setupMaintenanceIntegration() {
       body: formData,
     })
   }
-  async function legacyTicket(status: MaintenanceTicketStatus = 'FECHADO', archived = false) {
-    return prisma.chamadoManutencao.create({
+  async function legacyTicket(status: MaintenanceTicketStatus = 'CLOSED', archived = false) {
+    return prisma.maintenanceTicket.create({
       data: {
         tenantId: fixture.tenant.id,
-        imovelId: fixture.property.id,
-        categoria: 'Plumbing',
-        titulo: 'Legacy ticket',
-        descricao: 'Existing record',
-        abertoPorId: fixture.admin.id,
-        abertoPorNome: fixture.admin.nome,
+        propertyId: fixture.property.id,
+        category: 'PLUMBING',
+        title: 'Legacy ticket',
+        description: 'Existing record',
+        openedById: fixture.admin.id,
+        openedByName: fixture.admin.name,
         status,
-        resolvidoEm: ['RESOLVIDO', 'FECHADO'].includes(status) ? new Date('2026-09-01') : null,
-        excluidoEm: archived ? new Date('2026-09-02') : null,
-        excluidoPorId: archived ? fixture.admin.id : null,
-        concluidoPorId: fixture.agent.id,
-        concluidoPorPapel: 'AGENT',
-        atividades: { create: { tipo: 'NOTA', mensagem: 'Historical note' } },
-        anexos: { create: { nome: 'Historical photo', url: '/existing-photo.png' } },
+        resolvedAt: ['RESOLVED', 'CLOSED'].includes(status) ? new Date('2026-09-01') : null,
+        deletedAt: archived ? new Date('2026-09-02') : null,
+        deletedById: archived ? fixture.admin.id : null,
+        completedById: fixture.agent.id,
+        completedByRole: 'AGENT',
+        activities: { create: { type: 'NOTE', message: 'Historical note' } },
+        attachments: { create: { name: 'Historical photo', url: '/existing-photo.png' } },
       },
-      include: { atividades: true, anexos: true },
+      include: { activities: true, attachments: true },
     })
   }
 
   async function anotherContract(propertyId = fixture.property.id) {
-    const renter = await prisma.usuario.create({
+    const renter = await prisma.user.create({
       data: {
         tenantId: fixture.tenant.id,
-        nome: 'Alternate contract renter',
+        name: 'Alternate contract renter',
         email: `${randomUUID()}@maintenance.test`,
-        senhaHash: 'test-hash',
-        papel: 'RENTER',
+        passwordHash: 'test-hash',
+        role: 'RENTER',
       },
     })
-    const opportunity = await prisma.oportunidade.create({
+    const opportunity = await prisma.opportunity.create({
       data: {
         tenantId: fixture.tenant.id,
-        imovelId: propertyId,
-        interessadoNome: renter.nome,
-        interessadoEmail: renter.email,
-        valorProposto: 2500,
-        status: 'ACEITA',
+        propertyId: propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
+        interestedName: renter.name,
+        interestedEmail: renter.email,
+        proposedValue: 2500,
+        status: 'ACCEPTED',
       },
     })
-    const contract = await prisma.contrato.create({
+    const contract = await prisma.contract.create({
       data: {
         tenantId: fixture.tenant.id,
-        imovelId: propertyId,
-        oportunidadeOrigemId: opportunity.id,
-        codigo: `TEST-${randomUUID()}`,
-        valor: 2500,
-        diaVencimento: 5,
-        dataInicio: new Date('2027-01-01'),
-        dataFim: new Date('2028-01-01'),
-        indiceReajuste: 'IPCA',
-        tipoGarantia: 'CAUCAO',
-        partes: {
+        propertyId: propertyId,
+        sourceOpportunityId: opportunity.id,
+        code: `TEST-${randomUUID()}`,
+        amount: 2500,
+        dueDay: 5,
+        startDate: new Date('2027-01-01'),
+        endDate: new Date('2028-01-01'),
+        adjustmentIndex: 'IPCA',
+        guaranteeType: 'DEPOSIT',
+        parties: {
           create: {
-            papel: 'LOCATARIO',
-            nome: renter.nome,
+            role: 'RENTER',
+            name: renter.name,
             cpf: '00000000000',
             email: renter.email,
-            usuarioId: renter.id,
+            userId: renter.id,
           },
         },
       },

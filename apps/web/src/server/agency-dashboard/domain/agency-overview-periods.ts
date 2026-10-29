@@ -1,25 +1,21 @@
-export interface DateRange {
-  start: Date
-  end: Date
+import {
+  calendarMonthDateRange,
+  calendarMonthInTimeZone,
+  monthBoundsInTimeZone,
+} from '@server/shared/time-zone-calendar'
+import type { TimeRange } from '@server/shared/types/time-zone-calendar'
+
+export function currentMonthRange(referenceDate: Date): TimeRange {
+  return monthBoundsInTimeZone(referenceDate)
 }
 
-export function currentMonthRange(referenceDate: Date): DateRange {
-  return {
-    start: new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1),
-    end: new Date(referenceDate.getFullYear(), referenceDate.getMonth() + 1, 1),
-  }
+export function previousMonthRange(referenceDate: Date): TimeRange {
+  const current = currentMonthRange(referenceDate)
+
+  return monthBoundsInTimeZone(new Date(current.start.getTime() - 1))
 }
 
-export function previousMonthRange(referenceDate: Date): DateRange {
-  return {
-    start: new Date(referenceDate.getFullYear(), referenceDate.getMonth() - 1, 1),
-    end: new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1),
-  }
-}
-
-// Same elapsed time into the previous month (e.g. Oct 1–13 14:00 → Sep 1–13 14:00), capped at the
-// end of the previous month so a partial month is never compared against a full one.
-export function previousMonthSamePeriodRange(referenceDate: Date): DateRange {
+export function previousMonthSamePeriodRange(referenceDate: Date): TimeRange {
   const previousMonth = previousMonthRange(referenceDate)
   const elapsed = referenceDate.getTime() - currentMonthRange(referenceDate).start.getTime()
   const end = new Date(
@@ -27,4 +23,8 @@ export function previousMonthSamePeriodRange(referenceDate: Date): DateRange {
   )
 
   return { start: previousMonth.start, end }
+}
+
+export function previousMonthDueDateRange(referenceDate: Date): TimeRange {
+  return calendarMonthDateRange(calendarMonthInTimeZone(referenceDate), -1)
 }

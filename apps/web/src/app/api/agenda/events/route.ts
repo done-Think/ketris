@@ -2,7 +2,6 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { agendaContainer } from '@server/agenda/container'
 import {
@@ -12,40 +11,25 @@ import {
 import {
   toAgendaEventReadResponse,
   toAgendaEventResponse,
-} from '@server/agenda/schemas/agenda-event.schema'
-import { parseJsonBody, RequestValidationError, withErrorHandling } from '@server/shared/http'
+} from '@server/agenda/application/agenda-event-response'
+import { parseJsonBody, parseQuery, withErrorHandling } from '@server/shared/http'
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
-  const parsed = listAgendaEventsQuerySchema.safeParse(
-    Object.fromEntries(request.nextUrl.searchParams),
-  )
+  const query = parseQuery(request, listAgendaEventsQuerySchema)
 
-  if (!parsed.success) {
-    throw new RequestValidationError(
-      parsed.error.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
-    )
-  }
-
-  if (parsed.data.to <= parsed.data.from) {
-    throw new RequestValidationError([{ path: 'to', message: '"to" deve ser depois de "from".' }])
-  }
-
-  const actorPapel = actor.papel as Papel
+  const actorRole = actor.role
   const events = await agendaContainer.listAgendaEventsUseCase.execute({
     actorTenantId: actor.tenantId,
     actorUserId: actor.sub,
-    actorPapel,
-    from: parsed.data.from,
-    to: parsed.data.to,
-    responsavelId: parsed.data.responsibleId,
+    actorRole,
+    from: query.from,
+    to: query.to,
+    responsibleId: query.responsibleId,
   })
 
   return NextResponse.json(
-    { events: events.map((event) => toAgendaEventReadResponse(event, actorPapel)) },
+    { events: events.map((event) => toAgendaEventReadResponse(event, actorRole, actor.sub)) },
     { status: 200 },
   )
 })
@@ -57,22 +41,22 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const event = await agendaContainer.createAgendaEventUseCase.execute({
     actorTenantId: actor.tenantId,
     actorUserId: actor.sub,
-    actorPapel: actor.papel as Papel,
-    responsavelId: body.responsibleId,
-    destino: body.audience,
-    interno: body.internal,
-    imovelId: body.propertyId,
-    referenciaImovelLivre: body.propertyReference,
-    titulo: body.title,
-    tipo: body.kind,
-    inicio: body.start,
+    actorRole: actor.role,
+    responsibleId: body.responsibleId,
+    audience: body.audience,
+    internal: body.internal,
+    propertyId: body.propertyId,
+    freeFormPropertyReference: body.propertyReference,
+    title: body.title,
+    type: body.kind,
+    start: body.start,
     outsideBusinessHoursConfirmed: body.outsideBusinessHoursConfirmed,
     durationMinutes: body.durationMinutes,
-    participanteNome: body.participantName,
-    participanteTelefone: body.participantPhone,
-    notas: body.notes,
-    donoEmail: body.ownerEmail,
-    participanteEmails: body.participantEmails,
+    participantName: body.participantName,
+    participantPhone: body.participantPhone,
+    notes: body.notes,
+    ownerEmail: body.ownerEmail,
+    participantEmails: body.participantEmails,
   })
 
   return NextResponse.json({ event: toAgendaEventResponse(event) }, { status: 201 })

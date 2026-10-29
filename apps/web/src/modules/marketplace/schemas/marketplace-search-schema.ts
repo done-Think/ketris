@@ -1,20 +1,24 @@
 import { z } from 'zod'
 
-import { searchResultsViewModes } from '../config/search-results-view-mode'
+import { marketplacePropertyTypes } from '../config/property-types'
 import type { SchemaMessageTranslator } from '@shared/types'
 
 const searchFilterKeySchema = z.enum(['location', 'propertyType', 'priceRange'])
 
-const createTextSearchDraftSchema = (t: SchemaMessageTranslator) =>
+const createTextSearchDraftSchema = (t: SchemaMessageTranslator<'textTooLong'>) =>
   z.object({
     location: z.string().trim().max(80, t('textTooLong')),
     propertyType: z.string().trim().max(80, t('textTooLong')),
   })
 
-const createNumericTextSchema = (t: SchemaMessageTranslator, maxLength: number) =>
-  z.string().trim().max(maxLength, t('numberTooLong')).regex(/^\d*$/, t('numbersOnly'))
+const createNumericTextSchema = (
+  t: SchemaMessageTranslator<'numberTooLong' | 'numbersOnly'>,
+  maxLength: number,
+) => z.string().trim().max(maxLength, t('numberTooLong')).regex(/^\d*$/, t('numbersOnly'))
 
-export function createMarketplaceSearchFormSchema(t: SchemaMessageTranslator) {
+export function createMarketplaceSearchFormSchema(
+  t: SchemaMessageTranslator<'optionRequired' | 'priceInvalid' | 'textTooLong'>,
+) {
   return z.object({
     activeSearchMenu: searchFilterKeySchema.nullable(),
     selectedSearch: z.object({
@@ -30,31 +34,15 @@ export function createMarketplaceSearchFormSchema(t: SchemaMessageTranslator) {
   })
 }
 
-export function createSearchResultsFormSchema(t: SchemaMessageTranslator) {
+export function createSearchResultsFiltersFormSchema(
+  t: SchemaMessageTranslator<'numberTooLong' | 'numbersOnly' | 'optionInvalid'>,
+) {
   return z.object({
-    selectedPropertyId: z.string(),
-    locationQuery: z.string().trim().max(80, t('textTooLong')),
-    propertyTypeFilter: z.string().trim().max(80, t('textTooLong')),
-    priceFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
+    propertyType: z.enum(marketplacePropertyTypes).nullable(),
+    priceOption: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
     customMaxPrice: createNumericTextSchema(t, 12),
-    bedroomFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
-    areaFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
-    customMinArea: createNumericTextSchema(t, 8),
-    onlyWithParking: z.boolean(),
-    sortOption: z.enum(['relevancia', 'menor-preco', 'maior-preco']),
-    viewMode: z.enum(searchResultsViewModes),
-    currentPage: z.number().int().min(1, t('optionInvalid')),
-  })
-}
-
-export function createSearchResultsFiltersDialogFormSchema(t: SchemaMessageTranslator) {
-  return z.object({
-    isFiltersOpen: z.boolean(),
-    propertyTypeFilter: z.string().trim().max(80, t('textTooLong')),
-    priceFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
-    customMaxPrice: createNumericTextSchema(t, 12),
-    bedroomFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
-    areaFilterIndex: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
+    bedroomOption: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
+    areaOption: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
     customMinArea: createNumericTextSchema(t, 8),
     onlyWithParking: z.boolean(),
   })

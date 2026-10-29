@@ -1,25 +1,12 @@
+import type { CreateUserOutput } from '../../types/use-case-outputs'
+import type { CreateUserInput } from '../../types/use-case-inputs'
+import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import { EmailAlreadyInUseError } from '../../domain/errors'
-import {
-  toAuthenticatedUser,
-  type AuthenticatedUser,
-  type NonAdminPapel,
-  type Papel,
-} from '../../domain/user.entity'
+import { toAuthenticatedUser } from '../authenticated-user'
 import type { PasswordHasher } from '../ports/password-hasher.port'
 import type { UserRepository } from '../ports/user-repository.port'
-
-export interface CreateUserInput {
-  actorTenantId: string
-  actorPapel: Papel
-  nome: string
-  email: string
-  password: string
-  papel: NonAdminPapel
-}
-
-export type CreateUserOutput = AuthenticatedUser
 
 export class CreateUserUseCase {
   constructor(
@@ -28,24 +15,25 @@ export class CreateUserUseCase {
   ) {}
 
   async execute(input: CreateUserInput): Promise<CreateUserOutput> {
-    if (input.actorPapel !== 'ADMIN') {
-      throw new ForbiddenError('Apenas administradores podem criar usuários.')
+    if (!isAgencyManager(input.actorRole)) {
+      throw new ForbiddenError('Apenas a gestão da imobiliária pode criar usuários.')
     }
 
-    const existing = await this.userRepository.findByEmail(input.email)
+    const existing = await this.userRepository.findByEmail(input.email, input.actorTenantId)
 
     if (existing) {
       throw new EmailAlreadyInUseError()
     }
 
-    const senhaHash = await this.passwordHasher.hash(input.password)
+    const passwordHash = await this.passwordHasher.hash(input.password)
 
     const created = await this.userRepository.create({
       tenantId: input.actorTenantId,
-      nome: input.nome,
+      auditActor: { kind: 'USER', id: input.actorId },
+      name: input.name,
       email: input.email,
-      senhaHash,
-      papel: input.papel,
+      passwordHash,
+      role: input.role,
     })
 
     return toAuthenticatedUser(created)

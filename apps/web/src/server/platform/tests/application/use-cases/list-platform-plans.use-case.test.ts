@@ -10,7 +10,7 @@ describe('ListPlatformPlansUseCase', () => {
   it('conta só as contas ativas e cobráveis de cada plano', async () => {
     const tenant = (accountType: string, status: string, slug = `t-${Math.random()}`) => ({
       id: slug,
-      nome: slug,
+      name: slug,
       slug,
       accountType,
       status,

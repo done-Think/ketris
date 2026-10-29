@@ -18,12 +18,6 @@
     "defaultUserContext": "Real estate CRM",
     "openNavigation": "Open navigation"
   },
-  "access": {
-    "loadingSession": "Loading session",
-    "restrictedTitle": "Restricted CRM access",
-    "restrictedDescription": "Sign in with an account linked to a tenant to view opportunities.",
-    "signIn": "Sign in to Ketris"
-  },
   "pipeline": {
     "propertyReference": "Property {id}",
     "title": "Sales Pipeline",
@@ -65,7 +59,8 @@
       "rejected": "Lost"
     },
     "createSuccess": "Opportunity created.",
-    "createError": "Could not create the opportunity."
+    "createError": "Could not create the opportunity.",
+    "loadMore": "Load more"
   },
   "contacts": {
     "title": "Contacts",
@@ -120,12 +115,13 @@
         "email": "Email",
         "phone": "Phone",
         "type": "Type",
-        "notes": "Notes"
+        "notes": "Notes",
+        "avatarUrl": "Avatar URL"
       },
       "types": {
-        "PROPRIETARIO": "Owner",
-        "LOCATARIO": "Tenant",
-        "CORRETOR": "Broker"
+        "OWNER": "Owner",
+        "RENTER": "Tenant",
+        "BROKER": "Broker"
       },
       "actions": {
         "cancel": "Cancel",
@@ -133,7 +129,9 @@
       },
       "errors": {
         "nameRequired": "Name is required.",
-        "emailInvalid": "Invalid email."
+        "emailInvalid": "Invalid email.",
+        "textTooLong": "Text exceeds the allowed limit.",
+        "avatarUrlInvalid": "Enter a valid HTTP(S) URL"
       },
       "createSuccess": "Contact created.",
       "updateSuccess": "Contact updated.",
@@ -185,7 +183,8 @@
         "whatsApp": "WhatsApp",
         "instagram": "Instagram",
         "site": "Site",
-        "referral": "Referral"
+        "referral": "Referral",
+        "other": "Other"
       },
       "actions": {
         "back": "Back",
@@ -200,7 +199,8 @@
         "emailInvalid": "Enter a valid email",
         "interestRequired": "Enter the property or interest",
         "budgetRequired": "Enter the budget",
-        "sourceRequired": "Enter the source"
+        "sourceRequired": "Enter the source",
+        "textTooLong": "Text exceeds the allowed limit."
       }
     },
     "filters": {
@@ -239,11 +239,12 @@
       "proposedValue": "Proposed value",
       "propertyRequired": "Select a property.",
       "proposedValueInvalid": "Enter a valid value",
-      "propertyRequired": "Select a property.",
       "cancel": "Cancel",
       "confirm": "Convert",
       "success": "Lead converted to opportunity.",
-      "error": "Could not convert the lead. Please try again."
+      "error": "Could not convert the lead. Please try again.",
+      "email": "Interested party email",
+      "emailInvalid": "Enter a valid email."
     },
     "pagination": {
       "pageAriaLabel": "Go to page {page}"
@@ -277,7 +278,8 @@
       "atLeastOneFieldRequired": "Provide at least one field to update.",
       "desiredStartDateInvalid": "Invalid start date.",
       "specialConditionInvalid": "Invalid special condition.",
-      "notesInvalid": "Invalid notes."
+      "notesInvalid": "Invalid notes.",
+      "textTooLong": "Text exceeds the allowed limit."
     },
     "editTitle": "Edit opportunity",
     "breadcrumbAriaLabel": "Breadcrumb",
@@ -331,7 +333,6 @@
       "intendedStart": "Intended start",
       "guarantee": "Guarantee",
       "specialConditions": "Special conditions",
-      "specialConditionsHelper": "Separate conditions with commas.",
       "notes": "Notes",
       "notInformed": "Not informed",
       "currentStatus": "Current stage",
@@ -348,19 +349,25 @@
       "conditionsCount": "{count, plural, =0 {None} one {# condition} other {# conditions}}",
       "months": "{count, plural, one {# month} other {# months}}",
       "property": "Property",
-      "status": "Initial status"
+      "status": "Initial status",
+      "conditionNumber": "Condition {number}",
+      "removeCondition": "Remove condition {number}",
+      "addCondition": "Add condition",
+      "contactSelection": "Linked contact (optional)",
+      "contactSyncHelper": "Changes to the interested party details also update the contact and its linked opportunities."
     },
     "guarantees": {
-      "NENHUMA": "Not informed",
-      "FIADOR": "Guarantor",
-      "CAUCAO": "Security deposit",
-      "SEGURO_FIANCA": "Rental bond insurance"
+      "none": "Not informed",
+      "guarantor": "Guarantor",
+      "deposit": "Security deposit",
+      "insurance": "Rental bond insurance"
     },
     "actions": {
       "cancel": "Cancel",
       "saveChanges": "Save changes",
       "confirmStageChange": "Confirm change",
-      "createOpportunity": "Create opportunity"
+      "createOpportunity": "Create opportunity",
+      "retry": "Retry"
     },
     "createTitle": "New opportunity",
     "nextActions": {
@@ -413,14 +420,50 @@
       }
     },
     "statuses": {
-      "RASCUNHO": "Draft",
-      "ENVIADA": "Sent",
-      "EM_NEGOCIACAO": "In negotiation",
-      "ACEITA": "Accepted",
-      "RECUSADA": "Rejected"
+      "draft": "Draft",
+      "sent": "Sent",
+      "inNegotiation": "In negotiation",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
     },
     "noProperties": "No properties found.",
-    "loadingProperties": "Searching properties..."
+    "loadingProperties": "Searching properties...",
+    "activitiesLoadError": "Unable to load the history.",
+    "activityTypes": {
+      "note": "Note",
+      "statusChanged": "Status change",
+      "contactMade": "Contact made",
+      "proposalResponded": "Proposal response"
+    },
+    "activityActions": {
+      "opportunityCreated": "Opportunity created.",
+      "statusChanged": "Status changed from {previous} to {next}.",
+      "accepted": "Proposal accepted.",
+      "rejected": "Proposal rejected.",
+      "informationRequested": "More information requested from the interested party.",
+      "responsibleChanged": "Owner changed:"
+    },
+    "loadMoreProperties": "Load more properties",
+    "propertyLoadError": "Unable to load properties.",
+    "responsible": {
+      "title": "Owner",
+      "label": "Opportunity owner",
+      "me": "Me",
+      "createHelper": "Who will handle this opportunity.",
+      "changed": "{name} is now the owner.",
+      "changeError": "Could not change the owner.",
+      "invalid": "Choose an active team member."
+    },
+    "activityComposer": {
+      "type": "Activity type",
+      "note": "Note",
+      "contact": "Contact made",
+      "description": "Description",
+      "save": "Record activity",
+      "required": "Describe the activity.",
+      "success": "Activity recorded.",
+      "error": "Could not record the activity."
+    }
   },
   "proposalManagement": {
     "allStatuses": "All",
@@ -445,5 +488,18 @@
       "acceptedTotal": "Total value accepted",
       "conversionRate": "Conversion rate"
     }
+  },
+  "formatting": {
+    "monthlyAmount": "{amount}/month"
+  },
+  "autocomplete": {
+    "loading": "Loading...",
+    "empty": "No results.",
+    "clear": "Clear selection",
+    "open": "Open options",
+    "close": "Close options",
+    "retry": "Retry",
+    "loadError": "Unable to load options.",
+    "loadMore": "Load more"
   }
 }

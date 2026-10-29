@@ -4,40 +4,36 @@ import { useSession } from 'next-auth/react'
 import { agendaService } from '../services/agenda-service'
 import type {
   CreateAgendaEventPayload,
+  AgendaEventMutationInput,
+  CancelAgendaEventMutationInput,
   RescheduleAgendaEventPayload,
   UpdateAgendaEventPayload,
 } from '../types/agenda-event'
 
-export const agendaQueryKeys = {
-  all: ['agenda'] as const,
-  events: () => [...agendaQueryKeys.all, 'events'] as const,
-  tenant: (tenantId: string) => [...agendaQueryKeys.events(), tenantId] as const,
-  range: (tenantId: string, from: string, to: string) =>
-    [...agendaQueryKeys.tenant(tenantId), from, to] as const,
-}
+export { agendaQueryKeys } from '../config/agenda-query-keys'
+import { agendaQueryKeys } from '../config/agenda-query-keys'
 
 export function useAgendaEvents(tenantId: string | null | undefined, from: string, to: string) {
   const { data: session } = useSession()
   const scopedTenantId = tenantId ?? ''
 
   return useQuery({
-    queryKey: [
-      ...agendaQueryKeys.range(scopedTenantId, from, to),
-      session?.user?.id,
-      session?.role,
-    ],
+    queryKey: agendaQueryKeys.range(scopedTenantId, from, to, session?.user?.id, session?.role),
     queryFn: () => agendaService.list(from, to),
     enabled: Boolean(tenantId) && Boolean(session?.user?.id) && Boolean(session?.role),
   })
 }
 
-export function useCreateAgendaEvent(tenantId: string) {
+export function useCreateAgendaEvent(tenantId: string | undefined) {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (payload: CreateAgendaEventPayload) => agendaService.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) })
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) }),
+        queryClient.invalidateQueries({ queryKey: agendaQueryKeys.notificationAll }),
+      ])
     },
   })
 }
@@ -46,10 +42,13 @@ export function useRescheduleAgendaEvent(tenantId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: RescheduleAgendaEventPayload }) =>
+    mutationFn: ({ id, payload }: AgendaEventMutationInput<RescheduleAgendaEventPayload>) =>
       agendaService.reschedule(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) })
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) }),
+        queryClient.invalidateQueries({ queryKey: agendaQueryKeys.notificationAll }),
+      ])
     },
   })
 }
@@ -58,10 +57,13 @@ export function useUpdateAgendaEvent(tenantId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: UpdateAgendaEventPayload }) =>
+    mutationFn: ({ id, payload }: AgendaEventMutationInput<UpdateAgendaEventPayload>) =>
       agendaService.update(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) })
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) }),
+        queryClient.invalidateQueries({ queryKey: agendaQueryKeys.notificationAll }),
+      ])
     },
   })
 }
@@ -70,9 +72,13 @@ export function useCancelAgendaEvent(tenantId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) => agendaService.cancel(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) })
+    mutationFn: ({ id, payload }: CancelAgendaEventMutationInput) =>
+      agendaService.cancel(id, payload),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) }),
+        queryClient.invalidateQueries({ queryKey: agendaQueryKeys.notificationAll }),
+      ])
     },
   })
 }

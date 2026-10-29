@@ -1,5 +1,7 @@
+import { PrismaAgendaPropertyCatalog } from './infrastructure/prisma-agenda-property-catalog'
+import { ListAgendaPropertiesUseCase } from './application/use-cases/list-agenda-properties.use-case'
 import { PrismaUserRepository } from '@server/auth/infrastructure/prisma-user.repository'
-import { PrismaPropertyRepository } from '@server/properties/infrastructure/prisma-property.repository'
+import { PrismaAgendaPropertyLookup } from './infrastructure/prisma-agenda-property-lookup'
 
 import { CancelAgendaEventUseCase } from './application/use-cases/cancel-agenda-event.use-case'
 import { CreateAgendaEventUseCase } from './application/use-cases/create-agenda-event.use-case'
@@ -11,21 +13,29 @@ import { PrismaAgendaEventRepository } from './infrastructure/prisma-agenda-even
 
 const agendaEventRepository = new PrismaAgendaEventRepository()
 const userRepository = new PrismaUserRepository()
-const propertyRepository = new PrismaPropertyRepository()
+const propertyRepository = new PrismaAgendaPropertyLookup()
+
+const propertyCatalog = new PrismaAgendaPropertyCatalog()
 
 export const agendaContainer = {
+  listAgendaPropertiesUseCase: new ListAgendaPropertiesUseCase(propertyCatalog),
   createAgendaEventUseCase: new CreateAgendaEventUseCase(
     agendaEventRepository,
     userRepository,
     propertyRepository,
+    propertyCatalog,
   ),
-  listAgendaEventsUseCase: new ListAgendaEventsUseCase(agendaEventRepository),
-  getAgendaEventUseCase: new GetAgendaEventUseCase(agendaEventRepository),
+  listAgendaEventsUseCase: new ListAgendaEventsUseCase(agendaEventRepository, propertyCatalog),
+  getAgendaEventUseCase: new GetAgendaEventUseCase(agendaEventRepository, propertyCatalog),
   updateAgendaEventUseCase: new UpdateAgendaEventUseCase(
     agendaEventRepository,
     propertyRepository,
     userRepository,
+    propertyCatalog,
   ),
-  rescheduleAgendaEventUseCase: new RescheduleAgendaEventUseCase(agendaEventRepository),
-  cancelAgendaEventUseCase: new CancelAgendaEventUseCase(agendaEventRepository),
+  rescheduleAgendaEventUseCase: new RescheduleAgendaEventUseCase(
+    agendaEventRepository,
+    propertyCatalog,
+  ),
+  cancelAgendaEventUseCase: new CancelAgendaEventUseCase(agendaEventRepository, propertyCatalog),
 }

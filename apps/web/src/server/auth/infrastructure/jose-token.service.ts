@@ -1,7 +1,8 @@
 import { jwtVerify, SignJWT } from 'jose'
 
-import type { AuthenticatedUser } from '../domain/user.entity'
+import type { AuthenticatedUser } from '../types/authenticated-user'
 import type { AccessTokenPayload, TokenService } from '../application/ports/token-service.port'
+import { accessTokenClaimsSchema } from '../schemas/access-token.schema'
 
 const ACCESS_TOKEN_TTL = '1h'
 
@@ -19,7 +20,11 @@ function getSecretKey(): Uint8Array {
 
 export class JoseTokenService implements TokenService {
   async sign(user: AuthenticatedUser): Promise<string> {
-    return new SignJWT({ tenantId: user.tenantId, papel: user.papel })
+    return new SignJWT({
+      tenantId: user.tenantId,
+      role: user.role,
+      sessionVersion: user.sessionVersion ?? 0,
+    })
       .setProtectedHeader({ alg: 'HS256' })
       .setSubject(user.id)
       .setIssuedAt()
@@ -28,12 +33,14 @@ export class JoseTokenService implements TokenService {
   }
 
   async verify(token: string): Promise<AccessTokenPayload> {
-    const { payload } = await jwtVerify(token, getSecretKey())
+    const { payload } = await jwtVerify(token, getSecretKey(), { algorithms: ['HS256'] })
+    const claims = accessTokenClaimsSchema.parse(payload)
 
     return {
-      sub: String(payload.sub),
-      tenantId: String(payload.tenantId),
-      papel: String(payload.papel),
+      sub: claims.sub,
+      tenantId: claims.tenantId,
+      role: claims.role,
+      sessionVersion: claims.sessionVersion,
     }
   }
 }

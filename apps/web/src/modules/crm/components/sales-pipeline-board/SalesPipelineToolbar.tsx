@@ -17,14 +17,13 @@ import {
   Tooltip,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import * as crmStyles from '../../styles/sales-pipeline-toolbar.styles'
 
 import {
   DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
-  dashboardHeaderFilterButtonSx,
 } from '@shared/components/layout'
-import { alpha, brand, radius, surface } from '@shared/theme/tokens'
 
 import { salesPipelineStages } from '../../config/sales-pipeline-stages'
 import type { SalesPipelineToolbarProps, SalesPipelineViewMode } from '../../types/sales-pipeline'
@@ -45,39 +44,23 @@ export function SalesPipelineToolbar({
   const t = useTranslations('crm.pipeline')
 
   const actions = (
-    <Stack
-      direction={{ xs: 'column', sm: 'row' }}
-      gap={1.2}
-      sx={{ width: { xs: '100%', lg: 'auto' }, minWidth: 0, alignItems: { sm: 'center' } }}
-    >
+    <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.2} sx={crmStyles.stackSx}>
       <ToggleButtonGroup
         value={viewMode}
         exclusive
         onChange={(_event, nextViewMode: SalesPipelineViewMode | null) => {
           if (nextViewMode) onViewModeChange(nextViewMode)
         }}
-        sx={{
-          flexShrink: 0,
-          height: 36,
-          '& .MuiToggleButton-root': {
-            px: 1.1,
-            borderColor: brand.neutral[100],
-            color: 'text.secondary',
-            '&.Mui-selected': {
-              bgcolor: brand.neutral[50],
-              color: 'text.primary',
-            },
-          },
-        }}
+        sx={crmStyles.toggleButtonGroupSx}
       >
         <Tooltip title={t('viewMode.kanban')}>
           <ToggleButton value="kanban" aria-label={t('viewMode.kanban')}>
-            <ViewKanbanOutlinedIcon sx={{ fontSize: 16 }} />
+            <ViewKanbanOutlinedIcon sx={crmStyles.viewKanbanOutlinedIconSx} />
           </ToggleButton>
         </Tooltip>
         <Tooltip title={t('viewMode.list')}>
           <ToggleButton value="list" aria-label={t('viewMode.list')}>
-            <TableRowsRoundedIcon sx={{ fontSize: 16 }} />
+            <TableRowsRoundedIcon sx={crmStyles.viewKanbanOutlinedIconSx} />
           </ToggleButton>
         </Tooltip>
       </ToggleButtonGroup>
@@ -92,28 +75,12 @@ export function SalesPipelineToolbar({
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ color: 'text.disabled', fontSize: 16 }} />
+                <SearchRoundedIcon sx={crmStyles.searchRoundedIconSx} />
               </InputAdornment>
             ),
           },
         }}
-        sx={{
-          width: { xs: '100%', sm: 224 },
-          '& .MuiInputBase-root': {
-            height: { xs: 40, sm: 32 },
-            borderRadius: `${radius.sm}px`,
-            bgcolor: surface.paper,
-            color: brand.graphite[500],
-            fontSize: 12,
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: alpha.graphite[8],
-          },
-          '& .MuiInputBase-input::placeholder': {
-            color: brand.neutral[400],
-            opacity: 1,
-          },
-        }}
+        sx={crmStyles.textFieldSx}
       />
 
       {viewMode === 'kanban' ? (
@@ -126,12 +93,7 @@ export function SalesPipelineToolbar({
             onClick={(event) => onFilterOpen(event.currentTarget)}
             aria-haspopup="menu"
             aria-expanded={Boolean(filterAnchor)}
-            sx={{
-              ...dashboardHeaderFilterButtonSx,
-              width: { xs: '100%', sm: 'auto' },
-              minWidth: { sm: 148 },
-              flexShrink: 0,
-            }}
+            sx={crmStyles.buttonSx}
           >
             {selectedStage ? t(`stages.${selectedStage.labelKey}`) : t('filterByStage')}
           </Button>
@@ -145,16 +107,7 @@ export function SalesPipelineToolbar({
                 selected={selectedStageId === stage.id}
                 onClick={() => onStageSelect(stage.id)}
               >
-                <Box
-                  aria-hidden="true"
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    mr: 1.2,
-                    borderRadius: `${radius.full}px`,
-                    bgcolor: stage.color,
-                  }}
-                />
+                <Box aria-hidden="true" sx={crmStyles.getBoxSx(stage)} />
                 {t(`stages.${stage.labelKey}`)}
               </MenuItem>
             ))}
@@ -166,7 +119,7 @@ export function SalesPipelineToolbar({
         {t('newOpportunity')}
       </DashboardHeaderActionButton>
 
-      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+      <Box sx={crmStyles.boxSx}>
         <DashboardNotificationsButton />
       </Box>
     </Stack>

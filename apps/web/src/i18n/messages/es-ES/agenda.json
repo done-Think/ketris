@@ -10,20 +10,20 @@
       "ticketScheduled": "Atención programada"
     },
     "chargeStatuses": {
-      "PENDENTE": "Pendiente",
-      "PAGA": "Pagado",
-      "ATRASADA": "Vencido",
-      "AGENDADA": "Programado",
-      "CANCELADA": "Cancelado"
+      "PENDING": "Pendiente",
+      "PAID": "Pagado",
+      "OVERDUE": "Vencido",
+      "SCHEDULED": "Programado",
+      "CANCELED": "Cancelado"
     },
     "ticketStatuses": {
-      "ABERTO": "Abierto",
-      "EM_ANDAMENTO": "En curso",
-      "RESOLVIDO": "Resuelto",
-      "FECHADO": "Cerrado",
-      "AGUARDANDO_CONFIRMACAO": "Pendiente de confirmación",
-      "CONTESTADO": "Impugnado",
-      "CANCELADO": "Cancelado"
+      "OPEN": "Abierto",
+      "IN_PROGRESS": "En curso",
+      "RESOLVED": "Resuelto",
+      "CLOSED": "Cerrado",
+      "AWAITING_CONFIRMATION": "Pendiente de confirmación",
+      "DISPUTED": "Impugnado",
+      "CANCELED": "Cancelado"
     }
   },
   "dashboard": {
@@ -47,8 +47,10 @@
     "freeSlot": "Horario libre",
     "selectedDayLabel": "{day}, {date} de {month}",
     "creatorRoles": {
-      "agency": "inmobiliaria",
-      "colleague": "colega"
+      "OWNER": "gestor de inmobiliaria",
+      "AGENT": "corredor",
+      "PROPERTY_OWNER": "propietario",
+      "RENTER": "inquilino"
     },
     "createError": "No se pudo crear el evento. Inténtalo de nuevo.",
     "editSuccess": "{title} actualizado correctamente.",
@@ -58,7 +60,7 @@
   },
   "eventForm": {
     "audiences": {
-      "LEGACY_TEAM": "Visibilidad actual",
+      "SHARED_TEAM": "Compartido con el equipo",
       "ALL_AGENTS": "Todos los agentes",
       "ASSIGNED_AGENT": "Agente específico"
     },
@@ -96,7 +98,8 @@
       "date": "Fecha",
       "time": "Horario",
       "duration": "Duración",
-      "notes": "Observaciones"
+      "notes": "Observaciones",
+      "currentProperty": "Inmueble vinculado al evento"
     },
     "cancel": "Cancelar",
     "submit": "Crear evento",
@@ -112,13 +115,28 @@
       "titleRequired": "Indica el título del evento",
       "customPropertyRequired": "Indica el inmueble o referencia",
       "visitMinimumDuration": "Las visitas deben durar al menos 30 minutos",
-      "minimumAdvanceNotice": "Agenda con al menos 3 horas de anticipación"
+      "minimumAdvanceNotice": "Agenda con al menos 3 horas de anticipación",
+      "durationInteger": "Indica la duración en minutos enteros",
+      "titleTooLong": "Usa como máximo 200 caracteres para el título",
+      "participantTooLong": "Usa como máximo 200 caracteres para el nombre",
+      "phoneTooLong": "Usa como máximo 32 caracteres para el teléfono",
+      "propertyReferenceTooLong": "Usa como máximo 500 caracteres para la referencia",
+      "notesTooLong": "Usa como máximo 10.000 caracteres para las notas"
     },
     "outsideHoursWarning": {
       "message": "El período de este evento está fuera del horario comercial (08:00–18:00). ¿Quieres continuar?",
       "continue": "Continuar",
-      "back": "Volver"
-    }
+      "back": "Volver",
+      "title": "Confirma el horario"
+    },
+    "propertyOpen": "Abrir inmuebles",
+    "propertyClose": "Cerrar inmuebles",
+    "propertyClear": "Borrar inmueble",
+    "propertiesLoading": "Buscando inmuebles…",
+    "propertiesEmpty": "No se encontraron inmuebles",
+    "propertiesError": "No se pudieron cargar los inmuebles.",
+    "propertiesRetry": "Reintentar",
+    "propertiesMore": "Cargar más inmuebles"
   },
   "eventDetail": {
     "responsible": "Responsable: {name}",
@@ -135,7 +153,10 @@
       "title": "Eliminar evento",
       "description": "¿Seguro que deseas eliminar \"{title}\"? Esta acción no se puede deshacer.",
       "confirm": "Eliminar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "reason": "Motivo de cancelación",
+      "reasonRequired": "Indica el motivo de cancelación",
+      "reasonTooLong": "Usa como máximo 10.000 caracteres para el motivo"
     },
     "errors": {
       "durationTooShort": "Indica al menos 15 minutos",
@@ -149,5 +170,17 @@
       "visitMinimumDuration": "Las visitas deben durar al menos 30 minutos",
       "minimumAdvanceNotice": "Agenda con al menos 3 horas de anticipación"
     }
+  },
+  "errors": {
+    "minimumAdvanceNotice": "Programa con al menos 3 horas de antelación.",
+    "outsideBusinessHours": "Confirma el período fuera del horario laboral para continuar.",
+    "visitMinimumDuration": "Las visitas deben durar al menos 30 minutos.",
+    "userUnavailable": "No se pudo vincular a una de las personas al evento.",
+    "cancellationReasonRequired": "Indica el motivo de cancelación.",
+    "forbidden": "No tienes permiso para modificar este evento.",
+    "notFound": "El evento o uno de sus vínculos no está disponible. Actualiza la agenda.",
+    "conflict": "El horario entra en conflicto con los datos actuales. Revisa la hora y los vínculos.",
+    "invalidFields": "Revisa los campos antes de continuar.",
+    "rateLimit": "Demasiados intentos. Espera y vuelve a intentarlo."
   }
 }

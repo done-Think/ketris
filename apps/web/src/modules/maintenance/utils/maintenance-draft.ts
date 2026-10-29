@@ -1,32 +1,20 @@
-import type { MaintenanceCreateTicketFormValues } from '../types/maintenance'
+import { maintenanceDraftSchema } from '../schemas/maintenance-draft-schema'
+import type { MaintenanceTicketFormValues } from '../types/maintenance'
 
 export function maintenanceDraftKey(tenantId?: string, userId?: string) {
   return tenantId && userId ? `maintenance-draft:v1:${tenantId}:${userId}` : null
 }
 
-export function readMaintenanceDraft(key: string | null): MaintenanceCreateTicketFormValues | null {
+export function parseMaintenanceDraft(value: unknown): MaintenanceTicketFormValues | null {
+  const parsed = maintenanceDraftSchema.safeParse(value)
+  return parsed.success ? parsed.data : null
+}
+
+export function readMaintenanceDraft(key: string | null): MaintenanceTicketFormValues | null {
   if (!key) return null
   try {
     const raw = window.localStorage.getItem(key)
-    if (!raw) return null
-    const data: unknown = JSON.parse(raw)
-    if (!data || typeof data !== 'object') return null
-    const draft = data as Record<string, unknown>
-    if (
-      !['contractId', 'propertyId', 'category', 'title', 'description'].every(
-        (field) => typeof draft[field] === 'string',
-      ) ||
-      !['normal', 'high', 'urgent'].includes(String(draft.priority))
-    )
-      return null
-    return {
-      contractId: String(draft.contractId),
-      propertyId: String(draft.propertyId),
-      category: String(draft.category),
-      title: String(draft.title),
-      description: String(draft.description),
-      priority: draft.priority as MaintenanceCreateTicketFormValues['priority'],
-    }
+    return raw ? parseMaintenanceDraft(JSON.parse(raw)) : null
   } catch {
     return null
   }
@@ -34,13 +22,11 @@ export function readMaintenanceDraft(key: string | null): MaintenanceCreateTicke
 
 export function writeMaintenanceDraft(
   key: string | null,
-  values: MaintenanceCreateTicketFormValues | null,
+  values: MaintenanceTicketFormValues | null,
 ) {
   if (!key) return
   try {
     if (values) window.localStorage.setItem(key, JSON.stringify(values))
     else window.localStorage.removeItem(key)
-  } catch {
-    /* Storage may be unavailable in private browsing. */
-  }
+  } catch {}
 }

@@ -1,24 +1,24 @@
 import { vi } from 'vitest'
 import type {
   MaintenanceActor,
-  MaintenanceTicket,
   MaintenanceContract,
+  MaintenanceTicket,
 } from '../../types/maintenance-ticket'
 import type { MaintenanceTicketRepository } from '../../types/maintenance-ticket-repository'
 
 export function actor(
-  role: MaintenanceActor['actorPapel'],
-  id = role.toLowerCase(),
+  role: MaintenanceActor['actorRole'],
+  id = role === 'PROPERTY_OWNER' ? 'owner' : role.toLowerCase(),
   tenantId = 'tenant-1',
 ): MaintenanceActor {
-  return { actorId: id, actorPapel: role, actorTenantId: tenantId, actorName: id }
+  return { actorId: id, actorRole: role, actorTenantId: tenantId, actorName: id }
 }
 
-export const admin = actor('ADMIN')
+export const admin = actor('OWNER', 'admin')
 
 export const agent = actor('AGENT')
 
-export const owner = actor('OWNER')
+export const owner = actor('PROPERTY_OWNER')
 
 export const renter = actor('RENTER')
 
@@ -46,9 +46,9 @@ export const ticket: MaintenanceTicket = {
   completedByRole: null,
   deletedAt: null,
   replacementRequests: [],
-  category: 'Plumbing',
-  priority: 'URGENTE',
-  status: 'ABERTO',
+  category: 'PLUMBING',
+  priority: 'URGENT',
+  status: 'OPEN',
   title: 'Leak',
   description: 'Kitchen leak',
   openedById: 'renter',

@@ -1,11 +1,10 @@
 import type { NextRequest } from 'next/server'
 
-import { UnauthorizedError } from '@server/shared/errors'
+import { AppError, UnauthorizedError } from '@server/shared/errors'
+import { isAuthenticationError } from '@server/security/authentication-errors'
 
-import type {
-  PlatformAccessTokenPayload,
-  PlatformTokenService,
-} from './application/ports/platform-token-service.port'
+import type { PlatformTokenService } from './application/ports/platform-token-service.port'
+import type { PlatformAccessTokenPayload } from './types/platform-token-service'
 
 export async function requirePlatformBearerAuth(
   request: NextRequest,
@@ -20,7 +19,11 @@ export async function requirePlatformBearerAuth(
 
   try {
     return await tokenService.verify(token)
-  } catch {
-    throw new UnauthorizedError()
+  } catch (error) {
+    if (isAuthenticationError(error)) {
+      if (error instanceof AppError) throw error
+      throw new UnauthorizedError()
+    }
+    throw error
   }
 }

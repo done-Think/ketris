@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { TenantSlugAlreadyInUseError } from '../../../domain/errors'
-import type { TenantSummary } from '../../../domain/tenant-summary.entity'
+import type { TenantSummary } from '../../../types/tenant-summary'
 import type { TenantRepository } from '../../../application/ports/tenant-repository.port'
 import { CreateTenantUseCase } from '../../../application/use-cases/create-tenant.use-case'
 
 const createdTenant: TenantSummary = {
   id: 't1',
-  nome: 'Imobiliária Nova',
+  name: 'Imobiliária Nova',
   slug: 'imobiliaria-nova',
   createdAt: new Date(),
 }
@@ -26,11 +26,11 @@ describe('CreateTenantUseCase', () => {
     const repository = createRepository()
     const useCase = new CreateTenantUseCase(repository)
 
-    const result = await useCase.execute({ nome: 'Imobiliária Nova', slug: 'imobiliaria-nova' })
+    const result = await useCase.execute({ name: 'Imobiliária Nova', slug: 'imobiliaria-nova' })
 
     expect(result).toEqual(createdTenant)
     expect(repository.create).toHaveBeenCalledWith({
-      nome: 'Imobiliária Nova',
+      name: 'Imobiliária Nova',
       slug: 'imobiliaria-nova',
     })
   })
@@ -40,14 +40,14 @@ describe('CreateTenantUseCase', () => {
     const useCase = new CreateTenantUseCase(repository)
 
     await useCase.execute({
-      nome: 'Corretor Novo',
+      name: 'Corretor Novo',
       slug: 'corretor-novo',
       accountType: 'BROKER',
       status: 'TRIAL',
     })
 
     expect(repository.create).toHaveBeenCalledWith({
-      nome: 'Corretor Novo',
+      name: 'Corretor Novo',
       slug: 'corretor-novo',
       accountType: 'BROKER',
       status: 'TRIAL',
@@ -58,7 +58,7 @@ describe('CreateTenantUseCase', () => {
     const repository = createRepository(vi.fn().mockResolvedValue(createdTenant))
     const useCase = new CreateTenantUseCase(repository)
 
-    await expect(useCase.execute({ nome: 'Outra', slug: 'imobiliaria-nova' })).rejects.toThrow(
+    await expect(useCase.execute({ name: 'Outra', slug: 'imobiliaria-nova' })).rejects.toThrow(
       TenantSlugAlreadyInUseError,
     )
     expect(repository.create).not.toHaveBeenCalled()

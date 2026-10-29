@@ -4,16 +4,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { PropertyAutocomplete } from '../../components/opportunity-detail/PropertyAutocomplete'
 import { useCrmProperties } from '../../hooks/use-opportunities'
-import type { PublicPropertySummary } from '../../types/property'
+import type { CrmPropertySummary } from '../../types/property'
 
 vi.mock('../../hooks/use-opportunities', () => ({
   useCrmProperties: vi.fn(),
 }))
 
-const property: PublicPropertySummary = {
+const property: CrmPropertySummary = {
   id: 'property-1',
   title: 'Apartamento Jardins',
-  purpose: 'ALUGUEL',
+  purpose: 'RENT',
   propertyType: 'Apartamento',
   price: 3500,
   condoFee: null,
@@ -50,7 +50,7 @@ describe('PropertyAutocomplete', () => {
     const user = userEvent.setup()
     mockPropertiesQuery({ data: [property] })
 
-    render(<PropertyAutocomplete tenantId="tenant-1" value={null} onChange={vi.fn()} />)
+    render(<PropertyAutocomplete value={null} onChange={vi.fn()} />)
 
     await user.click(screen.getByLabelText(/^Imóvel/))
 
@@ -62,7 +62,7 @@ describe('PropertyAutocomplete', () => {
     const onChange = vi.fn()
     mockPropertiesQuery({ data: [property] })
 
-    render(<PropertyAutocomplete tenantId="tenant-1" value={null} onChange={onChange} />)
+    render(<PropertyAutocomplete value={null} onChange={onChange} />)
 
     await user.click(screen.getByLabelText(/^Imóvel/))
     await user.click(await screen.findByRole('option', { name: /Apartamento Jardins/ }))
@@ -73,17 +73,16 @@ describe('PropertyAutocomplete', () => {
   it('shows the empty state message when no properties match', async () => {
     const user = userEvent.setup()
 
-    render(<PropertyAutocomplete tenantId="tenant-1" value={null} onChange={vi.fn()} />)
+    render(<PropertyAutocomplete value={null} onChange={vi.fn()} />)
 
     await user.click(screen.getByLabelText(/^Imóvel/))
 
-    expect(await screen.findByText('Nenhum imóvel encontrado.')).toBeVisible()
+    expect(await screen.findByText('Nenhum resultado.')).toBeVisible()
   })
 
   it('shows a validation error message when provided', () => {
     render(
       <PropertyAutocomplete
-        tenantId="tenant-1"
         value={null}
         onChange={vi.fn()}
         error

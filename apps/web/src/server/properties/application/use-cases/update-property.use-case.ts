@@ -1,26 +1,27 @@
-import { ForbiddenError } from '@server/shared/errors'
+import { assertPropertyMediaScope } from '../../domain/property-media-policy'
+import { isPropertyOwner } from '@server/auth/domain/roles'
+import type { PropertyOwnerDirectory } from '../ports/property-owner-directory.port'
+import { PropertyOwnerValidationError } from '../../domain/errors'
+import type { UpdatePropertyInput } from '../../types/use-case-inputs'
 
-import type { Papel } from '@server/auth/domain/user.entity'
-
-import { assertPropertyAccess } from '../authorization'
+import { assertCanEditProperties, assertPropertyAccess } from '../authorization'
 import { PropertyNotFoundError } from '../../domain/errors'
-import type { PropertyChanges } from '../../types/property'
 import type { PropertyRepository } from '../ports/property-repository.port'
+import {
+  unavailableAddressGeocoder,
+  type AddressGeocoder,
+} from '@server/shared/location/address-geocoder.port'
+import { resolveAddressCoordinates } from '@server/shared/location/resolve-address-coordinates'
 
 export class UpdatePropertyUseCase {
-  constructor(private readonly propertyRepository: PropertyRepository) {}
+  constructor(
+    private readonly propertyRepository: PropertyRepository,
+    private readonly ownerDirectory: PropertyOwnerDirectory,
+    private readonly geocoder: AddressGeocoder = unavailableAddressGeocoder,
+  ) {}
 
-  async execute(
-    input: PropertyChanges & {
-      actorTenantId: string
-      actorId: string
-      actorPapel: Papel
-      id: string
-    },
-  ) {
-    if (input.actorPapel === 'RENTER') {
-      throw new ForbiddenError('Locatários não podem gerenciar imóveis.')
-    }
+  async execute(input: UpdatePropertyInput) {
+    assertCanEditProperties(input.actorRole)
 
     const existing = await this.propertyRepository.findByTenantAndId(input.actorTenantId, input.id)
 
@@ -28,24 +29,45 @@ export class UpdatePropertyUseCase {
       throw new PropertyNotFoundError()
     }
 
-    assertPropertyAccess(existing.responsavelId, input.actorId, input.actorPapel)
+    assertPropertyAccess(existing, input.actorId, input.actorRole)
 
-    const property = await this.propertyRepository.update(input.actorTenantId, input.id, {
-      titulo: input.titulo,
-      descricao: input.descricao,
-      finalidade: input.finalidade,
-      tipo: input.tipo,
-      quartos: input.quartos,
-      banheiros: input.banheiros,
-      vagas: input.vagas,
-      areaM2: input.areaM2,
-      valor: input.valor,
-      valorAluguel: input.valorAluguel,
-      condominio: input.condominio,
-      iptu: input.iptu,
-      endereco: input.endereco,
-      midias: input.midias,
-    })
+    assertPropertyMediaScope(
+      input.actorTenantId,
+      input.media,
+      existing.media.map((media) => media.url),
+    )
+    const ownerId = isPropertyOwner(input.actorRole) ? input.actorId : input.ownerId
+    if (
+      ownerId &&
+      ownerId !== existing.ownerId &&
+      !(await this.ownerDirectory.findActiveOwner(input.actorTenantId, ownerId))
+    ) {
+      throw new PropertyOwnerValidationError()
+    }
+
+    const property = await this.propertyRepository.update(
+      input.actorTenantId,
+      input.id,
+      {
+        ownerId: ownerId,
+        title: input.title,
+        description: input.description,
+        purpose: input.purpose,
+        type: input.type,
+        listing: input.listing,
+        bedrooms: input.bedrooms,
+        bathrooms: input.bathrooms,
+        parkingSpots: input.parkingSpots,
+        areaSqm: input.areaSqm,
+        price: input.price,
+        rentalPrice: input.rentalPrice,
+        condoFee: input.condoFee,
+        propertyTax: input.propertyTax,
+        address: await resolveAddressCoordinates(input.address, this.geocoder, existing.address),
+        media: input.media,
+      },
+      input.actorId,
+    )
 
     if (!property) {
       throw new PropertyNotFoundError()

@@ -1,11 +1,11 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { NextRequest } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { authContainer } from '@server/auth/container'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
-import { requireMaintenanceActor } from '../require-maintenance-actor'
 import { UnauthorizedError } from '@server/shared/errors'
+import { getServerSession } from 'next-auth'
+import { NextRequest } from 'next/server'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { requireMaintenanceActor } from '../require-maintenance-actor'
 
 vi.mock('next-auth', () => ({ getServerSession: vi.fn() }))
 vi.mock('@shared/lib/auth/auth-options', () => ({ authOptions: {} }))
@@ -16,12 +16,12 @@ vi.mock('@server/auth/require-bearer-auth', () => ({ requireBearerAuth: vi.fn() 
 const user = {
   id: 'user',
   tenantId: 'tenant',
-  nome: 'User',
+  name: 'User',
   email: 'user@example.test',
-  senhaHash: 'hash',
-  papel: 'RENTER' as const,
-  ativo: true,
-  vinculoAprovadoEm: new Date(),
+  passwordHash: 'hash',
+  role: 'RENTER' as const,
+  active: true,
+  membershipApprovedAt: new Date(),
 }
 const request = () =>
   new NextRequest('http://localhost/api/maintenance/tickets', {
@@ -33,7 +33,7 @@ describe('Maintenance authenticated actor', () => {
     vi.mocked(requireBearerAuth).mockResolvedValue({
       sub: 'user',
       tenantId: 'tenant',
-      papel: 'ADMIN',
+      role: 'OWNER',
     })
     vi.mocked(authContainer.userRepository.findById).mockResolvedValue(user)
   })
@@ -42,13 +42,13 @@ describe('Maintenance authenticated actor', () => {
       actorId: 'user',
       actorTenantId: 'tenant',
       actorName: 'User',
-      actorPapel: 'RENTER',
+      actorRole: 'RENTER',
     })
   })
   it.each([
     null,
-    { ...user, ativo: false },
-    { ...user, vinculoAprovadoEm: null },
+    { ...user, active: false },
+    { ...user, membershipApprovedAt: null },
     { ...user, tenantId: 'other' },
   ])('rejects invalid or unapproved user %#', async (invalid) => {
     vi.mocked(authContainer.userRepository.findById).mockResolvedValue(invalid)

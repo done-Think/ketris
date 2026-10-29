@@ -1,7 +1,7 @@
 import type { PublicPropertySummary } from '../types/public-property'
 import type { SearchResultProperty, SearchResultPurpose } from '../types/search'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { PropertyText } from './property-presentation'
+import type { PropertyText } from '../types/property-presentation'
 import { formatCompactCurrency } from './search-results'
 
 function buildDetails(summary: PublicPropertySummary): SearchResultProperty['details'] {
@@ -33,7 +33,7 @@ function buildLocation(summary: PublicPropertySummary): string {
 function buildPrice(summary: PublicPropertySummary, locale: AppLocale, t: PropertyText): string {
   const formatted = formatCompactCurrency(summary.price, locale)
 
-  return summary.purpose === 'ALUGUEL' ? t('monthly', { price: formatted }) : formatted
+  return summary.purpose === 'RENT' ? t('monthly', { price: formatted }) : formatted
 }
 
 export function mapSummaryToSearchResult(

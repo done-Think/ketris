@@ -1,32 +1,32 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prisma } from '@server/db/prisma'
+import { ConflictError } from '@server/shared/errors'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   PrismaMaintenanceTicketRepository,
   maintenanceTicketScope,
 } from '../../infrastructure/prisma-maintenance-ticket.repository'
 import type { MaintenanceActor, MaintenanceTicket } from '../../types/maintenance-ticket'
-import { ConflictError } from '@server/shared/errors'
 
 vi.mock('@server/db/prisma', () => ({ prisma: { $transaction: vi.fn() } }))
 const actor: MaintenanceActor = {
   actorId: 'renter',
   actorTenantId: 'tenant',
-  actorPapel: 'RENTER',
+  actorRole: 'RENTER',
   actorName: 'Renter',
 }
 describe('Maintenance repository boundary and atomic writes', () => {
   beforeEach(() => vi.clearAllMocks())
   it('scopes renter lists and counts through explicit contract party ID', () => {
     expect(maintenanceTicketScope(actor)).toEqual({
-      excluidoEm: null,
-      contrato: {
+      deletedAt: null,
+      contract: {
         is: {
-          partes: {
+          parties: {
             some: {
-              papel: 'LOCATARIO',
-              usuarioId: 'renter',
-              usuario: { ativo: true, papel: 'RENTER' },
+              role: 'RENTER',
+              userId: 'renter',
+              user: { active: true, role: 'RENTER' },
             },
           },
         },
@@ -34,14 +34,14 @@ describe('Maintenance repository boundary and atomic writes', () => {
     })
   })
   it('scopes agent and owner through assignment OR property relationship, always with contract and tenant', () => {
-    for (const role of ['AGENT', 'OWNER'] as const) {
-      const scope = maintenanceTicketScope({ ...actor, actorPapel: role })
+    for (const role of ['AGENT', 'PROPERTY_OWNER'] as const) {
+      const scope = maintenanceTicketScope({ ...actor, actorRole: role })
       expect(scope.tenantId).toBe('tenant')
-      expect(scope.contrato).toEqual({ is: { tenantId: 'tenant' } })
-      expect(scope.OR).toContainEqual({ responsavelId: 'renter' })
-      expect(scope.excluidoEm).toBeNull()
+      expect(scope.contract).toEqual({ is: { tenantId: 'tenant' } })
+      expect(scope.OR).toContainEqual({ responsibleId: 'renter' })
+      expect(scope.deletedAt).toBeNull()
     }
-    expect(maintenanceTicketScope({ ...actor, actorPapel: 'ADMIN' })).toEqual({
+    expect(maintenanceTicketScope({ ...actor, actorRole: 'OWNER' })).toEqual({
       tenantId: 'tenant',
     })
   })
@@ -49,9 +49,12 @@ describe('Maintenance repository boundary and atomic writes', () => {
     const updateMany = vi.fn().mockResolvedValue({ count: 0 })
     const create = vi.fn()
     const transaction = {
-      chamadoManutencao: { updateMany },
-      atividadeChamadoManutencao: { create },
-      solicitacaoTrocaPrestador: { create },
+      user: {
+        findFirst: vi.fn().mockResolvedValue({ id: 'admin', tenantId: 'tenant', role: 'OWNER' }),
+      },
+      maintenanceTicket: { updateMany },
+      maintenanceTicketActivity: { create },
+      providerChangeRequest: { create },
     }
     vi.mocked(prisma.$transaction).mockImplementation(
       async (callback) =>
@@ -69,7 +72,7 @@ describe('Maintenance repository boundary and atomic writes', () => {
         ticket,
         { responsibleId: 'agent' },
         {
-          type: 'RESPONSAVEL_ALTERADO',
+          type: 'RESPONSIBLE_CHANGED',
           message: 'Assigned',
           authorId: 'admin',
           authorName: 'Admin',
@@ -78,7 +81,7 @@ describe('Maintenance repository boundary and atomic writes', () => {
     ).rejects.toBeInstanceOf(ConflictError)
     expect(updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 'ticket', tenantId: 'tenant', updatedAt: ticket.updatedAt, excluidoEm: null },
+        where: { id: 'ticket', tenantId: 'tenant', updatedAt: ticket.updatedAt, deletedAt: null },
       }),
     )
     expect(create).not.toHaveBeenCalled()
@@ -86,9 +89,12 @@ describe('Maintenance repository boundary and atomic writes', () => {
   it('does not write an approval audit if the pending request was already decided', async () => {
     const create = vi.fn()
     const transaction = {
-      chamadoManutencao: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
-      atividadeChamadoManutencao: { create },
-      solicitacaoTrocaPrestador: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
+      user: {
+        findFirst: vi.fn().mockResolvedValue({ id: 'admin', tenantId: 'tenant', role: 'OWNER' }),
+      },
+      maintenanceTicket: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      maintenanceTicketActivity: { create },
+      providerChangeRequest: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
     }
     vi.mocked(prisma.$transaction).mockImplementation(
       async (callback) =>
@@ -104,7 +110,7 @@ describe('Maintenance repository boundary and atomic writes', () => {
       new PrismaMaintenanceTicketRepository().mutate(
         ticket,
         { provider: { name: 'New' } },
-        { type: 'TROCA_DECIDIDA', message: 'Approved', authorId: 'admin', authorName: 'Admin' },
+        { type: 'CHANGE_DECIDED', message: 'Approved', authorId: 'admin', authorName: 'Admin' },
         { kind: 'decision', actor, requestId: 'request', approved: true },
       ),
     ).rejects.toBeInstanceOf(ConflictError)

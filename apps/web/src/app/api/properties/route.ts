@@ -2,39 +2,33 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { authContainer } from '@server/auth/container'
-import type { Papel } from '@server/auth/domain/user.entity'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { propertiesContainer } from '@server/properties/container'
 import {
   createPropertyRequestSchema,
   listPropertiesQuerySchema,
 } from '@server/properties/schemas/property-input.schema'
-import { parseJsonBody, RequestValidationError, withErrorHandling } from '@server/shared/http'
+import { parseJsonBody, parseQuery, withErrorHandling } from '@server/shared/http'
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
-  const parsed = listPropertiesQuerySchema.safeParse(
-    Object.fromEntries(request.nextUrl.searchParams),
-  )
-
-  if (!parsed.success) {
-    throw new RequestValidationError(
-      parsed.error.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
-    )
-  }
+  const query = parseQuery(request, listPropertiesQuerySchema)
 
   const properties = await propertiesContainer.listPropertiesUseCase.execute({
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
-    actorPapel: actor.papel as Papel,
-    status: parsed.data.status,
-    finalidade: parsed.data.finalidade,
+    actorRole: actor.role,
+    locale: query.locale,
+    sortBy: query.sortBy,
+    sortOrder: query.sortOrder,
+    page: query.page,
+    pageSize: query.pageSize,
+    search: query.search,
+    status: query.status,
+    purpose: query.purpose,
   })
 
-  return NextResponse.json({ properties }, { status: 200 })
+  return NextResponse.json(properties, { status: 200 })
 })
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
@@ -44,33 +38,35 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const property = await propertiesContainer.createPropertyUseCase.execute({
     actorTenantId: actor.tenantId,
     actorUserId: actor.sub,
-    actorPapel: actor.papel as Papel,
-    titulo: body.titulo,
-    descricao: body.descricao ?? null,
-    finalidade: body.finalidade,
-    tipo: body.tipo,
-    quartos: body.quartos ?? null,
-    banheiros: body.banheiros ?? null,
-    vagas: body.vagas ?? null,
-    areaM2: body.areaM2 ?? null,
-    valor: body.valor,
-    valorAluguel: body.valorAluguel ?? null,
-    condominio: body.condominio ?? null,
-    iptu: body.iptu ?? null,
-    endereco: body.endereco
+    actorRole: actor.role,
+    ownerId: body.ownerId,
+    title: body.title,
+    description: body.description ?? null,
+    purpose: body.purpose,
+    type: body.type,
+    listing: body.listing,
+    bedrooms: body.bedrooms ?? null,
+    bathrooms: body.bathrooms ?? null,
+    parkingSpots: body.parkingSpots ?? null,
+    areaSqm: body.areaSqm ?? null,
+    price: body.price,
+    rentalPrice: body.rentalPrice ?? null,
+    condoFee: body.condoFee ?? null,
+    propertyTax: body.propertyTax ?? null,
+    address: body.address
       ? {
-          logradouro: body.endereco.logradouro,
-          numero: body.endereco.numero,
-          complemento: body.endereco.complemento ?? null,
-          bairro: body.endereco.bairro,
-          cidade: body.endereco.cidade,
-          estado: body.endereco.estado,
-          cep: body.endereco.cep,
-          latitude: body.endereco.latitude ?? null,
-          longitude: body.endereco.longitude ?? null,
+          street: body.address.street,
+          number: body.address.number,
+          complement: body.address.complement ?? null,
+          neighborhood: body.address.neighborhood,
+          city: body.address.city,
+          state: body.address.state,
+          zipCode: body.address.zipCode,
+          latitude: body.address.latitude ?? null,
+          longitude: body.address.longitude ?? null,
         }
       : undefined,
-    midias: body.midias,
+    media: body.media,
   })
 
   return NextResponse.json({ property }, { status: 201 })

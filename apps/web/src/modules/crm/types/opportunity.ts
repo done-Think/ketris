@@ -1,72 +1,44 @@
+import type {
+  ListOpportunityResponsiblesResponseDTO,
+  CreateOpportunityRequestDTO,
+  OpportunityActivityDTO,
+  OpportunityDTO,
+  PatchOpportunityRequestDTO,
+  RespondOpportunityRequestDTO,
+} from '@shared/types/generated/crm/dto'
 import type { z } from 'zod'
 
 import type {
   contractGuaranteeSchema,
   createEditOpportunityFormSchema,
   createOpportunityFormSchema,
-  createUpdateOpportunitySchema,
-  opportunityFiltersSchema,
   opportunityStatusSchema,
 } from '../schemas/opportunity-schema'
 
 export type OpportunityStatus = z.infer<typeof opportunityStatusSchema>
 export type ContractGuarantee = z.infer<typeof contractGuaranteeSchema>
-export type OpportunityFilters = z.infer<typeof opportunityFiltersSchema>
-export type UpdateOpportunityPayload = z.infer<ReturnType<typeof createUpdateOpportunitySchema>>
+export type OpportunityFilters = Omit<
+  import('@shared/types/generated/crm/dto').ListOpportunitiesQueryDTO,
+  'includeArchived' | 'statuses'
+> & { includeArchived?: boolean; statuses?: OpportunityStatus[] }
+export type UpdateOpportunityPayload = PatchOpportunityRequestDTO
 export type OpportunityEditFormValues = z.infer<ReturnType<typeof createEditOpportunityFormSchema>>
 export type CreateOpportunityFormValues = z.infer<ReturnType<typeof createOpportunityFormSchema>>
 
-export interface Opportunity {
-  id: string
-  tenantId: string
-  propertyId: string
-  contactId?: string | null
-  leadName: string
-  leadEmail: string
-  leadPhone: string | null
-  proposedValue: number
-  contractTermMonths: number | null
-  desiredStartDate: string | null
-  guaranteeType: ContractGuarantee
-  specialConditions: string[]
-  notes: string | null
-  status: OpportunityStatus
-  archivedAt: string | null
-  createdAt: string
-  updatedAt: string
-}
+export type Opportunity = OpportunityDTO
 
 export interface UpdateOpportunityInput {
   id: string
   changes: UpdateOpportunityPayload
 }
 
-export interface CreateOpportunityPayload {
-  propertyId: string
-  contactId?: string | null
-  leadName: string
-  leadEmail: string
-  leadPhone?: string | null
-  proposedValue: number
-  notes?: string | null
-  status?: Extract<OpportunityStatus, 'RASCUNHO' | 'ENVIADA'>
-}
+export type CreateOpportunityPayload = CreateOpportunityRequestDTO
 
-export type OpportunityResponseAction = 'ACEITAR' | 'RECUSAR' | 'SOLICITAR_INFORMACOES'
+export type OpportunityResponseAction = RespondOpportunityRequestDTO['action']
 
-export interface RespondOpportunityPayload {
-  action: OpportunityResponseAction
-  message?: string | null
-}
+export type RespondOpportunityPayload = RespondOpportunityRequestDTO
 
-export interface OpportunityActivityRecord {
-  id: string
-  opportunityId: string
-  type: 'NOTA' | 'MUDANCA_STATUS' | 'CONTATO_REALIZADO' | 'PROPOSTA_RESPONDIDA'
-  description: string
-  authorId: string | null
-  authorName: string | null
-  previousStatus: OpportunityStatus | null
-  newStatus: OpportunityStatus | null
-  createdAt: string
-}
+export type OpportunityActivityRecord = OpportunityActivityDTO
+
+export type OpportunityResponsibleOption =
+  ListOpportunityResponsiblesResponseDTO['responsibles'][number]

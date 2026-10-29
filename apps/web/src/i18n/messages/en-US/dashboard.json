@@ -33,9 +33,18 @@
     "title": "Dashboard",
     "notifications": "Notifications",
     "metrics": {
-      "leadsActive": { "label": "Active leads", "caption": "{count} today" },
-      "visitsMonth": { "label": "Visits this month", "caption": "{count} today" },
-      "proposals": { "label": "Proposals", "caption": "{count} awaiting response" }
+      "leadsActive": {
+        "label": "Active leads",
+        "caption": "{count} today"
+      },
+      "visitsMonth": {
+        "label": "Visits this month",
+        "caption": "{count} today"
+      },
+      "proposals": {
+        "label": "Proposals",
+        "caption": "{count} awaiting response"
+      }
     },
     "activityDetail": {
       "close": "Close",
@@ -78,7 +87,7 @@
     },
     "upcomingActivities": {
       "title": "Upcoming activities",
-      "empty": "No activities scheduled for this month."
+      "empty": "No upcoming activities."
     }
   },
   "agencyOverview": {
@@ -104,7 +113,7 @@
     },
     "performance": {
       "title": "Revenue Performance",
-      "subtitle": "Monthly revenue received by the agency",
+      "subtitle": "Monthly revenue receivable by the agency",
       "revenue": "Revenue"
     },
     "topBrokers": {
@@ -160,7 +169,8 @@
       "open": "Filters",
       "title": "Filters",
       "close": "Close filters",
-      "property": "Property"
+      "property": "Property",
+      "category": "Filter by category"
     },
     "filters": {
       "all": "All",
@@ -227,12 +237,17 @@
         "priorityRequired": "Select the priority",
         "titleRequired": "Enter the ticket title",
         "descriptionRequired": "Describe the problem",
-        "contractRequired": "Select a contract"
+        "contractRequired": "Select a contract",
+        "titleTooLong": "Use up to 200 characters.",
+        "descriptionTooLong": "Use up to 10,000 characters."
       },
       "discardDraft": "Discard draft",
       "saveDraftAndClose": "Save and close",
       "discardTitle": "Discard this draft?",
-      "currentContract": "Current contract"
+      "currentContract": "Current contract",
+      "loadError": "Unable to load the ticket.",
+      "retry": "Try again",
+      "loading": "Loading ticket…"
     },
     "actions": {
       "menu": "Actions for ticket {ticket}",
@@ -285,13 +300,19 @@
         "title": "Timeline and updates",
         "empty": "No updates recorded yet.",
         "placeholder": "Write a message or update about the ticket...",
-        "systemAuthor": "System"
+        "systemAuthor": "System",
+        "validation": {
+          "required": "Enter a message.",
+          "tooLong": "Use up to 10,000 characters."
+        }
       },
       "info": {
         "title": "General information",
         "lastUpdated": "Last updated",
         "dateTime": "{date} at {time}"
-      }
+      },
+      "loadError": "Unable to load the ticket.",
+      "retry": "Try again"
     },
     "activeTickets": "Active",
     "archivedTickets": "Archived",
@@ -329,12 +350,21 @@
       "success": "Action completed.",
       "error": "Could not complete the action.",
       "requestStatuses": {
-        "PENDENTE": "Pending",
-        "APROVADA": "Approved",
-        "REJEITADA": "Rejected"
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
       },
       "finish": "Finish ticket",
-      "finishConfirmation": "Do you confirm that the problem is resolved? The ticket will be marked as resolved and its history will be preserved."
+      "finishConfirmation": "Do you confirm that the problem is resolved? The ticket will be marked as resolved and its history will be preserved.",
+      "validation": {
+        "required": "This field is required.",
+        "reasonTooLong": "Use up to 5,000 characters.",
+        "nameTooLong": "Use up to 200 characters.",
+        "phoneTooLong": "Use up to 50 characters.",
+        "emailTooLong": "Use up to 254 characters.",
+        "notesTooLong": "Use up to 5,000 characters.",
+        "emailInvalid": "Enter a valid email address."
+      }
     },
     "links": {
       "title": "Regularize links",
@@ -346,7 +376,11 @@
       "back": "Back",
       "save": "Save links",
       "success": "Links updated.",
-      "error": "Could not update links."
+      "error": "Could not update links.",
+      "validation": {
+        "required": "This field is required.",
+        "linkRequired": "Select an owner or a renter link."
+      }
     },
     "scheduleNotSet": "Not scheduled yet",
     "empty": "No tickets found.",
@@ -369,18 +403,92 @@
       "invalid": "Enter a valid date and time.",
       "success": "Service date saved.",
       "error": "Unable to save the service date."
-    }
+    },
+    "providers": {
+      "title": "Agency providers",
+      "createTitle": "Add provider",
+      "editTitle": "Edit provider",
+      "name": "Provider name",
+      "phone": "Phone",
+      "email": "Email",
+      "notes": "Notes",
+      "cancel": "Cancel",
+      "save": "Save",
+      "close": "Close",
+      "search": "Search providers",
+      "includeInactive": "Include inactive",
+      "loading": "Loading providers…",
+      "retry": "Try again",
+      "loadError": "Unable to load providers.",
+      "empty": "No providers found.",
+      "success": "Provider saved successfully.",
+      "error": "Unable to save the provider.",
+      "inactive": "(inactive)",
+      "edit": "Edit",
+      "inactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "pagination": "{from}–{to} of {count}",
+      "select": "Select a registered provider",
+      "selectHelp": "Select a provider or enter the details below to add a new one.",
+      "open": "Open options",
+      "closeOptions": "Close options",
+      "clear": "Clear selection",
+      "loadMore": "Load more",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "firstPage": "First page",
+      "lastPage": "Last page"
+    },
+    "categories": {
+      "plumbing": "Plumbing",
+      "electrical": "Electrical",
+      "structural": "Structural",
+      "painting": "Painting",
+      "other": "Other"
+    },
+    "errors": {
+      "forbidden": "You do not have permission for this action.",
+      "unauthorized": "Sign in again to continue.",
+      "conflict": "The ticket or provider changed, or this action is unavailable in its current state. Refresh and try again.",
+      "validation": "Review the information you entered.",
+      "ticketNotFound": "Ticket not found or access unavailable.",
+      "propertyNotFound": "Contract or property not found for this user.",
+      "alreadyResolved": "This ticket is already closed.",
+      "attachmentInvalid": "Use a JPEG, PNG or WebP image up to 8 MB.",
+      "providerNotFound": "Provider not found in this agency.",
+      "providerInactive": "This provider is inactive. Ask agency management to reactivate it.",
+      "providerExists": "A provider with these details already exists in this agency.",
+      "storageUnavailable": "Attachment storage is unavailable. Try again later.",
+      "uploadExpired": "The upload authorization expired. Upload the file again.",
+      "uploadInvalid": "Unable to confirm this upload. Upload the file again."
+    },
+    "listLoading": "Loading tickets…",
+    "listError": "Unable to load tickets.",
+    "retry": "Try again",
+    "activityMessages": {
+      "created": "Ticket opened.",
+      "updated": "Ticket details updated.",
+      "archived": "Ticket archived.",
+      "contractLinked": "Contract linked to the ticket.",
+      "scheduled": "Service scheduled with the provider.",
+      "renterFinished": "Ticket completed by the renter.",
+      "statusChanged": "Status changed from {before} to {after}.",
+      "contested": "Resolution contested.",
+      "reopened": "Ticket reopened.",
+      "responsibleUpdated": "Internal assignee updated.",
+      "restored": "Ticket restored.",
+      "providerUpdated": "Provider updated.",
+      "replacementRequested": "Provider replacement requested.",
+      "replacementApproved": "Provider replacement approved.",
+      "replacementRejected": "Provider replacement rejected.",
+      "linksRegularized": "Access links regularized by management.",
+      "attachmentAdded": "Attachment added."
+    },
+    "allCategories": "All categories"
   },
   "finance": {
     "title": "Finance",
     "subtitle": "Monthly financial movement and sales/commission records.",
-    "exchangeRateNotice": "Estimated amounts in {currency} using the {date} PTAX closing rate (1 {currency} = BRL {rate}). Records remain in BRL.",
-    "exchangeRateLoading": "Loading the PTAX exchange rate. Amounts are shown in BRL for now.",
-    "exchangeRateUnavailable": "Exchange rate unavailable. Amounts are shown in BRL.",
-    "movementTitle": "Monthly movement",
-    "movementSubtitle": "Sales and commission inflows by month.",
-    "sales": "Sales",
-    "commissions": "Commissions",
     "table": {
       "type": "Type",
       "description": "Entry",
@@ -394,129 +502,189 @@
       "title": "Recent movements",
       "date": "Date"
     },
-    "statuses": {
-      "Recebido": "Received",
-      "Previsto": "Expected",
-      "Atrasado": "Overdue",
-      "Pago": "Paid",
-      "Pendente": "Pending"
-    },
-    "selectedMonth": "July 2025",
     "export": "Export",
-    "revenueChartTitle": "Revenue (6 months)",
-    "revenue": "Revenue",
+    "revenueChartTitle": "Receivable (6 months)",
+    "revenue": "Receivable",
     "upcomingDuesTitle": "Upcoming dues",
     "kpis": {
       "receivable": "Receivable",
       "delinquency": "Delinquency",
       "defaultRate": "Default rate",
       "occupancyRate": "Occupancy rate"
-    },
-    "history": {
-      "eyebrow": "Financial history",
-      "close": "Close history",
-      "propertyLabel": "Property",
-      "clientLabel": "Client"
-    },
-    "entryDetail": {
-      "eyebrow": "Financial record",
-      "close": "Close financial record",
-      "propertyLabel": "Property",
-      "clientLabel": "Client",
-      "amountLabel": "Amount",
-      "receiptsTitle": "Receipts"
     }
   },
   "team": {
     "title": "Broker Team",
-    "subtitle": "Track sales, follow-ups, and monthly goal progress by representative.",
+    "subtitle": "Track sales, follow-ups and the monthly goal pace of each broker.",
     "searchPlaceholder": "Search broker...",
     "inviteBroker": "Invite broker",
     "moreOptions": "More options",
     "viewProfileAriaLabel": "View {name}'s profile",
     "goalProgress": "Goal progress",
-    "returns": "{count} follow-ups",
-    "empty": "No broker found.",
+    "returns": "{count, plural, =0 {No follow-ups} one {# follow-up} other {# follow-ups}}",
+    "responseTime": "Response: {value}",
+    "responseTimeEmpty": "Response: —",
+    "duration": {
+      "minutes": "{minutes} min",
+      "hours": "{hours} h {minutes} min",
+      "days": "{days, plural, one {# day} other {# days}}"
+    },
+    "empty": "No brokers found.",
+    "emptyTeam": "Your team has no brokers yet. Invite the first one.",
+    "loadError": "We couldn't load the team.",
+    "retry": "Try again",
     "kpis": {
       "activeBrokers": "Active brokers",
       "properties": "Properties",
-      "monthlySales": "Monthly sales",
+      "monthlySales": "Sales this month",
       "averageGoal": "Average goal",
-      "activeBrokersHelper": "+2 in onboarding",
-      "propertiesHelper": "Active portfolio",
-      "monthlySalesHelper": "Monthly output",
-      "averageGoalHelper": "Consolidated goal"
+      "activeBrokersHelper": "{count, plural, =0 {No pending invitations} one {# pending invitation} other {# pending invitations}}",
+      "propertiesHelper": "Portfolio of active brokers",
+      "monthlySalesHelper": "Contracts activated this month",
+      "averageGoalHelper": "Among brokers with a goal",
+      "empty": "—"
     },
     "metrics": {
       "properties": "Properties",
-      "leads": "Leads",
-      "monthlySales": "Sales/mo"
+      "leads": "Open leads",
+      "monthlySales": "Sales this month"
     },
     "statuses": {
-      "ahead": "Ahead of goal",
-      "onTrack": "On track",
-      "attention": "Needs attention"
+      "AHEAD": "Ahead of pace",
+      "ON_TRACK": "On track",
+      "ATTENTION": "Needs attention",
+      "NO_GOAL": "No goal",
+      "inactive": "Inactive",
+      "invitationPending": "Invitation pending",
+      "invitationExpired": "Invitation expired"
     },
     "menu": {
       "performance": "View performance",
-      "editGoal": "Edit monthly goal",
-      "transferPortfolio": "Transfer leads/properties",
+      "editGoal": "Set monthly goal",
+      "transferPortfolio": "Transfer portfolio",
       "scheduleOneOnOne": "Schedule 1:1",
-      "deactivate": "Pause/deactivate broker",
-      "feedback": "{action} for {name}"
+      "deactivate": "Deactivate broker",
+      "activate": "Reactivate broker",
+      "resendInvitation": "Resend invitation",
+      "cancelInvitation": "Cancel invitation"
     },
     "dialogs": {
       "performanceTitle": "Performance — {name}",
-      "returns": "Follow-ups",
-      "monthlyGoal": "Monthly goal",
+      "returns": "Follow-ups this month",
+      "responseTime": "Response time (30 days)",
+      "expectedSales": "Expected so far",
+      "monthlyGoal": "Monthly sales goal",
+      "goalHistory": "Goal history",
+      "goalHistoryEmpty": "No goal set yet.",
+      "goalSetBy": "{goal, plural, one {# sale} other {# sales}} · {name} on {date}",
       "broker": "Broker",
-      "source": "Source",
+      "source": "From",
       "destination": "Transfer to",
-      "items": "Items",
+      "items": "What to transfer",
+      "itemProperties": "Properties ({count})",
+      "itemLeads": "Leads ({count})",
+      "itemOpportunities": "Open opportunities ({count})",
+      "itemFutureEvents": "Future calendar events",
       "close": "Close",
       "cancel": "Cancel",
       "save": "Save",
       "transfer": "Transfer",
-      "confirm": "Confirm",
-      "goalError": "Enter a whole-number goal between 1 and 10000",
-      "destinationError": "Select a destination broker",
+      "goalError": "Enter a whole goal between 1 and 10000",
+      "destinationError": "Select the broker who will receive the portfolio",
+      "noDestination": "There is no other active broker to receive the portfolio.",
       "itemsError": "Select at least one item",
-      "transferError": "Could not transfer the items",
+      "transferError": "We couldn't transfer the portfolio",
       "goalSaved": "Monthly goal updated",
-      "transferred": "Leads/properties transferred",
-      "deactivatePrompt": "Are you sure you want to pause/deactivate {name}? This changes the current status.",
-      "deactivated": "Broker deactivated",
-      "activated": "Broker activated",
-      "inactive": "Inactive",
-      "activate": "Activate broker",
+      "transferred": "Transferred: {properties} properties, {leads} leads, {opportunities} opportunities and {events} events",
+      "deactivateTitle": "Deactivate {name}",
+      "deactivateDescription": "The whole portfolio (properties, leads, opportunities and future events) goes to the chosen broker, and {name} loses access. Everything is recorded.",
+      "deactivateSubmit": "Transfer and deactivate",
+      "deactivated": "{name} was deactivated and the portfolio was transferred",
+      "deactivateError": "We couldn't deactivate the broker",
+      "activated": "{name} was reactivated",
+      "activateError": "We couldn't reactivate the broker",
       "oneOnOneTitle": "1:1 — {name}",
       "internalMeeting": "Internal meeting",
-      "scheduled": "1:1 scheduled successfully",
-      "scheduleError": "Could not schedule the 1:1",
-      "inviteDescription": "Create the broker's access to your agency. A temporary password is generated automatically: copy it and send it to the broker along with the email.",
+      "scheduled": "1:1 scheduled",
+      "scheduleError": "We couldn't schedule the 1:1",
+      "inviteDescription": "We'll email a link so the broker can set their own password. The link is valid for 7 days and can be used once.",
       "inviteName": "Full name",
       "inviteEmail": "Email",
-      "invitePassword": "Temporary password",
-      "invitePasswordHelper": "Strong password with uppercase, lowercase, number and special character. The broker can change it later in their profile.",
-      "inviteSubmit": "Invite",
+      "inviteSubmit": "Send invitation",
       "inviteNameError": "Enter the broker's name",
       "inviteEmailError": "Enter a valid email",
-      "invitePasswordError": "Password must have at least 8 characters, including uppercase, lowercase, a number and a special character",
-      "invited": "{name} was added to the team",
-      "inviteError": "Could not invite the broker",
-      "inviteEmailInUse": "This email is already in use",
-      "generatePassword": "Generate new password",
-      "copyPassword": "Copy password",
-      "passwordCopied": "Password copied"
+      "invited": "Invitation sent to {email}",
+      "invitedEmailFailed": "Invitation created, but the email was not sent. Use Resend invitation.",
+      "inviteError": "We couldn't invite the broker",
+      "inviteEmailInUse": "This email is already used in this agency",
+      "invitationResent": "Invitation resent to {email}",
+      "invitationResendError": "We couldn't resend the invitation",
+      "cancelInvitationTitle": "Cancel {name}'s invitation?",
+      "cancelInvitationDescription": "The link stops working and {name}'s access is removed.",
+      "cancelInvitationSubmit": "Cancel invitation",
+      "invitationCanceled": "Invitation canceled",
+      "invitationCancelError": "We couldn't cancel the invitation",
+      "invitationHasPortfolio": "This invitee already has properties, leads or events. Transfer them before canceling.",
+      "goalSaveError": "We couldn't save the goal",
+      "selfDestination": "{name} (you)"
     },
     "actions": {
-      "message": "Send message",
+      "message": "Send a WhatsApp message",
       "email": "Send email",
-      "call": "Call"
+      "call": "Call",
+      "noPhone": "No phone on file"
+    },
+    "invitationEmail": {
+      "subject": "Invitation to join {agency} on Ketris",
+      "title": "You've been invited to the team",
+      "greeting": "Hi, {name}!",
+      "intro": "{inviter} invited you to join {agency} on Ketris. Set your password to get started.",
+      "cta": "Set my password",
+      "expires": "The link is valid for {days} days and can only be used once.",
+      "ignore": "If you weren't expecting this invitation, ignore this email.",
+      "team": "The Ketris team"
+    },
+    "invitationPage": {
+      "title": "Join the team",
+      "description": "Set your password to access {agency}.",
+      "brandDescription": "Your agency invited you to Ketris.",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "passwordConfirmation": "Confirm password",
+      "submit": "Set password",
+      "success": "Password set! Sign in with your email and new password.",
+      "login": "Go to sign in",
+      "invalid": "Invitation not found. Check the link or ask for a new invitation.",
+      "expired": "This invitation has expired. Ask the agency manager for a new one.",
+      "accepted": "This invitation has already been used. Sign in with your email and password.",
+      "error": "We couldn't set the password. Try again.",
+      "passwordTooShort": "The password must have at least 8 characters",
+      "passwordTooLong": "Password too long. Use fewer characters.",
+      "passwordConfirmationRequired": "Confirm the password",
+      "passwordMismatch": "The passwords don't match"
+    },
+    "membershipRequests": {
+      "title": "Membership requests",
+      "description": "{count, plural, one {# broker is waiting for your approval to join the team.} other {# brokers are waiting for your approval to join the team.}}",
+      "approve": "Approve",
+      "pending": "Awaiting approval",
+      "approveAriaLabel": "Approve {name}'s membership",
+      "approveSuccess": "{name} is now part of the team.",
+      "approveError": "Could not approve the membership.",
+      "loadError": "Could not load the membership requests."
     }
   },
   "proposals": {
     "title": "Proposals",
     "subtitle": "Ongoing negotiations and reference values."
+  },
+  "leadSources": {
+    "marketplace": "Marketplace",
+    "whatsApp": "WhatsApp",
+    "instagram": "Instagram",
+    "site": "Site",
+    "referral": "Referral",
+    "other": "Other"
   }
 }

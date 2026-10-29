@@ -8,15 +8,10 @@ import {
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
 import type { PlatformRefreshTokenRepository } from '../ports/platform-refresh-token-repository.port'
 import type { PlatformTokenService } from '../ports/platform-token-service.port'
-
-export interface RefreshPlatformAdminTokenInput {
-  refreshToken: string
-}
-
-export interface RefreshPlatformAdminTokenOutput {
-  accessToken: string
-  refreshToken: string
-}
+import type {
+  RefreshPlatformAdminTokenInput,
+  RefreshPlatformAdminTokenOutput,
+} from '../../types/use-case-inputs'
 
 export class RefreshPlatformAdminTokenUseCase {
   constructor(
@@ -35,21 +30,23 @@ export class RefreshPlatformAdminTokenUseCase {
 
     const admin = await this.platformAdminRepository.findById(stored.platformAdminId)
 
-    if (!admin || !admin.ativo) {
+    if (!admin || !admin.active) {
       throw new InvalidPlatformRefreshTokenError()
     }
-
-    await this.refreshTokenRepository.revokeById(stored.id)
 
     const authenticatedAdmin = toAuthenticatedPlatformAdmin(admin)
     const accessToken = await this.tokenService.sign(authenticatedAdmin)
     const newRefreshToken = generatePlatformRefreshToken()
 
-    await this.refreshTokenRepository.create({
-      platformAdminId: authenticatedAdmin.id,
-      tokenHash: hashPlatformRefreshToken(newRefreshToken),
-      expiresAt: platformRefreshTokenExpiryDate(),
+    const rotated = await this.refreshTokenRepository.rotate({
+      previous: stored,
+      replacement: {
+        platformAdminId: authenticatedAdmin.id,
+        tokenHash: hashPlatformRefreshToken(newRefreshToken),
+        expiresAt: platformRefreshTokenExpiryDate(),
+      },
     })
+    if (!rotated) throw new InvalidPlatformRefreshTokenError()
 
     return { accessToken, refreshToken: newRefreshToken }
   }

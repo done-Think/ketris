@@ -3,11 +3,10 @@ import CloseIcon from '@mui/icons-material/Close'
 import { useLocale, useTranslations } from 'next-intl'
 import type { AppLocale } from '@/i18n/types/locale.types'
 
-import { componentText, radius } from '@shared/theme/tokens'
-
 import { priceLimit } from '../config/search-filters'
 import type { PriceRangeMenuProps } from '../types/search'
 import { formatSearchCurrency } from '../utils/search'
+import { styles } from '../styles/price-range-menu.styles'
 
 export function PriceRangeMenu({
   priceRange,
@@ -18,17 +17,15 @@ export function PriceRangeMenu({
   const t = useTranslations('marketplace.home.search')
 
   return (
-    <Box sx={{ px: 1.3, py: 1.5 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
-        <Typography sx={{ color: 'text.primary', ...componentText.menuTitle }}>
-          {t('priceRange')}
-        </Typography>
+    <Box sx={styles.box}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={styles.stack}>
+        <Typography sx={styles.typography}>{t('priceRange')}</Typography>
         <IconButton aria-label={t('closePriceRange')} size="small" onClick={closeSearchMenu}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </Stack>
 
-      <Stack direction="row" spacing={0.8} sx={{ mb: 2 }}>
+      <Stack direction="row" spacing={0.8} sx={styles.stack2}>
         <TextField
           label={t('minPrice')}
           type="number"
@@ -38,7 +35,7 @@ export function PriceRangeMenu({
           }
           size="small"
           fullWidth
-          sx={{ '& .MuiInputBase-input': { px: 1.2 } }}
+          sx={styles.textField}
           slotProps={{
             htmlInput: {
               min: priceLimit.min,
@@ -56,7 +53,7 @@ export function PriceRangeMenu({
           }
           size="small"
           fullWidth
-          sx={{ '& .MuiInputBase-input': { px: 1.2 } }}
+          sx={styles.textField}
           slotProps={{
             htmlInput: {
               min: priceLimit.min,
@@ -67,7 +64,7 @@ export function PriceRangeMenu({
         />
       </Stack>
 
-      <Box sx={{ px: 1 }}>
+      <Box sx={styles.box2}>
         <Slider
           getAriaLabel={() => t('priceRange')}
           value={priceRange}
@@ -81,21 +78,16 @@ export function PriceRangeMenu({
         />
       </Box>
 
-      <Stack direction="row" justifyContent="space-between" sx={{ mt: 0.5 }}>
-        <Typography sx={{ color: 'text.secondary', ...componentText.menuCaption }}>
+      <Stack direction="row" justifyContent="space-between" sx={styles.stack3}>
+        <Typography sx={styles.typography2}>
           {formatSearchCurrency(priceLimit.min, locale)}
         </Typography>
-        <Typography sx={{ color: 'text.secondary', ...componentText.menuCaption }}>
+        <Typography sx={styles.typography2}>
           {formatSearchCurrency(priceLimit.max, locale)}
         </Typography>
       </Stack>
 
-      <Button
-        variant="contained"
-        fullWidth
-        onClick={closeSearchMenu}
-        sx={{ mt: 1.8, minHeight: 38, borderRadius: `${radius.sm}px` }}
-      >
+      <Button variant="contained" fullWidth onClick={closeSearchMenu} sx={styles.button}>
         {t('apply')}
       </Button>
     </Box>

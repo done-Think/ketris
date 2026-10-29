@@ -1,15 +1,16 @@
+import { isAgencyManager } from '@server/auth/domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@server/auth/domain/user.entity'
 
-export function assertBrokerProfileAccess(actorPapel: Papel): void {
-  if (actorPapel !== 'AGENT') {
+export function assertBrokerProfileAccess(actorRole: UserRole): void {
+  if (actorRole !== 'AGENT') {
     throw new ForbiddenError('Só corretores (papel AGENT) têm perfil público de corretor.')
   }
 }
 
-export function assertAgencyProfileAccess(actorPapel: Papel): void {
-  if (actorPapel !== 'ADMIN' && actorPapel !== 'OWNER') {
+export function assertAgencyProfileAccess(actorRole: UserRole): void {
+  if (!isAgencyManager(actorRole)) {
     throw new ForbiddenError('Só administradores da imobiliária editam o perfil público dela.')
   }
 }

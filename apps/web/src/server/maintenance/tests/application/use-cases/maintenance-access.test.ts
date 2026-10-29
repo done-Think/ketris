@@ -1,26 +1,26 @@
-import { describe, expect, it, vi } from 'vitest'
 import { ConflictError, ForbiddenError } from '@server/shared/errors'
+import { describe, expect, it, vi } from 'vitest'
+import { canAccessTicket, publicTicket } from '../../../application/authorization'
+import { AddMaintenanceTicketNoteUseCase } from '../../../application/use-cases/add-maintenance-ticket-note.use-case'
+import { CreateMaintenanceTicketUseCase } from '../../../application/use-cases/create-maintenance-ticket.use-case'
+import { GetMaintenanceTicketUseCase } from '../../../application/use-cases/get-maintenance-ticket.use-case'
+import { ListMaintenanceTicketActivitiesUseCase } from '../../../application/use-cases/list-maintenance-ticket-activities.use-case'
+import { ListMaintenanceTicketsUseCase } from '../../../application/use-cases/list-maintenance-tickets.use-case'
+import { UploadMaintenanceTicketAttachmentUseCase } from '../../../application/use-cases/upload-maintenance-ticket-attachment.use-case'
+import { deleteTicket, updateTicket } from '../../../application/workflow'
 import {
   MaintenancePropertyNotFoundError,
   MaintenanceTicketNotFoundError,
 } from '../../../domain/errors'
-import { CreateMaintenanceTicketUseCase } from '../../../application/use-cases/create-maintenance-ticket.use-case'
-import { GetMaintenanceTicketUseCase } from '../../../application/use-cases/get-maintenance-ticket.use-case'
-import { ListMaintenanceTicketsUseCase } from '../../../application/use-cases/list-maintenance-tickets.use-case'
-import { AddMaintenanceTicketNoteUseCase } from '../../../application/use-cases/add-maintenance-ticket-note.use-case'
-import { UploadMaintenanceTicketAttachmentUseCase } from '../../../application/use-cases/upload-maintenance-ticket-attachment.use-case'
-import { ListMaintenanceTicketActivitiesUseCase } from '../../../application/use-cases/list-maintenance-ticket-activities.use-case'
-import { deleteTicket, updateTicket } from '../../../application/workflow'
-import { canAccessTicket, publicTicket } from '../../../application/authorization'
 import {
   actor,
   admin,
   agent,
+  contract,
   owner,
   renter,
-  contract,
-  ticket,
   repository,
+  ticket,
 } from '../../fixtures/maintenance-ticket'
 
 describe('Maintenance access', () => {
@@ -33,7 +33,7 @@ describe('Maintenance access', () => {
       contractId: contract.id,
       title: 'Leak',
       description: 'Details',
-      category: 'Plumbing',
+      category: 'PLUMBING',
       priority: 'NORMAL',
     })
     expect(repo.create).toHaveBeenCalledWith(
@@ -66,8 +66,8 @@ describe('Maintenance access', () => {
   it.each([
     actor('RENTER', 'other'),
     actor('AGENT', 'other'),
-    actor('OWNER', 'other'),
-    actor('ADMIN', 'admin', 'other-tenant'),
+    actor('PROPERTY_OWNER', 'other'),
+    actor('OWNER', 'admin', 'other-tenant'),
   ])('denies unrelated $actorPapel', async (user) => {
     const repo = repository()
     await expect(
@@ -108,7 +108,10 @@ describe('Maintenance access', () => {
       canAccessTicket(actor('AGENT', 'assigned'), { ...ticket, responsibleId: 'assigned' }),
     ).toBe(true)
     expect(
-      canAccessTicket(actor('OWNER', 'assigned'), { ...ticket, responsibleId: 'assigned' }),
+      canAccessTicket(actor('PROPERTY_OWNER', 'assigned'), {
+        ...ticket,
+        responsibleId: 'assigned',
+      }),
     ).toBe(true)
   })
 
@@ -133,7 +136,7 @@ describe('Maintenance access', () => {
         ...user,
         contractId: contract.id,
         title: 'Leak',
-        category: 'Plumbing',
+        category: 'PLUMBING',
         description: 'Leak',
         priority: 'NORMAL',
       })
@@ -156,7 +159,7 @@ describe('Maintenance access', () => {
           ...input,
           contractId: contract.id,
           title: 'Leak',
-          category: 'Plumbing',
+          category: 'PLUMBING',
           description: 'Leak',
           priority: 'NORMAL',
         }),
@@ -181,7 +184,7 @@ describe('Maintenance access', () => {
     )
   })
 
-  it.each(['ABERTO', 'EM_ANDAMENTO', 'AGUARDANDO_CONFIRMACAO', 'CONTESTADO'] as const)(
+  it.each(['OPEN', 'IN_PROGRESS', 'AWAITING_CONFIRMATION', 'DISPUTED'] as const)(
     'never lets renters edit original fields in %s',
     async (status) => {
       const repo = repository({ status })
@@ -192,7 +195,7 @@ describe('Maintenance access', () => {
     },
   )
 
-  it.each(['RESOLVIDO', 'CANCELADO', 'FECHADO'] as const)(
+  it.each(['RESOLVED', 'CANCELED', 'CLOSED'] as const)(
     'locks field edits on %s and allows only renter notes on resolved tickets',
     async (status) => {
       for (const user of [admin, agent, owner, renter]) {
@@ -205,7 +208,7 @@ describe('Maintenance access', () => {
           ticketId: ticket.id,
           message: 'new',
         })
-        if (status === 'RESOLVIDO' && user.actorPapel === 'RENTER') {
+        if (status === 'RESOLVED' && user.actorRole === 'RENTER') {
           await note
           expect(repo.addNote).toHaveBeenCalledWith(
             expect.anything(),

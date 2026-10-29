@@ -63,7 +63,6 @@
       "collapseNavigation": "Contraer navegación",
       "expandNavigation": "Expandir navegación",
       "collapseMenu": "Contraer menú",
-      "admin": "SUPER ADMIN",
       "overview": "Resumen",
       "tenants": "Tenants",
       "users": "Usuarios",
@@ -88,14 +87,6 @@
       },
       "churn": {
         "label": "Churn (mes)"
-      },
-      "uptime": {
-        "label": "Uptime de la plataforma"
-      },
-      "indicators": {
-        "growth": "+15%",
-        "stable": "Estable",
-        "normal": "Normal"
       }
     },
     "growth": {
@@ -140,10 +131,10 @@
       "emptyDescription": "Registra al administrador al lado para que la cuenta empiece a usar la plataforma.",
       "pendingApproval": "Pendiente de aprobación",
       "roles": {
-        "ADMIN": "Administrador",
-        "OWNER": "Dueño",
+        "OWNER": "Dueño de la inmobiliaria",
         "AGENT": "Corredor",
-        "RENTER": "Inquilino"
+        "RENTER": "Inquilino",
+        "PROPERTY_OWNER": "Propietario del inmueble"
       }
     },
     "account": {
@@ -237,15 +228,12 @@
     "name": "Nombre",
     "email": "Correo electrónico",
     "role": "Función",
-    "unavailable": "No disponible",
     "loadError": "No fue posible cargar los administradores.",
     "emptyTitle": "Ningún administrador",
     "emptyDescription": "Aún no existen administradores registrados en la plataforma.",
     "noResultsTitle": "No se encontraron usuarios",
     "noResultsDescription": "No encontramos administradores que coincidan con los filtros seleccionados.",
     "clearFilters": "Limpiar filtros",
-    "editUnavailable": "Editar (próximamente)",
-    "passwordUnavailable": "Cambiar contraseña (próximamente)",
     "deactivate": "Desactivar",
     "activate": "Activar",
     "editRegistration": "Editar registro",
@@ -266,7 +254,8 @@
       "lastAccess": "Último acceso",
       "createdAt": "Creado el",
       "actions": "Acciones"
-    }
+    },
+    "neverAccessed": "Nunca accedió"
   },
   "forms": {
     "name": "Nombre",
@@ -376,7 +365,8 @@
     "save": "Guardar",
     "cancel": "Cancelar",
     "updateSuccess": "Plan actualizado.",
-    "updateError": "No se pudo actualizar el plan."
+    "updateError": "No se pudo actualizar el plan.",
+    "updatedBy": "Modificado por {name} el {date}"
   },
   "finance": {
     "title": "Finanzas",
@@ -451,6 +441,10 @@
     "submit": "Crear cuenta",
     "cancel": "Cancelar",
     "createSuccess": "Cuenta {name} creada.",
-    "createError": "No se pudo crear la cuenta. Inténtalo de nuevo."
+    "createError": "No se pudo crear la cuenta. Inténtalo de nuevo.",
+    "forbidden": "Solo los administradores con el rol Admin pueden crear cuentas."
+  },
+  "errors": {
+    "lastPlatformAdmin": "Mantén al menos un administrador activo en la plataforma."
   }
 }

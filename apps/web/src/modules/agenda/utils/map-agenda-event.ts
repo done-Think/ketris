@@ -29,13 +29,6 @@ const toneByApiStatus: Record<AgendaEventApi['status'], AgendaEventTone> = {
   CANCELLED: 'info',
 }
 
-const statusByApiStatus: Record<AgendaEventApi['status'], AgendaEvent['status']> = {
-  CONFIRMED: 'Confirmada',
-  PENDING: 'Pendente',
-  RESCHEDULE: 'Reagendar',
-  CANCELLED: 'Reagendar',
-}
-
 export function toAgendaAudiencePayload(
   values: AgendaEventFormValues,
 ): Pick<
@@ -45,7 +38,7 @@ export function toAgendaAudiencePayload(
   const confirmation = values.outsideBusinessHoursConfirmed
     ? { outsideBusinessHoursConfirmed: true }
     : {}
-  if (values.audience === 'LEGACY_TEAM') return confirmation
+  if (values.audience === 'SHARED_TEAM') return confirmation
   return {
     ...confirmation,
     audience: values.audience,
@@ -66,19 +59,26 @@ export function toAgendaEvent(
     audience: 'audience' in api ? api.audience : undefined,
     internal: 'internal' in api ? api.internal : undefined,
     responsibleId: 'responsibleId' in api ? api.responsibleId : undefined,
+    createdById: 'createdById' in api ? api.createdById : undefined,
+    createdBy: 'createdBy' in api ? api.createdBy?.name : undefined,
+    createdByRole: 'createdBy' in api ? api.createdBy?.role : undefined,
     scheduledDate: start.format('YYYY-MM-DD'),
     time: start.format('HH:mm'),
     durationMinutes: dayjs(api.end).diff(start, 'minute'),
     title: api.title,
-    property: api.propertyReference ?? linkedProperty?.label ?? '',
-    propertyHref: linkedProperty?.href ?? '/dashboard/properties',
+    property: api.propertyReference ?? api.propertyLabel ?? linkedProperty?.label ?? '',
+    propertyHref:
+      linkedProperty?.href ??
+      (api.propertyId
+        ? { pathname: '/dashboard/properties/[id]', params: { id: api.propertyId } }
+        : '/dashboard/properties'),
     propertyId: api.propertyId,
     apiKind: api.kind,
     participant: 'participantName' in api ? api.participantName : api.responsibleName,
     phone: 'participantPhone' in api ? api.participantPhone : '',
     notes: 'notes' in api ? (api.notes ?? '') : '',
     responsibleName: 'responsibleName' in api ? api.responsibleName : undefined,
-    status: statusByApiStatus[api.status],
+    status: api.status,
     tone: toneByApiStatus[api.status],
     kind: api.kind ? kindByApiKind[api.kind] : undefined,
   }

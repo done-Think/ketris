@@ -1,21 +1,42 @@
+import { resolveMutationAuthor } from '@server/shared/persistence/mutation-author'
+import { Prisma } from '@prisma/client'
+
 import { prisma } from '@server/db/prisma'
 import { buildCreciNumberSlug, buildPublicProfileSlug } from '@shared/utils/public-profile-slug'
 
 import type { AgencyProfileRepository } from '../application/ports/agency-profile-repository.port'
+import type { DirectoryPage, DirectoryQuery } from '../types/directory'
+import { normalizedDirectoryTerm, normalizedSearchText } from './directory-search-sql'
+import {
+  publicBrokerEligibility,
+  publicTenantEligibility,
+  publishedAgencySql,
+} from './public-profile-visibility'
 import type {
   AgencyListingSummary,
   AgencyProfile,
   AgencyProfileDraft,
   AgencyTeamHighlight,
 } from '../types/agency-profile'
-import type { DecimalLike, TenantWithPerfilRow } from '../types/prisma-agency-profile-repository'
+import type { TenantWithProfileRow } from '../types/prisma-agency-profile-repository'
 
-const tenantWithPerfilInclude = {
-  perfilPublico: {
+const tenantWithProfileInclude = {
+  publicProfile: {
     include: {
-      destaques: {
-        orderBy: { ordem: 'asc' as const },
-        include: { usuario: { select: { id: true, nome: true, avatarUrl: true } } },
+      highlights: {
+        orderBy: { position: 'asc' as const },
+        include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+      },
+    },
+  },
+}
+
+const publishedTenantWithProfileInclude = {
+  publicProfile: {
+    include: {
+      highlights: {
+        ...tenantWithProfileInclude.publicProfile.include.highlights,
+        where: { user: publicBrokerEligibility },
       },
     },
   },
@@ -23,55 +44,60 @@ const tenantWithPerfilInclude = {
 
 async function buildStats(tenantId: string) {
   const [activeListings, brokersCount, dealsClosed] = await Promise.all([
-    prisma.imovel.count({ where: { tenantId, status: 'PUBLISHED' } }),
-    prisma.usuario.count({
-      where: { tenantId, ativo: true, papel: { in: ['ADMIN', 'OWNER', 'AGENT'] } },
+    prisma.property.count({ where: { tenantId, status: 'PUBLISHED' } }),
+    prisma.user.count({
+      where: {
+        tenantId,
+        active: true,
+        membershipApprovedAt: { not: null },
+        role: { in: ['OWNER', 'AGENT'] },
+      },
     }),
-    prisma.contrato.count({ where: { tenantId, status: 'ATIVO' } }),
+    prisma.contract.count({ where: { tenantId, status: 'ACTIVE' } }),
   ])
 
   return { activeListings, brokersCount, dealsClosed }
 }
 
 async function buildFeaturedListings(tenantId: string): Promise<AgencyListingSummary[]> {
-  const imoveis = await prisma.imovel.findMany({
+  const properties = await prisma.property.findMany({
     where: { tenantId, status: 'PUBLISHED' },
-    orderBy: { publicadoEm: 'desc' },
+    orderBy: { publishedAt: 'desc' },
     take: 4,
     select: {
       id: true,
-      titulo: true,
-      finalidade: true,
-      valor: true,
-      endereco: { select: { bairro: true, cidade: true } },
-      midias: { orderBy: { ordem: 'asc' }, take: 1, select: { url: true } },
+      title: true,
+      purpose: true,
+      price: true,
+      address: { select: { neighborhood: true, city: true } },
+      media: { orderBy: { position: 'asc' }, take: 1, select: { url: true } },
     },
   })
 
-  return imoveis.map((imovel) => ({
-    id: imovel.id,
-    title: imovel.titulo,
-    purpose: imovel.finalidade,
-    price: (imovel.valor as unknown as DecimalLike).toNumber(),
-    neighborhood: imovel.endereco?.bairro ?? null,
-    city: imovel.endereco?.cidade ?? null,
-    coverUrl: imovel.midias[0]?.url ?? null,
+  return properties.map((property) => ({
+    id: property.id,
+    title: property.title,
+    purpose: property.purpose,
+    price: property.price.toNumber(),
+    neighborhood: property.address?.neighborhood ?? null,
+    city: property.address?.city ?? null,
+    coverUrl: property.media[0]?.url ?? null,
   }))
 }
 
-function toTeam(perfil: TenantWithPerfilRow['perfilPublico']): AgencyTeamHighlight[] {
-  if (!perfil) return []
+function toTeam(profile: TenantWithProfileRow['publicProfile']): AgencyTeamHighlight[] {
+  if (!profile) return []
 
-  return perfil.destaques.map((destaque) => ({
-    usuarioId: destaque.usuario.id,
-    name: destaque.usuario.nome,
-    avatarUrl: destaque.usuario.avatarUrl,
-    order: destaque.ordem,
+  return profile.highlights.map((featured) => ({
+    userId: featured.user.id,
+    name: featured.user.name,
+    avatarUrl: featured.user.avatarUrl,
+    order: featured.position,
   }))
 }
 
-async function toAgencyProfile(tenant: TenantWithPerfilRow): Promise<AgencyProfile> {
-  const perfil = tenant.perfilPublico
+async function toAgencyProfile(tenant: TenantWithProfileRow): Promise<AgencyProfile> {
+  const profile = tenant.publicProfile
   const [stats, featuredListings] = await Promise.all([
     buildStats(tenant.id),
     buildFeaturedListings(tenant.id),
@@ -79,26 +105,26 @@ async function toAgencyProfile(tenant: TenantWithPerfilRow): Promise<AgencyProfi
 
   return {
     id: tenant.id,
-    displayName: perfil?.displayName ?? tenant.nome,
-    headline: perfil?.headline ?? null,
-    summary: perfil?.resumo ?? null,
-    legalCreci: perfil?.legalCreci ?? null,
-    headquarters: perfil?.sede ?? null,
-    address: perfil?.endereco ?? null,
-    phone: perfil?.telefone ?? null,
-    email: perfil?.email ?? null,
-    coverage: perfil?.cobertura ?? [],
-    segments: perfil?.segmentos ?? [],
-    yearsInMarket: perfil?.anosDeMercado ?? null,
-    primaryColor: tenant.corPrimaria,
-    secondaryColor: tenant.corSecundaria,
-    backgroundColor: perfil?.corFundo ?? null,
-    logoUrl: perfil?.logoUrl ?? null,
-    bannerUrl: perfil?.bannerUrl ?? null,
-    status: perfil?.status ?? 'DRAFT',
-    publishedAt: perfil?.publicadoEm ?? null,
+    displayName: profile?.displayName ?? tenant.name,
+    headline: profile?.headline ?? null,
+    summary: profile?.summary ?? null,
+    legalCreci: profile?.legalCreci ?? null,
+    headquarters: profile?.headquarters ?? null,
+    address: profile?.address ?? null,
+    phone: profile?.phone ?? null,
+    email: profile?.email ?? null,
+    coverage: profile?.coverage ?? [],
+    segments: profile?.segments ?? [],
+    yearsInMarket: profile?.yearsInMarket ?? null,
+    primaryColor: tenant.primaryColor,
+    secondaryColor: tenant.secondaryColor,
+    backgroundColor: profile?.backgroundColor ?? null,
+    logoUrl: profile?.logoUrl ?? null,
+    bannerUrl: profile?.bannerUrl ?? null,
+    status: profile?.status ?? 'DRAFT',
+    publishedAt: profile?.publishedAt ?? null,
     stats,
-    team: toTeam(perfil),
+    team: toTeam(profile),
     featuredListings,
   }
 }
@@ -107,18 +133,18 @@ export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
   async findByTenantId(tenantId: string): Promise<AgencyProfile | null> {
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
-      include: tenantWithPerfilInclude,
+      include: tenantWithProfileInclude,
     })
 
-    if (!tenant || !tenant.perfilPublico) return null
+    if (!tenant || !tenant.publicProfile) return null
 
     return toAgencyProfile(tenant)
   }
 
   async findPublishedById(tenantId: string): Promise<AgencyProfile | null> {
     const tenant = await prisma.tenant.findFirst({
-      where: { id: tenantId, perfilPublico: { status: 'PUBLISHED' } },
-      include: tenantWithPerfilInclude,
+      where: { id: tenantId, ...publicTenantEligibility, publicProfile: { status: 'PUBLISHED' } },
+      include: publishedTenantWithProfileInclude,
     })
 
     if (!tenant) return null
@@ -128,13 +154,13 @@ export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
 
   async findPublishedBySlug(slug: string, creci: string): Promise<AgencyProfile | null> {
     const tenants = await prisma.tenant.findMany({
-      where: { perfilPublico: { status: 'PUBLISHED' } },
-      include: tenantWithPerfilInclude,
+      where: { ...publicTenantEligibility, publicProfile: { status: 'PUBLISHED' } },
+      include: publishedTenantWithProfileInclude,
     })
 
     const tenant = tenants.find((currentTenant) => {
-      const displayName = currentTenant.perfilPublico?.displayName ?? currentTenant.nome
-      const legalCreci = currentTenant.perfilPublico?.legalCreci ?? null
+      const displayName = currentTenant.publicProfile?.displayName ?? currentTenant.name
+      const legalCreci = currentTenant.publicProfile?.legalCreci ?? null
 
       return (
         buildPublicProfileSlug(displayName) === slug && buildCreciNumberSlug(legalCreci) === creci
@@ -146,66 +172,107 @@ export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
     return toAgencyProfile(tenant)
   }
 
-  async listPublished(): Promise<AgencyProfile[]> {
+  async listPublished({
+    q,
+    page,
+    pageSize,
+  }: DirectoryQuery): Promise<DirectoryPage<AgencyProfile>> {
+    const term = normalizedDirectoryTerm(q)
+    const text = normalizedSearchText([
+      Prisma.sql`p."displayName"`,
+      Prisma.sql`p."legalCreci"`,
+      Prisma.sql`p.headquarters`,
+      Prisma.sql`array_to_string(p.coverage, ' ')`,
+      Prisma.sql`array_to_string(p.segments, ' ')`,
+    ])
+    const where = term
+      ? Prisma.sql`${publishedAgencySql} AND ${text} LIKE ${term}`
+      : publishedAgencySql
+    const [rows, counts] = await Promise.all([
+      prisma.$queryRaw<{ id: string }[]>`
+        SELECT p."tenantId" AS id FROM agency_public_profiles p
+        JOIN tenants t ON t.id = p."tenantId"
+        WHERE ${where}
+        ORDER BY p."publishedAt" DESC NULLS LAST, p.id
+        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`,
+      prisma.$queryRaw<{ total: bigint }[]>`
+        SELECT count(*) AS total FROM agency_public_profiles p
+        JOIN tenants t ON t.id = p."tenantId" WHERE ${where}`,
+    ])
     const tenants = await prisma.tenant.findMany({
-      where: { perfilPublico: { status: 'PUBLISHED' } },
-      include: tenantWithPerfilInclude,
-      orderBy: { perfilPublico: { publicadoEm: 'desc' } },
+      where: {
+        id: { in: rows.map((row) => row.id) },
+        ...publicTenantEligibility,
+        publicProfile: { status: 'PUBLISHED' },
+      },
+      include: publishedTenantWithProfileInclude,
     })
+    const byId = new Map(tenants.map((tenant) => [tenant.id, tenant]))
+    const items = await Promise.all(
+      rows.flatMap((row) => {
+        const tenant = byId.get(row.id)
+        return tenant ? [toAgencyProfile(tenant)] : []
+      }),
+    )
 
-    return Promise.all(tenants.map((tenant) => toAgencyProfile(tenant)))
+    return { items, totalCount: Number(counts[0]?.total ?? 0), page, pageSize }
   }
 
-  async save(tenantId: string, draft: AgencyProfileDraft): Promise<AgencyProfile> {
-    const validUsuarioIds =
+  async save(
+    tenantId: string,
+    draft: AgencyProfileDraft,
+    actorId?: string,
+  ): Promise<AgencyProfile> {
+    const validUserIds =
       draft.team.length > 0
         ? new Set(
             (
-              await prisma.usuario.findMany({
-                where: { tenantId, id: { in: draft.team.map((member) => member.usuarioId) } },
+              await prisma.user.findMany({
+                where: { tenantId, id: { in: draft.team.map((member) => member.userId) } },
                 select: { id: true },
               })
-            ).map((usuario) => usuario.id),
+            ).map((user) => user.id),
           )
         : new Set<string>()
 
     const data = {
+      updatedById: await resolveMutationAuthor(prisma, tenantId, actorId),
       displayName: draft.displayName,
       headline: draft.headline,
-      resumo: draft.summary,
+      summary: draft.summary,
       legalCreci: draft.legalCreci,
-      sede: draft.headquarters,
-      endereco: draft.address,
-      telefone: draft.phone,
+      headquarters: draft.headquarters,
+      address: draft.address,
+      phone: draft.phone,
       email: draft.email,
-      cobertura: draft.coverage,
-      segmentos: draft.segments,
-      anosDeMercado: draft.yearsInMarket,
-      corFundo: draft.backgroundColor,
+      coverage: draft.coverage,
+      segments: draft.segments,
+      yearsInMarket: draft.yearsInMarket,
+      backgroundColor: draft.backgroundColor,
       logoUrl: draft.logoUrl,
       bannerUrl: draft.bannerUrl,
     }
 
     await prisma.$transaction(async (transaction) => {
-      const perfil = await transaction.perfilPublicoImobiliaria.upsert({
+      const profile = await transaction.agencyPublicProfile.upsert({
         where: { tenantId },
         create: { tenantId, ...data },
         update: data,
         select: { id: true },
       })
 
-      await transaction.perfilPublicoImobiliariaDestaque.deleteMany({
-        where: { perfilId: perfil.id },
+      await transaction.agencyProfileHighlight.deleteMany({
+        where: { profileId: profile.id },
       })
 
-      const validTeam = draft.team.filter((member) => validUsuarioIds.has(member.usuarioId))
+      const validTeam = draft.team.filter((member) => validUserIds.has(member.userId))
 
       if (validTeam.length > 0) {
-        await transaction.perfilPublicoImobiliariaDestaque.createMany({
+        await transaction.agencyProfileHighlight.createMany({
           data: validTeam.map((member) => ({
-            perfilId: perfil.id,
-            usuarioId: member.usuarioId,
-            ordem: member.order,
+            profileId: profile.id,
+            userId: member.userId,
+            position: member.order,
           })),
         })
       }
@@ -224,17 +291,22 @@ export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
     tenantId: string,
     status: 'DRAFT' | 'PUBLISHED',
     publishedAt: Date | null,
+    actorId?: string,
   ): Promise<AgencyProfile | null> {
-    const existing = await prisma.perfilPublicoImobiliaria.findUnique({
+    const existing = await prisma.agencyPublicProfile.findUnique({
       where: { tenantId },
       select: { tenantId: true },
     })
 
     if (!existing) return null
 
-    await prisma.perfilPublicoImobiliaria.update({
+    await prisma.agencyPublicProfile.update({
       where: { tenantId },
-      data: { status, publicadoEm: publishedAt },
+      data: {
+        status,
+        publishedAt: publishedAt,
+        updatedById: await resolveMutationAuthor(prisma, tenantId, actorId),
+      },
     })
 
     return this.findByTenantId(tenantId)

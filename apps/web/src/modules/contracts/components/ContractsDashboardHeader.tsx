@@ -1,16 +1,14 @@
+import { styles } from '../styles/contracts-dashboard-header.styles'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { Box, InputAdornment, Stack, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { Controller } from 'react-hook-form'
-
 import {
   DashboardHeaderActionButton,
   DashboardNotificationsButton,
   DashboardPageHeader,
 } from '@shared/components/layout'
-import { alpha, brand, radius, surface } from '@shared/theme/tokens'
-
 import type { ContractsDashboardPageHeaderProps } from '../types/contract'
 
 export function ContractsDashboardHeader({
@@ -20,11 +18,7 @@ export function ContractsDashboardHeader({
   const t = useTranslations('contracts.dashboardHeader')
 
   const actions = (
-    <Stack
-      direction={{ xs: 'column', sm: 'row' }}
-      spacing={1.2}
-      sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
-    >
+    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2} sx={styles.stack}>
       <Controller
         control={control}
         name="searchQuery"
@@ -33,36 +27,26 @@ export function ContractsDashboardHeader({
             {...field}
             placeholder={t('searchPlaceholder')}
             size="small"
-            sx={{
-              width: { xs: '100%', sm: 280 },
-              '& .MuiInputBase-root': {
-                height: { xs: 40, sm: 32 },
-                borderRadius: `${radius.sm}px`,
-                bgcolor: surface.paper,
-                color: brand.graphite[500],
-                fontSize: 12,
-              },
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: alpha.graphite[8],
-              },
-            }}
+            sx={styles.textField}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ color: brand.neutral[400], fontSize: 16 }} />
+                  <SearchRoundedIcon sx={styles.searchRoundedIcon} />
                 </InputAdornment>
               ),
             }}
           />
         )}
       />
-      <DashboardHeaderActionButton
-        startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
-        onClick={onCreateContract}
-      >
-        {t('newContract')}
-      </DashboardHeaderActionButton>
-      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+      {onCreateContract ? (
+        <DashboardHeaderActionButton
+          startIcon={<AddRoundedIcon sx={styles.addRoundedIcon} />}
+          onClick={onCreateContract}
+        >
+          {t('newContract')}
+        </DashboardHeaderActionButton>
+      ) : null}
+      <Box sx={styles.box}>
         <DashboardNotificationsButton />
       </Box>
     </Stack>
@@ -73,7 +57,7 @@ export function ContractsDashboardHeader({
       title={t('title')}
       subtitle={t('subtitle')}
       actions={actions}
-      sx={{ mb: 2.2 }}
+      sx={styles.dashboardPageHeader}
     />
   )
 }

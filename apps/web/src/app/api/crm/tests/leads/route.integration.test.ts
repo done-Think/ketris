@@ -22,40 +22,40 @@ describe('/api/crm/leads (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Imobiliária CRM Leads', slug: `crm-leads-${randomUUID()}` },
+      data: { name: 'Imobiliária CRM Leads', slug: `crm-leads-${randomUUID()}` },
     })
     tenantId = tenant.id
 
     const other = await prisma.tenant.create({
-      data: { nome: 'Outra Imobiliária', slug: `crm-leads-other-${randomUUID()}` },
+      data: { name: 'Outra Imobiliária', slug: `crm-leads-other-${randomUUID()}` },
     })
     otherTenantId = other.id
 
-    async function createActor(papel: 'ADMIN' | 'AGENT' | 'RENTER', ownerTenantId: string) {
-      const usuario = await prisma.usuario.create({
+    async function createActor(role: 'OWNER' | 'AGENT' | 'RENTER', ownerTenantId: string) {
+      const user = await prisma.user.create({
         data: {
           tenantId: ownerTenantId,
-          nome: `Usuário ${papel}`,
-          email: `${papel.toLowerCase()}-${randomUUID()}@ketris.dev`,
-          senhaHash: 'hash-fake',
-          papel,
+          name: `Usuário ${role}`,
+          email: `${role.toLowerCase()}-${randomUUID()}@ketris.dev`,
+          passwordHash: 'hash-fake',
+          role,
         },
       })
 
       const token = await tokenService.sign({
-        id: usuario.id,
-        tenantId: usuario.tenantId,
-        nome: usuario.nome,
-        email: usuario.email,
-        papel: usuario.papel,
-        ativo: usuario.ativo,
-        vinculoAprovadoEm: usuario.vinculoAprovadoEm,
+        id: user.id,
+        tenantId: user.tenantId,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        active: user.active,
+        membershipApprovedAt: user.membershipApprovedAt,
       })
 
-      return { usuario, token }
+      return { user, token }
     }
 
-    const admin = await createActor('ADMIN', tenantId)
+    const admin = await createActor('OWNER', tenantId)
     adminToken = admin.token
 
     const agentA = await createActor('AGENT', tenantId)
@@ -70,12 +70,12 @@ describe('/api/crm/leads (integração)', () => {
     const leadOfAgentA = await prisma.lead.create({
       data: {
         tenantId,
-        responsavelId: agentA.usuario.id,
-        nome: 'Lead do Corretor A',
-        telefone: '(11) 90000-0001',
-        interesse: 'Apartamento 2 quartos',
-        orcamento: 'Até R$ 3.000',
-        origem: 'WhatsApp',
+        responsibleId: agentA.user.id,
+        name: 'Lead do Corretor A',
+        phone: '(11) 90000-0001',
+        interest: 'Apartamento 2 quartos',
+        budget: 'Até R$ 3.000',
+        source: 'WHATSAPP',
       },
     })
     leadOfAgentAId = leadOfAgentA.id
@@ -83,12 +83,12 @@ describe('/api/crm/leads (integração)', () => {
     const leadOfAgentB = await prisma.lead.create({
       data: {
         tenantId,
-        responsavelId: agentB.usuario.id,
-        nome: 'Lead do Corretor B',
-        telefone: '(11) 90000-0002',
-        interesse: 'Casa',
-        orcamento: 'Até R$ 5.000',
-        origem: 'Instagram',
+        responsibleId: agentB.user.id,
+        name: 'Lead do Corretor B',
+        phone: '(11) 90000-0002',
+        interest: 'Casa',
+        budget: 'Até R$ 5.000',
+        source: 'INSTAGRAM',
       },
     })
     leadOfAgentBId = leadOfAgentB.id
@@ -97,12 +97,12 @@ describe('/api/crm/leads (integração)', () => {
     const otherTenantLead = await prisma.lead.create({
       data: {
         tenantId: otherTenantId,
-        responsavelId: otherAgent.usuario.id,
-        nome: 'Lead de Outro Tenant',
-        telefone: '(11) 90000-0003',
-        interesse: 'Studio',
-        orcamento: 'Até R$ 2.000',
-        origem: 'Site',
+        responsibleId: otherAgent.user.id,
+        name: 'Lead de Outro Tenant',
+        phone: '(11) 90000-0003',
+        interest: 'Studio',
+        budget: 'Até R$ 2.000',
+        source: 'WEBSITE',
       },
     })
     otherTenantLeadId = otherTenantLead.id
@@ -132,7 +132,7 @@ describe('/api/crm/leads (integração)', () => {
   }
 
   describe('GET', () => {
-    it('ADMIN vê os leads de todos os corretores do tenant', async () => {
+    it('OWNER vê os leads de todos os corretores do tenant', async () => {
       const response = await GET(buildGetRequest(adminToken))
       const json = await response.json()
       const ids = json.leads.map((lead: { id: string }) => lead.id)
@@ -177,7 +177,7 @@ describe('/api/crm/leads (integração)', () => {
             phone: '(11) 98888-0000',
             interest: 'Cobertura',
             budget: 'Até R$ 8.000',
-            source: 'Marketplace',
+            source: 'MARKETPLACE',
           },
           agentAToken,
         ),
@@ -185,7 +185,7 @@ describe('/api/crm/leads (integração)', () => {
       const json = await response.json()
 
       expect(response.status).toBe(201)
-      expect(json.lead.stage).toBe('NOVO')
+      expect(json.lead.stage).toBe('NEW')
       expect(json.lead.opportunityId).toBeNull()
 
       await prisma.lead.delete({ where: { id: json.lead.id } })
@@ -199,7 +199,7 @@ describe('/api/crm/leads (integração)', () => {
             phone: '(11) 97777-0000',
             interest: 'Apartamento',
             budget: 'Até R$ 2.000',
-            source: 'Site',
+            source: 'WEBSITE',
           },
           renterToken,
         ),

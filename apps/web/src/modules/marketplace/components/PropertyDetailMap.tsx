@@ -5,9 +5,9 @@ import { useTranslations } from 'next-intl'
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
 
 import { env } from '@config/env'
-import { alpha, radius } from '@shared/theme/tokens'
 
 import type { PropertyDetailMapProps } from '../types/property-detail'
+import { styles } from '../styles/property-detail-map.styles'
 
 const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 const mapContainerStyle = { width: '100%', height: '100%' } as const
@@ -18,15 +18,7 @@ export function PropertyDetailMap({ latitude, longitude }: PropertyDetailMapProp
     env.mapStyleUrl && !env.mapStyleUrl.includes('demotiles') ? env.mapStyleUrl : defaultMapStyleUrl
 
   return (
-    <Box
-      sx={{
-        height: { xs: 240, md: 280 },
-        overflow: 'hidden',
-        borderRadius: `${radius.sm}px`,
-        border: '1px solid',
-        borderColor: 'divider',
-      }}
-    >
+    <Box sx={styles.box}>
       <Map
         locale={{
           'Map.Title': t('title'),
@@ -40,17 +32,7 @@ export function PropertyDetailMap({ latitude, longitude }: PropertyDetailMapProp
         attributionControl={true}
       >
         <Marker latitude={latitude} longitude={longitude} anchor="center">
-          <Box
-            sx={{
-              width: 22,
-              height: 22,
-              borderRadius: '50%',
-              bgcolor: 'primary.main',
-              border: '4px solid',
-              borderColor: 'common.white',
-              boxShadow: `0 10px 24px ${alpha.magenta[36]}`,
-            }}
-          />
+          <Box sx={styles.box2} />
         </Marker>
         <NavigationControl position="bottom-right" showCompass={false} />
       </Map>

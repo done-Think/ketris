@@ -1,10 +1,11 @@
+import { crmDateSchema } from './crm-date.schema'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
 import { opportunityStatusSchema } from './opportunity.schema'
 
 export const activityTypeSchema = z
-  .enum(['NOTA', 'MUDANCA_STATUS', 'CONTATO_REALIZADO', 'PROPOSTA_RESPONDIDA'])
+  .enum(['NOTE', 'STATUS_CHANGE', 'CONTACT_MADE', 'PROPOSAL_ANSWERED'])
   .openapi('OpportunityActivityType')
 
 export const opportunityActivitySchema = z
@@ -13,11 +14,12 @@ export const opportunityActivitySchema = z
     opportunityId: z.string(),
     type: activityTypeSchema,
     description: z.string(),
+    systemAction: z.string().nullable(),
     authorId: z.string().nullable(),
     authorName: z.string().nullable(),
     previousStatus: opportunityStatusSchema.nullable(),
     newStatus: opportunityStatusSchema.nullable(),
-    createdAt: z.coerce.date(),
+    createdAt: crmDateSchema,
   })
   .openapi('OpportunityActivity')
 
@@ -28,12 +30,11 @@ export const listActivitiesResponseSchema = z
 export const createActivityRequestSchema = z
   .object({
     description: z.string().min(1, 'Descrição é obrigatória.').max(2000),
-    type: z.enum(['NOTA', 'CONTATO_REALIZADO']).optional(),
+    type: z.enum(['NOTE', 'CONTACT_MADE']).optional(),
   })
+  .strict()
   .openapi('CreateOpportunityActivityRequest')
 
 export const activityResponseSchema = z
   .object({ activity: opportunityActivitySchema })
   .openapi('OpportunityActivityResponse')
-
-export type CreateActivityRequestDTO = z.infer<typeof createActivityRequestSchema>

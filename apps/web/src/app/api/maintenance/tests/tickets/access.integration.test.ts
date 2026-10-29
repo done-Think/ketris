@@ -1,18 +1,27 @@
-import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
-import type { MaintenanceTicketListItem } from '@server/maintenance/types/maintenance-ticket'
-import { describe, expect, it } from 'vitest'
+vi.mock('@server/maintenance/infrastructure/s3-maintenance-attachment-storage', async () => {
+  const { uploadToStorage, downloadFromStorage } = await import('../fixtures/maintenance-storage')
+  return {
+    S3MaintenanceAttachmentStorage: class {
+      upload = uploadToStorage
+      download = downloadFromStorage
+    },
+  }
+})
 import { prisma } from '@server/db/prisma'
-import { GET, POST } from '../../tickets/route'
-import { DELETE, GET as getTicket, PATCH } from '../../tickets/[id]/route'
-import { POST as addNote } from '../../tickets/[id]/notes/route'
-import { GET as listActivities } from '../../tickets/[id]/activities/route'
+import type { MaintenanceTicketListItem } from '@server/maintenance/types/maintenance-ticket'
+import { describe, expect, it, vi } from 'vitest'
 import { GET as options } from '../../options/route'
+import { GET as listActivities } from '../../tickets/[id]/activities/route'
 import { POST as attachFile } from '../../tickets/[id]/attachments/route'
+import { POST as addNote } from '../../tickets/[id]/notes/route'
+import { DELETE, GET as getTicket, PATCH } from '../../tickets/[id]/route'
+import { GET, POST } from '../../tickets/route'
+import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
 
 describe('/api/maintenance access (database integration)', () => {
   const env = setupMaintenanceIntegration()
   const { request, context, payload, create, action, attachmentRequest, uploadToStorage } = env
-  it.each(['RESOLVIDO', 'CANCELADO', 'FECHADO'] as const)(
+  it.each(['RESOLVED', 'CANCELED', 'CLOSED'] as const)(
     'preserves linked renter reading of %s tickets with timeline and attachments',
     async (status) => {
       const id = await create()
@@ -29,7 +38,7 @@ describe('/api/maintenance access (database integration)', () => {
       )
       expect(attachment.status).toBe(201)
       const attachmentBody = await attachment.json()
-      await prisma.chamadoManutencao.update({ where: { id }, data: { status } })
+      await prisma.maintenanceTicket.update({ where: { id }, data: { status } })
       const detail = await getTicket(
         request(`tickets/${id}`, 'GET', env.fixture.renter.token),
         context(id),
@@ -46,8 +55,8 @@ describe('/api/maintenance access (database integration)', () => {
       expect(body.ticket.permissions).toMatchObject({
         edit: false,
         collaborate: false,
-        comment: status === 'RESOLVIDO',
-        reopen: status === 'RESOLVIDO',
+        comment: status === 'RESOLVED',
+        reopen: status === 'RESOLVED',
         confirm: false,
       })
       const list = await GET(request(`tickets?status=${status}`, 'GET', env.fixture.renter.token))
@@ -84,7 +93,7 @@ describe('/api/maintenance access (database integration)', () => {
             context(id),
           )
         ).status,
-      ).toBe(status === 'RESOLVIDO' ? 201 : 409)
+      ).toBe(status === 'RESOLVED' ? 201 : 409)
       for (const user of [env.fixture.unrelated, env.other.renter]) {
         expect(
           (await getTicket(request(`tickets/${id}`, 'GET', user.token), context(id))).status,
@@ -107,9 +116,9 @@ describe('/api/maintenance access (database integration)', () => {
     ]
     for (const input of actions)
       expect((await action(id, env.fixture.renter.token, input)).status).toBe(403)
-    await prisma.chamadoManutencao.update({
+    await prisma.maintenanceTicket.update({
       where: { id },
-      data: { status: 'AGUARDANDO_CONFIRMACAO' },
+      data: { status: 'AWAITING_CONFIRMATION' },
     })
     expect((await action(id, env.fixture.renter.token, { action: 'confirm' })).status).toBe(403)
     expect(
@@ -162,7 +171,11 @@ describe('/api/maintenance access (database integration)', () => {
       (await allowed.json()).items.map((item: Pick<MaintenanceTicketListItem, 'id'>) => item.id),
     ).toContain(id)
     const denied = await GET(request('tickets', 'GET', env.fixture.unrelated.token))
-    expect(await denied.json()).toEqual({ items: [], totalCount: 0 })
+    expect(await denied.json()).toMatchObject({
+      items: [],
+      totalCount: 0,
+      summary: { totalCount: 0, urgentCount: 0 },
+    })
     expect(
       (await (await options(request('options', 'GET', env.fixture.unrelated.token))).json())
         .contracts,
@@ -239,7 +252,7 @@ describe('/api/maintenance access (database integration)', () => {
         .status,
     ).toBe(204)
     expect(
-      (await prisma.chamadoManutencao.findUniqueOrThrow({ where: { id } })).excluidoEm,
+      (await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id } })).deletedAt,
     ).not.toBeNull()
     expect(
       (await getTicket(request(`tickets/${id}`, 'GET', env.fixture.renter.token), context(id)))
@@ -253,14 +266,14 @@ describe('/api/maintenance access (database integration)', () => {
       (await archived.json()).items.map((item: Pick<MaintenanceTicketListItem, 'id'>) => item.id),
     ).toContain(id)
     expect((await action(id, env.fixture.admin.token, { action: 'restore' })).status).toBe(200)
-    const row = await prisma.chamadoManutencao.findUniqueOrThrow({
+    const row = await prisma.maintenanceTicket.findUniqueOrThrow({
       where: { id },
-      include: { atividades: true },
+      include: { activities: true },
     })
-    expect(row.excluidoEm).toBeNull()
-    expect(row.status).toBe('ABERTO')
-    expect(row.atividades.map((a) => a.tipo)).toEqual(
-      expect.arrayContaining(['EXCLUSAO', 'RESTAURACAO']),
+    expect(row.deletedAt).toBeNull()
+    expect(row.status).toBe('OPEN')
+    expect(row.activities.map((a) => a.type)).toEqual(
+      expect.arrayContaining(['DELETION', 'RESTORATION']),
     )
   })
 })

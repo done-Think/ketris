@@ -4,7 +4,7 @@ import type { AgencyProfile } from '../types/agency'
 import type { AgencyPublicProfileEditorFormValues } from '../types/profile-editor'
 import type { PublicAgencyProfile } from '../types/public-agency-profile'
 import type { AppLocale } from '@/i18n/types/locale.types'
-import type { PropertyText } from './property-presentation'
+import type { PropertyText } from '../types/property-presentation'
 import { formatCompactCurrency } from './search-results'
 
 export const emptyValues: AgencyPublicProfileEditorFormValues = {
@@ -48,7 +48,7 @@ export function toDraft(values: AgencyPublicProfileEditorFormValues) {
     backgroundColor: values.backgroundColor || null,
     logoUrl: values.logoUrl || null,
     bannerUrl: values.bannerUrl || null,
-    team: values.team.map((member, index) => ({ usuarioId: member.usuarioId, order: index })),
+    team: values.team.map((member, index) => ({ userId: member.userId, order: index })),
   }
 }
 
@@ -75,7 +75,7 @@ export function toFormValues(
     team: profile.team
       .slice()
       .sort((first, second) => first.order - second.order)
-      .map((member) => ({ usuarioId: member.usuarioId, name: member.name })),
+      .map((member) => ({ userId: member.userId, name: member.name })),
   }
 }
 
@@ -116,7 +116,7 @@ export function toPreviewProfile(
       ? buildAgencyPublicProfileHref(values.displayName, values.legalCreci, profile.id)
       : '',
     teamHighlights: values.team.map((member) => ({
-      usuarioId: member.usuarioId,
+      userId: member.userId,
       name: member.name,
       avatarUrl: null,
     })),
@@ -124,7 +124,7 @@ export function toPreviewProfile(
       title: listing.title,
       location: [listing.neighborhood, listing.city].filter(Boolean).join(', '),
       price:
-        listing.purpose === 'ALUGUEL'
+        listing.purpose === 'RENT'
           ? t('monthly', { price: formatCompactCurrency(listing.price, locale) })
           : formatCompactCurrency(listing.price, locale),
       href: `/properties/${listing.id}`,

@@ -1,20 +1,10 @@
-import {
-  calculateMonthlyCharge,
-  isBillableTenant,
-  type MonthlyCharge,
-  type PlatformPlan,
-  type TenantUsage,
-} from './platform-plan'
-import type { TenantAccount, TenantAccountType, TenantStatus } from './tenant-account'
-import type { TenantSummary } from './tenant-summary.entity'
-
-// A tenant as the platform admin sees it: the summary plus how the platform bills it.
-export interface PlatformTenant extends TenantSummary, TenantAccount {}
-
-// What the tenant's plan costs for its current usage; null for the renters' system tenant.
-export interface ChargedPlatformTenant extends PlatformTenant {
-  monthlyCharge: MonthlyCharge | null
-}
+import { calculateMonthlyCharge, isBillableTenant } from './platform-plan'
+import type { PlatformPlan, TenantUsage } from '../types/platform-plan'
+import type {
+  ChargedPlatformTenant,
+  PlatformTenant,
+  PlatformTenantResponse,
+} from '../types/platform-tenant'
 
 export function chargePlatformTenants(
   tenants: PlatformTenant[],
@@ -33,23 +23,12 @@ export function chargePlatformTenants(
   })
 }
 
-export interface PlatformTenantResponse {
-  id: string
-  name: string
-  slug: string
-  accountType: TenantAccountType
-  status: TenantStatus
-  canceledAt: Date | null
-  createdAt: Date
-  monthlyCharge?: MonthlyCharge | null
-}
-
 export function toPlatformTenantResponse(
   tenant: PlatformTenant | ChargedPlatformTenant,
 ): PlatformTenantResponse {
   return {
     id: tenant.id,
-    name: tenant.nome,
+    name: tenant.name,
     slug: tenant.slug,
     accountType: tenant.accountType,
     status: tenant.status,

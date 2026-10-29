@@ -9,7 +9,7 @@ const initialValues: ContactFormValues = {
   name: 'Maria Silva',
   email: 'maria@example.com',
   phone: '(11) 90000-0000',
-  type: 'PROPRIETARIO',
+  type: 'OWNER',
   notes: 'Cliente antiga',
 }
 

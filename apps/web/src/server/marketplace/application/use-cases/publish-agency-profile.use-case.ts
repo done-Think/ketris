@@ -1,14 +1,8 @@
-import type { Papel } from '@server/auth/domain/user.entity'
-
 import { assertAgencyProfileAccess } from '../authorization'
 import { AgencyProfileNotFoundError, ProfilePublishValidationError } from '../../domain/errors'
 import type { AgencyProfile } from '../../types/agency-profile'
 import type { AgencyProfileRepository } from '../ports/agency-profile-repository.port'
-
-export interface PublishAgencyProfileInput {
-  actorTenantId: string
-  actorPapel: Papel
-}
+import type { PublishAgencyProfileInput } from '../../types/use-case-inputs'
 
 function getPublishMissingFields(profile: AgencyProfile): string[] {
   const missingFields: string[] = []
@@ -35,7 +29,7 @@ export class PublishAgencyProfileUseCase {
   constructor(private readonly agencyProfileRepository: AgencyProfileRepository) {}
 
   async execute(input: PublishAgencyProfileInput): Promise<AgencyProfile> {
-    assertAgencyProfileAccess(input.actorPapel)
+    assertAgencyProfileAccess(input.actorRole)
 
     const profile = await this.agencyProfileRepository.findByTenantId(input.actorTenantId)
 
@@ -53,6 +47,7 @@ export class PublishAgencyProfileUseCase {
       input.actorTenantId,
       'PUBLISHED',
       new Date(),
+      input.actorId,
     )
 
     if (!published) {

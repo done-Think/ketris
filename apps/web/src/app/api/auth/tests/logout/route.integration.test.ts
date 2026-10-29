@@ -18,17 +18,17 @@ describe('POST /api/auth/logout (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Logout', slug: tenantSlug },
+      data: { name: 'Tenant Logout', slug: tenantSlug },
     })
     tenantId = tenant.id
 
-    await prisma.usuario.create({
+    await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Logout Teste',
+        name: 'Logout Teste',
         email,
-        senhaHash: await bcrypt.hash(password, 10),
-        papel: 'ADMIN',
+        passwordHash: await bcrypt.hash(password, 10),
+        role: 'OWNER',
       },
     })
   })

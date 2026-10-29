@@ -1,12 +1,7 @@
 import { AgencyProfileNotFoundError } from '../../domain/errors'
 import type { AgencyProfile } from '../../types/agency-profile'
 import type { AgencyProfileRepository } from '../ports/agency-profile-repository.port'
-
-export interface GetAgencyProfileInput {
-  id?: string
-  slug?: string
-  creci?: string
-}
+import type { GetAgencyProfileInput } from '../../types/use-case-inputs'
 
 export class GetAgencyProfileUseCase {
   constructor(private readonly agencyProfileRepository: AgencyProfileRepository) {}

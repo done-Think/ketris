@@ -35,21 +35,13 @@ export const routing = defineRouting({
     '/register': '/register',
     '/register/details': '/register/details',
     '/forgot-password': '/forgot-password',
-    '/backoffice': '/backoffice',
-    '/backoffice/admins': '/backoffice/admins',
-    '/backoffice/admins/[id]': '/backoffice/admins/[id]',
-    '/backoffice/admins/new': '/backoffice/admins/new',
-    '/backoffice/users': '/backoffice/users',
-    '/backoffice/login': '/backoffice/login',
+    '/confirm-email-change': '/confirm-email-change',
+    '/invite': '/invite',
     '/crm': '/crm',
     '/crm/contacts': '/crm/contacts',
     '/crm/opportunities/[id]': '/crm/opportunities/[id]',
     '/dashboard': '/dashboard',
-    '/dashboard/agenda': {
-      'pt-BR': '/dashboard/agenda',
-      'en-US': '/dashboard/schedule',
-      'es-ES': '/dashboard/agenda',
-    },
+    '/dashboard/agenda': '/dashboard/agenda',
     '/dashboard/contracts': '/dashboard/contracts',
     '/dashboard/contracts/[id]': '/dashboard/contracts/[id]',
     '/dashboard/contracts/new': '/dashboard/contracts/new',
@@ -120,4 +112,8 @@ export const routing = defineRouting({
 
 export function isAppLocale(locale: string | undefined): locale is AppLocale {
   return locales.includes(locale as AppLocale)
+}
+
+export function resolveLocale(locale: string | undefined): AppLocale {
+  return isAppLocale(locale) ? locale : defaultLocale
 }

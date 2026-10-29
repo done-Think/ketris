@@ -16,16 +16,23 @@ const { getServerSessionMock, redirectMock, routerMock } = vi.hoisted(() => ({
   routerMock: { replace: vi.fn(), refresh: vi.fn(), push: vi.fn() },
 }))
 
+// Server message loading is verified separately; JSDOM renders the client shell.
+vi.mock('@/i18n/scoped-messages', () => ({
+  ScopedMessages: ({ children }: { children: import('react').ReactNode }) => children,
+}))
+
 vi.mock('next-auth', () => ({ getServerSession: getServerSessionMock }))
 vi.mock('next-auth/react', () => ({ useSession: vi.fn() }))
 vi.mock('@shared/lib/auth/auth-options', () => ({ authOptions: {} }))
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   redirect: redirectMock,
   useRouter: () => routerMock,
 }))
 vi.mock('@/i18n/navigation', async () => {
   const React = await import('react')
   return {
+    ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
     usePathname: vi.fn(),
     useRouter: () => routerMock,
     Link: React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
@@ -88,5 +95,16 @@ describe('Authenticated dashboard layouts', () => {
       }),
     ).rejects.toThrow('NEXT_REDIRECT')
     expect(redirectMock).toHaveBeenCalledWith('/pt/login')
+  })
+  it('returns an unavailable screen without rendering protected children or redirecting to login', async () => {
+    getServerSessionMock.mockResolvedValueOnce({ authUnavailable: true, user: { id: 'u1' } })
+    const result = await DashboardLayout({
+      params: Promise.resolve({ locale: 'pt-BR' }),
+      children: <div>Private fresh data</div>,
+    })
+    render(<ThemeProvider theme={theme}>{result}</ThemeProvider>)
+    expect(screen.getByText('Autenticação temporariamente indisponível')).toBeInTheDocument()
+    expect(screen.queryByText('Private fresh data')).not.toBeInTheDocument()
+    expect(redirectMock).not.toHaveBeenCalled()
   })
 })

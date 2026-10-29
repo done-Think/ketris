@@ -1,10 +1,7 @@
 import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
 
 import { InvalidPlatformCredentialsError } from '../../domain/errors'
-import {
-  toAuthenticatedPlatformAdmin,
-  type AuthenticatedPlatformAdmin,
-} from '../../domain/platform-admin.entity'
+import { toAuthenticatedPlatformAdmin } from '../../domain/platform-admin.entity'
 import {
   generatePlatformRefreshToken,
   hashPlatformRefreshToken,
@@ -13,17 +10,7 @@ import {
 import type { PlatformAdminRepository } from '../ports/platform-admin-repository.port'
 import type { PlatformRefreshTokenRepository } from '../ports/platform-refresh-token-repository.port'
 import type { PlatformTokenService } from '../ports/platform-token-service.port'
-
-export interface LoginPlatformAdminInput {
-  email: string
-  password: string
-}
-
-export interface LoginPlatformAdminOutput {
-  admin: AuthenticatedPlatformAdmin
-  accessToken: string
-  refreshToken: string
-}
+import type { LoginPlatformAdminInput, LoginPlatformAdminOutput } from '../../types/use-case-inputs'
 
 export class LoginPlatformAdminUseCase {
   constructor(
@@ -36,17 +23,22 @@ export class LoginPlatformAdminUseCase {
   async execute(input: LoginPlatformAdminInput): Promise<LoginPlatformAdminOutput> {
     const admin = await this.platformAdminRepository.findByEmail(input.email)
 
-    if (!admin || !admin.ativo) {
+    if (!admin || !admin.active) {
       throw new InvalidPlatformCredentialsError()
     }
 
-    const passwordMatches = await this.passwordHasher.compare(input.password, admin.senhaHash)
+    const passwordMatches = await this.passwordHasher.compare(input.password, admin.passwordHash)
 
     if (!passwordMatches) {
       throw new InvalidPlatformCredentialsError()
     }
 
-    const authenticatedAdmin = toAuthenticatedPlatformAdmin(admin)
+    const accessedAt = new Date()
+    await this.platformAdminRepository.recordAccess(admin.id, accessedAt)
+    const authenticatedAdmin = toAuthenticatedPlatformAdmin({
+      ...admin,
+      lastAccessAt: accessedAt,
+    })
     const accessToken = await this.tokenService.sign(authenticatedAdmin)
 
     const refreshToken = generatePlatformRefreshToken()

@@ -1,6 +1,5 @@
+import { styles } from '../styles/create-property-step-fields.styles'
 import { Typography } from '@mui/material'
-
-import { brand } from '@shared/theme/tokens'
 
 import type { CreatePropertyStepFieldsProps } from '../types/dashboard-property'
 import { CreatePropertyAddressStepFields } from './CreatePropertyAddressStepFields'
@@ -11,13 +10,16 @@ import { CreatePropertyValuesStepFields } from './CreatePropertyValuesStepFields
 import { PropertyMediaUploadField } from './PropertyMediaUploadField'
 
 export function CreatePropertyStepFields({
+  getValues,
+  setValue,
   control,
+  onAddressChange,
   activeStepKey,
   activeStepLabel,
   propertyPurpose,
 }: CreatePropertyStepFieldsProps) {
-  const hasRentPurpose = propertyPurpose.includes('Aluguel')
-  const hasSalePurpose = propertyPurpose.includes('Venda')
+  const hasRentPurpose = propertyPurpose.includes('RENT')
+  const hasSalePurpose = propertyPurpose.includes('SALE')
   const hasDualPurpose = hasRentPurpose && hasSalePurpose
   const mainValueLabel = hasRentPurpose && !hasSalePurpose ? 'rentValue' : 'saleValue'
   const negotiationTermLabel =
@@ -29,21 +31,18 @@ export function CreatePropertyStepFields({
 
   return (
     <>
-      <Typography
-        sx={{
-          color: { xs: brand.neutral[500], md: 'primary.main' },
-          fontSize: { xs: 11, md: 13 },
-          fontWeight: 900,
-          mb: { xs: 1.8, md: 2.2 },
-          textTransform: 'uppercase',
-        }}
-      >
-        {activeStepLabel}
-      </Typography>
+      <Typography sx={styles.typography}>{activeStepLabel}</Typography>
 
       {activeStepKey === 'basic' ? <CreatePropertyBasicStepFields control={control} /> : null}
 
-      {activeStepKey === 'address' ? <CreatePropertyAddressStepFields control={control} /> : null}
+      {activeStepKey === 'address' ? (
+        <CreatePropertyAddressStepFields
+          control={control}
+          getValues={getValues}
+          setValue={setValue}
+          onAddressChange={onAddressChange}
+        />
+      ) : null}
 
       {activeStepKey === 'features' ? <CreatePropertyFeaturesStepFields control={control} /> : null}
 

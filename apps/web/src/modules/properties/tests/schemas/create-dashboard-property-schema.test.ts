@@ -1,3 +1,5 @@
+import { editableProperty } from '../fixtures/editable-property'
+import { buildEditPropertyFormValues } from '../../utils/build-edit-property-form-values'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -8,10 +10,13 @@ import {
 const schema = createDashboardPropertySchema((key) => key)
 
 describe('createDashboardPropertySchema', () => {
-  it('accepts the static dashboard form defaults', () => {
+  it('starts empty and requires the user to fill in the listing', () => {
     const result = schema.safeParse(createDashboardPropertyDefaultValues)
 
-    expect(result.success).toBe(true)
+    expect(result.success).toBe(false)
+    expect(createDashboardPropertyDefaultValues.title).toBe('')
+    expect(createDashboardPropertyDefaultValues.features).toEqual([])
+    expect(createDashboardPropertyDefaultValues.publishingOptions).toEqual([])
   })
 
   it('rejects missing required listing fields', () => {
@@ -38,3 +43,19 @@ describe('createDashboardPropertySchema', () => {
     )
   })
 })
+
+it.each(['bedrooms', 'bathrooms', 'parkingSpaces'] as const)(
+  'rejects fractional %s before submission',
+  (field) => {
+    const values = buildEditPropertyFormValues(editableProperty)
+    expect(schema.safeParse({ ...values, [field]: 2 }).success).toBe(true)
+    const result = schema.safeParse({ ...values, [field]: 1.5 })
+    expect(result.success).toBe(false)
+    if (!result.success)
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: [field], message: 'integerRequired' }),
+        ]),
+      )
+  },
+)

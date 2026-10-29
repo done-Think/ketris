@@ -16,7 +16,7 @@ describe('Criar usuário (API)', () => {
           tenantId,
           email: agentEmail,
           password: agentPassword,
-          papel: 'AGENT',
+          role: 'AGENT',
         })
       })
       .then(() =>
@@ -38,20 +38,20 @@ describe('Criar usuário (API)', () => {
     cy.task('cleanupAuthUser', tenantId)
   })
 
-  it('cria um usuário (papel AGENT por padrão) quando o ator é ADMIN', () => {
+  it('cria um usuário (papel AGENT por padrão) quando o ator é OWNER', () => {
     const email = `e2e-novo-${Date.now()}@ketris.dev`
 
     cy.request({
       method: 'POST',
       url: '/api/auth/users',
       headers: { Authorization: `Bearer ${adminToken}` },
-      body: { nome: 'Novo Agente E2E', email, password: 'senha-longa-123' },
+      body: { name: 'Novo Agente E2E', email, password: 'senha-longa-123' },
     }).then((response) => {
       expect(response.status).to.eq(201)
       expect(response.body.user.email).to.eq(email)
       expect(response.body.user.tenantId).to.eq(tenantId)
-      expect(response.body.user.papel).to.eq('AGENT')
-      expect(response.body.user).to.not.have.property('senhaHash')
+      expect(response.body.user.role).to.eq('AGENT')
+      expect(response.body.user).to.not.have.property('passwordHash')
     })
   })
 
@@ -59,7 +59,7 @@ describe('Criar usuário (API)', () => {
     cy.request({
       method: 'POST',
       url: '/api/auth/users',
-      body: { nome: 'X', email: `x-${Date.now()}@ketris.dev`, password: 'senha-longa-123' },
+      body: { name: 'X', email: `x-${Date.now()}@ketris.dev`, password: 'senha-longa-123' },
       failOnStatusCode: false,
     }).then((response) => {
       expect(response.status).to.eq(401)
@@ -67,12 +67,12 @@ describe('Criar usuário (API)', () => {
     })
   })
 
-  it('retorna 403 quando o ator autenticado não é ADMIN', () => {
+  it('retorna 403 quando o ator autenticado não é OWNER', () => {
     cy.request({
       method: 'POST',
       url: '/api/auth/users',
       headers: { Authorization: `Bearer ${agentToken}` },
-      body: { nome: 'X', email: `x-${Date.now()}@ketris.dev`, password: 'senha-longa-123' },
+      body: { name: 'X', email: `x-${Date.now()}@ketris.dev`, password: 'senha-longa-123' },
       failOnStatusCode: false,
     }).then((response) => {
       expect(response.status).to.eq(403)
@@ -85,7 +85,7 @@ describe('Criar usuário (API)', () => {
       method: 'POST',
       url: '/api/auth/users',
       headers: { Authorization: `Bearer ${adminToken}` },
-      body: { nome: 'Duplicado', email: adminEmail, password: 'senha-longa-123' },
+      body: { name: 'Duplicado', email: adminEmail, password: 'senha-longa-123' },
       failOnStatusCode: false,
     }).then((response) => {
       expect(response.status).to.eq(409)
@@ -99,10 +99,10 @@ describe('Criar usuário (API)', () => {
       url: '/api/auth/users',
       headers: { Authorization: `Bearer ${adminToken}` },
       body: {
-        nome: 'Tentativa',
+        name: 'Tentativa',
         email: `tentativa-${Date.now()}@ketris.dev`,
         password: 'senha-longa-123',
-        papel: 'ADMIN',
+        role: 'ADMIN',
       },
       failOnStatusCode: false,
     }).then((response) => {

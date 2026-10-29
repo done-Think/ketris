@@ -5,6 +5,7 @@ import { meetsMinimumAdvanceNotice } from '../utils/scheduling-window'
 import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-scheduling'
 import type { BuildAgendaEventFormSchemaOptions } from '../types/agenda-event'
 import type { SchemaMessageTranslator } from '@shared/types'
+import type { TranslationKey } from '@/i18n/types/messages.types'
 
 export const agendaOtherPropertyValue = 'other'
 
@@ -18,24 +19,24 @@ export const agendaEventKindOptions = [
 ] as const
 
 export function buildAgendaEventFormSchema(
-  t: SchemaMessageTranslator,
+  t: SchemaMessageTranslator<TranslationKey<'agenda.eventForm.errors'>>,
   options: BuildAgendaEventFormSchemaOptions = {},
 ) {
   const agendaEventFormShape = {
     outsideBusinessHoursConfirmed: z.boolean().default(false),
     internal: z.boolean().default(false),
-    audience: z.enum(['LEGACY_TEAM', 'ALL_AGENTS', 'ASSIGNED_AGENT']).default('LEGACY_TEAM'),
+    audience: z.enum(['SHARED_TEAM', 'ALL_AGENTS', 'ASSIGNED_AGENT']).default('SHARED_TEAM'),
     responsibleId: z.string().default(''),
-    customProperty: z.string(),
-    durationMinutes: z.coerce.number().min(15, t('durationTooShort')),
+    customProperty: z.string().trim().max(500, t('propertyReferenceTooLong')),
+    durationMinutes: z.coerce.number().int(t('durationInteger')).min(15, t('durationTooShort')),
     kind: z.enum(agendaEventKindOptions).optional().or(z.literal('')),
-    notes: z.string(),
-    participant: z.string(),
-    phone: z.string(),
+    notes: z.string().trim().max(10000, t('notesTooLong')),
+    participant: z.string().trim().max(200, t('participantTooLong')),
+    phone: z.string().trim().max(32, t('phoneTooLong')),
     propertyId: z.string(),
     scheduledDate: z.string().min(1, t('dateRequired')),
     scheduledTime: z.string().min(1, t('timeRequired')),
-    title: z.string().min(3, t('titleRequired')),
+    title: z.string().trim().min(3, t('titleRequired')).max(200, t('titleTooLong')),
   }
 
   return z.object(agendaEventFormShape).superRefine((values, context) => {
@@ -56,7 +57,7 @@ export function buildAgendaEventFormSchema(
         path: ['responsibleId'],
       })
     }
-    if (values.internal && values.audience === 'LEGACY_TEAM') {
+    if (values.internal && values.audience === 'SHARED_TEAM') {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         message: t('audienceRequired'),

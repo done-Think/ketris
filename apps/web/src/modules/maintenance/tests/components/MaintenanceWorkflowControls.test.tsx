@@ -1,10 +1,14 @@
+import {
+  maintenancePermissionsFixture,
+  maintenanceTicketFixture,
+} from '../fixtures/maintenance-ticket'
 import { render, screen } from '@testing-library/react'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { MaintenanceWorkflowControls } from '../../components/MaintenanceWorkflowControls'
 import { useMaintenanceAction, useMaintenanceOptions } from '../../hooks/use-maintenance'
-import type { ApiMaintenanceTicket, MaintenancePermissions } from '../../types/service'
+import type { ApiMaintenanceTicket } from '../../types/service'
 
 vi.mock('next-auth/react', () => ({ useSession: vi.fn() }))
 
@@ -13,25 +17,27 @@ vi.mock('../../hooks/use-maintenance', () => ({
   useMaintenanceOptions: vi.fn(),
 }))
 
-const ticket: ApiMaintenanceTicket = {
+const ticket: ApiMaintenanceTicket = maintenanceTicketFixture({
   id: 'MNT-0089',
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
-  permissions: { collaborate: true } as MaintenancePermissions,
+  permissions: maintenancePermissionsFixture({ collaborate: true }),
   replacementRequests: [
     {
       id: 'r1',
       reason: 'Prestador não apareceu',
-      status: 'PENDENTE',
+      status: 'PENDING',
+      requestedById: 'user-1',
       requestedByName: 'Bruno Oliveira',
+      decidedAt: null,
       decisionReason: null,
       decidedByName: null,
       createdAt: '2025-02-20T00:00:00.000Z',
     },
   ],
-  category: 'Hidráulica',
-  priority: 'URGENTE',
-  status: 'EM_ANDAMENTO',
+  category: 'PLUMBING',
+  priority: 'URGENT',
+  status: 'IN_PROGRESS',
   title: 'Vazamento na cozinha',
   description: 'Vazamento embaixo da pia da cozinha.',
   openedById: 'user-1',
@@ -41,9 +47,9 @@ const ticket: ApiMaintenanceTicket = {
   updatedAt: '2025-02-20T00:00:00.000Z',
   activities: [],
   attachments: [],
-}
+})
 
-function mockSession(role: 'ADMIN' | 'AGENT') {
+function mockSession(role: 'OWNER' | 'AGENT') {
   vi.mocked(useSession).mockReturnValue({
     data: { tenantId: 'tenant-1', user: { id: 'user-1' }, role },
     status: 'authenticated',
@@ -63,8 +69,8 @@ describe('MaintenanceWorkflowControls', () => {
     } as unknown as ReturnType<typeof useMaintenanceAction>)
   })
 
-  it('lets an ADMIN session role decide a pending replacement request', () => {
-    mockSession('ADMIN')
+  it('lets an OWNER session role decide a pending replacement request', () => {
+    mockSession('OWNER')
     render(<MaintenanceWorkflowControls ticket={ticket} />)
 
     expect(screen.getByRole('button', { name: 'Aprovar troca' })).toBeVisible()

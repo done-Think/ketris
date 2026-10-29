@@ -1,9 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type {
-  PlatformOverviewCounts,
-  PlatformOverviewRepository,
-} from '../../../application/ports/platform-overview-repository.port'
+import type { PlatformOverviewRepository } from '../../../application/ports/platform-overview-repository.port'
+import type { PlatformOverviewCounts } from '../../../types/platform-overview-repository'
 import type { PlatformPlanRepository } from '../../../application/ports/platform-plan-repository.port'
 import type { PlatformTenantRepository } from '../../../application/ports/platform-tenant-repository.port'
 import { GetPlatformOverviewUseCase } from '../../../application/use-cases/get-platform-overview.use-case'
@@ -32,7 +30,7 @@ function createRepositories() {
     findMany: vi.fn().mockResolvedValue([
       {
         id: 'a',
-        nome: 'A',
+        name: 'A',
         slug: 'a',
         accountType: 'AGENCY',
         status: 'ACTIVE',
@@ -41,7 +39,7 @@ function createRepositories() {
       },
       {
         id: 'b',
-        nome: 'B',
+        name: 'B',
         slug: 'b',
         accountType: 'BROKER',
         status: 'TRIAL',
@@ -50,7 +48,7 @@ function createRepositories() {
       },
       {
         id: 'c',
-        nome: 'C',
+        name: 'C',
         slug: 'c',
         accountType: 'BROKER',
         status: 'CANCELED',
@@ -60,6 +58,8 @@ function createRepositories() {
     ]),
     findById: vi.fn(),
     updateAccount: vi.fn(),
+    findPage: vi.fn(),
+    countByStatus: vi.fn(),
     findStatusChanges: vi.fn().mockResolvedValue([
       {
         tenantId: 'c',

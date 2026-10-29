@@ -1,7 +1,9 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
-const optionalTextSchema = z.string().trim().min(1).nullable().optional()
+import { directoryPageFields } from './directory.schema'
+
+const optionalTextSchema = z.string().trim().min(1).max(2000).nullable().optional()
 const colorSchema = z
   .string()
   .trim()
@@ -11,14 +13,14 @@ const colorSchema = z
 
 export const saveBrokerProfileRequestSchema = z
   .object({
-    displayName: z.string().trim().min(1),
+    displayName: z.string().trim().min(1).max(120),
     headline: optionalTextSchema,
     bio: optionalTextSchema,
     creci: optionalTextSchema,
     phone: optionalTextSchema,
     region: optionalTextSchema,
-    neighborhoods: z.array(z.string().trim().min(1)).default([]),
-    specialties: z.array(z.string().trim().min(1)).default([]),
+    neighborhoods: z.array(z.string().trim().min(1).max(80)).max(30).default([]),
+    specialties: z.array(z.string().trim().min(1).max(80)).max(30).default([]),
     availability: optionalTextSchema,
     primaryColor: colorSchema,
     secondaryColor: colorSchema,
@@ -26,13 +28,14 @@ export const saveBrokerProfileRequestSchema = z
     avatarUrl: z.string().trim().min(1).nullable().optional(),
     bannerUrl: z.string().trim().min(1).nullable().optional(),
   })
+  .strict()
   .openapi('SaveBrokerProfileRequest')
 
 export const brokerListingSummarySchema = z
   .object({
     id: z.string(),
     title: z.string(),
-    purpose: z.enum(['ALUGUEL', 'VENDA', 'AMBOS']),
+    purpose: z.enum(['RENT', 'SALE', 'BOTH']),
     price: z.number(),
     neighborhood: z.string().nullable(),
     city: z.string().nullable(),
@@ -67,7 +70,7 @@ export const publicBrokerProfileSchema = z
   .openapi('PublicBrokerProfile')
 
 export const listBrokersResponseSchema = z
-  .object({ brokers: z.array(publicBrokerProfileSchema) })
+  .object({ brokers: z.array(publicBrokerProfileSchema), ...directoryPageFields })
   .openapi('ListBrokersResponse')
 
 export const getBrokerProfileResponseSchema = z

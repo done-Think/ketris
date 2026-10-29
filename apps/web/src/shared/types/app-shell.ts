@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import type { SvgIconComponent } from '@mui/icons-material'
+import type { TranslationKey } from '@/i18n/types/messages.types'
 
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { UserRole } from '@shared/types/user-role'
 
 export type AppShellNavHref =
   | '/dashboard'
@@ -19,10 +20,10 @@ export type AppShellNavHref =
   | '/dashboard/maintenance'
 
 export type AppShellNavItem = {
-  labelKey: string
+  labelKey: TranslationKey<'common.appShell'>
   href: AppShellNavHref
   icon: SvgIconComponent
-  roles?: readonly Papel[]
+  roles?: readonly UserRole[]
 }
 
 export type AppShellProps = {

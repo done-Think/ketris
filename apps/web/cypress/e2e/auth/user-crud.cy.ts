@@ -19,7 +19,7 @@ describe('CRUD de usuários (API)', () => {
           url: '/api/auth/users',
           headers: { Authorization: `Bearer ${adminToken}` },
           body: {
-            nome: 'Alvo CRUD',
+            name: 'Alvo CRUD',
             email: `alvo-crud-${Date.now()}@ketris.dev`,
             password: 'senha-longa-123',
           },
@@ -34,7 +34,7 @@ describe('CRUD de usuários (API)', () => {
     cy.task('cleanupAuthUser', tenantId)
   })
 
-  it('lista os usuários do tenant sem incluir administradores', () => {
+  it('lista somente os usuários do tenant autenticado', () => {
     cy.request({
       method: 'GET',
       url: '/api/auth/users',
@@ -42,9 +42,9 @@ describe('CRUD de usuários (API)', () => {
     }).then((response) => {
       expect(response.status).to.eq(200)
       expect(response.body.users.some((user: { id: string }) => user.id === targetId)).to.eq(true)
-      expect(response.body.users.every((user: { papel: string }) => user.papel !== 'ADMIN')).to.eq(
-        true,
-      )
+      expect(
+        response.body.users.every((user: { tenantId: string }) => user.tenantId === tenantId),
+      ).to.eq(true)
     })
   })
 
@@ -64,17 +64,17 @@ describe('CRUD de usuários (API)', () => {
       method: 'PATCH',
       url: `/api/auth/users/${targetId}`,
       headers: { Authorization: `Bearer ${adminToken}` },
-      body: { papel: 'OWNER' },
+      body: { role: 'OWNER' },
     }).then((response) => {
       expect(response.status).to.eq(200)
-      expect(response.body.user.papel).to.eq('OWNER')
+      expect(response.body.user.role).to.eq('OWNER')
     })
 
     cy.request({
       method: 'PATCH',
       url: `/api/auth/users/${targetId}`,
       headers: { Authorization: `Bearer ${adminToken}` },
-      body: { papel: 'ADMIN' },
+      body: { role: 'ADMIN' },
       failOnStatusCode: false,
     }).then((response) => {
       expect(response.status).to.eq(400)
@@ -88,7 +88,7 @@ describe('CRUD de usuários (API)', () => {
       method: 'POST',
       url: '/api/auth/users',
       headers: { Authorization: `Bearer ${adminToken}` },
-      body: { nome: 'Será Desativado', email, password: 'senha-longa-123' },
+      body: { name: 'Será Desativado', email, password: 'senha-longa-123' },
     })
       .then((createResponse) => {
         const userId = createResponse.body.user.id
@@ -101,7 +101,7 @@ describe('CRUD de usuários (API)', () => {
           })
           .then((deleteResponse) => {
             expect(deleteResponse.status).to.eq(200)
-            expect(deleteResponse.body.user.ativo).to.eq(false)
+            expect(deleteResponse.body.user.active).to.eq(false)
           })
       })
       .then(() =>
@@ -113,7 +113,8 @@ describe('CRUD de usuários (API)', () => {
         }),
       )
       .then((loginResponse) => {
-        expect(loginResponse.status).to.eq(401)
+        expect(loginResponse.status).to.eq(403)
+        expect(loginResponse.body.error.code).to.eq('ACCOUNT_DEACTIVATED')
       })
   })
 })

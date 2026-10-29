@@ -1,9 +1,10 @@
+import type { ResponsiveStyleValue } from '@mui/system'
 import type { ViewMode } from './search'
 
 export type AgencyProfileStatus = 'DRAFT' | 'PUBLISHED'
 
 export type AgencyTeamHighlight = {
-  usuarioId: string
+  userId: string
   name: string
   avatarUrl: string | null
 }
@@ -69,4 +70,18 @@ export type AgencyAdaptiveBrandHeaderProps = {
   variant: AgencyAdaptiveBrandHeaderVariant
   showBanner?: boolean
   showHeadquarters?: boolean
+}
+
+export type AgencyBrand = AgencyProfile['brand']
+
+export type BrandHeaderConfig = {
+  height: ResponsiveStyleValue<number>
+  columns: ResponsiveStyleValue<string>
+  padding: ResponsiveStyleValue<number>
+  paddingLeft: ResponsiveStyleValue<string>
+  titleFontSize: ResponsiveStyleValue<number>
+  titleLineHeight: number
+  creciFontSize: ResponsiveStyleValue<number>
+  fallbackFontSize: number
+  noWrapTitle: boolean
 }

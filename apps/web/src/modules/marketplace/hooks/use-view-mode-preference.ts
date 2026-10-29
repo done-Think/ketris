@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
 
 import {
   defaultSearchResultsViewMode,
@@ -10,29 +10,37 @@ import {
 } from '../config/search-results-view-mode'
 import type { SearchResultsViewModeScope, ViewMode } from '../types/search'
 
-function getStoredViewMode(scope: SearchResultsViewModeScope) {
+const listeners = new Set<() => void>()
+
+function subscribe(listener: () => void) {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
+
+function readViewMode(scope: SearchResultsViewModeScope): ViewMode {
   const cookieKey = getSearchResultsViewModeCookieKey(scope)
   const cookieValue = document.cookie
     .split('; ')
     .find((cookie) => cookie.startsWith(`${cookieKey}=`))
     ?.slice(cookieKey.length + 1)
 
-  return isSearchResultsViewMode(cookieValue) ? cookieValue : undefined
+  return isSearchResultsViewMode(cookieValue) ? cookieValue : defaultSearchResultsViewMode
 }
 
 export function useViewModePreference(scope: SearchResultsViewModeScope) {
-  const [viewMode, setViewModeState] = useState<ViewMode>(defaultSearchResultsViewMode)
+  const viewMode = useSyncExternalStore(
+    subscribe,
+    () => readViewMode(scope),
+    () => defaultSearchResultsViewMode,
+  )
 
-  useEffect(() => {
-    const storedViewMode = getStoredViewMode(scope)
-
-    if (storedViewMode) setViewModeState(storedViewMode)
-  }, [scope])
-
-  const setViewMode = (mode: ViewMode) => {
-    document.cookie = getSearchResultsViewModeCookie(mode, scope)
-    setViewModeState(mode)
-  }
+  const setViewMode = useCallback(
+    (mode: ViewMode) => {
+      document.cookie = getSearchResultsViewModeCookie(mode, scope)
+      listeners.forEach((listener) => listener())
+    },
+    [scope],
+  )
 
   return { setViewMode, viewMode }
 }

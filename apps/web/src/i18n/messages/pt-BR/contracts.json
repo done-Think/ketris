@@ -18,29 +18,29 @@
   },
   "filters": {
     "tabs": {
-      "Todos": "Todos",
-      "Ativos": "Ativos",
-      "Vencendo": "Vencendo",
-      "Encerrados": "Encerrados"
+      "ALL": "Todos",
+      "active": "Ativos",
+      "expiring90": "Vencendo",
+      "closed": "Encerrados"
     },
     "typeFilter": {
       "label": "Tipo de contrato",
-      "Todos": "Todos os tipos",
-      "Residencial": "Residencial",
-      "Comercial": "Comercial",
-      "Temporada": "Temporada"
+      "ALL": "Todos os tipos",
+      "residential": "Residencial",
+      "commercial": "Comercial",
+      "shortTerm": "Temporada"
     }
   },
   "summary": {
-    "Ativos": {
+    "active": {
       "label": "Ativos",
       "caption": "Contratos vigentes"
     },
-    "Vencendo em 30d": {
+    "expiring30": {
       "label": "Vencendo em 30d",
       "caption": "Exigem acompanhamento"
     },
-    "Total": {
+    "total": {
       "label": "Total de contratos",
       "caption": "Em todos os status"
     }
@@ -65,21 +65,23 @@
       "view-summary": "Ver resumo",
       "view-history": "Ver histórico",
       "edit-data": "Editar dados",
-      "duplicate": "Duplicar contrato",
-      "download-pdf": "Baixar PDF",
-      "download-draft": "Baixar minuta",
-      "send-signature": "Enviar assinatura",
-      "copy-signature-link": "Copiar link"
+      "view-documents": "Ver documentos"
+    },
+    "paginationAria": {
+      "next": "Próxima página",
+      "previous": "Página anterior",
+      "first": "Primeira página",
+      "last": "Última página"
     }
   },
   "status": {
-    "Rascunho": "Rascunho",
-    "Em revisão": "Em revisão",
-    "Aguardando assinatura": "Aguardando assinatura",
-    "Assinado": "Assinado",
-    "Ativo": "Ativo",
-    "Encerrado": "Encerrado",
-    "Cancelado": "Cancelado"
+    "draft": "Rascunho",
+    "review": "Em revisão",
+    "awaitingSignature": "Aguardando assinatura",
+    "signed": "Assinado",
+    "active": "Ativo",
+    "closed": "Encerrado",
+    "cancelled": "Cancelado"
   },
   "emptyState": {
     "title": "Nenhum contrato encontrado",
@@ -121,7 +123,17 @@
       "guarantorCpfInvalid": "Informe um CPF válido",
       "guarantorEmailRequired": "Informe o e-mail do fiador",
       "guarantorPhoneRequired": "Informe o telefone do fiador",
-      "guarantorPhoneInvalid": "Informe um telefone válido"
+      "guarantorPhoneInvalid": "Informe um telefone válido",
+      "amountRequired": "Informe um valor positivo para o contrato",
+      "nameTooLong": "Use até 200 caracteres.",
+      "emailTooLong": "Use até 254 caracteres.",
+      "phoneTooLong": "Use até 32 caracteres.",
+      "notesTooLong": "Use até 10.000 caracteres.",
+      "dueDayInvalid": "Informe um dia inteiro de 1 a 31.",
+      "dateInvalid": "Informe uma data válida no formato DD/MM/AAAA.",
+      "endAfterStart": "O término deve ser posterior ao início.",
+      "amountTooLarge": "O valor máximo é 9.999.999.999,99.",
+      "amountPrecision": "Use no máximo duas casas decimais."
     },
     "actions": {
       "back": "Voltar",
@@ -133,7 +145,14 @@
       "picker": {
         "label": "Selecionar oportunidade aceita",
         "helperText": "Só oportunidades aceitas e sem contrato aparecem aqui.",
-        "noOptions": "Nenhuma oportunidade aceita disponível."
+        "noOptions": "Nenhuma oportunidade aceita disponível.",
+        "loading": "Carregando...",
+        "clear": "Limpar seleção",
+        "open": "Abrir opções",
+        "close": "Fechar opções",
+        "retry": "Tentar novamente",
+        "error": "Não foi possível carregar as propostas.",
+        "more": "Carregar mais propostas"
       },
       "summary": {
         "property": "Imóvel",
@@ -152,7 +171,8 @@
         "cpf": "CPF",
         "email": "E-mail",
         "phone": "Telefone"
-      }
+      },
+      "removeGuarantor": "Remover fiador (troque a garantia antes, se necessário)"
     },
     "conditions": {
       "title": "Condições comerciais",
@@ -163,23 +183,24 @@
         "startDate": "Início",
         "endDate": "Término",
         "adjustmentIndex": "Reajuste",
-        "notes": "Observações"
+        "notes": "Observações",
+        "amount": "Valor do contrato (BRL)"
       },
       "contractTypeOptions": {
-        "RESIDENCIAL": "Residencial",
-        "COMERCIAL": "Comercial",
-        "TEMPORADA": "Temporada"
+        "residential": "Residencial",
+        "commercial": "Comercial",
+        "shortTerm": "Temporada"
       },
       "guaranteeTypeOptions": {
-        "FIADOR": "Fiador",
-        "CAUCAO": "Caução",
-        "SEGURO_FIANCA": "Seguro fiança",
-        "TITULO_CAPITALIZACAO": "Título de capitalização"
+        "guarantor": "Fiador",
+        "deposit": "Caução",
+        "insurance": "Seguro fiança",
+        "capitalizationBond": "Título de capitalização"
       },
       "adjustmentIndexOptions": {
-        "IPCA": "IPCA",
-        "IGPM": "IGP-M",
-        "INPC": "INPC"
+        "ipca": "IPCA",
+        "igpm": "IGP-M",
+        "inpc": "INPC"
       }
     },
     "review": {
@@ -200,7 +221,8 @@
         "start": "Início",
         "end": "Término",
         "adjustment": "Reajuste",
-        "notes": "Observações"
+        "notes": "Observações",
+        "amount": "Valor"
       }
     },
     "discardDialog": {
@@ -210,15 +232,141 @@
       "confirm": "Descartar"
     }
   },
-  "actionDialog": {
-    "close": "Fechar",
-    "summaryLabels": {
-      "property": "Imovel",
-      "owner": "Locador",
-      "tenant": "Locatario",
-      "amount": "Valor",
-      "start": "Inicio",
-      "end": "Termino"
+  "detail": {
+    "contracts": "Contratos",
+    "title": "Contrato {code}",
+    "edit": "Editar",
+    "cancel": "Cancelar contrato",
+    "close": "Encerrar contrato",
+    "loadError": "Não foi possível carregar o contrato.",
+    "retry": "Tentar novamente",
+    "info": "Dados do contrato",
+    "notes": "Cláusulas e observações",
+    "emptyNotes": "Nenhuma observação registrada.",
+    "property": "Imóvel",
+    "tenant": "Locatário",
+    "amount": "Valor",
+    "adjustment": "Reajuste",
+    "start": "Início",
+    "end": "Término",
+    "payment": "Dia de pagamento",
+    "paymentDay": "Dia {day} de cada mês",
+    "guarantee": "Garantia",
+    "parties": "Partes e assinaturas",
+    "legacySignature": "Assinado — registro anterior",
+    "sign": "Registrar assinatura manual",
+    "link": "Confirmar vínculo do locatário",
+    "linkNotice": "Confirme o vínculo de acesso para {email}.",
+    "linked": "Conta vinculada",
+    "linkSuccess": "Vínculo confirmado.",
+    "uploadBusy": "Aguarde a conclusão do envio do PDF antes de alterar o contrato.",
+    "back": "Voltar",
+    "landlord": "Locador",
+    "guarantor": "Fiador",
+    "manual": "Registro manual",
+    "provider": "Assinatura eletrônica"
+  },
+  "documents": {
+    "title": "Documentos",
+    "file": "PDF comprobatório",
+    "limits": "Somente PDF, até 10 MB.",
+    "progress": "Progresso do envio do PDF",
+    "upload": "Enviar PDF",
+    "success": "PDF enviado e conferido.",
+    "empty": "Nenhum documento enviado.",
+    "download": "Baixar {name}",
+    "legacy": "Arquivo legado sem download privado disponível.",
+    "outdated": "Versão anterior: envie um novo PDF para registrar assinaturas.",
+    "validation": {
+      "required": "Selecione um arquivo PDF.",
+      "size": "O PDF deve ter conteúdo e no máximo 10 MB.",
+      "pdf": "Selecione um arquivo no formato PDF."
     }
+  },
+  "signature": {
+    "title": "Registrar assinatura manual",
+    "manualNotice": "Este é um registro manual feito pela imobiliária com comprovante. A assinatura eletrônica pelo provedor externo ainda não está disponível.",
+    "party": "Parte: {name}",
+    "document": "PDF comprobatório",
+    "noDocument": "Envie um PDF para a revisão atual do contrato antes de registrar a assinatura.",
+    "required": "Selecione um PDF da revisão atual.",
+    "back": "Voltar",
+    "confirm": "Confirmar registro manual"
+  },
+  "transition": {
+    "cancelTitle": "Cancelar contrato",
+    "closeTitle": "Encerrar contrato",
+    "notice": "A operação será registrada com seu usuário e a data atual, preservando documentos, histórico e cobranças.",
+    "reason": "Motivo",
+    "required": "Informe o motivo.",
+    "tooLong": "Use até 10.000 caracteres.",
+    "back": "Voltar",
+    "confirm": "Confirmar"
+  },
+  "history": {
+    "title": "Histórico",
+    "retry": "Tentar novamente",
+    "empty": "Nenhum evento registrado. Registros antigos podem não ter histórico de autoria.",
+    "system": "Sistema",
+    "unavailableActor": "Autoria indisponível",
+    "pagination": "Páginas do histórico",
+    "actions": {
+      "CREATED": "Contrato criado",
+      "UPDATED": "Contrato atualizado",
+      "MANUAL_SIGNATURE_REGISTERED": "Assinatura registrada manualmente",
+      "DOCUMENT_UPLOADED": "Documento enviado",
+      "CANCELLED": "Contrato cancelado",
+      "CLOSED": "Contrato encerrado"
+    },
+    "page": "Ir para a página {page}",
+    "navigation": {
+      "next": "Próxima página",
+      "previous": "Página anterior",
+      "first": "Primeira página",
+      "last": "Última página"
+    },
+    "fields": {
+      "type": "Tipo de contrato",
+      "amount": "Valor",
+      "dueDay": "Dia de pagamento",
+      "adjustmentIndex": "Reajuste",
+      "guaranteeType": "Garantia",
+      "notes": "Observações",
+      "startDate": "Início da vigência",
+      "endDate": "Fim da vigência",
+      "parties": "Partes e vínculos",
+      "status": "Status",
+      "documents": "Documentos",
+      "other": "Outros dados"
+    },
+    "changes": "Dados alterados: {fields}"
+  },
+  "errors": {
+    "generic": "Não foi possível concluir a operação. Tente novamente.",
+    "CONTRACT_EDITING_LOCKED": "Este contrato não permite mais edição.",
+    "CONTRACT_TRANSITION_NOT_ALLOWED": "O estado atual do contrato não permite essa operação.",
+    "CONTRACT_DOCUMENT_NOT_FOUND": "Documento indisponível ou sem acesso autorizado.",
+    "CONTRACT_DOCUMENT_OUTDATED": "Os dados mudaram. Envie um novo PDF atualizado.",
+    "CONTRACT_EVIDENCE_REQUIRED": "Selecione um PDF comprobatório enviado ao contrato.",
+    "CONTRACT_DOCUMENT_INVALID": "O arquivo não corresponde ao PDF autorizado.",
+    "CONTRACT_DOCUMENT_STORAGE_UNAVAILABLE": "O serviço de documentos está indisponível. Tente novamente.",
+    "CONTRACT_UPLOAD_EXPIRED": "O envio expirou. Selecione o PDF e envie novamente.",
+    "CONTRACT_UPLOAD_INVALID": "A autorização de envio é inválida. Inicie novamente.",
+    "CONTRACT_PARTY_ALREADY_SIGNED": "A assinatura dessa parte já foi registrada.",
+    "CONTRACT_RENTER_USER_NOT_FOUND": "Nenhuma conta ativa de locatário encontrada para este e-mail.",
+    "CONTRACT_PARTY_EMAIL_MISMATCH": "O e-mail não corresponde à parte do contrato.",
+    "CONTRACT_RENTER_USER_AMBIGUOUS": "Há mais de uma conta elegível. Revise o vínculo antes de continuar.",
+    "CONTRACT_PARTY_ALREADY_LINKED": "Esta parte já está vinculada a outra conta.",
+    "CONTRACT_OPPORTUNITY_ALREADY_HAS_CONTRACT": "Esta proposta já tem contrato. Selecione outra.",
+    "CONTRACT_OPPORTUNITY_NOT_ACCEPTED": "A proposta precisa estar aceita para gerar contrato.",
+    "FORBIDDEN": "Seu perfil não permite essa operação.",
+    "UNAUTHORIZED": "Confirme seu acesso e tente novamente.",
+    "CONFLICT": "O vínculo conflita com os dados atuais ou há contas ambíguas. Revise os dados antes de tentar novamente."
+  },
+  "edit": {
+    "title": "Editar contrato",
+    "notice": "Proposta e imóvel permanecem fixos. Após salvar alterações nos dados, envie um novo PDF atualizado antes de registrar assinaturas. Alterar o e-mail do locatário remove o vínculo anterior de acesso.",
+    "back": "Voltar",
+    "save": "Salvar alterações"
   }
 }

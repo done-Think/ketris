@@ -1,108 +1,50 @@
-export type ApiChargeType = 'A_RECEBER' | 'A_PAGAR'
+import type { components, paths } from '@shared/types/generated/api'
+export type ApiChargeType = components['schemas']['Charge']['type']
 
-export type ApiChargeStatus = 'PENDENTE' | 'PAGA' | 'ATRASADA' | 'AGENDADA' | 'CANCELADA'
+export type ApiChargeStatus = components['schemas']['Charge']['status']
 
-export type ApiNewChargeStatus = Extract<ApiChargeStatus, 'PENDENTE' | 'AGENDADA'>
+export type ApiStoredChargeStatus = NonNullable<
+  components['schemas']['ChargeAuditEvent']['fromStatus']
+>
 
-export interface ApiCharge {
-  id: string
-  code: string
-  type: ApiChargeType
-  status: ApiChargeStatus
-  amount: number
-  dueDate: string
-  description: string | null
-  paymentMethod: string | null
-  receiptUrl: string | null
-  paidAt: string | null
-  createdAt: string
-  updatedAt: string
-  contractId: string | null
-  contractCode: string | null
-  propertyId: string | null
-  propertyTitle: string | null
-  propertyAddress: string | null
-  payerName: string | null
-  payerEmail: string | null
-}
+export type ApiNewChargeStatus = components['schemas']['CreateChargeRequest']['status']
 
-export interface ApiChargeListItem {
-  id: string
-  code: string
-  type: ApiChargeType
-  status: ApiChargeStatus
-  amount: number
-  dueDate: string
-  description: string | null
-  contractId: string | null
-  payerName: string | null
-  propertyTitle: string | null
-  updatedAt: string
-}
+export type ApiChargeAuditAction = components['schemas']['ChargeAuditEvent']['action']
 
-export interface ChargeListFilters {
-  type?: ApiChargeType
-  status?: ApiChargeStatus
-  search?: string
-  page?: number
-  pageSize?: number
-}
+export type ApiChargeReceipt = NonNullable<components['schemas']['ChargeReceipt']>
 
-export interface CreateChargePayload {
-  contractId?: string
-  description?: string
-  type: ApiChargeType
-  amount: number
-  dueDate: string
-  status: ApiNewChargeStatus
-}
+export type ApiCharge = components['schemas']['Charge']
 
-export interface UpdateChargePayload {
-  description?: string | null
-  type: ApiChargeType
-  amount: number
-  dueDate: string
-  status: ApiChargeStatus
-}
+export type ApiChargeListItem = components['schemas']['ChargeListItem']
 
-export interface RegisterChargePaymentPayload {
-  paidAt: string
-  paymentMethod: string
-  receiptUrl?: string | null
-}
+export type ApiChargeStatusCounts = components['schemas']['ChargeStatusCounts']
 
-export interface ListChargesResponse {
-  items: ApiChargeListItem[]
-  totalCount: number
-}
+export type ChargeListFilters = NonNullable<
+  paths['/financial/charges']['get']['parameters']['query']
+>
 
-export interface ChargeResponse {
-  charge: ApiCharge
-}
+export type CreateChargePayload = components['schemas']['CreateChargeRequest']
 
-export interface FinancialMonthlyTotal {
-  year: number
-  month: number
-  total: number
-}
+export type UpdateChargePayload = components['schemas']['UpdateChargeRequest']
 
-export interface FinancialUpcomingCharge {
-  id: string
-  code: string
-  description: string | null
-  payerName: string | null
-  propertyId: string | null
-  propertyTitle: string | null
-  dueDate: string
-  amount: number
-  status: ApiChargeStatus
-}
+export type RegisterChargePaymentPayload = components['schemas']['RegisterChargePaymentRequest']
 
-export interface FinancialSummary {
-  monthlyReceivable: number
-  overdueTotal: number
-  defaultRatePercentage: number
-  occupancyRatePercentage: number
-  monthlySeries: FinancialMonthlyTotal[]
-  upcomingDues: FinancialUpcomingCharge[]
-}
+export type ChargeReasonPayload = components['schemas']['ChargeReasonRequest']
+
+export type ListChargesResponse = components['schemas']['ChargesResponse']
+
+export type ChargeResponse = components['schemas']['ChargeResponse']
+
+export type ApiChargeAuditEvent = components['schemas']['ChargeAuditEvent']
+
+export type ChargeHistoryResponse = components['schemas']['ChargeHistoryResponse']
+
+export type ChargeReceiptUploadAuthorization = components['schemas']['ChargeReceiptUploadResponse']
+
+export type ChargeReceiptDownload = components['schemas']['ChargeReceiptDownloadResponse']
+
+export type FinancialMonthlyTotal = components['schemas']['FinancialMonthlyTotal']
+
+export type FinancialUpcomingCharge = components['schemas']['FinancialUpcomingCharge']
+
+export type FinancialSummary = components['schemas']['FinancialSummary']

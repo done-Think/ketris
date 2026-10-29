@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { User, Papel } from '@server/auth/domain/user.entity'
+import type { User, UserRole } from '@server/auth/domain/user.entity'
 import type { UserRepository } from '@server/auth/application/ports/user-repository.port'
-import type { PropertyRepository } from '@server/properties/application/ports/property-repository.port'
+import type { AgendaPropertyLookup } from '../../../application/ports/agenda-property-lookup.port'
 import type { AgendaEvent } from '../../../domain/agenda-event.entity'
 import type { AgendaEventRepository } from '../../../application/ports/agenda-event-repository.port'
 import { CreateAgendaEventUseCase } from '../../../application/use-cases/create-agenda-event.use-case'
@@ -9,44 +9,44 @@ import { UpdateAgendaEventUseCase } from '../../../application/use-cases/update-
 import { RescheduleAgendaEventUseCase } from '../../../application/use-cases/reschedule-agenda-event.use-case'
 import { CancelAgendaEventUseCase } from '../../../application/use-cases/cancel-agenda-event.use-case'
 
-const inicio = new Date('2026-10-21T10:00:00-03:00')
+const start = new Date('2026-10-21T10:00:00-03:00')
 const input = {
   actorTenantId: 'agency',
   actorUserId: 'admin',
-  actorPapel: 'ADMIN' as Papel,
-  titulo: 'Team meeting',
-  inicio,
+  actorRole: 'OWNER' as UserRole,
+  title: 'Team meeting',
+  start,
   durationMinutes: 60,
-  interno: true,
-  destino: 'ALL_AGENTS' as const,
-  participanteNome: '',
-  participanteTelefone: '',
+  internal: true,
+  audience: 'ALL_AGENTS' as const,
+  participantName: '',
+  participantPhone: '',
 }
 
 function deps(changes: Partial<AgendaEvent> = {}) {
   const event: AgendaEvent = {
     id: 'event',
     tenantId: 'agency',
-    responsavelId: 'admin',
-    responsavelNome: 'Agency',
-    criadoPorId: 'admin',
-    donoUsuarioId: null,
+    responsibleId: 'admin',
+    responsibleName: 'Agency',
+    createdById: 'admin',
+    ownerUserId: null,
     dono: null,
-    participantes: [],
-    imovelId: null,
-    referenciaImovelLivre: null,
-    titulo: 'Team meeting',
-    tipo: 'MEETING',
-    destino: 'ALL_AGENTS',
-    interno: true,
+    participants: [],
+    propertyId: null,
+    freeFormPropertyReference: null,
+    title: 'Team meeting',
+    type: 'MEETING',
+    audience: 'ALL_AGENTS',
+    internal: true,
     status: 'CONFIRMED',
-    inicio,
-    fim: new Date(inicio.getTime() + 3600000),
-    participanteNome: '',
-    participanteTelefone: '',
-    notas: 'Discuss the weekly plan',
-    createdAt: inicio,
-    updatedAt: inicio,
+    start,
+    end: new Date(start.getTime() + 3600000),
+    participantName: '',
+    participantPhone: '',
+    notes: 'Discuss the weekly plan',
+    createdAt: start,
+    updatedAt: start,
     ...changes,
   }
   const repository: AgendaEventRepository = {
@@ -62,15 +62,15 @@ function deps(changes: Partial<AgendaEvent> = {}) {
   const agent: User = {
     id: 'agent',
     tenantId: 'agency',
-    nome: 'Agent',
+    name: 'Agent',
     email: 'agent@example.test',
-    senhaHash: '',
-    papel: 'AGENT',
-    ativo: true,
-    vinculoAprovadoEm: inicio,
+    passwordHash: '',
+    role: 'AGENT',
+    active: true,
+    membershipApprovedAt: start,
   }
   const users = { findById: vi.fn().mockResolvedValue(agent) } as unknown as UserRepository
-  const properties = { findByTenantAndId: vi.fn() } as unknown as PropertyRepository
+  const properties = { findByTenantAndId: vi.fn() } as unknown as AgendaPropertyLookup
   return { event, agent, repository, users, properties }
 }
 
@@ -87,13 +87,13 @@ describe('Agency event recipients and internal events', () => {
     expect(d.repository.create).toHaveBeenCalledTimes(1)
     expect(d.repository.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        destino: 'ALL_AGENTS',
-        interno: true,
+        audience: 'ALL_AGENTS',
+        internal: true,
         tenantId: 'agency',
-        responsavelId: 'admin',
-        imovelId: null,
-        participanteNome: '',
-        participanteTelefone: '',
+        responsibleId: 'admin',
+        propertyId: null,
+        participantName: '',
+        participantPhone: '',
       }),
       expect.anything(),
     )
@@ -104,14 +104,14 @@ describe('Agency event recipients and internal events', () => {
     const d = deps()
     await new CreateAgendaEventUseCase(d.repository, d.users, d.properties).execute({
       ...input,
-      destino: 'ASSIGNED_AGENT',
-      responsavelId: 'agent',
+      audience: 'ASSIGNED_AGENT',
+      responsibleId: 'agent',
     })
     expect(d.users.findById).toHaveBeenCalledWith('agent')
     expect(d.repository.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        destino: 'ASSIGNED_AGENT',
-        responsavelId: 'agent',
+        audience: 'ASSIGNED_AGENT',
+        responsibleId: 'agent',
         tenantId: 'agency',
       }),
       expect.anything(),
@@ -120,31 +120,31 @@ describe('Agency event recipients and internal events', () => {
 
   it.each([
     { tenantId: 'other-tenant' },
-    { ativo: false },
-    { vinculoAprovadoEm: null },
-    { papel: 'OWNER' as Papel },
-    { papel: 'RENTER' as Papel },
+    { active: false },
+    { membershipApprovedAt: null },
+    { role: 'OWNER' as UserRole },
+    { role: 'RENTER' as UserRole },
   ])('rejects an unavailable agent: %j', async (changes) => {
     const d = deps()
     vi.mocked(d.users.findById).mockResolvedValue({ ...d.agent, ...changes })
     await expect(
       new CreateAgendaEventUseCase(d.repository, d.users, d.properties).execute({
         ...input,
-        destino: 'ASSIGNED_AGENT',
-        responsavelId: 'agent',
+        audience: 'ASSIGNED_AGENT',
+        responsibleId: 'agent',
       }),
     ).rejects.toMatchObject({ status: 404 })
     expect(d.repository.create).not.toHaveBeenCalled()
   })
 
-  it.each(['AGENT', 'OWNER', 'RENTER'] as const)(
+  it.each(['AGENT', 'PROPERTY_OWNER', 'RENTER'] as const)(
     'prevents %s from publishing internal or collective events',
-    async (actorPapel) => {
+    async (actorRole) => {
       const d = deps()
       await expect(
         new CreateAgendaEventUseCase(d.repository, d.users, d.properties).execute({
           ...input,
-          actorPapel,
+          actorRole,
         }),
       ).rejects.toMatchObject({ status: 403 })
       expect(d.repository.create).not.toHaveBeenCalled()
@@ -156,7 +156,7 @@ describe('Agency event recipients and internal events', () => {
     await expect(
       new CreateAgendaEventUseCase(d.repository, d.users, d.properties).execute({
         ...input,
-        participanteEmails: ['renter@example.test'],
+        participantEmails: ['renter@example.test'],
       }),
     ).rejects.toMatchObject({ status: 409 })
     expect(d.repository.create).not.toHaveBeenCalled()
@@ -168,12 +168,12 @@ describe('Agency event recipients and internal events', () => {
     await expect(
       new UpdateAgendaEventUseCase(d.repository, d.properties, d.users).execute({
         actorTenantId: 'agency',
-        actorPapel: 'ADMIN',
+        actorRole: 'OWNER',
         actorUserId: 'admin',
         id: 'event',
-        destino: 'ASSIGNED_AGENT',
-        responsavelId: 'other-agent',
-        inicio: new Date('2026-10-22T11:00:00-03:00'),
+        audience: 'ASSIGNED_AGENT',
+        responsibleId: 'other-agent',
+        start: new Date('2026-10-22T11:00:00-03:00'),
       }),
     ).rejects.toMatchObject({ status: 404 })
     expect(d.repository.update).not.toHaveBeenCalled()
@@ -185,48 +185,54 @@ describe('Agency event recipients and internal events', () => {
     const start = new Date('2026-10-22T11:00:00-03:00')
     await new UpdateAgendaEventUseCase(d.repository, d.properties, d.users).execute({
       actorTenantId: 'agency',
-      actorPapel: 'ADMIN',
+      actorRole: 'OWNER',
       actorUserId: 'admin',
       id: 'event',
-      destino: 'ASSIGNED_AGENT',
-      responsavelId: 'agent',
-      inicio: start,
-      titulo: 'Changed meeting',
+      audience: 'ASSIGNED_AGENT',
+      responsibleId: 'agent',
+      start: start,
+      title: 'Changed meeting',
     })
     expect(d.repository.update).toHaveBeenCalledTimes(1)
     expect(d.repository.update).toHaveBeenCalledWith(
       'agency',
       'event',
       expect.objectContaining({
-        inicio: start,
-        fim: new Date(start.getTime() + 3600000),
-        responsavelId: 'agent',
-        destino: 'ASSIGNED_AGENT',
-        titulo: 'Changed meeting',
+        start: start,
+        end: new Date(start.getTime() + 3600000),
+        responsibleId: 'agent',
+        audience: 'ASSIGNED_AGENT',
+        title: 'Changed meeting',
       }),
-      { donoEmail: null, participanteEmails: [] },
+      { ownerEmail: null, participantEmails: [] },
+      'admin',
     )
     expect(d.repository.reschedule).not.toHaveBeenCalled()
   })
 
   it('keeps internal events read-only to agents across every mutation', async () => {
-    const d = deps({ destino: 'ASSIGNED_AGENT', responsavelId: 'agent' })
+    const d = deps({ audience: 'ASSIGNED_AGENT', responsibleId: 'agent' })
     const actor = {
       actorTenantId: 'agency',
-      actorPapel: 'AGENT' as const,
+      actorRole: 'AGENT' as const,
       actorUserId: 'agent',
       id: 'event',
     }
     await expect(
       new UpdateAgendaEventUseCase(d.repository, d.properties, d.users).execute({
         ...actor,
-        titulo: 'Changed',
+        title: 'Changed',
       }),
     ).rejects.toMatchObject({ status: 403 })
     await expect(
-      new RescheduleAgendaEventUseCase(d.repository).execute({ ...actor, inicio }),
+      new RescheduleAgendaEventUseCase(d.repository).execute({ ...actor, start }),
     ).rejects.toMatchObject({ status: 403 })
-    await expect(new CancelAgendaEventUseCase(d.repository).execute(actor)).rejects.toMatchObject({
+    await expect(
+      new CancelAgendaEventUseCase(d.repository).execute({
+        ...actor,
+        reason: 'Cliente indisponível',
+      }),
+    ).rejects.toMatchObject({
       status: 403,
     })
     expect(d.repository.update).not.toHaveBeenCalled()
@@ -235,14 +241,14 @@ describe('Agency event recipients and internal events', () => {
   })
 
   it('does not let an agent redirect or broaden an assigned client event', async () => {
-    const d = deps({ interno: false, destino: 'ASSIGNED_AGENT', responsavelId: 'agent' })
+    const d = deps({ internal: false, audience: 'ASSIGNED_AGENT', responsibleId: 'agent' })
     await expect(
       new UpdateAgendaEventUseCase(d.repository, d.properties, d.users).execute({
         actorTenantId: 'agency',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         actorUserId: 'agent',
         id: 'event',
-        destino: 'LEGACY_TEAM',
+        audience: 'SHARED_TEAM',
       }),
     ).rejects.toMatchObject({ status: 403 })
     expect(d.repository.update).not.toHaveBeenCalled()

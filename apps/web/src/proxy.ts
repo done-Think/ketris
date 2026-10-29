@@ -3,10 +3,18 @@ import { NextResponse } from 'next/server'
 import createMiddleware from 'next-intl/middleware'
 
 import { routing } from './i18n/routing'
-import { createRateLimitPolicy, InMemoryRateLimitStore } from '@server/security/rate-limit'
+import { createRateLimitPolicy } from '@server/security/rate-limit'
 import type { RateLimitPolicy, RateLimitResult } from '@server/security/types/rate-limit.types'
+import { getAuthRateLimitKey } from '@server/security/client-key'
+import { PostgresRateLimitStore } from '@server/security/postgres-rate-limit-store'
+import { validateApiContract } from '@server/shared/http/api-contract'
+import {
+  API_CONTRACT_HEADER,
+  API_CONTRACT_VERSION,
+  requiresApiContract,
+} from '@shared/config/api-contract'
 
-const store = new InMemoryRateLimitStore()
+const store = new PostgresRateLimitStore()
 const handleI18nRouting = createMiddleware(routing)
 
 const apiPolicy = createRateLimitPolicy(
@@ -21,6 +29,14 @@ const authPolicy = createRateLimitPolicy(
   toPositiveInteger(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60_000),
 )
 
+const inquiryPolicy = createRateLimitPolicy(
+  'marketplace-inquiry',
+  toPositiveInteger(process.env.MARKETPLACE_INQUIRY_RATE_LIMIT_MAX, 5),
+  toPositiveInteger(process.env.MARKETPLACE_INQUIRY_RATE_LIMIT_WINDOW_MS, 10 * 60_000),
+)
+
+const inquiryPathPattern = /^\/api\/marketplace\/properties\/[^/]+\/inquiries$/
+
 const authPaths = new Set([
   '/api/auth/login',
   '/api/auth/refresh',
@@ -30,19 +46,44 @@ const authPaths = new Set([
   '/api/auth/reset-password',
   '/api/auth/password-reset-codes',
   '/api/auth/password-reset-codes/verify',
+  '/api/auth/email-verification-codes',
+  '/api/auth/email-verification-codes/verify',
+  '/api/auth/me/email-change',
+  '/api/auth/me/email-change/verify',
+  '/api/auth/email-change/verify',
   '/api/auth/me/password',
+  '/api/team/invitations/accept',
 ])
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   if (!request.nextUrl.pathname.startsWith('/api')) {
     return handleI18nRouting(request)
   }
 
   const policy = selectPolicy(request.nextUrl.pathname)
-  const result = store.consume({
-    key: getClientKey(request),
-    policy,
-  })
+  let result: RateLimitResult
+  try {
+    result = await store.consume({ key: getAuthRateLimitKey(request.headers), policy })
+  } catch {
+    return NextResponse.json(
+      {
+        error: {
+          code:
+            policy === authPolicy ? 'AUTH_RATE_LIMIT_UNAVAILABLE' : 'API_RATE_LIMIT_UNAVAILABLE',
+          message: 'Serviço temporariamente indisponível.',
+        },
+      },
+      {
+        status: 503,
+        headers: {
+          'Retry-After': '60',
+          'Cache-Control': 'no-store',
+          'RateLimit-Limit': String(policy.limit),
+          'RateLimit-Remaining': '0',
+        },
+      },
+    )
+  }
 
   if (!result.allowed) {
     return withRateLimitHeaders(
@@ -53,13 +94,19 @@ export function proxy(request: NextRequest) {
             message: 'Muitas requisições. Tente novamente mais tarde.',
           },
         },
-        { status: 429 },
+        { status: 429, headers: { 'Cache-Control': 'no-store' } },
       ),
       result,
     )
   }
 
-  return withRateLimitHeaders(NextResponse.next(), result)
+  const contractError = validateApiContract(request)
+  const response = contractError ?? NextResponse.next()
+  if (!contractError && requiresApiContract(request.nextUrl.pathname)) {
+    response.headers.set(API_CONTRACT_HEADER, API_CONTRACT_VERSION)
+    response.headers.append('Vary', API_CONTRACT_HEADER)
+  }
+  return withRateLimitHeaders(response, result)
 }
 
 export const config = {
@@ -67,17 +114,26 @@ export const config = {
 }
 
 function selectPolicy(pathname: string): RateLimitPolicy {
-  return authPaths.has(pathname) ? authPolicy : apiPolicy
-}
+  let normalizedPathname = pathname
+  try {
+    normalizedPathname = decodeURIComponent(pathname)
+  } catch {}
+  normalizedPathname = normalizedPathname.replace(/\/+$/, '')
 
-function getClientKey(request: NextRequest): string {
-  const forwardedFor = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-  const realIp = request.headers.get('x-real-ip')?.trim()
+  if (inquiryPathPattern.test(normalizedPathname)) return inquiryPolicy
 
-  return forwardedFor || realIp || 'unknown'
+  return authPaths.has(normalizedPathname) ||
+    normalizedPathname.startsWith('/api/auth/callback/') ||
+    /^\/api\/auth\/users\/[^/]+\/email-change$/.test(normalizedPathname)
+    ? authPolicy
+    : apiPolicy
 }
 
 function withRateLimitHeaders(response: NextResponse, result: RateLimitResult): NextResponse {
+  const releaseSha = process.env.KETRIS_RELEASE_SHA
+  if (releaseSha && /^[a-f0-9]{40}$/.test(releaseSha)) {
+    response.headers.set('X-Ketris-Release-Sha', releaseSha)
+  }
   response.headers.set('RateLimit-Limit', String(result.limit))
   response.headers.set('RateLimit-Remaining', String(result.remaining))
   response.headers.set('RateLimit-Reset', String(Math.ceil(result.resetAt / 1000)))

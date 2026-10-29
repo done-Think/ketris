@@ -1,14 +1,16 @@
+import { crmDateSchema } from './crm-date.schema'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
+import { crmEmailSchema, crmNameSchema, crmNotesSchema, crmPhoneSchema } from './crm-input.schema'
+import { crmGroupsSchema, crmListQuerySchema, crmPaginationSchema } from './pagination.schema'
 
-export const contactTypeSchema = z
-  .enum(['PROPRIETARIO', 'LOCATARIO', 'CORRETOR'])
-  .openapi('ContactType')
+export const contactTypeSchema = z.enum(['OWNER', 'RENTER', 'BROKER']).openapi('ContactType')
 
 export const contactSchema = z
   .object({
     id: z.string(),
     tenantId: z.string(),
+    createdById: z.string().nullable().optional(),
     name: z.string(),
     email: z.string().email(),
     phone: z.string().nullable(),
@@ -17,21 +19,24 @@ export const contactSchema = z
     notes: z.string().nullable(),
     lastInteraction: z.coerce.date().nullable(),
     archivedAt: z.coerce.date().nullable(),
-    createdAt: z.coerce.date(),
-    updatedAt: z.coerce.date(),
+    createdAt: crmDateSchema,
+    updatedAt: crmDateSchema,
   })
   .openapi('Contact')
 
 export const contactListItemSchema = contactSchema
   .extend({
     propertyCount: z.number().int().openapi({
-      description: 'Quantidade de oportunidades ativas vinculadas a este contato.',
+      description:
+        'Quantidade de imóveis distintos nas oportunidades não arquivadas visíveis deste contato.',
     }),
   })
   .openapi('ContactListItem')
 
 export const listContactsQuerySchema = z
   .object({
+    ...crmListQuerySchema.shape,
+    sortBy: z.enum(['name', 'type', 'lastInteraction', 'createdAt']).optional(),
     type: contactTypeSchema.optional(),
     q: z.string().min(1).optional(),
     includeArchived: z
@@ -39,19 +44,29 @@ export const listContactsQuerySchema = z
       .transform((value) => value === 'true')
       .optional(),
   })
+  .strict()
   .openapi('ListContactsQuery')
 
 export const listContactsResponseSchema = z
-  .object({ contacts: z.array(contactListItemSchema) })
+  .object({
+    contacts: z.array(contactListItemSchema),
+    pagination: crmPaginationSchema,
+    groups: crmGroupsSchema,
+  })
   .openapi('ListContactsResponse')
 
 export const contactResponseSchema = z.object({ contact: contactSchema }).openapi('ContactResponse')
 
-const name = z.string().min(1, 'Nome é obrigatório.')
-const email = z.string().email('E-mail inválido.')
-const phone = z.string().min(1).nullable()
-const avatarUrl = z.string().url('URL inválida.').nullable()
-const notes = z.string().min(1).nullable()
+const name = crmNameSchema
+const email = crmEmailSchema
+const phone = crmPhoneSchema.nullable()
+const avatarUrl = z
+  .string()
+  .max(2048)
+  .url('URL inválida.')
+  .refine((value) => /^https?:\/\//i.test(value), 'URL inválida.')
+  .nullable()
+const notes = crmNotesSchema.nullable()
 
 export const createContactRequestSchema = z
   .object({
@@ -62,6 +77,7 @@ export const createContactRequestSchema = z
     avatarUrl: avatarUrl.optional(),
     notes: notes.optional(),
   })
+  .strict()
   .openapi('CreateContactRequest')
 
 export const patchContactRequestSchema = z
@@ -72,12 +88,9 @@ export const patchContactRequestSchema = z
     type: contactTypeSchema.optional(),
     avatarUrl: avatarUrl.optional(),
     notes: notes.optional(),
-    lastInteraction: z.coerce.date().nullable().optional(),
   })
+  .strict()
   .refine((data) => Object.values(data).some((value) => value !== undefined), {
     message: 'Informe ao menos um campo para atualizar.',
   })
   .openapi('PatchContactRequest')
-
-export type CreateContactRequestDTO = z.infer<typeof createContactRequestSchema>
-export type PatchContactRequestDTO = z.infer<typeof patchContactRequestSchema>

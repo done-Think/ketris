@@ -1,10 +1,19 @@
+import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 import { marketplaceContainer } from '@server/marketplace/container'
-import { withErrorHandling } from '@server/shared/http'
+import { directoryQuerySchema } from '@server/marketplace/schemas/directory.schema'
+import { parseQuery, withErrorHandling } from '@server/shared/http'
 
-export const GET = withErrorHandling(async () => {
-  const brokers = await marketplaceContainer.listBrokerProfilesUseCase.execute()
+export const dynamic = 'force-dynamic'
 
-  return NextResponse.json({ brokers }, { status: 200 })
+export const GET = withErrorHandling(async (request: NextRequest) => {
+  const query = parseQuery(request, directoryQuerySchema)
+  const { items, totalCount, page, pageSize } =
+    await marketplaceContainer.listBrokerProfilesUseCase.execute(query)
+
+  return NextResponse.json(
+    { brokers: items, totalCount, page, pageSize },
+    { status: 200, headers: { 'Cache-Control': 'no-store' } },
+  )
 })

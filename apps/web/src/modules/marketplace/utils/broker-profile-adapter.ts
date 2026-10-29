@@ -5,7 +5,7 @@ import type {
   PublicBrokerProfile,
 } from '../types/public-broker-profile'
 import { formatCompactCurrency } from './search-results'
-import type { PropertyText } from './property-presentation'
+import type { PropertyText } from '../types/property-presentation'
 
 function buildListingLocation(listing: PublicBrokerListingSummary): string {
   return [listing.neighborhood, listing.city].filter(Boolean).join(', ')
@@ -18,7 +18,7 @@ function buildListingPrice(
 ): string {
   const formatted = formatCompactCurrency(listing.price, locale)
 
-  return listing.purpose === 'ALUGUEL' ? t('monthly', { price: formatted }) : formatted
+  return listing.purpose === 'RENT' ? t('monthly', { price: formatted }) : formatted
 }
 
 export function toBrokerProfile(

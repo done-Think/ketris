@@ -1,3 +1,11 @@
+vi.mock('../../hooks/use-agenda-properties', () => ({
+  useAgendaProperties: () => ({
+    data: undefined,
+    isFetching: false,
+    hasNextPage: false,
+    isError: false,
+  }),
+}))
 import { useAgendaAgents } from '../../hooks/use-agenda-agents'
 import { ThemeProvider } from '@mui/material'
 import { render, screen, waitFor, within } from '@testing-library/react'
@@ -66,6 +74,16 @@ const twoDaysFromNow = '2026-10-23'
 
 function makeEvent(overrides: Partial<AgendaEventApi> = {}): AgendaEventApi {
   return {
+    audience: 'SHARED_TEAM',
+    internal: false,
+    responsibleName: 'Corretor',
+    owner: null,
+    createdBy: null,
+    participants: [],
+    propertyLabel: null,
+    cancelledAt: null,
+    cancelledById: null,
+    cancellationReason: null,
     id: 'event-1',
     tenantId: 'tenant-1',
     responsibleId: 'user-1',
@@ -154,7 +172,7 @@ describe('AgendaDashboardPage', () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(dayjs().hour(9).minute(0).second(0).millisecond(0).toDate())
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1' },
+      data: { tenantId: 'tenant-1', role: 'AGENT', user: { id: 'user-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -186,7 +204,7 @@ describe('AgendaDashboardPage', () => {
 
   it('sends the chosen agent when the agency creates an internal event', async () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', role: 'ADMIN', user: { id: 'admin' } },
+      data: { tenantId: 'tenant-1', role: 'OWNER', user: { id: 'admin' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -247,13 +265,14 @@ describe('AgendaDashboardPage', () => {
     expect(dialog.queryByRole('button', { name: /Editar|Excluir/ })).not.toBeInTheDocument()
   })
 
-  it('shows linked renter events with the reduced API response and no management actions', async () => {
+  it('lets the renter create events but keeps linked events from others read-only', async () => {
     vi.mocked(useSession).mockReturnValue({
       data: { scope: 'tenant', tenantId: 'renters', role: 'RENTER', user: { id: 'renter-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
     const event: RenterAgendaEventApi = {
+      propertyLabel: null,
       id: 'linked-event',
       title: 'Vistoria agendada',
       kind: 'INSPECTION',
@@ -266,7 +285,7 @@ describe('AgendaDashboardPage', () => {
     }
     mockEventsQuery({ data: [event] })
     renderPage()
-    expect(screen.queryByRole('button', { name: 'Novo Evento' })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Novo Evento' }).length).toBeGreaterThan(0)
     await userEvent.click(screen.getAllByRole('button', { name: 'Abrir Vistoria agendada' })[0])
     const dialog = within(screen.getByRole('dialog'))
     expect(dialog.getByText('Apartamento vinculado')).toBeVisible()
@@ -291,7 +310,6 @@ describe('AgendaDashboardPage', () => {
     const calendar = within(screen.getByRole('region', { name: 'Agenda' }))
     expect(calendar.getByText('08:00')).toBeVisible()
     expect(calendar.getByText('18:00')).toBeVisible()
-    expect(screen.queryByRole('button', { name: 'Novo Evento' })).not.toBeInTheDocument()
   })
 
   it('shows charges and both ticket dates even when appointments fail, with links to the records', async () => {
@@ -310,7 +328,7 @@ describe('AgendaDashboardPage', () => {
             description: 'Rent payment',
             amount: 1500,
             dueDate: `${today}T00:00:00Z`,
-            status: 'PENDENTE',
+            status: 'PENDING',
             propertyTitle: 'Apartment',
           },
         ],
@@ -323,7 +341,7 @@ describe('AgendaDashboardPage', () => {
             id: 'ticket-1',
             title: 'Kitchen leak',
             propertyTitle: 'Apartment',
-            status: 'ABERTO',
+            status: 'OPEN',
             createdAt: dayjs(`${today}T09:00:00`).toISOString(),
             scheduledAt: dayjs(`${twoDaysFromNow}T14:00:00`).toISOString(),
           },
@@ -352,7 +370,7 @@ describe('AgendaDashboardPage', () => {
     'shows administrator ticket dates even when appointments fail: %s',
     (isError) => {
       vi.mocked(useSession).mockReturnValue({
-        data: { tenantId: 'tenant-1', role: 'ADMIN', user: { id: 'admin-1' } },
+        data: { tenantId: 'tenant-1', role: 'OWNER', user: { id: 'admin-1' } },
         status: 'authenticated',
         update: vi.fn(),
       } as unknown as ReturnType<typeof useSession>)
@@ -365,7 +383,7 @@ describe('AgendaDashboardPage', () => {
               id: 'ticket-tenant',
               title: 'Tenant repair',
               propertyTitle: 'Tenant apartment',
-              status: 'ABERTO',
+              status: 'OPEN',
               createdAt: dayjs(`${today}T09:00:00`).toISOString(),
               scheduledAt: dayjs(`${twoDaysFromNow}T14:00:00`).toISOString(),
             },
@@ -396,7 +414,7 @@ describe('AgendaDashboardPage', () => {
 
   it('shows a maintenance source failure without hiding administrator appointments', () => {
     vi.mocked(useSession).mockReturnValue({
-      data: { tenantId: 'tenant-1', role: 'ADMIN', user: { id: 'admin-1' } },
+      data: { tenantId: 'tenant-1', role: 'OWNER', user: { id: 'admin-1' } },
       status: 'authenticated',
       update: vi.fn(),
     } as unknown as ReturnType<typeof useSession>)
@@ -572,6 +590,10 @@ describe('AgendaDashboardPage', () => {
 
     const dialogs = await screen.findAllByRole('dialog')
     const confirmDialog = dialogs[dialogs.length - 1]
+    await userEvent.type(
+      within(confirmDialog).getByLabelText('Motivo do cancelamento'),
+      'Cliente indisponível',
+    )
     await userEvent.click(within(confirmDialog).getByRole('button', { name: 'Excluir' }))
 
     await waitFor(() =>
@@ -580,7 +602,10 @@ describe('AgendaDashboardPage', () => {
         { variant: 'success' },
       ),
     )
-    expect(cancelMutateAsync).toHaveBeenCalledWith('event-1')
+    expect(cancelMutateAsync).toHaveBeenCalledWith({
+      id: 'event-1',
+      payload: { reason: 'Cliente indisponível' },
+    })
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 })

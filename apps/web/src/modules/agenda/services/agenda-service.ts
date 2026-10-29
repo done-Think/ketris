@@ -1,3 +1,5 @@
+import type { AgendaPropertyOptionsResponseDTO } from '@shared/types/generated/agenda/http'
+import type { ListUsersResponseDTO } from '@shared/types/generated/auth/http'
 import { BaseService } from '@shared/lib/api/base-service'
 import type {
   AgendaChargeApi,
@@ -12,19 +14,29 @@ import type {
   AgendaEventResponse,
   AgendaEventsResponse,
   CreateAgendaEventPayload,
+  CancelAgendaEventPayload,
   RescheduleAgendaEventPayload,
   UpdateAgendaEventPayload,
 } from '../types/agenda-event'
 
 export class AgendaService extends BaseService {
   private readonly path = '/agenda/events'
+  listProperties(search: string, page = 1): Promise<AgendaPropertyOptionsResponseDTO> {
+    return this.http.get('/agenda/properties', { params: { search, page, pageSize: 25 } })
+  }
   async listAgents(): Promise<AgendaAgentOption[]> {
-    const { users } = await this.http.get<{
-      users: (AgendaAgentOption & { role: string; active: boolean; pendingApproval: boolean })[]
-    }>('/auth/users')
-    return users
-      .filter((user) => user.role === 'AGENT' && user.active && !user.pendingApproval)
-      .map(({ id, name }) => ({ id, name }))
+    const agents: AgendaAgentOption[] = []
+    for (let page = 1; ; page += 1) {
+      const result = await this.http.get<ListUsersResponseDTO>('/auth/users', {
+        params: { page, pageSize: 100 },
+      })
+      agents.push(
+        ...result.users
+          .filter((user) => user.role === 'AGENT' && user.active && !user.pendingApproval)
+          .map(({ id, name }) => ({ id, name })),
+      )
+      if (!result.users.length || page * result.pageSize >= result.total) return agents
+    }
   }
 
   private async listPages<T>(path: string): Promise<T[]> {
@@ -68,9 +80,9 @@ export class AgendaService extends BaseService {
       .then((data) => data.event)
   }
 
-  cancel(id: string): Promise<AgendaEventApi> {
+  cancel(id: string, payload: CancelAgendaEventPayload): Promise<AgendaEventApi> {
     return this.http
-      .post<AgendaEventResponse>(`${this.path}/${id}/cancel`)
+      .post<AgendaEventResponse>(`${this.path}/${id}/cancel`, payload)
       .then((data) => data.event)
   }
 }

@@ -1,157 +1,58 @@
 'use client'
 
-import { Box, Chip, Stack, Typography } from '@mui/material'
-import { useLocale, useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { Box, Stack, Typography } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
-import { alpha, brand, motion, radius, shadows, surface } from '@shared/theme/tokens'
-import type { AppLocale } from '@/i18n/types/locale.types'
+import { useFinancialFormat } from '../hooks/use-financial-format'
+import type { FinancialUpcomingDueListProps } from '../types/financial-entry'
+import { ChargeStatusChip } from './ChargeStatusChip'
+import { styles } from '../styles/financial-upcoming-due-list.styles'
 
-import { financialStatusStyles } from '../config/financial-status-styles'
-import type { FinancialUpcomingDue, FinancialUpcomingDueListProps } from '../types/financial-entry'
-import { formatFinancialAmount } from '../utils/financial-display-currency'
-import { FinancialDueHistoryDialog } from './FinancialDueHistoryDialog'
-
-export function FinancialUpcomingDueList({ items, exchangeRate }: FinancialUpcomingDueListProps) {
-  const locale = useLocale() as AppLocale
+export function FinancialUpcomingDueList({ items, onOpen }: FinancialUpcomingDueListProps) {
   const t = useTranslations('dashboard.finance')
-  const statusT = useTranslations('dashboard.finance.statuses')
-  const searchParams = useSearchParams()
-  const [selectedDue, setSelectedDue] = useState<FinancialUpcomingDue | null>(null)
-  const formatCurrency = (value: number) => formatFinancialAmount(value, locale, exchangeRate, 0)
-  const openDueHistory = (due: FinancialUpcomingDue) => {
-    setSelectedDue(due)
-  }
-
-  useEffect(() => {
-    const dueId = searchParams.get('dueId')
-    const due = items.find((item) => item.id === dueId)
-    if (!due) return
-
-    setSelectedDue(due)
-  }, [items, searchParams])
+  const format = useFinancialFormat()
 
   return (
-    <Box
-      sx={{
-        bgcolor: surface.paper,
-        border: '1px solid',
-        borderColor: alpha.graphite[6],
-        borderRadius: `${radius.sm}px`,
-        boxShadow: shadows.propertyCard,
-        p: { xs: 2, md: 2.4 },
-      }}
-    >
-      <Typography sx={{ color: brand.graphite[500], fontSize: 18, fontWeight: 900, mb: 1.8 }}>
-        {t('upcomingDuesTitle')}
-      </Typography>
+    <Box sx={styles.card}>
+      <Typography sx={styles.title}>{t('upcomingDuesTitle')}</Typography>
 
       <Stack spacing={1}>
         {items.map((item) => {
-          const status = financialStatusStyles[item.status]
-
           return (
             <Box
               key={item.id}
               role="button"
               tabIndex={0}
-              onClick={() => openDueHistory(item)}
+              onClick={() => onOpen(item.id)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault()
-                  openDueHistory(item)
+                  onOpen(item.id)
                 }
               }}
-              sx={{
-                bgcolor: surface.app,
-                borderRadius: `${radius.sm}px`,
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: 'minmax(0, 1fr) 74px 42px 66px',
-                  sm: 'minmax(0, 1fr) 92px 48px 76px',
-                },
-                alignItems: 'center',
-                columnGap: { xs: 0.6, sm: 1.2 },
-                justifyItems: 'stretch',
-                px: 1.2,
-                py: 1,
-                textAlign: 'left',
-                transition: motion.transition.bordered,
-                width: '100%',
-                '&:hover': {
-                  bgcolor: alpha.magenta[6],
-                },
-                '&:focus-visible': {
-                  boxShadow: `0 0 0 2px ${alpha.magenta[14]}`,
-                  outline: 0,
-                },
-              }}
+              sx={styles.item}
             >
-              <Box sx={{ minWidth: 0 }}>
-                <Typography
-                  noWrap
-                  sx={{
-                    color: brand.graphite[500],
-                    display: 'block',
-                    fontSize: 12,
-                    fontWeight: 900,
-                  }}
-                >
+              <Box sx={styles.itemText}>
+                <Typography noWrap sx={styles.property}>
                   {item.property}
                 </Typography>
-                <Typography
-                  noWrap
-                  sx={{ color: brand.neutral[500], display: 'block', fontSize: 11 }}
-                >
+                <Typography noWrap sx={styles.client}>
                   {item.client}
                 </Typography>
               </Box>
-              <Typography
-                noWrap
-                sx={{
-                  color: brand.graphite[500],
-                  fontSize: 12,
-                  fontWeight: 900,
-                  justifySelf: 'end',
-                }}
-              >
-                {formatCurrency(item.amountValue)}
+              <Typography noWrap sx={styles.amount}>
+                {format.currency(item.amountValue)}
               </Typography>
-              <Typography
-                noWrap
-                sx={{
-                  color: brand.neutral[500],
-                  fontSize: 11,
-                  fontWeight: 700,
-                  justifySelf: 'center',
-                }}
-              >
-                {item.dueDate}
+              <Typography noWrap sx={styles.dueDate}>
+                {format.dayMonth(item.dueDate)}
               </Typography>
-              <Chip
-                label={statusT(item.status)}
-                size="small"
-                sx={{
-                  justifySelf: 'end',
-                  minWidth: { xs: 62, sm: 72 },
-                  bgcolor: status.bgcolor,
-                  color: status.color,
-                  borderRadius: `${radius.full}px`,
-                  fontSize: 10,
-                  fontWeight: 900,
-                }}
-              />
+              <Box sx={styles.status}>
+                <ChargeStatusChip status={item.status} />
+              </Box>
             </Box>
           )
         })}
       </Stack>
-      <FinancialDueHistoryDialog
-        due={selectedDue}
-        open={Boolean(selectedDue)}
-        onClose={() => setSelectedDue(null)}
-        exchangeRate={exchangeRate}
-      />
     </Box>
   )
 }

@@ -1,13 +1,17 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { useSession } from 'next-auth/react'
-import { useLocale, useTranslations } from 'next-intl'
-import type { AppLocale } from '@/i18n/types/locale.types'
-import { useSearchParams } from 'next/navigation'
+import { useCrmFormatter } from '../hooks/use-crm-formatter'
 
-import { getLeadListFixtures } from '../fixtures/lead-list-fixtures'
-import { useLeads, useUpdateLeadStage } from '../hooks/use-leads'
+import { useDebouncedValue } from '@shared/hooks/use-debounced-value'
+import { useListState } from '@shared/hooks/use-list-state'
+import { crmPageCounts } from '../utils/page-counts'
+
+import type { AppLocale } from '@/i18n/types/locale.types'
+import { useLocale, useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
+import { useState } from 'react'
+
+import { useLead, useLeads, useUpdateLeadStage } from '../hooks/use-leads'
 import type {
   DashboardLead,
   LeadApiStage,
@@ -16,10 +20,9 @@ import type {
   LeadTableSortState,
 } from '../types/lead'
 import { toDashboardLead } from '../utils/map-dashboard-lead'
-import { filterLeads, leadsDefaultPageSize, paginateLeads, sortLeads } from '../utils/leads'
-import { CrmListLayout } from './CrmListLayout'
 import { ConvertLeadDialog } from './ConvertLeadDialog'
 import { CreateLeadDialog } from './CreateLeadDialog'
+import { CrmListLayout } from './CrmListLayout'
 import { LeadContactDialog } from './LeadContactDialog'
 import { LeadsCards } from './leads-list/LeadsCards'
 import { LeadsHeader } from './leads-list/LeadsHeader'
@@ -27,113 +30,100 @@ import { LeadsStatusFilters } from './leads-list/LeadsStatusFilters'
 import { LeadsTable } from './leads-list/LeadsTable'
 
 export function LeadsDashboardPage() {
+  const format = useCrmFormatter()
   const locale = useLocale() as AppLocale
   const t = useTranslations('crm.leads')
   const searchParams = useSearchParams()
-  const { data: session } = useSession()
-  const tenantId = session?.tenantId ?? ''
-  const leadsQuery = useLeads(tenantId)
-  const updateLeadStage = useUpdateLeadStage(tenantId)
-  const fixtureMode =
-    process.env.NODE_ENV !== 'production' &&
-    !leadsQuery.isLoading &&
-    (leadsQuery.isError || (leadsQuery.data ?? []).length === 0)
-  const leads = useMemo(
-    () =>
-      fixtureMode
-        ? getLeadListFixtures(locale)
-        : (leadsQuery.data ?? []).map((lead) => toDashboardLead(lead, locale)),
-    [fixtureMode, leadsQuery.data, locale],
-  )
-  const [search, setSearch] = useState('')
-  const [activeFilter, setActiveFilter] = useState<LeadFilter>('Todos')
-  const [sort, setSort] = useState<LeadTableSortState>(null)
-  const [page, setPage] = useState(1)
-  const [rowsPerPage, setRowsPerPage] = useState(leadsDefaultPageSize)
+  const { filters: list, setFilter } = useListState({
+    search: '',
+    activeFilter: 'ALL' as LeadFilter,
+    sort: null as LeadTableSortState,
+    page: 1,
+    pageSize: 5,
+  })
+  const query = useDebouncedValue(list.search)
+  const leadsQuery = useLeads({
+    q: query || undefined,
+    stage: list.activeFilter === 'ALL' ? undefined : list.activeFilter,
+    page: list.page,
+    pageSize: list.pageSize,
+    locale,
+    sortBy: list.sort?.field,
+    sortDirection: list.sort?.direction,
+  })
+  const linkedLeadId = searchParams?.get('leadId') ?? null
+  const updateLeadStage = useUpdateLeadStage()
+  const leads = (leadsQuery.data?.leads ?? []).map((lead) => toDashboardLead(lead, locale, format))
   const [isCreateLeadDialogOpen, setIsCreateLeadDialogOpen] = useState(false)
-  const [selectedContactLead, setSelectedContactLead] = useState<DashboardLead | null>(null)
+  const [selectedContactId, setSelectedContactId] = useState<string | null | undefined>(undefined)
+  const contactId = selectedContactId === undefined ? linkedLeadId : selectedContactId
+  const contactQuery = useLead(contactId)
   const [convertLead, setConvertLead] = useState<DashboardLead | null>(null)
 
   function handleStageChange(leadId: string, stage: LeadApiStage) {
     updateLeadStage.mutate({ leadId, stage })
   }
 
-  const filteredLeads = useMemo(
-    () => filterLeads(leads, search, activeFilter),
-    [search, activeFilter, leads],
-  )
-  const sortedLeads = useMemo(() => sortLeads(filteredLeads, sort), [filteredLeads, sort])
-  const leadsPage = useMemo(
-    () => paginateLeads(sortedLeads, page, rowsPerPage),
-    [sortedLeads, page, rowsPerPage],
-  )
-
   function handleSearchChange(value: string) {
-    setSearch(value)
-    setPage(1)
+    setFilter('search', value)
+    setFilter('page', 1)
   }
-
-  function handleFilterChange(filter: LeadFilter) {
-    setActiveFilter(filter)
-    setPage(1)
+  function handleFilterChange(value: LeadFilter) {
+    setFilter('activeFilter', value)
+    setFilter('page', 1)
   }
-
   function handleSortChange(field: LeadTableSortField) {
-    setSort((currentSort) => {
-      if (currentSort?.field !== field) return { field, direction: 'asc' }
-
-      return {
-        field,
-        direction: currentSort.direction === 'asc' ? 'desc' : 'asc',
-      }
+    setFilter('sort', {
+      field,
+      direction: list.sort?.field === field && list.sort.direction === 'asc' ? 'desc' : 'asc',
     })
-    setPage(1)
+    setFilter('page', 1)
   }
 
-  useEffect(() => {
-    const leadId = searchParams?.get('leadId')
-    const lead = leads.find((currentLead) => currentLead.id === leadId)
-    if (!lead) return
-
-    setSelectedContactLead(lead)
-  }, [leads, searchParams])
+  const contactLead = contactQuery.data
+    ? toDashboardLead(contactQuery.data, locale, format)
+    : (leads.find((lead) => lead.id === contactId) ?? null)
+  const openContact = (lead: DashboardLead) => setSelectedContactId(lead.id)
 
   return (
     <>
       <CrmListLayout
+        isLoading={leadsQuery.isLoading}
+        error={leadsQuery.isError}
+        onRetry={() => void leadsQuery.refetch()}
         header={
           <LeadsHeader
-            search={search}
+            search={list.search}
             onSearchChange={handleSearchChange}
             onNewLead={() => setIsCreateLeadDialogOpen(true)}
           />
         }
         filters={
           <LeadsStatusFilters
-            activeFilter={activeFilter}
-            leads={leads}
+            activeFilter={list.activeFilter}
+            counts={crmPageCounts(leadsQuery.data?.groups)}
             onFilterChange={handleFilterChange}
           />
         }
         table={
           <LeadsTable
-            leads={leadsPage.items}
-            sort={sort}
-            onContactLead={setSelectedContactLead}
+            leads={leads}
+            sort={list.sort}
+            onContactLead={openContact}
             onSortChange={handleSortChange}
           />
         }
-        cards={<LeadsCards leads={leadsPage.items} onContactLead={setSelectedContactLead} />}
-        isEmpty={leadsPage.items.length === 0}
+        cards={<LeadsCards leads={leads} onContactLead={openContact} />}
+        isEmpty={leads.length === 0}
         emptyMessage={t('empty')}
         pagination={{
-          count: leadsPage.totalCount,
-          page: leadsPage.page,
-          rowsPerPage,
-          onPageChange: setPage,
+          count: leadsQuery.data?.pagination.totalCount ?? 0,
+          page: leadsQuery.data?.pagination.page ?? list.page,
+          rowsPerPage: list.pageSize,
+          onPageChange: (value) => setFilter('page', value),
           onRowsPerPageChange: (nextRowsPerPage) => {
-            setRowsPerPage(nextRowsPerPage)
-            setPage(1)
+            setFilter('pageSize', nextRowsPerPage)
+            setFilter('page', 1)
           },
         }}
       />
@@ -142,12 +132,12 @@ export function LeadsDashboardPage() {
         onClose={() => setIsCreateLeadDialogOpen(false)}
       />
       <LeadContactDialog
-        lead={selectedContactLead}
-        open={Boolean(selectedContactLead)}
-        onClose={() => setSelectedContactLead(null)}
+        lead={contactLead}
+        open={Boolean(contactLead)}
+        onClose={() => setSelectedContactId(null)}
         onStageChange={handleStageChange}
         onConvertRequest={(lead) => {
-          setSelectedContactLead(null)
+          setSelectedContactId(null)
           setConvertLead(lead)
         }}
       />

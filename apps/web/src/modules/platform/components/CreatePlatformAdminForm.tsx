@@ -10,15 +10,18 @@ import { useTranslations } from 'next-intl'
 import { RhfTextField } from '@shared/components/form'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
+import { platformAdminRoles } from '../config/platform-admins'
 import { createPlatformAdminSchema } from '../schemas/create-platform-admin-schema'
-import { useCreatePlatformAdmin } from '../hooks/use-create-platform-admin'
+import { useCreatePlatformAdmin } from '../hooks/use-platform-admins'
 import type {
   CreatePlatformAdminFormProps,
   CreatePlatformAdminFormValues,
 } from '../types/platform-admin'
+import { styles } from '../styles/create-platform-admin-form.styles'
 
 export function CreatePlatformAdminForm({ onCancel, onSuccess }: CreatePlatformAdminFormProps) {
   const t = useTranslations('platform.forms')
+  const rolesT = useTranslations('platform.admins.roles')
   const { enqueueSnackbar } = useSnackbar()
   const createPlatformAdmin = useCreatePlatformAdmin()
   const schema = useMemo(() => createPlatformAdminSchema((key) => t(`errors.${key}`)), [t])
@@ -54,7 +57,7 @@ export function CreatePlatformAdminForm({ onCancel, onSuccess }: CreatePlatformA
   }
 
   return (
-    <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5} sx={{ maxWidth: 420 }}>
+    <Stack component="form" onSubmit={handleSubmit(onSubmit)} spacing={2.5} sx={styles.stack}>
       <RhfTextField control={control} name="name" label={t('name')} fullWidth autoFocus />
       <RhfTextField
         control={control}
@@ -76,9 +79,11 @@ export function CreatePlatformAdminForm({ onCancel, onSuccess }: CreatePlatformA
             inputRef={field.ref}
             fullWidth
           >
-            <MenuItem value="ADMIN">Admin</MenuItem>
-            <MenuItem value="ADMIN_AGENT">Admin + Agent</MenuItem>
-            <MenuItem value="AGENT">Agent</MenuItem>
+            {platformAdminRoles.map((role) => (
+              <MenuItem key={role} value={role}>
+                {rolesT(role)}
+              </MenuItem>
+            ))}
           </TextField>
         )}
       />
@@ -106,7 +111,7 @@ export function CreatePlatformAdminForm({ onCancel, onSuccess }: CreatePlatformA
       ) : null}
 
       {onCancel ? (
-        <DialogActions sx={{ px: 0, pb: 0, pt: 0 }}>
+        <DialogActions sx={styles.dialogActions}>
           <Button
             type="button"
             variant="outlined"

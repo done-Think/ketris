@@ -1,29 +1,33 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
+import { maintenanceCategories } from '@shared/lib/utils/maintenance-categories'
+
 export const maintenanceTicketStatusSchema = z.enum([
-  'ABERTO',
-  'EM_ANDAMENTO',
-  'RESOLVIDO',
-  'FECHADO',
-  'AGUARDANDO_CONFIRMACAO',
-  'CONTESTADO',
-  'CANCELADO',
+  'OPEN',
+  'IN_PROGRESS',
+  'RESOLVED',
+  'CLOSED',
+  'AWAITING_CONFIRMATION',
+  'DISPUTED',
+  'CANCELED',
 ])
 
-export const maintenanceTicketPrioritySchema = z.enum(['NORMAL', 'ALTA', 'URGENTE'])
+export const maintenanceTicketPrioritySchema = z.enum(['NORMAL', 'HIGH', 'URGENT'])
+
+export const maintenanceCategorySchema = z.enum(maintenanceCategories)
 
 export const maintenanceActivityTypeSchema = z.enum([
-  'NOTA',
-  'MUDANCA_STATUS',
-  'ANEXO_ADICIONADO',
-  'EDICAO',
-  'RESPONSAVEL_ALTERADO',
-  'PRESTADOR_ALTERADO',
-  'TROCA_SOLICITADA',
-  'TROCA_DECIDIDA',
-  'EXCLUSAO',
-  'RESTAURACAO',
+  'NOTE',
+  'STATUS_CHANGE',
+  'ATTACHMENT_ADDED',
+  'EDIT',
+  'RESPONSIBLE_CHANGED',
+  'PROVIDER_CHANGED',
+  'CHANGE_REQUESTED',
+  'CHANGE_DECIDED',
+  'DELETION',
+  'RESTORATION',
 ])
 
 export const maintenancePermissionsSchema = z.object({
@@ -48,6 +52,7 @@ export const maintenancePermissionsSchema = z.object({
 })
 
 const providerSchema = z.object({
+  id: z.string().optional(),
   name: z.string(),
   phone: z.string().nullable().optional(),
   email: z.string().nullable().optional(),
@@ -56,9 +61,9 @@ const providerSchema = z.object({
 const replacementSchema = z.object({
   id: z.string(),
   reason: z.string(),
-  requestedById: z.string(),
+  requestedById: z.string().nullable(),
   requestedByName: z.string(),
-  status: z.enum(['PENDENTE', 'APROVADA', 'REJEITADA']),
+  status: z.enum(['PENDING', 'APPROVED', 'REJECTED']),
   decisionReason: z.string().nullable(),
   decidedByName: z.string().nullable(),
   decidedAt: z.string().nullable(),
@@ -71,6 +76,7 @@ export const maintenanceActivitySchema = z
     ticketId: z.string(),
     type: maintenanceActivityTypeSchema,
     message: z.string(),
+    systemAction: z.string().nullable().optional(),
     authorId: z.string().nullable(),
     authorName: z.string().nullable(),
     details: z.record(z.unknown()).nullable().optional(),
@@ -98,16 +104,16 @@ export const maintenanceTicketSchema = z
     responsibleId: z.string().nullable(),
     responsibleName: z.string().nullable(),
     provider: providerSchema.nullable(),
-    completedByRole: z.enum(['ADMIN', 'AGENT', 'OWNER', 'RENTER']).nullable(),
+    completedByRole: z.enum(['OWNER', 'AGENT', 'RENTER', 'PROPERTY_OWNER']).nullable(),
     deletedAt: z.string().nullable(),
     replacementRequests: z.array(replacementSchema),
     permissions: maintenancePermissionsSchema,
-    category: z.string(),
+    category: maintenanceCategorySchema,
     priority: maintenanceTicketPrioritySchema,
     status: maintenanceTicketStatusSchema,
     title: z.string(),
     description: z.string(),
-    openedById: z.string(),
+    openedById: z.string().nullable(),
     openedByName: z.string(),
     resolvedAt: z.string().nullable(),
     createdAt: z.string(),
@@ -128,7 +134,7 @@ export const maintenanceTicketListItemSchema = z
     responsibleName: z.string().nullable(),
     deletedAt: z.string().nullable(),
     permissions: maintenancePermissionsSchema,
-    category: z.string(),
+    category: maintenanceCategorySchema,
     priority: maintenanceTicketPrioritySchema,
     status: maintenanceTicketStatusSchema,
     title: z.string(),
@@ -140,7 +146,8 @@ export const maintenanceTicketListItemSchema = z
   .openapi('MaintenanceTicketListItem')
 
 export const maintenanceTicketIdParamsSchema = z
-  .object({ id: z.string() })
+  .object({ id: z.string().trim().min(1) })
+  .strict()
   .openapi('MaintenanceTicketIdParams')
 
 export const maintenanceTicketResponseSchema = z
@@ -148,7 +155,22 @@ export const maintenanceTicketResponseSchema = z
   .openapi('MaintenanceTicketResponse')
 
 export const maintenanceTicketsResponseSchema = z
-  .object({ items: z.array(maintenanceTicketListItemSchema), totalCount: z.number() })
+  .object({
+    items: z.array(maintenanceTicketListItemSchema),
+    totalCount: z.number(),
+    pagination: z.object({
+      page: z.number().int(),
+      pageSize: z.number().int(),
+      pageCount: z.number().int(),
+      totalCount: z.number().int(),
+    }),
+    summary: z.object({
+      totalCount: z.number().int(),
+      urgentCount: z.number().int(),
+      byStatus: z.record(maintenanceTicketStatusSchema, z.number().int()),
+      averageResolutionDays: z.number().nullable(),
+    }),
+  })
   .openapi('MaintenanceTicketsResponse')
 
 export const maintenanceActivityResponseSchema = z
@@ -183,7 +205,7 @@ export const maintenanceOptionsSchema = z.object({
     z.object({
       id: z.string(),
       name: z.string(),
-      role: z.enum(['ADMIN', 'AGENT', 'OWNER', 'RENTER']),
+      role: z.enum(['OWNER', 'AGENT', 'RENTER', 'PROPERTY_OWNER']),
     }),
   ),
 })

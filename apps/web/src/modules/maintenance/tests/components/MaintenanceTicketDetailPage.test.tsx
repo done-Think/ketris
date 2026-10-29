@@ -1,22 +1,27 @@
-import type { MaintenanceMutationOverrides } from '../../types/testing'
+import { maintenanceTicketFixture } from '../fixtures/maintenance-ticket'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { MaintenanceMutationOverrides } from '../../types/testing'
 
 import { MaintenanceTicketDetailPage } from '../../components/MaintenanceTicketDetailPage'
 import {
   useAddMaintenanceTicketNote,
+  useMaintenanceAction,
+  useMaintenanceOptions,
   useMaintenanceTicket,
   useResolveMaintenanceTicket,
   useUploadMaintenanceTicketAttachment,
-  useMaintenanceOptions,
-  useMaintenanceAction,
 } from '../../hooks/use-maintenance'
 import type { ApiMaintenanceTicket } from '../../types/service'
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
+}))
+
+vi.mock('../../hooks/use-maintenance-providers', () => ({
+  useMaintenanceProviderOptions: () => ({ data: { pages: [] }, isLoading: false }),
 }))
 
 vi.mock('../../hooks/use-maintenance', () => ({
@@ -28,7 +33,7 @@ vi.mock('../../hooks/use-maintenance', () => ({
   useMaintenanceAction: vi.fn(),
 }))
 
-const mockTicket: ApiMaintenanceTicket = {
+const mockTicket: ApiMaintenanceTicket = maintenanceTicketFixture({
   permissions: {
     linkContract: false,
     schedule: false,
@@ -52,9 +57,9 @@ const mockTicket: ApiMaintenanceTicket = {
   id: 'MNT-0089',
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
-  category: 'Hidráulica',
-  priority: 'URGENTE',
-  status: 'EM_ANDAMENTO',
+  category: 'PLUMBING',
+  priority: 'URGENT',
+  status: 'IN_PROGRESS',
   title: 'Vazamento na cozinha',
   description: 'Vazamento embaixo da pia da cozinha.',
   openedById: 'user-1',
@@ -66,7 +71,7 @@ const mockTicket: ApiMaintenanceTicket = {
     {
       id: 'a1',
       ticketId: 'MNT-0089',
-      type: 'NOTA',
+      type: 'NOTE',
       message: 'Abri o chamado.',
       authorId: 'user-1',
       authorName: 'Bruno Oliveira',
@@ -75,7 +80,7 @@ const mockTicket: ApiMaintenanceTicket = {
     {
       id: 'a2',
       ticketId: 'MNT-0089',
-      type: 'NOTA',
+      type: 'NOTE',
       message: 'Já aprovei a solicitação.',
       authorId: 'user-2',
       authorName: 'Marina Costa',
@@ -91,9 +96,9 @@ const mockTicket: ApiMaintenanceTicket = {
       createdAt: '2025-02-20T10:15:00.000Z',
     },
   ],
-}
+})
 
-function mockSession(role: 'ADMIN' | 'RENTER' = 'ADMIN') {
+function mockSession(role: 'OWNER' | 'RENTER' = 'OWNER') {
   vi.mocked(useSession).mockReturnValue({
     data: { tenantId: 'tenant-1', role },
     status: 'authenticated',
@@ -237,7 +242,7 @@ describe('MaintenanceTicketDetailPage', () => {
     ).toHaveBeenCalledWith('The leak is still visible.')
   })
 
-  it.each(['CANCELADO', 'FECHADO'] as const)(
+  it.each(['CANCELED', 'CLOSED'] as const)(
     'keeps %s tickets readable and blocks renter collaboration',
     (status) => {
       mockSession('RENTER')
@@ -276,7 +281,7 @@ describe('MaintenanceTicketDetailPage', () => {
     mockTicketQuery({
       data: {
         ...mockTicket,
-        status: 'RESOLVIDO',
+        status: 'RESOLVED',
         permissions: {
           ...mockTicket.permissions!,
           edit: false,
@@ -308,7 +313,7 @@ describe('MaintenanceTicketDetailPage', () => {
     mockTicketQuery({
       data: {
         ...mockTicket,
-        status: 'RESOLVIDO',
+        status: 'RESOLVED',
         permissions: {
           ...mockTicket.permissions!,
           edit: false,
@@ -333,7 +338,7 @@ describe('MaintenanceTicketDetailPage', () => {
     await waitFor(() =>
       expect(
         vi.mocked(useMaintenanceAction).mock.results[0].value.mutateAsync,
-      ).toHaveBeenCalledWith({ action: 'reopen', status: 'ABERTO', reason: '   Leak returned' }),
+      ).toHaveBeenCalledWith({ action: 'reopen', status: 'OPEN', reason: 'Leak returned' }),
     )
   })
   it('lets a linked renter contest with a mandatory reason while confirmation stays unavailable', async () => {
@@ -341,7 +346,7 @@ describe('MaintenanceTicketDetailPage', () => {
     mockTicketQuery({
       data: {
         ...mockTicket,
-        status: 'AGUARDANDO_CONFIRMACAO',
+        status: 'AWAITING_CONFIRMATION',
         permissions: {
           ...mockTicket.permissions!,
           edit: false,
@@ -367,7 +372,7 @@ describe('MaintenanceTicketDetailPage', () => {
     await waitFor(() =>
       expect(
         vi.mocked(useMaintenanceAction).mock.results[0].value.mutateAsync,
-      ).toHaveBeenCalledWith({ action: 'contest', reason: '   Still leaking' }),
+      ).toHaveBeenCalledWith({ action: 'contest', reason: 'Still leaking' }),
     )
   })
 
@@ -385,7 +390,7 @@ describe('MaintenanceTicketDetailPage', () => {
     expect(screen.getByText('Ainda não agendado')).toBeVisible()
   })
 
-  it.each(['RESOLVIDO', 'FECHADO'] as const)(
+  it.each(['RESOLVED', 'CLOSED'] as const)(
     'requires explicit contract selection for archived %s tickets and filters other properties',
     async (status) => {
       mockTicketQuery({
@@ -456,7 +461,7 @@ describe('MaintenanceTicketDetailPage', () => {
     expect(screen.getByText('Marina Costa')).toBeVisible()
   })
 
-  it.each(['ABERTO', 'EM_ANDAMENTO', 'AGUARDANDO_CONFIRMACAO', 'CONTESTADO'] as const)(
+  it.each(['OPEN', 'IN_PROGRESS', 'AWAITING_CONFIRMATION', 'DISPUTED'] as const)(
     'lets a renter finish a %s ticket after confirming the problem is resolved',
     async (status) => {
       mockSession('RENTER')
@@ -489,7 +494,7 @@ describe('MaintenanceTicketDetailPage', () => {
     mockTicketQuery({
       data: {
         ...mockTicket,
-        status: 'ABERTO',
+        status: 'OPEN',
         permissions: {
           ...mockTicket.permissions!,
           finish: true,
@@ -624,9 +629,50 @@ describe('MaintenanceTicketDetailPage', () => {
   })
 
   it('renders a not-found state for an unknown ticket id', () => {
-    mockTicketQuery({ data: undefined, isLoading: false } as never)
+    mockTicketQuery({
+      data: undefined,
+      isLoading: false,
+      error: { isAxiosError: true, response: { status: 404 } },
+    } as never)
     render(<MaintenanceTicketDetailPage ticketId="MNT-9999" />)
 
     expect(screen.getByText('Chamado não encontrado')).toBeVisible()
+  })
+
+  it('retries a server failure without presenting a missing ticket', async () => {
+    const refetch = vi.fn()
+    mockTicketQuery({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: { isAxiosError: true, response: { status: 500 } },
+      refetch,
+    } as never)
+    render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    expect(screen.queryByText('Chamado não encontrado')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    expect(refetch).toHaveBeenCalledOnce()
+  })
+
+  it('preserves an unsaved schedule through a background refetch', async () => {
+    const editable = {
+      ...mockTicket,
+      provider: { name: 'Selected provider' },
+      permissions: { ...mockTicket.permissions!, schedule: true },
+      scheduledAt: new Date(2026, 9, 24, 10, 0).toISOString(),
+    }
+    mockTicketQuery({ data: editable })
+    const { rerender } = render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    fireEvent.change(screen.getByLabelText('Data do atendimento'), {
+      target: { value: '2026-11-02' },
+    })
+    mockTicketQuery({
+      data: { ...editable, scheduledAt: new Date(2026, 9, 25, 12, 30).toISOString() },
+    })
+    rerender(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: 'Hora (24h)' })).toHaveValue('12'),
+    )
+    expect(screen.getByLabelText('Data do atendimento')).toHaveValue('2026-11-02')
   })
 })

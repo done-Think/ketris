@@ -1,9 +1,6 @@
+import { userRoleSchema } from '@server/auth/schemas/user.schema'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
-
-import type { Papel } from '@server/auth/domain/user.entity'
-
-import type { AgendaEvent, AgendaEventLinkedUser } from '../domain/agenda-event.entity'
 
 const agendaEventLinkedUserSchema = z
   .object({ name: z.string(), email: z.string() })
@@ -23,10 +20,12 @@ export const agendaEventSchema = z
     tenantId: z.string(),
     responsibleId: z.string().openapi({ description: 'ID do usuário responsável pelo evento.' }),
     responsibleName: z.string(),
-    audience: z.enum(['LEGACY_TEAM', 'ALL_AGENTS', 'ASSIGNED_AGENT']),
+    audience: z.enum(['SHARED_TEAM', 'ALL_AGENTS', 'ASSIGNED_AGENT']),
     internal: z.boolean(),
     createdById: z.string().nullable(),
+    createdBy: z.object({ name: z.string(), role: userRoleSchema }).nullable(),
     propertyId: z.string().nullable(),
+    propertyLabel: z.string().nullable(),
     propertyReference: z
       .string()
       .nullable()
@@ -45,6 +44,9 @@ export const agendaEventSchema = z
     participants: z.array(agendaEventLinkedUserSchema).openapi({
       description: 'Usuários participantes vinculados (acesso de leitura).',
     }),
+    cancelledAt: z.string().nullable(),
+    cancelledById: z.string().nullable(),
+    cancellationReason: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),
   })
@@ -59,6 +61,7 @@ export const renterAgendaEventSchema = z
     start: z.string().openapi({ description: 'Início do evento (ISO 8601).' }),
     end: z.string().openapi({ description: 'Término do evento (ISO 8601).' }),
     propertyId: z.string().nullable(),
+    propertyLabel: z.string().nullable(),
     propertyReference: z.string().nullable(),
     responsibleName: z.string().openapi({ description: 'Nome do responsável pelo evento.' }),
   })
@@ -85,58 +88,3 @@ export const agendaEventReadResponseSchema = z
 export const agendaEventsResponseSchema = z
   .object({ events: z.array(agendaEventReadSchema) })
   .openapi('AgendaEventsResponse')
-
-export type AgendaEventResponseDTO = z.infer<typeof agendaEventSchema>
-export type RenterAgendaEventResponseDTO = z.infer<typeof renterAgendaEventSchema>
-
-export function toAgendaEventResponse(event: AgendaEvent): AgendaEventResponseDTO {
-  return {
-    id: event.id,
-    tenantId: event.tenantId,
-    responsibleId: event.responsavelId,
-    responsibleName: event.responsavelNome,
-    audience: event.destino ?? 'LEGACY_TEAM',
-    internal: event.interno ?? false,
-    createdById: event.criadoPorId,
-    propertyId: event.imovelId,
-    propertyReference: event.referenciaImovelLivre,
-    title: event.titulo,
-    kind: event.tipo,
-    status: event.status,
-    start: event.inicio.toISOString(),
-    end: event.fim.toISOString(),
-    participantName: event.participanteNome,
-    participantPhone: event.participanteTelefone,
-    notes: event.notas,
-    owner: event.dono ? toLinkedUserResponse(event.dono) : null,
-    participants: event.participantes.map(toLinkedUserResponse),
-    createdAt: event.createdAt.toISOString(),
-    updatedAt: event.updatedAt.toISOString(),
-  }
-}
-
-export function toRenterAgendaEventResponse(event: AgendaEvent): RenterAgendaEventResponseDTO {
-  return {
-    id: event.id,
-    title: event.titulo,
-    kind: event.tipo,
-    status: event.status,
-    start: event.inicio.toISOString(),
-    end: event.fim.toISOString(),
-    propertyId: event.imovelId,
-    propertyReference: event.referenciaImovelLivre,
-    responsibleName: event.responsavelNome,
-  }
-}
-
-/** Read endpoints answer the reduced view to a RENTER and the full view to the staff. */
-export function toAgendaEventReadResponse(
-  event: AgendaEvent,
-  actorPapel: Papel,
-): AgendaEventResponseDTO | RenterAgendaEventResponseDTO {
-  return actorPapel === 'RENTER' ? toRenterAgendaEventResponse(event) : toAgendaEventResponse(event)
-}
-
-function toLinkedUserResponse(user: AgendaEventLinkedUser) {
-  return { name: user.nome, email: user.email }
-}

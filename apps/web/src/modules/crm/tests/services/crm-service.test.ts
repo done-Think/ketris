@@ -2,23 +2,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { HttpClient } from '@shared/lib/api/http-client'
 
-import type { Opportunity } from '../../types/opportunity'
 import { CrmService } from '../../services/crm-service'
+import type { Opportunity } from '../../types/opportunity'
 
 const opportunity: Opportunity = {
   id: 'opportunity-1',
   tenantId: 'tenant-1',
+  contactId: null,
   propertyId: 'property-1',
+  responsibleId: 'agent-1',
+  responsibleName: 'Ana Corretora',
   leadName: 'Maria Silva',
   leadEmail: 'maria@example.com',
   leadPhone: null,
   proposedValue: 4800,
   contractTermMonths: null,
   desiredStartDate: null,
-  guaranteeType: 'NENHUMA',
+  guaranteeType: 'NONE',
   specialConditions: [],
   notes: null,
-  status: 'ENVIADA',
+  status: 'SENT',
   archivedAt: null,
   createdAt: '2026-08-12T10:00:00.000Z',
   updatedAt: '2026-08-12T10:00:00.000Z',
@@ -27,7 +30,7 @@ const opportunity: Opportunity = {
 const property = {
   id: 'property-1',
   title: 'Apartamento Jardins',
-  purpose: 'ALUGUEL' as const,
+  purpose: 'RENT' as const,
   propertyType: 'apartamento',
   price: 4800,
   condoFee: 900,
@@ -59,11 +62,11 @@ describe('CrmService', () => {
   it('lists opportunities with the API-supported filters', async () => {
     http.get.mockResolvedValueOnce({ opportunities: [opportunity] })
 
-    await expect(service.list({ status: 'EM_NEGOCIACAO', includeArchived: true })).resolves.toEqual(
-      [opportunity],
-    )
+    await expect(
+      service.list({ status: 'IN_NEGOTIATION', includeArchived: true }),
+    ).resolves.toEqual({ opportunities: [opportunity] })
     expect(http.get).toHaveBeenCalledWith('/crm/opportunities', {
-      params: { status: 'EM_NEGOCIACAO', includeArchived: 'true' },
+      params: { status: 'IN_NEGOTIATION', includeArchived: 'true', statuses: undefined },
     })
   })
 
@@ -94,12 +97,12 @@ describe('CrmService', () => {
   })
 
   it('updates one opportunity with PATCH', async () => {
-    const updated = { ...opportunity, status: 'ACEITA' as const }
+    const updated = { ...opportunity, status: 'ACCEPTED' as const }
     http.patch.mockResolvedValueOnce({ opportunity: updated })
 
-    await expect(service.update(opportunity.id, { status: 'ACEITA' })).resolves.toEqual(updated)
+    await expect(service.update(opportunity.id, { status: 'ACCEPTED' })).resolves.toEqual(updated)
     expect(http.patch).toHaveBeenCalledWith(`/crm/opportunities/${opportunity.id}`, {
-      status: 'ACEITA',
+      status: 'ACCEPTED',
     })
   })
 
@@ -113,10 +116,10 @@ describe('CrmService', () => {
 
   it('lists public properties through the existing marketplace endpoint', async () => {
     http.get.mockResolvedValueOnce({ properties: [property] })
-    const filters = { purpose: 'ALUGUEL' as const, q: 'Jardins' }
+    const filters = { q: 'Jardins' }
 
-    await expect(service.listProperties(filters)).resolves.toEqual([property])
-    expect(http.get).toHaveBeenCalledWith('/marketplace/properties', { params: filters })
+    await expect(service.listProperties(filters)).resolves.toEqual({ properties: [property] })
+    expect(http.get).toHaveBeenCalledWith('/crm/properties', { params: filters })
   })
 
   it('gets public property detail through the existing marketplace endpoint', async () => {
@@ -124,30 +127,30 @@ describe('CrmService', () => {
     http.get.mockResolvedValueOnce({ property: detail })
 
     await expect(service.getProperty(property.id)).resolves.toEqual(detail)
-    expect(http.get).toHaveBeenCalledWith(`/marketplace/properties/${property.id}`)
+    expect(http.get).toHaveBeenCalledWith(`/crm/properties/${property.id}`)
   })
 
   it('responds to an opportunity and returns both the opportunity and the logged activity', async () => {
-    const accepted = { ...opportunity, status: 'ACEITA' as const }
+    const accepted = { ...opportunity, status: 'ACCEPTED' as const }
     const activity = {
       id: 'activity-1',
       opportunityId: opportunity.id,
-      type: 'PROPOSTA_RESPONDIDA' as const,
+      type: 'PROPOSAL_ANSWERED' as const,
       description: 'Proposta aceita.',
       authorId: null,
       authorName: null,
-      previousStatus: 'ENVIADA' as const,
-      newStatus: 'ACEITA' as const,
+      previousStatus: 'SENT' as const,
+      newStatus: 'ACCEPTED' as const,
       createdAt: '2026-08-12T12:00:00.000Z',
     }
     http.post.mockResolvedValueOnce({ opportunity: accepted, activity })
 
-    await expect(service.respond(opportunity.id, { action: 'ACEITAR' })).resolves.toEqual({
+    await expect(service.respond(opportunity.id, { action: 'ACCEPT' })).resolves.toEqual({
       opportunity: accepted,
       activity,
     })
     expect(http.post).toHaveBeenCalledWith(`/crm/opportunities/${opportunity.id}/respond`, {
-      action: 'ACEITAR',
+      action: 'ACCEPT',
     })
   })
 
@@ -162,7 +165,7 @@ describe('CrmService', () => {
     const note = {
       id: 'activity-2',
       opportunityId: opportunity.id,
-      type: 'NOTA' as const,
+      type: 'NOTE' as const,
       description: 'Ligou para confirmar a visita.',
       authorId: null,
       authorName: null,
@@ -177,6 +180,13 @@ describe('CrmService', () => {
     ).resolves.toEqual(note)
     expect(http.post).toHaveBeenCalledWith(`/crm/opportunities/${opportunity.id}/activities`, {
       description: 'Ligou para confirmar a visita.',
+      type: 'NOTE',
     })
+  })
+  it('preserves the published property lookup used by Dashboard', async () => {
+    const detail = { ...property, description: null, address: null, media: [] }
+    http.get.mockResolvedValueOnce({ property: detail })
+    expect(await service.getPublishedProperty(property.id)).toEqual(detail)
+    expect(http.get).toHaveBeenCalledWith(`/marketplace/properties/${property.id}`)
   })
 })

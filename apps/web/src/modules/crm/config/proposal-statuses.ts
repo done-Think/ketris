@@ -7,31 +7,31 @@ import type {
 } from '../types/proposal-management'
 
 export const proposalManagementStatuses = [
-  'EM_NEGOCIACAO',
-  'ENVIADA',
-  'ACEITA',
-  'RECUSADA',
-  'RASCUNHO',
+  'IN_NEGOTIATION',
+  'SENT',
+  'ACCEPTED',
+  'REJECTED',
+  'DRAFT',
 ] as const satisfies readonly ProposalManagementStatus[]
 
 export const proposalStatusPresentations = {
-  EM_NEGOCIACAO: {
+  IN_NEGOTIATION: {
     color: brand.semantic.warning,
     backgroundColor: supportColor.warningSoft,
   },
-  ENVIADA: {
+  SENT: {
     color: brand.semantic.info,
     backgroundColor: supportColor.infoSoft,
   },
-  ACEITA: {
+  ACCEPTED: {
     color: brand.semantic.success,
     backgroundColor: supportColor.successSoft,
   },
-  RECUSADA: {
+  REJECTED: {
     color: brand.magenta[700],
     backgroundColor: brand.magenta[50],
   },
-  RASCUNHO: {
+  DRAFT: {
     color: brand.neutral[600],
     backgroundColor: brand.neutral[50],
   },

@@ -9,6 +9,30 @@ export class PropertyNotFoundError extends AppError {
   }
 }
 
+export class InquiryRejectedError extends AppError {
+  constructor() {
+    super('Não foi possível enviar a solicitação.', { status: 400, code: 'INQUIRY_REJECTED' })
+  }
+}
+
+export class InquiryQuotaExceededError extends AppError {
+  constructor(readonly retryAfter: number) {
+    super('Muitas solicitações para este imóvel. Tente novamente mais tarde.', {
+      status: 429,
+      code: 'RATE_LIMIT_EXCEEDED',
+    })
+  }
+}
+
+export class InquiryRateLimitUnavailableError extends AppError {
+  constructor() {
+    super('Serviço temporariamente indisponível.', {
+      status: 503,
+      code: 'INQUIRY_RATE_LIMIT_UNAVAILABLE',
+    })
+  }
+}
+
 export class BrokerProfileNotFoundError extends AppError {
   constructor() {
     super('Perfil de corretor não encontrado ou não está publicado.', {
@@ -39,5 +63,11 @@ export class ProfilePublishValidationError extends AppError {
 export class ProfileMediaValidationError extends AppError {
   constructor(message: string) {
     super(message, { status: 400, code: 'PROFILE_MEDIA_VALIDATION_ERROR' })
+  }
+}
+
+export class ProfileMediaNotFoundError extends AppError {
+  constructor() {
+    super('Mídia não encontrada.', { status: 404, code: 'PROFILE_MEDIA_NOT_FOUND' })
   }
 }

@@ -16,7 +16,7 @@ describe('POST /api/platform/refresh (integração)', () => {
 
   beforeAll(async () => {
     const admin = await prisma.platformAdmin.create({
-      data: { nome: 'Refresh Teste', email, senhaHash: await bcrypt.hash(password, 10) },
+      data: { name: 'Refresh Teste', email, passwordHash: await bcrypt.hash(password, 10) },
     })
     adminId = admin.id
   })
@@ -59,17 +59,17 @@ describe('POST /api/platform/refresh (integração)', () => {
   it('rotação: o refresh token usado uma vez não pode ser reutilizado (retorna 401)', async () => {
     const refreshToken = await loginAndGetRefreshToken()
 
-    const primeira = await refresh(
+    const first = await refresh(
       buildRequest('http://localhost/api/platform/refresh', { refreshToken }),
     )
-    expect(primeira.status).toBe(200)
+    expect(first.status).toBe(200)
 
-    const segunda = await refresh(
+    const second = await refresh(
       buildRequest('http://localhost/api/platform/refresh', { refreshToken }),
     )
-    const json = await segunda.json()
+    const json = await second.json()
 
-    expect(segunda.status).toBe(401)
+    expect(second.status).toBe(401)
     expect(json.error.code).toBe('INVALID_PLATFORM_REFRESH_TOKEN')
   })
 

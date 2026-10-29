@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { HttpClient } from '../../../lib/api/http-client'
 
-vi.mock('axios', () => {
+vi.mock('axios', async () => {
+  const { AxiosError } = await vi.importActual<typeof import('axios')>('axios')
   const interceptors = {
     request: { use: vi.fn() },
     response: { use: vi.fn() },
@@ -19,6 +20,7 @@ vi.mock('axios', () => {
   })
 
   return {
+    AxiosError,
     default: {
       create: vi.fn(() => instance),
     },
@@ -42,6 +44,32 @@ describe('HttpClient — refresh de token em respostas 401', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(axios.create).mock.results.at(-1)?.value?.mockReset()
+  })
+
+  it('declares the English contract and never retries a mutation rejected for an old contract', async () => {
+    const client = new HttpClient()
+    expect(axios.create).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({ 'X-Ketris-Api-Version': '2' }),
+      }),
+    )
+    const { instance, onRejected } = getResponseErrorHandler()
+    const handler = vi.fn()
+    client.setUnauthorizedHandler(handler)
+    const error = {
+      config: { method: 'POST', url: '/properties' },
+      response: { status: 409, data: { error: { code: 'CLIENT_UPDATE_REQUIRED' } } },
+    }
+    await expect(onRejected(error)).rejects.toBe(error)
+    expect(instance).not.toHaveBeenCalled()
+    expect(handler).not.toHaveBeenCalled()
+  })
+
+  it('keeps the application contract header out of direct storage uploads', () => {
+    new HttpClient('')
+    expect(axios.create).toHaveBeenLastCalledWith(
+      expect.objectContaining({ baseURL: '', headers: { 'Content-Type': 'application/json' } }),
+    )
   })
 
   it('rejeita a resposta original quando não há handler de 401 configurado', async () => {
@@ -148,5 +176,15 @@ describe('HttpClient — refresh de token em respostas 401', () => {
     await Promise.all([firstCall, secondCall])
 
     expect(handler).toHaveBeenCalledTimes(1)
+  })
+  it('blocks new requests until authentication can be revalidated', () => {
+    const client = new HttpClient()
+    const instance = vi.mocked(axios.create).mock.results.at(-1)?.value
+    const onRequest = instance.interceptors.request.use.mock.calls.at(-1)[0]
+    const config = { url: '/private-data', headers: {} }
+    client.setAuthUnavailable(true)
+    expect(() => onRequest(config)).toThrow('AUTH_UNAVAILABLE')
+    client.setAuthUnavailable(false)
+    expect(onRequest(config)).toBe(config)
   })
 })

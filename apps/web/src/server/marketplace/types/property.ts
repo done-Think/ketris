@@ -1,4 +1,7 @@
-export type PropertyPurpose = 'ALUGUEL' | 'VENDA' | 'AMBOS'
+export type PropertyPurpose = 'RENT' | 'SALE' | 'BOTH'
+
+export type PublicPropertyType =
+  'APARTMENT' | 'HOUSE' | 'STUDIO' | 'PENTHOUSE' | 'COMMERCIAL' | 'LOFT' | 'OTHER'
 
 export interface PropertyAddress {
   street: string
@@ -15,7 +18,7 @@ export interface PropertyAddress {
 export interface PropertyMedia {
   id: string
   url: string
-  type: string
+  type: 'photo' | 'video' | 'floorPlan'
   order: number
 }
 
@@ -23,7 +26,7 @@ export interface PublishedPropertySummary {
   id: string
   title: string
   purpose: PropertyPurpose
-  propertyType: string
+  propertyType: PublicPropertyType
   price: number
   condoFee: number | null
   propertyTax: number | null

@@ -1,16 +1,17 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { OpportunityNotFoundError } from '../../../domain/errors'
-import type { Opportunity } from '../../../domain/opportunity.entity'
 import type { ActivityRepository } from '../../../application/ports/activity-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
-import type { PropertyLookupPort } from '../../../application/ports/property-lookup.port'
 import { AddOpportunityNoteUseCase } from '../../../application/use-cases/add-opportunity-note.use-case'
+import { OpportunityNotFoundError } from '../../../domain/errors'
+import type { Opportunity } from '../../../domain/opportunity.entity'
 
 const opportunity: Opportunity = {
   id: 'op-1',
   tenantId: 'tenant-1',
   propertyId: 'imovel-1',
+  responsibleId: 'agent-1',
+  responsibleName: 'Agente Um',
   contactId: null,
   leadName: 'Maria',
   leadEmail: 'maria@exemplo.com',
@@ -18,19 +19,13 @@ const opportunity: Opportunity = {
   proposedValue: 2500,
   contractTermMonths: null,
   desiredStartDate: null,
-  guaranteeType: 'NENHUMA',
+  guaranteeType: 'NONE',
   specialConditions: [],
   notes: null,
-  status: 'ENVIADA',
+  status: 'SENT',
   archivedAt: null,
   createdAt: new Date('2026-08-10T00:00:00.000Z'),
   updatedAt: new Date('2026-08-10T00:00:00.000Z'),
-}
-
-function createPropertyLookup(findResponsavelId?: PropertyLookupPort['findResponsavelId']) {
-  return {
-    findResponsavelId: findResponsavelId ?? vi.fn().mockResolvedValue('agent-1'),
-  } as unknown as PropertyLookupPort
 }
 
 describe('AddOpportunityNoteUseCase', () => {
@@ -39,15 +34,11 @@ describe('AddOpportunityNoteUseCase', () => {
     const create = vi.fn().mockResolvedValue({})
     const opportunityRepository = { findById } as unknown as OpportunityRepository
     const activityRepository = { create } as unknown as ActivityRepository
-    const useCase = new AddOpportunityNoteUseCase(
-      opportunityRepository,
-      activityRepository,
-      createPropertyLookup(),
-    )
+    const useCase = new AddOpportunityNoteUseCase(opportunityRepository, activityRepository)
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorRole: 'OWNER',
       actorId: 'user-1',
       actorName: 'Ana',
       opportunityId: 'op-1',
@@ -56,7 +47,7 @@ describe('AddOpportunityNoteUseCase', () => {
 
     expect(create).toHaveBeenCalledWith({
       opportunityId: 'op-1',
-      type: 'NOTA',
+      type: 'NOTE',
       description: 'Ligou para confirmar a visita.',
       authorId: 'user-1',
       authorName: 'Ana',
@@ -70,21 +61,17 @@ describe('AddOpportunityNoteUseCase', () => {
     const create = vi.fn().mockResolvedValue({})
     const opportunityRepository = { findById } as unknown as OpportunityRepository
     const activityRepository = { create } as unknown as ActivityRepository
-    const useCase = new AddOpportunityNoteUseCase(
-      opportunityRepository,
-      activityRepository,
-      createPropertyLookup(),
-    )
+    const useCase = new AddOpportunityNoteUseCase(opportunityRepository, activityRepository)
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'ADMIN',
+      actorRole: 'OWNER',
       opportunityId: 'op-1',
       description: 'Falou com o interessado por telefone.',
-      type: 'CONTATO_REALIZADO',
+      type: 'CONTACT_MADE',
     })
 
-    expect(create).toHaveBeenCalledWith(expect.objectContaining({ type: 'CONTATO_REALIZADO' }))
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ type: 'CONTACT_MADE' }))
   })
 
   it('lança OpportunityNotFoundError e não cria nota quando é de outro tenant', async () => {
@@ -92,16 +79,12 @@ describe('AddOpportunityNoteUseCase', () => {
     const create = vi.fn()
     const opportunityRepository = { findById } as unknown as OpportunityRepository
     const activityRepository = { create } as unknown as ActivityRepository
-    const useCase = new AddOpportunityNoteUseCase(
-      opportunityRepository,
-      activityRepository,
-      createPropertyLookup(),
-    )
+    const useCase = new AddOpportunityNoteUseCase(opportunityRepository, activityRepository)
 
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'ADMIN',
+        actorRole: 'OWNER',
         opportunityId: 'op-1',
         description: 'x',
       }),
@@ -109,22 +92,18 @@ describe('AddOpportunityNoteUseCase', () => {
     expect(create).not.toHaveBeenCalled()
   })
 
-  it('AGENT que não é responsável pelo imóvel recebe 404 opaco e não cria nota', async () => {
+  it('AGENT que não é responsável pela oportunidade recebe 404 opaco e não cria nota', async () => {
     const findById = vi.fn().mockResolvedValue(opportunity)
     const create = vi.fn()
     const opportunityRepository = { findById } as unknown as OpportunityRepository
     const activityRepository = { create } as unknown as ActivityRepository
-    const useCase = new AddOpportunityNoteUseCase(
-      opportunityRepository,
-      activityRepository,
-      createPropertyLookup(vi.fn().mockResolvedValue('outro-agente')),
-    )
+    const useCase = new AddOpportunityNoteUseCase(opportunityRepository, activityRepository)
 
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorId: 'agent-2',
+        actorRole: 'AGENT',
         opportunityId: 'op-1',
         description: 'x',
       }),

@@ -5,15 +5,19 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service'
 import { prisma } from '@server/db/prisma'
+import { createVerifiedContractProof } from '@server/contracts/tests/fixtures/workflow-database'
 
 import { POST as linkPartyUser } from '../[id]/parties/[partyId]/link-user/route'
 import { POST as signParty } from '../[id]/parties/[partyId]/sign/route'
 import { GET as getContract } from '../[id]/route'
 import { GET, POST } from '../route'
+import { propertyResponsibleId } from '@server/shared/tests/fixtures/property-responsible'
 
 describe('/api/contracts (integração)', () => {
   const tokenService = new JoseTokenService()
   let tenantId: string
+  let actorId: string
+  let proofId: string
   let actorToken: string
   let renterToken: string
   let sharedTenantId: string
@@ -27,129 +31,135 @@ describe('/api/contracts (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Contracts', slug: `contracts-${randomUUID()}` },
+      data: { name: 'Tenant Contracts', slug: `contracts-${randomUUID()}` },
     })
     tenantId = tenant.id
 
-    const actor = await prisma.usuario.create({
+    const actor = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor',
+        name: 'Corretor',
         email: `corretor-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
+    actorId = actor.id
     actorToken = await tokenService.sign({
       id: actor.id,
       tenantId: actor.tenantId,
-      nome: actor.nome,
+      name: actor.name,
       email: actor.email,
-      papel: actor.papel,
-      ativo: actor.ativo,
-      vinculoAprovadoEm: actor.vinculoAprovadoEm,
+      role: actor.role,
+      active: actor.active,
+      membershipApprovedAt: actor.membershipApprovedAt,
     })
 
-    const renter = await prisma.usuario.create({
+    const renter = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Locatário Teste',
+        name: 'Locatário Teste',
         email: `locatario-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'RENTER',
+        passwordHash: 'hash-fake',
+        role: 'RENTER',
       },
     })
     renterToken = await tokenService.sign({
       id: renter.id,
       tenantId: renter.tenantId,
-      nome: renter.nome,
+      name: renter.name,
       email: renter.email,
-      papel: renter.papel,
-      ativo: renter.ativo,
-      vinculoAprovadoEm: renter.vinculoAprovadoEm,
+      role: renter.role,
+      active: renter.active,
+      membershipApprovedAt: renter.membershipApprovedAt,
     })
 
     // A RENTER from the shared renters tenant, linked later to the contract's LOCATARIO party.
     const sharedTenant = await prisma.tenant.create({
-      data: { nome: 'Locatários', slug: `locatarios-${randomUUID()}` },
+      data: { name: 'Locatários', slug: `locatarios-${randomUUID()}` },
     })
     sharedTenantId = sharedTenant.id
-    const linkedRenter = await prisma.usuario.create({
+    const linkedRenter = await prisma.user.create({
       data: {
         tenantId: sharedTenantId,
-        nome: 'Mariana Souza',
+        name: 'Mariana Souza',
         email: tenantPartyEmail,
-        senhaHash: 'hash-fake',
-        papel: 'RENTER',
+        passwordHash: 'hash-fake',
+        role: 'RENTER',
       },
     })
     linkedRenterToken = await tokenService.sign(linkedRenter)
 
-    adminToken = await createUserToken('ADMIN')
+    adminToken = await createUserToken('OWNER')
     otherAgentToken = await createUserToken('AGENT')
 
-    const property = await prisma.imovel.create({
+    const property = await prisma.property.create({
       data: {
         tenantId,
-        responsavelId: actor.id,
-        titulo: 'Apartamento Batel',
-        finalidade: 'ALUGUEL',
-        tipo: 'apartamento',
-        valor: 2500,
+        responsibleId: actor.id,
+        title: 'Apartamento Batel',
+        purpose: 'RENT',
+        type: 'APARTMENT',
+        price: 2500,
         status: 'PUBLISHED',
       },
     })
     propertyId = property.id
 
-    const acceptedOpportunity = await prisma.oportunidade.create({
+    const acceptedOpportunity = await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId: propertyId,
-        interessadoNome: 'Mariana Souza',
-        interessadoEmail: 'mariana@example.com',
-        valorProposto: 2500,
-        status: 'ACEITA',
+        propertyId: propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
+        interestedName: 'Mariana Souza',
+        interestedEmail: 'mariana@example.com',
+        proposedValue: 2500,
+        status: 'ACCEPTED',
       },
     })
     acceptedOpportunityId = acceptedOpportunity.id
 
-    const pendingOpportunity = await prisma.oportunidade.create({
+    const pendingOpportunity = await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId: propertyId,
-        interessadoNome: 'Rafael Lima',
-        interessadoEmail: 'rafael@example.com',
-        valorProposto: 2500,
-        status: 'EM_NEGOCIACAO',
+        propertyId: propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
+        interestedName: 'Rafael Lima',
+        interestedEmail: 'rafael@example.com',
+        proposedValue: 2500,
+        status: 'IN_NEGOTIATION',
       },
     })
     pendingOpportunityId = pendingOpportunity.id
   })
 
-  async function createUserToken(papel: 'ADMIN' | 'AGENT'): Promise<string> {
-    const user = await prisma.usuario.create({
+  async function createUserToken(role: 'OWNER' | 'AGENT'): Promise<string> {
+    const user = await prisma.user.create({
       data: {
         tenantId,
-        nome: `Usuário ${papel}`,
-        email: `${papel.toLowerCase()}-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel,
+        name: `Usuário ${role}`,
+        email: `${role.toLowerCase()}-${randomUUID()}@ketris.dev`,
+        passwordHash: 'hash-fake',
+        role,
       },
     })
 
     return tokenService.sign({
       id: user.id,
       tenantId: user.tenantId,
-      nome: user.nome,
+      name: user.name,
       email: user.email,
-      papel: user.papel,
-      ativo: user.ativo,
-      vinculoAprovadoEm: user.vinculoAprovadoEm,
+      role: user.role,
+      active: user.active,
+      membershipApprovedAt: user.membershipApprovedAt,
     })
   }
 
   afterAll(async () => {
     if (tenantId) {
+      await prisma.contractSignature.deleteMany({
+        where: { contractParty: { contract: { tenantId } } },
+      })
       await prisma.tenant.delete({ where: { id: tenantId } })
     }
     if (sharedTenantId) {
@@ -170,25 +180,36 @@ describe('/api/contracts (integração)', () => {
   }
 
   const createPayload = {
-    type: 'RESIDENCIAL',
+    type: 'RESIDENTIAL',
     dueDay: 5,
     startDate: '2026-10-01',
     endDate: '2027-10-01',
     adjustmentIndex: 'IGPM',
-    guaranteeType: 'CAUCAO',
-    owner: { name: 'Bruno Oliveira', cpf: '11111111111', email: 'bruno@example.com' },
-    tenant: { name: 'Mariana Souza', cpf: '22222222222', email: tenantPartyEmail },
+    guaranteeType: 'DEPOSIT',
+    owner: {
+      name: 'Bruno Oliveira',
+      cpf: '52998224725',
+      email: 'bruno@example.com',
+      phone: '11999999999',
+    },
+    tenant: {
+      name: 'Mariana Souza',
+      cpf: '98765432100',
+      email: tenantPartyEmail,
+      phone: '11999999999',
+    },
   }
 
   async function createContractForNewOpportunity() {
-    const opportunity = await prisma.oportunidade.create({
+    const opportunity = await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId: propertyId,
-        interessadoNome: 'Teste de sequência',
-        interessadoEmail: `${randomUUID()}@example.com`,
-        valorProposto: 2500,
-        status: 'ACEITA',
+        propertyId: propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
+        interestedName: 'Teste de sequência',
+        interestedEmail: `${randomUUID()}@example.com`,
+        proposedValue: 2500,
+        status: 'ACCEPTED',
       },
     })
     const response = await POST(
@@ -260,7 +281,7 @@ describe('/api/contracts (integração)', () => {
     expect(response.status).toBe(404)
     expect(json.error.code).toBe('CONTRACT_OPPORTUNITY_NOT_FOUND')
     expect(
-      await prisma.contrato.count({ where: { oportunidadeOrigemId: acceptedOpportunityId } }),
+      await prisma.contract.count({ where: { sourceOpportunityId: acceptedOpportunityId } }),
     ).toBe(0)
   })
 
@@ -283,21 +304,22 @@ describe('/api/contracts (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(201)
-    expect(json.contract.status).toBe('AGUARDANDO_ASSINATURA')
+    expect(json.contract.status).toBe('AWAITING_SIGNATURE')
     expect(json.contract.amount).toBe(2500)
     expect(json.contract.parties).toHaveLength(2)
     expect(
       json.contract.parties.every(
-        (party: { signatureStatus: string }) => party.signatureStatus === 'PENDENTE',
+        (party: { signatureStatus: string }) => party.signatureStatus === 'PENDING',
       ),
     ).toBe(true)
 
     contractId = json.contract.id
+    proofId = (await createVerifiedContractProof(contractId, actorId)).id
     ownerPartyId = json.contract.parties.find(
-      (party: { role: string }) => party.role === 'LOCADOR',
+      (party: { role: string }) => party.role === 'LANDLORD',
     ).id
     tenantPartyId = json.contract.parties.find(
-      (party: { role: string }) => party.role === 'LOCATARIO',
+      (party: { role: string }) => party.role === 'RENTER',
     ).id
   })
 
@@ -330,7 +352,7 @@ describe('/api/contracts (integração)', () => {
     expect(ids).toContain(contractId)
   })
 
-  it('lista o contrato para o ADMIN, mesmo sem ser o responsável pelo imóvel', async () => {
+  it('lista o contrato para o OWNER, mesmo sem ser o responsável pelo imóvel', async () => {
     const response = await GET(
       buildRequest('http://localhost/api/contracts', 'GET', undefined, adminToken),
     )
@@ -425,7 +447,7 @@ describe('/api/contracts (integração)', () => {
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${tenantPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         linkedRenterToken,
       ),
       partyContext(contractId, tenantPartyId),
@@ -433,10 +455,10 @@ describe('/api/contracts (integração)', () => {
 
     expect(response.status).toBe(403)
     expect((await response.json()).error.code).toBe('FORBIDDEN')
-    const signature = await prisma.assinatura.findUniqueOrThrow({
-      where: { parteContratoId: tenantPartyId },
+    const signature = await prisma.contractSignature.findUniqueOrThrow({
+      where: { contractPartyId: tenantPartyId },
     })
-    expect(signature.status).toBe('PENDENTE')
+    expect(signature.status).toBe('PENDING')
   })
 
   function partyContext(id: string, partyId: string) {
@@ -448,7 +470,7 @@ describe('/api/contracts (integração)', () => {
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         otherAgentToken,
       ),
       partyContext(contractId, ownerPartyId),
@@ -458,10 +480,10 @@ describe('/api/contracts (integração)', () => {
     expect(response.status).toBe(404)
     expect(json.error.code).toBe('CONTRACT_NOT_FOUND')
 
-    const signature = await prisma.assinatura.findUniqueOrThrow({
-      where: { parteContratoId: ownerPartyId },
+    const signature = await prisma.contractSignature.findUniqueOrThrow({
+      where: { contractPartyId: ownerPartyId },
     })
-    expect(signature.status).toBe('PENDENTE')
+    expect(signature.status).toBe('PENDING')
   })
 
   it('retorna 403 quando um RENTER tenta assinar', async () => {
@@ -469,7 +491,7 @@ describe('/api/contracts (integração)', () => {
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         renterToken,
       ),
       partyContext(contractId, ownerPartyId),
@@ -484,7 +506,7 @@ describe('/api/contracts (integração)', () => {
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         actorToken,
       ),
       partyContext(contractId, ownerPartyId),
@@ -492,7 +514,7 @@ describe('/api/contracts (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.contract.status).toBe('AGUARDANDO_ASSINATURA')
+    expect(json.contract.status).toBe('AWAITING_SIGNATURE')
     expect(json.contract.activatedBy).toBeNull()
 
     const ownerParty = json.contract.parties.find(
@@ -500,7 +522,7 @@ describe('/api/contracts (integração)', () => {
     )
     expect(ownerParty.signedBy).toMatchObject({ name: 'Corretor' })
 
-    const property = await prisma.imovel.findUniqueOrThrow({ where: { id: propertyId } })
+    const property = await prisma.property.findUniqueOrThrow({ where: { id: propertyId } })
     expect(property.status).toBe('PUBLISHED')
   })
 
@@ -509,7 +531,7 @@ describe('/api/contracts (integração)', () => {
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${ownerPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         actorToken,
       ),
       partyContext(contractId, ownerPartyId),
@@ -520,12 +542,12 @@ describe('/api/contracts (integração)', () => {
     expect(json.error.code).toBe('CONTRACT_PARTY_ALREADY_SIGNED')
   })
 
-  it('ativa o contrato, aluga o imóvel e gera a primeira cobrança quando a última parte assina (pelo ADMIN)', async () => {
+  it('ativa o contrato, aluga o imóvel e gera a primeira cobrança quando a última parte assina (pelo OWNER)', async () => {
     const response = await signParty(
       buildRequest(
         `http://localhost/api/contracts/${contractId}/parties/${tenantPartyId}/sign`,
         'POST',
-        undefined,
+        { documentId: proofId },
         adminToken,
       ),
       partyContext(contractId, tenantPartyId),
@@ -533,23 +555,23 @@ describe('/api/contracts (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.contract.status).toBe('ATIVO')
+    expect(json.contract.status).toBe('ACTIVE')
     expect(json.contract.activatedAt).not.toBeNull()
-    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário ADMIN' })
+    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário OWNER' })
 
     const tenantParty = json.contract.parties.find(
       (party: { id: string }) => party.id === tenantPartyId,
     )
-    expect(tenantParty.signedBy).toMatchObject({ name: 'Usuário ADMIN' })
+    expect(tenantParty.signedBy).toMatchObject({ name: 'Usuário OWNER' })
 
-    const property = await prisma.imovel.findUniqueOrThrow({ where: { id: propertyId } })
+    const property = await prisma.property.findUniqueOrThrow({ where: { id: propertyId } })
     expect(property.status).toBe('RENTED')
 
-    const charges = await prisma.cobranca.findMany({ where: { contratoId: contractId } })
+    const charges = await prisma.charge.findMany({ where: { contractId: contractId } })
     expect(charges).toHaveLength(1)
-    expect(charges[0].status).toBe('PENDENTE')
-    expect(charges[0].tipo).toBe('A_RECEBER')
-    expect(charges[0].valor.toNumber()).toBe(2500)
+    expect(charges[0].status).toBe('PENDING')
+    expect(charges[0].type).toBe('RECEIVABLE')
+    expect(charges[0].amount.toNumber()).toBe(2500)
   })
 
   it('consulta o contrato ativado pelo id', async () => {
@@ -560,27 +582,28 @@ describe('/api/contracts (integração)', () => {
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(json.contract.status).toBe('ATIVO')
+    expect(json.contract.status).toBe('ACTIVE')
     expect(
       json.contract.parties.every(
-        (party: { signatureStatus: string }) => party.signatureStatus === 'ASSINADA',
+        (party: { signatureStatus: string }) => party.signatureStatus === 'SIGNED',
       ),
     ).toBe(true)
-    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário ADMIN' })
+    expect(json.contract.activatedBy).toMatchObject({ name: 'Usuário OWNER' })
     expect(
       json.contract.parties.map((party: { signedBy: { name: string } }) => party.signedBy.name),
-    ).toEqual(expect.arrayContaining(['Corretor', 'Usuário ADMIN']))
+    ).toEqual(expect.arrayContaining(['Corretor', 'Usuário OWNER']))
   })
 
   it('quando duas pessoas assinam a mesma parte ao mesmo tempo, só uma assina e o contrato ativa uma vez', async () => {
-    const opportunity = await prisma.oportunidade.create({
+    const opportunity = await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId: propertyId,
-        interessadoNome: 'Paula Reis',
-        interessadoEmail: 'paula@example.com',
-        valorProposto: 3100,
-        status: 'ACEITA',
+        propertyId: propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
+        interestedName: 'Paula Reis',
+        interestedEmail: 'paula@example.com',
+        proposedValue: 3100,
+        status: 'ACCEPTED',
       },
     })
     const created = await POST(
@@ -592,14 +615,15 @@ describe('/api/contracts (integração)', () => {
       ),
     )
     const { contract } = await created.json()
-    const owner = contract.parties.find((party: { role: string }) => party.role === 'LOCADOR')
-    const tenant = contract.parties.find((party: { role: string }) => party.role === 'LOCATARIO')
+    const owner = contract.parties.find((party: { role: string }) => party.role === 'LANDLORD')
+    const tenant = contract.parties.find((party: { role: string }) => party.role === 'RENTER')
+    const proof = await createVerifiedContractProof(contract.id, actorId)
     const signAs = (partyId: string, token: string) =>
       signParty(
         buildRequest(
           `http://localhost/api/contracts/${contract.id}/parties/${partyId}/sign`,
           'POST',
-          undefined,
+          { documentId: proof.id },
           token,
         ),
         partyContext(contract.id, partyId),
@@ -613,27 +637,28 @@ describe('/api/contracts (integração)', () => {
 
     expect(responses.map((response) => response.status).sort()).toEqual([200, 409])
     const winnerIndex = responses.findIndex((response) => response.status === 200)
-    const winnerName = winnerIndex === 0 ? 'Corretor' : 'Usuário ADMIN'
+    const winnerName = winnerIndex === 0 ? 'Corretor' : 'Usuário OWNER'
     const { contract: activated } = await responses[winnerIndex].json()
-    expect(activated.status).toBe('ATIVO')
+    expect(activated.status).toBe('ACTIVE')
     expect(activated.activatedBy).toMatchObject({ name: winnerName })
     expect(
       activated.parties.find((party: { id: string }) => party.id === tenant.id).signedBy,
     ).toMatchObject({ name: winnerName })
 
-    const charges = await prisma.cobranca.findMany({ where: { contratoId: contract.id } })
+    const charges = await prisma.charge.findMany({ where: { contractId: contract.id } })
     expect(charges).toHaveLength(1)
   })
 
   it('quando as duas últimas partes assinam ao mesmo tempo, o contrato ativa uma única vez', async () => {
-    const opportunity = await prisma.oportunidade.create({
+    const opportunity = await prisma.opportunity.create({
       data: {
         tenantId,
-        imovelId: propertyId,
-        interessadoNome: 'Lucas Prado',
-        interessadoEmail: 'lucas@example.com',
-        valorProposto: 2800,
-        status: 'ACEITA',
+        propertyId: propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
+        interestedName: 'Lucas Prado',
+        interestedEmail: 'lucas@example.com',
+        proposedValue: 2800,
+        status: 'ACCEPTED',
       },
     })
     const created = await POST(
@@ -645,13 +670,14 @@ describe('/api/contracts (integração)', () => {
       ),
     )
     const { contract } = await created.json()
+    const proof = await createVerifiedContractProof(contract.id, actorId)
     const responses = await Promise.all(
       contract.parties.map((party: { id: string }) =>
         signParty(
           buildRequest(
             `http://localhost/api/contracts/${contract.id}/parties/${party.id}/sign`,
             'POST',
-            undefined,
+            { documentId: proof.id },
             adminToken,
           ),
           partyContext(contract.id, party.id),
@@ -660,16 +686,45 @@ describe('/api/contracts (integração)', () => {
     )
 
     expect(responses.map((response) => response.status)).toEqual([200, 200])
-    const stored = await prisma.contrato.findUniqueOrThrow({ where: { id: contract.id } })
-    expect(stored.status).toBe('ATIVO')
-    const charges = await prisma.cobranca.findMany({ where: { contratoId: contract.id } })
+    const stored = await prisma.contract.findUniqueOrThrow({ where: { id: contract.id } })
+    expect(stored.status).toBe('ACTIVE')
+    const charges = await prisma.charge.findMany({ where: { contractId: contract.id } })
     expect(charges).toHaveLength(1)
+  })
+
+  it('recusa a segunda criação simultânea para a mesma proposta com conflito', async () => {
+    const opportunity = await prisma.opportunity.create({
+      data: {
+        tenantId,
+        propertyId: propertyId,
+        responsibleId: await propertyResponsibleId(prisma, propertyId),
+        interestedName: 'Concorrência',
+        interestedEmail: 'concurrent@example.test',
+        proposedValue: 2500,
+        status: 'ACCEPTED',
+      },
+    })
+    const create = () =>
+      POST(
+        buildRequest(
+          'http://localhost/api/contracts',
+          'POST',
+          {
+            ...createPayload,
+            opportunityId: opportunity.id,
+          },
+          actorToken,
+        ),
+      )
+    const responses = await Promise.all([create(), create()])
+    expect(responses.map((response) => response.status).sort()).toEqual([201, 409])
+    expect(await prisma.contract.count({ where: { sourceOpportunityId: opportunity.id } })).toBe(1)
   })
 
   it('gera um código livre após excluir um contrato anterior da sequência', async () => {
     const first = await createContractForNewOpportunity()
     const second = await createContractForNewOpportunity()
-    await prisma.contrato.delete({ where: { id: first.id } })
+    await prisma.contract.delete({ where: { id: first.id } })
 
     const third = await createContractForNewOpportunity()
 

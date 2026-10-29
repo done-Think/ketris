@@ -1,15 +1,29 @@
-export type PropertyPurpose = 'ALUGUEL' | 'VENDA' | 'AMBOS'
+import type { AppLocale } from '@/i18n/types/locale.types'
+export type PropertyType =
+  'APARTMENT' | 'HOUSE' | 'STUDIO' | 'PENTHOUSE' | 'COMMERCIAL' | 'LOFT' | 'OTHER'
+
+export type PropertyAmenity = 'FURNISHED' | 'GOURMET_BALCONY' | 'PET_FRIENDLY' | 'CONCIERGE_24H'
+
+export interface PropertyListing {
+  amenities: PropertyAmenity[]
+  negotiationTerms: string | null
+  publishAfterReview: boolean
+  allowWhatsappContact: boolean
+  featured: boolean
+}
+
+export type PropertyPurpose = 'RENT' | 'SALE' | 'BOTH'
 
 export type PropertyStatus = 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
 
 export interface PropertyAddress {
-  logradouro: string
-  numero: string
-  complemento: string | null
-  bairro: string
-  cidade: string
-  estado: string
-  cep: string
+  street: string
+  number: string
+  complement: string | null
+  neighborhood: string
+  city: string
+  state: string
+  zipCode: string
   latitude: number | null
   longitude: number | null
 }
@@ -17,103 +31,138 @@ export interface PropertyAddress {
 export interface PropertyMedia {
   id: string
   url: string
-  tipo: string
-  ordem: number
+  type: string
+  position: number
   createdAt: Date
 }
 
 export interface PropertyMediaInput {
   url: string
-  tipo?: string
-  ordem?: number
+  type?: string
+  position?: number
 }
 
 export interface PropertyValues {
-  valor: number
-  valorAluguel: number | null
-  condominio: number | null
-  iptu: number | null
+  price: number
+  rentalPrice: number | null
+  condoFee: number | null
+  propertyTax: number | null
 }
 
 export interface PropertyCharacteristics {
-  quartos: number | null
-  banheiros: number | null
-  vagas: number | null
-  areaM2: number | null
+  bedrooms: number | null
+  bathrooms: number | null
+  parkingSpots: number | null
+  areaSqm: number | null
 }
 
 export interface Property {
+  responsibleName: string
+  activeContractId: string | null
   id: string
   tenantId: string
-  responsavelId: string
-  titulo: string
-  descricao: string | null
-  finalidade: PropertyPurpose
-  tipo: string
+  responsibleId: string
+  ownerId: string | null
+  title: string
+  description: string | null
+  purpose: PropertyPurpose
+  type: PropertyType
+  listing: PropertyListing
   status: PropertyStatus
-  publicadoEm: Date | null
+  publishedAt: Date | null
   createdAt: Date
   updatedAt: Date
-  endereco: PropertyAddress | null
-  midias: PropertyMedia[]
-  valores: PropertyValues
-  caracteristicas: PropertyCharacteristics
+  address: PropertyAddress | null
+  media: PropertyMedia[]
+  values: PropertyValues
+  characteristics: PropertyCharacteristics
 }
 
 export interface NewProperty {
   tenantId: string
-  responsavelId: string
-  titulo: string
-  descricao?: string | null
-  finalidade: PropertyPurpose
-  tipo: string
-  quartos?: number | null
-  banheiros?: number | null
-  vagas?: number | null
-  areaM2?: number | null
-  valor: number
-  valorAluguel?: number | null
-  condominio?: number | null
-  iptu?: number | null
-  endereco?: PropertyAddress
-  midias?: PropertyMediaInput[]
+  responsibleId: string
+  ownerId?: string | null
+  title: string
+  description?: string | null
+  purpose: PropertyPurpose
+  type: PropertyType
+  listing?: PropertyListing
+  bedrooms?: number | null
+  bathrooms?: number | null
+  parkingSpots?: number | null
+  areaSqm?: number | null
+  price: number
+  rentalPrice?: number | null
+  condoFee?: number | null
+  propertyTax?: number | null
+  address?: PropertyAddress
+  media?: PropertyMediaInput[]
 }
 
 export interface PropertyChanges {
-  titulo?: string
-  descricao?: string | null
-  finalidade?: PropertyPurpose
-  tipo?: string
-  quartos?: number | null
-  banheiros?: number | null
-  vagas?: number | null
-  areaM2?: number | null
-  valor?: number
-  valorAluguel?: number | null
-  condominio?: number | null
-  iptu?: number | null
-  endereco?: PropertyAddress
-  midias?: PropertyMediaInput[]
+  ownerId?: string | null
+  title?: string
+  description?: string | null
+  purpose?: PropertyPurpose
+  type?: PropertyType
+  listing?: PropertyListing
+  bedrooms?: number | null
+  bathrooms?: number | null
+  parkingSpots?: number | null
+  areaSqm?: number | null
+  price?: number
+  rentalPrice?: number | null
+  condoFee?: number | null
+  propertyTax?: number | null
+  address?: PropertyAddress
+  media?: PropertyMediaInput[]
 }
 
+export type PropertySortField =
+  'title' | 'type' | 'saleValue' | 'rentalValue' | 'status' | 'broker' | 'updatedAt'
+
 export interface PropertyListFilters {
+  locale?: AppLocale
+  sortBy?: PropertySortField
+  sortOrder?: 'asc' | 'desc'
+  page?: number
+  pageSize?: number
+  search?: string
   tenantId: string
   renterId?: string
+  ownerId?: string
   status?: PropertyStatus
-  finalidade?: PropertyPurpose
-  responsavelId?: string
+  purpose?: PropertyPurpose
+  responsibleId?: string
+}
+
+export interface RentedProperty {
+  propertyId: string
+  tenantId: string
 }
 
 export interface ActiveContractProperty {
   contractId: string
   propertyId: string
   contractStatus:
-    | 'RASCUNHO'
-    | 'EM_REVISAO'
-    | 'AGUARDANDO_ASSINATURA'
-    | 'ASSINADO'
-    | 'ATIVO'
-    | 'ENCERRADO'
-    | 'CANCELADO'
-  finalidade: PropertyPurpose
+    'DRAFT' | 'IN_REVIEW' | 'AWAITING_SIGNATURE' | 'SIGNED' | 'ACTIVE' | 'CLOSED' | 'CANCELED'
+  purpose: PropertyPurpose
 }
+
+export interface PropertyOwnerOption {
+  id: string
+  name: string
+}
+
+export interface PropertyPage {
+  properties: Property[]
+  pagination: { page: number; pageSize: number; total: number; totalPages: number }
+  counts: Record<PropertyStatus, number>
+}
+
+export interface PropertyOwnersPage {
+  owners: PropertyOwnerOption[]
+  pagination: { page: number; pageSize: number; total: number; totalPages: number }
+}
+
+export type PropertyAccessTarget = Pick<Property, 'responsibleId' | 'ownerId'>

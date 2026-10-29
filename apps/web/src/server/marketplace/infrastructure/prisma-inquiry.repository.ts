@@ -1,45 +1,33 @@
-import { prisma } from '@server/db/prisma'
+import type { Opportunity } from '@prisma/client'
 
-import type { Inquiry, NewInquiry } from '../domain/inquiry.entity'
+import { prisma } from '@server/db/prisma'
+import { PostgresRateLimitStore } from '@server/security/postgres-rate-limit-store'
+import { inquiryContactRateLimitKey, inquiryContactRateLimitPolicy } from './inquiry-rate-limit'
+import {
+  InquiryQuotaExceededError,
+  InquiryRateLimitUnavailableError,
+  PropertyNotFoundError,
+} from '../domain/errors'
+
+import type { Inquiry, NewInquiry } from '../types/inquiry'
 import type { InquiryRepository } from '../application/ports/inquiry-repository.port'
 
-type DecimalLike = { toNumber(): number }
-
-type OportunidadeRow = {
-  id: string
-  tenantId: string
-  imovelId: string
-  interessadoNome: string
-  interessadoEmail: string
-  interessadoTelefone: string | null
-  valorProposto: DecimalLike
-  prazoContratoMeses: number | null
-  inicioPretendido: Date | null
-  garantiaContratual: Inquiry['guaranteeType']
-  condicoesEspeciais: string[]
-  observacoes: string | null
-  status: Inquiry['status']
-  arquivadaEm: Date | null
-  createdAt: Date
-  updatedAt: Date
-}
-
-function toDomainInquiry(row: OportunidadeRow): Inquiry {
+function toDomainInquiry(row: Opportunity): Inquiry {
   return {
     id: row.id,
     tenantId: row.tenantId,
-    propertyId: row.imovelId,
-    leadName: row.interessadoNome,
-    leadEmail: row.interessadoEmail,
-    leadPhone: row.interessadoTelefone,
-    proposedValue: row.valorProposto.toNumber(),
-    contractTermMonths: row.prazoContratoMeses,
-    desiredStartDate: row.inicioPretendido,
-    guaranteeType: row.garantiaContratual,
-    specialConditions: row.condicoesEspeciais,
-    notes: row.observacoes,
+    propertyId: row.propertyId,
+    leadName: row.interestedName,
+    leadEmail: row.interestedEmail,
+    leadPhone: row.interestedPhone,
+    proposedValue: row.proposedValue.toNumber(),
+    contractTermMonths: row.contractTermMonths,
+    desiredStartDate: row.desiredStart,
+    guaranteeType: row.contractGuarantee,
+    specialConditions: row.specialConditions,
+    notes: row.notes,
     status: row.status,
-    archivedAt: row.arquivadaEm,
+    archivedAt: row.archivedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
@@ -47,19 +35,34 @@ function toDomainInquiry(row: OportunidadeRow): Inquiry {
 
 export class PrismaInquiryRepository implements InquiryRepository {
   async create(inquiry: NewInquiry): Promise<Inquiry> {
-    const oportunidade = await prisma.oportunidade.create({
-      data: {
-        tenantId: inquiry.tenantId,
-        imovelId: inquiry.propertyId,
-        interessadoNome: inquiry.leadName,
-        interessadoEmail: inquiry.leadEmail,
-        interessadoTelefone: inquiry.leadPhone,
-        valorProposto: inquiry.proposedValue,
-        observacoes: inquiry.notes,
-        status: 'ENVIADA',
-      },
+    const key = inquiryContactRateLimitKey(inquiry.propertyId, inquiry.leadEmail)
+    return prisma.$transaction(async (tx) => {
+      const property = await tx.property.findFirst({
+        where: { id: inquiry.propertyId, tenantId: inquiry.tenantId, status: 'PUBLISHED' },
+        select: { responsibleId: true },
+      })
+      if (!property) throw new PropertyNotFoundError()
+      const store = new PostgresRateLimitStore(tx, false)
+      const result = await store
+        .consume({ key, policy: inquiryContactRateLimitPolicy() })
+        .catch(() => {
+          throw new InquiryRateLimitUnavailableError()
+        })
+      if (!result.allowed) throw new InquiryQuotaExceededError(result.retryAfter)
+      const opportunity = await tx.opportunity.create({
+        data: {
+          tenantId: inquiry.tenantId,
+          propertyId: inquiry.propertyId,
+          responsibleId: property.responsibleId,
+          interestedName: inquiry.leadName,
+          interestedEmail: inquiry.leadEmail.trim().toLowerCase(),
+          interestedPhone: inquiry.leadPhone,
+          proposedValue: inquiry.proposedValue,
+          notes: inquiry.notes,
+          status: 'SENT',
+        },
+      })
+      return toDomainInquiry(opportunity)
     })
-
-    return toDomainInquiry(oportunidade as unknown as OportunidadeRow)
   }
 }

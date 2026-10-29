@@ -1,11 +1,17 @@
-import type { Endereco, Imovel, Midia, Prisma } from '@prisma/client'
+import type { PropertyAddress, Property, PropertyMedia, Prisma } from '@prisma/client'
 
-export type PropertyRow = Imovel & {
-  endereco: Endereco | null
-  midias: Midia[]
+export type PropertyRow = Property & {
+  responsible: { name: string }
+  contracts: { id: string }[]
+  address: PropertyAddress | null
+  media: PropertyMedia[]
 }
 
 export type PropertyTransaction = Omit<
   Prisma.TransactionClient,
   '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
 >
+
+export interface PropertyIdRow {
+  id: string
+}

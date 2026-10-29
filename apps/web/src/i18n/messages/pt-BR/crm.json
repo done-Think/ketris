@@ -18,12 +18,6 @@
     "defaultUserContext": "CRM imobiliário",
     "openNavigation": "Abrir navegação"
   },
-  "access": {
-    "loadingSession": "Carregando sessão",
-    "restrictedTitle": "Acesso restrito ao CRM",
-    "restrictedDescription": "Entre com uma conta vinculada a um tenant para visualizar as oportunidades.",
-    "signIn": "Entrar no Ketris"
-  },
   "pipeline": {
     "propertyReference": "Imóvel {id}",
     "title": "Pipeline de Vendas",
@@ -65,7 +59,8 @@
       "rejected": "Perdido"
     },
     "createSuccess": "Oportunidade criada.",
-    "createError": "Não foi possível criar a oportunidade."
+    "createError": "Não foi possível criar a oportunidade.",
+    "loadMore": "Carregar mais"
   },
   "contacts": {
     "title": "Contatos",
@@ -120,12 +115,13 @@
         "email": "E-mail",
         "phone": "Telefone",
         "type": "Tipo",
-        "notes": "Observações"
+        "notes": "Observações",
+        "avatarUrl": "URL do avatar"
       },
       "types": {
-        "PROPRIETARIO": "Proprietário",
-        "LOCATARIO": "Locatário",
-        "CORRETOR": "Corretor"
+        "OWNER": "Proprietário",
+        "RENTER": "Locatário",
+        "BROKER": "Corretor"
       },
       "actions": {
         "cancel": "Cancelar",
@@ -133,7 +129,9 @@
       },
       "errors": {
         "nameRequired": "Nome é obrigatório.",
-        "emailInvalid": "E-mail inválido."
+        "emailInvalid": "E-mail inválido.",
+        "textTooLong": "O texto excede o limite permitido.",
+        "avatarUrlInvalid": "Informe uma URL HTTP(S) válida"
       },
       "createSuccess": "Contato criado.",
       "updateSuccess": "Contato atualizado.",
@@ -185,7 +183,8 @@
         "whatsApp": "WhatsApp",
         "instagram": "Instagram",
         "site": "Site",
-        "referral": "Indicação"
+        "referral": "Indicação",
+        "other": "Outra"
       },
       "actions": {
         "back": "Voltar",
@@ -200,7 +199,8 @@
         "emailInvalid": "Informe um e-mail válido",
         "interestRequired": "Informe o imóvel ou interesse",
         "budgetRequired": "Informe o orçamento",
-        "sourceRequired": "Informe a origem"
+        "sourceRequired": "Informe a origem",
+        "textTooLong": "O texto excede o limite permitido."
       }
     },
     "filters": {
@@ -239,11 +239,12 @@
       "proposedValue": "Valor proposto",
       "propertyRequired": "Selecione um imóvel.",
       "proposedValueInvalid": "Informe um valor válido",
-      "propertyRequired": "Selecione um imóvel.",
       "cancel": "Cancelar",
       "confirm": "Converter",
       "success": "Lead convertido em oportunidade.",
-      "error": "Não foi possível converter o lead. Tente novamente."
+      "error": "Não foi possível converter o lead. Tente novamente.",
+      "email": "E-mail do interessado",
+      "emailInvalid": "Informe um e-mail válido."
     },
     "pagination": {
       "pageAriaLabel": "Ir para a página {page}"
@@ -277,7 +278,8 @@
       "atLeastOneFieldRequired": "Informe ao menos um campo para atualizar.",
       "desiredStartDateInvalid": "Data de início inválida.",
       "specialConditionInvalid": "Condição especial inválida.",
-      "notesInvalid": "Observações inválidas."
+      "notesInvalid": "Observações inválidas.",
+      "textTooLong": "O texto excede o limite permitido."
     },
     "editTitle": "Editar oportunidade",
     "breadcrumbAriaLabel": "Navegação estrutural",
@@ -331,7 +333,6 @@
       "intendedStart": "Início pretendido",
       "guarantee": "Garantia",
       "specialConditions": "Condições especiais",
-      "specialConditionsHelper": "Separe as condições por vírgulas.",
       "notes": "Observações",
       "notInformed": "Não informado",
       "currentStatus": "Etapa atual",
@@ -348,19 +349,25 @@
       "conditionsCount": "{count, plural, =0 {Nenhuma} one {# condição} other {# condições}}",
       "months": "{count, plural, one {# mês} other {# meses}}",
       "property": "Imóvel",
-      "status": "Status inicial"
+      "status": "Status inicial",
+      "conditionNumber": "Condição {number}",
+      "removeCondition": "Remover condição {number}",
+      "addCondition": "Adicionar condição",
+      "contactSelection": "Contato vinculado (opcional)",
+      "contactSyncHelper": "Alterações nos dados do interessado também atualizam o contato e suas oportunidades vinculadas."
     },
     "guarantees": {
-      "NENHUMA": "Não informada",
-      "FIADOR": "Fiador",
-      "CAUCAO": "Caução",
-      "SEGURO_FIANCA": "Seguro-fiança"
+      "none": "Não informada",
+      "guarantor": "Fiador",
+      "deposit": "Caução",
+      "insurance": "Seguro-fiança"
     },
     "actions": {
       "cancel": "Cancelar",
       "saveChanges": "Salvar alterações",
       "confirmStageChange": "Confirmar mudança",
-      "createOpportunity": "Criar oportunidade"
+      "createOpportunity": "Criar oportunidade",
+      "retry": "Tentar novamente"
     },
     "createTitle": "Nova oportunidade",
     "nextActions": {
@@ -413,14 +420,50 @@
       }
     },
     "statuses": {
-      "RASCUNHO": "Rascunho",
-      "ENVIADA": "Enviada",
-      "EM_NEGOCIACAO": "Em negociação",
-      "ACEITA": "Aceita",
-      "RECUSADA": "Recusada"
+      "draft": "Rascunho",
+      "sent": "Enviada",
+      "inNegotiation": "Em negociação",
+      "accepted": "Aceita",
+      "rejected": "Recusada"
     },
     "noProperties": "Nenhum imóvel encontrado.",
-    "loadingProperties": "Buscando imóveis..."
+    "loadingProperties": "Buscando imóveis...",
+    "activitiesLoadError": "Não foi possível carregar o histórico.",
+    "activityTypes": {
+      "note": "Nota",
+      "statusChanged": "Mudança de status",
+      "contactMade": "Contato realizado",
+      "proposalResponded": "Proposta respondida"
+    },
+    "activityActions": {
+      "opportunityCreated": "Oportunidade criada.",
+      "statusChanged": "Status alterado de {previous} para {next}.",
+      "accepted": "Proposta aceita.",
+      "rejected": "Proposta recusada.",
+      "informationRequested": "Solicitadas mais informações ao interessado.",
+      "responsibleChanged": "Responsável alterado:"
+    },
+    "loadMoreProperties": "Carregar mais imóveis",
+    "propertyLoadError": "Não foi possível carregar os imóveis.",
+    "responsible": {
+      "title": "Responsável",
+      "label": "Responsável pela oportunidade",
+      "me": "Eu",
+      "createHelper": "Quem vai cuidar desta oportunidade.",
+      "changed": "Agora {name} é o responsável.",
+      "changeError": "Não foi possível trocar o responsável.",
+      "invalid": "Escolha alguém ativo da equipe."
+    },
+    "activityComposer": {
+      "type": "Tipo de atividade",
+      "note": "Nota",
+      "contact": "Contato realizado",
+      "description": "Descrição",
+      "save": "Registrar atividade",
+      "required": "Descreva a atividade.",
+      "success": "Atividade registrada.",
+      "error": "Não foi possível registrar a atividade."
+    }
   },
   "proposalManagement": {
     "allStatuses": "Todas",
@@ -445,5 +488,18 @@
       "acceptedTotal": "Valor total das aceitas",
       "conversionRate": "Taxa de conversão"
     }
+  },
+  "formatting": {
+    "monthlyAmount": "{amount}/mês"
+  },
+  "autocomplete": {
+    "loading": "Carregando...",
+    "empty": "Nenhum resultado.",
+    "clear": "Limpar seleção",
+    "open": "Abrir opções",
+    "close": "Fechar opções",
+    "retry": "Tentar novamente",
+    "loadError": "Não foi possível carregar as opções.",
+    "loadMore": "Carregar mais"
   }
 }

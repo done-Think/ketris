@@ -15,7 +15,7 @@ export default async function DashboardChargeDetailsPage({
 }) {
   const { id } = await params
   return (
-    <RoleGuard allowedRoles={['ADMIN', 'OWNER', 'RENTER']}>
+    <RoleGuard allowedRoles={['OWNER', 'RENTER', 'PROPERTY_OWNER']}>
       <ChargeDetailsPage chargeId={id} />
     </RoleGuard>
   )

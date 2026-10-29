@@ -1,4 +1,5 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { GetPropertyInput } from '../../types/use-case-inputs'
+import { isAgencyStaff, isPropertyOwner } from '@server/auth/domain/roles'
 
 import { assertPropertyAccess } from '../authorization'
 import { PropertyNotFoundError } from '../../domain/errors'
@@ -7,21 +8,22 @@ import type { PropertyRepository } from '../ports/property-repository.port'
 export class GetPropertyUseCase {
   constructor(private readonly propertyRepository: PropertyRepository) {}
 
-  async execute(input: { actorTenantId: string; actorId: string; actorPapel: Papel; id: string }) {
+  async execute(input: GetPropertyInput) {
     const property = await this.propertyRepository.findByTenantAndId(
       input.actorTenantId,
       input.id,
-      input.actorPapel === 'RENTER' ? input.actorId : undefined,
+      input.actorRole === 'RENTER' ? input.actorId : undefined,
+      input.actorRole === 'PROPERTY_OWNER' ? input.actorId : undefined,
     )
 
     if (!property) {
       throw new PropertyNotFoundError()
     }
 
-    if (input.actorPapel !== 'RENTER') {
-      assertPropertyAccess(property.responsavelId, input.actorId, input.actorPapel)
+    if (isAgencyStaff(input.actorRole) || isPropertyOwner(input.actorRole)) {
+      assertPropertyAccess(property, input.actorId, input.actorRole)
     }
 
-    return property
+    return input.actorRole === 'RENTER' ? { ...property, activeContractId: null } : property
   }
 }

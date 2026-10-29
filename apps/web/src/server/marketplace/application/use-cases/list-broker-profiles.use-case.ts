@@ -1,13 +1,14 @@
 import { toPublicBrokerProfile } from '../../domain/broker-profile.entity'
 import type { PublicBrokerProfile } from '../../types/broker-profile'
+import type { DirectoryPage, DirectoryQuery } from '../../types/directory'
 import type { BrokerProfileRepository } from '../ports/broker-profile-repository.port'
 
 export class ListBrokerProfilesUseCase {
   constructor(private readonly brokerProfileRepository: BrokerProfileRepository) {}
 
-  async execute(): Promise<PublicBrokerProfile[]> {
-    const profiles = await this.brokerProfileRepository.listPublished()
+  async execute(query: DirectoryQuery): Promise<DirectoryPage<PublicBrokerProfile>> {
+    const result = await this.brokerProfileRepository.listPublished(query)
 
-    return profiles.map(toPublicBrokerProfile)
+    return { ...result, items: result.items.map(toPublicBrokerProfile) }
   }
 }

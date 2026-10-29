@@ -1,5 +1,7 @@
 'use client'
 
+import { styles } from '@shared/styles/rhf-password-field.styles'
+
 import { useState } from 'react'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
@@ -7,7 +9,6 @@ import { IconButton, InputAdornment } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import type { FieldPath, FieldValues } from 'react-hook-form'
 
-import { brand } from '@shared/theme/tokens'
 import type { RhfTextFieldProps } from '@shared/types'
 
 import { RhfTextField } from './RhfTextField'
@@ -37,7 +38,7 @@ export function RhfPasswordField<
                 aria-pressed={isVisible}
                 edge="end"
                 onClick={() => setIsVisible((current) => !current)}
-                sx={{ color: brand.neutral[500] }}
+                sx={styles.iconButton}
               >
                 {isVisible ? (
                   <VisibilityOffOutlinedIcon fontSize="small" />

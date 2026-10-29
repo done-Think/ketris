@@ -9,17 +9,20 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import 'dayjs/locale/es'
 import 'dayjs/locale/pt-br'
 import { SessionProvider } from 'next-auth/react'
-import { NextIntlClientProvider } from 'next-intl'
+import { NextIntlClientProvider, useLocale } from 'next-intl'
 import { SnackbarProvider } from 'notistack'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import type { LocaleProvidersProps, ProvidersProps } from '@/i18n/types/provider.types'
 import { HttpClientSessionBridge } from '@shared/components/providers'
+import { AuthAvailabilityBoundary } from '@shared/components/layout/AuthAvailabilityBoundary'
 import { makeQueryClient } from '@shared/lib/query/query-client'
-import { theme } from '@shared/theme/theme'
+import { getDatePickerLocaleText, getLocalizedTheme } from '@shared/theme/localized-theme'
 
 export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(() => makeQueryClient())
+  const locale = useLocale()
+  const theme = useMemo(() => getLocalizedTheme(locale), [locale])
 
   return (
     <AppRouterCacheProvider options={{ enableCssLayer: true }}>
@@ -33,7 +36,7 @@ export function Providers({ children }: ProvidersProps) {
               autoHideDuration={2000}
               anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-              {children}
+              <AuthAvailabilityBoundary>{children}</AuthAvailabilityBoundary>
             </SnackbarProvider>
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryClientProvider>
@@ -48,7 +51,11 @@ export function LocaleProviders({ children, i18n }: LocaleProvidersProps) {
 
   return (
     <NextIntlClientProvider locale={i18n.locale} messages={i18n.messages} timeZone={i18n.timeZone}>
-      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={dayjsAdapterLocale}>
+      <LocalizationProvider
+        dateAdapter={AdapterDayjs}
+        adapterLocale={dayjsAdapterLocale}
+        localeText={getDatePickerLocaleText(i18n.locale)}
+      >
         {children}
       </LocalizationProvider>
     </NextIntlClientProvider>

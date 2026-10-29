@@ -1,22 +1,17 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import type { ListLeadsInput, ListLeadsOutput } from '../../types/list-leads.use-case.types'
+export type { ListLeadsInput, ListLeadsOutput } from '../../types/list-leads.use-case.types'
 
-import type { Lead } from '../../domain/lead.entity'
+import { assertCrmAccess } from '../authorization'
 import type { LeadRepository } from '../ports/lead-repository.port'
-
-export interface ListLeadsInput {
-  actorTenantId: string
-  actorId: string
-  actorPapel: Papel
-}
-
-export type ListLeadsOutput = Lead[]
 
 export class ListLeadsUseCase {
   constructor(private readonly leadRepository: LeadRepository) {}
 
   async execute(input: ListLeadsInput): Promise<ListLeadsOutput> {
+    assertCrmAccess(input.actorRole)
     return this.leadRepository.findManyByTenant(input.actorTenantId, {
-      responsavelId: input.actorPapel === 'AGENT' ? input.actorId : undefined,
+      ...input.filters,
+      responsibleId: input.actorRole === 'AGENT' ? input.actorId : undefined,
     })
   }
 }

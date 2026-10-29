@@ -1,5 +1,7 @@
 'use client'
 
+import { styles } from '../styles/registration-details-form.styles'
+
 import { useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -19,11 +21,10 @@ import { useTranslations } from 'next-intl'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
-import { brand } from '@shared/theme/tokens'
 
 import { AgencyAutocomplete } from './AgencyAutocomplete'
-import { AuthFormField } from './AuthFormField'
-import { authPrimaryButtonSx, authTextFieldSx } from './auth-form.styles'
+import { AuthFormField } from '@shared/components/form/AuthFormField'
+import { authTextFieldSx } from '@shared/components/form/auth-form.styles'
 import { createRegistrationDetailsSchema } from '../schemas/registration-details-schema'
 import type {
   AgencySearchResult,
@@ -69,8 +70,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
     },
   })
 
-  const showCompanyName =
-    profile === 'imobiliaria' || profile === 'construtora' || profile === 'corretor'
+  const showCompanyName = profile === 'agency' || profile === 'developer' || profile === 'broker'
 
   const acceptTerms = useWatch({ control, name: 'acceptTerms' })
 
@@ -91,8 +91,8 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
   }
 
   return (
-    <Box component="form" noValidate onSubmit={handleSubmit(submitDetails)} sx={{ mt: 4 }}>
-      <Box sx={{ display: 'grid', gap: 2.25 }}>
+    <Box component="form" noValidate onSubmit={handleSubmit(submitDetails)} sx={styles.box}>
+      <Box sx={styles.box2}>
         <AuthFormField htmlFor="registration-full-name" label={t('fullName.label')} required>
           <RhfTextField
             id="registration-full-name"
@@ -119,13 +119,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
           </AuthFormField>
         ) : null}
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'minmax(0, 1.35fr) minmax(0, 0.85fr)' },
-            gap: 2,
-          }}
-        >
+        <Box sx={styles.box3}>
           <AuthFormField htmlFor="registration-email" label={t('email.label')} required>
             <RhfTextField
               id="registration-email"
@@ -154,13 +148,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
           </AuthFormField>
         </Box>
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
-            gap: 2,
-          }}
-        >
+        <Box sx={styles.box4}>
           {passwordFields.map((field) => {
             const isVisible = visiblePasswordFields.has(field.name)
             const label = t(`${field.translationKey}.label`)
@@ -193,7 +181,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
                             edge="end"
                             size="small"
                             onClick={() => togglePasswordVisibility(field.name)}
-                            sx={{ color: brand.neutral[500] }}
+                            sx={styles.iconButton}
                           >
                             {isVisible ? (
                               <VisibilityOffOutlinedIcon fontSize="small" />
@@ -214,7 +202,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
         <AuthFormField
           htmlFor="registration-creci"
           label={t('creci.label')}
-          required={profile === 'corretor'}
+          required={profile === 'broker'}
         >
           <RhfTextField
             id="registration-creci"
@@ -222,14 +210,14 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
             name="creci"
             placeholder={t('creci.placeholder')}
             helperText={
-              profile === 'corretor' ? t('creci.requiredHelper') : t('creci.optionalHelper')
+              profile === 'broker' ? t('creci.requiredHelper') : t('creci.optionalHelper')
             }
             fullWidth
             sx={authTextFieldSx}
           />
         </AuthFormField>
 
-        {profile === 'corretor' ? (
+        {profile === 'broker' ? (
           <Controller
             control={control}
             name="agencyId"
@@ -250,7 +238,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
         control={control}
         name="acceptTerms"
         render={({ field, fieldState }) => (
-          <FormControl error={Boolean(fieldState.error)} sx={{ mt: 2.25 }}>
+          <FormControl error={Boolean(fieldState.error)} sx={styles.formControl}>
             <FormControlLabel
               control={
                 <Checkbox
@@ -260,25 +248,25 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
                   onBlur={field.onBlur}
                   onChange={(_, checked) => field.onChange(checked)}
                   size="small"
-                  sx={{ p: 0, mr: 1.25, color: brand.neutral[200] }}
+                  sx={styles.checkbox}
                 />
               }
               label={
                 <Typography color="text.secondary" variant="body2">
                   {t('terms.prefix')}{' '}
-                  <Box component="span" sx={{ color: 'primary.main' }}>
+                  <Box component="span" sx={styles.box5}>
                     {t('terms.termsOfUse')}
                   </Box>{' '}
                   {t('terms.connector')}{' '}
-                  <Box component="span" sx={{ color: 'primary.main' }}>
+                  <Box component="span" sx={styles.box6}>
                     {t('terms.privacyPolicy')}
                   </Box>
                 </Typography>
               }
-              sx={{ m: 0, alignItems: 'center' }}
+              sx={styles.formControlLabel}
             />
             {fieldState.error && (
-              <FormHelperText sx={{ ml: 0 }}>{fieldState.error.message}</FormHelperText>
+              <FormHelperText sx={styles.formHelperText}>{fieldState.error.message}</FormHelperText>
             )}
           </FormControl>
         )}
@@ -288,12 +276,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
         type="submit"
         variant="contained"
         disabled={isSubmitting || !acceptTerms}
-        sx={{
-          ...authPrimaryButtonSx,
-          width: '100%',
-          maxWidth: 286,
-          mt: 3.25,
-        }}
+        sx={styles.button}
       >
         {t('submit')}
       </Button>

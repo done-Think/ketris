@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
 import type { z } from 'zod'
+import type { ConfirmSignupVerificationResponseDTO } from '@shared/types/generated/auth/http'
+type PendingEmailVerificationOutput = RegisterResponseDTO
+import type { RegisterResponseDTO } from '@shared/types/generated/registration/http'
 
 import type { createRegistrationDetailsSchema } from '../schemas/registration-details-schema'
 
@@ -7,8 +10,7 @@ export type RegistrationDetailsFormValues = z.infer<
   ReturnType<typeof createRegistrationDetailsSchema>
 >
 
-export type RegistrationProfileId =
-  'proprietario' | 'corretor' | 'imobiliaria' | 'construtora' | 'locatario'
+export type RegistrationProfileId = 'owner' | 'broker' | 'agency' | 'developer' | 'renter'
 
 export type RegistrationProfileIcon = 'owner' | 'broker' | 'agency' | 'developer' | 'tenant'
 
@@ -84,24 +86,12 @@ export type RegistrationDetailsScreenProps = {
 }
 
 export type EmailVerificationStepProps = {
-  email: string
-  onConfirmed: () => void
+  verification: PendingEmailVerificationOutput
+  onConfirmed: (response: ConfirmSignupVerificationResponseDTO) => Promise<unknown>
 }
 
 export interface RegisterErrorBody {
   error?: { code?: string }
 }
 
-export interface RegisteredBody {
-  outcome: 'REGISTERED'
-  user: { role: string }
-  accessToken: string
-  refreshToken: string
-}
-
-export interface PendingApprovalBody {
-  outcome: 'PENDING_APPROVAL'
-  email: string
-}
-
-export type RegisterResponseBody = RegisteredBody | PendingApprovalBody
+export type RegisterResponseBody = RegisterResponseDTO

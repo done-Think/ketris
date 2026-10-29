@@ -1,18 +1,19 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { CannotDeactivateSelfError, PlatformAdminNotFoundError } from '../../../domain/errors'
-import type { PlatformAdmin } from '../../../domain/platform-admin.entity'
+import type { PlatformAdmin } from '../../../types/platform-admin'
 import type { PlatformAdminRepository } from '../../../application/ports/platform-admin-repository.port'
-import type { PlatformRefreshTokenRepository } from '../../../application/ports/platform-refresh-token-repository.port'
 import { DeactivatePlatformAdminUseCase } from '../../../application/use-cases/deactivate-platform-admin.use-case'
 
 const target: PlatformAdmin = {
   id: 'platform-admin-2',
-  nome: 'Sócio Ketris',
+  name: 'Sócio Ketris',
   email: 'socio@ketris.dev',
-  senhaHash: 'hash-fake',
+  passwordHash: 'hash-fake',
   role: 'ADMIN',
-  ativo: true,
+  active: true,
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  lastAccessAt: null,
 }
 
 function createDeps(overrides?: { findById?: PlatformAdminRepository['findById'] }) {
@@ -22,41 +23,33 @@ function createDeps(overrides?: { findById?: PlatformAdminRepository['findById']
     findMany: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
-    deactivate: vi.fn().mockResolvedValue({ ...target, ativo: false }),
-  }
-  const refreshTokenRepository: PlatformRefreshTokenRepository = {
-    create: vi.fn(),
-    findValidByTokenHash: vi.fn(),
-    revokeById: vi.fn(),
-    revokeAllForPlatformAdmin: vi.fn().mockResolvedValue(undefined),
+    deactivate: vi.fn().mockResolvedValue({ ...target, active: false }),
+    recordAccess: vi.fn(),
   }
 
-  return { platformAdminRepository, refreshTokenRepository }
+  return { platformAdminRepository }
 }
 
 describe('DeactivatePlatformAdminUseCase', () => {
-  it('desativa o alvo e revoga todos os refresh tokens dele', async () => {
+  it('delegates guarded deactivation and token revocation to the atomic repository operation', async () => {
     const deps = createDeps()
-    const useCase = new DeactivatePlatformAdminUseCase(
-      deps.platformAdminRepository,
-      deps.refreshTokenRepository,
-    )
+    const useCase = new DeactivatePlatformAdminUseCase(deps.platformAdminRepository)
 
     const result = await useCase.execute({
       actorId: 'platform-admin-1',
       platformAdminId: target.id,
     })
 
-    expect(result.ativo).toBe(false)
-    expect(deps.refreshTokenRepository.revokeAllForPlatformAdmin).toHaveBeenCalledWith(target.id)
+    expect(result.active).toBe(false)
+    expect(deps.platformAdminRepository.deactivate).toHaveBeenCalledWith(
+      target.id,
+      'platform-admin-1',
+    )
   })
 
   it('lança CannotDeactivateSelfError quando o ator tenta se autodesativar', async () => {
     const deps = createDeps()
-    const useCase = new DeactivatePlatformAdminUseCase(
-      deps.platformAdminRepository,
-      deps.refreshTokenRepository,
-    )
+    const useCase = new DeactivatePlatformAdminUseCase(deps.platformAdminRepository)
 
     await expect(
       useCase.execute({ actorId: target.id, platformAdminId: target.id }),
@@ -66,10 +59,7 @@ describe('DeactivatePlatformAdminUseCase', () => {
 
   it('lança PlatformAdminNotFoundError quando o alvo não existe', async () => {
     const deps = createDeps({ findById: vi.fn().mockResolvedValue(null) })
-    const useCase = new DeactivatePlatformAdminUseCase(
-      deps.platformAdminRepository,
-      deps.refreshTokenRepository,
-    )
+    const useCase = new DeactivatePlatformAdminUseCase(deps.platformAdminRepository)
 
     await expect(
       useCase.execute({ actorId: 'platform-admin-1', platformAdminId: 'inexistente' }),

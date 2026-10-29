@@ -1,18 +1,8 @@
-import { PropertyNotFoundError } from '../../domain/errors'
-import { toCreatedInquiry, type CreatedInquiry } from '../../domain/inquiry.entity'
+import { InquiryRejectedError, PropertyNotFoundError } from '../../domain/errors'
+import { toCreatedInquiry } from '../../domain/inquiry.entity'
 import type { InquiryRepository } from '../ports/inquiry-repository.port'
 import type { PublicPropertyRepository } from '../ports/public-property-repository.port'
-
-export interface SubmitInquiryInput {
-  propertyId: string
-  leadName: string
-  leadEmail: string
-  leadPhone?: string
-  proposedValue?: number
-  notes?: string
-}
-
-export type SubmitInquiryOutput = CreatedInquiry
+import type { SubmitInquiryInput, SubmitInquiryOutput } from '../../types/use-case-inputs'
 
 export class SubmitInquiryUseCase {
   constructor(
@@ -21,6 +11,7 @@ export class SubmitInquiryUseCase {
   ) {}
 
   async execute(input: SubmitInquiryInput): Promise<SubmitInquiryOutput> {
+    if (input.website?.trim()) throw new InquiryRejectedError()
     const property = await this.propertyRepository.findPublishedById(input.propertyId)
 
     if (!property) {
@@ -31,7 +22,7 @@ export class SubmitInquiryUseCase {
       tenantId: property.tenantId,
       propertyId: property.id,
       leadName: input.leadName,
-      leadEmail: input.leadEmail,
+      leadEmail: input.leadEmail.trim().toLowerCase(),
       leadPhone: input.leadPhone ?? null,
       proposedValue: input.proposedValue ?? property.price,
       notes: input.notes ?? null,

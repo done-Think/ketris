@@ -20,27 +20,27 @@ const OUTSIDE_BUSINESS_HOURS_INICIO = new Date('2030-01-16T22:00:00.000Z')
 const existingEvent: AgendaEvent = {
   id: 'event-1',
   tenantId: 'tenant-1',
-  responsavelId: 'agent-1',
-  criadoPorId: 'agent-1',
-  responsavelNome: 'Corretor',
-  donoUsuarioId: null,
+  responsibleId: 'agent-1',
+  createdById: 'agent-1',
+  responsibleName: 'Corretor',
+  ownerUserId: null,
   dono: null,
-  participantes: [],
-  imovelId: null,
-  referenciaImovelLivre: null,
-  titulo: 'Follow-up',
-  tipo: 'FOLLOW_UP',
+  participants: [],
+  propertyId: null,
+  freeFormPropertyReference: null,
+  title: 'Follow-up',
+  type: 'FOLLOW_UP',
   status: 'CONFIRMED',
-  inicio: EXISTING_INICIO,
-  fim: EXISTING_FIM,
-  participanteNome: 'Ana',
-  participanteTelefone: '(11) 99999-0000',
-  notas: null,
+  start: EXISTING_INICIO,
+  end: EXISTING_FIM,
+  participantName: 'Ana',
+  participantPhone: '(11) 99999-0000',
+  notes: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 }
 
-const existingVisitEvent: AgendaEvent = { ...existingEvent, id: 'visit-1', tipo: 'VISIT' }
+const existingVisitEvent: AgendaEvent = { ...existingEvent, id: 'visit-1', type: 'VISIT' }
 
 const rescheduledEvent: AgendaEvent = { ...existingEvent, status: 'CONFIRMED' }
 
@@ -76,50 +76,67 @@ describe('RescheduleAgendaEventUseCase', () => {
   it('mantém a duração original quando durationMinutes não é informado', async () => {
     const deps = createDeps()
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
-    const novoInicio = NEW_VALID_INICIO
+    const newStart = NEW_VALID_INICIO
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       id: 'event-1',
-      inicio: novoInicio,
+      start: newStart,
     })
 
-    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith('tenant-1', 'event-1', {
-      inicio: novoInicio,
-      fim: new Date(novoInicio.getTime() + 60 * 60_000),
-    })
+    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith(
+      'tenant-1',
+      'event-1',
+      {
+        start: newStart,
+        end: new Date(newStart.getTime() + 60 * 60_000),
+      },
+      undefined,
+    )
   })
 
   it('usa a nova duração quando informada', async () => {
     const deps = createDeps()
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
-    const novoInicio = NEW_VALID_INICIO
+    const newStart = NEW_VALID_INICIO
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       id: 'event-1',
-      inicio: novoInicio,
+      start: newStart,
       durationMinutes: 30,
     })
 
-    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith('tenant-1', 'event-1', {
-      inicio: novoInicio,
-      fim: new Date(novoInicio.getTime() + 30 * 60_000),
-    })
+    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith(
+      'tenant-1',
+      'event-1',
+      {
+        start: newStart,
+        end: new Date(newStart.getTime() + 30 * 60_000),
+      },
+      undefined,
+    )
   })
 
-  it('lança ForbiddenError quando o ator é RENTER', async () => {
+  it('o RENTER não remarca evento criado por outra pessoa', async () => {
     const deps = createDeps()
+    vi.mocked(deps.agendaEventRepository.findByScopeAndId).mockResolvedValue({
+      id: 'event-1',
+      tenantId: 'agency-1',
+      responsibleId: 'agent-1',
+      createdById: 'agent-1',
+    } as AgendaEvent)
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
 
     await expect(
       useCase.execute({
-        actorTenantId: 'tenant-1',
-        actorPapel: 'RENTER',
+        actorTenantId: 'renters',
+        actorUserId: 'renter-1',
+        actorRole: 'RENTER',
         id: 'event-1',
-        inicio: new Date(),
+        start: new Date(),
       }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
     expect(deps.agendaEventRepository.reschedule).not.toHaveBeenCalled()
@@ -132,9 +149,9 @@ describe('RescheduleAgendaEventUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         id: 'inexistente',
-        inicio: new Date(),
+        start: new Date(),
       }),
     ).rejects.toThrow(AgendaEventNotFoundError)
   })
@@ -146,9 +163,9 @@ describe('RescheduleAgendaEventUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         id: 'event-1',
-        inicio: NEW_VALID_INICIO,
+        start: NEW_VALID_INICIO,
         durationMinutes: 30,
       }),
     ).rejects.toThrow(AgendaEventNotFoundError)
@@ -161,9 +178,9 @@ describe('RescheduleAgendaEventUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         id: 'event-1',
-        inicio: NEW_VALID_INICIO,
+        start: NEW_VALID_INICIO,
       }),
     ).rejects.toThrow(AgendaEventConflictError)
     expect(deps.agendaEventRepository.reschedule).not.toHaveBeenCalled()
@@ -172,20 +189,20 @@ describe('RescheduleAgendaEventUseCase', () => {
   it('exclui o próprio evento da checagem de conflito', async () => {
     const deps = createDeps()
     const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
-    const novoInicio = NEW_VALID_INICIO
+    const newStart = NEW_VALID_INICIO
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       id: 'event-1',
-      inicio: novoInicio,
+      start: newStart,
     })
 
     expect(deps.agendaEventRepository.hasOverlap).toHaveBeenCalledWith(
       'tenant-1',
       'agent-1',
-      novoInicio,
-      new Date(novoInicio.getTime() + 60 * 60_000),
+      newStart,
+      new Date(newStart.getTime() + 60 * 60_000),
       'event-1',
     )
   })
@@ -197,9 +214,9 @@ describe('RescheduleAgendaEventUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         id: 'event-1',
-        inicio: OUTSIDE_BUSINESS_HOURS_INICIO,
+        start: OUTSIDE_BUSINESS_HOURS_INICIO,
       }),
     ).rejects.toThrow(AgendaOutsideBusinessHoursError)
     expect(deps.agendaEventRepository.reschedule).not.toHaveBeenCalled()
@@ -212,9 +229,9 @@ describe('RescheduleAgendaEventUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         id: 'event-1',
-        inicio: new Date(Date.now() + 60 * 60_000),
+        start: new Date(Date.now() + 60 * 60_000),
       }),
     ).rejects.toThrow(AgendaMinimumAdvanceNoticeError)
     expect(deps.agendaEventRepository.reschedule).not.toHaveBeenCalled()
@@ -226,16 +243,21 @@ describe('RescheduleAgendaEventUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       id: 'event-1',
-      inicio: existingEvent.inicio,
+      start: existingEvent.start,
       durationMinutes: 90,
     })
 
-    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith('tenant-1', 'event-1', {
-      inicio: existingEvent.inicio,
-      fim: new Date(existingEvent.inicio.getTime() + 90 * 60_000),
-    })
+    expect(deps.agendaEventRepository.reschedule).toHaveBeenCalledWith(
+      'tenant-1',
+      'event-1',
+      {
+        start: existingEvent.start,
+        end: new Date(existingEvent.start.getTime() + 90 * 60_000),
+      },
+      undefined,
+    )
   })
 
   it('lança AgendaVisitMinimumDurationError ao reagendar uma VISIT para menos de 30min', async () => {
@@ -245,9 +267,9 @@ describe('RescheduleAgendaEventUseCase', () => {
     await expect(
       useCase.execute({
         actorTenantId: 'tenant-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         id: 'visit-1',
-        inicio: NEW_VALID_INICIO,
+        start: NEW_VALID_INICIO,
         durationMinutes: 15,
       }),
     ).rejects.toThrow(AgendaVisitMinimumDurationError)
@@ -260,9 +282,9 @@ describe('RescheduleAgendaEventUseCase', () => {
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       id: 'visit-1',
-      inicio: NEW_VALID_INICIO,
+      start: NEW_VALID_INICIO,
     })
 
     expect(deps.agendaEventRepository.reschedule).toHaveBeenCalled()

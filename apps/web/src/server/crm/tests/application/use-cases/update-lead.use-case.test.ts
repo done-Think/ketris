@@ -1,21 +1,21 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { LeadNotFoundError } from '../../../domain/errors'
-import type { Lead } from '../../../domain/lead.entity'
 import type { LeadRepository } from '../../../application/ports/lead-repository.port'
 import { UpdateLeadUseCase } from '../../../application/use-cases/update-lead.use-case'
+import { LeadNotFoundError } from '../../../domain/errors'
+import type { Lead } from '../../../domain/lead.entity'
 
 const lead: Lead = {
   id: 'lead-1',
   tenantId: 'tenant-1',
-  responsavelId: 'agent-1',
+  responsibleId: 'agent-1',
   name: 'Maria Souza',
   phone: '(11) 99999-0000',
   email: null,
   interest: 'Apartamento',
   budget: 'Até R$ 3.000',
-  source: 'WhatsApp',
-  stage: 'NOVO',
+  source: 'WHATSAPP',
+  stage: 'NEW',
   notes: null,
   opportunityId: null,
   createdAt: new Date('2026-09-21T00:00:00.000Z'),
@@ -25,20 +25,20 @@ const lead: Lead = {
 describe('UpdateLeadUseCase', () => {
   it('atualiza o estágio quando o ator é o responsável', async () => {
     const findById = vi.fn().mockResolvedValue(lead)
-    const update = vi.fn().mockResolvedValue({ ...lead, stage: 'EM_CONTATO' })
+    const update = vi.fn().mockResolvedValue({ ...lead, stage: 'IN_CONTACT' })
     const repository = { findById, update } as unknown as LeadRepository
     const useCase = new UpdateLeadUseCase(repository)
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'agent-1',
-      actorPapel: 'AGENT',
+      actorRole: 'AGENT',
       leadId: 'lead-1',
-      changes: { stage: 'EM_CONTATO' },
+      changes: { stage: 'IN_CONTACT' },
     })
 
-    expect(update).toHaveBeenCalledWith('lead-1', { stage: 'EM_CONTATO' })
-    expect(result.stage).toBe('EM_CONTATO')
+    expect(update).toHaveBeenCalledWith('lead-1', { stage: 'IN_CONTACT' })
+    expect(result.stage).toBe('IN_CONTACT')
   })
 
   it('bloqueia AGENT que não é o responsável (404 opaco) e não atualiza', async () => {
@@ -51,9 +51,9 @@ describe('UpdateLeadUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-2',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         leadId: 'lead-1',
-        changes: { stage: 'PROPOSTA' },
+        changes: { stage: 'PROPOSAL' },
       }),
     ).rejects.toThrow(LeadNotFoundError)
     expect(update).not.toHaveBeenCalled()
@@ -69,7 +69,7 @@ describe('UpdateLeadUseCase', () => {
       useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'agent-1',
-        actorPapel: 'AGENT',
+        actorRole: 'AGENT',
         leadId: 'lead-inexistente',
         changes: { notes: 'Ligou de volta' },
       }),

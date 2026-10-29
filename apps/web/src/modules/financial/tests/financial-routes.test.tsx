@@ -13,7 +13,10 @@ vi.mock('next-auth/react', () => ({
     status: 'authenticated',
   }),
 }))
-vi.mock('@/i18n/navigation', () => ({ useRouter: () => ({ replace: state.replace }) }))
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
+  useRouter: () => ({ replace: state.replace }),
+}))
 vi.mock('@modules/financial', () => ({
   ChargesPage: () => <div>Lista de cobranças permitidas</div>,
   ChargeDetailsPage: () => <div>Detalhe da cobrança permitida</div>,

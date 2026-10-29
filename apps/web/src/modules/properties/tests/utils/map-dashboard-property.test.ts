@@ -1,4 +1,7 @@
+import { createFormatter } from 'next-intl'
 import { describe, expect, it } from 'vitest'
+
+import ptMessages from '@/i18n/messages/pt-BR/properties.json'
 
 import { toDashboardProperty } from '../../utils/map-dashboard-property'
 import type { DashboardPropertyMappingOptions } from '../../types/dashboard-property'
@@ -8,10 +11,20 @@ const baseProperty: Property = {
   id: 'property-1',
   tenantId: 'tenant-1',
   responsibleUserId: 'user-1',
+  ownerUserId: null,
+  responsibleName: 'Corretor responsável',
+  activeContractId: null,
+  listing: {
+    amenities: [],
+    negotiationTerms: null,
+    publishAfterReview: false,
+    allowWhatsappContact: false,
+    featured: false,
+  },
   title: 'Apartamento Jardins',
   description: 'Pronto para morar',
   purpose: 'RENT',
-  type: 'apartamento',
+  type: 'apartment',
   status: 'PUBLISHED',
   publishedAt: '2026-09-01T10:00:00.000Z',
   createdAt: '2026-08-01T10:00:00.000Z',
@@ -31,22 +44,30 @@ const baseProperty: Property = {
     {
       id: 'media-1',
       url: 'https://cdn.ketris.dev/foto.jpg',
-      type: 'foto',
+      type: 'photo',
       order: 0,
       createdAt: '2026-08-01T10:00:00.000Z',
     },
   ],
   values: { price: 6500, rentalPrice: null, condoFee: 1200, propertyTax: 380 },
-  characteristics: { bedrooms: 3, bathrooms: 2, parkingSpots: 2, areaM2: 95 },
+  characteristics: { bedrooms: 3, bathrooms: 2, parkingSpots: 2, areaSqm: 95 },
+}
+
+const ptMappingOptions: DashboardPropertyMappingOptions = {
+  locale: 'pt-BR',
+  formatter: createFormatter({ locale: 'pt-BR' }),
+  messages: { ...ptMessages.dashboard.mapping, mediaKinds: ptMessages.detail.mediaKinds },
 }
 
 const enMappingOptions: DashboardPropertyMappingOptions = {
   locale: 'en-US',
+  formatter: createFormatter({ locale: 'en-US' }),
   messages: {
     notAnnounced: 'Not announced',
     notInformed: 'Not informed',
     unknownAddress: 'Address not informed',
     monthlySuffix: '/mo',
+    mediaKinds: { photo: 'Photo', floorPlan: 'Floor plan', video: 'Video' },
     purposes: {
       rent: 'Rent',
       sale: 'Sale',
@@ -57,6 +78,8 @@ const enMappingOptions: DashboardPropertyMappingOptions = {
       studio: 'Studio',
       penthouse: 'Penthouse',
       commercial: 'Commercial',
+      loft: 'Loft',
+      other: 'Other',
     },
     activity: {
       created: 'Property registration completed',
@@ -92,7 +115,7 @@ const enMappingOptions: DashboardPropertyMappingOptions = {
 
 describe('toDashboardProperty', () => {
   it('formats a rental listing with a monthly price and rent-only pricing', () => {
-    const result = toDashboardProperty(baseProperty)
+    const result = toDashboardProperty(baseProperty, ptMappingOptions)
 
     expect(result.purpose).toBe('Aluguel')
     expect(result.price).toBe('R$ 6.500/mês')
@@ -103,18 +126,21 @@ describe('toDashboardProperty', () => {
   })
 
   it('carries the raw responsible user id and API status through for permission checks', () => {
-    const result = toDashboardProperty(baseProperty)
+    const result = toDashboardProperty(baseProperty, ptMappingOptions)
 
     expect(result.responsibleUserId).toBe('user-1')
     expect(result.apiStatus).toBe('PUBLISHED')
   })
 
   it('formats a sale listing without a monthly suffix and sale-only pricing', () => {
-    const result = toDashboardProperty({
-      ...baseProperty,
-      purpose: 'SALE',
-      values: { ...baseProperty.values, price: 4500000 },
-    })
+    const result = toDashboardProperty(
+      {
+        ...baseProperty,
+        purpose: 'SALE',
+        values: { ...baseProperty.values, price: 4500000 },
+      },
+      ptMappingOptions,
+    )
 
     expect(result.purpose).toBe('Venda')
     expect(result.price).toBe('R$ 4.500.000')
@@ -123,39 +149,45 @@ describe('toDashboardProperty', () => {
   })
 
   it.each([
-    ['DRAFT', 'Em análise'],
-    ['PUBLISHED', 'Disponível'],
-    ['RENTED', 'Alugado'],
-    ['SOLD', 'Ativo'],
-    ['INACTIVE', 'Inativo'],
+    ['DRAFT', 'inReview'],
+    ['PUBLISHED', 'available'],
+    ['RENTED', 'rented'],
+    ['SOLD', 'sold'],
+    ['INACTIVE', 'inactive'],
   ] as const)('maps API status %s to dashboard status %s', (apiStatus, dashboardStatus) => {
-    const result = toDashboardProperty({ ...baseProperty, status: apiStatus })
+    const result = toDashboardProperty({ ...baseProperty, status: apiStatus }, ptMappingOptions)
 
     expect(result.status).toBe(dashboardStatus)
   })
 
   it('keeps the raw SOLD API status available for dashboard filtering', () => {
-    const result = toDashboardProperty({ ...baseProperty, purpose: 'SALE', status: 'SOLD' })
+    const result = toDashboardProperty(
+      { ...baseProperty, purpose: 'SALE', status: 'SOLD' },
+      ptMappingOptions,
+    )
 
     expect(result.apiStatus).toBe('SOLD')
-    expect(result.status).toBe('Ativo')
+    expect(result.status).toBe('sold')
   })
 
   it('falls back to placeholders when characteristics/values are null', () => {
-    const result = toDashboardProperty({
-      ...baseProperty,
-      values: { price: 6500, rentalPrice: null, condoFee: null, propertyTax: null },
-      characteristics: { bedrooms: null, bathrooms: null, parkingSpots: null, areaM2: null },
-    })
+    const result = toDashboardProperty(
+      {
+        ...baseProperty,
+        values: { price: 6500, rentalPrice: null, condoFee: null, propertyTax: null },
+        characteristics: { bedrooms: null, bathrooms: null, parkingSpots: null, areaSqm: null },
+      },
+      ptMappingOptions,
+    )
 
     expect(result.summary.bedrooms).toBe('Não informado')
     expect(result.summary.area).toBe('Não informado')
     expect(result.summary.condominium).toBe('Não informado')
-    expect(result.summary.iptu).toBe('Não informado')
+    expect(result.summary.propertyTax).toBe('Não informado')
   })
 
   it('falls back to a generic address label when there is no structured address', () => {
-    const result = toDashboardProperty({ ...baseProperty, address: null })
+    const result = toDashboardProperty({ ...baseProperty, address: null }, ptMappingOptions)
 
     expect(result.address).toBe('Endereço não informado')
     expect(result.location).toBe('')
@@ -167,14 +199,14 @@ describe('toDashboardProperty', () => {
         ...baseProperty,
         address: null,
         values: { price: 6500, rentalPrice: null, condoFee: null, propertyTax: null },
-        characteristics: { bedrooms: null, bathrooms: null, parkingSpots: null, areaM2: null },
+        characteristics: { bedrooms: null, bathrooms: null, parkingSpots: null, areaSqm: null },
       },
       enMappingOptions,
     )
 
     expect(result.purpose).toBe('Rent')
     expect(result.type).toBe('Apartment')
-    expect(result.price).toBe('R$ 6.500/mo')
+    expect(result.price).toBe('R$6,500/mo')
     expect(result.pricing.sale).toBe('Not announced')
     expect(result.summary.area).toBe('Not informed')
     expect(result.address).toBe('Address not informed')
@@ -182,8 +214,8 @@ describe('toDashboardProperty', () => {
   })
 
   it('includes a "published" activity entry only when publishedAt is set', () => {
-    const published = toDashboardProperty(baseProperty)
-    const draft = toDashboardProperty({ ...baseProperty, publishedAt: null })
+    const published = toDashboardProperty(baseProperty, ptMappingOptions)
+    const draft = toDashboardProperty({ ...baseProperty, publishedAt: null }, ptMappingOptions)
 
     expect(published.activityHistory.some((entry) => entry.label === 'Imóvel publicado')).toBe(true)
     expect(draft.activityHistory.some((entry) => entry.label === 'Imóvel publicado')).toBe(false)

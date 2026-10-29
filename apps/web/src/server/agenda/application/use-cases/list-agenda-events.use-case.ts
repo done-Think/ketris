@@ -1,26 +1,23 @@
-import type { Papel } from '@server/auth/domain/user.entity'
+import { withAgendaPropertySummaries } from '../with-agenda-property-summaries'
+import type { AgendaPropertyCatalog } from '../ports/agenda-property-catalog.port'
+import type { ListAgendaEventsInput } from '../../types/use-case-inputs'
 
 import { resolveAgendaReadScope } from '../../domain/agenda-access-rules'
 import type { AgendaEventRepository } from '../ports/agenda-event-repository.port'
 
-export interface ListAgendaEventsInput {
-  actorTenantId: string
-  actorUserId: string
-  actorPapel: Papel
-  from: Date
-  to: Date
-  responsavelId?: string
-}
-
 export class ListAgendaEventsUseCase {
-  constructor(private readonly agendaEventRepository: AgendaEventRepository) {}
+  constructor(
+    private readonly agendaEventRepository: AgendaEventRepository,
+    private readonly propertyCatalog?: AgendaPropertyCatalog,
+  ) {}
 
   async execute(input: ListAgendaEventsInput) {
-    return this.agendaEventRepository.list({
+    const events = await this.agendaEventRepository.list({
       scope: resolveAgendaReadScope(input),
       from: input.from,
       to: input.to,
-      responsavelId: input.responsavelId,
+      responsibleId: input.responsibleId,
     })
+    return withAgendaPropertySummaries(this.propertyCatalog, input, events)
   }
 }

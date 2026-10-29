@@ -12,7 +12,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const body = await parseJsonBody(request, changeOwnPasswordRequestSchema)
   const user = await authContainer.userRepository.findById(actor.sub)
 
-  if (!user || user.tenantId !== actor.tenantId || !user.ativo) {
+  if (!user || user.tenantId !== actor.tenantId || !user.active) {
     throw new UserNotFoundError()
   }
 

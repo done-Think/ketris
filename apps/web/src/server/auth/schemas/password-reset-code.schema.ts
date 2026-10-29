@@ -1,6 +1,7 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
+import { tenantSelectionResponseSchema } from './login.schema'
 import { locales } from '@/i18n/routing'
 
 export const requestPasswordResetCodeSchema = z
@@ -9,13 +10,13 @@ export const requestPasswordResetCodeSchema = z
       .string()
       .trim()
       .email('E-mail inválido.')
+      .max(254, 'E-mail inválido.')
       .transform((value) => value.toLowerCase())
       .openapi({ example: 'ana@ketris.dev' }),
     locale: z.enum(locales).openapi({ example: 'pt-BR' }),
   })
+  .strict()
   .openapi('RequestPasswordResetCodeRequest')
-
-export type RequestPasswordResetCodeDTO = z.infer<typeof requestPasswordResetCodeSchema>
 
 export const verifyPasswordResetCodeSchema = z
   .object({
@@ -23,20 +24,22 @@ export const verifyPasswordResetCodeSchema = z
       .string()
       .trim()
       .email('E-mail inválido.')
+      .max(254, 'E-mail inválido.')
       .transform((value) => value.toLowerCase())
       .openapi({ example: 'ana@ketris.dev' }),
+    tenantId: z.string().trim().min(1).optional(),
     code: z
       .string()
       .trim()
       .regex(/^\d{6}$/, 'Código deve ter 6 dígitos.')
       .openapi({ example: '123456' }),
   })
+  .strict()
   .openapi('VerifyPasswordResetCodeRequest')
 
-export type VerifyPasswordResetCodeDTO = z.infer<typeof verifyPasswordResetCodeSchema>
-
 export const verifyPasswordResetCodeResponseSchema = z
-  .object({
-    resetToken: z.string().openapi({ example: 'eyJhbGciOiJIUzI1NiJ9...' }),
-  })
+  .union([
+    z.object({ resetToken: z.string().openapi({ example: 'eyJhbGciOiJIUzI1NiJ9...' }) }),
+    tenantSelectionResponseSchema,
+  ])
   .openapi('VerifyPasswordResetCodeResponse')

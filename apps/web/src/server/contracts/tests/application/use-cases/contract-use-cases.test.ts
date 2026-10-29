@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest'
-
 import {
   ContractNotFoundError,
   ContractPartyAlreadySignedError,
@@ -19,19 +18,28 @@ import { SignContractPartyUseCase } from '../../../application/use-cases/sign-co
 
 const contract: Contract = {
   id: 'contract-1',
+  dataRevision: 0,
+  createdBy: null,
+  cancelledAt: null,
+  cancelledBy: null,
+  cancellationReason: null,
+  closedAt: null,
+  closedBy: null,
+  closingReason: null,
   tenantId: 'tenant-1',
   propertyId: 'property-1',
+  property: { title: 'Apartamento', address: 'Rua do contrato' },
   opportunityId: 'opportunity-1',
   code: 'CTR-2026-0001',
-  type: 'RESIDENCIAL',
+  type: 'RESIDENTIAL',
   amount: 2500,
   dueDay: 5,
   startDate: new Date('2026-10-01T00:00:00.000Z'),
   endDate: new Date('2027-10-01T00:00:00.000Z'),
   adjustmentIndex: 'IGPM',
-  guaranteeType: 'CAUCAO',
+  guaranteeType: 'DEPOSIT',
   notes: null,
-  status: 'AGUARDANDO_ASSINATURA',
+  status: 'AWAITING_SIGNATURE',
   activatedAt: null,
   activatedBy: null,
   createdAt: new Date('2026-09-29T00:00:00.000Z'),
@@ -40,24 +48,34 @@ const contract: Contract = {
     {
       id: 'party-owner',
       userId: null,
-      role: 'LOCADOR',
+      role: 'LANDLORD',
       name: 'Bruno Oliveira',
       cpf: '11111111111',
       email: 'bruno@example.com',
       phone: null,
-      signatureStatus: 'PENDENTE',
+      signatureMethod: null,
+      signatureDocumentId: null,
+      signatureDocumentHash: null,
+      createdAt: null,
+      updatedAt: null,
+      signatureStatus: 'PENDING',
       signedAt: null,
       signedBy: null,
     },
     {
       id: 'party-tenant',
       userId: null,
-      role: 'LOCATARIO',
+      role: 'RENTER',
       name: 'Mariana Souza',
       cpf: '22222222222',
       email: 'mariana@example.com',
       phone: null,
-      signatureStatus: 'ASSINADA',
+      signatureMethod: null,
+      signatureDocumentId: null,
+      signatureDocumentHash: null,
+      createdAt: null,
+      updatedAt: null,
+      signatureStatus: 'SIGNED',
       signedAt: new Date('2026-09-29T00:00:00.000Z'),
       signedBy: { id: 'agent-1', name: 'Camila Rocha' },
     },
@@ -70,14 +88,13 @@ function createRepository(overrides?: Partial<ContractRepository>): ContractRepo
     findEligibleOpportunity: vi.fn().mockResolvedValue({
       id: 'opportunity-1',
       propertyId: 'property-1',
-      status: 'ACEITA',
+      status: 'ACCEPTED',
       hasContract: false,
     }),
     create: vi.fn().mockResolvedValue(contract),
     findMany: vi.fn().mockResolvedValue({ items: [], totalCount: 0 }),
     findById: vi.fn().mockResolvedValue(contract),
-    signParty: vi.fn().mockResolvedValue({ ...contract, status: 'ATIVO' }),
-    linkPartyUser: vi.fn().mockResolvedValue(true),
+    signParty: vi.fn().mockResolvedValue({ ...contract, status: 'ACTIVE' }),
     ...overrides,
   }
 }
@@ -85,14 +102,14 @@ function createRepository(overrides?: Partial<ContractRepository>): ContractRepo
 const baseCreateInput = {
   actorTenantId: 'tenant-1',
   actorId: 'agent-1',
-  actorPapel: 'AGENT' as const,
+  actorRole: 'AGENT' as const,
   opportunityId: 'opportunity-1',
-  type: 'RESIDENCIAL' as const,
+  type: 'RESIDENTIAL' as const,
   dueDay: 5,
   startDate: new Date('2026-10-01T00:00:00.000Z'),
   endDate: new Date('2027-10-01T00:00:00.000Z'),
   adjustmentIndex: 'IGPM' as const,
-  guaranteeType: 'CAUCAO' as const,
+  guaranteeType: 'DEPOSIT' as const,
   notes: null,
   owner: { name: 'Bruno Oliveira', cpf: '11111111111', email: 'bruno@example.com', phone: null },
   tenant: { name: 'Mariana Souza', cpf: '22222222222', email: 'mariana@example.com', phone: null },
@@ -104,7 +121,7 @@ describe('CreateContractFromOpportunityUseCase', () => {
     const useCase = new CreateContractFromOpportunityUseCase(createRepository())
 
     await expect(
-      useCase.execute({ ...baseCreateInput, actorPapel: 'RENTER' }),
+      useCase.execute({ ...baseCreateInput, actorRole: 'RENTER' }),
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
   })
 
@@ -131,13 +148,13 @@ describe('CreateContractFromOpportunityUseCase', () => {
     expect(repository.create).not.toHaveBeenCalled()
   })
 
-  it.each(['ADMIN', 'OWNER'] as const)(
+  it.each(['OWNER'] as const)(
     'deixa %s criar a partir de qualquer oportunidade aceita do tenant',
-    async (actorPapel) => {
+    async (actorRole) => {
       const repository = createRepository()
       const useCase = new CreateContractFromOpportunityUseCase(repository)
 
-      await useCase.execute({ ...baseCreateInput, actorId: 'user-1', actorPapel })
+      await useCase.execute({ ...baseCreateInput, actorId: 'user-1', actorRole })
 
       expect(repository.findEligibleOpportunity).toHaveBeenCalledWith(
         'tenant-1',
@@ -151,7 +168,7 @@ describe('CreateContractFromOpportunityUseCase', () => {
     const useCase = new CreateContractFromOpportunityUseCase(createRepository())
 
     await expect(
-      useCase.execute({ ...baseCreateInput, guaranteeType: 'FIADOR', guarantor: null }),
+      useCase.execute({ ...baseCreateInput, guaranteeType: 'GUARANTOR', guarantor: null }),
     ).rejects.toThrow(GuarantorPartyRequiredError)
   })
 
@@ -169,7 +186,7 @@ describe('CreateContractFromOpportunityUseCase', () => {
       findEligibleOpportunity: vi.fn().mockResolvedValue({
         id: 'opportunity-1',
         propertyId: 'property-1',
-        status: 'ACEITA',
+        status: 'ACCEPTED',
         hasContract: true,
       }),
     })
@@ -185,7 +202,7 @@ describe('CreateContractFromOpportunityUseCase', () => {
       findEligibleOpportunity: vi.fn().mockResolvedValue({
         id: 'opportunity-1',
         propertyId: 'property-1',
-        status: 'EM_NEGOCIACAO',
+        status: 'IN_NEGOTIATION',
         hasContract: false,
       }),
     })
@@ -206,10 +223,11 @@ describe('CreateContractFromOpportunityUseCase', () => {
         tenantId: 'tenant-1',
         opportunityId: 'opportunity-1',
         parties: [
-          expect.objectContaining({ role: 'LOCADOR', name: 'Bruno Oliveira' }),
-          expect.objectContaining({ role: 'LOCATARIO', name: 'Mariana Souza' }),
+          expect.objectContaining({ role: 'LANDLORD', name: 'Bruno Oliveira' }),
+          expect.objectContaining({ role: 'RENTER', name: 'Mariana Souza' }),
         ],
       }),
+      { responsibleId: 'agent-1' },
     )
   })
 
@@ -223,36 +241,37 @@ describe('CreateContractFromOpportunityUseCase', () => {
       phone: null,
     }
 
-    await useCase.execute({ ...baseCreateInput, guaranteeType: 'FIADOR', guarantor })
+    await useCase.execute({ ...baseCreateInput, guaranteeType: 'GUARANTOR', guarantor })
 
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         parties: [
-          expect.objectContaining({ role: 'LOCADOR' }),
-          expect.objectContaining({ role: 'LOCATARIO' }),
-          expect.objectContaining({ role: 'FIADOR', name: 'Carlos Fiador' }),
+          expect.objectContaining({ role: 'LANDLORD' }),
+          expect.objectContaining({ role: 'RENTER' }),
+          expect.objectContaining({ role: 'GUARANTOR', name: 'Carlos Fiador' }),
         ],
       }),
+      { responsibleId: 'agent-1' },
     )
   })
 })
 
 describe('ListContractsUseCase', () => {
-  it.each(['ADMIN', 'OWNER'] as const)(
+  it.each(['OWNER'] as const)(
     'lista todos os contratos do tenant para %s, sem filtro de responsável',
-    async (actorPapel) => {
+    async (actorRole) => {
       const repository = createRepository()
       const useCase = new ListContractsUseCase(repository)
 
       await useCase.execute({
         actorTenantId: 'tenant-1',
         actorId: 'user-1',
-        actorPapel,
-        status: 'ATIVO',
+        actorRole,
+        status: 'ACTIVE',
       })
 
       expect(repository.findMany).toHaveBeenCalledWith(
-        { status: 'ATIVO' },
+        { status: 'ACTIVE' },
         { kind: 'tenant', tenantId: 'tenant-1' },
       )
     },
@@ -262,7 +281,7 @@ describe('ListContractsUseCase', () => {
     const repository = createRepository()
     const useCase = new ListContractsUseCase(repository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'agent-1', actorPapel: 'AGENT' })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'agent-1', actorRole: 'AGENT' })
 
     expect(repository.findMany).toHaveBeenCalledWith(
       {},
@@ -277,7 +296,7 @@ describe('ListContractsUseCase', () => {
     await useCase.execute({
       actorTenantId: 'locatarios',
       actorId: 'renter-1',
-      actorPapel: 'RENTER',
+      actorRole: 'RENTER',
       search: 'Jardins',
       page: 2,
     })
@@ -293,7 +312,7 @@ describe('GetContractUseCase', () => {
   const baseGetInput = {
     actorTenantId: 'tenant-1',
     actorId: 'user-1',
-    actorPapel: 'ADMIN' as const,
+    actorRole: 'OWNER' as const,
     contractId: 'contract-1',
   }
 
@@ -306,7 +325,7 @@ describe('GetContractUseCase', () => {
     )
   })
 
-  it('retorna o contrato quando encontrado, sem filtro de responsável para ADMIN', async () => {
+  it('retorna o contrato quando encontrado, sem filtro de responsável para OWNER', async () => {
     const repository = createRepository()
     const useCase = new GetContractUseCase(repository)
 
@@ -323,7 +342,7 @@ describe('GetContractUseCase', () => {
     const repository = createRepository()
     const useCase = new GetContractUseCase(repository)
 
-    await useCase.execute({ ...baseGetInput, actorId: 'agent-1', actorPapel: 'AGENT' })
+    await useCase.execute({ ...baseGetInput, actorId: 'agent-1', actorRole: 'AGENT' })
 
     expect(repository.findById).toHaveBeenCalledWith('contract-1', {
       kind: 'tenant',
@@ -337,7 +356,7 @@ describe('GetContractUseCase', () => {
     const useCase = new GetContractUseCase(repository)
 
     await expect(
-      useCase.execute({ ...baseGetInput, actorId: 'agent-2', actorPapel: 'AGENT' }),
+      useCase.execute({ ...baseGetInput, actorId: 'agent-2', actorRole: 'AGENT' }),
     ).rejects.toThrow(ContractNotFoundError)
   })
 
@@ -349,7 +368,7 @@ describe('GetContractUseCase', () => {
       ...baseGetInput,
       actorTenantId: 'locatarios',
       actorId: 'renter-1',
-      actorPapel: 'RENTER',
+      actorRole: 'RENTER',
     })
 
     expect(repository.findById).toHaveBeenCalledWith('contract-1', {
@@ -363,7 +382,7 @@ describe('GetContractUseCase', () => {
     const useCase = new GetContractUseCase(repository)
 
     await expect(
-      useCase.execute({ ...baseGetInput, actorId: 'renter-2', actorPapel: 'RENTER' }),
+      useCase.execute({ ...baseGetInput, actorId: 'renter-2', actorRole: 'RENTER' }),
     ).rejects.toThrow(ContractNotFoundError)
   })
 })
@@ -372,9 +391,12 @@ describe('SignContractPartyUseCase', () => {
   const baseSignInput = {
     actorTenantId: 'tenant-1',
     actorId: 'agent-1',
-    actorPapel: 'AGENT' as const,
+    actorRole: 'AGENT' as const,
     contractId: 'contract-1',
     partyId: 'party-owner',
+    documentId: 'proof-1',
+    clientIp: null,
+    userAgent: 'Contracts unit test',
   }
 
   it('lança 403 quando o ator é RENTER, sem consultar o repositório', async () => {
@@ -382,7 +404,7 @@ describe('SignContractPartyUseCase', () => {
     const useCase = new SignContractPartyUseCase(repository)
 
     await expect(
-      useCase.execute({ ...baseSignInput, actorId: 'renter-1', actorPapel: 'RENTER' }),
+      useCase.execute({ ...baseSignInput, actorId: 'renter-1', actorRole: 'RENTER' }),
     ).rejects.toThrow(ContractRenterForbiddenError)
     expect(repository.findById).not.toHaveBeenCalled()
   })
@@ -419,12 +441,12 @@ describe('SignContractPartyUseCase', () => {
     expect(repository.signParty).not.toHaveBeenCalled()
   })
 
-  it('deixa ADMIN e OWNER assinarem qualquer contrato do tenant', async () => {
+  it('deixa o OWNER assinar qualquer contrato do tenant', async () => {
     const repository = createRepository()
     const useCase = new SignContractPartyUseCase(repository)
 
-    await useCase.execute({ ...baseSignInput, actorId: 'admin-1', actorPapel: 'ADMIN' })
-    await useCase.execute({ ...baseSignInput, actorId: 'owner-1', actorPapel: 'OWNER' })
+    await useCase.execute({ ...baseSignInput, actorId: 'admin-1', actorRole: 'OWNER' })
+    await useCase.execute({ ...baseSignInput, actorId: 'owner-1', actorRole: 'OWNER' })
 
     const tenantScope = { kind: 'tenant', tenantId: 'tenant-1' }
     expect(repository.findById).toHaveBeenNthCalledWith(1, 'contract-1', tenantScope)
@@ -461,7 +483,9 @@ describe('SignContractPartyUseCase', () => {
       'contract-1',
       'party-owner',
       'agent-1',
+      { documentId: 'proof-1', clientIp: null, userAgent: 'Contracts unit test' },
+      { responsibleId: 'agent-1' },
     )
-    expect(result.status).toBe('ATIVO')
+    expect(result.status).toBe('ACTIVE')
   })
 })

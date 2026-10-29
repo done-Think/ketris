@@ -18,29 +18,29 @@
   },
   "filters": {
     "tabs": {
-      "Todos": "All",
-      "Ativos": "Active",
-      "Vencendo": "Expiring",
-      "Encerrados": "Closed"
+      "ALL": "All",
+      "active": "Active",
+      "expiring90": "Expiring",
+      "closed": "Closed"
     },
     "typeFilter": {
       "label": "Contract type",
-      "Todos": "All types",
-      "Residencial": "Residential",
-      "Comercial": "Commercial",
-      "Temporada": "Short-term"
+      "ALL": "All types",
+      "residential": "Residential",
+      "commercial": "Commercial",
+      "shortTerm": "Short-term"
     }
   },
   "summary": {
-    "Ativos": {
+    "active": {
       "label": "Active",
       "caption": "Contracts in force"
     },
-    "Vencendo em 30d": {
+    "expiring30": {
       "label": "Expiring in 30d",
       "caption": "Need follow-up"
     },
-    "Total": {
+    "total": {
       "label": "Total contracts",
       "caption": "Across every status"
     }
@@ -65,21 +65,23 @@
       "view-summary": "View summary",
       "view-history": "View history",
       "edit-data": "Edit data",
-      "duplicate": "Duplicate contract",
-      "download-pdf": "Download PDF",
-      "download-draft": "Download draft",
-      "send-signature": "Send for signature",
-      "copy-signature-link": "Copy link"
+      "view-documents": "View documents"
+    },
+    "paginationAria": {
+      "next": "Next page",
+      "previous": "Previous page",
+      "first": "First page",
+      "last": "Last page"
     }
   },
   "status": {
-    "Rascunho": "Draft",
-    "Em revisão": "Under review",
-    "Aguardando assinatura": "Awaiting signature",
-    "Assinado": "Signed",
-    "Ativo": "Active",
-    "Encerrado": "Closed",
-    "Cancelado": "Cancelled"
+    "draft": "Draft",
+    "review": "Under review",
+    "awaitingSignature": "Awaiting signature",
+    "signed": "Signed",
+    "active": "Active",
+    "closed": "Closed",
+    "cancelled": "Cancelled"
   },
   "emptyState": {
     "title": "No contracts found",
@@ -121,7 +123,17 @@
       "guarantorCpfInvalid": "Enter a valid CPF",
       "guarantorEmailRequired": "Enter the guarantor's email",
       "guarantorPhoneRequired": "Enter the guarantor's phone number",
-      "guarantorPhoneInvalid": "Enter a valid phone number"
+      "guarantorPhoneInvalid": "Enter a valid phone number",
+      "amountRequired": "Enter a positive contract amount",
+      "nameTooLong": "Use up to 200 characters.",
+      "emailTooLong": "Use up to 254 characters.",
+      "phoneTooLong": "Use up to 32 characters.",
+      "notesTooLong": "Use up to 10,000 characters.",
+      "dueDayInvalid": "Enter a whole day from 1 to 31.",
+      "dateInvalid": "Enter a valid date in DD/MM/YYYY format.",
+      "endAfterStart": "The end date must be after the start date.",
+      "amountTooLarge": "The maximum amount is 9,999,999,999.99.",
+      "amountPrecision": "Use at most two decimal places."
     },
     "actions": {
       "back": "Back",
@@ -133,7 +145,14 @@
       "picker": {
         "label": "Select an accepted opportunity",
         "helperText": "Only accepted opportunities without a contract show up here.",
-        "noOptions": "No accepted opportunities available."
+        "noOptions": "No accepted opportunities available.",
+        "loading": "Loading...",
+        "clear": "Clear selection",
+        "open": "Open options",
+        "close": "Close options",
+        "retry": "Try again",
+        "error": "Could not load proposals.",
+        "more": "Load more proposals"
       },
       "summary": {
         "property": "Property",
@@ -152,7 +171,8 @@
         "cpf": "National ID",
         "email": "Email",
         "phone": "Phone"
-      }
+      },
+      "removeGuarantor": "Remove guarantor (change the guarantee first if required)"
     },
     "conditions": {
       "title": "Commercial conditions",
@@ -163,23 +183,24 @@
         "startDate": "Start",
         "endDate": "End",
         "adjustmentIndex": "Adjustment index",
-        "notes": "Notes"
+        "notes": "Notes",
+        "amount": "Contract amount (BRL)"
       },
       "contractTypeOptions": {
-        "RESIDENCIAL": "Residential",
-        "COMERCIAL": "Commercial",
-        "TEMPORADA": "Short-term"
+        "residential": "Residential",
+        "commercial": "Commercial",
+        "shortTerm": "Short-term"
       },
       "guaranteeTypeOptions": {
-        "FIADOR": "Guarantor",
-        "CAUCAO": "Security deposit",
-        "SEGURO_FIANCA": "Lease insurance",
-        "TITULO_CAPITALIZACAO": "Savings bond"
+        "guarantor": "Guarantor",
+        "deposit": "Security deposit",
+        "insurance": "Lease insurance",
+        "capitalizationBond": "Savings bond"
       },
       "adjustmentIndexOptions": {
-        "IPCA": "IPCA",
-        "IGPM": "IGP-M",
-        "INPC": "INPC"
+        "ipca": "IPCA",
+        "igpm": "IGP-M",
+        "inpc": "INPC"
       }
     },
     "review": {
@@ -200,7 +221,8 @@
         "start": "Start",
         "end": "End",
         "adjustment": "Adjustment",
-        "notes": "Notes"
+        "notes": "Notes",
+        "amount": "Amount"
       }
     },
     "discardDialog": {
@@ -210,15 +232,141 @@
       "confirm": "Discard"
     }
   },
-  "actionDialog": {
-    "close": "Close",
-    "summaryLabels": {
-      "property": "Property",
-      "owner": "Landlord",
-      "tenant": "Tenant",
-      "amount": "Amount",
-      "start": "Start",
-      "end": "End"
+  "detail": {
+    "contracts": "Contracts",
+    "title": "Contract {code}",
+    "edit": "Edit",
+    "cancel": "Cancel contract",
+    "close": "Close contract",
+    "loadError": "Could not load the contract.",
+    "retry": "Try again",
+    "info": "Contract information",
+    "notes": "Clauses and notes",
+    "emptyNotes": "No notes recorded.",
+    "property": "Property",
+    "tenant": "Tenant",
+    "amount": "Amount",
+    "adjustment": "Adjustment",
+    "start": "Start",
+    "end": "End",
+    "payment": "Payment day",
+    "paymentDay": "Day {day} of each month",
+    "guarantee": "Guarantee",
+    "parties": "Parties and signatures",
+    "legacySignature": "Signed — previous record",
+    "sign": "Record manual signature",
+    "link": "Confirm tenant account link",
+    "linkNotice": "Confirm account access for {email}.",
+    "linked": "Account linked",
+    "linkSuccess": "Account link confirmed.",
+    "uploadBusy": "Wait for the PDF upload to finish before changing the contract.",
+    "back": "Back",
+    "landlord": "Landlord",
+    "guarantor": "Guarantor",
+    "manual": "Manual record",
+    "provider": "Electronic signature"
+  },
+  "documents": {
+    "title": "Documents",
+    "file": "Supporting PDF",
+    "limits": "PDF only, up to 10 MB.",
+    "progress": "PDF upload progress",
+    "upload": "Upload PDF",
+    "success": "PDF uploaded and verified.",
+    "empty": "No documents uploaded.",
+    "download": "Download {name}",
+    "legacy": "Legacy file without a private download.",
+    "outdated": "Previous revision: upload a new PDF to record signatures.",
+    "validation": {
+      "required": "Select a PDF file.",
+      "size": "The PDF must not be empty and must be at most 10 MB.",
+      "pdf": "Select a PDF file."
     }
+  },
+  "signature": {
+    "title": "Record manual signature",
+    "manualNotice": "This is a manual record made by the agency with supporting evidence. Electronic signing through an external provider is not available yet.",
+    "party": "Party: {name}",
+    "document": "Supporting PDF",
+    "noDocument": "Upload a PDF for the current contract revision before recording a signature.",
+    "required": "Select a PDF for the current revision.",
+    "back": "Back",
+    "confirm": "Confirm manual record"
+  },
+  "transition": {
+    "cancelTitle": "Cancel contract",
+    "closeTitle": "Close contract",
+    "notice": "The operation will record your user and the current date, preserving documents, history and charges.",
+    "reason": "Reason",
+    "required": "Enter the reason.",
+    "tooLong": "Use up to 10,000 characters.",
+    "back": "Back",
+    "confirm": "Confirm"
+  },
+  "history": {
+    "title": "History",
+    "retry": "Try again",
+    "empty": "No events recorded. Older records may not include author history.",
+    "system": "System",
+    "unavailableActor": "Author unavailable",
+    "pagination": "History pages",
+    "actions": {
+      "CREATED": "Contract created",
+      "UPDATED": "Contract updated",
+      "MANUAL_SIGNATURE_REGISTERED": "Signature recorded manually",
+      "DOCUMENT_UPLOADED": "Document uploaded",
+      "CANCELLED": "Contract cancelled",
+      "CLOSED": "Contract closed"
+    },
+    "page": "Go to page {page}",
+    "navigation": {
+      "next": "Next page",
+      "previous": "Previous page",
+      "first": "First page",
+      "last": "Last page"
+    },
+    "fields": {
+      "type": "Contract type",
+      "amount": "Amount",
+      "dueDay": "Payment day",
+      "adjustmentIndex": "Adjustment",
+      "guaranteeType": "Guarantee",
+      "notes": "Notes",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "parties": "Parties and account links",
+      "status": "Status",
+      "documents": "Documents",
+      "other": "Other data"
+    },
+    "changes": "Changed data: {fields}"
+  },
+  "errors": {
+    "generic": "Could not complete the operation. Try again.",
+    "CONTRACT_EDITING_LOCKED": "This contract can no longer be edited.",
+    "CONTRACT_TRANSITION_NOT_ALLOWED": "The current contract status does not allow this operation.",
+    "CONTRACT_DOCUMENT_NOT_FOUND": "Document unavailable or access not authorized.",
+    "CONTRACT_DOCUMENT_OUTDATED": "The contract data changed. Upload an updated PDF.",
+    "CONTRACT_EVIDENCE_REQUIRED": "Select a supporting PDF uploaded to the contract.",
+    "CONTRACT_DOCUMENT_INVALID": "The file does not match the authorized PDF.",
+    "CONTRACT_DOCUMENT_STORAGE_UNAVAILABLE": "The document service is unavailable. Try again.",
+    "CONTRACT_UPLOAD_EXPIRED": "The upload expired. Select the PDF and upload again.",
+    "CONTRACT_UPLOAD_INVALID": "The upload authorization is invalid. Start again.",
+    "CONTRACT_PARTY_ALREADY_SIGNED": "This party signature has already been recorded.",
+    "CONTRACT_RENTER_USER_NOT_FOUND": "No active tenant account found for this email.",
+    "CONTRACT_PARTY_EMAIL_MISMATCH": "The email does not match the contract party.",
+    "CONTRACT_RENTER_USER_AMBIGUOUS": "Multiple eligible accounts were found. Review the link before continuing.",
+    "CONTRACT_PARTY_ALREADY_LINKED": "This party is already linked to another account.",
+    "CONTRACT_OPPORTUNITY_ALREADY_HAS_CONTRACT": "This proposal already has a contract. Select another.",
+    "CONTRACT_OPPORTUNITY_NOT_ACCEPTED": "The proposal must be accepted to generate a contract.",
+    "FORBIDDEN": "Your role does not allow this operation.",
+    "UNAUTHORIZED": "Check your access and try again.",
+    "CONFLICT": "The link conflicts with the current data or matches multiple accounts. Review the data before trying again."
+  },
+  "edit": {
+    "title": "Edit contract",
+    "notice": "The proposal and property remain fixed. After saving changes to contract data, upload an updated PDF before recording signatures. Changing the tenant email removes the previous account access link.",
+    "back": "Back",
+    "save": "Save changes"
   }
 }

@@ -1,13 +1,3 @@
-import type { PlatformTenant, TenantAccountType } from './tenant'
+import type { components } from '@shared/types/generated/api'
 
-export interface ApiPlatformFinance {
-  referenceDate: string
-  mrr: number
-  payingAccounts: number
-  trialAccounts: number
-  suspendedAccounts: number
-  canceledThisMonth: number
-  churnRate: number | null
-  byAccountType: { accountType: TenantAccountType; activeAccounts: number; mrr: number }[]
-  accounts: PlatformTenant[]
-}
+export type ApiPlatformFinance = components['schemas']['PlatformFinanceResponse']

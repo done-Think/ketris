@@ -3,6 +3,7 @@
 import { Box, CircularProgress, Stack, Typography } from '@mui/material'
 
 import type { DirectoryLoadMoreStatusProps } from '../../types/directory'
+import { styles } from '../../styles/directory-load-more-status.styles'
 
 export function DirectoryLoadMoreStatus({
   emptyLabel,
@@ -14,26 +15,14 @@ export function DirectoryLoadMoreStatus({
   loadMoreRef,
 }: DirectoryLoadMoreStatusProps) {
   return (
-    <Box
-      ref={loadMoreRef}
-      sx={{
-        minHeight: 72,
-        display: 'grid',
-        placeItems: 'center',
-        mt: 2,
-      }}
-    >
+    <Box ref={loadMoreRef} sx={styles.box}>
       {hasMoreItems || isLoadingMore ? (
         <Stack direction="row" spacing={1} alignItems="center">
           <CircularProgress size={18} thickness={4} />
-          <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 500 }}>
-            {loadingLabel}
-          </Typography>
+          <Typography sx={styles.typography}>{loadingLabel}</Typography>
         </Stack>
       ) : (
-        <Typography sx={{ color: 'text.secondary', fontSize: 13, fontWeight: 500 }}>
-          {hasItems ? loadedLabel : emptyLabel}
-        </Typography>
+        <Typography sx={styles.typography}>{hasItems ? loadedLabel : emptyLabel}</Typography>
       )}
     </Box>
   )

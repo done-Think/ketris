@@ -20,20 +20,20 @@ describe('POST /api/auth/reset-password (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Reset', slug: tenantSlug },
+      data: { name: 'Tenant Reset', slug: tenantSlug },
     })
     tenantId = tenant.id
 
-    const usuario = await prisma.usuario.create({
+    const user = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Reset Teste',
+        name: 'Reset Teste',
         email,
-        senhaHash: await bcrypt.hash(oldPassword, 10),
-        papel: 'ADMIN',
+        passwordHash: await bcrypt.hash(oldPassword, 10),
+        role: 'OWNER',
       },
     })
-    userId = usuario.id
+    userId = user.id
   })
 
   afterAll(async () => {
@@ -61,7 +61,7 @@ describe('POST /api/auth/reset-password (integração)', () => {
       },
     })
 
-    const resetToken = await passwordResetTokenService.issue(userId)
+    const resetToken = await passwordResetTokenService.issue(userId, 0)
 
     const response = await resetPassword(
       buildRequest('http://localhost/api/auth/reset-password', {
@@ -72,9 +72,9 @@ describe('POST /api/auth/reset-password (integração)', () => {
     )
     expect(response.status).toBe(204)
 
-    const updated = await prisma.usuario.findUniqueOrThrow({ where: { id: userId } })
-    expect(await bcrypt.compare(newPassword, updated.senhaHash)).toBe(true)
-    expect(await bcrypt.compare(oldPassword, updated.senhaHash)).toBe(false)
+    const updated = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
+    expect(await bcrypt.compare(newPassword, updated.passwordHash)).toBe(true)
+    expect(await bcrypt.compare(oldPassword, updated.passwordHash)).toBe(false)
 
     const remainingTokens = await prisma.refreshToken.findMany({
       where: { userId, revokedAt: null },
@@ -90,9 +90,18 @@ describe('POST /api/auth/reset-password (integração)', () => {
       buildRequest('http://localhost/api/auth/login', { email, password: oldPassword }),
     )
     expect(loginWithOldPassword.status).toBe(401)
+    const replay = await resetPassword(
+      buildRequest('http://localhost/api/auth/reset-password', {
+        email,
+        password: 'replayed-password',
+        resetToken,
+      }),
+    )
+    expect(replay.status).toBe(401)
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: userId } })).sessionVersion).toBe(1)
   })
 
-  it('retorna 204 mesmo para um e-mail que não existe (anti-enumeração)', async () => {
+  it('retorna o mesmo erro de token inválido independentemente do e-mail', async () => {
     const response = await resetPassword(
       buildRequest('http://localhost/api/auth/reset-password', {
         email: 'nao-existe@ketris.dev',
@@ -101,7 +110,7 @@ describe('POST /api/auth/reset-password (integração)', () => {
       }),
     )
 
-    expect(response.status).toBe(204)
+    expect(response.status).toBe(401)
   })
 
   it('retorna 400 quando o corpo falha na validação Zod', async () => {
@@ -119,22 +128,22 @@ describe('POST /api/auth/reset-password (integração)', () => {
   })
 
   it('retorna 401 quando o resetToken é inválido, ausente ou de outro usuário', async () => {
-    const outroUsuario = await prisma.usuario.create({
+    const outroUser = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Outro Usuário',
+        name: 'Outro Usuário',
         email: `reset-outro-${randomUUID()}@ketris.dev`,
-        senhaHash: await bcrypt.hash('senha-qualquer-123', 10),
-        papel: 'ADMIN',
+        passwordHash: await bcrypt.hash('senha-qualquer-123', 10),
+        role: 'OWNER',
       },
     })
-    const resetTokenDeOutroUsuario = await passwordResetTokenService.issue(outroUsuario.id)
+    const resetTokenDeOutroUser = await passwordResetTokenService.issue(outroUser.id, 0)
 
     const response = await resetPassword(
       buildRequest('http://localhost/api/auth/reset-password', {
         email,
         password: 'senha-nova-789',
-        resetToken: resetTokenDeOutroUsuario,
+        resetToken: resetTokenDeOutroUser,
       }),
     )
     const json = await response.json()
@@ -142,6 +151,6 @@ describe('POST /api/auth/reset-password (integração)', () => {
     expect(response.status).toBe(401)
     expect(json.error.code).toBe('INVALID_RESET_TOKEN')
 
-    await prisma.usuario.delete({ where: { id: outroUsuario.id } })
+    await prisma.user.delete({ where: { id: outroUser.id } })
   })
 })

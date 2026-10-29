@@ -1,36 +1,13 @@
-import type { FinancialExchangeRate } from '../utils/financial-display-currency'
-
-export type FinancialEntryStatus = 'Pago' | 'Pendente' | 'Atrasado'
+import type { ChargeStatus } from './charge'
 
 export type FinancialEntry = {
   id: string
-  propertyId: string
   date: string
   description: string
   property: string
   client: string
-  contactId: string
   amountValue: number
-  status: FinancialEntryStatus
-  receipts: FinancialReceipt[]
-}
-
-export type FinancialReceipt = {
-  id: string
-  title: string
-  issuer: string
-  issuedAt: string
-  amountValue: number
-  fileName: string
-}
-
-export type FinancialDueHistoryEntry = {
-  id: string
-  date: string
-  description: string
-  property: string
-  amountValue: number
-  status: FinancialEntryStatus
+  status: ChargeStatus
 }
 
 export type FinancialMonthlyMovement = {
@@ -42,27 +19,18 @@ export type FinancialKpiTone = 'success' | 'warning' | 'error' | 'info'
 
 export type FinancialKpi = {
   id: string
-  labelKey: string
+  labelKey: TranslationKey<'dashboard.finance.kpis'>
   value: string
-  helper: string
   tone: FinancialKpiTone
 }
 
 export type FinancialUpcomingDue = {
   id: string
-  propertyId: string
   property: string
-  contactId: string
   client: string
   dueDate: string
   amountValue: number
-  status: FinancialEntryStatus
-  history: FinancialDueHistoryEntry[]
-}
-
-export type FinancialStatusStyle = {
-  bgcolor: string
-  color: string
+  status: ChargeStatus
 }
 
 export type FinancialKpiCardsProps = {
@@ -70,34 +38,24 @@ export type FinancialKpiCardsProps = {
 }
 
 export type FinancialDashboardHeaderActionsProps = {
-  exportLabel: string
+  month: string
+  months: string[]
+  exporting: boolean
+  onMonthChange: (month: string) => void
+  onExport: () => void
 }
 
 export type FinancialEntriesTableProps = {
   entries: FinancialEntry[]
-  exchangeRate?: FinancialExchangeRate | null
+  onOpen: (id: string) => void
 }
 
 export type FinancialMovementChartProps = {
   movement: FinancialMonthlyMovement[]
-  currency?: 'BRL' | 'EUR' | 'USD'
 }
 
 export type FinancialUpcomingDueListProps = {
   items: FinancialUpcomingDue[]
-  exchangeRate?: FinancialExchangeRate | null
+  onOpen: (id: string) => void
 }
-
-export type FinancialDueHistoryDialogProps = {
-  due: FinancialUpcomingDue | null
-  onClose: () => void
-  open: boolean
-  exchangeRate?: FinancialExchangeRate | null
-}
-
-export type FinancialEntryDetailDialogProps = {
-  entry: FinancialEntry | null
-  onClose: () => void
-  open: boolean
-  exchangeRate?: FinancialExchangeRate | null
-}
+import type { TranslationKey } from '@/i18n/types/messages.types'

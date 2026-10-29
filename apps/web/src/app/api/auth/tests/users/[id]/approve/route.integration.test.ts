@@ -22,48 +22,48 @@ describe('PATCH /api/auth/users/{id}/approve (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { nome: 'Tenant Approve', slug: tenantSlug },
+      data: { name: 'Tenant Approve', slug: tenantSlug },
     })
     tenantId = tenant.id
 
-    const admin = await prisma.usuario.create({
+    const admin = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Admin Teste',
+        name: 'Admin Teste',
         email: `admin-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'ADMIN',
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
       },
     })
 
-    const agent = await prisma.usuario.create({
+    const agent = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Agente Teste',
+        name: 'Agente Teste',
         email: `agent-${randomUUID()}@ketris.dev`,
-        senhaHash: 'hash-fake',
-        papel: 'AGENT',
+        passwordHash: 'hash-fake',
+        role: 'AGENT',
       },
     })
 
     adminToken = await tokenService.sign({
       id: admin.id,
       tenantId: admin.tenantId,
-      nome: admin.nome,
+      name: admin.name,
       email: admin.email,
-      papel: admin.papel,
-      ativo: admin.ativo,
-      vinculoAprovadoEm: admin.vinculoAprovadoEm,
+      role: admin.role,
+      active: admin.active,
+      membershipApprovedAt: admin.membershipApprovedAt,
     })
 
     agentToken = await tokenService.sign({
       id: agent.id,
       tenantId: agent.tenantId,
-      nome: agent.nome,
+      name: agent.name,
       email: agent.email,
-      papel: agent.papel,
-      ativo: agent.ativo,
-      vinculoAprovadoEm: agent.vinculoAprovadoEm,
+      role: agent.role,
+      active: agent.active,
+      membershipApprovedAt: agent.membershipApprovedAt,
     })
 
     adminOnlyTargetId = admin.id
@@ -87,16 +87,16 @@ describe('PATCH /api/auth/users/{id}/approve (integração)', () => {
     return { params: Promise.resolve({ id }) }
   }
 
-  it('retorna 403 quando o ator não é ADMIN', async () => {
+  it('retorna 403 quando o ator não é OWNER', async () => {
     const bcrypt = await import('bcryptjs')
-    const pending = await prisma.usuario.create({
+    const pending = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor Pendente',
+        name: 'Corretor Pendente',
         email: `pendente-${randomUUID()}@ketris.dev`,
-        senhaHash: await bcrypt.hash(pendingPassword, 10),
-        papel: 'AGENT',
-        vinculoAprovadoEm: null,
+        passwordHash: await bcrypt.hash(pendingPassword, 10),
+        role: 'AGENT',
+        membershipApprovedAt: null,
       },
     })
 
@@ -107,15 +107,13 @@ describe('PATCH /api/auth/users/{id}/approve (integração)', () => {
     expect(json.error.code).toBe('FORBIDDEN')
   })
 
-  it('retorna 404 quando o alvo é um ADMIN', async () => {
+  it('retorna 200 sem alterar quando o vínculo do alvo já está aprovado', async () => {
     const response = await PATCH(
       buildRequest(adminOnlyTargetId, adminToken),
       context(adminOnlyTargetId),
     )
-    const json = await response.json()
 
-    expect(response.status).toBe(404)
-    expect(json.error.code).toBe('USER_NOT_FOUND')
+    expect(response.status).toBe(200)
   })
 
   it('retorna 404 quando o id não existe', async () => {
@@ -132,14 +130,14 @@ describe('PATCH /api/auth/users/{id}/approve (integração)', () => {
   it('aprova o vínculo pendente e o corretor passa a conseguir logar', async () => {
     const bcrypt = await import('bcryptjs')
     pendingAgentEmail = `pendente-${randomUUID()}@ketris.dev`
-    const pending = await prisma.usuario.create({
+    const pending = await prisma.user.create({
       data: {
         tenantId,
-        nome: 'Corretor Pendente',
+        name: 'Corretor Pendente',
         email: pendingAgentEmail,
-        senhaHash: await bcrypt.hash(pendingPassword, 10),
-        papel: 'AGENT',
-        vinculoAprovadoEm: null,
+        passwordHash: await bcrypt.hash(pendingPassword, 10),
+        role: 'AGENT',
+        membershipApprovedAt: null,
       },
     })
     pendingAgentId = pending.id

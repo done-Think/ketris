@@ -12,7 +12,8 @@ vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
 }))
 
-vi.mock('@/i18n/navigation', () => ({
+vi.mock('@/i18n/navigation', async () => ({
+  ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
   useRouter: vi.fn(),
 }))
 
@@ -23,15 +24,23 @@ vi.mock('@shared/lib/auth/clear-client-session', () => ({
 vi.mock('../../../lib/api/http-client', () => ({
   httpClient: {
     setAuthToken: vi.fn(),
+    setAuthUnavailable: vi.fn(),
     setTenant: vi.fn(),
     setUnauthorizedHandler: vi.fn(),
+    post: vi.fn(),
   },
 }))
 
 const router = { replace: vi.fn(), refresh: vi.fn() }
 
 function mockSession(
-  overrides: Partial<{ accessToken: string; refreshToken: string; tenantId: string }>,
+  overrides: Partial<{
+    accessToken: string
+    refreshToken: string
+    tenantId: string
+    scope: 'tenant' | 'platform'
+    authUnavailable: boolean
+  }>,
   update = vi.fn(),
 ) {
   vi.mocked(useSession).mockReturnValue({
@@ -52,7 +61,7 @@ describe('useHttpClientSessionSync', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(useRouter).mockReturnValue(router as unknown as ReturnType<typeof useRouter>)
-    vi.stubGlobal('fetch', vi.fn())
+    vi.mocked(httpClient.post).mockReset()
   })
 
   it('sincroniza accessToken e tenantId da sessão pro httpClient', () => {
@@ -78,23 +87,25 @@ describe('useHttpClientSessionSync', () => {
   })
 
   it('com refreshToken e refresh bem-sucedido, atualiza a sessão e o httpClient', async () => {
-    const update = vi.fn()
+    const update = vi
+      .fn()
+      .mockResolvedValue({ accessToken: 'novo-access', refreshToken: 'novo-refresh' })
     mockSession({ accessToken: 'stale', refreshToken: 'refresh-1' }, update)
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ accessToken: 'novo-access', refreshToken: 'novo-refresh' }),
-    } as Response)
+    vi.mocked(httpClient.post).mockResolvedValueOnce({
+      accessToken: 'novo-access',
+      refreshToken: 'novo-refresh',
+    })
 
     renderHook(() => useHttpClientSessionSync())
 
     const handler = getRegisteredHandler()
     const result = await handler?.()
 
-    expect(fetch).toHaveBeenCalledWith('/api/auth/refresh', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken: 'refresh-1' }),
-    })
+    expect(httpClient.post).toHaveBeenCalledWith(
+      '/auth/refresh',
+      { refreshToken: 'refresh-1' },
+      { skipUnauthorizedHandling: true },
+    )
     expect(update).toHaveBeenCalledWith({
       accessToken: 'novo-access',
       refreshToken: 'novo-refresh',
@@ -106,7 +117,10 @@ describe('useHttpClientSessionSync', () => {
 
   it('quando o endpoint de refresh falha, limpa a sessão e redireciona pro login', async () => {
     mockSession({ accessToken: 'stale', refreshToken: 'refresh-1' })
-    vi.mocked(fetch).mockResolvedValueOnce({ ok: false } as Response)
+    vi.mocked(httpClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 401 },
+    })
 
     renderHook(() => useHttpClientSessionSync())
 
@@ -125,5 +139,88 @@ describe('useHttpClientSessionSync', () => {
     unmount()
 
     expect(httpClient.setUnauthorizedHandler).toHaveBeenLastCalledWith(null)
+  })
+  it('renews a platform session through its own endpoint', async () => {
+    const update = vi
+      .fn()
+      .mockResolvedValue({ accessToken: 'new-platform', refreshToken: 'new-refresh' })
+    mockSession(
+      { scope: 'platform', accessToken: 'stale', refreshToken: 'platform-refresh' },
+      update,
+    )
+    vi.mocked(httpClient.post).mockResolvedValueOnce({
+      accessToken: 'new-platform',
+      refreshToken: 'new-refresh',
+    })
+    renderHook(() => useHttpClientSessionSync())
+    expect(await getRegisteredHandler()?.()).toBe('new-platform')
+    expect(httpClient.post).toHaveBeenCalledWith(
+      '/platform/refresh',
+      { refreshToken: 'platform-refresh' },
+      { skipUnauthorizedHandling: true },
+    )
+    expect(update).toHaveBeenCalledWith({
+      accessToken: 'new-platform',
+      refreshToken: 'new-refresh',
+    })
+  })
+
+  it('redirects an expired platform session to the platform login', async () => {
+    mockSession({ scope: 'platform', refreshToken: 'invalid-platform-refresh' })
+    vi.mocked(httpClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 401 },
+    })
+    renderHook(() => useHttpClientSessionSync())
+    expect(await getRegisteredHandler()?.()).toBeNull()
+    expect(router.replace).toHaveBeenCalledWith('/platform/login')
+  })
+
+  it.each([429, 500, 503, undefined])(
+    'preserves the session during a temporary refresh failure (%s)',
+    async (status) => {
+      mockSession({ scope: 'tenant', refreshToken: 'refresh-token' })
+      vi.mocked(httpClient.post).mockRejectedValueOnce({
+        isAxiosError: true,
+        response: status ? { status } : undefined,
+      })
+      renderHook(() => useHttpClientSessionSync())
+      expect(await getRegisteredHandler()?.()).toBeNull()
+      expect(clearClientSession).not.toHaveBeenCalled()
+      expect(router.replace).not.toHaveBeenCalled()
+    },
+  )
+  it('blocks transport and never logs out an unavailable session that temporarily has no public refresh token', async () => {
+    mockSession({ authUnavailable: true })
+    renderHook(() => useHttpClientSessionSync())
+    expect(httpClient.setAuthUnavailable).toHaveBeenCalledWith(true)
+    expect(httpClient.setAuthToken).toHaveBeenCalledWith(null)
+    expect(await getRegisteredHandler()?.()).toBeNull()
+    expect(clearClientSession).not.toHaveBeenCalled()
+    expect(httpClient.post).not.toHaveBeenCalled()
+    expect(router.replace).not.toHaveBeenCalled()
+  })
+
+  it('does not install raw rotated tokens if their NextAuth validation is unavailable', async () => {
+    const update = vi.fn().mockResolvedValue({ authUnavailable: true })
+    mockSession({ scope: 'tenant', accessToken: 'old', refreshToken: 'old-refresh' }, update)
+    vi.mocked(httpClient.post).mockResolvedValueOnce({
+      accessToken: 'fresh',
+      refreshToken: 'fresh-refresh',
+    })
+    renderHook(() => useHttpClientSessionSync())
+    expect(await getRegisteredHandler()?.()).toBeNull()
+    expect(httpClient.setAuthUnavailable).toHaveBeenLastCalledWith(true)
+    expect(httpClient.setAuthToken).not.toHaveBeenCalledWith('fresh')
+    expect(clearClientSession).not.toHaveBeenCalled()
+  })
+
+  it('restores transport only when the public session is successfully revalidated', () => {
+    mockSession({ authUnavailable: true })
+    const { rerender } = renderHook(() => useHttpClientSessionSync())
+    mockSession({ scope: 'tenant', accessToken: 'revalidated', refreshToken: 'refresh' })
+    rerender()
+    expect(httpClient.setAuthUnavailable).toHaveBeenLastCalledWith(false)
+    expect(httpClient.setAuthToken).toHaveBeenLastCalledWith('revalidated')
   })
 })

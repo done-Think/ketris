@@ -2,32 +2,37 @@
 
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import { Box, Stack } from '@mui/material'
+import { useTranslations } from 'next-intl'
 
 import {
   DashboardHeaderActionButton,
   DashboardMonthSelector,
   DashboardNotificationsButton,
 } from '@shared/components/layout'
-import { iconSize } from '@shared/theme/tokens'
 
+import { styles } from '../styles/financial-dashboard-header-actions.styles'
 import type { FinancialDashboardHeaderActionsProps } from '../types/financial-entry'
 
 export function FinancialDashboardHeaderActions({
-  exportLabel,
+  month,
+  months,
+  exporting,
+  onMonthChange,
+  onExport,
 }: FinancialDashboardHeaderActionsProps) {
+  const t = useTranslations('dashboard.finance')
+
   return (
-    <Stack
-      direction={{ xs: 'column', sm: 'row' }}
-      spacing={1.2}
-      sx={{ width: { xs: '100%', md: 'auto' }, alignItems: { xs: 'stretch', sm: 'center' } }}
-    >
-      <DashboardMonthSelector />
+    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2} sx={styles.actions}>
+      <DashboardMonthSelector value={month} options={months} onChange={onMonthChange} />
       <DashboardHeaderActionButton
-        startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: iconSize.sm }} />}
+        startIcon={<FileDownloadOutlinedIcon sx={styles.icon} />}
+        onClick={onExport}
+        disabled={exporting}
       >
-        {exportLabel}
+        {t('export')}
       </DashboardHeaderActionButton>
-      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+      <Box sx={styles.desktopOnly}>
         <DashboardNotificationsButton />
       </Box>
     </Stack>

@@ -1,6 +1,7 @@
 import { ThemeProvider } from '@mui/material'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { AxiosError, type AxiosResponse } from 'axios'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
@@ -8,18 +9,18 @@ import { theme } from '@shared/theme/theme'
 import { PlatformTenantDetailPage } from '../../components/PlatformTenantDetailPage'
 import type { PlatformTenant, TenantUser } from '../../types/tenant'
 
-const { useTenants, useTenantUsers, createAdmin, enqueueSnackbar } = vi.hoisted(() => ({
-  useTenants: vi.fn(),
+const { useTenant, useTenantUsers, createAdmin, enqueueSnackbar, actor } = vi.hoisted(() => ({
+  useTenant: vi.fn(),
+  actor: { key: 'admin-1:ADMIN', enabled: true, canManage: true },
   useTenantUsers: vi.fn(),
   createAdmin: vi.fn(),
   enqueueSnackbar: vi.fn(),
 }))
-vi.mock('../../hooks/use-tenants', () => ({ useTenants }))
-vi.mock('../../hooks/use-tenant-users', () => ({ useTenantUsers }))
-vi.mock('../../hooks/use-create-tenant-admin', () => ({
+vi.mock('../../hooks/use-platform-actor', () => ({ usePlatformActor: () => actor }))
+vi.mock('../../hooks/use-tenants', () => ({
+  useTenant,
+  useTenantUsers,
   useCreateTenantAdmin: () => ({ mutateAsync: createAdmin, isError: false, error: null }),
-}))
-vi.mock('../../hooks/use-update-tenant-account', () => ({
   useUpdateTenantAccount: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
@@ -49,7 +50,9 @@ const user = (overrides: Partial<TenantUser>): TenantUser => ({
   name: 'Roberto Lima',
   email: 'roberto@ketris.dev',
   avatarUrl: null,
-  role: 'ADMIN',
+  phone: null,
+  creci: null,
+  role: 'OWNER',
   active: true,
   pendingApproval: false,
   ...overrides,
@@ -63,11 +66,25 @@ function renderPage(tenantId = 'roberto') {
   )
 }
 
+function usersPage(users: TenantUser[]) {
+  return { users, totalCount: users.length, page: 1, pageSize: 20 }
+}
+
 describe('PlatformTenantDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(useTenants).mockReturnValue({ data: [tenant], isPending: false, isError: false })
-    vi.mocked(useTenantUsers).mockReturnValue({ data: [], isPending: false, isError: false })
+    actor.canManage = true
+    vi.mocked(useTenant).mockReturnValue({
+      data: tenant,
+      isPending: false,
+      isError: false,
+      error: null,
+    })
+    vi.mocked(useTenantUsers).mockReturnValue({
+      data: usersPage([]),
+      isPending: false,
+      isError: false,
+    })
   })
 
   it('mostra de quem é a página: nome, identificador, tipo e situação', () => {
@@ -103,8 +120,8 @@ describe('PlatformTenantDetailPage', () => {
 
   it('lista os usuários com o papel traduzido e quem aguarda aprovação', () => {
     vi.mocked(useTenantUsers).mockReturnValue({
-      data: [
-        user({ id: 'u1', name: 'Roberto Lima', role: 'ADMIN' }),
+      data: usersPage([
+        user({ id: 'u1', name: 'Roberto Lima', role: 'OWNER' }),
         user({
           id: 'u2',
           name: 'Ana Souza',
@@ -112,7 +129,7 @@ describe('PlatformTenantDetailPage', () => {
           role: 'AGENT',
           pendingApproval: true,
         }),
-      ],
+      ]),
       isPending: false,
       isError: false,
     })
@@ -121,7 +138,7 @@ describe('PlatformTenantDetailPage', () => {
     const users = screen.getByRole('region', { name: /Usuários/ })
     expect(within(users).getByText('2')).toBeVisible()
     const roberto = within(users).getByRole('row', { name: /Roberto Lima/ })
-    expect(within(roberto).getByText('Administrador')).toBeVisible()
+    expect(within(roberto).getByText('Dono da imobiliária')).toBeVisible()
     expect(within(roberto).getByText('Ativo')).toBeVisible()
     const ana = within(users).getByRole('row', { name: /Ana Souza/ })
     expect(within(ana).getByText('Corretor')).toBeVisible()
@@ -164,7 +181,6 @@ describe('PlatformTenantDetailPage', () => {
       name: 'Admin Roberto',
       email: 'admin@ketris.dev',
       password: 'senha-segura',
-      confirmPassword: 'senha-segura',
     })
     expect(enqueueSnackbar).toHaveBeenCalledWith(
       'Administrador admin@ketris.dev criado com sucesso.',
@@ -175,8 +191,53 @@ describe('PlatformTenantDetailPage', () => {
   })
 
   it('informa quando a conta não existe', () => {
+    vi.mocked(useTenant).mockReturnValue({
+      data: undefined,
+      isPending: false,
+      isError: true,
+      error: new AxiosError('Not found', '404', undefined, undefined, {
+        status: 404,
+      } as AxiosResponse),
+    })
     renderPage('inexistente')
 
     expect(screen.getByRole('heading', { name: 'Conta não encontrada.' })).toBeVisible()
+  })
+
+  it('mostra erro de carregamento quando a busca falha por outro motivo', () => {
+    vi.mocked(useTenant).mockReturnValue({
+      data: undefined,
+      isPending: false,
+      isError: true,
+      error: new Error('offline'),
+    })
+    renderPage()
+
+    expect(screen.getByRole('heading', { name: /Não foi possível/ })).toBeVisible()
+  })
+
+  it('esconde a edição da conta e a criação de admin para quem não é ADMIN', () => {
+    actor.canManage = false
+    renderPage()
+
+    expect(screen.queryByRole('button', { name: 'Editar conta' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: /Novo administrador/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('region', { name: /Usuários/ })).toBeVisible()
+  })
+
+  it('pagina os usuários pelo total do servidor', () => {
+    vi.mocked(useTenantUsers).mockReturnValue({
+      data: {
+        ...usersPage([user({ id: 'u1', name: 'Roberto Lima', role: 'OWNER' })]),
+        totalCount: 45,
+      },
+      isPending: false,
+      isError: false,
+    })
+    renderPage()
+
+    const users = screen.getByRole('region', { name: /Usuários/ })
+    expect(within(users).getByText('45')).toBeVisible()
+    expect(within(users).getByText('1-20 de 45')).toBeVisible()
   })
 })
