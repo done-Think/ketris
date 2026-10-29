@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 
 export function requireValue(condition, code) {
   if (!condition) throw new Error(code)
@@ -12,8 +12,6 @@ export function validateConfig(env, target) {
     'VERCEL_TOKEN',
     'VERCEL_ORG_ID',
     'VERCEL_PROJECT_ID',
-    'STAGING_SMOKE_EMAIL',
-    'STAGING_SMOKE_PASSWORD',
     'CONTRACTS_DATA_ENCRYPTION_KEY',
   ]) {
     requireValue(Boolean(env[name]?.trim()), `MISSING_${name}`)
@@ -23,11 +21,6 @@ export function validateConfig(env, target) {
     'INVALID_CONTRACTS_KEY',
   )
   let url
-  requireValue(
-    !target.smokeEmail || env.STAGING_SMOKE_EMAIL === target.smokeEmail,
-    'WRONG_SMOKE_ACCOUNT',
-  )
-  requireValue(env.STAGING_SMOKE_PASSWORD.length >= 20, 'SMOKE_PASSWORD_TOO_SHORT')
   try {
     url = new URL(env.DATABASE_URL)
   } catch {
@@ -43,6 +36,26 @@ export function validateConfig(env, target) {
     'WRONG_STAGING_DATABASE',
   )
   return url
+}
+
+export function createSmokeCredentials() {
+  return {
+    email: 'staging-smoke@ketris.example.test',
+    password: randomBytes(32).toString('base64url'),
+  }
+}
+
+export function findAutomationBypass(project, configured) {
+  if (configured) return configured
+  return Object.entries(project.protectionBypass ?? {}).find(
+    ([, settings]) => settings?.scope === 'automation-bypass',
+  )?.[0]
+}
+
+export function requiresAutomationBypass(project) {
+  return [project.ssoProtection, project.passwordProtection, project.trustedIps].some(
+    (settings) => settings && settings.deploymentType !== 'none',
+  )
 }
 
 export function planMigrations(files, ledger, compatible) {

@@ -4,8 +4,11 @@ import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { ensureSmokeAccount } from './staging-smoke-account.mjs'
 import {
+  createSmokeCredentials,
+  findAutomationBypass,
   planMigrations,
   requireValue,
+  requiresAutomationBypass,
   runRelease,
   smokeDeployment,
   validateCandidate,
@@ -37,6 +40,7 @@ function command(binary, args, options = {}) {
 export async function main() {
   const target = JSON.parse(await readFile('infra/deploy/staging.json', 'utf8'))
   const databaseUrl = validateConfig(env, target)
+  const smokeCredentials = createSmokeCredentials()
   const { Client } = createRequire(import.meta.url)('pg')
   const ca = await fetch('https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem', {
     signal: AbortSignal.timeout(15_000),
@@ -71,24 +75,27 @@ export async function main() {
       )
     ).rows
   }
-  async function providerGet(path) {
+  async function providerRequest(path, options = {}) {
     const url = new URL(path, 'https://api.vercel.com')
     url.searchParams.set('teamId', env.VERCEL_ORG_ID)
     const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${env.VERCEL_TOKEN}` },
+      method: options.method ?? 'GET',
+      headers: { Authorization: `Bearer ${env.VERCEL_TOKEN}`, 'Content-Type': 'application/json' },
+      body: options.body,
       signal: AbortSignal.timeout(20_000),
     })
-    requireValue(response.ok, `VERCEL_CONFIGURATION_FAILED:${response.status}`)
+    requireValue(response.ok, `VERCEL_CONFIGURATION_FAILED_${response.status}`)
     return response.json()
   }
   const cliAuth = ['--token', env.VERCEL_TOKEN, '--scope', env.VERCEL_ORG_ID]
   let userId
+  let bypass
   let result
   await client.connect()
   try {
     result = await runRelease({
       async preflight() {
-        const project = await providerGet(
+        const project = await providerRequest(
           `/v9/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}`,
         )
         requireValue(
@@ -98,13 +105,22 @@ export async function main() {
             project.rootDirectory === 'apps/web',
           'WRONG_VERCEL_PROJECT',
         )
-        const domains = await providerGet(
+        const domains = await providerRequest(
           `/v9/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}/domains`,
         )
         requireValue(
           domains.domains?.some((domain) => domain.name === new URL(target.origin).hostname),
           'WRONG_STAGING_DOMAIN',
         )
+        bypass = findAutomationBypass(project, env.VERCEL_AUTOMATION_BYPASS_SECRET)
+        if (!bypass && requiresAutomationBypass(project)) {
+          const protection = await providerRequest(
+            `/v1/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}/protection-bypass`,
+            { method: 'PATCH', body: '{}' },
+          )
+          bypass = findAutomationBypass(protection)
+          requireValue(bypass, 'AUTOMATION_BYPASS_UNAVAILABLE')
+        }
         console.log('Staging target and credentials checked.')
       },
       async plan() {
@@ -138,7 +154,7 @@ export async function main() {
           ...cliAuth,
         ])
         const candidate = validateCandidate(output, target.projectName)
-        const deployment = await providerGet(
+        const deployment = await providerRequest(
           `/v13/deployments/${encodeURIComponent(new URL(candidate).hostname)}`,
         )
         requireValue(
@@ -193,20 +209,16 @@ export async function main() {
           ],
           { cwd: 'apps/web' },
         )
-        userId = await ensureSmokeAccount(client, {
-          email: env.STAGING_SMOKE_EMAIL,
-          password: env.STAGING_SMOKE_PASSWORD,
-        })
+        userId = await ensureSmokeAccount(client, smokeCredentials)
       },
       async smoke(origin) {
         await smokeDeployment({
           origin,
           canonicalOrigin: target.origin,
           sha: env.GITHUB_SHA,
-          email: env.STAGING_SMOKE_EMAIL,
-          password: env.STAGING_SMOKE_PASSWORD,
+          ...smokeCredentials,
           userId,
-          bypass: env.VERCEL_AUTOMATION_BYPASS_SECRET,
+          bypass,
         })
         console.log('Candidate database and authenticated session checked.')
       },
@@ -218,10 +230,9 @@ export async function main() {
         await smokeDeployment({
           origin: target.origin,
           sha: env.GITHUB_SHA,
-          email: env.STAGING_SMOKE_EMAIL,
-          password: env.STAGING_SMOKE_PASSWORD,
+          ...smokeCredentials,
           userId,
-          bypass: env.VERCEL_AUTOMATION_BYPASS_SECRET,
+          bypass,
         })
         console.log('Public domain and authenticated session checked.')
       },

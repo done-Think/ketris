@@ -2,6 +2,9 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import {
+  createSmokeCredentials,
+  findAutomationBypass,
+  requiresAutomationBypass,
   planMigrations,
   runRelease,
   smokeDeployment,
@@ -9,6 +12,7 @@ import {
   validateConfig,
 } from '../staging-release-lib.mjs'
 
+const smokeCredentials = { email: 'smoke@example.test', password: 'private-password-long-enough' }
 const sha = 'a'.repeat(40)
 const target = { databaseHost: 'staging.example.test', databaseName: 'ketris' }
 const env = {
@@ -18,8 +22,6 @@ const env = {
   VERCEL_TOKEN: 'private-token',
   VERCEL_ORG_ID: 'team_test',
   VERCEL_PROJECT_ID: 'prj_test',
-  STAGING_SMOKE_EMAIL: 'smoke@example.test',
-  STAGING_SMOKE_PASSWORD: 'private-password-long-enough',
   CONTRACTS_DATA_ENCRYPTION_KEY: Buffer.alloc(32).toString('base64'),
   DATABASE_URL: 'postgresql://user:password@staging.example.test/ketris?sslmode=require',
 }
@@ -33,12 +35,51 @@ test('refuses wrong database/branch/repository and never echoes credentials', ()
     { GITHUB_REF: 'refs/heads/main' },
     { GITHUB_REPOSITORY: 'other/repo' },
     { GITHUB_SHA: 'dev' },
-    { STAGING_SMOKE_PASSWORD: '' },
+    { VERCEL_TOKEN: '' },
   ])
     assert.throws(
       () => validateConfig({ ...env, ...changes }, target),
       (error) => !error.message.includes('secret') && !error.message.includes('private-password'),
     )
+})
+
+test('generates fresh smoke credentials without GitHub secrets', () => {
+  const first = createSmokeCredentials()
+  const second = createSmokeCredentials()
+  assert.equal(first.email, 'staging-smoke@ketris.example.test')
+  assert.equal(second.email, first.email)
+  assert.ok(first.password.length >= 32)
+  assert.match(first.password, /^[A-Za-z0-9_-]+$/)
+  assert.notEqual(first.password, second.password)
+})
+
+test('reuses only automation bypasses and preserves an explicit override', () => {
+  const project = {
+    protectionBypass: {
+      shared: { scope: 'shareable-link' },
+      private: { scope: 'automation-bypass' },
+    },
+  }
+  assert.equal(findAutomationBypass(project), 'private')
+  assert.equal(findAutomationBypass(project, 'override'), 'override')
+  assert.equal(findAutomationBypass({}), undefined)
+  assert.equal(
+    findAutomationBypass({ protectionBypass: { shared: { scope: 'shareable-link' } } }),
+    undefined,
+  )
+})
+
+test('creates automation access only when a protection method is configured', () => {
+  assert.equal(requiresAutomationBypass({}), false)
+  assert.equal(requiresAutomationBypass({ ssoProtection: { deploymentType: 'none' } }), false)
+  for (const key of ['ssoProtection', 'passwordProtection', 'trustedIps']) {
+    assert.equal(
+      requiresAutomationBypass({
+        [key]: { deploymentType: 'prod_deployment_urls_and_all_previews' },
+      }),
+      true,
+    )
+  }
 })
 
 const file = {
@@ -242,7 +283,7 @@ function smokeFixture({
       )
     if (path === '/api/auth/callback/credentials') {
       assert.match(options.headers.Cookie, /csrf=private-cookie/)
-      assert.equal(new URLSearchParams(options.body).get('password'), env.STAGING_SMOKE_PASSWORD)
+      assert.equal(new URLSearchParams(options.body).get('password'), smokeCredentials.password)
       return Response.json(
         { url: `${callbackOrigin || origin}/pt` },
         {
@@ -257,7 +298,7 @@ function smokeFixture({
         missingUser
           ? {}
           : {
-              user: { id: 'smoke-id', email: env.STAGING_SMOKE_EMAIL },
+              user: { id: 'smoke-id', email: smokeCredentials.email },
               scope: 'tenant',
               accessToken: 'private-access-token',
               refreshToken: 'private-refresh-token',
@@ -273,8 +314,8 @@ function smokeFixture({
     config: {
       origin,
       sha,
-      email: env.STAGING_SMOKE_EMAIL,
-      password: env.STAGING_SMOKE_PASSWORD,
+      email: smokeCredentials.email,
+      password: smokeCredentials.password,
       userId: 'smoke-id',
       bypass: 'private-bypass',
     },

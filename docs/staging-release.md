@@ -58,14 +58,16 @@ envs, credenciais locais, dumps e estados Terraform.
 | `VERCEL_TOKEN` | Secret com acesso ao projeto Vercel correto |
 | `STAGING_DATABASE_URL` | Secret para o RDS declarado em `infra/deploy/staging.json` |
 | `CONTRACTS_DATA_ENCRYPTION_KEY` | Secret existente, idêntico ao da aplicação |
-| `STAGING_SMOKE_EMAIL` | Secret com `staging-smoke@ketris.example.test` |
-| `STAGING_SMOKE_PASSWORD` | Secret com senha aleatória de pelo menos 20 caracteres |
-| `VERCEL_AUTOMATION_BYPASS_SECRET` | Secret se o candidato exigir Deployment Protection |
+| `VERCEL_AUTOMATION_BYPASS_SECRET` | Override opcional; o pipeline resolve o acesso de automação pela API da Vercel |
 
 O pipeline cria/reconcilia somente a fixture reservada `staging-ci-smoke-tenant` /
-`staging-ci-smoke-user`, com papel AGENT. Colisões com outras contas impedem a publicação.
+`staging-ci-smoke-user`, com papel AGENT e senha aleatória de 256 bits gerada em memória a
+cada execução, sem secrets adicionais no GitHub. Colisões com outras contas impedem a publicação.
 O teste faz CSRF → callback Credentials do NextAuth → sessão autenticada, verifica o ID do
 usuário no RDS esperado e revoga o refresh token gerado. Não executa o seed completo nem reset.
+Se o projeto tiver proteção, reutiliza um bypass de automação existente ou o cria pela API
+com o token autorizado, antes de preparar o candidato. A proteção do projeto permanece ativa;
+o valor fica em memória, sem ser escrito nos logs.
 
 ### Novas migrations e falhas
 
@@ -99,7 +101,7 @@ preservam as evidências e requisitos daqueles contextos.
 
 ### Verificação desta implementação
 
-- 22 testes de sequência, falhas, alvo e autenticação com respostas simuladas.
+- 25 testes de sequência, falhas, alvo e autenticação com respostas simuladas.
 - Ensaio em database temporário local com as 53 migrations reais: checksums conferidos;
   criação/repetição da fixture e conflitos com outras contas/tenants testados.
 - 31 testes do proxy, incluindo o SHA da release; tipos e lint dos arquivos alterados.

@@ -24,13 +24,11 @@ O projeto Vercel correto é ketris-web-x9bk, com domínio ketris-web-x9bk.vercel
    A URL deve apontar para o mesmo RDS usado por esse projeto Vercel. A chave de contratos
    deve ser a existente, igual à da aplicação. Não gere outra chave nem exponha os valores.
    Se uma informação não estiver disponível, informe apenas qual secret falta.
-6. Configure o secret STAGING_SMOKE_EMAIL=staging-smoke@ketris.example.test e gere uma
-   senha aleatória de pelo menos 20 caracteres para o secret STAGING_SMOKE_PASSWORD.
-   O pipeline criará/reconciliará somente essa conta fictícia em um tenant reservado.
-   Não é preciso cadastrar a conta no site. Não utilizar a senha pessoal do proprietário.
-7. Se o deployment candidato tiver Deployment Protection, configure um secret de bypass
-   da automação da Vercel como VERCEL_AUTOMATION_BYPASS_SECRET no mesmo environment.
-   Preserve a proteção dos deployments.
+6. A conta de teste de login é criada pelo pipeline em um tenant reservado, com senha
+   aleatória gerada em memória a cada execução. Não cadastrar conta ou secrets de smoke.
+7. Preserve a proteção dos deployments. O pipeline reutiliza o acesso de automação
+   existente ou o cria pela API quando a proteção está ativada e o token tem permissão.
+   O secret VERCEL_AUTOMATION_BYPASS_SECRET no GitHub é apenas um override opcional.
 8. Conclua a configuração dos acessos antes do merge. Esta etapa configura os painéis;
    a integração da branch será feita após a validação. O repositório desabilitará o deploy
    direto por Git na dev para evitar dois publicadores. Não altere globalmente os outros

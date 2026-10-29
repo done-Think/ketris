@@ -7,7 +7,7 @@ import { readFile, readdir } from 'node:fs/promises'
 import pg from 'pg'
 import bcrypt from 'bcryptjs'
 import { ensureSmokeAccount } from '../staging-smoke-account.mjs'
-import { planMigrations } from '../staging-release-lib.mjs'
+import { createSmokeCredentials, planMigrations } from '../staging-release-lib.mjs'
 
 test('real schema: validates checksums and bootstraps only its reserved smoke account', async () => {
   const source = new URL(process.env.DATABASE_URL)
@@ -53,10 +53,7 @@ test('real schema: validates checksums and bootstraps only its reserved smoke ac
       )
     ).rows
     assert.deepEqual(planMigrations(files, ledger, {}), [])
-    const credentials = {
-      email: 'staging-smoke@ketris.example.test',
-      password: 'integration-only-safe-password',
-    }
+    const credentials = createSmokeCredentials()
     const id = await ensureSmokeAccount(client, credentials)
     await ensureSmokeAccount(client, credentials)
     const [user] = (await client.query('SELECT * FROM public.users WHERE id=$1', [id])).rows
