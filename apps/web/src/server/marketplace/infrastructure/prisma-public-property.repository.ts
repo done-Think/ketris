@@ -110,20 +110,19 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
       }
     }
 
-    if (filters.city) {
-      where.address = { is: { city: { equals: filters.city, mode: 'insensitive' } } }
-    }
-
-    if (filters.location) {
-      where.address = {
-        is: {
-          OR: [
-            { neighborhood: { contains: filters.location, mode: 'insensitive' } },
-            { city: { contains: filters.location, mode: 'insensitive' } },
-          ],
-        },
-      }
-    }
+    const addressFilters: Prisma.PropertyAddressWhereInput[] = []
+    if (filters.city) addressFilters.push({ city: { equals: filters.city, mode: 'insensitive' } })
+    for (const part of filters.location
+      ?.split(',')
+      .map((value) => value.trim())
+      .filter(Boolean) ?? [])
+      addressFilters.push({
+        OR: [
+          { neighborhood: { contains: part, mode: 'insensitive' } },
+          { city: { contains: part, mode: 'insensitive' } },
+        ],
+      })
+    if (addressFilters.length) where.address = { is: { AND: addressFilters } }
 
     if (filters.q) {
       where.OR = [

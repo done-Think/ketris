@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 import { createContractRequestSchema, contractAmountSchema } from './contract-input.schema'
@@ -9,7 +10,7 @@ export const editContractRequestSchema = createContractRequestSchema
   .extend({ amount: contractAmountSchema })
   .strict()
   .refine((value) => value.endDate > value.startDate, {
-    message: 'A data de término deve ser posterior à data de início.',
+    ...validationRefinement('endAfterStart'),
     path: ['endDate'],
   })
   .openapi('EditContractRequest')

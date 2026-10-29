@@ -42,7 +42,7 @@ export class PrismaInquiryRepository implements InquiryRepository {
         select: { responsibleId: true },
       })
       if (!property) throw new PropertyNotFoundError()
-      const store = new PostgresRateLimitStore(tx, false)
+      const store = new PostgresRateLimitStore(tx)
       const result = await store
         .consume({ key, policy: inquiryContactRateLimitPolicy() })
         .catch(() => {

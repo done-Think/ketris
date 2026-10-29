@@ -2,7 +2,7 @@ import type { ZodIssue, ZodTooBigIssue, ZodTooSmallIssue } from 'zod'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { RequestValidationIssue, ValidationParameter } from '../types/request-validation'
 import {
-  customValidationMessageKey,
+  validationMessageKey,
   validationMessage,
   type ServerValidationMessageKey,
 } from './validation-messages'
@@ -163,10 +163,7 @@ export function localizeZodIssues(
   locale: AppLocale,
 ): RequestValidationIssue[] {
   return issues.map((issue) => {
-    const customKey = customValidationMessageKey(
-      issue.message,
-      issue.code === 'custom' ? issue.params : undefined,
-    )
+    const customKey = validationMessageKey(issue.code === 'custom' ? issue.params : undefined)
     const { key, params } = standardMessage(issue)
     return {
       path: issue.path.join('.'),
@@ -185,7 +182,7 @@ export function localizeValidationIssues(
     ...issue,
     message: validationMessage(
       locale,
-      customValidationMessageKey(issue.message, issue.params) ?? 'invalidValue',
+      validationMessageKey(issue.params) ?? 'invalidValue',
       issue.params,
     ),
   }))

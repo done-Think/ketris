@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
@@ -5,8 +6,8 @@ import { authenticatedUserResponseSchema, tenantMemberRoleSchema } from './user.
 
 export const updateUserRequestSchema = z
   .object({
-    name: z.string().trim().min(1, 'Nome é obrigatório.').max(200).optional(),
-    email: z.string().trim().max(254).email('E-mail inválido.').optional(),
+    name: z.string().trim().min(1).max(200).optional(),
+    email: z.string().trim().max(254).email().optional(),
     phone: z
       .string()
       .trim()
@@ -14,7 +15,7 @@ export const updateUserRequestSchema = z
       .refine((value) => {
         const digits = value.replace(/\D/g, '')
         return digits.length === 10 || digits.length === 11
-      }, 'Telefone inválido.')
+      }, validationRefinement('phoneInvalid'))
       .nullable()
       .optional(),
     creci: z.string().trim().max(32).nullable().optional(),
@@ -31,7 +32,7 @@ export const updateUserRequestSchema = z
       data.avatarUrl !== undefined ||
       data.role !== undefined,
     {
-      message: 'Informe ao menos um campo para atualizar.',
+      ...validationRefinement('updateRequired'),
     },
   )
   .openapi('UpdateUserRequest')

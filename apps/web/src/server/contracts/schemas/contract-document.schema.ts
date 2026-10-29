@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 import { CONTRACT_DOCUMENT_MAX_BYTES } from '../config/document-limits'
@@ -10,7 +11,7 @@ export const initContractDocumentRequestSchema = z
       .trim()
       .min(1)
       .max(200)
-      .refine((name) => !/[\r\n\0]/.test(name), 'Nome de arquivo inválido.'),
+      .refine((name) => !/[\r\n\0]/.test(name), validationRefinement('filenameInvalid')),
     size: z.number().int().positive().max(CONTRACT_DOCUMENT_MAX_BYTES),
     sha256: z
       .string()

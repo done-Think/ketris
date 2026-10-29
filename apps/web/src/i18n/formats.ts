@@ -7,11 +7,9 @@ export const formats = {
     },
   },
   number: {
-    currency: {
-      style: 'currency',
-      currency: 'BRL',
-    },
+    currency: currencyOptions,
   },
 } as const
 
 export const defaultTimeZone = 'America/Sao_Paulo'
+import { currencyOptions } from '@shared/config/currency'

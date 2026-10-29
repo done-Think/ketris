@@ -113,6 +113,21 @@ describe('GET /api/marketplace/properties (integração)', () => {
     return new NextRequest(`http://localhost/api/marketplace/properties${query}`)
   }
 
+  it('searches a real neighborhood/city suggestion and keeps the city constraint', async () => {
+    const suggestion = `${neighborhood}, ${city}`
+    const result = await (
+      await GET(buildRequest(`?${new URLSearchParams({ location: suggestion })}`))
+    ).json()
+    expect(result.totalCount).toBe(1)
+    expect(result.properties.map((property: { id: string }) => property.id)).toEqual([publishedId])
+    const constrained = await (
+      await GET(buildRequest(`?${new URLSearchParams({ location: neighborhood, city })}`))
+    ).json()
+    expect(constrained.properties.map((property: { id: string }) => property.id)).toEqual([
+      publishedId,
+    ])
+  })
+
   // Searches are scoped to this file's neighbourhood: the result is paginated and the database
   // holds published properties from other tests.
   it('retorna 200 e lista apenas imóveis publicados (rascunho não aparece)', async () => {

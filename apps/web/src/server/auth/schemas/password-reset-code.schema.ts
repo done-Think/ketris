@@ -9,8 +9,8 @@ export const requestPasswordResetCodeSchema = z
     email: z
       .string()
       .trim()
-      .email('E-mail inválido.')
-      .max(254, 'E-mail inválido.')
+      .email()
+      .max(254)
       .transform((value) => value.toLowerCase())
       .openapi({ example: 'ana@ketris.dev' }),
     locale: z.enum(locales).openapi({ example: 'pt-BR' }),
@@ -23,15 +23,15 @@ export const verifyPasswordResetCodeSchema = z
     email: z
       .string()
       .trim()
-      .email('E-mail inválido.')
-      .max(254, 'E-mail inválido.')
+      .email()
+      .max(254)
       .transform((value) => value.toLowerCase())
       .openapi({ example: 'ana@ketris.dev' }),
     tenantId: z.string().trim().min(1).optional(),
     code: z
       .string()
       .trim()
-      .regex(/^\d{6}$/, 'Código deve ter 6 dígitos.')
+      .regex(/^\d{6}$/)
       .openapi({ example: '123456' }),
   })
   .strict()

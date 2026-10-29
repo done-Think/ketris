@@ -2,6 +2,7 @@
 
 import { Box, Typography } from '@mui/material'
 import { useFormatter, useTranslations } from 'next-intl'
+import { formatCurrency } from '@shared/lib/utils/format'
 
 import type { PlatformMetric } from '../types/platform-overview'
 import { styles } from '../styles/platform-metric-cards.styles'
@@ -36,12 +37,10 @@ function formatMetricValue(
     case 'compactNumber':
       return number(metric.value, { notation: 'compact', maximumFractionDigits: 1 })
     case 'compactCurrency':
-      return number(metric.value, {
+      return formatCurrency(metric.value, number, {
         notation: 'compact',
         minimumFractionDigits: 0,
         maximumFractionDigits: 1,
-        style: 'currency',
-        currency: 'BRL',
       })
     case 'percent':
       return number(metric.value, { style: 'percent', maximumFractionDigits: 2 })

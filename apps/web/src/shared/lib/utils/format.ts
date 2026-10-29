@@ -3,6 +3,7 @@ import 'dayjs/locale/pt-br'
 import 'dayjs/locale/es'
 
 import { defaultLocale } from '@/i18n/routing'
+import { currencyOptions } from '@shared/config/currency'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type {
   CurrencyFormatOptions,
@@ -22,13 +23,20 @@ export function formatCurrency(
   precision: CurrencyPrecision = {},
 ): string {
   const options: CurrencyFormatOptions = {
-    style: 'currency',
-    currency: 'BRL',
+    ...currencyOptions,
     ...precision,
   }
   return typeof localeOrFormatter === 'function'
     ? localeOrFormatter(value, options)
     : new Intl.NumberFormat(localeOrFormatter, options).format(value)
+}
+
+export function formatCurrencySymbol(locale: string): string {
+  return (
+    new Intl.NumberFormat(locale, { ...currencyOptions, currencyDisplay: 'narrowSymbol' })
+      .formatToParts(0)
+      .find((part) => part.type === 'currency')?.value ?? currencyOptions.currency
+  )
 }
 
 export function formatDate(

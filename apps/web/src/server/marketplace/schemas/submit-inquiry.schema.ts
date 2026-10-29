@@ -4,24 +4,10 @@ import { z } from 'zod'
 export const submitInquiryRequestSchema = z
   .object({
     website: z.string().max(200).optional(),
-    leadName: z
-      .string()
-      .trim()
-      .min(1, 'Nome é obrigatório.')
-      .max(120)
-      .openapi({ example: 'Maria Silva' }),
-    leadEmail: z
-      .string()
-      .trim()
-      .max(254)
-      .email('E-mail inválido.')
-      .openapi({ example: 'maria@exemplo.com' }),
+    leadName: z.string().trim().min(1).max(120).openapi({ example: 'Maria Silva' }),
+    leadEmail: z.string().trim().max(254).email().openapi({ example: 'maria@exemplo.com' }),
     leadPhone: z.string().trim().min(1).max(30).optional().openapi({ example: '(41) 99999-9999' }),
-    proposedValue: z
-      .number()
-      .positive('Valor proposto deve ser positivo.')
-      .max(9999999999.99)
-      .optional(),
+    proposedValue: z.number().positive().max(9999999999.99).optional(),
     notes: z
       .string()
       .trim()

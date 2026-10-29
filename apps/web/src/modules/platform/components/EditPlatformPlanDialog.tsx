@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency, formatCurrencySymbol } from '@shared/lib/utils/format'
+
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -43,14 +45,7 @@ export function EditPlatformPlanDialog({ plan, onClose }: EditPlatformPlanDialog
     [t, locale],
   )
   const unit = plan.usageUnit === 'BROKERS' ? 'Brokers' : 'Properties'
-  const currencySymbol =
-    new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: 'BRL',
-      currencyDisplay: 'narrowSymbol',
-    })
-      .formatToParts(0)
-      .find((part) => part.type === 'currency')?.value ?? 'BRL'
+  const currencySymbol = formatCurrencySymbol(locale)
   const moneyAdornment = <InputAdornment position="start">{currencySymbol}</InputAdornment>
 
   const { control, handleSubmit, watch } = useForm<PlatformPlanFormValues>({
@@ -76,10 +71,7 @@ export function EditPlatformPlanDialog({ plan, onClose }: EditPlatformPlanDialog
     const usage = included + EXAMPLE_EXTRA_UNITS
     return t(`example${unit}`, {
       count: usage,
-      total: format.number(calculateMonthlyTotal(price, included, extra, usage), {
-        style: 'currency',
-        currency: 'BRL',
-      }),
+      total: formatCurrency(calculateMonthlyTotal(price, included, extra, usage), format.number),
     })
   })()
 

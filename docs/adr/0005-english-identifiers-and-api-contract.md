@@ -29,3 +29,23 @@ Renome físico exige janela de publicação com instâncias anteriores drenadas,
 Manter `@map` preservaria nomes físicos antigos, contrariando o escopo solicitado. Adaptar todos os DTOs e enums em duas direções sustentaria clientes antigos, com mais código temporário e risco de traduzir auditoria/texto livre. A atualização obrigatória limita essa manutenção e bloqueia a execução de operações incompatíveis, ao custo de exigir recarregamento e coordenação operacional.
 
 Uma migration concluída é desfeita por nova migration compensatória e aplicação compatível; uma migration falha é conferida e reconciliada antes da nova execução. Ambos os caminhos são ensaiados, incluindo o próximo deploy. O [procedimento](../../apps/web/prisma/english-rename/README.md) contém os comandos para databases descartáveis e cópia do database local. Staging/produção continuam exigindo validação e janela próprias.
+
+## Retirada da compatibilidade JWT
+
+Reavaliado em 29/10/2026 (TD-39). A retirada depende de um inventário dos emissores e
+consumidores de staging, incluindo deployments antigos ainda acessíveis e cookies NextAuth.
+O access token emitido por `JoseTokenService` dura uma hora e a verificação não configura
+tolerância de relógio. Isso não determina sozinho a validade dos cookies do NextAuth: a
+sessão JWT usa o padrão de 30 dias da configuração instalada (`next-auth/core/init.js`) e pode ser renovada.
+
+O responsável pela publicação deve registrar a última emissão possível do claim `papel`
+por cada emissor e confirmar a retirada dos deployments anteriores. O primeiro instante
+seguro para retirar o leitor de access tokens é a última emissão comprovada mais uma hora,
+acrescida de qualquer tolerância futura. O leitor dos cookies só sai após expiração ou
+migração comprovada de todas as sessões correspondentes. Refresh tokens opacos devem
+continuar emitindo access tokens com `role`.
+
+Ainda não existe evidência suficiente para fixar uma data de remoção. O parser continua
+restrito às bordas documentadas, rejeita conflitos no access token e não amplia permissões.
+O PR que o retirar deve atualizar a guarda e substituir os testes de aceitação legada por
+testes de rejeição, preservando os leitores de auditoria, que têm outra finalidade.

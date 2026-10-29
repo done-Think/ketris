@@ -7,17 +7,8 @@ const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 export const createTenantRequestSchema = z
   .object({
-    name: z
-      .string()
-      .trim()
-      .min(1, 'Nome é obrigatório.')
-      .max(120, 'Nome muito longo.')
-      .openapi({ example: 'Imobiliária Exemplo' }),
-    slug: z
-      .string()
-      .min(1, 'Slug é obrigatório.')
-      .regex(SLUG_PATTERN, 'Slug deve conter apenas letras minúsculas, números e hífens.')
-      .openapi({ example: 'imobiliaria-exemplo' }),
+    name: z.string().trim().min(1).max(120).openapi({ example: 'Imobiliária Exemplo' }),
+    slug: z.string().min(1).regex(SLUG_PATTERN).openapi({ example: 'imobiliaria-exemplo' }),
     accountType: tenantAccountTypeSchema.optional().openapi({
       description: 'Tipo de conta (define o plano). Padrão: AGENCY.',
     }),

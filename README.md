@@ -43,6 +43,11 @@ Use Node.js 24 (`.nvmrc`/`.node-version` apontam para `24.18.0`).
 Copie `apps/web/.env.example` para `apps/web/.env` (**não** `.env.local` — o CLI do Prisma só lê `.env`,
 não `.env.local`) e ajuste se necessário.
 
+Configure também `CONTRACTS_DATA_ENCRYPTION_KEY`: chave de 32 bytes em base64, própria para
+este banco e compartilhada entre aplicação e seed. Se o banco já contém dados criptografados,
+preserve a chave existente. As [operações de contratos](docs/contracts-operations.md)
+explicam geração, armazenamento e recuperação da chave.
+
 ```bash
 nvm use
 npm install

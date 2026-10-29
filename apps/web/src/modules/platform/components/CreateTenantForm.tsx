@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency } from '@shared/lib/utils/format'
+
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import {
@@ -80,8 +82,7 @@ function CreateTenantFormContent() {
   const plans = plansQuery.data
   const planOf = (type: CreateTenantFormValues['accountType']) =>
     plans?.find((plan) => plan.accountType === type)
-  const formatPrice = (value: number) =>
-    format.number(value, { style: 'currency', currency: 'BRL' })
+  const formatPrice = (value: number) => formatCurrency(value, format.number)
 
   async function onSubmit(values: CreateTenantFormValues) {
     try {

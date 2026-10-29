@@ -110,4 +110,43 @@ describe('GET /api/marketplace/stats (integração)', () => {
     expect(locations).not.toContain(`Bairro privado, ${city}`)
     expect(locations.length).toBeLessThanOrEqual(20)
   })
+
+  it('returns the 20 most frequent locations out of 30, with deterministic order', async () => {
+    const user = await prisma.user.findFirstOrThrow({ where: { tenantId } })
+    const properties = Array.from({ length: 30 }, (_, index) =>
+      Array.from({ length: 100 + index }, () => ({
+        id: randomUUID(),
+        tenantId,
+        responsibleId: user.id,
+        title: 'Ranked location',
+        purpose: 'SALE' as const,
+        type: 'HOUSE' as const,
+        price: 1,
+        status: 'PUBLISHED' as const,
+        neighborhood: `Rank ${String(index).padStart(2, '0')}`,
+      })),
+    ).flat()
+    await prisma.property.createMany({
+      data: properties.map(({ neighborhood: _neighborhood, ...property }) => property),
+    })
+    await prisma.propertyAddress.createMany({
+      data: properties.map((property) => ({
+        tenantId,
+        propertyId: property.id,
+        street: 'Ranking',
+        number: '1',
+        neighborhood: property.neighborhood,
+        city,
+        state: 'PR',
+        zipCode: '80000-000',
+      })),
+    })
+    const { locations } = await (await GET()).json()
+    expect(locations).toEqual(
+      Array.from(
+        { length: 20 },
+        (_, index) => `Rank ${String(29 - index).padStart(2, '0')}, ${city}`,
+      ),
+    )
+  })
 })

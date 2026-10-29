@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
@@ -6,12 +7,12 @@ import { isSupportedNewPasswordLength } from '@shared/utils/password-length'
 import { pendingEmailVerificationResponseSchema } from '@server/shared/schemas/email-verification.schema'
 
 const registerBaseFields = {
-  fullName: z.string().trim().min(3, 'Informe o nome completo.').max(200),
+  fullName: z.string().trim().min(3).max(200),
   email: z
     .string()
     .trim()
     .max(254)
-    .email('E-mail inválido.')
+    .email()
     .transform((value) => value.toLowerCase()),
   phone: z
     .string()
@@ -20,14 +21,16 @@ const registerBaseFields = {
     .refine((value) => {
       const digits = value.replace(/\D/g, '')
       return digits.length === 10 || digits.length === 11
-    }, 'Telefone inválido.'),
+    }, validationRefinement('phoneInvalid')),
   password: z
     .string()
-    .min(8, 'Senha deve ter pelo menos 8 caracteres.')
-    .refine(isSupportedNewPasswordLength, 'Senha deve ter no máximo 72 bytes.'),
-  acceptTerms: z.literal(true, {
-    errorMap: () => ({ message: 'É necessário aceitar os termos.' }),
-  }),
+    .min(8)
+    .refine(isSupportedNewPasswordLength, validationRefinement('passwordBytes')),
+  acceptTerms: z
+    .boolean()
+    .refine((value) => value, validationRefinement('termsRequired'))
+    .transform(() => true as const)
+    .openapi({ type: 'boolean', enum: [true] }),
   locale: z.enum(locales).default('pt-BR'),
 }
 
@@ -46,7 +49,7 @@ export const registerRequestSchema = z
         profile: z.literal('broker'),
         companyName: z.string().trim().min(1).optional(),
         agencyId: z.string().trim().min(1).optional(),
-        creci: z.string().trim().min(1, 'CRECI é obrigatório.').max(32),
+        creci: z.string().trim().min(1).max(32),
       })
       .strict(),
     z.object({ ...registerBaseFields, profile: z.literal('renter') }).strict(),

@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server'
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
 import createMiddleware from 'next-intl/middleware'
 
 import { routing } from './i18n/routing'
@@ -8,6 +8,8 @@ import type { RateLimitPolicy, RateLimitResult } from '@server/security/types/ra
 import { getAuthRateLimitKey } from '@server/security/client-key'
 import { PostgresRateLimitStore } from '@server/security/postgres-rate-limit-store'
 import { validateApiContract } from '@server/shared/http/api-contract'
+import { resolveRequestLocale } from '@server/shared/http/request-locale'
+import { validationMessage } from '@server/shared/http/validation-messages'
 import {
   API_CONTRACT_HEADER,
   API_CONTRACT_VERSION,
@@ -61,6 +63,8 @@ export async function proxy(request: NextRequest) {
   }
 
   const policy = selectPolicy(request.nextUrl.pathname)
+  const locale = resolveRequestLocale(request)
+  const startedAt = performance.now()
   let result: RateLimitResult
   try {
     result = await store.consume({ key: getAuthRateLimitKey(request.headers), policy })
@@ -70,7 +74,7 @@ export async function proxy(request: NextRequest) {
         error: {
           code:
             policy === authPolicy ? 'AUTH_RATE_LIMIT_UNAVAILABLE' : 'API_RATE_LIMIT_UNAVAILABLE',
-          message: 'Serviço temporariamente indisponível.',
+          message: validationMessage(locale, 'rateLimitUnavailable'),
         },
       },
       {
@@ -84,6 +88,10 @@ export async function proxy(request: NextRequest) {
       },
     )
   }
+  const duration = performance.now() - startedAt
+  after(async () => {
+    await store.cleanupExpired()
+  })
 
   if (!result.allowed) {
     return withRateLimitHeaders(
@@ -91,12 +99,13 @@ export async function proxy(request: NextRequest) {
         {
           error: {
             code: 'RATE_LIMIT_EXCEEDED',
-            message: 'Muitas requisições. Tente novamente mais tarde.',
+            message: validationMessage(locale, 'rateLimitExceeded'),
           },
         },
         { status: 429, headers: { 'Cache-Control': 'no-store' } },
       ),
       result,
+      duration,
     )
   }
 
@@ -106,7 +115,7 @@ export async function proxy(request: NextRequest) {
     response.headers.set(API_CONTRACT_HEADER, API_CONTRACT_VERSION)
     response.headers.append('Vary', API_CONTRACT_HEADER)
   }
-  return withRateLimitHeaders(response, result)
+  return withRateLimitHeaders(response, result, duration)
 }
 
 export const config = {
@@ -129,7 +138,12 @@ function selectPolicy(pathname: string): RateLimitPolicy {
     : apiPolicy
 }
 
-function withRateLimitHeaders(response: NextResponse, result: RateLimitResult): NextResponse {
+function withRateLimitHeaders(
+  response: NextResponse,
+  result: RateLimitResult,
+  duration: number,
+): NextResponse {
+  response.headers.append('Server-Timing', `rate-limit;dur=${duration.toFixed(2)}`)
   const releaseSha = process.env.KETRIS_RELEASE_SHA
   if (releaseSha && /^[a-f0-9]{40}$/.test(releaseSha)) {
     response.headers.set('X-Ketris-Release-Sha', releaseSha)

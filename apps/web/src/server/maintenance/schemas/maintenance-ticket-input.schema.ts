@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
@@ -38,7 +39,7 @@ export const updateMaintenanceTicketRequestSchema = z
   })
   .strict()
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
-    message: 'Informe ao menos um campo para atualizar.',
+    ...validationRefinement('updateRequired'),
   })
   .openapi('UpdateMaintenanceTicketRequest')
 
@@ -80,7 +81,7 @@ export const maintenanceProviderSchema = z
 export const maintenanceProviderSelectionSchema = maintenanceProviderSchema
   .partial({ name: true })
   .refine((value) => Boolean(value.id || value.name), {
-    message: 'Selecione um prestador ou informe seus dados.',
+    ...validationRefinement('providerRequired'),
   })
   .transform((value) => ({ ...value, name: value.name ?? '' }))
 
@@ -130,9 +131,9 @@ export const maintenanceLinksSchema = z
   .strict()
   .refine(
     (input) => Boolean(input.ownerId || (input.partyId && input.renterId)),
-    'Informe um vinculo.',
+    validationRefinement('linkRequired'),
   )
   .refine(
     (input) => Boolean(input.partyId) === Boolean(input.renterId),
-    'Informe a parte e o usuario locatario juntos.',
+    validationRefinement('partyAndRenterRequired'),
   )

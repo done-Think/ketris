@@ -3,11 +3,7 @@ import { z } from 'zod'
 
 import { tenantAccountTypeSchema } from './tenant.schema'
 
-const moneySchema = z
-  .number()
-  .min(0, 'O valor não pode ser negativo.')
-  .max(999_999.99, 'Valor muito alto.')
-  .multipleOf(0.01, 'Use no máximo duas casas decimais.')
+const moneySchema = z.number().min(0).max(999_999.99).multipleOf(0.01)
 
 export const platformPlanSchema = z
   .object({
@@ -35,9 +31,9 @@ export const updatePlatformPlanRequestSchema = z
     monthlyPrice: moneySchema.openapi({ description: 'Preço mensal em BRL.', example: 99.99 }),
     includedUnits: z
       .number()
-      .int('Use um número inteiro.')
-      .min(0, 'O limite não pode ser negativo.')
-      .max(100_000, 'Limite muito alto.')
+      .int()
+      .min(0)
+      .max(100_000)
       .openapi({ description: 'Imóveis ou corretores incluídos no preço.', example: 10 }),
     extraUnitPrice: moneySchema.openapi({
       description: 'Valor em BRL por unidade acima do limite.',

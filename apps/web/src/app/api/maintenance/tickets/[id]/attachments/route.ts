@@ -1,3 +1,4 @@
+import { validationIssue } from '@server/shared/http/validation-messages'
 import { maintenanceAttachmentFormSchema } from '@server/maintenance/schemas/maintenance-attachment.schema'
 import { maintenanceTicketIdParamsSchema } from '@server/maintenance/schemas/maintenance-ticket.schema'
 import type { MaintenanceTicketRouteContext } from '@server/maintenance/types/route-context'
@@ -15,9 +16,7 @@ export const POST = withErrorHandling(
     const formData = await request.formData()
     const parsed = maintenanceAttachmentFormSchema.safeParse(Object.fromEntries(formData))
     if (!parsed.success || formData.getAll('file').length !== 1)
-      throw new RequestValidationError([
-        { path: 'file', message: 'Envie somente um arquivo no campo file.' },
-      ])
+      throw new RequestValidationError([validationIssue('file', 'singleFileRequired')])
     const file = parsed.data.file
 
     const body = Buffer.from(await file.arrayBuffer())

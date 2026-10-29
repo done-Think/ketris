@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
@@ -23,7 +24,7 @@ export const createChargeRequestSchema = z
   })
   .strict()
   .refine((value) => Boolean(value.contractId) || Boolean(value.description), {
-    message: 'Informe uma descrição para uma cobrança avulsa (sem contrato).',
+    ...validationRefinement('descriptionRequired'),
     path: ['description'],
   })
   .openapi('CreateChargeRequest')

@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency } from '@shared/lib/utils/format'
+
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
 import { useState } from 'react'
@@ -19,8 +21,7 @@ export function PlatformPlansPage() {
   const plansQuery = usePlatformPlans()
   const [editingPlan, setEditingPlan] = useState<ApiPlatformPlan | null>(null)
   const { canManage } = usePlatformActor()
-  const formatPrice = (value: number) =>
-    format.number(value, { style: 'currency', currency: 'BRL' })
+  const formatPrice = (value: number) => formatCurrency(value, format.number)
 
   return (
     <Box sx={styles.box}>

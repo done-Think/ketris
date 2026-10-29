@@ -2,7 +2,7 @@ import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
 export const searchTenantsQuerySchema = z.object({
-  q: z.string().trim().min(1, 'Informe um termo de busca.'),
+  q: z.string().trim().min(1),
 })
 
 const tenantSearchResultSchema = z
