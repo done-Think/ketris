@@ -90,7 +90,7 @@ describe('Contracts — fluxos reais com documentos privados', () => {
 
   it('cria, edita, exige PDF atualizado, registra assinaturas manuais e encerra preservando o financeiro', () => {
     const data = fixtures!
-    expect(Cypress.env('CONTRACTS_STORAGE_ENABLED')).to.eq(true)
+    expect(Cypress.expose('CONTRACTS_STORAGE_ENABLED')).to.eq(true)
     login(data.ownerEmail)
     createContract(data).then((contractId) => {
       cy.intercept('PATCH', '**/api/contracts/' + contractId).as('editContract')

@@ -120,7 +120,7 @@ describe('Equipe de corretores', () => {
   })
 
   it('convida um corretor por e-mail e o convidado define a própria senha', function () {
-    if (!Cypress.env('AUTH_MAILBOX_ENABLED')) this.skip()
+    if (!Cypress.expose('AUTH_MAILBOX_ENABLED')) this.skip()
     cy.contains('button', 'Convidar corretor').click()
     dialog().find('input[name="name"]').type('Eva Convidada')
     dialog().find('input[name="email"]').type(invitedEmail)

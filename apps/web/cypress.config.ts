@@ -50,6 +50,12 @@ import { getDatabaseUrl } from './src/server/db/database-url'
 import { createPostgresAdapter } from './src/server/db/postgres-adapter'
 
 export default defineConfig({
+  allowCypressEnv: false,
+  expose: {
+    DATABASE_AVAILABLE: false,
+    AUTH_MAILBOX_ENABLED: false,
+    CONTRACTS_STORAGE_ENABLED: false,
+  },
   e2e: {
     baseUrl: 'http://localhost:3000',
     supportFile: 'cypress/support/e2e.ts',
@@ -92,8 +98,11 @@ export default defineConfig({
           throw new Error('O simulador de PDFs exige aplicação, banco isolado e storage locais.')
         contractStorage = await startPrivateS3Server(storagePort, app.origin)
       }
-      config.env.CONTRACTS_STORAGE_ENABLED = Boolean(contractStorage)
-      config.env.AUTH_MAILBOX_ENABLED = Boolean(mailbox)
+      // Only public fixture flags belong in the browser; keep other env values in Node.
+      config.expose.DATABASE_AVAILABLE =
+        config.env.DATABASE_AVAILABLE ?? config.expose.DATABASE_AVAILABLE
+      config.expose.CONTRACTS_STORAGE_ENABLED = Boolean(contractStorage)
+      config.expose.AUTH_MAILBOX_ENABLED = Boolean(mailbox)
       const prisma = new PrismaClient({
         adapter: createPostgresAdapter({ connectionString: getDatabaseUrl() }),
       })

@@ -14,7 +14,7 @@ describe('Autenticação', () => {
   })
 
   const databaseTest =
-    Cypress.env('DATABASE_AVAILABLE') || Cypress.env('AUTH_MAILBOX_ENABLED') ? it : it.skip
+    Cypress.expose('DATABASE_AVAILABLE') || Cypress.expose('AUTH_MAILBOX_ENABLED') ? it : it.skip
 
   databaseTest('autentica com uma fixture isolada e mantém a sessão no dashboard', () => {
     const suffix = Date.now() + '-' + Math.floor(Math.random() * 10000)
