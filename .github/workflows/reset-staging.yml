@@ -11,9 +11,13 @@ on:
         description: 'Digite RESET para confirmar — isso apaga todos os dados do banco de staging'
         required: true
 
+concurrency:
+  group: ketris-staging-release
+  cancel-in-progress: false
+
 jobs:
   reset:
-    if: github.event.inputs.confirm == 'RESET'
+    if: github.ref == 'refs/heads/dev' && github.event.inputs.confirm == 'RESET'
     runs-on: ubuntu-latest
     environment: staging
 
@@ -37,6 +41,10 @@ jobs:
       - name: Valida a chave de proteção de Contracts antes de resetar o banco
         run: |
           node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs'
+          const target = JSON.parse(readFileSync('infra/deploy/staging.json', 'utf8'))
+          const url = new URL(process.env.DATABASE_URL ?? '')
+          if (!['postgres:', 'postgresql:'].includes(url.protocol) || url.hostname !== target.databaseHost || url.pathname !== `/${target.databaseName}` || (url.port && url.port !== '5432')) throw new Error('Reset requires the declared staging database.')
           const key = process.env.CONTRACTS_DATA_ENCRYPTION_KEY ?? ''
           if (!/^[A-Za-z0-9+/]+={0,2}$/.test(key) || Buffer.from(key, 'base64').length !== 32) {
             throw new Error('Configure CONTRACTS_DATA_ENCRYPTION_KEY com 32 bytes em base64.')

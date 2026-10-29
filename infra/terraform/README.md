@@ -98,9 +98,11 @@ No dashboard do projeto na Vercel → Settings → Environment Variables, adicio
 | `AWS_REGION` | o valor de `aws_region` usado (padrão `us-east-1`) |
 | `S3_BUCKET_NAME` | saída de `terraform output s3_bucket_name` |
 
-Depois disso, o login em Preview já fala direto com um Postgres de verdade — o antigo modo de
-login simulado (`AUTH_MOCK_ENABLED`) foi removido do código, já que não é mais necessário com RDS,
-S3 e as migrations/seeds de CI configurados.
+O login em Preview usa o Postgres configurado. Além das variáveis, esse banco precisa ter as
+migrations compatíveis com a versão publicada. O build da Vercel gera o cliente Prisma e compila
+o aplicativo; não executa `prisma migrate deploy`. O Postgres efêmero do CI também não atualiza o
+RDS. A publicação da aplicação e a atualização do banco devem seguir o
+[roteiro coordenado de staging](../../docs/staging-release.md).
 
 Se o volume de variáveis crescer ou precisar ficar sincronizado entre várias pessoas, dá pra
 automatizar isso via Vercel CLI (`vercel env add <NOME> preview --token=$VERCEL_TOKEN --force`)
@@ -111,15 +113,23 @@ variáveis que mudam raramente, o dashboard manual já resolve.
 
 - `ci.yml`: typecheck/lint/testes contra um Postgres **efêmero do próprio runner**
   (`services: postgres:16-alpine`) — nunca contra este RDS de staging. Roda em todo PR/push.
-- `deploy-staging.yml`: só em push para `dev`, roda `prisma migrate deploy` + `npm run db:seed`
-  (idempotente) contra este RDS via a secret do GitHub `STAGING_DATABASE_URL`. O workflow usa
-  um GitHub **Environment** chamado `staging` (Settings → Environments → New environment,
-  nome exatamente `staging`) — configure as secrets ali dentro (não em Settings → Secrets →
-  Actions direto), colando a mesma `rds_database_url` acima em `STAGING_DATABASE_URL`.
-  Configure também `PLATFORM_ADMIN_NAME`/`PLATFORM_ADMIN_EMAIL`/`PLATFORM_ADMIN_PASSWORD` como
-  secrets do mesmo Environment (usados pelo seed para bootstrapar o primeiro platform admin —
-  ver ADR-0003). Usar um Environment (em vez de secret de repositório) permite adicionar
-  revisores obrigatórios depois, se quiserem gate manual antes do deploy tocar o banco.
+- `deploy-staging.yml`: workflow reutilizável chamado pelo CI após `quality` e `auth-e2e`,
+  somente em push na `dev`. Prepara o deployment sem promover, aplica migrations compatíveis,
+  confere o schema, cria a conta de smoke reservada, testa o login e promove o mesmo artefato.
+  A publicação é acionada diretamente pelo CI aprovado da `dev`.
+  Nome/IDs/domínio da Vercel e o RDS esperado são verificados; não executa seed completo/reset.
+- `reset-staging.yml`: continua destrutivo e manual, restrito à `dev`, com confirmação RESET.
+  Compartilha a trava da release. O usuário autorizou descartar os dados fictícios, mas nenhum
+  reset ou exclusão de RDS/S3 foi necessário nesta implementação.
+
+Configurar o environment conforme o [roteiro de publicação](../../docs/staging-release.md)
+e os [prompts dos consoles](../../docs/staging-console-setup.md). O caminho automático usa
+`workflow_call` e não depende da definição manual na `main`. O deploy direto por Git da `dev`
+fica desabilitado no `apps/web/vercel.json`; conferir o alcance nos projetos do monorepo.
+
+A release usa `STAGING_DATABASE_URL` para conectar ao RDS por TLS. Não cria snapshots
+extras nem assume uma role AWS; a política de backups existente do RDS é independente.
+A configuração de role OIDC proposta para essa opção foi removida antes de qualquer apply.
 
 ## Dívida técnica registrada (não bloqueia agora)
 

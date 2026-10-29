@@ -43,6 +43,20 @@ describe('proxy rate limit', () => {
     vi.useRealTimers()
   })
 
+  it('identifies the deployed commit for release verification', async () => {
+    vi.stubEnv('KETRIS_RELEASE_SHA', 'a'.repeat(40))
+    const { proxy } = await import('../../../proxy')
+    const response = await proxy(postFrom('203.0.113.10', '/api/marketplace/stats'))
+    expect(response.headers.get('X-Ketris-Release-Sha')).toBe('a'.repeat(40))
+  })
+
+  it('does not publish an invalid release identifier', async () => {
+    vi.stubEnv('KETRIS_RELEASE_SHA', 'not-a-release-sha')
+    const { proxy } = await import('../../../proxy')
+    const response = await proxy(postFrom('203.0.113.10', '/api/marketplace/stats'))
+    expect(response.headers.has('X-Ketris-Release-Sha')).toBe(false)
+  })
+
   it.each([
     '/api/auth/me/password',
     '/api/auth/email-verification-codes',

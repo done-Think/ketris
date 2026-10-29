@@ -1,0 +1,7 @@
+{
+  "projectName": "ketris-web-x9bk",
+  "origin": "https://ketris-web-x9bk.vercel.app",
+  "databaseHost": "ketris-staging.cubemqk8wpqi.us-east-1.rds.amazonaws.com",
+  "databaseName": "ketris",
+  "compatibleMigrations": {}
+}

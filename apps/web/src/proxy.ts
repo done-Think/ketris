@@ -130,6 +130,10 @@ function selectPolicy(pathname: string): RateLimitPolicy {
 }
 
 function withRateLimitHeaders(response: NextResponse, result: RateLimitResult): NextResponse {
+  const releaseSha = process.env.KETRIS_RELEASE_SHA
+  if (releaseSha && /^[a-f0-9]{40}$/.test(releaseSha)) {
+    response.headers.set('X-Ketris-Release-Sha', releaseSha)
+  }
   response.headers.set('RateLimit-Limit', String(result.limit))
   response.headers.set('RateLimit-Remaining', String(result.remaining))
   response.headers.set('RateLimit-Reset', String(Math.ceil(result.resetAt / 1000)))
