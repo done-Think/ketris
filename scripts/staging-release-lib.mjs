@@ -42,10 +42,6 @@ export function validateConfig(env, target) {
       (!url.searchParams.has('schema') || url.searchParams.get('schema') === 'public'),
     'WRONG_STAGING_DATABASE',
   )
-  requireValue(
-    ['true', 'false'].includes(env.STAGING_SNAPSHOT_ENABLED ?? 'false'),
-    'INVALID_SNAPSHOT_SETTING',
-  )
   return url
 }
 
@@ -89,20 +85,18 @@ export function planMigrations(files, ledger, compatible) {
   return pending.map((file) => file.name)
 }
 
-export async function runRelease(actions, { snapshotEnabled = false } = {}) {
+export async function runRelease(actions) {
   await actions.preflight()
   const pending = await actions.plan()
   const candidate = await actions.prepare()
   await actions.checkCurrentHead()
-  let snapshot
-  if (pending.length && snapshotEnabled) snapshot = await actions.snapshot()
   if (pending.length) await actions.migrate()
   await actions.verifyDatabase()
   await actions.smoke(candidate)
   // Do not rebuild, reset the database, or auto-revert an already completed migration here.
   await actions.promote(candidate)
   await actions.smokePublic()
-  return { candidate, pending, snapshot }
+  return { candidate, pending }
 }
 
 export function validateCandidate(value, projectName) {

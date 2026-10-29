@@ -6,18 +6,19 @@ integrações AWS e publicação em produção continuam pendentes. Evidências 
 A migration de renome muda o contrato físico do banco. Uma instância antiga não pode continuar
 atendendo durante a troca. `X-Ketris-Api-Version: 2` protege o contrato HTTP; não adapta uma
 instância antiga ao banco novo. O incidente abaixo ocorreu com migrations manuais e deploy independente.
-A automação implementada nesta branch coordena essas etapas e aguarda ativação externa.
+A automação implementada nesta branch coordena essas etapas e aguarda a configuração dos
+acessos externos e integração na `dev`.
 
-## Automação implementada — ativação externa pendente
+## Automação implementada — configuração externa pendente
 
 Implementação na branch `ci/automate-staging-release`, a partir da `dev` em
-`e76d31099fb2d89849d004cf6dc3430615c54c4c`. A ativação exige configurar o GitHub Environment
-`staging` e validar a primeira publicação real. Nenhum deploy, reset ou apply AWS foi executado
-por esta tarefa. Produção continua fora do escopo.
+`e76d31099fb2d89849d004cf6dc3430615c54c4c`. Antes do merge, configurar o GitHub Environment
+`staging`; validar a primeira publicação real após a integração. Nenhum deploy, reset ou
+apply AWS foi executado por esta tarefa. Produção continua fora do escopo.
 
 ```text
 Merge na dev → quality + auth-e2e → deployment candidato sem promoção
-             → snapshot opcional → migrations pendentes → diff do schema
+             → migrations pendentes → diff do schema
              → conta de smoke isolada → login no candidato → promoção → login no domínio público
 ```
 
@@ -33,27 +34,26 @@ O header `X-Ketris-Release-Sha` permite confirmar o commit do candidato e do dom
 Ver [deploy pela CLI](https://vercel.com/docs/cli/deploying-from-cli).
 
 O arquivo `apps/web/vercel.json` desabilita deployments diretos por Git da `dev`. Ao integrar
-esta branch, a aplicação atual permanece disponível; o novo caminho só publica com a variable
-`STAGING_RELEASE_ENABLED=true`. Conferir os demais projetos do monorepo que usam `apps/web`
-antes do merge. `.vercelignore` exclui envs, credenciais locais, dumps e estados Terraform.
+esta branch, o CI aprovado da `dev` aciona diretamente a release. Configurar os acessos antes
+do merge e conferir os demais projetos do monorepo que usam `apps/web`. `.vercelignore` exclui
+envs, credenciais locais, dumps e estados Terraform.
 
-### Configuração e ativação
+### Configuração e primeira publicação
 
-1. Executar o [prompt de GitHub/Vercel](staging-console-setup.md), mantendo a ativação em false.
-   Configurar os secrets e variables da tabela abaixo. Usar a mesma URL PostgreSQL e a mesma
-   chave de contratos da aplicação; não substituir a chave que protege os dados existentes.
-2. Conferir CI verde nesta branch e o alcance da configuração da Vercel. Integrar na `dev`
-   com `STAGING_RELEASE_ENABLED=false`; a etapa de publicação registrará que está desativada.
-3. Configurar `STAGING_RELEASE_ENABLED=true` no environment `staging` e executar novamente o
-   CI do commit atual da `dev` (Re-run all jobs). O CI completo precede a primeira publicação.
-   O environment deve permitir a `dev` sem aprovação humana a cada execução.
-4. Conferir o resumo do Actions, o SHA do domínio e o login. Após a validação, os próximos
-   pushes/merges na `dev` executam a sequência automaticamente. A recuperação manual opcional
-   do workflow requer sua definição também na branch padrão; o fluxo automático não requer.
+1. Executar o [prompt de GitHub/Vercel](staging-console-setup.md) e configurar os secrets e
+   variables da tabela abaixo. Usar a mesma URL PostgreSQL e a mesma chave de contratos da
+   aplicação; não substituir a chave que protege os dados existentes.
+2. Conferir CI verde nesta branch e o alcance da configuração da Vercel. O environment deve
+   permitir a `dev` sem aprovação humana a cada execução. Preparar os acessos antes do merge.
+3. Integrar na `dev`: o CI completo precede a primeira publicação, acionada diretamente após
+   `quality` e `auth-e2e` aprovados. Não há flags de ativação ou de snapshot para cadastrar.
+4. Conferir o resumo do Actions, o SHA do domínio e o login. Os próximos pushes/merges na `dev`
+   repetem a sequência automaticamente. Se algum acesso estiver incorreto, corrigir a
+   configuração e reexecutar o CI do commit atual. A recuperação manual opcional requer a
+   definição do workflow também na branch padrão; o fluxo automático não requer.
 
 | Configuração no environment staging | Tipo / finalidade |
 |---|---|
-| `STAGING_RELEASE_ENABLED` | Variable: false durante configuração; true para ativar |
 | `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | Variables com os IDs confirmados do projeto/time |
 | `VERCEL_TOKEN` | Secret com acesso ao projeto Vercel correto |
 | `STAGING_DATABASE_URL` | Secret para o RDS declarado em `infra/deploy/staging.json` |
@@ -61,8 +61,6 @@ antes do merge. `.vercelignore` exclui envs, credenciais locais, dumps e estados
 | `STAGING_SMOKE_EMAIL` | Secret com `staging-smoke@ketris.example.test` |
 | `STAGING_SMOKE_PASSWORD` | Secret com senha aleatória de pelo menos 20 caracteres |
 | `VERCEL_AUTOMATION_BYPASS_SECRET` | Secret se o candidato exigir Deployment Protection |
-| `STAGING_SNAPSHOT_ENABLED` | Variable opcional; false por padrão nesta fase de dados fictícios |
-| `AWS_STAGING_RELEASE_ROLE_ARN` | Variable necessária apenas se snapshots estiverem habilitados |
 
 O pipeline cria/reconcilia somente a fixture reservada `staging-ci-smoke-tenant` /
 `staging-ci-smoke-user`, com papel AGENT. Colisões com outras contas impedem a publicação.
@@ -88,20 +86,20 @@ barreira conservadora, não um parser ou prova de compatibilidade. DDL incompat�
 bloqueado até existir um caminho de manutenção/drenagem efetivamente implementado e testado.
 
 O ledger é conferido por checksum e migrations falhas/desconhecidas são recusadas. Depois da
-aplicação, `migrate diff --exit-code` deve ficar vazio. Falha de build, backup, migration ou
+aplicação, `migrate diff --exit-code` deve ficar vazio. Falha de build, migration ou
 login do candidato impede a promoção. Falha após promover marca a release como falha; não
 reseta dados nem reverte o schema automaticamente. Reexecutar o CI para retomar após corrigir
 a causa. O teste de sessão anônima 200 não substitui o login real.
 
-O usuário confirmou que os dados atuais de staging são fictícios e descartáveis. Por isso os
-snapshots são opcionais nesta fase. Se habilitados, a role OIDC cria snapshots apenas do RDS
-confirmado e o pipeline aguarda Available. Configurar retenção/limpeza antes de habilitar:
-snapshots manuais não expiram sozinhos. O prompt AWS e a role Terraform estão disponíveis,
-sem permissões para excluir RDS/S3. A restauração continua sendo uma verificação separada.
+O usuário confirmou que os dados atuais de staging são fictícios e descartáveis e dispensou
+as flags propostas. O pipeline não cria snapshots extras por publicação e não depende de
+credenciais IAM ou configuração OIDC. A política de backups existente do RDS permanece
+independente. Os registros históricos da recuperação e os procedimentos de produção abaixo
+preservam as evidências e requisitos daqueles contextos.
 
 ### Verificação desta implementação
 
-- 23 testes de sequência, falhas, alvo e autenticação com respostas simuladas.
+- 22 testes de sequência, falhas, alvo e autenticação com respostas simuladas.
 - Ensaio em database temporário local com as 53 migrations reais: checksums conferidos;
   criação/repetição da fixture e conflitos com outras contas/tenants testados.
 - 31 testes do proxy, incluindo o SHA da release; tipos e lint dos arquivos alterados.

@@ -12,7 +12,6 @@ on:
 permissions:
   contents: read
   actions: read
-  id-token: write
 
 concurrency:
   group: ketris-staging-release
@@ -27,7 +26,6 @@ jobs:
       name: staging
       url: https://ketris-web-x9bk.vercel.app
     env:
-      RELEASE_ENABLED: ${{ vars.STAGING_RELEASE_ENABLED }}
       DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
       CONTRACTS_DATA_ENCRYPTION_KEY: ${{ secrets.CONTRACTS_DATA_ENCRYPTION_KEY }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -36,28 +34,15 @@ jobs:
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
       STAGING_SMOKE_EMAIL: ${{ secrets.STAGING_SMOKE_EMAIL }}
       STAGING_SMOKE_PASSWORD: ${{ secrets.STAGING_SMOKE_PASSWORD }}
-      STAGING_SNAPSHOT_ENABLED: ${{ vars.STAGING_SNAPSHOT_ENABLED || 'false' }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Confere a ativação do environment
-        id: activation
-        shell: bash
-        run: |
-          if [ "$RELEASE_ENABLED" = 'true' ]; then
-            echo 'enabled=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'enabled=false' >> "$GITHUB_OUTPUT"
-            echo 'Staging release is disabled. Configure the environment and enable STAGING_RELEASE_ENABLED.' >> "$GITHUB_STEP_SUMMARY"
-          fi
       - uses: actions/checkout@v4
-        if: steps.activation.outputs.enabled == 'true'
       - uses: actions/setup-node@v4
-        if: steps.activation.outputs.enabled == 'true'
         with:
           node-version: '24'
           cache: npm
       - name: Confere CI para a recuperação manual
-        if: steps.activation.outputs.enabled == 'true' && github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/github-script@v7
         with:
           script: |
@@ -66,16 +51,7 @@ jobs:
               core.setFailed('Successful CI on dev is required for this exact commit.');
             }
       - run: npm ci
-        if: steps.activation.outputs.enabled == 'true'
       - name: Instala a CLI da Vercel com versão fixada
-        if: steps.activation.outputs.enabled == 'true'
         run: npm install --global vercel@65.5.0
-      - name: Autentica na AWS para snapshots opcionais
-        if: steps.activation.outputs.enabled == 'true' && vars.STAGING_SNAPSHOT_ENABLED == 'true'
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_STAGING_RELEASE_ROLE_ARN }}
-          aws-region: us-east-1
       - name: Prepara, migra, valida e promove o mesmo artefato
-        if: steps.activation.outputs.enabled == 'true'
         run: node scripts/staging-release.mjs

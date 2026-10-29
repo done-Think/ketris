@@ -112,7 +112,6 @@ function actionsFixture({ pending = [file.name], failure } = {}) {
       'plan',
       'prepare',
       'checkCurrentHead',
-      'snapshot',
       'migrate',
       'verifyDatabase',
       'smoke',
@@ -127,7 +126,7 @@ function actionsFixture({ pending = [file.name], failure } = {}) {
           ? pending
           : name === 'prepare'
             ? 'https://candidate.vercel.app'
-            : 'snapshot'
+            : undefined
       },
     ]),
   )
@@ -136,13 +135,12 @@ function actionsFixture({ pending = [file.name], failure } = {}) {
 
 test('prepares before migration and promotes only after database and login pass', async () => {
   const { actions, calls } = actionsFixture()
-  await runRelease(actions, { snapshotEnabled: true })
+  await runRelease(actions)
   assert.deepEqual(calls, [
     'preflight',
     'plan',
     'prepare',
     'checkCurrentHead',
-    'snapshot',
     'migrate',
     'verifyDatabase',
     'smoke',
@@ -151,11 +149,10 @@ test('prepares before migration and promotes only after database and login pass'
   ])
 })
 
-test('no migrations means no snapshot or migration; disposable staging can skip snapshots', async () => {
+test('publishes with or without pending migrations', async () => {
   for (const pending of [[], [file.name]]) {
     const { actions, calls } = actionsFixture({ pending })
     await runRelease(actions)
-    assert.equal(calls.includes('snapshot'), false)
     assert.equal(calls.includes('migrate'), pending.length > 0)
   }
 })
@@ -165,16 +162,15 @@ for (const failure of [
   'plan',
   'prepare',
   'checkCurrentHead',
-  'snapshot',
   'migrate',
   'verifyDatabase',
   'smoke',
 ]) {
   test(`failure at ${failure} prevents promotion`, async () => {
     const { actions, calls } = actionsFixture({ failure })
-    await assert.rejects(runRelease(actions, { snapshotEnabled: true }), /INJECTED_FAILURE/)
+    await assert.rejects(runRelease(actions), /INJECTED_FAILURE/)
     assert.equal(calls.includes('promote'), false)
-    if (['preflight', 'plan', 'prepare', 'checkCurrentHead', 'snapshot'].includes(failure)) {
+    if (['preflight', 'plan', 'prepare', 'checkCurrentHead'].includes(failure)) {
       assert.equal(calls.includes('migrate'), false)
     }
   })

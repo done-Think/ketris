@@ -116,7 +116,7 @@ variáveis que mudam raramente, o dashboard manual já resolve.
 - `deploy-staging.yml`: workflow reutilizável chamado pelo CI após `quality` e `auth-e2e`,
   somente em push na `dev`. Prepara o deployment sem promover, aplica migrations compatíveis,
   confere o schema, cria a conta de smoke reservada, testa o login e promove o mesmo artefato.
-  A ativação depende de `STAGING_RELEASE_ENABLED=true` no environment `staging`.
+  A publicação é acionada diretamente pelo CI aprovado da `dev`.
   Nome/IDs/domínio da Vercel e o RDS esperado são verificados; não executa seed completo/reset.
 - `reset-staging.yml`: continua destrutivo e manual, restrito à `dev`, com confirmação RESET.
   Compartilha a trava da release. O usuário autorizou descartar os dados fictícios, mas nenhum
@@ -127,25 +127,9 @@ e os [prompts dos consoles](../../docs/staging-console-setup.md). O caminho auto
 `workflow_call` e não depende da definição manual na `main`. O deploy direto por Git da `dev`
 fica desabilitado no `apps/web/vercel.json`; conferir o alcance nos projetos do monorepo.
 
-### Role OIDC opcional para snapshots
-
-`github-release.tf` prepara uma role sem chaves permanentes e sem permissões de exclusão ou
-S3. OIDC não substitui a senha PostgreSQL. Como os dados de staging são fictícios,
-`STAGING_SNAPSHOT_ENABLED` fica false por padrão; habilitar depois requer role e política de
-retenção dos snapshots manuais. Essa configuração está desabilitada no Terraform por padrão.
-
-Se o provider e a role forem criados pelo prompt no console, informar
-`github_release_enabled=true` e `github_oidc_provider_arn` no tfvars privado e importar a role
-antes de planejar um apply. Exemplo, a partir deste diretório:
-
-```sh
-terraform import 'aws_iam_role.github_release[0]' ketris-staging-github-release
-terraform import 'aws_iam_role_policy.github_release_snapshots[0]' ketris-staging-github-release:ketris-staging-release-snapshots
-```
-
-Conferir o plano e preservar RDS, S3 e o usuário IAM da aplicação. O provider OIDC existente é
-referenciado pelo ARN; não é recriado por este módulo. Esta tarefa validou a configuração,
-sem importar/aplicar recursos na AWS.
+A release usa `STAGING_DATABASE_URL` para conectar ao RDS por TLS. Não cria snapshots
+extras nem assume uma role AWS; a política de backups existente do RDS é independente.
+A configuração de role OIDC proposta para essa opção foi removida antes de qualquer apply.
 
 ## Dívida técnica registrada (não bloqueia agora)
 

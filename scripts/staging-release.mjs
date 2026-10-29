@@ -86,206 +86,153 @@ export async function main() {
   let result
   await client.connect()
   try {
-    result = await runRelease(
-      {
-        async preflight() {
-          const project = await providerGet(
-            `/v9/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}`,
-          )
-          requireValue(
-            project.id === env.VERCEL_PROJECT_ID &&
-              project.name === target.projectName &&
-              project.accountId === env.VERCEL_ORG_ID &&
-              project.rootDirectory === 'apps/web',
-            'WRONG_VERCEL_PROJECT',
-          )
-          const domains = await providerGet(
-            `/v9/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}/domains`,
-          )
-          requireValue(
-            domains.domains?.some((domain) => domain.name === new URL(target.origin).hostname),
-            'WRONG_STAGING_DOMAIN',
-          )
-          console.log('Staging target and credentials checked.')
-        },
-        async plan() {
-          const pending = planMigrations(files, await ledger(), target.compatibleMigrations)
-          console.log(`Pending migrations: ${pending.length}`)
-          return pending
-        },
-        async prepare() {
-          await mkdir('.vercel', { recursive: true })
-          await writeFile(
-            '.vercel/project.json',
-            JSON.stringify({
-              projectId: env.VERCEL_PROJECT_ID,
-              orgId: env.VERCEL_ORG_ID,
-            }),
-            { mode: 0o600 },
-          )
-          const output = await command('vercel', [
-            'deploy',
-            '--prod',
-            '--skip-domain',
-            '--yes',
-            '--meta',
-            `githubCommitSha=${env.GITHUB_SHA}`,
-            '--meta',
-            'githubCommitRef=dev',
-            '--env',
-            `KETRIS_RELEASE_SHA=${env.GITHUB_SHA}`,
-            '--build-env',
-            `KETRIS_RELEASE_SHA=${env.GITHUB_SHA}`,
-            ...cliAuth,
-          ])
-          const candidate = validateCandidate(output, target.projectName)
-          const deployment = await providerGet(
-            `/v13/deployments/${encodeURIComponent(new URL(candidate).hostname)}`,
-          )
-          requireValue(
-            deployment.projectId === env.VERCEL_PROJECT_ID &&
-              deployment.target === 'production' &&
-              deployment.readyState === 'READY' &&
-              deployment.meta?.githubCommitSha === env.GITHUB_SHA,
-            'WRONG_CANDIDATE_DEPLOYMENT',
-          )
-          console.log(`Candidate ready: ${candidate}`)
-          return candidate
-        },
-        async checkCurrentHead() {
-          const response = await fetch(
-            'https://api.github.com/repos/done-Think/ketris/git/ref/heads/dev',
-            {
-              headers: {
-                Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-                'X-GitHub-Api-Version': '2022-11-28',
-              },
-              signal: AbortSignal.timeout(15_000),
-            },
-          )
-          requireValue(
-            response.ok && (await response.json()).object?.sha === env.GITHUB_SHA,
-            'RELEASE_SUPERSEDED',
-          )
-        },
-        async snapshot() {
-          const account = await command('aws', [
-            'sts',
-            'get-caller-identity',
-            '--query',
-            'Account',
-            '--output',
-            'text',
-          ])
-          requireValue(account === '946232032967', 'WRONG_AWS_ACCOUNT')
-          const host = await command('aws', [
-            'rds',
-            'describe-db-instances',
-            '--region',
-            target.region,
-            '--db-instance-identifier',
-            target.rdsIdentifier,
-            '--query',
-            'DBInstances[0].Endpoint.Address',
-            '--output',
-            'text',
-          ])
-          requireValue(host === target.databaseHost, 'WRONG_RDS_INSTANCE')
-          const snapshot = `${target.rdsIdentifier}-ci-${env.GITHUB_RUN_ID}-${env.GITHUB_RUN_ATTEMPT}`
-          requireValue(/^[a-z][a-z0-9-]+$/.test(snapshot), 'INVALID_SNAPSHOT_NAME')
-          await command('aws', [
-            'rds',
-            'create-db-snapshot',
-            '--region',
-            target.region,
-            '--db-instance-identifier',
-            target.rdsIdentifier,
-            '--db-snapshot-identifier',
-            snapshot,
-            '--tags',
-            'Key=ManagedBy,Value=github-actions',
-            'Key=Environment,Value=staging',
-          ])
-          await command('aws', [
-            'rds',
-            'wait',
-            'db-snapshot-available',
-            '--region',
-            target.region,
-            '--db-snapshot-identifier',
-            snapshot,
-          ])
-          console.log(`Snapshot available: ${snapshot}`)
-          return snapshot
-        },
-        async migrate() {
-          await command(
-            process.execPath,
-            ['../../node_modules/prisma/build/index.js', 'migrate', 'deploy'],
-            { cwd: 'apps/web' },
-          )
-          console.log('Pending migrations applied.')
-        },
-        async verifyDatabase() {
-          requireValue(
-            planMigrations(files, await ledger(), target.compatibleMigrations).length === 0,
-            'MIGRATIONS_STILL_PENDING',
-          )
-          await command(
-            process.execPath,
-            [
-              '../../node_modules/prisma/build/index.js',
-              'migrate',
-              'diff',
-              '--from-config-datasource',
-              '--to-schema',
-              'prisma/schema.prisma',
-              '--exit-code',
-            ],
-            { cwd: 'apps/web' },
-          )
-          userId = await ensureSmokeAccount(client, {
-            email: env.STAGING_SMOKE_EMAIL,
-            password: env.STAGING_SMOKE_PASSWORD,
-          })
-        },
-        async smoke(origin) {
-          await smokeDeployment({
-            origin,
-            canonicalOrigin: target.origin,
-            sha: env.GITHUB_SHA,
-            email: env.STAGING_SMOKE_EMAIL,
-            password: env.STAGING_SMOKE_PASSWORD,
-            userId,
-            bypass: env.VERCEL_AUTOMATION_BYPASS_SECRET,
-          })
-          console.log('Candidate database and authenticated session checked.')
-        },
-        async promote(candidate) {
-          await command('vercel', ['promote', candidate, '--yes', ...cliAuth])
-          console.log('Candidate promoted.')
-        },
-        async smokePublic() {
-          await smokeDeployment({
-            origin: target.origin,
-            sha: env.GITHUB_SHA,
-            email: env.STAGING_SMOKE_EMAIL,
-            password: env.STAGING_SMOKE_PASSWORD,
-            userId,
-            bypass: env.VERCEL_AUTOMATION_BYPASS_SECRET,
-          })
-          console.log('Public domain and authenticated session checked.')
-        },
+    result = await runRelease({
+      async preflight() {
+        const project = await providerGet(
+          `/v9/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}`,
+        )
+        requireValue(
+          project.id === env.VERCEL_PROJECT_ID &&
+            project.name === target.projectName &&
+            project.accountId === env.VERCEL_ORG_ID &&
+            project.rootDirectory === 'apps/web',
+          'WRONG_VERCEL_PROJECT',
+        )
+        const domains = await providerGet(
+          `/v9/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}/domains`,
+        )
+        requireValue(
+          domains.domains?.some((domain) => domain.name === new URL(target.origin).hostname),
+          'WRONG_STAGING_DOMAIN',
+        )
+        console.log('Staging target and credentials checked.')
       },
-      { snapshotEnabled: env.STAGING_SNAPSHOT_ENABLED === 'true' },
-    )
+      async plan() {
+        const pending = planMigrations(files, await ledger(), target.compatibleMigrations)
+        console.log(`Pending migrations: ${pending.length}`)
+        return pending
+      },
+      async prepare() {
+        await mkdir('.vercel', { recursive: true })
+        await writeFile(
+          '.vercel/project.json',
+          JSON.stringify({
+            projectId: env.VERCEL_PROJECT_ID,
+            orgId: env.VERCEL_ORG_ID,
+          }),
+          { mode: 0o600 },
+        )
+        const output = await command('vercel', [
+          'deploy',
+          '--prod',
+          '--skip-domain',
+          '--yes',
+          '--meta',
+          `githubCommitSha=${env.GITHUB_SHA}`,
+          '--meta',
+          'githubCommitRef=dev',
+          '--env',
+          `KETRIS_RELEASE_SHA=${env.GITHUB_SHA}`,
+          '--build-env',
+          `KETRIS_RELEASE_SHA=${env.GITHUB_SHA}`,
+          ...cliAuth,
+        ])
+        const candidate = validateCandidate(output, target.projectName)
+        const deployment = await providerGet(
+          `/v13/deployments/${encodeURIComponent(new URL(candidate).hostname)}`,
+        )
+        requireValue(
+          deployment.projectId === env.VERCEL_PROJECT_ID &&
+            deployment.target === 'production' &&
+            deployment.readyState === 'READY' &&
+            deployment.meta?.githubCommitSha === env.GITHUB_SHA,
+          'WRONG_CANDIDATE_DEPLOYMENT',
+        )
+        console.log(`Candidate ready: ${candidate}`)
+        return candidate
+      },
+      async checkCurrentHead() {
+        const response = await fetch(
+          'https://api.github.com/repos/done-Think/ketris/git/ref/heads/dev',
+          {
+            headers: {
+              Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+              'X-GitHub-Api-Version': '2022-11-28',
+            },
+            signal: AbortSignal.timeout(15_000),
+          },
+        )
+        requireValue(
+          response.ok && (await response.json()).object?.sha === env.GITHUB_SHA,
+          'RELEASE_SUPERSEDED',
+        )
+      },
+      async migrate() {
+        await command(
+          process.execPath,
+          ['../../node_modules/prisma/build/index.js', 'migrate', 'deploy'],
+          { cwd: 'apps/web' },
+        )
+        console.log('Pending migrations applied.')
+      },
+      async verifyDatabase() {
+        requireValue(
+          planMigrations(files, await ledger(), target.compatibleMigrations).length === 0,
+          'MIGRATIONS_STILL_PENDING',
+        )
+        await command(
+          process.execPath,
+          [
+            '../../node_modules/prisma/build/index.js',
+            'migrate',
+            'diff',
+            '--from-config-datasource',
+            '--to-schema',
+            'prisma/schema.prisma',
+            '--exit-code',
+          ],
+          { cwd: 'apps/web' },
+        )
+        userId = await ensureSmokeAccount(client, {
+          email: env.STAGING_SMOKE_EMAIL,
+          password: env.STAGING_SMOKE_PASSWORD,
+        })
+      },
+      async smoke(origin) {
+        await smokeDeployment({
+          origin,
+          canonicalOrigin: target.origin,
+          sha: env.GITHUB_SHA,
+          email: env.STAGING_SMOKE_EMAIL,
+          password: env.STAGING_SMOKE_PASSWORD,
+          userId,
+          bypass: env.VERCEL_AUTOMATION_BYPASS_SECRET,
+        })
+        console.log('Candidate database and authenticated session checked.')
+      },
+      async promote(candidate) {
+        await command('vercel', ['promote', candidate, '--yes', ...cliAuth])
+        console.log('Candidate promoted.')
+      },
+      async smokePublic() {
+        await smokeDeployment({
+          origin: target.origin,
+          sha: env.GITHUB_SHA,
+          email: env.STAGING_SMOKE_EMAIL,
+          password: env.STAGING_SMOKE_PASSWORD,
+          userId,
+          bypass: env.VERCEL_AUTOMATION_BYPASS_SECRET,
+        })
+        console.log('Public domain and authenticated session checked.')
+      },
+    })
   } finally {
     await client.end()
   }
   if (env.GITHUB_STEP_SUMMARY)
     await appendFile(
       env.GITHUB_STEP_SUMMARY,
-      `## Staging release\n\n- Commit: ${env.GITHUB_SHA}\n- Candidate: ${result.candidate}\n- Public URL: ${target.origin}\n- Migrations: ${result.pending.join(', ') || 'none'}\n- Snapshot: ${result.snapshot || 'disabled or no migrations'}\n- Database and authenticated session: passed\n`,
+      `## Staging release\n\n- Commit: ${env.GITHUB_SHA}\n- Candidate: ${result.candidate}\n- Public URL: ${target.origin}\n- Migrations: ${result.pending.join(', ') || 'none'}\n- Database and authenticated session: passed\n`,
     )
 }
 
