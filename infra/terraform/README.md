@@ -112,7 +112,9 @@ variáveis que mudam raramente, o dashboard manual já resolve.
 ## CI/CD (`.github/workflows/`)
 
 - `ci.yml`: typecheck/lint/testes contra um Postgres **efêmero do próprio runner**
-  (`services: postgres:16-alpine`) — nunca contra este RDS de staging. Roda em todo PR/push.
+  (`services: postgres:16-alpine`) — nunca contra este RDS de staging. Roda em cada PR e em
+  pushes na `dev` e na `main`. Nas branches de trabalho, abrir um PR (inclusive em rascunho)
+  aciona as validações sem duplicá-las por push.
 - `deploy-staging.yml`: workflow reutilizável chamado pelo CI após `quality` e `auth-e2e`,
   somente em push na `dev`. Prepara o deployment sem promover, aplica migrations compatíveis,
   confere o schema, cria a conta de smoke reservada, testa o login e promove o mesmo artefato.

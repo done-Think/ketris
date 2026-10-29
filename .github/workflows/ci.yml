@@ -3,7 +3,8 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [dev, main, 'refactor/**', 'ci/**']
+    # Working branches are validated through their PR, avoiding a second run per push.
+    branches: [dev, main]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}

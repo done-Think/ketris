@@ -31,6 +31,12 @@ não depende de `workflow_dispatch` na `main`. Push de outra branch e PR não pu
 `dev` não é cancelado por outro push; release e reset compartilham a trava
 `ketris-staging-release`. Um commit superado é recusado antes da alteração do banco.
 
+Os testes completos rodam em cada abertura, reabertura ou atualização de PR. O gatilho
+`push` fica restrito à `dev` e à `main`: branches de trabalho precisam de um PR aberto para
+executar o CI, incluindo PRs em rascunho. Isso evita executar as mesmas suítes por push e
+por atualização do PR. Depois do merge, a execução na `dev` valida o commit integrado antes
+da publicação; a execução na `main` valida o resultado integrado nessa branch.
+
 A chamada repassa nominalmente os três secrets obrigatórios e o override opcional de bypass.
 O job reutilizável continua vinculado ao environment `staging`, cujos valores prevalecem.
 Sem esse repasse, o GitHub resolve os secrets como vazios mesmo com `environment` declarado;
