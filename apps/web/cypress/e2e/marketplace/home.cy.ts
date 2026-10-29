@@ -88,8 +88,14 @@ describe('Home pública do marketplace', () => {
         .should('be.visible')
         .click(),
     )
-    cy.contains('a', 'Buscar').first().click()
-    cy.location('search').then((search) => {
+    cy.contains('a', 'Buscar')
+      .first()
+      .should(($link) => {
+        const destination = new URL($link.attr('href')!, 'http://localhost')
+        expect(destination.searchParams.get('location')).to.eq(`Centro, ${fixture!.city}`)
+      })
+      .click()
+    cy.location('search', { timeout: 60000 }).should((search) => {
       expect(new URLSearchParams(search).get('location')).to.eq(`Centro, ${fixture!.city}`)
     })
     cy.get('main').find('input').first().should('have.value', `Centro, ${fixture!.city}`)

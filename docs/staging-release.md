@@ -1,13 +1,20 @@
 # Publicação coordenada da refatoração
 
-Status em 29/10/2026: publicação automática de staging validada após o merge do PR #163,
-commit `7bef8af9f8f33d9dc3115ed8403233b227798f4c`.
-A [execução 40874916469](https://github.com/done-Think/ketris/actions/runs/40874916469) aprovou
-2.882 testes unitários, 729 integrações, build e 65 cenários de navegador. A release verificou
+Status em 29/10/2026: última publicação automática confirmada no commit
+`87ead6ced95ae428c721cd4c5fba88ffe044342d`, após o merge do PR #164.
+A [execução 40897148130](https://github.com/done-Think/ketris/actions/runs/40897148130) aprovou
+2.902 testes unitários, 733 integrações, build e 65 cenários de navegador. A release verificou
 o destino, não encontrou migrations pendentes, conferiu o schema, aprovou login no candidato,
 promoveu o artefato e aprovou login no domínio público. Sessão e estatísticas públicas
 responderam 200 com o SHA esperado; estatísticas exigem o contrato HTTP v2.
 Os testes publicados específicos de S3/SES continuam pendentes.
+
+O merge posterior do PR #166 (`0c65673e`) aprovou quality e build, mas o teste de seleção
+de bairro/cidade verificou a URL antes de a navegação terminar. A
+[execução 40943395733](https://github.com/done-Think/ketris/actions/runs/40943395733) falhou
+em `auth-e2e` e ignorou `release-staging`, preservando o artefato anterior. Consultas públicas
+em 29/10 confirmaram o SHA `87ead6ce`. A branch `fix/staging-readiness` corrige a espera do
+teste e preserva capturas de falha como artefatos por execução/tentativa, durante sete dias.
 
 A migration de renome muda o contrato físico do banco. Uma instância antiga não pode continuar
 atendendo durante a troca. `X-Ketris-Api-Version: 2` protege o contrato HTTP; não adapta uma
@@ -125,7 +132,7 @@ preservam as evidências e requisitos daqueles contextos.
 - 31 testes do proxy, incluindo o SHA da release; tipos e lint dos arquivos alterados.
 - `actionlint` nos três workflows e `terraform validate` aprovados, sem apply.
 - CLI oficial conferida para os argumentos deploy/promote. Publicação e autenticação reais
-  na Vercel ainda dependem da configuração externa e da primeira execução de staging.
+  aprovadas na execução `40897148130`; a entrega posterior do PR #166 aguarda corrigir o CI.
 
 ## Recuperação do staging em 28/10/2026
 
