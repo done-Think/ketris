@@ -9,7 +9,7 @@ function enterVerificationCode(code: string) {
     })
 }
 
-const describeWithMailbox = Cypress.env('AUTH_MAILBOX_ENABLED') ? describe : describe.skip
+const describeWithMailbox = Cypress.expose('AUTH_MAILBOX_ENABLED') ? describe : describe.skip
 
 describeWithMailbox('Auth — cadastro, sessão e prova real de e-mail', () => {
   const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`

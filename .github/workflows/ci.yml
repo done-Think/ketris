@@ -3,7 +3,8 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [dev, main, 'refactor/**', 'ci/**']
+    # Working branches are validated through their PR, avoiding a second run per push.
+    branches: [dev, main]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -27,7 +28,7 @@ jobs:
         ports:
           - 55432:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U ketris -d ketris"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
@@ -42,9 +43,9 @@ jobs:
       CONTRACTS_DATA_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: npm
@@ -97,7 +98,7 @@ jobs:
         ports:
           - 55432:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U ketris -d ketris"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
@@ -130,8 +131,8 @@ jobs:
       KETRIS_BUILD_LOW_MEMORY: '1'
       NEXT_TELEMETRY_DISABLED: '1'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: npm
@@ -169,3 +170,8 @@ jobs:
       contents: read
       actions: read
     uses: ./.github/workflows/deploy-staging.yml
+    secrets:
+      STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+      CONTRACTS_DATA_ENCRYPTION_KEY: ${{ secrets.CONTRACTS_DATA_ENCRYPTION_KEY }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}

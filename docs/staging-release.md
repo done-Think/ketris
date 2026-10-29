@@ -1,20 +1,24 @@
 # Publicação coordenada da refatoração
 
-Status em 28/10/2026: aplicação e schema de staging alinhados; validação funcional completa,
-integrações AWS e publicação em produção continuam pendentes. Evidências da recuperação abaixo.
+Status em 29/10/2026: aplicação e schema de staging alinhados. O primeiro CI automático após
+o merge do PR #162 aprovou qualidade e navegador, mas a release parou em
+`MISSING_VERCEL_TOKEN`, antes de alterar o banco ou preparar um deployment. O workflow
+chamador não repassava os secrets do environment. A correção declara os secrets necessários
+na chamada e no workflow reutilizável; precisa ser integrada e validada numa nova execução
+da `dev`. Integrações AWS e publicação em produção continuam pendentes.
 
 A migration de renome muda o contrato físico do banco. Uma instância antiga não pode continuar
 atendendo durante a troca. `X-Ketris-Api-Version: 2` protege o contrato HTTP; não adapta uma
 instância antiga ao banco novo. O incidente abaixo ocorreu com migrations manuais e deploy independente.
-A automação implementada nesta branch coordena essas etapas e aguarda a configuração dos
-acessos externos e integração na `dev`.
+A automação coordena essas etapas; a primeira publicação completa continua pendente.
 
-## Automação implementada — configuração externa pendente
+## Automação implementada — primeira publicação pendente
 
-Implementação na branch `ci/automate-staging-release`, a partir da `dev` em
-`e76d31099fb2d89849d004cf6dc3430615c54c4c`. Antes do merge, configurar o GitHub Environment
-`staging`; validar a primeira publicação real após a integração. Nenhum deploy, reset ou
-apply AWS foi executado por esta tarefa. Produção continua fora do escopo.
+Implementação integrada à `dev` pelo PR #162, commit `2ae29ef12f3d3dde8d69bb00263e5b10ed5d1718`.
+Secrets, variables e restrição à branch `dev` foram configurados no GitHub Environment
+`staging`. A [primeira execução](https://github.com/done-Think/ketris/actions/runs/40812034760)
+expôs a ausência do repasse dos secrets. Nenhum deploy, reset ou apply AWS foi executado
+nessa tentativa. Produção continua fora do escopo.
 
 ```text
 Merge na dev → quality + auth-e2e → deployment candidato sem promoção
@@ -26,6 +30,17 @@ O CI chama o workflow reutilizável `deploy-staging.yml` pelo mesmo SHA. A chama
 não depende de `workflow_dispatch` na `main`. Push de outra branch e PR não publicam. O CI da
 `dev` não é cancelado por outro push; release e reset compartilham a trava
 `ketris-staging-release`. Um commit superado é recusado antes da alteração do banco.
+
+Os testes completos rodam em cada abertura, reabertura ou atualização de PR. O gatilho
+`push` fica restrito à `dev` e à `main`: branches de trabalho precisam de um PR aberto para
+executar o CI, incluindo PRs em rascunho. Isso evita executar as mesmas suítes por push e
+por atualização do PR. Depois do merge, a execução na `dev` valida o commit integrado antes
+da publicação; a execução na `main` valida o resultado integrado nessa branch.
+
+A chamada repassa nominalmente os três secrets obrigatórios e o override opcional de bypass.
+O job reutilizável continua vinculado ao environment `staging`, cujos valores prevalecem.
+Sem esse repasse, o GitHub resolve os secrets como vazios mesmo com `environment` declarado;
+ver [secrets em workflows reutilizáveis](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows).
 
 A CLI Vercel está fixada em `65.5.0`. O candidato é preparado por `--prod --skip-domain` e
 promovido sem rebuild; o alvo production é do projeto de STAGING `ketris-web-x9bk`, não da
@@ -52,13 +67,13 @@ envs, credenciais locais, dumps e estados Terraform.
    configuração e reexecutar o CI do commit atual. A recuperação manual opcional requer a
    definição do workflow também na branch padrão; o fluxo automático não requer.
 
-| Configuração no environment staging | Tipo / finalidade |
-|---|---|
-| `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | Variables com os IDs confirmados do projeto/time |
-| `VERCEL_TOKEN` | Secret com acesso ao projeto Vercel correto |
-| `STAGING_DATABASE_URL` | Secret para o RDS declarado em `infra/deploy/staging.json` |
-| `CONTRACTS_DATA_ENCRYPTION_KEY` | Secret existente, idêntico ao da aplicação |
-| `VERCEL_AUTOMATION_BYPASS_SECRET` | Override opcional; o pipeline resolve o acesso de automação pela API da Vercel |
+| Configuração no environment staging  | Tipo / finalidade                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------ |
+| `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | Variables com os IDs confirmados do projeto/time                               |
+| `VERCEL_TOKEN`                       | Secret com acesso ao projeto Vercel correto                                    |
+| `STAGING_DATABASE_URL`               | Secret para o RDS declarado em `infra/deploy/staging.json`                     |
+| `CONTRACTS_DATA_ENCRYPTION_KEY`      | Secret existente, idêntico ao da aplicação                                     |
+| `VERCEL_AUTOMATION_BYPASS_SECRET`    | Override opcional; o pipeline resolve o acesso de automação pela API da Vercel |
 
 O pipeline cria/reconcilia somente a fixture reservada `staging-ci-smoke-tenant` /
 `staging-ci-smoke-user`, com papel AGENT e senha aleatória de 256 bits gerada em memória a

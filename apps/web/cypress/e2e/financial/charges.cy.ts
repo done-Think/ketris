@@ -73,7 +73,7 @@ describe('Charges real workflows', () => {
     cy.contains('button', 'Registrar pagamento').click()
     dialog().find('input[name="paymentDate"]').type('2026-10-20')
     dialog().find('input[name="paymentMethod"]').type('PIX')
-    const storage = Cypress.env('CONTRACTS_STORAGE_ENABLED') === true
+    const storage = Cypress.expose('CONTRACTS_STORAGE_ENABLED') === true
     if (storage)
       dialog()
         .find('input[type="file"]')

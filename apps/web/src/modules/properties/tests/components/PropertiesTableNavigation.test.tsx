@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ThemeProvider } from '@mui/material'
+import { createTheme, ThemeProvider } from '@mui/material'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
@@ -60,8 +60,11 @@ describe('property table navigation', () => {
 
   it('requests the selected page size from the server', async () => {
     const user = userEvent.setup()
+    // jsdom evaluates media types, but not viewport widths. Render the desktop controls.
+    const desktopTheme = createTheme(theme)
+    desktopTheme.breakpoints.up = () => '@media screen'
     render(
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={desktopTheme}>
         <PropertiesDashboardPage />
       </ThemeProvider>,
     )
