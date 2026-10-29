@@ -13,7 +13,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -84,7 +84,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -137,7 +137,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -226,7 +226,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -285,7 +285,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -360,7 +360,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -442,7 +442,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -528,7 +528,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -597,7 +597,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -659,7 +659,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -728,7 +728,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -799,7 +799,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -879,7 +879,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -939,7 +939,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -1025,7 +1025,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -1120,7 +1120,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -1209,7 +1209,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -1328,7 +1328,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -1388,7 +1388,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -1459,7 +1459,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -1530,7 +1530,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -1601,7 +1601,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -1654,7 +1654,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -1734,7 +1734,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -1808,7 +1808,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -1882,7 +1882,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -1975,7 +1975,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -2058,7 +2058,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -2175,7 +2175,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -2219,7 +2219,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -2308,7 +2308,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -2367,7 +2367,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -2456,7 +2456,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -2549,7 +2549,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -2642,7 +2642,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -2742,7 +2742,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           documentId: string
@@ -2843,7 +2843,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -2943,7 +2943,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -3034,7 +3034,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -3128,7 +3128,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -3224,7 +3224,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -3309,7 +3309,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -3353,7 +3353,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -3424,7 +3424,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -3480,7 +3480,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -3536,7 +3536,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -3622,7 +3622,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -3666,7 +3666,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -3744,7 +3744,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -3803,7 +3803,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -3881,7 +3881,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -3984,7 +3984,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -4037,7 +4037,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -4124,7 +4124,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -4182,7 +4182,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -4245,7 +4245,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -4323,7 +4323,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -4378,7 +4378,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -4460,7 +4460,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -4543,7 +4543,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -4646,7 +4646,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -4730,7 +4730,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -4838,7 +4838,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -4905,7 +4905,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -4979,7 +4979,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -5041,7 +5041,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -5125,7 +5125,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -5190,7 +5190,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -5255,7 +5255,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -5344,7 +5344,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -5432,7 +5432,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -5512,7 +5512,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -5614,7 +5614,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -5707,7 +5707,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -5807,7 +5807,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -5907,7 +5907,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -5985,7 +5985,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -6054,7 +6054,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -6172,7 +6172,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -6249,7 +6249,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -6298,7 +6298,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -6376,7 +6376,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -6460,7 +6460,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -6501,7 +6501,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -6576,7 +6576,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -6620,7 +6620,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -6662,7 +6662,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -6731,7 +6731,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -6887,7 +6887,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -6949,7 +6949,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -7018,7 +7018,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -7087,7 +7087,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -7163,7 +7163,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -7236,7 +7236,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -7304,7 +7304,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -7353,7 +7353,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -7417,7 +7417,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -7466,7 +7466,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -7574,7 +7574,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -7614,7 +7614,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -7683,7 +7683,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -7756,7 +7756,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -7818,7 +7818,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -7858,7 +7858,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -7927,7 +7927,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -8000,7 +8000,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -8067,7 +8067,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -8160,7 +8160,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -8218,7 +8218,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -8280,7 +8280,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -8369,7 +8369,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -8415,7 +8415,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -8470,7 +8470,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -8526,7 +8526,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -8597,7 +8597,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -8684,7 +8684,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -8744,7 +8744,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -8812,7 +8812,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -8867,7 +8867,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -8922,7 +8922,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -8983,7 +8983,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           accountType: 'INDIVIDUAL' | 'BROKER' | 'AGENCY'
@@ -9070,7 +9070,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -9190,7 +9190,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -9240,7 +9240,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -9317,7 +9317,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -9392,7 +9392,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -9482,7 +9482,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -9561,7 +9561,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -9602,7 +9602,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -9671,7 +9671,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -9715,7 +9715,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -9757,7 +9757,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -9823,7 +9823,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -9889,7 +9889,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -9949,7 +9949,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -10096,7 +10096,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -10165,7 +10165,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -10245,7 +10245,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -10311,7 +10311,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -10391,7 +10391,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -10465,7 +10465,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -10546,7 +10546,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -10589,7 +10589,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never
@@ -10670,7 +10670,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -10743,7 +10743,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -10831,7 +10831,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -10893,7 +10893,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -10984,7 +10984,7 @@ export interface paths {
         query?: never
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path: {
           id: string
@@ -11077,7 +11077,7 @@ export interface paths {
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '2'
+          'X-Ketris-Api-Version': '3'
         }
         path?: never
         cookie?: never

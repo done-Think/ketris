@@ -1,6 +1,5 @@
 import type { ActivityType } from '../domain/activity.entity'
 import type { GuaranteeType, OpportunityStatus } from '../domain/opportunity.entity'
-import { normalizeOpportunityResponseAction } from '@shared/config/opportunity-response-actions'
 
 export const CRM_STATUS_KEYS = {
   DRAFT: 'draft',
@@ -36,6 +35,9 @@ const systemActionKeys: Record<
   ACCEPT: 'accepted',
   REJECT: 'rejected',
   REQUEST_INFORMATION: 'informationRequested',
+  ACEITAR: 'accepted',
+  RECUSAR: 'rejected',
+  SOLICITAR_INFORMACOES: 'informationRequested',
 }
 export function crmStatusKey(status: OpportunityStatus) {
   return CRM_STATUS_KEYS[status]
@@ -47,8 +49,5 @@ export function crmActivityKey(type: ActivityType) {
   return CRM_ACTIVITY_KEYS[type]
 }
 export function crmSystemActionKey(action: string | null | undefined) {
-  const normalized = action ? normalizeOpportunityResponseAction(action) : null
-  return normalized && Object.hasOwn(systemActionKeys, normalized)
-    ? systemActionKeys[normalized]
-    : null
+  return action && Object.hasOwn(systemActionKeys, action) ? systemActionKeys[action] : null
 }

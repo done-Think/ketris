@@ -27,18 +27,14 @@ describe('JoseTokenService claims', () => {
     })
   })
 
-  it('reads a legacy signed role without mutating or weakening the current claims', async () => {
+  it('rejects a signed token that only has the retired role claim', async () => {
     const token = await signClaims({
       sub: 'user-1',
       tenantId: 'tenant-1',
       papel: 'AGENT',
       sessionVersion: 4,
     })
-    await expect(new JoseTokenService().verify(token)).resolves.toEqual({
-      ...validClaims,
-      sessionVersion: 4,
-    })
-    expect(decodeJwt(token)).toHaveProperty('papel', 'AGENT')
+    await expect(new JoseTokenService().verify(token)).rejects.toThrow()
   })
 
   it('emits only the English role claim for new tokens', async () => {
@@ -54,9 +50,14 @@ describe('JoseTokenService claims', () => {
     })
     expect(decodeJwt(token)).toMatchObject({ role: 'AGENT', sessionVersion: 4 })
     expect(decodeJwt(token)).not.toHaveProperty('papel')
+    await expect(new JoseTokenService().verify(token)).resolves.toMatchObject({
+      ...validClaims,
+      sessionVersion: 4,
+    })
   })
 
   it.each([
+    { ...validClaims, papel: 'AGENT' },
     { ...validClaims, papel: 'OWNER' },
     { ...validClaims, role: null, papel: 'AGENT' },
     { sub: 'user-1', tenantId: 'tenant-1', papel: 'ADMIN' },

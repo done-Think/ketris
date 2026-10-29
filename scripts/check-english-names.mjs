@@ -32,11 +32,11 @@ const auditReaders = new Set([
   'charge-history.test.ts',
   'maintenance-history.test.ts',
 ])
-const jwtReaders = new Set([
-  'access-token.schema.ts',
-  'auth-options.ts',
-  'auth-options.test.ts',
-  'jose-token.service.test.ts',
+const jwtRejectionTests = new Set([
+  'apps/web/src/shared/lib/auth/tests/auth-options.test.ts',
+  'apps/web/src/server/auth/tests/infrastructure/jose-token.service.test.ts',
+  'apps/web/src/app/api/auth/tests/users/route.integration.test.ts',
+  'apps/web/cypress/support/session-cookies.ts',
 ])
 const oldClientTokens = new Set(['titulo', 'finalidade', 'tipo', 'valor', 'VENDA', 'CASA'])
 // ViaCEP's wire format is outside our control. Only these two external keys are exempt,
@@ -49,7 +49,7 @@ const postalCodeBoundaryFiles = new Set([
 const postalCodeWireTokens = new Set(['logradouro', 'bairro'])
 const legacyOpportunityActions = new Set(['ACEITAR', 'RECUSAR', 'SOLICITAR_INFORMACOES'])
 const opportunityActionCompatibilityFiles = new Set([
-  'apps/web/src/shared/config/opportunity-response-actions.ts',
+  'apps/web/src/server/crm/constants/translation-keys.ts',
   'apps/web/src/server/crm/tests/schemas/opportunity-response-actions.test.ts',
   'apps/web/src/app/api/crm/tests/opportunities/[id]/respond/route.integration.test.ts',
 ])
@@ -73,7 +73,7 @@ function allowed(file, token, literal) {
     (postalCodeBoundaryFiles.has(path.relative(root, file)) && postalCodeWireTokens.has(token)) ||
     basename === 'maintenance-migrations.integration.test.ts' ||
     (literal && auditReaders.has(basename)) ||
-    (token === 'papel' && jwtReaders.has(basename)) ||
+    (token === 'papel' && jwtRejectionTests.has(path.relative(root, file))) ||
     (basename === 'api-contract.cy.ts' && oldClientTokens.has(token))
   )
 }

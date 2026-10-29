@@ -10,7 +10,7 @@ describe('English HTTP contract', () => {
   })
   it('publishes the current property fields, enum values and version requirement', () => {
     const document = generateOpenApiDocument()
-    expect(document.info.version).toBe('2.0.0')
+    expect(document.info.version).toBe('3.0.0')
     expect(document.components?.schemas?.TenantProperty).toMatchObject({
       properties: {
         title: { type: 'string' },
@@ -26,7 +26,7 @@ describe('English HTTP contract', () => {
         in: 'header',
         name: 'X-Ketris-Api-Version',
         required: true,
-        schema: { type: 'string', enum: ['2'] },
+        schema: { type: 'string', enum: ['3'] },
       }),
     )
   })

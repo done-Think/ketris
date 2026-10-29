@@ -23,9 +23,20 @@ retornou HTTP 403 sem permissão de origem. Os quatro bloqueios de acesso públi
 habilitados. O RDS continuou disponível em PostgreSQL 16.13, sem mudanças pendentes.
 
 O fluxo completo de Maintenance com arquivo de 8 MB foi validado anteriormente no E2E local com
-storage simulado. A verificação na AWS confirmou o CORS real; ela não representa um deploy do código
-nem um teste de upload pela aplicação publicada. O ambiente da aplicação ainda precisa da versão
-correspondente e de suas credenciais de storage configuradas.
+storage simulado. A rodada de 26/10 confirmou o CORS; o ensaio publicado posterior está abaixo.
+
+## Validação publicada em 29/10/2026
+
+No artefato `87ead6ced95ae428c721cd4c5fba88ffe044342d`, duas rodadas com contas e chamados temporários
+aprovaram o fluxo real: autorização pela aplicação, preflight HTTP da origem de staging, PUT de PNG
+com checksum, confirmação do anexo e redirecionamento autenticado para leitura assinada.
+Foram usados um PNG pequeno e outro de 7.854.138 bytes (aproximadamente 7,49 MiB).
+O SHA-256 do download correspondeu ao arquivo enviado.
+
+Leituras anônimas retornaram 401 na aplicação e 403 no S3; a tentativa de outro tenant retornou 404.
+Os registros e as versões S3 criados pelo ensaio foram removidos ao final. O bucket permaneceu
+privado e a configuração foi apenas consultada. O aceite humano da interface e os ensaios de carga
+ficam separados dessa evidência de API/preflight.
 
 O estado recuperado, seus backups e as credenciais permanecem fora do Git, com acesso local restrito.
 A análise dos metadados do RDS e o procedimento de recuperação estão registrados na branch
