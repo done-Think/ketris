@@ -2,6 +2,15 @@ name: Staging release
 
 on:
   workflow_call:
+    secrets:
+      STAGING_DATABASE_URL:
+        required: true
+      CONTRACTS_DATA_ENCRYPTION_KEY:
+        required: true
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_AUTOMATION_BYPASS_SECRET:
+        required: false
   workflow_dispatch:
     inputs:
       confirm:
@@ -34,14 +43,14 @@ jobs:
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: npm
       - name: Confere CI para a recuperação manual
         if: github.event_name == 'workflow_dispatch'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const {data} = await github.rest.actions.listWorkflowRuns({owner: context.repo.owner, repo: context.repo.repo, workflow_id: 'ci.yml', head_sha: context.sha, status: 'completed', per_page: 100});
@@ -50,6 +59,6 @@ jobs:
             }
       - run: npm ci
       - name: Instala a CLI da Vercel com versão fixada
-        run: npm install --global vercel@65.5.0
+        run: npm install --global --allow-scripts=esbuild vercel@65.5.0
       - name: Prepara, migra, valida e promove o mesmo artefato
         run: node scripts/staging-release.mjs
