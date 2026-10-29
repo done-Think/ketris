@@ -21,14 +21,12 @@ export function PropertyBreadcrumbs({
   propertyTitle,
 }: PropertyBreadcrumbsProps) {
   const t = useTranslations('marketplace')
-  const [neighborhood = location, city = 'São Paulo'] = location
-    .split(',')
-    .map((item) => item.trim())
+  const [neighborhood, city] = location.split(',').map((item) => item.trim())
 
   const locationBreadcrumbs: MarketplaceBreadcrumbItem[] = [
     { label: t('navigation.home'), href: '/' },
-    { label: city, href: buildLocationHref(city) },
-    { label: neighborhood, href: buildLocationHref(neighborhood) },
+    ...(city ? [{ label: city, href: buildLocationHref(city) }] : []),
+    ...(neighborhood ? [{ label: neighborhood, href: buildLocationHref(neighborhood) }] : []),
   ]
 
   if (context?.originType === 'broker' && context.originName && context.originHref) {

@@ -11,7 +11,12 @@ const statLabels = {
   publishedProperties: 'activeProperties',
   publishedBrokers: 'partnerBrokers',
   servedCities: 'servedCities',
-} as const satisfies Record<keyof MarketplaceStats, string>
+} as const
+const statKeys = [
+  'publishedProperties',
+  'publishedBrokers',
+  'servedCities',
+] as const satisfies readonly (keyof MarketplaceStats)[]
 
 export function HeroStats() {
   const format = useFormatter()
@@ -20,9 +25,7 @@ export function HeroStats() {
 
   if (!stats) return null
 
-  const items = (Object.keys(statLabels) as (keyof MarketplaceStats)[]).filter(
-    (key) => stats[key] > 0,
-  )
+  const items = statKeys.filter((key) => stats[key] > 0)
   if (!items.length) return null
 
   return (

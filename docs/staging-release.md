@@ -1,24 +1,27 @@
 # Publicação coordenada da refatoração
 
-Status em 29/10/2026: aplicação e schema de staging alinhados. O primeiro CI automático após
-o merge do PR #162 aprovou qualidade e navegador, mas a release parou em
-`MISSING_VERCEL_TOKEN`, antes de alterar o banco ou preparar um deployment. O workflow
-chamador não repassava os secrets do environment. A correção declara os secrets necessários
-na chamada e no workflow reutilizável; precisa ser integrada e validada numa nova execução
-da `dev`. Integrações AWS e publicação em produção continuam pendentes.
+Status em 29/10/2026: publicação automática de staging validada após o merge do PR #163,
+commit `7bef8af9f8f33d9dc3115ed8403233b227798f4c`.
+A [execução 40874916469](https://github.com/done-Think/ketris/actions/runs/40874916469) aprovou
+2.882 testes unitários, 729 integrações, build e 65 cenários de navegador. A release verificou
+o destino, não encontrou migrations pendentes, conferiu o schema, aprovou login no candidato,
+promoveu o artefato e aprovou login no domínio público. Sessão e estatísticas públicas
+responderam 200 com o SHA esperado; estatísticas exigem o contrato HTTP v2.
+Os testes publicados específicos de S3/SES continuam pendentes.
 
 A migration de renome muda o contrato físico do banco. Uma instância antiga não pode continuar
 atendendo durante a troca. `X-Ketris-Api-Version: 2` protege o contrato HTTP; não adapta uma
 instância antiga ao banco novo. O incidente abaixo ocorreu com migrations manuais e deploy independente.
-A automação coordena essas etapas; a primeira publicação completa continua pendente.
+A automação de mudanças compatíveis coordena essas etapas e foi exercitada no staging.
 
-## Automação implementada — primeira publicação pendente
+## Automação implementada e validada no staging
 
 Implementação integrada à `dev` pelo PR #162, commit `2ae29ef12f3d3dde8d69bb00263e5b10ed5d1718`.
 Secrets, variables e restrição à branch `dev` foram configurados no GitHub Environment
 `staging`. A [primeira execução](https://github.com/done-Think/ketris/actions/runs/40812034760)
 expôs a ausência do repasse dos secrets. Nenhum deploy, reset ou apply AWS foi executado
-nessa tentativa. Produção continua fora do escopo.
+nessa tentativa. O PR #163 corrigiu o repasse nominal dos secrets e a duplicação de CI nas
+branches de trabalho; a execução bem-sucedida de 29/10 está registrada acima.
 
 ```text
 Merge na dev → quality + auth-e2e → deployment candidato sem promoção

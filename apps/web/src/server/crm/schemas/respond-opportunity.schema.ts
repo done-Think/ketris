@@ -1,16 +1,24 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
+import {
+  normalizeOpportunityResponseAction,
+  opportunityResponseActions,
+} from '@shared/config/opportunity-response-actions'
 
 import { opportunityActivitySchema } from './activity.schema'
 import { opportunitySchema } from './opportunity.schema'
 
 export const opportunityResponseActionSchema = z
-  .enum(['ACEITAR', 'RECUSAR', 'SOLICITAR_INFORMACOES'])
+  .enum(opportunityResponseActions)
   .openapi('OpportunityResponseAction')
 
 export const respondOpportunityRequestSchema = z
   .object({
-    action: opportunityResponseActionSchema,
+    action: z.preprocess(
+      (action) =>
+        typeof action === 'string' ? normalizeOpportunityResponseAction(action) : action,
+      opportunityResponseActionSchema,
+    ),
     message: z
       .string()
       .min(1)

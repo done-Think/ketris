@@ -6,5 +6,6 @@ export const marketplaceStatsResponseSchema = z
     publishedProperties: z.number().int().nonnegative(),
     publishedBrokers: z.number().int().nonnegative(),
     servedCities: z.number().int().nonnegative(),
+    locations: z.array(z.string()).max(20).optional(),
   })
   .openapi('MarketplaceStatsResponse')

@@ -1,10 +1,14 @@
+import {
+  maintenancePermissionsFixture,
+  maintenanceTicketFixture,
+} from '../fixtures/maintenance-ticket'
 import { render, screen } from '@testing-library/react'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { MaintenanceWorkflowControls } from '../../components/MaintenanceWorkflowControls'
 import { useMaintenanceAction, useMaintenanceOptions } from '../../hooks/use-maintenance'
-import type { ApiMaintenanceTicket, MaintenancePermissions } from '../../types/service'
+import type { ApiMaintenanceTicket } from '../../types/service'
 
 vi.mock('next-auth/react', () => ({ useSession: vi.fn() }))
 
@@ -13,11 +17,11 @@ vi.mock('../../hooks/use-maintenance', () => ({
   useMaintenanceOptions: vi.fn(),
 }))
 
-const ticket: ApiMaintenanceTicket = {
+const ticket: ApiMaintenanceTicket = maintenanceTicketFixture({
   id: 'MNT-0089',
   propertyId: 'p1',
   propertyTitle: 'Apt Jardins 3q',
-  permissions: { collaborate: true } as MaintenancePermissions,
+  permissions: maintenancePermissionsFixture({ collaborate: true }),
   replacementRequests: [
     {
       id: 'r1',
@@ -43,7 +47,7 @@ const ticket: ApiMaintenanceTicket = {
   updatedAt: '2025-02-20T00:00:00.000Z',
   activities: [],
   attachments: [],
-}
+})
 
 function mockSession(role: 'OWNER' | 'AGENT') {
   vi.mocked(useSession).mockReturnValue({

@@ -36,7 +36,7 @@ describe('CRM request validation', () => {
     [patchLeadRequestSchema, { notes: 'Ligou' }],
     [convertLeadRequestSchema, { propertyId: 'property-1', proposedValue: 1800.45 }],
     [createActivityRequestSchema, { description: 'Ligou' }],
-    [respondOpportunityRequestSchema, { action: 'ACEITAR' }],
+    [respondOpportunityRequestSchema, { action: 'ACCEPT' }],
   ])('rejects unknown fields rather than returning a false success', (schema, valid) => {
     expect(schema.safeParse(valid).success).toBe(true)
     expect(schema.safeParse({ ...valid, unknownField: 'must not disappear' }).success).toBe(false)

@@ -1,3 +1,4 @@
+import { maintenanceTicketFixture } from '../fixtures/maintenance-ticket'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
@@ -32,7 +33,7 @@ vi.mock('../../hooks/use-maintenance', () => ({
   useMaintenanceAction: vi.fn(),
 }))
 
-const mockTicket: ApiMaintenanceTicket = {
+const mockTicket: ApiMaintenanceTicket = maintenanceTicketFixture({
   permissions: {
     linkContract: false,
     schedule: false,
@@ -95,7 +96,7 @@ const mockTicket: ApiMaintenanceTicket = {
       createdAt: '2025-02-20T10:15:00.000Z',
     },
   ],
-}
+})
 
 function mockSession(role: 'OWNER' | 'RENTER' = 'OWNER') {
   vi.mocked(useSession).mockReturnValue({

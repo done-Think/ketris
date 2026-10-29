@@ -4,15 +4,7 @@ export const searchOptions = {
   location: {
     labelKey: 'location',
     query: 'location',
-    values: [
-      'Jardins, São Paulo',
-      'Vila Madalena, São Paulo',
-      'Itaim Bibi, São Paulo',
-      'Moema, São Paulo',
-      'Pinheiros, São Paulo',
-      'Savassi, Belo Horizonte',
-      'Batista Campos, Belém',
-    ],
+    values: [],
   },
   propertyType: {
     labelKey: 'propertyType',

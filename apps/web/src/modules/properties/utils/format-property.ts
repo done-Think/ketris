@@ -1,14 +1,11 @@
 import type { PropertyFormatter } from '../types/dashboard-property'
+import { formatCurrency } from '@shared/lib/utils/format'
 
 export function formatPropertyCurrency(value: number, formatter: PropertyFormatter): string {
-  return formatter
-    .number(value, {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
-      maximumFractionDigits: 2,
-    })
-    .replace(/\u00a0/g, ' ')
+  return formatCurrency(value, (amount, options) => formatter.number(amount, options), {
+    minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).replace(/\u00a0/g, ' ')
 }
 
 export function formatPropertyArea(

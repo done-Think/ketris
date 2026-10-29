@@ -1,3 +1,4 @@
+import { maintenancePermissionsFixture } from '../fixtures/maintenance-ticket'
 import type { MaintenanceCategory } from '@shared/lib/utils/maintenance-categories'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
@@ -72,6 +73,12 @@ describe('Maintenance query isolation and paging', () => {
     const plumbing: Awaited<ReturnType<typeof maintenanceService.list>> = {
       items: [
         {
+          scheduledAt: null,
+          contractId: null,
+          responsibleId: null,
+          responsibleName: null,
+          deletedAt: null,
+          permissions: maintenancePermissionsFixture(),
           id: 'plumbing',
           propertyId: 'property',
           propertyTitle: 'Property',

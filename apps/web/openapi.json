@@ -3182,7 +3182,7 @@
       },
       "OpportunityResponseAction": {
         "type": "string",
-        "enum": ["ACEITAR", "RECUSAR", "SOLICITAR_INFORMACOES"]
+        "enum": ["ACCEPT", "REJECT", "REQUEST_INFORMATION"]
       },
       "RespondOpportunityRequest": {
         "type": "object",
@@ -3931,7 +3931,8 @@
         "properties": {
           "publishedProperties": { "type": "integer", "minimum": 0 },
           "publishedBrokers": { "type": "integer", "minimum": 0 },
-          "servedCities": { "type": "integer", "minimum": 0 }
+          "servedCities": { "type": "integer", "minimum": 0 },
+          "locations": { "type": "array", "items": { "type": "string" }, "maxItems": 20 }
         },
         "required": ["publishedProperties", "publishedBrokers", "servedCities"]
       },

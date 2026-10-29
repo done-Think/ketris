@@ -15,6 +15,7 @@ import type {
   MaintenanceTicketStatusDTO,
   UpdateMaintenanceTicketRequestDTO,
 } from '@shared/types/generated/maintenance/dto'
+import type { components } from '@shared/types/generated/api'
 
 export type MaintenanceAction = MaintenanceActionDTO
 export type MaintenancePermissions = MaintenancePermissionsDTO
@@ -26,26 +27,8 @@ export type ApiMaintenanceActivityType = MaintenanceActivityTypeDTO
 export type ApiMaintenanceActivity = MaintenanceActivityDTO
 export type ApiMaintenanceAttachment = MaintenanceAttachmentDTO
 
-type OptionalTicketFields =
-  | 'scheduledAt'
-  | 'contractId'
-  | 'responsibleId'
-  | 'responsibleName'
-  | 'provider'
-  | 'deletedAt'
-  | 'permissions'
-  | 'replacementRequests'
-  | 'completedByRole'
-export type ApiMaintenanceTicket = Omit<MaintenanceTicketDTO, OptionalTicketFields> &
-  Partial<Pick<MaintenanceTicketDTO, OptionalTicketFields>>
-
-type OptionalListItemFields =
-  'scheduledAt' | 'contractId' | 'responsibleId' | 'responsibleName' | 'deletedAt' | 'permissions'
-export type ApiMaintenanceTicketListItem = Omit<
-  MaintenanceTicketListItemDTO,
-  OptionalListItemFields
-> &
-  Partial<Pick<MaintenanceTicketListItemDTO, OptionalListItemFields>>
+export type ApiMaintenanceTicket = MaintenanceTicketDTO
+export type ApiMaintenanceTicketListItem = MaintenanceTicketListItemDTO
 
 export type MaintenanceTicketListFilters = Omit<
   Partial<ListMaintenanceTicketsQueryDTO>,
@@ -53,21 +36,12 @@ export type MaintenanceTicketListFilters = Omit<
 > & { archived?: boolean }
 export type CreateMaintenanceTicketPayload = CreateMaintenanceTicketRequestDTO
 export type UpdateMaintenanceTicketPayload = UpdateMaintenanceTicketRequestDTO
-export type ListMaintenanceTicketsResponse = Omit<MaintenanceTicketListResponseDTO, 'items'> & {
-  items: ApiMaintenanceTicketListItem[]
-}
-export interface MaintenanceTicketResponse {
-  ticket: ApiMaintenanceTicket
-}
-export interface MaintenanceActivityResponse {
-  activity: ApiMaintenanceActivity
-}
-export interface MaintenanceActivitiesResponse {
-  activities: ApiMaintenanceActivity[]
-}
-export interface UploadMaintenanceTicketAttachmentResponse {
-  attachment: ApiMaintenanceAttachment
-}
+export type ListMaintenanceTicketsResponse = MaintenanceTicketListResponseDTO
+export type MaintenanceTicketResponse = components['schemas']['MaintenanceTicketResponse']
+export type MaintenanceActivityResponse = components['schemas']['MaintenanceActivityResponse']
+export type MaintenanceActivitiesResponse = components['schemas']['MaintenanceActivitiesResponse']
+export type UploadMaintenanceTicketAttachmentResponse =
+  components['schemas']['MaintenanceAttachmentResponse']
 export type MaintenanceUserLinkInput = MaintenanceLinksDTO
 export interface UpdateMaintenanceTicketVariables {
   id: string

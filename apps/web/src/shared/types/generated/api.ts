@@ -12950,6 +12950,7 @@ export interface components {
       size: number
     }
     MarketplaceStatsResponse: {
+      locations?: string[]
       publishedBrokers: number
       publishedProperties: number
       servedCities: number
@@ -13016,7 +13017,7 @@ export interface components {
       opportunity: components['schemas']['Opportunity']
     }
     /** @enum {string} */
-    OpportunityResponseAction: 'ACEITAR' | 'RECUSAR' | 'SOLICITAR_INFORMACOES'
+    OpportunityResponseAction: 'ACCEPT' | 'REJECT' | 'REQUEST_INFORMATION'
     OpportunityResponsible: {
       id: string
       name: string
