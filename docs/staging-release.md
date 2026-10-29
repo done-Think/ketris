@@ -7,7 +7,7 @@ A [execução 40897148130](https://github.com/done-Think/ketris/actions/runs/408
 o destino, não encontrou migrations pendentes, conferiu o schema, aprovou login no candidato,
 promoveu o artefato e aprovou login no domínio público. Sessão e estatísticas públicas
 responderam 200 com o SHA esperado; estatísticas exigem o contrato HTTP v2.
-Os testes publicados específicos de S3/SES continuam pendentes.
+Os fluxos privados de S3 e o envio SES foram exercitados nesse artefato em 29/10, conforme abaixo.
 
 O merge posterior do PR #166 (`0c65673e`) aprovou quality e build, mas o teste de seleção
 de bairro/cidade verificou a URL antes de a navegação terminar. A
@@ -15,6 +15,22 @@ de bairro/cidade verificou a URL antes de a navegação terminar. A
 em `auth-e2e` e ignorou `release-staging`, preservando o artefato anterior. Consultas públicas
 em 29/10 confirmaram o SHA `87ead6ce`. A branch `fix/staging-readiness` corrige a espera do
 teste e preserva capturas de falha como artefatos por execução/tentativa, durante sete dias.
+
+### Integrações exercitadas em 29/10/2026
+
+- SES: requisição de confirmação pelo site para destinatário autorizado; o contador do SES
+  passou de zero para um envio e o usuário confirmou o recebimento no Outlook, com remetente
+  `contato@donethink.com`. O cadastro temporário da aplicação foi removido. A identidade verificada
+  de envio é independente da URL Vercel do site.
+- S3: APIs reais de Contracts e Maintenance, preflights HTTP da origem de staging, PUT com
+  checksum, confirmação e downloads assinados com integridade conferida. Acesso anônimo e de
+  outro tenant foram recusados. O registro manual das duas partes usou o PDF/hash corretos e
+  produziu auditoria. Duas rodadas cobriram arquivos pequenos, PDF de 10 MiB e PNG de 7,49 MiB.
+  Os quatro tenants temporários, registros e quatro versões S3 foram removidos.
+
+As evidências detalhadas estão em [Contracts](technical-debt/contracts-s3-cors.md) e
+[Maintenance](technical-debt/maintenance-s3-cors.md). Aceite humano das telas e ensaios de carga
+no hosting continuam separados desses testes de integração.
 
 A migration de renome muda o contrato físico do banco. Uma instância antiga não pode continuar
 atendendo durante a troca. `X-Ketris-Api-Version: 2` protege o contrato HTTP; não adapta uma
