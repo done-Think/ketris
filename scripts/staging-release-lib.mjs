@@ -140,7 +140,7 @@ export async function smokeDeployment(
   const cookies = new Map()
   async function request(path, { method = 'GET', body, form = false } = {}) {
     const headers = {
-      'X-Ketris-Api-Version': '2',
+      'X-Ketris-Api-Version': '3',
       Cookie: [...cookies].map(([k, v]) => `${k}=${v}`).join('; '),
     }
     if (bypass) headers['x-vercel-protection-bypass'] = bypass
@@ -165,7 +165,7 @@ export async function smokeDeployment(
   try {
     const stats = await request('/api/marketplace/stats')
     requireValue(stats.headers.get('X-Ketris-Release-Sha') === sha, 'WRONG_DEPLOYMENT_SHA')
-    requireValue(stats.headers.get('X-Ketris-Api-Version') === '2', 'WRONG_API_VERSION')
+    requireValue(stats.headers.get('X-Ketris-Api-Version') === '3', 'WRONG_API_VERSION')
     requireValue(typeof (await stats.json()) === 'object', 'INVALID_STATS_RESPONSE')
     const { csrfToken } = await (await request('/api/auth/csrf')).json()
     requireValue(typeof csrfToken === 'string' && Boolean(csrfToken), 'MISSING_CSRF_TOKEN')

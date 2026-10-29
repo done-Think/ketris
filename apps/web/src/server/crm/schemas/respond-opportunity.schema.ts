@@ -1,9 +1,6 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
-import {
-  normalizeOpportunityResponseAction,
-  opportunityResponseActions,
-} from '@shared/config/opportunity-response-actions'
+import { opportunityResponseActions } from '@shared/config/opportunity-response-actions'
 
 import { opportunityActivitySchema } from './activity.schema'
 import { opportunitySchema } from './opportunity.schema'
@@ -14,11 +11,7 @@ export const opportunityResponseActionSchema = z
 
 export const respondOpportunityRequestSchema = z
   .object({
-    action: z.preprocess(
-      (action) =>
-        typeof action === 'string' ? normalizeOpportunityResponseAction(action) : action,
-      opportunityResponseActionSchema,
-    ),
+    action: opportunityResponseActionSchema,
     message: z
       .string()
       .min(1)

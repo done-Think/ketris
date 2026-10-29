@@ -50,7 +50,7 @@ describe('HttpClient — refresh de token em respostas 401', () => {
     const client = new HttpClient()
     expect(axios.create).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        headers: expect.objectContaining({ 'X-Ketris-Api-Version': '2' }),
+        headers: expect.objectContaining({ 'X-Ketris-Api-Version': '3' }),
       }),
     )
     const { instance, onRejected } = getResponseErrorHandler()

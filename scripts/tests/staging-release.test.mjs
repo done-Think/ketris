@@ -245,6 +245,7 @@ test('candidate must be an immutable HTTPS URL for the expected project', () => 
 
 function smokeFixture({
   wrongSha = false,
+  wrongVersion = false,
   missingUser = false,
   unavailable = false,
   redirect = false,
@@ -256,6 +257,7 @@ function smokeFixture({
     seen.push({ url, options })
     assert.equal(url.origin, origin)
     assert.equal(options.redirect, 'manual')
+    assert.equal(options.headers['X-Ketris-Api-Version'], '3')
     if (redirect)
       return new Response(null, {
         status: 302,
@@ -268,7 +270,7 @@ function smokeFixture({
         {
           headers: {
             'X-Ketris-Release-Sha': wrongSha ? 'b'.repeat(40) : sha,
-            'X-Ketris-Api-Version': '2',
+            'X-Ketris-Api-Version': wrongVersion ? '2' : '3',
           },
         },
       )
@@ -342,6 +344,7 @@ test('accepts the configured canonical callback without following it from the ca
 
 for (const failure of [
   { wrongSha: true },
+  { wrongVersion: true },
   { missingUser: true },
   { unavailable: true },
   { redirect: true },

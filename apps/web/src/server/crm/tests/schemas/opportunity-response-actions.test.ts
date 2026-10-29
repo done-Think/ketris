@@ -9,14 +9,13 @@ const cases = [
   ['SOLICITAR_INFORMACOES', 'REQUEST_INFORMATION', 'informationRequested'],
 ] as const
 
-describe('opportunity response wire and history compatibility', () => {
-  it.each(cases)('accepts %s and %s while retaining human text', (legacy, action) => {
+describe('canonical opportunity responses and history compatibility', () => {
+  it.each(cases)('rejects %s and accepts %s while retaining human text', (legacy, action) => {
     const message = `Texto livre: ${legacy}. Não deve ser traduzido.`
     expect(respondOpportunityRequestSchema.parse({ action, message })).toEqual({ action, message })
-    expect(respondOpportunityRequestSchema.parse({ action: legacy, message })).toEqual({
-      action,
-      message,
-    })
+    expect(respondOpportunityRequestSchema.safeParse({ action: legacy, message }).success).toBe(
+      false,
+    )
   })
 
   it.each(cases)(

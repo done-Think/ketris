@@ -1,4 +1,4 @@
-export const API_CONTRACT_VERSION = '2'
+export const API_CONTRACT_VERSION = '3'
 export const API_CONTRACT_HEADER = 'X-Ketris-Api-Version'
 
 export function requiresApiContract(pathname: string): boolean {

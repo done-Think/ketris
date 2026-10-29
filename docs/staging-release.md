@@ -16,6 +16,22 @@ em `auth-e2e` e ignorou `release-staging`, preservando o artefato anterior. Cons
 em 29/10 confirmaram o SHA `87ead6ce`. A branch `fix/staging-readiness` corrige a espera do
 teste e preserva capturas de falha como artefatos por execução/tentativa, durante sete dias.
 
+### Próxima entrega: contrato HTTP v3
+
+Com o inventário do staging limitado ao site Ketris, esta branch prepara o corte de entradas
+legadas: contrato HTTP v3, ações CRM canônicas e access tokens de tenant com `role`. Frontend, OpenAPI, tipos
+gerados e smoke de publicação passam à mesma versão. O artefato publicado `87ead6ce` ainda usa v2.
+
+Após a promoção, abas com v2 recebem 409 antes do handler e devem recarregar. Cookies de tenant dependentes
+do claim aposentado exigem novo login; sessões canônicas conservam suas verificações de usuário
+e versão. Históricos antigos permanecem legíveis. A cadeia de 53 migrations não muda.
+
+Verificação local: 338 testes unitários direcionados, 39 testes dos scripts, 33 integrações
+PostgreSQL e 67 cenários Cypress em 18 specs aprovados, além de build, tipos, lint, guardas e
+OpenAPI. O navegador conferiu a sessão canônica, o novo login exigido pelo cookie legado e
+o bloqueio de mutações de abas v2 antes da escrita. Os bancos descartáveis foram removidos.
+O Cypress usou espera padrão de comandos de 30 s somente na CLI local; o CI mantém seus tempos padrão.
+
 ### Integrações exercitadas em 29/10/2026
 
 - SES: requisição de confirmação pelo site para destinatário autorizado; o contador do SES
@@ -33,7 +49,7 @@ As evidências detalhadas estão em [Contracts](technical-debt/contracts-s3-cors
 no hosting continuam separados desses testes de integração.
 
 A migration de renome muda o contrato físico do banco. Uma instância antiga não pode continuar
-atendendo durante a troca. `X-Ketris-Api-Version: 2` protege o contrato HTTP; não adapta uma
+atendendo durante a troca. `X-Ketris-Api-Version` protege o contrato HTTP; não adapta uma
 instância antiga ao banco novo. O incidente abaixo ocorreu com migrations manuais e deploy independente.
 A automação de mudanças compatíveis coordena essas etapas e foi exercitada no staging.
 
@@ -253,7 +269,7 @@ local. Não é necessário criar chaves permanentes para executar esses testes l
 A URL de staging registrada no Terraform, `https://ketris-web-x9bk.vercel.app`, respondeu 200 em
 `/pt` e `/api/marketplace/stats`. Esses retornos não anunciaram o cabeçalho de contrato v2.
 `/api/docs/openapi.json` respondeu 200 e informou API `0.1.0`, com os campos antigos em português
-nas propriedades. A nova entrega gera OpenAPI `2.0.0`. Isso confirma que a aplicação desta branch
+nas propriedades. A entrega do renome gerou OpenAPI `2.0.0`. Isso confirmou que aquela aplicação
 não está promovida ali; não comprova o schema atual do RDS. Não houve escrita nem implantação
 nessa verificação. A AWS continuou recusando STS com sessão expirada. Este é o registro anterior
 ao merge e à recuperação descritos acima; não representa o estado atual do staging.

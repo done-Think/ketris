@@ -32,7 +32,7 @@ vi.mock('../postgres-rate-limit-store', async () => {
 function postFrom(ip: string, pathname: string) {
   return new NextRequest(`http://localhost${pathname}`, {
     method: 'POST',
-    headers: { 'x-forwarded-for': ip, 'X-Ketris-Api-Version': '2' },
+    headers: { 'x-forwarded-for': ip, 'X-Ketris-Api-Version': '3' },
   })
 }
 
@@ -217,17 +217,24 @@ describe('proxy rate limit', () => {
     expect((await proxy(postFrom('198.51.100.1', '/api/auth/login'))).status).toBe(429)
   })
 
-  it.each(['GET', 'POST', 'PATCH', 'DELETE'])(
-    'stops an old %s client before forwarding the operation',
-    async (method) => {
+  it.each(
+    ['GET', 'POST', 'PATCH', 'DELETE'].flatMap((method) =>
+      [undefined, '2'].map((version) => ({ method, version })),
+    ),
+  )(
+    'stops an old $method client with version $version before forwarding the operation',
+    async ({ method, version }) => {
       const { proxy } = await import('../../../proxy')
       const response = await proxy(
-        new NextRequest('http://localhost/api/properties/property-1', { method }),
+        new NextRequest('http://localhost/api/properties/property-1', {
+          method,
+          headers: version ? { 'X-Ketris-Api-Version': version } : {},
+        }),
       )
       expect(response.status).toBe(409)
       expect(await response.json()).toMatchObject({ error: { code: 'CLIENT_UPDATE_REQUIRED' } })
       expect(response.headers.get('x-middleware-next')).toBeNull()
-      expect(response.headers.get('X-Ketris-Api-Version')).toBe('2')
+      expect(response.headers.get('X-Ketris-Api-Version')).toBe('3')
     },
   )
 

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { decodeJwt, SignJWT } from 'jose'
 
 import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -75,6 +76,37 @@ describe('/api/auth/users (integração)', () => {
       },
     })
   }
+
+  it.each(['legacy-only', 'mixed-equal', 'mixed-conflicting'])(
+    'rejects %s signed role claims before creating a user',
+    async (format) => {
+      const claims = decodeJwt(adminToken)
+      const legacy: Record<string, unknown> = {
+        ...claims,
+        papel: format === 'mixed-conflicting' ? 'AGENT' : claims.role,
+      }
+      if (format === 'legacy-only') delete legacy.role
+      const token = await new SignJWT(legacy)
+        .setProtectedHeader({ alg: 'HS256' })
+        .setExpirationTime('1h')
+        .sign(new TextEncoder().encode(process.env.AUTH_TOKEN_SECRET))
+      const before = await prisma.user.count({ where: { tenantId } })
+      const response = await POST(
+        buildRequest(
+          'POST',
+          {
+            name: 'Retired token rejection',
+            email: `retired-${randomUUID()}@example.test`,
+            password: 'local-rejection-test-password',
+            role: 'AGENT',
+          },
+          token,
+        ),
+      )
+      expect(response.status).toBe(401)
+      expect(await prisma.user.count({ where: { tenantId } })).toBe(before)
+    },
+  )
 
   describe('POST', () => {
     it('retorna 201 e o usuário criado (campos em inglês, sem senhaHash) quando o ator é OWNER', async () => {

@@ -142,12 +142,6 @@ export const authOptions: NextAuthOptions = {
         return token
       }
 
-      if ('papel' in token) {
-        const legacyRole = userRoleSchema.safeParse(token.papel)
-        if (token.role === undefined && legacyRole.success) token.role = legacyRole.data
-        delete token.papel
-      }
-
       if (
         trigger === 'update' &&
         typeof session?.accessToken === 'string' &&
