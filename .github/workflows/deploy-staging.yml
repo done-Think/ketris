@@ -1,79 +1,81 @@
-name: Staging migration (maintenance window)
+name: Staging release
 
-# The English rename is incompatible with running older application instances.
-# A push must never migrate the shared database ahead of coordinated promotion.
 on:
+  workflow_call:
   workflow_dispatch:
     inputs:
-      maintenance_confirmed:
-        description: 'Old application instances drained and writes stopped'
-        type: boolean
+      confirm:
+        description: 'Digite RELEASE para publicar o commit atual da dev'
         required: true
-        default: false
-      snapshot_reference:
-        description: 'Verified restore point/snapshot reference (no secrets)'
         type: string
-        required: true
-      deployment_reference:
-        description: 'Compatible, validated application artifact ready for promotion'
-        type: string
-        required: true
-      seed_demo:
-        description: 'Run demo seed (resets fixture users/passwords; staging demo only)'
-        type: boolean
-        required: true
-        default: false
 
 permissions:
   contents: read
   actions: read
+  id-token: write
 
 concurrency:
-  group: deploy-staging
+  group: ketris-staging-release
   cancel-in-progress: false
 
 jobs:
-  migrate:
-    if: github.ref == 'refs/heads/dev' && inputs.maintenance_confirmed
+  release:
+    if: github.ref == 'refs/heads/dev' && (github.event_name == 'push' || inputs.confirm == 'RELEASE')
     runs-on: ubuntu-latest
-    environment: staging
+    timeout-minutes: 45
+    environment:
+      name: staging
+      url: https://ketris-web-x9bk.vercel.app
     env:
+      RELEASE_ENABLED: ${{ vars.STAGING_RELEASE_ENABLED }}
       DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
-      PLATFORM_ADMIN_NAME: ${{ secrets.PLATFORM_ADMIN_NAME }}
-      PLATFORM_ADMIN_EMAIL: ${{ secrets.PLATFORM_ADMIN_EMAIL }}
-      PLATFORM_ADMIN_PASSWORD: ${{ secrets.PLATFORM_ADMIN_PASSWORD }}
       CONTRACTS_DATA_ENCRYPTION_KEY: ${{ secrets.CONTRACTS_DATA_ENCRYPTION_KEY }}
-      SNAPSHOT_REFERENCE: ${{ inputs.snapshot_reference }}
-      DEPLOYMENT_REFERENCE: ${{ inputs.deployment_reference }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      STAGING_SMOKE_EMAIL: ${{ secrets.STAGING_SMOKE_EMAIL }}
+      STAGING_SMOKE_PASSWORD: ${{ secrets.STAGING_SMOKE_PASSWORD }}
+      STAGING_SNAPSHOT_ENABLED: ${{ vars.STAGING_SNAPSHOT_ENABLED || 'false' }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - name: Confere a ativação do environment
+        id: activation
+        shell: bash
+        run: |
+          if [ "$RELEASE_ENABLED" = 'true' ]; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+            echo 'Staging release is disabled. Configure the environment and enable STAGING_RELEASE_ENABLED.' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - uses: actions/checkout@v4
+        if: steps.activation.outputs.enabled == 'true'
       - uses: actions/setup-node@v4
+        if: steps.activation.outputs.enabled == 'true'
         with:
           node-version: '24'
           cache: npm
-      - name: Require successful CI for this exact commit
+      - name: Confere CI para a recuperação manual
+        if: steps.activation.outputs.enabled == 'true' && github.event_name == 'workflow_dispatch'
         uses: actions/github-script@v7
         with:
           script: |
             const {data} = await github.rest.actions.listWorkflowRuns({owner: context.repo.owner, repo: context.repo.repo, workflow_id: 'ci.yml', head_sha: context.sha, status: 'completed', per_page: 100});
-            if (!data.workflow_runs.some(run => run.conclusion === 'success' && run.head_branch === 'dev')) {
-              core.setFailed('Successful CI on dev is required for this commit.');
+            if (!data.workflow_runs.some(run => run.conclusion === 'success' && run.head_branch === 'dev' && run.event === 'push')) {
+              core.setFailed('Successful CI on dev is required for this exact commit.');
             }
       - run: npm ci
-      - name: Check release prerequisites before changing the database
-        run: |
-          node --input-type=module <<'JS'
-          const key = process.env.CONTRACTS_DATA_ENCRYPTION_KEY ?? ''
-          if (!/^[A-Za-z0-9+/]+={0,2}$/.test(key) || Buffer.from(key, 'base64').length !== 32) throw new Error('Configure the existing 32-byte contracts encryption key.');
-          if (!(process.env.SNAPSHOT_REFERENCE ?? '').trim() || !(process.env.DEPLOYMENT_REFERENCE ?? '').trim()) throw new Error('Verified snapshot and application artifact references are required.');
-          const url = new URL(process.env.DATABASE_URL ?? '');
-          if (!['postgres:', 'postgresql:'].includes(url.protocol)) throw new Error('Invalid staging database configuration.');
-          JS
-      - name: Apply the coordinated database release
-        run: npm run db:deploy -w @ketris/web
-      - name: Seed staging demo (explicit opt-in)
-        if: inputs.seed_demo
-        run: npm run db:seed -w @ketris/web
-      - name: Record the remaining promotion gate
-        run: |
-          echo 'Database migration finished. Keep maintenance active until the referenced compatible application is promoted and smoke-tested.' >> "$GITHUB_STEP_SUMMARY"
+        if: steps.activation.outputs.enabled == 'true'
+      - name: Instala a CLI da Vercel com versão fixada
+        if: steps.activation.outputs.enabled == 'true'
+        run: npm install --global vercel@65.5.0
+      - name: Autentica na AWS para snapshots opcionais
+        if: steps.activation.outputs.enabled == 'true' && vars.STAGING_SNAPSHOT_ENABLED == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_STAGING_RELEASE_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: Prepara, migra, valida e promove o mesmo artefato
+        if: steps.activation.outputs.enabled == 'true'
+        run: node scripts/staging-release.mjs

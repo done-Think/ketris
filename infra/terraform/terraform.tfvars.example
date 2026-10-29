@@ -4,6 +4,11 @@
 aws_region  = "us-east-1"
 db_username = "ketris"
 
+# Opcional: snapshots automáticos do GitHub Actions via OIDC.
+# Se a role foi criada no console, importe-a antes do apply (ver README).
+github_release_enabled   = false
+github_oidc_provider_arn = ""
+
 # Preencha com as origens reais da aplicação (sem caminho, barra final ou curinga).
 # Sem esta configuração, o upload direto de PDFs de Contracts não estará habilitado no navegador.
 contract_document_allowed_origins = ["https://preview.seu-dominio.example"]

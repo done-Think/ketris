@@ -1,0 +1,18 @@
+.git
+node_modules
+**/node_modules
+**/.next
+.vercel
+**/.env*
+**/.local
+**/.local/**
+**/.terraform
+**/*.tfstate*
+**/terraform.tfvars
+**/*.tfplan
+**/*.dump
+**/*.pem
+**/*.key
+Claude outputs
+cypress/videos
+cypress/screenshots

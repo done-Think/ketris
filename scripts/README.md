@@ -9,3 +9,16 @@ O patch é aplicado pelo `postinstall`, somente aos clientes browser/edge de des
 Verificação: `node --test scripts/tests/patch-next-dev-performance.test.mjs`.
 
 A configuração webpack usa uma versão de cache própria em desenvolvimento para não reutilizar os clientes RSC compilados antes do patch. Ao remover o patch, remova também esse sufixo em `next.config.mjs`.
+
+## Publicação de staging
+
+`staging-release.mjs` coordena o candidato Vercel, migrations e testes de autenticação. É chamado
+pelo GitHub Actions, com destino fixado em `infra/deploy/staging.json`; não carrega envs locais.
+`staging-release-lib.mjs` valida destino, ledger e ordem das etapas. A fixture de autenticação
+é reconciliada por `staging-smoke-account.mjs`, separada do seed completo e de contas humanas.
+Configuração e ativação estão em [staging-release.md](../docs/staging-release.md).
+
+Os testes de fluxo usam `node --test scripts/tests/staging-release.test.mjs`. O ensaio de banco
+usa `node --test scripts/tests/staging-release-db.test.mjs` com `DATABASE_URL` de um servidor
+PostgreSQL **local**: cria, migra e remove seu próprio database temporário, sem modificar o
+database informado na URL. Não aceita host remoto. Ambos os testes rodam no CI.

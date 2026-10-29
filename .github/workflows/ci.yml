@@ -3,11 +3,12 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [dev, main, 'refactor/**']
+    branches: [dev, main, 'refactor/**', 'ci/**']
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Once a dev release starts, another push must not interrupt its migration/promotion.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/dev' }}
 
 jobs:
   quality:
@@ -50,6 +51,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Testa as garantias da publicação de staging
+        run: node --test scripts/tests/staging-release.test.mjs
+
       - name: Verifica nomes em inglês e exceções de compatibilidade
         run: npm run check:english-names
 
@@ -58,6 +62,9 @@ jobs:
 
       - name: Aplica as migrations no Postgres efêmero
         run: npm run db:deploy -w @ketris/web
+
+      - name: Valida a conta de smoke no schema real em database descartável
+        run: node --test scripts/tests/staging-release-db.test.mjs
 
       - name: Ensaia renome e recuperação em databases descartáveis
         env:
@@ -154,3 +161,12 @@ jobs:
           if (!ready) throw new Error('O servidor de teste Auth não iniciou.')
           JS
           npm exec -w @ketris/web -- cypress run --browser electron --config baseUrl=http://localhost:3000 --spec 'cypress/e2e/auth/**/*.cy.ts,cypress/e2e/agenda/**/*.cy.ts,cypress/e2e/contracts/**/*.cy.ts,cypress/e2e/crm/**/*.cy.ts,cypress/e2e/maintenance/**/*.cy.ts,cypress/e2e/financial/**/*.cy.ts,cypress/e2e/properties/**/*.cy.ts,cypress/e2e/marketplace/**/*.cy.ts,cypress/e2e/platform/**/*.cy.ts,cypress/e2e/team/**/*.cy.ts,cypress/e2e/login.cy.ts'
+
+  release-staging:
+    needs: [quality, auth-e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    uses: ./.github/workflows/deploy-staging.yml
