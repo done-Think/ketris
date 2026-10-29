@@ -14,11 +14,17 @@ const oldNames = new Set([
   ...Object.keys(map.additionalIdentifiers),
   'Papel',
   'actorPapel',
+  'ACEITAR',
+  'RECUSAR',
+  'SOLICITAR_INFORMACOES',
 ])
 const oldEnumValues = new Set([
   ...Object.keys(map.enums),
   ...Object.keys(map.physical).filter((word) => /^[A-Z_]+$/.test(word)),
   'ATRASADA',
+  'ACEITAR',
+  'RECUSAR',
+  'SOLICITAR_INFORMACOES',
 ])
 const auditReaders = new Set([
   'charge-history-fields.ts',
@@ -41,6 +47,12 @@ const postalCodeBoundaryFiles = new Set([
   'apps/web/src/modules/properties/tests/services/postal-code-service.test.ts',
 ])
 const postalCodeWireTokens = new Set(['logradouro', 'bairro'])
+const legacyOpportunityActions = new Set(['ACEITAR', 'RECUSAR', 'SOLICITAR_INFORMACOES'])
+const opportunityActionCompatibilityFiles = new Set([
+  'apps/web/src/shared/config/opportunity-response-actions.ts',
+  'apps/web/src/server/crm/tests/schemas/opportunity-response-actions.test.ts',
+  'apps/web/src/app/api/crm/tests/opportunities/[id]/respond/route.integration.test.ts',
+])
 const violations = []
 
 async function files(directory) {
@@ -56,6 +68,8 @@ async function files(directory) {
 function allowed(file, token, literal) {
   const basename = path.basename(file)
   return (
+    (opportunityActionCompatibilityFiles.has(path.relative(root, file)) &&
+      legacyOpportunityActions.has(token)) ||
     (postalCodeBoundaryFiles.has(path.relative(root, file)) && postalCodeWireTokens.has(token)) ||
     basename === 'maintenance-migrations.integration.test.ts' ||
     (literal && auditReaders.has(basename)) ||

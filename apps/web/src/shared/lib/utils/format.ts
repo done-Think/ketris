@@ -4,6 +4,11 @@ import 'dayjs/locale/es'
 
 import { defaultLocale } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'
+import type {
+  CurrencyFormatOptions,
+  CurrencyNumberFormatter,
+  CurrencyPrecision,
+} from '@shared/types/currency-format'
 
 const dayjsLocales: Record<AppLocale, string> = {
   'pt-BR': 'pt-br',
@@ -11,11 +16,19 @@ const dayjsLocales: Record<AppLocale, string> = {
   'es-ES': 'es',
 }
 
-export function formatCurrency(value: number, locale: AppLocale = defaultLocale): string {
-  return new Intl.NumberFormat(locale, {
+export function formatCurrency(
+  value: number,
+  localeOrFormatter: AppLocale | CurrencyNumberFormatter = defaultLocale,
+  precision: CurrencyPrecision = {},
+): string {
+  const options: CurrencyFormatOptions = {
     style: 'currency',
     currency: 'BRL',
-  }).format(value)
+    ...precision,
+  }
+  return typeof localeOrFormatter === 'function'
+    ? localeOrFormatter(value, options)
+    : new Intl.NumberFormat(localeOrFormatter, options).format(value)
 }
 
 export function formatDate(

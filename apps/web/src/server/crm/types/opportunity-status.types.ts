@@ -1,1 +1,3 @@
-export type OpportunityResponseAction = 'ACEITAR' | 'RECUSAR' | 'SOLICITAR_INFORMACOES'
+import type { opportunityResponseActions } from '@shared/config/opportunity-response-actions'
+
+export type OpportunityResponseAction = (typeof opportunityResponseActions)[number]

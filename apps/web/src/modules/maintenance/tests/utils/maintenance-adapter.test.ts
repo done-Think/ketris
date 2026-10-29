@@ -1,3 +1,4 @@
+import { maintenanceTicketListItemFixture } from '../fixtures/maintenance-ticket'
 import en from '@/i18n/messages/en-US/dashboard.json'
 import es from '@/i18n/messages/es-ES/dashboard.json'
 import pt from '@/i18n/messages/pt-BR/dashboard.json'
@@ -34,7 +35,7 @@ describe('Maintenance adapters and locale presentation', () => {
   })
   it('uses the injected locale formatter for list dates', () => {
     const item = mapMaintenanceTicketListItemFromApi(
-      {
+      maintenanceTicketListItemFixture({
         id: 'ticket',
         title: 'Title',
         propertyId: 'property',
@@ -46,7 +47,7 @@ describe('Maintenance adapters and locale presentation', () => {
         resolvedAt: null,
         createdAt: '2026-10-26T12:00:00Z',
         updatedAt: '2026-10-26T12:00:00Z',
-      },
+      }),
       () => 'Oct 26, 2026',
     )
     expect(item).toMatchObject({ openedAt: 'Oct 26, 2026', priority: 'urgent', status: 'open' })

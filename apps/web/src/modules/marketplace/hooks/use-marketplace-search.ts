@@ -19,8 +19,9 @@ import { buildSearchHref, formatSearchCurrency, normalizeSearchText } from '../u
 
 const emptySelection: SelectedSearch = { location: '', propertyType: '' }
 const emptyDraft: SearchDraft = { location: '', propertyType: '' }
+const emptyLocations: readonly string[] = []
 
-export function useMarketplaceSearch() {
+export function useMarketplaceSearch(locations: readonly string[] = emptyLocations) {
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.home.search')
   const typeT = useTranslations('marketplace.propertyDetail.categories')
@@ -65,14 +66,14 @@ export function useMarketplaceSearch() {
   const filterSearchOptions = useCallback(
     (key: TextSearchFilterKey): readonly string[] => {
       const query = normalizeSearchText(searchDraft[key])
-      const values: readonly string[] = searchOptions[key].values
+      const values: readonly string[] = key === 'location' ? locations : searchOptions[key].values
       if (!query) return values
 
       return values.filter((value) =>
         normalizeSearchText(getSearchOptionLabel(key, value)).includes(query),
       )
     },
-    [getSearchOptionLabel, searchDraft],
+    [getSearchOptionLabel, searchDraft, locations],
   )
 
   const updatePriceRange = useCallback((nextRange: PriceRange) => {

@@ -145,12 +145,12 @@ describe('CrmService', () => {
     }
     http.post.mockResolvedValueOnce({ opportunity: accepted, activity })
 
-    await expect(service.respond(opportunity.id, { action: 'ACEITAR' })).resolves.toEqual({
+    await expect(service.respond(opportunity.id, { action: 'ACCEPT' })).resolves.toEqual({
       opportunity: accepted,
       activity,
     })
     expect(http.post).toHaveBeenCalledWith(`/crm/opportunities/${opportunity.id}/respond`, {
-      action: 'ACEITAR',
+      action: 'ACCEPT',
     })
   })
 

@@ -21,9 +21,9 @@ export function allowedNextStatuses(from: OpportunityStatus): readonly Opportuni
 }
 
 const responseTargetStatus: Record<OpportunityResponseAction, OpportunityStatus> = {
-  ACEITAR: 'ACCEPTED',
-  RECUSAR: 'REJECTED',
-  SOLICITAR_INFORMACOES: 'IN_NEGOTIATION',
+  ACCEPT: 'ACCEPTED',
+  REJECT: 'REJECTED',
+  REQUEST_INFORMATION: 'IN_NEGOTIATION',
 }
 
 export function statusForResponse(action: OpportunityResponseAction): OpportunityStatus {

@@ -34,7 +34,7 @@ export interface UpdateOpportunityInput {
 
 export type CreateOpportunityPayload = CreateOpportunityRequestDTO
 
-export type OpportunityResponseAction = 'ACEITAR' | 'RECUSAR' | 'SOLICITAR_INFORMACOES'
+export type OpportunityResponseAction = RespondOpportunityRequestDTO['action']
 
 export type RespondOpportunityPayload = RespondOpportunityRequestDTO
 

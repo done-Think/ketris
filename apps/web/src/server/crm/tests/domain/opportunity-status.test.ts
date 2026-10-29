@@ -51,9 +51,9 @@ describe('allowedNextStatuses', () => {
 
 describe('statusForResponse', () => {
   it('mapeia cada ação de resposta para o status correspondente', () => {
-    expect(statusForResponse('ACEITAR')).toBe('ACCEPTED')
-    expect(statusForResponse('RECUSAR')).toBe('REJECTED')
-    expect(statusForResponse('SOLICITAR_INFORMACOES')).toBe('IN_NEGOTIATION')
+    expect(statusForResponse('ACCEPT')).toBe('ACCEPTED')
+    expect(statusForResponse('REJECT')).toBe('REJECTED')
+    expect(statusForResponse('REQUEST_INFORMATION')).toBe('IN_NEGOTIATION')
   })
 })
 

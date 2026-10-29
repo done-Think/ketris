@@ -1,3 +1,8 @@
+import {
+  maintenanceTicketListItemFixture,
+  maintenancePermissionsFixture,
+  maintenanceTicketFixture,
+} from '../fixtures/maintenance-ticket'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
@@ -42,7 +47,7 @@ vi.mock('@modules/properties/hooks/use-properties', () => ({
 }))
 
 const listItems: ApiMaintenanceTicketListItem[] = [
-  {
+  maintenanceTicketListItemFixture({
     id: 'MNT-0089',
     propertyId: 'p1',
     propertyTitle: 'Apt Jardins 3q',
@@ -54,8 +59,8 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     resolvedAt: null,
     createdAt: '2025-02-20T00:00:00.000Z',
     updatedAt: '2025-02-20T00:00:00.000Z',
-  },
-  {
+  }),
+  maintenanceTicketListItemFixture({
     id: 'MNT-0088',
     propertyId: 'p2',
     propertyTitle: 'Studio Pinheiros',
@@ -67,8 +72,8 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     resolvedAt: null,
     createdAt: '2025-02-19T00:00:00.000Z',
     updatedAt: '2025-02-19T00:00:00.000Z',
-  },
-  {
+  }),
+  maintenanceTicketListItemFixture({
     id: 'MNT-0087',
     propertyId: 'p3',
     propertyTitle: 'Casa Vila Madalena',
@@ -80,8 +85,8 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     resolvedAt: null,
     createdAt: '2025-02-18T00:00:00.000Z',
     updatedAt: '2025-02-18T00:00:00.000Z',
-  },
-  {
+  }),
+  maintenanceTicketListItemFixture({
     id: 'MNT-0086',
     propertyId: 'p4',
     propertyTitle: 'Cobertura Moema',
@@ -93,7 +98,7 @@ const listItems: ApiMaintenanceTicketListItem[] = [
     resolvedAt: '2025-02-16T00:00:00.000Z',
     createdAt: '2025-02-15T00:00:00.000Z',
     updatedAt: '2025-02-16T00:00:00.000Z',
-  },
+  }),
 ]
 
 const properties = [
@@ -103,7 +108,7 @@ const properties = [
   { id: 'p4', title: 'Cobertura Moema' },
 ]
 
-const fullTicket: ApiMaintenanceTicket = {
+const fullTicket: ApiMaintenanceTicket = maintenanceTicketFixture({
   contractId: 'c-p1',
   id: 'MNT-0089',
   propertyId: 'p1',
@@ -120,7 +125,7 @@ const fullTicket: ApiMaintenanceTicket = {
   updatedAt: '2025-02-20T00:00:00.000Z',
   activities: [],
   attachments: [],
-}
+})
 
 function mockDefaults() {
   vi.mocked(useSession).mockReturnValue({
@@ -142,7 +147,10 @@ function mockDefaults() {
 
     return {
       data: {
-        items: filtered.map((item) => ({ ...item, permissions: { edit: true, delete: true } })),
+        items: filtered.map((item) => ({
+          ...item,
+          permissions: maintenancePermissionsFixture({ edit: true, delete: true }),
+        })),
         totalCount: filtered.length,
         pagination: {
           page: filters.page ?? 1,
@@ -220,7 +228,7 @@ describe('MaintenanceDashboardPage', () => {
       data: {
         items: listItems.map((item) => ({
           ...item,
-          permissions: { edit: false, delete: false },
+          permissions: maintenancePermissionsFixture({ edit: false, delete: false }),
         })),
         totalCount: listItems.length,
       },
@@ -245,13 +253,13 @@ describe('MaintenanceDashboardPage', () => {
   it.each([
     {
       role: 'AGENT',
-      permissions: { edit: true, delete: false },
+      permissions: maintenancePermissionsFixture({ edit: true, delete: false }),
       allowedAction: 'Editar chamado',
       hiddenAction: 'Excluir chamado',
     },
     {
       role: 'OWNER',
-      permissions: { edit: false, delete: true },
+      permissions: maintenancePermissionsFixture({ edit: false, delete: true }),
       allowedAction: 'Excluir chamado',
       hiddenAction: 'Editar chamado',
     },

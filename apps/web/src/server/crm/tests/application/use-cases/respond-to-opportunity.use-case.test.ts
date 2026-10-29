@@ -65,7 +65,7 @@ describe('RespondToOpportunityUseCase', () => {
       actorId: 'user-1',
       actorName: 'Ana',
       opportunityId: 'op-1',
-      action: 'ACEITAR',
+      action: 'ACCEPT',
     })
 
     expect(result.opportunity.status).toBe('ACCEPTED')
@@ -74,7 +74,7 @@ describe('RespondToOpportunityUseCase', () => {
         opportunityId: 'op-1',
         type: 'PROPOSAL_ANSWERED',
         description: '',
-        systemAction: 'ACEITAR',
+        systemAction: 'ACCEPT',
         previousStatus: 'SENT',
         newStatus: 'ACCEPTED',
         authorId: 'user-1',
@@ -95,7 +95,7 @@ describe('RespondToOpportunityUseCase', () => {
       actorTenantId: 'tenant-1',
       actorRole: 'OWNER',
       opportunityId: 'op-1',
-      action: 'RECUSAR',
+      action: 'REJECT',
       message: 'Valor abaixo do mínimo aceito pelo proprietário.',
     })
 
@@ -119,12 +119,12 @@ describe('RespondToOpportunityUseCase', () => {
       actorTenantId: 'tenant-1',
       actorRole: 'OWNER',
       opportunityId: 'op-1',
-      action: 'SOLICITAR_INFORMACOES',
+      action: 'REQUEST_INFORMATION',
       message: '   ',
     })
 
     expect(deps.activityRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ description: '', systemAction: 'SOLICITAR_INFORMACOES' }),
+      expect.objectContaining({ description: '', systemAction: 'REQUEST_INFORMATION' }),
     )
   })
 
@@ -139,7 +139,7 @@ describe('RespondToOpportunityUseCase', () => {
       actorTenantId: 'tenant-1',
       actorRole: 'OWNER',
       opportunityId: 'op-1',
-      action: 'SOLICITAR_INFORMACOES',
+      action: 'REQUEST_INFORMATION',
     })
 
     expect(result.opportunity.status).toBe('IN_NEGOTIATION')
@@ -159,7 +159,7 @@ describe('RespondToOpportunityUseCase', () => {
         actorTenantId: 'tenant-1',
         actorRole: 'OWNER',
         opportunityId: 'op-1',
-        action: 'ACEITAR',
+        action: 'ACCEPT',
       }),
     ).rejects.toThrow(OpportunityNotFoundError)
     expect(deps.activityRepository.create).not.toHaveBeenCalled()
@@ -177,7 +177,7 @@ describe('RespondToOpportunityUseCase', () => {
         actorTenantId: 'tenant-1',
         actorRole: 'OWNER',
         opportunityId: 'op-1',
-        action: 'ACEITAR',
+        action: 'ACCEPT',
       }),
     ).rejects.toThrow(OpportunityNotAnswerableError)
     expect(deps.activityRepository.create).not.toHaveBeenCalled()
@@ -195,7 +195,7 @@ describe('RespondToOpportunityUseCase', () => {
         actorTenantId: 'tenant-1',
         actorRole: 'OWNER',
         opportunityId: 'op-1',
-        action: 'RECUSAR',
+        action: 'REJECT',
       }),
     ).rejects.toThrow(OpportunityNotAnswerableError)
   })
@@ -211,7 +211,7 @@ describe('RespondToOpportunityUseCase', () => {
       actorTenantId: 'tenant-1',
       actorRole: 'OWNER',
       opportunityId: 'op-1',
-      action: 'SOLICITAR_INFORMACOES',
+      action: 'REQUEST_INFORMATION',
     })
 
     expect(result.opportunity.status).toBe('IN_NEGOTIATION')
@@ -230,7 +230,7 @@ describe('RespondToOpportunityUseCase', () => {
         actorId: 'agent-2',
         actorRole: 'AGENT',
         opportunityId: 'op-1',
-        action: 'ACEITAR',
+        action: 'ACCEPT',
       }),
     ).rejects.toThrow(OpportunityNotFoundError)
     expect(deps.activityRepository.create).not.toHaveBeenCalled()

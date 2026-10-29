@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { generateOpenApiDocument } from '../registry'
 
 describe('English HTTP contract', () => {
+  it('publishes canonical English opportunity actions', () => {
+    expect(generateOpenApiDocument().components?.schemas?.OpportunityResponseAction).toMatchObject({
+      type: 'string',
+      enum: ['ACCEPT', 'REJECT', 'REQUEST_INFORMATION'],
+    })
+  })
   it('publishes the current property fields, enum values and version requirement', () => {
     const document = generateOpenApiDocument()
     expect(document.info.version).toBe('2.0.0')

@@ -9,12 +9,12 @@ import type { z } from 'zod'
 
 import type { createContactFormSchema } from '../schemas/contact-schema'
 
-export type ContactType = 'OWNER' | 'RENTER' | 'BROKER'
+export type ContactType = ContactDTO['type']
 export type ContactFilterKey = 'all' | 'owners' | 'tenants' | 'brokers'
 
 export type ContactFormValues = z.infer<ReturnType<typeof createContactFormSchema>>
 
-export type ApiContactType = 'OWNER' | 'RENTER' | 'BROKER'
+export type ApiContactType = ContactDTO['type']
 
 export type ApiContact = ContactDTO
 

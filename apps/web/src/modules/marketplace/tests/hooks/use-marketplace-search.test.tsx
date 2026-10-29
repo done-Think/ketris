@@ -52,7 +52,9 @@ it('limita e ordena a faixa de preço', () => {
 })
 
 it('filtra as opções pelo rótulo traduzido, ignorando acentos', () => {
-  const { result } = renderHook(() => useMarketplaceSearch())
+  const { result } = renderHook(() =>
+    useMarketplaceSearch(['Moema, São Paulo', 'Savassi, Belo Horizonte']),
+  )
 
   act(() => result.current.setSearchDraft({ location: 'sao paulo', propertyType: 'apart' }))
 
@@ -60,6 +62,21 @@ it('filtra as opções pelo rótulo traduzido, ignorando acentos', () => {
   expect(result.current.filterSearchOptions('location')).not.toContain('Savassi, Belo Horizonte')
   expect(result.current.filterSearchOptions('propertyType')).toEqual(['APARTMENT'])
   expect(result.current.getSearchOptionLabel('propertyType', '')).toBe('Todos os tipos')
+})
+
+it('uses the current published location catalog and keeps free-text searches available', () => {
+  const { result, rerender } = renderHook(({ locations }) => useMarketplaceSearch(locations), {
+    initialProps: { locations: [] as string[] },
+  })
+  expect(result.current.filterSearchOptions('location')).toEqual([])
+  rerender({ locations: ['Anhumas, Itajubá', 'Centro, Itajubá'] })
+  act(() => result.current.setSearchDraft({ location: 'anhumas', propertyType: '' }))
+  expect(result.current.filterSearchOptions('location')).toEqual(['Anhumas, Itajubá'])
+  act(() =>
+    result.current.setSearchDraft({ location: 'Local ainda sem sugestão', propertyType: '' }),
+  )
+  expect(result.current.filterSearchOptions('location')).toEqual([])
+  expect(result.current.searchHref.query).toMatchObject({ location: 'Local ainda sem sugestão' })
 })
 
 it('inclui a finalidade escolhida no link da busca', () => {
