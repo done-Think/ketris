@@ -4,7 +4,6 @@ export const searchOptions = {
   location: {
     labelKey: 'location',
     query: 'location',
-    values: [],
   },
   propertyType: {
     labelKey: 'propertyType',

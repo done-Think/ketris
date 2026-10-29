@@ -29,7 +29,7 @@ export const listActivitiesResponseSchema = z
 
 export const createActivityRequestSchema = z
   .object({
-    description: z.string().min(1, 'Descrição é obrigatória.').max(2000),
+    description: z.string().min(1).max(2000),
     type: z.enum(['NOTE', 'CONTACT_MADE']).optional(),
   })
   .strict()

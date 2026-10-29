@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
@@ -5,8 +6,8 @@ import { authenticatedPlatformAdminSchema } from './platform-admin.schema'
 
 export const updatePlatformAdminRequestSchema = z
   .object({
-    name: z.string().trim().min(1, 'Nome é obrigatório.').max(120, 'Nome muito longo.').optional(),
-    email: z.string().trim().max(254, 'E-mail inválido.').email('E-mail inválido.').optional(),
+    name: z.string().trim().min(1).max(120).optional(),
+    email: z.string().trim().max(254).email().optional(),
     role: z.enum(['ADMIN', 'ADMIN_AGENT', 'AGENT']).optional(),
     active: z.literal(true).optional(),
   })
@@ -18,7 +19,7 @@ export const updatePlatformAdminRequestSchema = z
       data.role !== undefined ||
       data.active !== undefined,
     {
-      message: 'Informe ao menos um campo para atualizar.',
+      ...validationRefinement('updateRequired'),
     },
   )
   .openapi('UpdatePlatformAdminRequest')

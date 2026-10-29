@@ -4,3 +4,7 @@ export interface MarketplaceStats {
   servedCities: number
   locations?: string[]
 }
+
+export interface MarketplaceLocationRow {
+  location: string
+}

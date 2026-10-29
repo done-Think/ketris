@@ -1,3 +1,4 @@
+import { formatCurrency } from '@shared/lib/utils/format'
 import { useFormatter } from 'next-intl'
 import { useCallback, useMemo } from 'react'
 
@@ -5,10 +6,7 @@ import { calendarDate, monthDate } from '../utils/month'
 
 export function useFinancialFormat() {
   const format = useFormatter()
-  const currency = useCallback(
-    (value: number) => format.number(value, { style: 'currency', currency: 'BRL' }),
-    [format],
-  )
+  const currency = useCallback((value: number) => formatCurrency(value, format.number), [format])
   const date = useCallback(
     (value: string) =>
       format.dateTime(calendarDate(value), { dateStyle: 'short', timeZone: 'UTC' }),

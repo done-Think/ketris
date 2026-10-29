@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency } from '@shared/lib/utils/format'
+
 import { Avatar, Box, Card, Chip, Divider, Stack, Typography } from '@mui/material'
 import { useFormatter, useTranslations } from 'next-intl'
 import { accountInitials } from '../utils/account-type-icons'
@@ -23,8 +25,7 @@ export function CreateTenantSummary({
   const stepsT = useTranslations('platform.createAccount.nextSteps')
   const accountT = useTranslations('platform.account')
   const format = useFormatter()
-  const formatPrice = (value: number) =>
-    format.number(value, { style: 'currency', currency: 'BRL' })
+  const formatPrice = (value: number) => formatCurrency(value, format.number)
   const displayName = name.trim()
 
   return (

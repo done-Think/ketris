@@ -1,8 +1,9 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 import { contractDateSchema } from './contract-date.schema'
-import { createPhoneSchema } from '@shared/schemas/phone-schema'
-import { createCpfSchema } from '@shared/schemas/cpf-schema'
+import { isValidPhone } from '@shared/schemas/phone-schema'
+import { isValidCpf } from '@shared/schemas/cpf-schema'
 import {
   adjustmentIndexSchema,
   contractGuaranteeTypeSchema,
@@ -13,13 +14,14 @@ import {
 const contractPartyInputSchema = z
   .object({
     name: z.string().trim().min(1).max(200),
-    cpf: createCpfSchema((key) =>
-      key === 'cpfRequired' ? 'Informe o CPF.' : 'Informe um CPF válido.',
-    ),
+    cpf: z.string().trim().min(1).refine(isValidCpf, validationRefinement('cpfInvalid')),
     email: z.string().trim().email().max(254),
-    phone: createPhoneSchema((key) =>
-      key === 'phoneRequired' ? 'Informe o telefone.' : 'Informe um telefone válido.',
-    ).refine((value) => value.length <= 32, 'Use até 32 caracteres.'),
+    phone: z
+      .string()
+      .trim()
+      .min(1)
+      .refine(isValidPhone, validationRefinement('phoneInvalid'))
+      .refine((value) => value.length <= 32, validationRefinement('stringMax', { maximum: 32 })),
   })
   .strict()
 
@@ -28,11 +30,7 @@ export const linkContractPartyUserRequestSchema = z
   .strict()
   .openapi('LinkContractPartyUserRequest')
 
-export const contractAmountSchema = z
-  .number()
-  .min(0.01, 'O valor mínimo é 0,01.')
-  .max(9999999999.99, 'O valor excede o limite do contrato.')
-  .multipleOf(0.01, 'Use no máximo duas casas decimais.')
+export const contractAmountSchema = z.number().min(0.01).max(9999999999.99).multipleOf(0.01)
 
 export const createContractRequestSchema = z
   .object({
@@ -51,7 +49,7 @@ export const createContractRequestSchema = z
   })
   .strict()
   .refine((value) => value.endDate > value.startDate, {
-    message: 'A data de término deve ser posterior à data de início.',
+    ...validationRefinement('endAfterStart'),
     path: ['endDate'],
   })
   .openapi('CreateContractRequest')

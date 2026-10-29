@@ -1,3 +1,4 @@
+import { formatCurrency } from '@shared/lib/utils/format'
 import { useFormatter, useTranslations } from 'next-intl'
 import type { CrmFormatters } from '../types/formatters'
 
@@ -6,9 +7,7 @@ export function useCrmFormatter(): CrmFormatters {
   const t = useTranslations('crm.formatting')
   return {
     money(value, monthly = false) {
-      const amount = formatter.number(value, {
-        style: 'currency',
-        currency: 'BRL',
+      const amount = formatCurrency(value, formatter.number, {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
       })

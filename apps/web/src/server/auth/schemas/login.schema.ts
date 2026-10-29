@@ -16,13 +16,10 @@ export const loginRequestSchema = z
       .string()
       .trim()
       .max(254)
-      .email('E-mail inválido.')
+      .email()
       .transform((value) => value.toLowerCase())
       .openapi({ example: 'admin@ketris.dev' }),
-    password: z
-      .string()
-      .min(1, 'Senha é obrigatória.')
-      .openapi({ example: 'trocar-em-desenvolvimento' }),
+    password: z.string().min(1).openapi({ example: 'trocar-em-desenvolvimento' }),
     tenantId: z.string().trim().min(1).optional(),
     locale: z.enum(locales).default('pt-BR'),
   })

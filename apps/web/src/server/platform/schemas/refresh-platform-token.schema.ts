@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 export const refreshPlatformTokenRequestSchema = z
   .object({
-    refreshToken: z.string().min(1, 'Refresh token é obrigatório.'),
+    refreshToken: z.string().min(1),
   })
   .strict()
   .openapi('RefreshPlatformTokenRequest')

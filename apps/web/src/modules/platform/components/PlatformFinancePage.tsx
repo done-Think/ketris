@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency } from '@shared/lib/utils/format'
+
 import {
   Avatar,
   Box,
@@ -40,8 +42,7 @@ export function PlatformFinancePage() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const financeQuery = usePlatformFinance()
   const finance = financeQuery.data
-  const formatPrice = (value: number) =>
-    format.number(value, { style: 'currency', currency: 'BRL' })
+  const formatPrice = (value: number) => formatCurrency(value, format.number)
   const formatShare = (value: number) =>
     format.number(value, { style: 'percent', maximumFractionDigits: 0 })
 
@@ -276,8 +277,7 @@ function UsageBar({ charge }: { charge: MonthlyCharge }) {
 function FeeCell({ charge, billed }: { charge: MonthlyCharge; billed: boolean }) {
   const t = useTranslations('platform.finance.accounts')
   const format = useFormatter()
-  const formatPrice = (value: number) =>
-    format.number(value, { style: 'currency', currency: 'BRL' })
+  const formatPrice = (value: number) => formatCurrency(value, format.number)
 
   return (
     <Box sx={styles.box15}>

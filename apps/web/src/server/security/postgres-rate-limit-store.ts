@@ -11,10 +11,7 @@ import type {
 export class PostgresRateLimitStore implements RateLimitStore {
   private nextCleanupAt = 0
 
-  constructor(
-    private readonly database: RateLimitDatabase = prisma,
-    private readonly cleanup = true,
-  ) {}
+  constructor(private readonly database: RateLimitDatabase = prisma) {}
 
   async consume(input: RateLimitInput): Promise<RateLimitResult> {
     const key = `${input.policy.name}:${input.key}`
@@ -42,18 +39,6 @@ export class PostgresRateLimitStore implements RateLimitStore {
 
     if (!bucket) throw new Error('Contador de requisições indisponível.')
 
-    if (this.cleanup && Date.now() >= this.nextCleanupAt) {
-      this.nextCleanupAt = Date.now() + 60_000
-      await this.database.$executeRaw`
-        DELETE FROM "auth_rate_limit_buckets"
-        WHERE "key" IN (
-          SELECT "key" FROM "auth_rate_limit_buckets"
-          WHERE "resetAt" <= date_trunc('milliseconds', CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
-          ORDER BY "resetAt" LIMIT 100
-        ) AND "resetAt" <= date_trunc('milliseconds', CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
-      `
-    }
-
     return {
       allowed: bucket.count <= limit,
       limit,
@@ -64,5 +49,32 @@ export class PostgresRateLimitStore implements RateLimitStore {
         1,
       ),
     }
+  }
+
+  async cleanupExpired(): Promise<number> {
+    if (Date.now() < this.nextCleanupAt) return 0
+    this.nextCleanupAt = Date.now() + 60_000
+    const deadline = Date.now() + 1_000
+    let removed = 0
+    try {
+      for (let batch = 0; batch < 10; batch += 1) {
+        const count = await this.database.$executeRaw`
+          DELETE FROM "auth_rate_limit_buckets"
+          WHERE "key" IN (
+            SELECT "key" FROM "auth_rate_limit_buckets"
+            WHERE "resetAt" <= date_trunc('milliseconds', CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+            ORDER BY "resetAt", "key" LIMIT 100 FOR UPDATE SKIP LOCKED
+          ) AND "resetAt" <= date_trunc('milliseconds', CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+        `
+        removed += count
+        if (count < 100) return removed
+        if (Date.now() >= deadline) break
+      }
+      this.nextCleanupAt = Date.now() + 1_000
+    } catch {
+      this.nextCleanupAt = Date.now() + 5_000
+      console.error('[rate-limit] Counter cleanup failed; retry scheduled.')
+    }
+    return removed
   }
 }

@@ -1,13 +1,9 @@
+import { formatCurrency as formatSharedCurrency } from '@shared/lib/utils/format'
 import { defaultLocale } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'
 
 export function formatCurrency(value: number, locale: AppLocale = defaultLocale): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: 'BRL',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value)
+  return formatSharedCurrency(value, locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })
 }
 
 export function formatMonthlyCurrency(

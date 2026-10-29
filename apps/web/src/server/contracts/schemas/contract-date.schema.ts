@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import { z } from 'zod'
 
 const dateText = z
@@ -13,6 +14,6 @@ const dateText = z
       calendarDate.getUTCMonth() + 1 === Number(month) &&
       calendarDate.getUTCDate() === Number(day)
     )
-  }, 'Informe uma data existente em formato ISO.')
+  }, validationRefinement('isoDateInvalid'))
 
 export const contractDateSchema = z.union([z.date(), dateText]).pipe(z.coerce.date())

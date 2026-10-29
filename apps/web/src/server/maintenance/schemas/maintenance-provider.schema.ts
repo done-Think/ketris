@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 import { maintenanceProviderSchema } from './maintenance-ticket-input.schema'
@@ -41,7 +42,7 @@ export const updateMaintenanceProviderRequestSchema = maintenanceProviderDataSch
   })
   .strict()
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
-    message: 'Informe ao menos um campo para atualizar.',
+    ...validationRefinement('updateRequired'),
   })
   .openapi('UpdateMaintenanceProviderRequest')
 

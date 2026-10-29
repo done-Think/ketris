@@ -1,5 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
+import { resolveRequestLocale } from './request-locale'
+import { validationMessage } from './validation-messages'
 
 import {
   API_CONTRACT_HEADER,
@@ -19,7 +21,7 @@ export function validateApiContract(request: NextRequest): NextResponse | null {
     {
       error: {
         code: 'CLIENT_UPDATE_REQUIRED',
-        message: 'A aplicação foi atualizada. Recarregue a página para continuar.',
+        message: validationMessage(resolveRequestLocale(request), 'clientUpdateRequired'),
       },
     },
     {

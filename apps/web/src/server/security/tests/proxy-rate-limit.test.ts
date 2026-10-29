@@ -2,6 +2,11 @@ import { NextRequest } from 'next/server'
 import type { RateLimitInput } from '../types/rate-limit.types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock('next/server', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/server')>()),
+  after: vi.fn(),
+}))
+
 // O roteamento de idioma não participa das rotas /api e o build ESM do next-intl não resolve
 // `next/server` no Vitest.
 vi.mock('next-intl/middleware', () => ({ default: () => () => new Response(null) }))
@@ -16,6 +21,9 @@ vi.mock('../postgres-rate-limit-store', async () => {
       async consume(input: RateLimitInput) {
         unavailable()
         return this.store.consume(input)
+      }
+      async cleanupExpired() {
+        return 0
       }
     },
   }
@@ -158,6 +166,46 @@ describe('proxy rate limit', () => {
     expect(await general.json()).toMatchObject({ error: { code: 'API_RATE_LIMIT_UNAVAILABLE' } })
     expect(general.headers.get('Cache-Control')).toBe('no-store')
   })
+
+  it.each([
+    [
+      'pt-BR',
+      'Serviço temporariamente indisponível.',
+      'Muitas requisições. Tente novamente mais tarde.',
+    ],
+    ['en-US', 'Service temporarily unavailable.', 'Too many requests. Please try again later.'],
+    [
+      'es-ES',
+      'Servicio temporalmente no disponible.',
+      'Demasiadas solicitudes. Inténtalo de nuevo más tarde.',
+    ],
+  ])(
+    'localizes unavailable and exceeded counters in %s',
+    async (locale, unavailableMessage, exceededMessage) => {
+      vi.stubEnv('AUTH_RATE_LIMIT_MAX', '1')
+      const { proxy } = await import('../../../proxy')
+      const request = () => {
+        const input = postFrom('203.0.113.20', '/api/auth/login')
+        input.headers.set('Accept-Language', locale)
+        return input
+      }
+      const allowed = await proxy(request())
+      expect(allowed.headers.get('Server-Timing')).toMatch(/^rate-limit;dur=\d+\.\d{2}$/)
+      const blocked = await proxy(request())
+      expect(blocked.status).toBe(429)
+      expect(await blocked.json()).toMatchObject({
+        error: { code: 'RATE_LIMIT_EXCEEDED', message: exceededMessage },
+      })
+      unavailable.mockImplementation(() => {
+        throw new Error('unavailable')
+      })
+      const failed = await proxy(request())
+      expect(failed.status).toBe(503)
+      expect(await failed.json()).toMatchObject({
+        error: { code: 'AUTH_RATE_LIMIT_UNAVAILABLE', message: unavailableMessage },
+      })
+    },
+  )
 
   it('does not let forged forwarding headers create fresh auth budgets outside Vercel', async () => {
     const { proxy } = await import('../../../proxy')

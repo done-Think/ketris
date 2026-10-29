@@ -3,10 +3,12 @@ import { PrismaClient } from '@prisma/client'
 import { getDatabaseUrl } from './database-url'
 import { createPostgresAdapter } from './postgres-adapter'
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }
+declare global {
+  var prisma: PrismaClient | undefined
+}
 
 export const prisma =
-  globalForPrisma.prisma ??
+  globalThis.prisma ??
   new PrismaClient({
     adapter: createPostgresAdapter({
       connectionString: getDatabaseUrl({ allowPlaceholder: true }),
@@ -15,5 +17,5 @@ export const prisma =
   })
 
 if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma
+  globalThis.prisma = prisma
 }

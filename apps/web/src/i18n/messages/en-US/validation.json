@@ -74,6 +74,11 @@
     "cpfLength": "Use at most 32 characters.",
     "decimalPlaces": "Use at most two decimal places.",
     "linkRequired": "Provide a link.",
-    "partyAndRenterRequired": "Provide the party and renter user together."
+    "partyAndRenterRequired": "Provide the party and renter user together.",
+    "postalCodeInvalid": "Enter a postal code with 8 digits.",
+    "cpfInvalid": "Enter a valid CPF.",
+    "rateLimitUnavailable": "Service temporarily unavailable.",
+    "rateLimitExceeded": "Too many requests. Please try again later.",
+    "clientUpdateRequired": "The application was updated. Reload the page to continue."
   }
 }

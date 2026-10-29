@@ -1,3 +1,4 @@
+import { formatCurrency } from '@shared/lib/utils/format'
 import { isMarketplacePropertyType } from '../config/property-types'
 import { priceLimit, searchOptions } from '../config/search-filters'
 import type { SearchState } from '../types/search'
@@ -5,11 +6,7 @@ import { defaultLocale } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'
 
 export const formatSearchCurrency = (value: number, locale: AppLocale = defaultLocale) =>
-  new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: 'BRL',
-    maximumFractionDigits: 0,
-  }).format(value)
+  formatCurrency(value, locale, { maximumFractionDigits: 0 })
 
 export const normalizeSearchText = (value: string) =>
   value

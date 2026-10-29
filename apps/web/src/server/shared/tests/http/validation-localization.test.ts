@@ -1,3 +1,6 @@
+import { validationIssue, validationRefinement } from '../../http/validation-messages'
+import { updateUserRequestSchema } from '@server/auth/schemas/update-user.schema'
+import { registerRequestSchema } from '@server/registration/schemas/register.schema'
 // @vitest-environment node
 import { NextRequest, NextResponse } from 'next/server'
 import { describe, expect, it, vi } from 'vitest'
@@ -30,23 +33,58 @@ function request(locale?: AppLocale, body: unknown = {}) {
 
 describe('request validation localization', () => {
   it.each([
-    [
-      'pt-BR',
-      'Dados inválidos.',
-      'Informe um e-mail válido.',
-      'Senha deve ter pelo menos 8 caracteres.',
-    ],
+    ['pt-BR', 'Telefone inválido.', 'É necessário aceitar os termos.'],
+    ['en-US', 'Invalid phone number.', 'You must accept the terms.'],
+    ['es-ES', 'Número de teléfono inválido.', 'Debes aceptar los términos.'],
+  ] satisfies [AppLocale, string, string][])(
+    'uses typed domain keys from the actual schemas in %s',
+    async (locale, phoneMessage, termsMessage) => {
+      await expect(
+        parseJsonBody(request(locale, { phone: '0' }), updateUserRequestSchema),
+      ).rejects.toMatchObject({
+        issues: [{ path: 'phone', message: phoneMessage, params: { i18nKey: 'phoneInvalid' } }],
+      })
+      await expect(
+        parseJsonBody(
+          request(locale, {
+            profile: 'owner',
+            fullName: 'Test User',
+            email: 'test@example.test',
+            phone: '11999999999',
+            password: 'test-password-123',
+            acceptTerms: false,
+          }),
+          registerRequestSchema,
+        ),
+      ).rejects.toMatchObject({
+        issues: [
+          { path: 'acceptTerms', message: termsMessage, params: { i18nKey: 'termsRequired' } },
+        ],
+      })
+      expect(
+        registerRequestSchema.safeParse({
+          profile: 'owner',
+          fullName: 'Test User',
+          email: 'test@example.test',
+          phone: '11999999999',
+          password: 'test-password-123',
+        }).success,
+      ).toBe(false)
+    },
+  )
+  it.each([
+    ['pt-BR', 'Dados inválidos.', 'Informe um e-mail válido.', 'Use ao menos 8 caracteres.'],
     [
       'en-US',
       'Invalid request data.',
       'Enter a valid email address.',
-      'The password must contain at least 8 characters.',
+      'Use at least 8 characters.',
     ],
     [
       'es-ES',
       'Datos de solicitud inválidos.',
       'Introduce un correo electrónico válido.',
-      'La contraseña debe contener al menos 8 caracteres.',
+      'Usa al menos 8 caracteres.',
     ],
   ] satisfies [AppLocale, string, string, string][])(
     'localizes nested body issues in %s while preserving paths, codes and constraints',
@@ -54,8 +92,8 @@ describe('request validation localization', () => {
       const schema = z.object({
         members: z.array(
           z.object({
-            email: z.string().email('E-mail inválido.'),
-            password: z.string().min(8, 'Senha deve ter pelo menos 8 caracteres.'),
+            email: z.string().email(),
+            password: z.string().min(8),
           }),
         ),
       })
@@ -138,7 +176,7 @@ describe('request validation localization', () => {
   )
 
   it('uses the explicit custom catalog and a translated fallback for unknown refinements', async () => {
-    const known = z.string().refine(() => false, 'Selecione um prestador ou informe seus dados.')
+    const known = z.string().refine(() => false, validationRefinement('providerRequired'))
     await expect(parseJsonBody(request('en-US', 'value'), known)).rejects.toMatchObject({
       issues: [{ path: '', code: 'custom', message: 'Select a provider or enter their details.' }],
     })
@@ -207,7 +245,7 @@ describe('request validation localization', () => {
       },
     })
     const manual = new RequestValidationError(
-      [{ path: 'file', message: 'Envie um arquivo em "file".' }],
+      [validationIssue('file', 'fileRequired')],
       'PROFILE_MEDIA_INVALID',
     )
     expect(await handleRouteError(manual, request('en-US')).json()).toMatchObject({
