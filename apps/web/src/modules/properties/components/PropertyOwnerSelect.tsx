@@ -1,47 +1,31 @@
-import { MenuItem, TextField } from '@mui/material'
 import { Controller } from 'react-hook-form'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
+import { ContactPicker } from '@modules/crm/contact-picker'
 
-import { usePropertyOwners } from '../hooks/use-properties'
 import type { CreatePropertyBasicStepFieldsProps } from '../types/dashboard-property'
 
 export function PropertyOwnerSelect({ control }: CreatePropertyBasicStepFieldsProps) {
   const t = useTranslations('properties.create')
   const { data: session } = useSession()
   const canChooseOwner = session?.role === 'OWNER' || session?.role === 'AGENT'
-  const owners = usePropertyOwners(canChooseOwner)
   if (!canChooseOwner) return null
 
   return (
     <Controller
       control={control}
-      name="ownerUserId"
+      name="ownerContact"
       render={({ field, fieldState }) => (
-        <TextField
-          {...field}
-          select
-          fullWidth
+        <ContactPicker
+          value={field.value}
+          onChange={field.onChange}
           label={t('fields.owner')}
-          slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
-          disabled={owners.isLoading || owners.isError}
-          error={Boolean(fieldState.error) || owners.isError}
+          error={Boolean(fieldState.error)}
           helperText={
-            fieldState.error?.message ?? (owners.isError ? t('ownersLoadError') : undefined)
+            fieldState.error?.message ??
+            `${field.value ? '' : `${t('noOwner')}. `}${t('ownerContactHelp')}`
           }
-        >
-          <MenuItem value="">{t('noOwner')}</MenuItem>
-          {field.value && !owners.data?.some((owner) => owner.id === field.value) ? (
-            <MenuItem value={field.value} disabled>
-              {t('ownerUnavailable')}
-            </MenuItem>
-          ) : null}
-          {(owners.data ?? []).map((owner) => (
-            <MenuItem key={owner.id} value={owner.id}>
-              {owner.name}
-            </MenuItem>
-          ))}
-        </TextField>
+        />
       )}
     />
   )

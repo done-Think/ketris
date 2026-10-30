@@ -27,6 +27,7 @@ import type { PropertyRow, PropertyTransaction } from '../types/prisma-property-
 
 const propertyInclude = {
   responsible: { select: { name: true } },
+  ownerContact: { select: { id: true, name: true } },
   contracts: {
     where: { status: 'ACTIVE' as const },
     select: { id: true },
@@ -102,6 +103,7 @@ export class PrismaPropertyRepository implements PropertyRepository {
           updatedById: authorId,
           responsibleId: property.responsibleId,
           ownerId: property.ownerId ?? null,
+          ownerContactId: property.ownerContactId ?? null,
           title: property.title,
           description: property.description ?? null,
           purpose: property.purpose,
@@ -237,7 +239,7 @@ export class PrismaPropertyRepository implements PropertyRepository {
         where: { id, tenantId },
         data: {
           ...toPropertyUpdateData(changes),
-          updatedBy: authorId ? { connect: { id: authorId } } : { disconnect: true },
+          updatedById: authorId,
         },
       })
 
@@ -342,14 +344,10 @@ export class PrismaPropertyRepository implements PropertyRepository {
   }
 }
 
-function toPropertyUpdateData(changes: PropertyChanges): Prisma.PropertyUpdateInput {
+function toPropertyUpdateData(changes: PropertyChanges): Prisma.PropertyUncheckedUpdateInput {
   return {
-    owner:
-      changes.ownerId === undefined
-        ? undefined
-        : changes.ownerId === null
-          ? { disconnect: true }
-          : { connect: { id: changes.ownerId } },
+    ownerId: changes.ownerId,
+    ownerContactId: changes.ownerContactId,
     title: changes.title,
     description: changes.description,
     purpose: changes.purpose,
@@ -458,6 +456,8 @@ function mapProperty(property: PropertyRow): Property {
     responsibleName: property.responsible.name,
     activeContractId: property.contracts[0]?.id ?? null,
     ownerId: property.ownerId,
+    ownerContactId: property.ownerContactId,
+    ownerContact: property.ownerContact,
     title: property.title,
     description: property.description,
     purpose: mapPurpose(property.purpose),

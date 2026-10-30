@@ -31,7 +31,7 @@ function summary(id: string): PublicPropertySummary {
   return {
     id,
     title: `Casa ${id}`,
-    purpose: 'SALE',
+    purpose: 'RENT',
     propertyType: 'HOUSE',
     price: 900000,
     condoFee: null,
@@ -77,6 +77,7 @@ it('lista os imóveis publicados recentemente depois dos destaques', async () =>
   expect(screen.getByRole('link', { name: /Casa a/ })).toHaveAttribute('href', '/properties/a')
   expect(screen.getAllByRole('link')).toHaveLength(2)
   expect(marketplaceService.searchProperties).toHaveBeenCalledWith({
+    purpose: 'RENT',
     sortBy: 'recent',
     page: 2,
     pageSize: 6,

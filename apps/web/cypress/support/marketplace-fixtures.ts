@@ -91,10 +91,60 @@ export async function seedMarketplaceFixtures(
     },
   })
 
+  const rental = await prisma.property.create({
+    data: {
+      tenantId: tenant.id,
+      responsibleId: broker.id,
+      title: 'Aluguel Marketplace E2E ' + suffix,
+      purpose: 'RENT',
+      type: 'HOUSE',
+      price: 3500,
+      status: 'PUBLISHED',
+      publishedAt: new Date(Date.now() + 60000),
+      address: {
+        create: {
+          street: 'Rua do Teste',
+          number: '43',
+          neighborhood: 'Centro',
+          city,
+          state: 'PR',
+          zipCode: '80010000',
+        },
+      },
+    },
+  })
+  const dual = await prisma.property.create({
+    data: {
+      tenantId: tenant.id,
+      responsibleId: broker.id,
+      title: 'Venda e aluguel E2E ' + suffix,
+      purpose: 'BOTH',
+      type: 'APARTMENT',
+      price: 900000,
+      rentalPrice: 2500,
+      status: 'PUBLISHED',
+      publishedAt: new Date(Date.now() + 30000),
+      address: {
+        create: {
+          street: 'Rua do Teste',
+          number: '44',
+          neighborhood: 'Centro',
+          city,
+          state: 'PR',
+          zipCode: '80010000',
+        },
+      },
+    },
+  })
+
   return {
     tenantIds: [tenant.id],
     propertyId: property.id,
     propertyTitle,
+    rentalPropertyId: rental.id,
+    rentalPropertyTitle: rental.title,
+    dualPropertyId: dual.id,
+    dualPropertyTitle: dual.title,
     city,
     brokerName,
     ownerEmail,

@@ -1,6 +1,5 @@
-import type { Prisma } from '@prisma/client'
-
 import { prisma } from '@server/db/prisma'
+import { publicPropertySearchPage } from './public-property-search-page'
 
 import type { PublicPropertyRepository } from '../application/ports/public-property-repository.port'
 import type {
@@ -31,6 +30,7 @@ function toSummary(row: PropertySummaryRow): PublishedPropertySummary {
     purpose: row.purpose,
     propertyType: row.type,
     price: row.price.toNumber(),
+    rentalPrice: row.rentalPrice?.toNumber() ?? null,
     condoFee: toNumber(row.condoFee),
     propertyTax: toNumber(row.propertyTax),
     bedrooms: row.bedrooms,
@@ -79,89 +79,51 @@ function toDetail(row: PropertyDetailRow): PublishedPropertyDetail {
   }
 }
 
-const sortOrderBy: Record<
-  NonNullable<PropertySearchFilters['sortBy']>,
-  Prisma.PropertyOrderByWithRelationInput
-> = {
-  recent: { publishedAt: 'desc' },
-  priceAsc: { price: 'asc' },
-  priceDesc: { price: 'desc' },
-}
-
 export class PrismaPublicPropertyRepository implements PublicPropertyRepository {
   async search(
     filters: PropertySearchFilters,
     { page, pageSize }: PropertySearchPage,
   ): Promise<PropertySearchResult> {
-    const where: Prisma.PropertyWhereInput = { status: 'PUBLISHED' }
-
-    if (filters.purpose) {
-      where.purpose = filters.purpose === 'BOTH' ? 'BOTH' : { in: [filters.purpose, 'BOTH'] }
-    }
-    if (filters.propertyType) where.type = filters.propertyType
-    if (filters.minBedrooms !== undefined) where.bedrooms = { gte: filters.minBedrooms }
-    if (filters.minArea !== undefined) where.areaSqm = { gte: filters.minArea }
-    if (filters.hasParking) where.parkingSpots = { gt: 0 }
-
-    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-      where.price = {
-        ...(filters.minPrice !== undefined ? { gte: filters.minPrice } : {}),
-        ...(filters.maxPrice !== undefined ? { lte: filters.maxPrice } : {}),
-      }
-    }
-
-    const addressFilters: Prisma.PropertyAddressWhereInput[] = []
-    if (filters.city) addressFilters.push({ city: { equals: filters.city, mode: 'insensitive' } })
-    for (const part of filters.location
-      ?.split(',')
-      .map((value) => value.trim())
-      .filter(Boolean) ?? [])
-      addressFilters.push({
-        OR: [
-          { neighborhood: { contains: part, mode: 'insensitive' } },
-          { city: { contains: part, mode: 'insensitive' } },
-        ],
-      })
-    if (addressFilters.length) where.address = { is: { AND: addressFilters } }
-
-    if (filters.q) {
-      where.OR = [
-        { title: { contains: filters.q, mode: 'insensitive' } },
-        { description: { contains: filters.q, mode: 'insensitive' } },
-      ]
-    }
-
-    const [properties, totalCount] = await prisma.$transaction([
-      prisma.property.findMany({
-        where,
-        orderBy: [sortOrderBy[filters.sortBy ?? 'recent'], { id: 'asc' }],
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        select: {
-          id: true,
-          title: true,
-          purpose: true,
-          type: true,
-          price: true,
-          condoFee: true,
-          propertyTax: true,
-          bedrooms: true,
-          bathrooms: true,
-          parkingSpots: true,
-          areaSqm: true,
-          publishedAt: true,
-          address: { select: { city: true, neighborhood: true, latitude: true, longitude: true } },
-          responsible: { select: { name: true, avatarUrl: true } },
-          media: { orderBy: { position: 'asc' }, take: 1, select: { url: true } },
-        },
-      }),
-      prisma.property.count({ where }),
-    ])
-
-    return {
-      items: properties.map((property) => toSummary(property)),
-      totalCount,
-    }
+    return prisma.$transaction(
+      async (transaction) => {
+        const { ids, totalCount } = await publicPropertySearchPage(transaction, filters, {
+          page,
+          pageSize,
+        })
+        const properties = await transaction.property.findMany({
+          where: { id: { in: ids } },
+          select: {
+            id: true,
+            title: true,
+            purpose: true,
+            type: true,
+            price: true,
+            rentalPrice: true,
+            condoFee: true,
+            propertyTax: true,
+            bedrooms: true,
+            bathrooms: true,
+            parkingSpots: true,
+            areaSqm: true,
+            publishedAt: true,
+            address: {
+              select: { city: true, neighborhood: true, latitude: true, longitude: true },
+            },
+            responsible: { select: { name: true, avatarUrl: true } },
+            media: { orderBy: { position: 'asc' }, take: 1, select: { url: true } },
+          },
+        })
+        const byId = new Map(properties.map((property) => [property.id, property]))
+        return {
+          items: ids.flatMap((id) => {
+            const property = byId.get(id)
+            return property ? [toSummary(property)] : []
+          }),
+          totalCount,
+        }
+      },
+      { isolationLevel: 'RepeatableRead' },
+    )
   }
 
   async findPublishedById(id: string): Promise<PublishedPropertyDetail | null> {

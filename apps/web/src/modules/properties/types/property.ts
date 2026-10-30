@@ -45,6 +45,8 @@ export interface Property {
   responsibleName: string
   activeContractId: string | null
   ownerUserId: string | null
+  ownerContactId?: string | null
+  ownerContact?: NonNullable<components['schemas']['TenantProperty']['ownerContact']> | null
   title: string
   description: string | null
   purpose: PropertyPurpose
@@ -62,6 +64,7 @@ export interface Property {
 
 export interface PropertyFormValues {
   ownerUserId?: string | null
+  ownerContactId?: string | null
   listing?: PropertyListing
   title: string
   description?: string | null

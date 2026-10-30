@@ -117,5 +117,7 @@ export function useCrmContactOptions(q: string) {
       page.pagination.page < page.pagination.pageCount ? page.pagination.page + 1 : undefined,
     select: (data) => data.pages.flatMap((page) => page.contacts),
     enabled: scope.enabled,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   })
 }

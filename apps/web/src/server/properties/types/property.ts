@@ -63,6 +63,8 @@ export interface Property {
   tenantId: string
   responsibleId: string
   ownerId: string | null
+  ownerContactId?: string | null
+  ownerContact?: { id: string; name: string } | null
   title: string
   description: string | null
   purpose: PropertyPurpose
@@ -82,6 +84,7 @@ export interface NewProperty {
   tenantId: string
   responsibleId: string
   ownerId?: string | null
+  ownerContactId?: string | null
   title: string
   description?: string | null
   purpose: PropertyPurpose
@@ -101,6 +104,7 @@ export interface NewProperty {
 
 export interface PropertyChanges {
   ownerId?: string | null
+  ownerContactId?: string | null
   title?: string
   description?: string | null
   purpose?: PropertyPurpose

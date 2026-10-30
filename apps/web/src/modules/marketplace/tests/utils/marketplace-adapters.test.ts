@@ -1,3 +1,4 @@
+import { formatPublicPropertyPrice } from '../../utils/public-property-price'
 import { describe, expect, it, vi } from 'vitest'
 
 import * as agencyEditor from '../../utils/agency-public-profile-editor-adapter'
@@ -108,13 +109,24 @@ describe('property presentation', () => {
 
     expect(card).toMatchObject({
       id: 'p1',
-      href: '/properties/p1',
+      href: '/properties/p1?purpose=rent',
       location: 'Curitiba',
       broker: '',
       image: '',
       mapCenter: { latitude: -25.4, longitude: -49.2 },
     })
     expect(card.price).toMatch(/^monthly:R\$\s?3\.200$/)
+  })
+  it('uses the dual listing rental price in rental cards and details', () => {
+    const t = vi.fn((key: string, values: { price: string } | { count: number }) =>
+      key === 'monthly' && 'price' in values ? `${values.price} / month` : key,
+    )
+    const dual = { price: 900000, rentalPrice: 2500, purpose: 'BOTH' as const }
+    expect(formatPublicPropertyPrice(dual, 'alugar', 'pt-BR', t)).toMatch(/2\.500.*month/)
+    expect(formatPublicPropertyPrice(dual, 'comprar', 'pt-BR', t)).toContain('900.000')
+    expect(formatPublicPropertyPrice({ ...dual, rentalPrice: null }, 'alugar', 'pt-BR', t)).toBe(
+      'priceOnRequest',
+    )
   })
 })
 

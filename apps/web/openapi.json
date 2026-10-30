@@ -1303,6 +1303,7 @@
         "type": "object",
         "properties": {
           "ownerId": { "type": "string", "nullable": true, "minLength": 1 },
+          "ownerContactId": { "type": "string", "nullable": true, "minLength": 1 },
           "title": { "type": "string", "minLength": 1, "maxLength": 200 },
           "description": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 10000 },
           "purpose": { "type": "string", "enum": ["RENT", "SALE", "BOTH"] },
@@ -3486,6 +3487,7 @@
         "type": "object",
         "properties": {
           "ownerId": { "type": "string", "nullable": true, "minLength": 1 },
+          "ownerContactId": { "type": "string", "nullable": true, "minLength": 1 },
           "title": { "type": "string", "minLength": 1, "maxLength": 200 },
           "description": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 10000 },
           "purpose": { "type": "string", "enum": ["RENT", "SALE", "BOTH"] },
@@ -3947,6 +3949,7 @@
             "enum": ["APARTMENT", "HOUSE", "STUDIO", "PENTHOUSE", "COMMERCIAL", "LOFT", "OTHER"]
           },
           "price": { "type": "number" },
+          "rentalPrice": { "type": "number", "nullable": true },
           "condoFee": { "type": "number", "nullable": true },
           "propertyTax": { "type": "number", "nullable": true },
           "bedrooms": { "type": "integer", "nullable": true },
@@ -4402,6 +4405,13 @@
             "enum": ["APARTMENT", "HOUSE", "STUDIO", "PENTHOUSE", "COMMERCIAL", "LOFT", "OTHER"]
           },
           "ownerId": { "type": "string", "nullable": true },
+          "ownerContactId": { "type": "string", "nullable": true },
+          "ownerContact": {
+            "type": "object",
+            "nullable": true,
+            "properties": { "id": { "type": "string" }, "name": { "type": "string" } },
+            "required": ["id", "name"]
+          },
           "listing": { "$ref": "#/components/schemas/TenantPropertyListing" },
           "status": {
             "type": "string",

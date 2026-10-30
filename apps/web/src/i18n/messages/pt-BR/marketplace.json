@@ -111,7 +111,12 @@
         "priceInvalid": "Valor de preço inválido"
       },
       "anyLocation": "Qualquer região",
-      "anyPropertyType": "Todos os tipos"
+      "anyPropertyType": "Todos os tipos",
+      "anyPrice": "Qualquer preço",
+      "fromPrice": "A partir de {price}",
+      "upToPrice": "Até {price}",
+      "noMinPrice": "Sem mínimo",
+      "noMaxPrice": "Sem máximo"
     },
     "featured": {
       "title": "Imóveis em destaque",
@@ -260,7 +265,8 @@
     "bedrooms": "{count, plural, =0 {Nenhum quarto} one {# quarto} other {# quartos}}",
     "bathrooms": "{count, plural, =0 {Nenhum banheiro} one {# banheiro} other {# banheiros}}",
     "parking": "{count, plural, =0 {Nenhuma vaga} one {# vaga} other {# vagas}}",
-    "monthly": "{price} / mês"
+    "monthly": "{price} / mês",
+    "priceOnRequest": "Sob consulta"
   },
   "profileEditor": {
     "previewName": "Seu nome",

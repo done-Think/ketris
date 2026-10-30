@@ -1,11 +1,10 @@
-import { Box, Button, IconButton, Slider, Stack, TextField, Typography } from '@mui/material'
+import { useState } from 'react'
+import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { useLocale, useTranslations } from 'next-intl'
-import type { AppLocale } from '@/i18n/types/locale.types'
+import { useTranslations } from 'next-intl'
 
-import { priceLimit } from '../config/search-filters'
-import type { PriceRangeMenuProps } from '../types/search'
-import { formatSearchCurrency } from '../utils/search'
+import type { PriceRange, PriceRangeMenuProps } from '../types/search'
+import { isValidPriceRange } from '../utils/search'
 import { styles } from '../styles/price-range-menu.styles'
 
 export function PriceRangeMenu({
@@ -13,11 +12,21 @@ export function PriceRangeMenu({
   updatePriceRange,
   closeSearchMenu,
 }: PriceRangeMenuProps) {
-  const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.home.search')
+  const [draft, setDraft] = useState<PriceRange>(priceRange)
+  const valid = isValidPriceRange(draft)
 
   return (
-    <Box sx={styles.box}>
+    <Box
+      component="form"
+      sx={styles.box}
+      onSubmit={(event) => {
+        event.preventDefault()
+        if (!valid) return
+        updatePriceRange(draft)
+        closeSearchMenu()
+      }}
+    >
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={styles.stack}>
         <Typography sx={styles.typography}>{t('priceRange')}</Typography>
         <IconButton aria-label={t('closePriceRange')} size="small" onClick={closeSearchMenu}>
@@ -29,65 +38,47 @@ export function PriceRangeMenu({
         <TextField
           label={t('minPrice')}
           type="number"
-          value={priceRange[0]}
+          value={draft[0] ?? ''}
+          placeholder={t('noMinPrice')}
+          error={!valid}
           onChange={(event) =>
-            updatePriceRange([Number(event.target.value || priceLimit.min), priceRange[1]])
+            setDraft([event.target.value === '' ? null : Number(event.target.value), draft[1]])
           }
           size="small"
           fullWidth
           sx={styles.textField}
           slotProps={{
             htmlInput: {
-              min: priceLimit.min,
-              max: priceLimit.max,
-              step: priceLimit.step,
+              min: 0,
+              step: 'any',
             },
           }}
         />
         <TextField
           label={t('maxPrice')}
           type="number"
-          value={priceRange[1]}
+          value={draft[1] ?? ''}
+          placeholder={t('noMaxPrice')}
+          error={!valid}
+          helperText={
+            !valid ? t('errors.priceInvalid') : draft[1] === null ? t('noMaxPrice') : undefined
+          }
           onChange={(event) =>
-            updatePriceRange([priceRange[0], Number(event.target.value || priceLimit.min)])
+            setDraft([draft[0], event.target.value === '' ? null : Number(event.target.value)])
           }
           size="small"
           fullWidth
           sx={styles.textField}
           slotProps={{
             htmlInput: {
-              min: priceLimit.min,
-              max: priceLimit.max,
-              step: priceLimit.step,
+              min: 0,
+              step: 'any',
             },
           }}
         />
       </Stack>
 
-      <Box sx={styles.box2}>
-        <Slider
-          getAriaLabel={() => t('priceRange')}
-          value={priceRange}
-          onChange={(_, nextValue) => updatePriceRange(nextValue as [number, number])}
-          valueLabelDisplay="auto"
-          valueLabelFormat={(value) => formatSearchCurrency(value, locale)}
-          min={priceLimit.min}
-          max={priceLimit.max}
-          step={priceLimit.step}
-          disableSwap
-        />
-      </Box>
-
-      <Stack direction="row" justifyContent="space-between" sx={styles.stack3}>
-        <Typography sx={styles.typography2}>
-          {formatSearchCurrency(priceLimit.min, locale)}
-        </Typography>
-        <Typography sx={styles.typography2}>
-          {formatSearchCurrency(priceLimit.max, locale)}
-        </Typography>
-      </Stack>
-
-      <Button variant="contained" fullWidth onClick={closeSearchMenu} sx={styles.button}>
+      <Button type="submit" variant="contained" fullWidth disabled={!valid} sx={styles.button}>
         {t('apply')}
       </Button>
     </Box>

@@ -431,6 +431,7 @@ model Property {
   tenantId             String
   responsibleId        String
   ownerId              String?
+  ownerContactId       String?
   title                String
   description          String?
   purpose              PropertyPurpose
@@ -458,6 +459,7 @@ model Property {
   updatedBy          User?               @relation("PropertyUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   responsible        User                @relation("PropertyResponsible", fields: [responsibleId], references: [id])
   owner              User?               @relation("PropertyOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerContact       Contact?            @relation(fields: [ownerContactId, tenantId], references: [id, tenantId], onDelete: NoAction)
   address            PropertyAddress?
   media              PropertyMedia[]
   opportunities      Opportunity[]
@@ -469,6 +471,7 @@ model Property {
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, ownerId])
+  @@index([tenantId, ownerContactId])
   @@index([updatedById])
   @@map("properties")
 }
@@ -745,12 +748,14 @@ model Contact {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  opportunities Opportunity[]
-  updatedBy     User?         @relation("ContactUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  archivedBy    User?         @relation("ContactArchivedBy", fields: [archivedById], references: [id], onDelete: SetNull)
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  opportunities   Opportunity[]
+  updatedBy       User?         @relation("ContactUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  ownedProperties Property[]
+  archivedBy      User?         @relation("ContactArchivedBy", fields: [archivedById], references: [id], onDelete: SetNull)
 
   @@unique([tenantId, email])
+  @@unique([id, tenantId])
   @@index([tenantId, createdById])
   @@index([tenantId])
   @@index([tenantId, type])

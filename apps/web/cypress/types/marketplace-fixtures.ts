@@ -7,6 +7,10 @@ export interface MarketplaceFixtureResult {
   tenantIds: string[]
   propertyId: string
   propertyTitle: string
+  rentalPropertyId: string
+  rentalPropertyTitle: string
+  dualPropertyId: string
+  dualPropertyTitle: string
   city: string
   brokerName: string
   ownerEmail: string

@@ -1,4 +1,6 @@
 import { assertPropertyMediaScope } from '../../domain/property-media-policy'
+import { assertOwnerContactChange } from '../property-owner-contact-policy'
+import type { PropertyOwnerContactDirectory } from '../ports/property-owner-contact-directory.port'
 import { isPropertyOwner } from '@server/auth/domain/roles'
 import type { PropertyOwnerDirectory } from '../ports/property-owner-directory.port'
 import { PropertyOwnerValidationError } from '../../domain/errors'
@@ -18,6 +20,7 @@ export class UpdatePropertyUseCase {
     private readonly propertyRepository: PropertyRepository,
     private readonly ownerDirectory: PropertyOwnerDirectory,
     private readonly geocoder: AddressGeocoder = unavailableAddressGeocoder,
+    private readonly ownerContacts?: PropertyOwnerContactDirectory,
   ) {}
 
   async execute(input: UpdatePropertyInput) {
@@ -30,6 +33,12 @@ export class UpdatePropertyUseCase {
     }
 
     assertPropertyAccess(existing, input.actorId, input.actorRole)
+    await assertOwnerContactChange(
+      input,
+      input.ownerContactId,
+      existing.ownerContactId,
+      this.ownerContacts,
+    )
 
     assertPropertyMediaScope(
       input.actorTenantId,
@@ -50,6 +59,7 @@ export class UpdatePropertyUseCase {
       input.id,
       {
         ownerId: ownerId,
+        ownerContactId: input.ownerContactId,
         title: input.title,
         description: input.description,
         purpose: input.purpose,
