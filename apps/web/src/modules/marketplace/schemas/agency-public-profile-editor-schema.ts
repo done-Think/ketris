@@ -6,7 +6,7 @@ import type { TranslationKey } from '@/i18n/types/messages.types'
 type ProfileValidationKey = TranslationKey<'marketplace.agencyProfileEditor.errors'>
 
 const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
-const INTERNAL_MARKETPLACE_MEDIA_PATH = /^\/api\/marketplace\/media\/.+/
+const INTERNAL_PROFILE_MEDIA_PATH = /^\/api\/(?:marketplace\/media\/|auth\/media\/avatars\/).+/
 
 const createRequiredTextSchema = (
   t: SchemaMessageTranslator<ProfileValidationKey>,
@@ -41,7 +41,7 @@ const createUrlSchema = (
   requirePublishFields: boolean,
 ) => {
   const isValidMediaUrl = (value: string) =>
-    z.string().url().safeParse(value).success || INTERNAL_MARKETPLACE_MEDIA_PATH.test(value)
+    z.string().url().safeParse(value).success || INTERNAL_PROFILE_MEDIA_PATH.test(value)
 
   if (!requirePublishFields) {
     return z.string().refine(isValidMediaUrl, t('urlInvalid')).or(z.literal(''))

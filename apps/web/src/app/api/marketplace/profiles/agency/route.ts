@@ -11,6 +11,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const actor = await requireBearerAuth(request, authContainer.tokenService)
 
   const profile = await marketplaceContainer.getOwnAgencyProfileUseCase.execute({
+    actorId: actor.sub,
     actorTenantId: actor.tenantId,
     actorRole: actor.role,
   })

@@ -31,6 +31,7 @@ const profile: AgencyProfile = {
 
 function createRepository(listPublished: AgencyProfileRepository['listPublished']) {
   const agencyProfileRepository: AgencyProfileRepository = {
+    findForEditor: vi.fn().mockResolvedValue(null),
     findPublishedById: vi.fn(),
     findPublishedBySlug: vi.fn(),
     listPublished,

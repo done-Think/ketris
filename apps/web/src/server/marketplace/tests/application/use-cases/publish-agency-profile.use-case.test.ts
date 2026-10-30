@@ -37,6 +37,7 @@ function makeProfile(overrides: Partial<AgencyProfile> = {}): AgencyProfile {
 
 function createDeps(profile: AgencyProfile | null = makeProfile()) {
   const agencyProfileRepository: AgencyProfileRepository = {
+    findForEditor: vi.fn().mockResolvedValue(null),
     findPublishedById: vi.fn(),
     findPublishedBySlug: vi.fn(),
     listPublished: vi.fn(),

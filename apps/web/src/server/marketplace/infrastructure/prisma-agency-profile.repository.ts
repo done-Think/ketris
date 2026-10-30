@@ -130,6 +130,27 @@ async function toAgencyProfile(tenant: TenantWithProfileRow): Promise<AgencyProf
 }
 
 export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
+  async findForEditor(tenantId: string, actorId: string): Promise<AgencyProfile | null> {
+    const [tenant, owner] = await Promise.all([
+      prisma.tenant.findUnique({ where: { id: tenantId }, include: tenantWithProfileInclude }),
+      prisma.user.findFirst({
+        where: { id: actorId, tenantId, role: 'OWNER', active: true },
+        select: { email: true, emailVerifiedAt: true, phone: true, avatarUrl: true },
+      }),
+    ])
+
+    if (!tenant || !owner) return null
+
+    const profile = await toAgencyProfile(tenant)
+
+    return {
+      ...profile,
+      email: profile.email ?? (owner.emailVerifiedAt ? owner.email : null),
+      phone: profile.phone ?? owner.phone,
+      logoUrl: profile.logoUrl ?? owner.avatarUrl,
+    }
+  }
+
   async findByTenantId(tenantId: string): Promise<AgencyProfile | null> {
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },

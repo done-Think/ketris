@@ -301,6 +301,46 @@ describe('PublicProfileEditorPage', () => {
       agencyProfileMocks.publishMutate.mockClear()
     })
 
+    it('loads account defaults, masks both phone lengths and saves the inherited logo', async () => {
+      const logoUrl = '/api/auth/media/avatars/tenant-1/owner-1/company.png'
+      vi.mocked(useOwnAgencyProfile).mockReturnValue({
+        data: {
+          ...draftAgencyProfile,
+          displayName: 'Imobiliária Horizonte',
+          email: 'verified@example.com',
+          phone: '35997989991',
+          logoUrl,
+        },
+      } as unknown as ReturnType<typeof useOwnAgencyProfile>)
+      const user = userEvent.setup()
+      renderWithTheme(<AgencyPublicProfileEditorPage />)
+
+      expect(screen.getByLabelText('E-mail')).toHaveValue('verified@example.com')
+      expect(screen.getByLabelText('Telefone')).toHaveValue('(35) 99798-9991')
+      expect(document.querySelector(`img[src="${logoUrl}"]`)).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Editar' }))
+      const phone = screen.getByLabelText('Telefone')
+      await user.clear(phone)
+      await user.type(phone, '35999990000')
+      expect(phone).toHaveValue('(35) 99999-0000')
+      await user.clear(phone)
+      await user.type(phone, '3536221234')
+      expect(phone).toHaveValue('(35) 3622-1234')
+      await user.click(screen.getByRole('button', { name: 'Salvar' }))
+
+      await waitFor(() =>
+        expect(agencyProfileMocks.saveMutate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            email: 'verified@example.com',
+            phone: '(35) 3622-1234',
+            logoUrl,
+          }),
+          expect.any(Object),
+        ),
+      )
+    })
+
     it('shows the required-field errors below every empty field when publishing without them', async () => {
       vi.mocked(useOwnAgencyProfile).mockReturnValue({
         data: { ...draftAgencyProfile, displayName: 'Imobiliária Horizonte' },

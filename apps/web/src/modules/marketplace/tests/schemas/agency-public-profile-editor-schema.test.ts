@@ -43,6 +43,23 @@ describe('agencyPublicProfileEditorSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('accepts the account avatar as the agency logo', () => {
+    const result = agencyPublicProfileEditorSchema.safeParse({
+      ...validDraft,
+      logoUrl: '/api/auth/media/avatars/tenant-1/owner-1/company.png',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects unrelated application paths as images', () => {
+    expect(
+      agencyPublicProfileEditorSchema.safeParse({
+        ...validDraft,
+        logoUrl: '/api/auth/users/owner-1',
+      }).success,
+    ).toBe(false)
+  })
+
   it('rejeita e-mail em formato inválido', () => {
     const result = agencyPublicProfileEditorSchema.safeParse({
       ...validDraft,

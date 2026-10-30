@@ -6,7 +6,7 @@ import { useMemo } from 'react'
 import { Controller } from 'react-hook-form'
 
 import type { AppLocale } from '@/i18n/types/locale.types'
-import { RhfTextField } from '@shared/components/form'
+import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
 
 import {
   useOwnAgencyProfile,
@@ -31,6 +31,7 @@ import { PublicProfileEditorShell } from './public-profile-editor/PublicProfileE
 import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
 
 const formId = 'agency-public-profile-editor-form'
+const phoneMask = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
 
 export function AgencyPublicProfileEditorPage() {
   const t = useTranslations('marketplace.agencyProfileEditor')
@@ -155,11 +156,14 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
             label={t('fields.address')}
             disabled={disabled}
           />
-          <RhfTextField
+          <RhfMaskedTextField
             control={control}
             name="phone"
             label={t('fields.phone')}
-            disabled={disabled}
+            mask={phoneMask}
+            type="tel"
+            autoComplete="tel"
+            InputProps={{ readOnly: disabled }}
           />
           <RhfTextField
             control={control}
