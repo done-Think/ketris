@@ -3,5 +3,7 @@
   "origin": "https://ketris-web-x9bk.vercel.app",
   "databaseHost": "ketris-staging.cubemqk8wpqi.us-east-1.rds.amazonaws.com",
   "databaseName": "ketris",
-  "compatibleMigrations": {}
+  "compatibleMigrations": {
+    "20261105090000_property_owner_contact": "Adds a nullable CRM contact reference and tenant-scoped indexes without changing existing properties, accounts, or access grants. The previous application remains compatible."
+  }
 }

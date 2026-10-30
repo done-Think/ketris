@@ -32,6 +32,7 @@ export function CrmAutocomplete<T extends { id: string }>({
         }}
         filterOptions={(items) => items}
         isOptionEqualToValue={(option, selected) => option.id === selected.id}
+        getOptionKey={(option) => option.id}
         getOptionLabel={getOptionLabel}
         loading={loading}
         loadingText={t('loading')}

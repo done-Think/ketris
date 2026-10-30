@@ -11896,6 +11896,7 @@ export interface components {
       description?: string | null
       listing?: components['schemas']['TenantPropertyListing']
       media?: components['schemas']['TenantPropertyMediaInput'][]
+      ownerContactId?: string | null
       ownerId?: string | null
       parkingSpots?: number | null
       price: number
@@ -13713,6 +13714,11 @@ export interface components {
       id: string
       listing: components['schemas']['TenantPropertyListing']
       media: components['schemas']['TenantPropertyMedia'][]
+      ownerContact?: {
+        id: string
+        name: string
+      } | null
+      ownerContactId?: string | null
       ownerId: string | null
       publishedAt: string | null
       /** @enum {string} */
@@ -13950,6 +13956,7 @@ export interface components {
       description?: string | null
       listing?: components['schemas']['TenantPropertyListing']
       media?: components['schemas']['TenantPropertyMediaInput'][]
+      ownerContactId?: string | null
       ownerId?: string | null
       parkingSpots?: number | null
       price?: number

@@ -29,6 +29,10 @@ const state = vi.hoisted(() => ({
   push: vi.fn(),
   notify: vi.fn(),
   owners: [] as PropertyOwnerOption[],
+  contacts: [] as { id: string; name: string; email: string }[],
+}))
+vi.mock('@modules/crm/hooks/use-contacts', () => ({
+  useCrmContactOptions: () => ({ data: state.contacts, isFetching: false, isError: false }),
 }))
 vi.mock('../../services/properties-service', () => ({
   propertiesService: { uploadMedia: state.upload },
@@ -71,6 +75,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   state.upload.mockReset()
   state.owners = []
+  state.contacts = []
   state.query = { data: undefined, isError: false, isLoading: false, error: null, refetch: vi.fn() }
   state.create.mockResolvedValue({ id: 'new-property' })
   state.update.mockResolvedValue(editableProperty)
@@ -83,15 +88,14 @@ describe('property forms', () => {
   it('shows and keeps the no-owner selection when the owner directory is empty', async () => {
     const user = userEvent.setup()
     render(<CreatePropertyDashboardPage />)
-    const owner = screen.getByRole('combobox', { name: /Proprietário/ })
-    expect(owner).toHaveTextContent('Sem proprietário vinculado')
-    expect(screen.getByText('Proprietário', { selector: 'label' })).toHaveAttribute(
-      'data-shrink',
-      'true',
-    )
+    const owner = screen.getByRole('combobox', { name: /Conta com acesso ao imóvel/ })
+    expect(owner).toHaveTextContent('Sem conta de acesso vinculada')
+    expect(
+      screen.getByText('Conta com acesso ao imóvel (opcional)', { selector: 'label' }),
+    ).toHaveAttribute('data-shrink', 'true')
     await user.click(owner)
-    await user.click(screen.getByRole('option', { name: 'Sem proprietário vinculado' }))
-    expect(owner).toHaveTextContent('Sem proprietário vinculado')
+    await user.click(screen.getByRole('option', { name: 'Sem conta de acesso vinculada' }))
+    expect(owner).toHaveTextContent('Sem conta de acesso vinculada')
   })
 
   it('clears an existing owner and saves the property without a linked account', async () => {
@@ -99,15 +103,61 @@ describe('property forms', () => {
     state.owners = [{ id: 'owner-1', name: 'Dona Maria' }]
     state.query.data = { ...editableProperty, ownerUserId: 'owner-1' }
     render(<EditPropertyDashboardPage propertyId={editableProperty.id} />)
-    const owner = screen.getByRole('combobox', { name: /Proprietário/ })
+    const owner = screen.getByRole('combobox', { name: /Conta com acesso ao imóvel/ })
     expect(owner).toHaveTextContent('Dona Maria')
     await user.click(owner)
-    await user.click(screen.getByRole('option', { name: 'Sem proprietário vinculado' }))
-    expect(owner).toHaveTextContent('Sem proprietário vinculado')
+    await user.click(screen.getByRole('option', { name: 'Sem conta de acesso vinculada' }))
+    expect(owner).toHaveTextContent('Sem conta de acesso vinculada')
     await user.click(screen.getAllByRole('button', { name: /Publicação/ })[0])
     await user.click(await screen.findByRole('button', { name: 'Salvar alterações' }))
     await waitFor(() => expect(state.update).toHaveBeenCalledOnce())
     expect(state.update).toHaveBeenCalledWith(expect.objectContaining({ ownerUserId: null }))
+  })
+
+  it('selects a CRM contact without changing the account that can access the property', async () => {
+    const user = userEvent.setup()
+    state.contacts = [{ id: 'contact-1', name: 'Maria do CRM', email: 'maria@example.test' }]
+    state.owners = [{ id: 'owner-1', name: 'Conta existente' }]
+    state.query.data = { ...editableProperty, ownerUserId: 'owner-1' }
+    render(<EditPropertyDashboardPage propertyId={editableProperty.id} />)
+    const contact = screen.getByRole('combobox', { name: 'Proprietário' })
+    expect(contact).toHaveValue('')
+    expect(screen.getByText(/Sem proprietário vinculado/)).toBeVisible()
+    await user.click(contact)
+    await user.click(screen.getByRole('option', { name: /Maria do CRM/ }))
+    expect(contact).toHaveValue('Maria do CRM')
+    expect(screen.getByRole('combobox', { name: /Conta com acesso/ })).toHaveTextContent(
+      'Conta existente',
+    )
+    await user.click(screen.getAllByRole('button', { name: /Publicação/ })[0])
+    await user.click(await screen.findByRole('button', { name: 'Salvar alterações' }))
+    await waitFor(() => expect(state.update).toHaveBeenCalledOnce())
+    expect(state.update).toHaveBeenCalledWith(
+      expect.objectContaining({ ownerContactId: 'contact-1', ownerUserId: 'owner-1' }),
+    )
+  })
+
+  it('keeps an existing contact outside the options and can clear it without revoking access', async () => {
+    const user = userEvent.setup()
+    state.owners = [{ id: 'owner-1', name: 'Conta existente' }]
+    state.query.data = {
+      ...editableProperty,
+      ownerUserId: 'owner-1',
+      ownerContactId: 'archived-contact',
+      ownerContact: { id: 'archived-contact', name: 'Contato histórico' },
+    }
+    render(<EditPropertyDashboardPage propertyId={editableProperty.id} />)
+    const contact = screen.getByRole('combobox', { name: 'Proprietário' })
+    expect(contact).toHaveValue('Contato histórico')
+    await user.click(contact)
+    await user.click(screen.getByRole('button', { name: 'Limpar seleção' }))
+    expect(contact).toHaveValue('')
+    await user.click(screen.getAllByRole('button', { name: /Publicação/ })[0])
+    await user.click(await screen.findByRole('button', { name: 'Salvar alterações' }))
+    await waitFor(() => expect(state.update).toHaveBeenCalledOnce())
+    expect(state.update).toHaveBeenCalledWith(
+      expect.objectContaining({ ownerContactId: null, ownerUserId: 'owner-1' }),
+    )
   })
 
   it('validates the current step before allowing the user to advance', async () => {

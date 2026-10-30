@@ -207,7 +207,8 @@
       "owner": "Proprietário",
       "complement": "Complemento",
       "latitude": "Latitude (opcional)",
-      "longitude": "Longitude (opcional)"
+      "longitude": "Longitude (opcional)",
+      "ownerAccessAccount": "Conta com acesso ao imóvel (opcional)"
     },
     "steps": {
       "ariaLabel": "Etapas do cadastro",
@@ -279,7 +280,10 @@
     "ownerUnavailable": "Proprietário indisponível",
     "ownersLoadError": "Não foi possível carregar os proprietários.",
     "mediaUploadFileError": "Não foi possível enviar \"{filename}\". Tente novamente.",
-    "mediaStorageUnavailableFileError": "O serviço de imagens está indisponível. Não foi possível enviar \"{filename}\". Tente novamente mais tarde."
+    "mediaStorageUnavailableFileError": "O serviço de imagens está indisponível. Não foi possível enviar \"{filename}\". Tente novamente mais tarde.",
+    "noOwnerAccess": "Sem conta de acesso vinculada",
+    "ownerContactHelp": "Selecione um contato do CRM. O contato não precisa ter login e não receberá acesso automaticamente.",
+    "ownerAccessHelp": "Esta conta poderá acessar o imóvel. O vínculo é independente do contato proprietário."
   },
   "edit": {
     "title": "Editar imóvel",

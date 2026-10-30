@@ -2,6 +2,7 @@ import type { PropertyAddress, Property, PropertyMedia, Prisma } from '@prisma/c
 
 export type PropertyRow = Property & {
   responsible: { name: string }
+  ownerContact: { id: string; name: string } | null
   contracts: { id: string }[]
   address: PropertyAddress | null
   media: PropertyMedia[]

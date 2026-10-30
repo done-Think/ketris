@@ -1,4 +1,6 @@
 import { assertPropertyMediaScope } from '../../domain/property-media-policy'
+import { assertOwnerContactChange } from '../property-owner-contact-policy'
+import type { PropertyOwnerContactDirectory } from '../ports/property-owner-contact-directory.port'
 import type { PropertyOwnerDirectory } from '../ports/property-owner-directory.port'
 import { PropertyOwnerValidationError } from '../../domain/errors'
 import type { CreatePropertyInput } from '../../types/use-case-inputs'
@@ -17,6 +19,7 @@ export class CreatePropertyUseCase {
     private readonly propertyRepository: PropertyRepository,
     private readonly ownerDirectory: PropertyOwnerDirectory,
     private readonly geocoder: AddressGeocoder = unavailableAddressGeocoder,
+    private readonly ownerContacts?: PropertyOwnerContactDirectory,
   ) {}
 
   execute(input: CreatePropertyInput) {
@@ -26,6 +29,16 @@ export class CreatePropertyUseCase {
 
   private async createProperty(input: CreatePropertyInput) {
     assertPropertyMediaScope(input.actorTenantId, input.media)
+    await assertOwnerContactChange(
+      {
+        actorTenantId: input.actorTenantId,
+        actorId: input.actorUserId,
+        actorRole: input.actorRole,
+      },
+      input.ownerContactId,
+      null,
+      this.ownerContacts,
+    )
     const ownerId = isPropertyOwner(input.actorRole) ? input.actorUserId : (input.ownerId ?? null)
     if (ownerId && !(await this.ownerDirectory.findActiveOwner(input.actorTenantId, ownerId))) {
       throw new PropertyOwnerValidationError()
@@ -35,6 +48,7 @@ export class CreatePropertyUseCase {
         tenantId: input.actorTenantId,
         responsibleId: input.actorUserId,
         ownerId: ownerId,
+        ownerContactId: input.ownerContactId ?? null,
         title: input.title,
         description: input.description,
         purpose: input.purpose,

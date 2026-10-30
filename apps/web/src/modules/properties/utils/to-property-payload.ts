@@ -27,7 +27,9 @@ export function toPropertyPayload(
     values.latitude !== existingAddress?.latitude || values.longitude !== existingAddress?.longitude
 
   return {
-    ...(options.canChooseOwner ? { ownerUserId: values.ownerUserId || null } : {}),
+    ...(options.canChooseOwner
+      ? { ownerUserId: values.ownerUserId || null, ownerContactId: values.ownerContact?.id ?? null }
+      : {}),
     title: values.title,
     description: values.description,
     purpose,

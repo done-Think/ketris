@@ -1,4 +1,5 @@
 import { PrismaPropertyOwnerDirectory } from './infrastructure/prisma-property-owner-directory'
+import { CrmPropertyOwnerContactDirectory } from './infrastructure/crm-property-owner-contact-directory'
 import { ListPropertyOwnersUseCase } from './application/use-cases/list-property-owners.use-case'
 import { CreatePropertyUseCase } from './application/use-cases/create-property.use-case'
 import { DeletePropertyUseCase } from './application/use-cases/delete-property.use-case'
@@ -17,6 +18,7 @@ import { addressGeocoder } from '@server/shared/location/geocoder'
 
 const propertyRepository = new PrismaPropertyRepository()
 const propertyOwnerDirectory = new PrismaPropertyOwnerDirectory()
+const propertyOwnerContacts = new CrmPropertyOwnerContactDirectory()
 const propertyMediaStorage = shouldUseLocalUploadsStorage()
   ? new LocalPropertyMediaStorage()
   : new S3PropertyMediaStorage()
@@ -27,6 +29,7 @@ export const propertiesContainer = {
     propertyRepository,
     propertyOwnerDirectory,
     addressGeocoder,
+    propertyOwnerContacts,
   ),
   listPropertiesUseCase: new ListPropertiesUseCase(propertyRepository),
   getPropertyUseCase: new GetPropertyUseCase(propertyRepository),
@@ -34,6 +37,7 @@ export const propertiesContainer = {
     propertyRepository,
     propertyOwnerDirectory,
     addressGeocoder,
+    propertyOwnerContacts,
   ),
   deletePropertyUseCase: new DeletePropertyUseCase(propertyRepository),
   publishPropertyUseCase: new PublishPropertyUseCase(propertyRepository),
