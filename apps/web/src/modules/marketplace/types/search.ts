@@ -3,6 +3,7 @@ import type { Control } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { LocalizedHref } from '@shared/types/localized-href'
+import type { useMarketplaceSearch } from '../hooks/use-marketplace-search'
 import type { PropertyCardData } from '@shared/types'
 import type { searchOptions } from '../config/search-filters'
 import type {
@@ -136,7 +137,7 @@ export type SearchPropertyCardProps = {
   viewMode?: ViewMode
 }
 
-export type PriceRange = [number, number]
+export type PriceRange = [number | null, number | null]
 
 export type SearchDraft = Record<TextSearchFilterKey, string>
 
@@ -205,3 +206,6 @@ export type MobileSearchBoxProps = Omit<DesktopSearchBarProps, 'desktopSearchRef
 export type HeroSectionProps = DesktopSearchBarProps & {
   mobileSearchRef: Ref<HTMLDivElement>
 }
+
+export type HomeHeroAreaProps = { search: ReturnType<typeof useMarketplaceSearch> }
+export type HomePropertySectionProps = { purpose?: SearchResultPurposeParam }

@@ -63,6 +63,11 @@ function positiveNumber(value: string): number | null {
   return value && parsed > 0 ? parsed : null
 }
 
+function priceNumber(value: string): number | null {
+  const parsed = Number(value)
+  return value.trim() !== '' && Number.isFinite(parsed) && parsed >= 0 ? parsed : null
+}
+
 export function useSearchResults({
   purpose,
   initialLocation = '',
@@ -79,7 +84,7 @@ export function useSearchResults({
   } = useListState<SearchResultsState>({
     ...emptySearchResultsFilters,
     propertyType: initialPropertyType,
-    customMaxPrice: initialPriceRange?.max ? String(initialPriceRange.max) : '',
+    customMaxPrice: initialPriceRange?.max != null ? String(initialPriceRange.max) : '',
     location: initialLocation,
     minPrice: initialPriceRange?.min ?? null,
     sortOption: 'relevancia',
@@ -87,7 +92,7 @@ export function useSearchResults({
     selectedPropertyId: '',
   })
 
-  const customMaxPrice = positiveNumber(filters.customMaxPrice)
+  const customMaxPrice = priceNumber(filters.customMaxPrice)
   const customMinArea = positiveNumber(filters.customMinArea)
   const maxPrice = customMaxPrice ?? priceFilterOptions[filters.priceOption].max
   const minArea = customMinArea ?? areaFilterOptions[filters.areaOption].min
@@ -131,7 +136,7 @@ export function useSearchResults({
 
   const activeFiltersCount = [
     filters.propertyType,
-    maxPrice ?? filters.minPrice,
+    maxPrice !== null || filters.minPrice !== null,
     minBedrooms,
     minArea,
     filters.onlyWithParking,

@@ -7,6 +7,7 @@ export function toPublicPropertyDetail(property: PublishedPropertyDetail): Publi
     purpose: property.purpose,
     propertyType: property.propertyType,
     price: property.price,
+    rentalPrice: property.rentalPrice ?? null,
     condoFee: property.condoFee,
     propertyTax: property.propertyTax,
     bedrooms: property.bedrooms,

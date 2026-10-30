@@ -14,7 +14,13 @@ const createTextSearchDraftSchema = (t: SchemaMessageTranslator<'textTooLong'>) 
 const createNumericTextSchema = (
   t: SchemaMessageTranslator<'numberTooLong' | 'numbersOnly'>,
   maxLength: number,
-) => z.string().trim().max(maxLength, t('numberTooLong')).regex(/^\d*$/, t('numbersOnly'))
+  decimal = false,
+) =>
+  z
+    .string()
+    .trim()
+    .max(maxLength, t('numberTooLong'))
+    .regex(decimal ? /^(?:\d+(?:\.\d{0,2})?)?$/ : /^\d*$/, t('numbersOnly'))
 
 export function createMarketplaceSearchFormSchema(
   t: SchemaMessageTranslator<'optionRequired' | 'priceInvalid' | 'textTooLong'>,
@@ -27,8 +33,8 @@ export function createMarketplaceSearchFormSchema(
       priceRange: z.string().trim().min(1, t('optionRequired')).max(80, t('textTooLong')),
     }),
     priceRange: z.tuple([
-      z.number().min(0, t('priceInvalid')),
-      z.number().min(0, t('priceInvalid')),
+      z.number().min(0, t('priceInvalid')).nullable(),
+      z.number().min(0, t('priceInvalid')).nullable(),
     ]),
     searchDraft: createTextSearchDraftSchema(t),
   })
@@ -40,7 +46,7 @@ export function createSearchResultsFiltersFormSchema(
   return z.object({
     propertyType: z.enum(marketplacePropertyTypes).nullable(),
     priceOption: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
-    customMaxPrice: createNumericTextSchema(t, 12),
+    customMaxPrice: createNumericTextSchema(t, 15, true),
     bedroomOption: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
     areaOption: z.number().int().min(0, t('optionInvalid')).max(2, t('optionInvalid')),
     customMinArea: createNumericTextSchema(t, 8),

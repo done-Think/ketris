@@ -3949,6 +3949,7 @@
             "enum": ["APARTMENT", "HOUSE", "STUDIO", "PENTHOUSE", "COMMERCIAL", "LOFT", "OTHER"]
           },
           "price": { "type": "number" },
+          "rentalPrice": { "type": "number", "nullable": true },
           "condoFee": { "type": "number", "nullable": true },
           "propertyTax": { "type": "number", "nullable": true },
           "bedrooms": { "type": "integer", "nullable": true },

@@ -33,7 +33,7 @@ describe('Home pública do marketplace', () => {
         cy.contains(/corretor(es)? parceiros?/).should('be.visible')
       }
       cy.contains('Imóveis em destaque').should('be.visible')
-      cy.then(() => cy.contains(fixture!.propertyTitle).should('exist'))
+      cy.then(() => cy.contains(fixture!.rentalPropertyTitle).should('exist'))
       cy.contains('Apartamento compacto – Pinheiros').should('not.exist')
       assertPageWidth()
     }
@@ -42,6 +42,7 @@ describe('Home pública do marketplace', () => {
   it('abre o detalhe do imóvel a partir dos destaques', () => {
     cy.viewport(1280, 900)
     cy.visit('/pt')
+    cy.get('button[value="buy"]').first().click()
     cy.then(() => cy.contains('a', fixture!.propertyTitle).first().click())
     cy.location('pathname', { timeout: 60000 }).should('match', /\/imoveis\/[^/]+$/)
     cy.then(() => {
@@ -69,12 +70,54 @@ describe('Home pública do marketplace', () => {
     })
   })
 
-  it('envia a finalidade escolhida no seletor Alugar/Comprar para a busca', () => {
+  it('updates featured listings immediately on desktop and mobile without leaving home', () => {
+    for (const width of [1280, 375]) {
+      cy.viewport(width, 900)
+      cy.visit('/pt')
+      cy.then(() => cy.contains(fixture!.rentalPropertyTitle).should('be.visible'))
+      if (width < 600) cy.contains('button', 'Buscar por bairro, cidade...').click()
+      cy.get('button[value="buy"]').filter(':visible').first().click()
+      if (width < 600) cy.get('[aria-label="Fechar busca"]').click()
+      cy.location('pathname').should('eq', '/pt')
+      cy.then(() => {
+        cy.contains(fixture!.propertyTitle).should('be.visible')
+        cy.contains(fixture!.rentalPropertyTitle).should('not.exist')
+        cy.contains('a', fixture!.dualPropertyTitle).within(() =>
+          cy.contains(/900\.000/).should('be.visible'),
+        )
+      })
+      if (width < 600) cy.contains('button', 'Buscar por bairro, cidade...').click()
+      cy.get('button[value="rent"]').filter(':visible').first().click()
+      if (width < 600) cy.get('[aria-label="Fechar busca"]').click()
+      cy.location('pathname').should('eq', '/pt')
+      cy.then(() => {
+        cy.contains(fixture!.rentalPropertyTitle).should('be.visible')
+        cy.contains(fixture!.propertyTitle).should('not.exist')
+        cy.contains('a', fixture!.dualPropertyTitle).within(() =>
+          cy.contains(/2\.500.*mês/).should('be.visible'),
+        )
+      })
+    }
+    cy.then(() => cy.contains('a', fixture!.dualPropertyTitle).first().click())
+    cy.location('search').should('include', 'purpose=rent')
+    cy.contains(/2\.500.*mês/).should('be.visible')
+  })
+
+  it('searches with an explicit maximum above ten thousand', () => {
     cy.viewport(1280, 900)
     cy.visit('/pt')
+    cy.contains('button', 'Faixa de preço').click()
+    cy.get('input').filter('[type="number"]').filter(':visible').last().as('maximumPrice')
+    cy.get('@maximumPrice').should('not.have.attr', 'max')
+    cy.get('@maximumPrice').type('750000')
+    cy.contains('button', 'Aplicar').click()
     cy.get('button[value="buy"]').first().click()
     cy.contains('a', 'Buscar').first().click()
-    cy.location('search', { timeout: 60000 }).should('contain', 'purpose=buy')
+    cy.location('search').should('include', 'purpose=buy').and('include', 'priceRange=-750000')
+    cy.then(() => {
+      cy.contains('main', fixture!.propertyTitle).should('be.visible')
+      cy.contains('main', fixture!.dualPropertyTitle).should('not.exist')
+    })
   })
 
   it('busca o imóvel ao selecionar a sugestão real de bairro e cidade', () => {
@@ -104,11 +147,22 @@ describe('Home pública do marketplace', () => {
 
   it('filtra a busca pública pelo código do tipo e pela cidade', () => {
     cy.viewport(1280, 900)
+    cy.intercept('GET', '**/api/marketplace/properties?*').as('results')
+    cy.then(() =>
+      cy.visit(
+        `/pt/imoveis?purpose=buy&location=${encodeURIComponent(fixture!.city)}&propertyType=HOUSE`,
+      ),
+    )
+    cy.wait('@results').its('response.statusCode').should('eq', 200)
+    cy.then(() => cy.contains(fixture!.propertyTitle).should('be.visible'))
+    cy.then(() =>
+      cy.visit(
+        `/pt/imoveis?purpose=buy&location=${encodeURIComponent(fixture!.city)}&propertyType=APARTMENT`,
+      ),
+    )
+    cy.wait('@results').its('response.statusCode').should('eq', 200)
     cy.then(() => {
-      const location = encodeURIComponent(fixture!.city)
-      cy.visit(`/pt/properties?purpose=comprar&location=${location}&propertyType=CASA`)
-      cy.contains(fixture!.propertyTitle).should('be.visible')
-      cy.visit(`/pt/properties?purpose=comprar&location=${location}&propertyType=APARTAMENTO`)
+      cy.contains(fixture!.dualPropertyTitle).should('be.visible')
       cy.contains(fixture!.propertyTitle).should('not.exist')
     })
   })

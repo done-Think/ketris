@@ -1,5 +1,6 @@
 import type { DirectoryListFilters } from '../types/directory'
 import type { SearchPropertiesFilters } from '../types/public-property'
+import { defaultHomePurpose } from './home'
 
 export const marketplaceQueryKeys = {
   all: ['marketplace'] as const,
@@ -7,8 +8,11 @@ export const marketplaceQueryKeys = {
   properties: () => [...marketplaceQueryKeys.all, 'properties'] as const,
   search: (filters: SearchPropertiesFilters) =>
     [...marketplaceQueryKeys.properties(), 'search', filters] as const,
-  recent: (page: number, pageSize: number) =>
-    [...marketplaceQueryKeys.properties(), 'recent', page, pageSize] as const,
+  recent: (
+    page: number,
+    pageSize: number,
+    purpose: SearchPropertiesFilters['purpose'] = defaultHomePurpose,
+  ) => [...marketplaceQueryKeys.properties(), 'recent', page, pageSize, purpose] as const,
   brokers: (filters: DirectoryListFilters) =>
     [...marketplaceQueryKeys.all, 'brokers', filters] as const,
   broker: (id: string) => [...marketplaceQueryKeys.all, 'broker', id] as const,

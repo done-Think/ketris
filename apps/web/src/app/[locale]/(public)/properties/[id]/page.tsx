@@ -20,18 +20,9 @@ import {
 } from '@modules/marketplace/utils/property-links'
 import { mapDetailToMarketplacePropertyDetail } from '@modules/marketplace/utils/property-detail-adapter'
 
-const getProperty = cache(async (id: string, locale: string) => {
+const getProperty = cache(async (id: string) => {
   try {
-    const property = await marketplaceContainer.getPropertyUseCase.execute({ propertyId: id })
-    const tFeatures = await getTranslations({ locale, namespace: 'marketplace.propertyFeatures' })
-    return mapDetailToMarketplacePropertyDetail(
-      {
-        ...property,
-        publishedAt: property.publishedAt?.toISOString() ?? null,
-      },
-      locale as 'pt-BR' | 'en-US' | 'es-ES',
-      tFeatures,
-    )
+    return await marketplaceContainer.getPropertyUseCase.execute({ propertyId: id })
   } catch (error) {
     if (error instanceof PropertyNotFoundError) return null
 
@@ -47,14 +38,14 @@ export async function generateMetadata({
     locale,
     namespace: 'marketplace.metadata.details',
   })
-  const property = await getProperty(id, locale)
+  const property = await getProperty(id)
 
   if (!property) return { ...privateMetadata, title: t('notFoundTitle') }
 
   return {
     ...publicMetadata(locale, { pathname: '/properties/[id]', params: { id } }),
     title: `Ketris | ${property.title}`,
-    description: property.description,
+    description: property.description ?? '',
   }
 }
 
@@ -89,11 +80,12 @@ export default async function PropertyPage({
 }: LocaleRoutePageProps<{ id: string }, PropertyPageSearchParams>) {
   const { id, locale } = await params
   const resolvedSearchParams = await searchParams
-  const property = await getProperty(id, locale)
+  const property = await getProperty(id)
 
   if (!property) notFound()
 
   const activePurpose = getValidPurpose(resolvedSearchParams?.purpose)
+  const tFeatures = await getTranslations({ locale, namespace: 'marketplace.propertyFeatures' })
   const originType = getValidOriginType(resolvedSearchParams?.source)
   const originHref = getSafeOriginHref(resolvedSearchParams?.sourceHref, originType)
   const originName = originHref ? resolvedSearchParams?.sourceName : undefined
@@ -101,7 +93,12 @@ export default async function PropertyPage({
   return (
     <PropertyDetailPage
       activePurpose={activePurpose}
-      property={property}
+      property={mapDetailToMarketplacePropertyDetail(
+        { ...property, publishedAt: property.publishedAt?.toISOString() ?? null },
+        locale as 'pt-BR' | 'en-US' | 'es-ES',
+        tFeatures,
+        activePurpose,
+      )}
       breadcrumbContext={{
         originHref,
         originName,

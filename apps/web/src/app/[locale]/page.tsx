@@ -7,7 +7,7 @@ import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 
 import { HomePage } from '@modules/marketplace'
 import { marketplaceQueryKeys } from '@modules/marketplace/config/marketplace-query-keys'
-import { featuredPropertiesCount } from '@modules/marketplace/config/home'
+import { featuredPropertiesCount, defaultHomePurpose } from '@modules/marketplace/config/home'
 import { marketplaceContainer } from '@server/marketplace/container'
 
 export const dynamic = 'force-dynamic'
@@ -25,6 +25,7 @@ async function recentProperties(page: number) {
   const { items, totalCount, pageSize } =
     await marketplaceContainer.searchPropertiesUseCase.execute({
       sortBy: 'recent',
+      purpose: defaultHomePurpose,
       page,
       pageSize: featuredPropertiesCount,
     })

@@ -20,6 +20,7 @@ export const publicPropertySummarySchema = z
     purpose: propertyPurposeSchema,
     propertyType: publicPropertyTypeSchema,
     price: z.number(),
+    rentalPrice: z.number().nullable().optional(),
     condoFee: z.number().nullable(),
     propertyTax: z.number().nullable(),
     bedrooms: z.number().int().nullable(),

@@ -3,14 +3,17 @@
 import { Box, Container, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
-import { featuredPropertiesCount } from '../config/home'
+import { featuredPropertiesCount, defaultSearchPurpose } from '../config/home'
+import type { HomePropertySectionProps } from '../types/search'
 import { useRecentProperties } from '../hooks/use-featured-properties'
 import { styles } from '../styles/mini-properties-section.styles'
 import { MiniPropertyCard } from './MiniPropertyCard'
 
-export function MiniPropertiesSection() {
+export function MiniPropertiesSection({
+  purpose = defaultSearchPurpose,
+}: HomePropertySectionProps) {
   const t = useTranslations('marketplace.home.miniProperties')
-  const { properties } = useRecentProperties(2, featuredPropertiesCount)
+  const { properties } = useRecentProperties(2, featuredPropertiesCount, purpose)
 
   if (!properties.length) return null
 

@@ -28,6 +28,7 @@ export interface PublishedPropertySummary {
   purpose: PropertyPurpose
   propertyType: PublicPropertyType
   price: number
+  rentalPrice?: number | null
   condoFee: number | null
   propertyTax: number | null
   bedrooms: number | null

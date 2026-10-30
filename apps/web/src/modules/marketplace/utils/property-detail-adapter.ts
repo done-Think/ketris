@@ -5,6 +5,7 @@ import type { AppLocale } from '@/i18n/types/locale.types'
 import type { PropertyText } from '../types/property-presentation'
 import { formatCompactCurrency } from './search-results'
 import { formatPostalCode } from '@shared/utils/postal-code'
+import { formatPublicPropertyPrice } from './public-property-price'
 
 const fallbackImage =
   'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=82'
@@ -36,12 +37,6 @@ function buildLocation(property: PublicPropertyDetail): string {
   return [property.neighborhood, property.city].filter(Boolean).join(', ')
 }
 
-function buildPrice(property: PublicPropertyDetail, locale: AppLocale, t: PropertyText): string {
-  const formatted = formatCompactCurrency(property.price, locale)
-
-  return property.purpose === 'RENT' ? t('monthly', { price: formatted }) : formatted
-}
-
 function buildAddressLine(property: PublicPropertyDetail): string {
   if (!property.address) return buildLocation(property)
 
@@ -68,6 +63,7 @@ export function mapDetailToMarketplacePropertyDetail(
   property: PublicPropertyDetail,
   locale: AppLocale,
   t: PropertyText,
+  purpose?: SearchResultProperty['purpose'],
 ): MarketplacePropertyDetail {
   return {
     id: property.id,
@@ -78,7 +74,7 @@ export function mapDetailToMarketplacePropertyDetail(
     title: property.title,
     category: property.propertyType,
     condominium: property.condoFee ? formatCompactCurrency(property.condoFee, locale) : '',
-    price: buildPrice(property, locale, t),
+    price: formatPublicPropertyPrice(property, purpose, locale, t),
     details: buildDetails(property),
     description: property.description ?? '',
     address: buildAddressLine(property),

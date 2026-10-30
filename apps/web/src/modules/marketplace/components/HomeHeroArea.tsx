@@ -4,14 +4,11 @@ import { useMemo, useRef } from 'react'
 
 import { useClickAway } from '@shared/hooks'
 
-import { useMarketplaceSearch } from '../hooks/use-marketplace-search'
-import { useMarketplaceStats } from '../hooks/use-marketplace-stats'
+import type { HomeHeroAreaProps } from '../types/search'
 import { HeroSection } from './HeroSection'
 import { MarketplaceHeader } from './MarketplaceHeader'
 
-export function HomeHeroArea() {
-  const { data: stats } = useMarketplaceStats()
-  const search = useMarketplaceSearch(stats?.locations)
+export function HomeHeroArea({ search }: HomeHeroAreaProps) {
   const { activeSearchMenu, closeSearchMenu } = search
   const desktopSearchRef = useRef<HTMLDivElement | null>(null)
   const mobileSearchRef = useRef<HTMLDivElement | null>(null)

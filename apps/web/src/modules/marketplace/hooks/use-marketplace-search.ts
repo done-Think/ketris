@@ -6,7 +6,8 @@ import { useLocale, useTranslations } from 'next-intl'
 import type { AppLocale } from '@/i18n/types/locale.types'
 
 import { isMarketplacePropertyType, propertyTypeLabelKeys } from '../config/property-types'
-import { priceLimit, searchOptions } from '../config/search-filters'
+import { searchOptions } from '../config/search-filters'
+import { defaultSearchPurpose } from '../config/home'
 import type {
   PriceRange,
   SearchDraft,
@@ -15,7 +16,12 @@ import type {
   SelectedSearch,
   TextSearchFilterKey,
 } from '../types/search'
-import { buildSearchHref, formatSearchCurrency, normalizeSearchText } from '../utils/search'
+import {
+  buildSearchHref,
+  formatSearchCurrency,
+  normalizeSearchText,
+  isValidPriceRange,
+} from '../utils/search'
 
 const emptySelection: SelectedSearch = { location: '', propertyType: '' }
 const emptyDraft: SearchDraft = { location: '', propertyType: '' }
@@ -28,8 +34,8 @@ export function useMarketplaceSearch(locations: readonly string[] = emptyLocatio
   const [activeSearchMenu, setActiveSearchMenu] = useState<SearchFilterKey | null>(null)
   const [selectedSearch, setSelectedSearch] = useState<SelectedSearch>(emptySelection)
   const [searchDraft, setSearchDraftState] = useState<SearchDraft>(emptyDraft)
-  const [purpose, setPurpose] = useState<SearchResultPurposeParam>('rent')
-  const [priceRange, setPriceRange] = useState<PriceRange>([priceLimit.min, priceLimit.max])
+  const [purpose, setPurpose] = useState<SearchResultPurposeParam>(defaultSearchPurpose)
+  const [priceRange, setPriceRange] = useState<PriceRange>([null, null])
 
   const openSearchMenu = useCallback(
     (key: SearchFilterKey) => setActiveSearchMenu((current) => (current === key ? null : key)),
@@ -77,16 +83,18 @@ export function useMarketplaceSearch(locations: readonly string[] = emptyLocatio
   )
 
   const updatePriceRange = useCallback((nextRange: PriceRange) => {
-    const [minValue, maxValue] = nextRange.map((value) =>
-      Math.max(priceLimit.min, Math.min(value, priceLimit.max)),
-    )
-    setPriceRange(minValue <= maxValue ? [minValue, maxValue] : [maxValue, minValue])
+    if (isValidPriceRange(nextRange)) setPriceRange(nextRange)
   }, [])
 
-  const priceRangeLabel = `${formatSearchCurrency(priceRange[0], locale)} - ${formatSearchCurrency(
-    priceRange[1],
-    locale,
-  )}`
+  const [minPrice, maxPrice] = priceRange
+  const priceRangeLabel =
+    minPrice !== null && maxPrice !== null
+      ? `${formatSearchCurrency(minPrice, locale)} - ${formatSearchCurrency(maxPrice, locale)}`
+      : maxPrice !== null
+        ? t('upToPrice', { price: formatSearchCurrency(maxPrice, locale) })
+        : minPrice !== null
+          ? t('fromPrice', { price: formatSearchCurrency(minPrice, locale) })
+          : t('anyPrice')
 
   const searchHref = useMemo(
     () => buildSearchHref({ selectedSearch, searchDraft, priceRange, purpose }),

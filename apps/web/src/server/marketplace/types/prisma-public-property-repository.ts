@@ -22,6 +22,7 @@ export type PropertySummaryRow = {
   purpose: PropertyPurpose
   type: PublicPropertyType
   price: DecimalLike
+  rentalPrice?: DecimalLike | null
   condoFee: DecimalLike | null
   propertyTax: DecimalLike | null
   bedrooms: number | null

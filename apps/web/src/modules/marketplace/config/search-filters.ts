@@ -19,9 +19,3 @@ export const searchOptions = {
 
 export const searchFilterOrder = ['location', 'propertyType', 'priceRange'] as const
 export const textSearchFilterOrder = ['location', 'propertyType'] as const
-
-export const priceLimit = {
-  min: 0,
-  max: 10000,
-  step: 500,
-}
