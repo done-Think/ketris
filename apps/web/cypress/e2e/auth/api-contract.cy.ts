@@ -1,6 +1,15 @@
 import type { SessionCookieFixtures } from '../../types/session-cookies'
 
-describe('English API contract and old tabs', () => {
+describe('English API contract and old tabs', { testIsolation: true }, () => {
+  const baseUrl = Cypress.config('baseUrl')
+  if (!baseUrl) throw new Error('The API contract tests require a base URL.')
+  const sessionCookieOptions = {
+    domain: new URL(baseUrl).hostname,
+    path: '/',
+    hostOnly: true,
+    httpOnly: true,
+    log: false,
+  }
   const suffix = Date.now()
   const email = `contract-${suffix}@example.test`
   const password = 'Contract-e2e-password-123'
@@ -17,19 +26,45 @@ describe('English API contract and old tabs', () => {
     })
   })
 
-  it('keeps a canonical session and requires login when only the retired cookie role is present', () => {
-    cy.visit('/pt')
+  it('keeps a canonical session authenticated', () => {
     cy.task<SessionCookieFixtures>(
       'createSessionCookies',
       { tenantId, email, accessToken, refreshToken },
       { log: false },
-    ).then(({ current, retired }) => {
-      cy.setCookie('next-auth.session-token', current, { httpOnly: true, log: false })
+    ).then(({ current }) => {
+      cy.setCookie('next-auth.session-token', current, sessionCookieOptions)
+      cy.intercept('GET', '/api/auth/session').as('currentSession')
       cy.visit('/pt/dashboard/properties')
+      cy.wait('@currentSession').then(({ response }) => {
+        expect(response?.statusCode).to.eq(200)
+        expect(response?.body.scope).to.eq('tenant')
+        expect(response?.body.user.email).to.eq(email)
+        expect(response?.body.authUnavailable).to.eq(false)
+      })
       cy.location('pathname', { timeout: 60000 }).should('eq', '/pt/dashboard/properties')
-      cy.setCookie('next-auth.session-token', retired, { httpOnly: true, log: false })
+    })
+  })
+
+  it('requires login when only the retired cookie role is present', () => {
+    cy.task<SessionCookieFixtures>(
+      'createSessionCookies',
+      { tenantId, email, accessToken, refreshToken },
+      { log: false },
+    ).then(({ retired }) => {
+      cy.setCookie('next-auth.session-token', retired, sessionCookieOptions)
+      cy.intercept('GET', '/api/auth/session').as('retiredSession')
       cy.visit('/pt/dashboard/properties')
+      cy.wait('@retiredSession').then(({ response }) => {
+        expect(response?.statusCode).to.eq(200)
+        expect(response?.body.user.email).to.eq(email)
+        expect(response?.body.scope).to.eq(undefined)
+        expect(response?.body.role).to.eq(undefined)
+        expect(response?.body.accessToken).to.eq(undefined)
+        expect(response?.body.refreshToken).to.eq(undefined)
+        expect(response?.body.authUnavailable).to.eq(false)
+      })
       cy.location('pathname', { timeout: 60000 }).should('include', '/login')
+      cy.get('input[name="email"]').should('be.visible')
     })
   })
   after(() => {
