@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 import { crmDateSchema } from './crm-date.schema'
@@ -91,7 +92,7 @@ const contactId = z.string().min(1).nullable()
 
 export const createOpportunityRequestSchema = z
   .object({
-    propertyId: z.string().min(1, 'Imóvel é obrigatório.'),
+    propertyId: z.string().min(1),
     responsibleId: z.string().min(1).max(64).optional(),
     contactId: z.string().min(1).optional(),
     leadName,
@@ -124,7 +125,7 @@ export const patchOpportunityRequestSchema = z
   })
   .strict()
   .refine((data) => Object.values(data).some((value) => value !== undefined), {
-    message: 'Informe ao menos um campo para atualizar.',
+    ...validationRefinement('updateRequired'),
   })
   .openapi('PatchOpportunityRequest')
 

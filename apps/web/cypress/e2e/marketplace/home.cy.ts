@@ -77,6 +77,31 @@ describe('Home pública do marketplace', () => {
     cy.location('search', { timeout: 60000 }).should('contain', 'purpose=buy')
   })
 
+  it('busca o imóvel ao selecionar a sugestão real de bairro e cidade', () => {
+    cy.viewport(1280, 900)
+    cy.visit('/pt')
+    cy.get('button[value="buy"]').first().click()
+    cy.contains('button', 'Localização').click()
+    cy.then(() =>
+      cy
+        .contains('[role="menuitem"]', `Centro, ${fixture!.city}`, { timeout: 20000 })
+        .should('be.visible')
+        .click(),
+    )
+    cy.contains('a', 'Buscar')
+      .first()
+      .should(($link) => {
+        const destination = new URL($link.attr('href')!, 'http://localhost')
+        expect(destination.searchParams.get('location')).to.eq(`Centro, ${fixture!.city}`)
+      })
+      .click()
+    cy.location('search', { timeout: 60000 }).should((search) => {
+      expect(new URLSearchParams(search).get('location')).to.eq(`Centro, ${fixture!.city}`)
+    })
+    cy.get('main').find('input').first().should('have.value', `Centro, ${fixture!.city}`)
+    cy.then(() => cy.contains('main', fixture!.propertyTitle).should('be.visible'))
+  })
+
   it('filtra a busca pública pelo código do tipo e pela cidade', () => {
     cy.viewport(1280, 900)
     cy.then(() => {

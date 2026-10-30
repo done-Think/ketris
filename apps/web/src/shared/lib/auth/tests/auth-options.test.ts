@@ -499,14 +499,27 @@ describe('authOptions — callbacks.jwt', () => {
     expect(findByIdMock).not.toHaveBeenCalled()
   })
 
-  it('migrates legacy papel cookies and keeps version-zero sessions until revocation', async () => {
+  it('clears legacy-only role sessions so they require a new login', async () => {
     findByIdMock.mockResolvedValueOnce({ ...currentUser, sessionVersion: 0 })
     const { role, sessionVersion, ...legacyToken } = currentToken
     void sessionVersion
-    const migrated = await run({ ...legacyToken, papel: role } as unknown as typeof currentToken)
-    expect(migrated.role).toBe('AGENT')
-    expect(migrated.scope).toBe('tenant')
-    expect(migrated).not.toHaveProperty('papel')
+    const cleared = await run({ ...legacyToken, papel: role } as unknown as typeof currentToken)
+    expect(cleared.scope).toBeUndefined()
+    expect(cleared.role).toBeUndefined()
+    expect(cleared.accessToken).toBeUndefined()
+    expect(cleared.refreshToken).toBeUndefined()
+    expect(cleared.authUnavailable).toBeUndefined()
+  })
+
+  it('keeps canonical role cookies without a session version when the stored version is zero', async () => {
+    findByIdMock.mockResolvedValueOnce({ ...currentUser, sessionVersion: 0 })
+    const { sessionVersion, ...canonicalToken } = currentToken
+    void sessionVersion
+    const token = await run(canonicalToken as typeof currentToken)
+    expect(token.scope).toBe('tenant')
+    expect(token.role).toBe('AGENT')
+    expect(token.accessToken).toBe(currentToken.accessToken)
+    expect(token.authUnavailable).toBeUndefined()
   })
 
   it('rejects unknown roles even if supplied by a legacy cookie', async () => {

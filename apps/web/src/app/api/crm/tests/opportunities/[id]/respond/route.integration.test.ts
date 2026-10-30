@@ -163,33 +163,48 @@ describe('POST /api/crm/opportunities/[id]/respond (integração)', () => {
     ['ACEITAR', 'ACCEPT', 'ACCEPTED'],
     ['RECUSAR', 'REJECT', 'REJECTED'],
     ['SOLICITAR_INFORMACOES', 'REQUEST_INFORMATION', 'IN_NEGOTIATION'],
-  ])('accepts legacy %s without rewriting stored history', async (legacy, action, status) => {
-    const opportunity = await createOpportunity('IN_NEGOTIATION')
-    const historical = await prisma.opportunityActivity.create({
-      data: {
-        opportunityId: opportunity.id,
-        type: 'PROPOSAL_ANSWERED',
-        systemAction: 'SOLICITAR_INFORMACOES',
-        description: 'Mensagem original: aceitar depois da visita.',
-        previousStatus: 'SENT',
-        newStatus: 'IN_NEGOTIATION',
-      },
-    })
-    const response = await POST(
-      buildRequest(opportunity.id, { action: legacy }, actorToken),
-      context(opportunity.id),
-    )
-    const json = await response.json()
-    expect(response.status).toBe(200)
-    expect(json.opportunity.status).toBe(status)
-    expect(json.activity.systemAction).toBe(action)
-    expect(await prisma.opportunityActivity.findUnique({ where: { id: historical.id } })).toEqual(
-      historical,
-    )
-    expect(
-      await prisma.opportunityActivity.findUnique({ where: { id: json.activity.id } }),
-    ).toMatchObject({ systemAction: action })
-  })
+  ])(
+    'rejects legacy %s, accepts %s and preserves stored history',
+    async (legacy, action, status) => {
+      const opportunity = await createOpportunity('IN_NEGOTIATION')
+      const historical = await prisma.opportunityActivity.create({
+        data: {
+          opportunityId: opportunity.id,
+          type: 'PROPOSAL_ANSWERED',
+          systemAction: 'SOLICITAR_INFORMACOES',
+          description: 'Mensagem original: aceitar depois da visita.',
+          previousStatus: 'SENT',
+          newStatus: 'IN_NEGOTIATION',
+        },
+      })
+      const rejected = await POST(
+        buildRequest(opportunity.id, { action: legacy }, actorToken),
+        context(opportunity.id),
+      )
+      expect(rejected.status).toBe(400)
+      expect((await rejected.json()).error.code).toBe('VALIDATION_ERROR')
+      expect(await prisma.opportunity.findUnique({ where: { id: opportunity.id } })).toMatchObject({
+        status: 'IN_NEGOTIATION',
+      })
+      expect(
+        await prisma.opportunityActivity.count({ where: { opportunityId: opportunity.id } }),
+      ).toBe(1)
+      const response = await POST(
+        buildRequest(opportunity.id, { action }, actorToken),
+        context(opportunity.id),
+      )
+      const json = await response.json()
+      expect(response.status).toBe(200)
+      expect(json.opportunity.status).toBe(status)
+      expect(json.activity.systemAction).toBe(action)
+      expect(await prisma.opportunityActivity.findUnique({ where: { id: historical.id } })).toEqual(
+        historical,
+      )
+      expect(
+        await prisma.opportunityActivity.findUnique({ where: { id: json.activity.id } }),
+      ).toMatchObject({ systemAction: action })
+    },
+  )
 
   it('retorna 409 ao tentar responder um rascunho — ainda não foi enviado', async () => {
     const opportunity = await createOpportunity('DRAFT')

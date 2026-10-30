@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency } from '@shared/lib/utils/format'
+
 import { styles } from '../../styles/agenda-organization-card.styles'
 
 import { Box, Typography } from '@mui/material'
@@ -39,7 +41,7 @@ export function AgendaOrganizationCard({ item }: AgendaOrganizationCardProps) {
       <Typography noWrap sx={styles.typography3}>
         {status}
         {item.amount !== undefined
-          ? ` · ${formatter.number(item.amount, { style: 'currency', currency: 'BRL' })}`
+          ? ` · ${formatCurrency(item.amount, formatter.number)}`
           : item.property
             ? ` · ${item.property}`
             : ''}

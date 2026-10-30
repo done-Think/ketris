@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency } from '@shared/lib/utils/format'
+
 import { Box, Stack, Typography } from '@mui/material'
 import { LineChart } from '@mui/x-charts/LineChart'
 import { useFormatter, useTranslations } from 'next-intl'
@@ -16,8 +18,7 @@ export function AgencyRevenuePerformancePanel({
 }: AgencyRevenuePerformancePanelProps) {
   const t = useTranslations('dashboard.agencyOverview.performance')
   const format = useFormatter()
-  const formatCurrency = (value: number) =>
-    format.number(value, { style: 'currency', currency: 'BRL' })
+  const formatMoney = (value: number) => formatCurrency(value, format.number)
   const chartDataset = [...revenuePoints]
 
   return (
@@ -56,7 +57,7 @@ export function AgencyRevenuePerformancePanel({
                 curve: 'linear',
                 showMark: false,
                 area: true,
-                valueFormatter: (value) => formatCurrency(value ?? 0),
+                valueFormatter: (value) => formatMoney(value ?? 0),
               },
             ]}
             height={270}

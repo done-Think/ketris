@@ -1,3 +1,4 @@
+import { formatCurrency } from '@shared/lib/utils/format'
 import { useState } from 'react'
 import { Alert, Autocomplete, Box, Button, Stack, TextField } from '@mui/material'
 import { useFormatter, useTranslations } from 'next-intl'
@@ -101,10 +102,7 @@ export function OpportunityStep({ control, setValue }: ContractOpportunityStepPr
             <ReviewItem label={t('summary.lead')} value={selected.leadName} />
             <ReviewItem
               label={t('summary.amount')}
-              value={formatter.number(selected.proposedValue, {
-                style: 'currency',
-                currency: 'BRL',
-              })}
+              value={formatCurrency(selected.proposedValue, formatter.number)}
             />
           </Box>
         )}

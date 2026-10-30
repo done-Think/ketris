@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency } from '@shared/lib/utils/format'
+
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import {
@@ -146,8 +148,7 @@ function TenantAccountCard({ tenant }: { tenant: PlatformTenant }) {
   const plansT = useTranslations('platform.plans')
   const format = useFormatter()
   const charge = tenant.monthlyCharge
-  const formatPrice = (value: number) =>
-    format.number(value, { style: 'currency', currency: 'BRL' })
+  const formatPrice = (value: number) => formatCurrency(value, format.number)
 
   return (
     <Card

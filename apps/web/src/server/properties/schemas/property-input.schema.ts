@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 import { normalizePostalCode } from '@shared/utils/postal-code'
@@ -22,8 +23,7 @@ export const propertyAddressInputSchema = z
       .trim()
       .min(8)
       .refine((value) => normalizePostalCode(value) !== null, {
-        message: 'Informe um CEP com 8 dígitos.',
-        params: { i18nKey: 'formatInvalid' },
+        ...validationRefinement('postalCodeInvalid'),
       })
       .transform((value) => normalizePostalCode(value)!)
       .openapi({
@@ -71,7 +71,7 @@ export const createPropertyRequestSchema = z
 export const updatePropertyRequestSchema = createPropertyRequestSchema
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
-    message: 'Informe ao menos um campo para atualização.',
+    ...validationRefinement('updateRequired'),
   })
   .openapi('UpdateTenantPropertyRequest')
 

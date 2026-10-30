@@ -2,7 +2,7 @@ import { prisma } from '@server/db/prisma'
 import { publishedBrokerEligibility } from './public-profile-visibility'
 
 import type { MarketplaceStatsReader } from '../application/ports/marketplace-stats-reader.port'
-import type { MarketplaceStats } from '../types/marketplace-stats'
+import type { MarketplaceStats, MarketplaceLocationRow } from '../types/marketplace-stats'
 
 export class PrismaMarketplaceStatsReader implements MarketplaceStatsReader {
   async read(): Promise<MarketplaceStats> {
@@ -13,23 +13,18 @@ export class PrismaMarketplaceStatsReader implements MarketplaceStatsReader {
         by: ['city', 'state'],
         where: { property: { status: 'PUBLISHED' } },
       }),
-      prisma.propertyAddress.groupBy({
-        by: ['city', 'state', 'neighborhood'],
-        where: { property: { status: 'PUBLISHED' }, city: { not: '' } },
-        orderBy: [{ city: 'asc' }, { neighborhood: 'asc' }, { state: 'asc' }],
-        take: 20,
-      }),
+      prisma.$queryRaw<MarketplaceLocationRow[]>`
+        SELECT concat_ws(', ', NULLIF(btrim(a."neighborhood"), ''), btrim(a."city")) AS "location"
+        FROM "property_addresses" a
+        JOIN "properties" p ON p."id" = a."propertyId" AND p."tenantId" = a."tenantId"
+        WHERE p."status" = 'PUBLISHED' AND btrim(a."city") <> ''
+        GROUP BY "location"
+        ORDER BY count(*) DESC, "location" ASC
+        LIMIT 20
+      `,
     ])
 
-    const locations = [
-      ...new Set(
-        places
-          .filter(({ city }) => city.trim())
-          .map(({ neighborhood, city }) =>
-            [neighborhood.trim(), city.trim()].filter(Boolean).join(', '),
-          ),
-      ),
-    ]
+    const locations = places.map(({ location }) => location)
     return { publishedProperties, publishedBrokers, servedCities: cities.length, locations }
   }
 }

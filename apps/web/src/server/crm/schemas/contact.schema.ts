@@ -1,3 +1,4 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import { crmDateSchema } from './crm-date.schema'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
@@ -63,8 +64,8 @@ const phone = crmPhoneSchema.nullable()
 const avatarUrl = z
   .string()
   .max(2048)
-  .url('URL inválida.')
-  .refine((value) => /^https?:\/\//i.test(value), 'URL inválida.')
+  .url()
+  .refine((value) => /^https?:\/\//i.test(value), validationRefinement('urlInvalid'))
   .nullable()
 const notes = crmNotesSchema.nullable()
 
@@ -91,6 +92,6 @@ export const patchContactRequestSchema = z
   })
   .strict()
   .refine((data) => Object.values(data).some((value) => value !== undefined), {
-    message: 'Informe ao menos um campo para atualizar.',
+    ...validationRefinement('updateRequired'),
   })
   .openapi('PatchContactRequest')

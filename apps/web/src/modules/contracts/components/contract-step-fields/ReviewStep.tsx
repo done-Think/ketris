@@ -1,3 +1,4 @@
+import { formatCurrency } from '@shared/lib/utils/format'
 import { parseContractFormDate } from '../../utils/contract-date'
 import { formatContractOption } from '../../utils/contract-option-message'
 import { styles } from '../../styles/review-step.styles'
@@ -66,7 +67,7 @@ export function ReviewStep({ control }: ContractStepReviewProps) {
         items={[
           {
             label: t('labels.amount'),
-            value: formatter.number(values.amount, { style: 'currency', currency: 'BRL' }),
+            value: formatCurrency(values.amount, formatter.number),
           },
           {
             label: t('labels.contract'),

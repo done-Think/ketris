@@ -1,16 +1,57 @@
 # Publicação coordenada da refatoração
 
-Status em 29/10/2026: publicação automática de staging validada após o merge do PR #163,
-commit `7bef8af9f8f33d9dc3115ed8403233b227798f4c`.
-A [execução 40874916469](https://github.com/done-Think/ketris/actions/runs/40874916469) aprovou
-2.882 testes unitários, 729 integrações, build e 65 cenários de navegador. A release verificou
+Status em 29/10/2026: última publicação automática confirmada no commit
+`4105c505a15786578dfe591a59d8b298176fee6b`, após o merge do PR #167.
+A [execução 40974855116](https://github.com/done-Think/ketris/actions/runs/40974855116) aprovou
+2.921 testes unitários, 739 integrações, build e 67 cenários de navegador. A release verificou
 o destino, não encontrou migrations pendentes, conferiu o schema, aprovou login no candidato,
 promoveu o artefato e aprovou login no domínio público. Sessão e estatísticas públicas
-responderam 200 com o SHA esperado; estatísticas exigem o contrato HTTP v2.
-Os testes publicados específicos de S3/SES continuam pendentes.
+responderam 200 com o SHA esperado; estatísticas exigem o contrato HTTP v3. Consultas externas
+conferiram esse SHA, OpenAPI `3.0.0`, recusa de v2/versão ausente com 409 e páginas PT/EN/ES com 200.
+Os fluxos privados de S3 e o envio SES foram exercitados no artefato anterior `87ead6ce` em 29/10,
+conforme abaixo. A medição inicial e o ensaio exploratório estão no
+[registro do limite distribuído](technical-debt/api-distributed-rate-limit.md).
+
+Antes dessa publicação, o merge do PR #166 (`0c65673e`) aprovou quality e build, mas o teste de seleção
+de bairro/cidade verificou a URL antes de a navegação terminar. A
+[execução 40943395733](https://github.com/done-Think/ketris/actions/runs/40943395733) falhou
+em `auth-e2e` e ignorou `release-staging`, preservando `87ead6ce`. O PR #167 corrigiu a espera do
+teste e preserva capturas de falha como artefatos por execução/tentativa, durante sete dias.
+
+### Contrato HTTP v3 publicado
+
+Com o inventário do staging limitado ao site Ketris, o PR #167 encerrou a transição de entradas
+legadas: contrato HTTP v3, ações CRM canônicas e access tokens de tenant com `role`. Frontend, OpenAPI, tipos
+gerados e smoke de publicação usam a mesma versão. O domínio público serve `4105c505` com v3.
+
+Abas com v2 recebem 409 antes do handler e devem recarregar. Cookies de tenant dependentes
+do claim aposentado exigem novo login; sessões canônicas conservam suas verificações de usuário
+e versão. Históricos antigos permanecem legíveis. A cadeia de 53 migrations não muda.
+
+Verificação local: 338 testes unitários direcionados, 39 testes dos scripts, 33 integrações
+PostgreSQL e 67 cenários Cypress em 18 specs aprovados, além de build, tipos, lint, guardas e
+OpenAPI. O navegador conferiu a sessão canônica, o novo login exigido pelo cookie legado e
+o bloqueio de mutações de abas v2 antes da escrita. Os bancos descartáveis foram removidos.
+O Cypress usou espera padrão de comandos de 30 s somente na CLI local; o CI mantém seus tempos padrão.
+
+### Integrações exercitadas em 29/10/2026
+
+- SES: requisição de confirmação pelo site para destinatário autorizado; o contador do SES
+  passou de zero para um envio e o usuário confirmou o recebimento no Outlook, com remetente
+  `contato@donethink.com`. O cadastro temporário da aplicação foi removido. A identidade verificada
+  de envio é independente da URL Vercel do site.
+- S3: APIs reais de Contracts e Maintenance, preflights HTTP da origem de staging, PUT com
+  checksum, confirmação e downloads assinados com integridade conferida. Acesso anônimo e de
+  outro tenant foram recusados. O registro manual das duas partes usou o PDF/hash corretos e
+  produziu auditoria. Duas rodadas cobriram arquivos pequenos, PDF de 10 MiB e PNG de 7,49 MiB.
+  Os quatro tenants temporários, registros e quatro versões S3 foram removidos.
+
+As evidências detalhadas estão em [Contracts](technical-debt/contracts-s3-cors.md) e
+[Maintenance](technical-debt/maintenance-s3-cors.md). Aceite humano das telas e ensaios de carga
+no hosting continuam separados desses testes de integração.
 
 A migration de renome muda o contrato físico do banco. Uma instância antiga não pode continuar
-atendendo durante a troca. `X-Ketris-Api-Version: 2` protege o contrato HTTP; não adapta uma
+atendendo durante a troca. `X-Ketris-Api-Version` protege o contrato HTTP; não adapta uma
 instância antiga ao banco novo. O incidente abaixo ocorreu com migrations manuais e deploy independente.
 A automação de mudanças compatíveis coordena essas etapas e foi exercitada no staging.
 
@@ -50,6 +91,12 @@ promovido sem rebuild; o alvo production é do projeto de STAGING `ketris-web-x9
 produção do Ketris. Nome, IDs, Root Directory, domínio e destino PostgreSQL são conferidos.
 O header `X-Ketris-Release-Sha` permite confirmar o commit do candidato e do domínio público.
 Ver [deploy pela CLI](https://vercel.com/docs/cli/deploying-from-cli).
+
+Depois de promover, a checagem pública aceita até 20 leituras de estatísticas para observar o
+SHA esperado, com intervalo de 1,5 s quando ainda recebe outro SHA. Essas novas tentativas
+ocorrem antes de qualquer requisição de autenticação. Erros de contrato, HTTP ou login
+continuam interrompendo a release; chamadas de login/logout não são repetidas. A checagem
+do candidato permanece imediata.
 
 O arquivo `apps/web/vercel.json` desabilita deployments diretos por Git da `dev`. Ao integrar
 esta branch, o CI aprovado da `dev` aciona diretamente a release. Configurar os acessos antes
@@ -125,7 +172,7 @@ preservam as evidências e requisitos daqueles contextos.
 - 31 testes do proxy, incluindo o SHA da release; tipos e lint dos arquivos alterados.
 - `actionlint` nos três workflows e `terraform validate` aprovados, sem apply.
 - CLI oficial conferida para os argumentos deploy/promote. Publicação e autenticação reais
-  na Vercel ainda dependem da configuração externa e da primeira execução de staging.
+  aprovadas na execução `40897148130`; a entrega posterior do PR #166 aguarda corrigir o CI.
 
 ## Recuperação do staging em 28/10/2026
 
@@ -230,7 +277,7 @@ local. Não é necessário criar chaves permanentes para executar esses testes l
 A URL de staging registrada no Terraform, `https://ketris-web-x9bk.vercel.app`, respondeu 200 em
 `/pt` e `/api/marketplace/stats`. Esses retornos não anunciaram o cabeçalho de contrato v2.
 `/api/docs/openapi.json` respondeu 200 e informou API `0.1.0`, com os campos antigos em português
-nas propriedades. A nova entrega gera OpenAPI `2.0.0`. Isso confirma que a aplicação desta branch
+nas propriedades. A entrega do renome gerou OpenAPI `2.0.0`. Isso confirmou que aquela aplicação
 não está promovida ali; não comprova o schema atual do RDS. Não houve escrita nem implantação
 nessa verificação. A AWS continuou recusando STS com sessão expirada. Este é o registro anterior
 ao merge e à recuperação descritos acima; não representa o estado atual do staging.

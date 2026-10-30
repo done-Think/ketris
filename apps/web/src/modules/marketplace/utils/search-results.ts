@@ -1,3 +1,4 @@
+import { formatCurrency } from '@shared/lib/utils/format'
 import type { SearchResultProperty } from '../types/search'
 import { defaultLocale } from '@/i18n/routing'
 import type { AppLocale } from '@/i18n/types/locale.types'
@@ -16,11 +17,7 @@ export function getFeatureNumber(property: SearchResultProperty, key: string) {
 }
 
 export function formatCompactCurrency(value: number, locale: AppLocale = defaultLocale) {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: 'BRL',
-    maximumFractionDigits: 0,
-  }).format(value)
+  return formatCurrency(value, locale, { maximumFractionDigits: 0 })
 }
 
 export function normalizeLocationFilter(value: string) {

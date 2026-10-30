@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CreatePropertyDashboardPage } from '../../components/CreatePropertyDashboardPage'
 import { EditPropertyDashboardPage } from '../../components/EditPropertyDashboardPage'
 import { editableProperty } from '../fixtures/editable-property'
-import type { Property, PropertyMediaInput } from '../../types/property'
+import type { Property, PropertyMediaInput, PropertyOwnerOption } from '../../types/property'
 
 const state = vi.hoisted(() => ({
   query: {
@@ -28,6 +28,7 @@ const state = vi.hoisted(() => ({
   update: vi.fn(),
   push: vi.fn(),
   notify: vi.fn(),
+  owners: [] as PropertyOwnerOption[],
 }))
 vi.mock('../../services/properties-service', () => ({
   propertiesService: { uploadMedia: state.upload },
@@ -40,7 +41,7 @@ vi.mock('../../hooks/use-properties', async () => {
     useProperty: () => state.query,
     useCreateProperty: () => ({ mutateAsync: state.create, isPending: false }),
     useUpdateProperty: () => ({ mutateAsync: state.update, isPending: false }),
-    usePropertyOwners: () => ({ data: [], isError: false, isLoading: false }),
+    usePropertyOwners: () => ({ data: state.owners, isError: false, isLoading: false }),
     useUploadPropertyMediaBatch: actual.useUploadPropertyMediaBatch,
     usePropertyMediaUploadsPending: actual.usePropertyMediaUploadsPending,
   }
@@ -69,6 +70,7 @@ vi.mock('next/navigation', async () => ({
 beforeEach(() => {
   vi.clearAllMocks()
   state.upload.mockReset()
+  state.owners = []
   state.query = { data: undefined, isError: false, isLoading: false, error: null, refetch: vi.fn() }
   state.create.mockResolvedValue({ id: 'new-property' })
   state.update.mockResolvedValue(editableProperty)
@@ -78,6 +80,36 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('property forms', () => {
+  it('shows and keeps the no-owner selection when the owner directory is empty', async () => {
+    const user = userEvent.setup()
+    render(<CreatePropertyDashboardPage />)
+    const owner = screen.getByRole('combobox', { name: /Proprietário/ })
+    expect(owner).toHaveTextContent('Sem proprietário vinculado')
+    expect(screen.getByText('Proprietário', { selector: 'label' })).toHaveAttribute(
+      'data-shrink',
+      'true',
+    )
+    await user.click(owner)
+    await user.click(screen.getByRole('option', { name: 'Sem proprietário vinculado' }))
+    expect(owner).toHaveTextContent('Sem proprietário vinculado')
+  })
+
+  it('clears an existing owner and saves the property without a linked account', async () => {
+    const user = userEvent.setup()
+    state.owners = [{ id: 'owner-1', name: 'Dona Maria' }]
+    state.query.data = { ...editableProperty, ownerUserId: 'owner-1' }
+    render(<EditPropertyDashboardPage propertyId={editableProperty.id} />)
+    const owner = screen.getByRole('combobox', { name: /Proprietário/ })
+    expect(owner).toHaveTextContent('Dona Maria')
+    await user.click(owner)
+    await user.click(screen.getByRole('option', { name: 'Sem proprietário vinculado' }))
+    expect(owner).toHaveTextContent('Sem proprietário vinculado')
+    await user.click(screen.getAllByRole('button', { name: /Publicação/ })[0])
+    await user.click(await screen.findByRole('button', { name: 'Salvar alterações' }))
+    await waitFor(() => expect(state.update).toHaveBeenCalledOnce())
+    expect(state.update).toHaveBeenCalledWith(expect.objectContaining({ ownerUserId: null }))
+  })
+
   it('validates the current step before allowing the user to advance', async () => {
     const user = userEvent.setup()
     render(<CreatePropertyDashboardPage />)

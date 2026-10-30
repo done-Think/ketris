@@ -1,3 +1,4 @@
+import { validationIssue } from '@server/shared/http/validation-messages'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
@@ -25,13 +26,11 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const target = formData.get('target')
 
   if (!(file instanceof File)) {
-    throw new RequestValidationError([{ path: 'file', message: 'Envie um arquivo em "file".' }])
+    throw new RequestValidationError([validationIssue('file', 'fileRequired')])
   }
 
   if (!isProfileMediaTarget(target)) {
-    throw new RequestValidationError([
-      { path: 'target', message: 'Informe um destino válido em "target".' },
-    ])
+    throw new RequestValidationError([validationIssue('target', 'targetRequired')])
   }
 
   const body = Buffer.from(await file.arrayBuffer())

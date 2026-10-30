@@ -46,6 +46,8 @@ import bcrypt from 'bcryptjs'
 import { defineConfig } from 'cypress'
 
 import { createAuthMailbox } from './cypress/support/auth-mailbox'
+import { createSessionCookies } from './cypress/support/session-cookies'
+import type { SessionCookieInput } from './cypress/types/session-cookies'
 import { getDatabaseUrl } from './src/server/db/database-url'
 import { createPostgresAdapter } from './src/server/db/postgres-adapter'
 
@@ -108,6 +110,8 @@ export default defineConfig({
       })
 
       on('task', {
+        createSessionCookies: (input: SessionCookieInput) =>
+          createSessionCookies(prisma, config.baseUrl ?? '', input),
         seedMaintenanceFixtures: (input: MaintenanceFixtureInput) =>
           seedMaintenanceFixtures(prisma, input),
         cleanupMaintenanceFixtures: (tenantIds: string[]) =>

@@ -8,7 +8,7 @@ import { AppError } from '@server/shared/errors'
 import type { RequestValidationIssue } from '../types/request-validation'
 import { resolveRequestLocale } from './request-locale'
 import { localizeValidationIssues, localizeZodIssues } from './validation-issues'
-import { validationMessage } from './validation-messages'
+import { validationIssue, validationMessage } from './validation-messages'
 
 export class RequestValidationError extends AppError {
   readonly issues: RequestValidationIssue[]
@@ -51,7 +51,7 @@ export async function parseJsonBody<T extends ZodTypeAny>(
     raw = await request.json()
   } catch {
     throw new RequestValidationError(
-      [{ path: '', message: 'Corpo da requisição não é um JSON válido.' }],
+      [validationIssue('', 'invalidJson')],
       'MALFORMED_JSON_BODY',
       locale,
     )
