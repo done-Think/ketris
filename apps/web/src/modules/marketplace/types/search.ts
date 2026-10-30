@@ -38,6 +38,7 @@ export type SearchResultsFiltersFormValues = z.infer<
 
 export type SearchResultsFilters = SearchResultsFiltersFormValues & {
   location: string
+  city: string | null
   minPrice: number | null
 }
 
@@ -55,6 +56,7 @@ export type SearchResultsViewModeScope = 'rent' | 'buy' | 'brokers' | 'agencies'
 
 export type SearchResultsPageProps = {
   purpose: SearchResultPurpose
+  initialCity?: string
   initialLocation?: string
   initialPropertyType?: SearchResultsFiltersFormValues['propertyType']
   initialPriceRange?: { min: number | null; max: number | null }
@@ -62,6 +64,7 @@ export type SearchResultsPageProps = {
 
 export type SearchResultsRoutePageProps = {
   searchParams?: {
+    city?: string
     location?: string
     purpose?: string
     propertyType?: string

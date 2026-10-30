@@ -128,7 +128,7 @@ export async function seedMarketplaceFixtures(
         create: {
           street: 'Rua do Teste',
           number: '44',
-          neighborhood: 'Centro',
+          neighborhood: 'Área Rural',
           city,
           state: 'PR',
           zipCode: '80010000',

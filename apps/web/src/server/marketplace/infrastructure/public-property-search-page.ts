@@ -28,7 +28,7 @@ export async function publicPropertySearchPage(
   if (filters.hasParking) clauses.push(Prisma.sql`p."parkingSpots" > 0`)
   if (filters.minPrice !== undefined) clauses.push(Prisma.sql`${price} >= ${filters.minPrice}`)
   if (filters.maxPrice !== undefined) clauses.push(Prisma.sql`${price} <= ${filters.maxPrice}`)
-  if (filters.city) clauses.push(Prisma.sql`a.city ILIKE ${filters.city}`)
+  if (filters.city) clauses.push(Prisma.sql`lower(btrim(a.city)) = lower(${filters.city.trim()})`)
   for (const part of filters.location
     ?.split(',')
     .map((value) => value.trim())

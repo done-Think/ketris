@@ -104,6 +104,25 @@ it('envia os filtros iniciais da URL usando o código do tipo de imóvel', async
   expect(result.current.activeFiltersCount).toBe(2)
 })
 
+it('keeps a selected city separate from neighborhood text and clears that scope when edited', async () => {
+  mockPages()
+  const { result } = renderHook(
+    () => useSearchResults({ purpose: 'comprar', initialCity: 'Itajubá' }),
+    { wrapper },
+  )
+  await waitFor(() => expect(result.current.resultCount).toBe(23))
+  expect(result.current.filters.location).toBe('Itajubá')
+  expect(marketplaceService.searchProperties).toHaveBeenLastCalledWith(
+    expect.objectContaining({ city: 'Itajubá', location: undefined }),
+  )
+  act(() => result.current.setLocationQuery('Anhumas'))
+  await waitFor(() =>
+    expect(marketplaceService.searchProperties).toHaveBeenLastCalledWith(
+      expect.objectContaining({ city: undefined, location: 'Anhumas' }),
+    ),
+  )
+})
+
 it('aplica os filtros do diálogo de uma vez, volta à primeira página e descarta o preço mínimo da URL', async () => {
   mockPages()
   const { result } = renderHook(

@@ -120,14 +120,15 @@ describe('Home pública do marketplace', () => {
     })
   })
 
-  it('busca o imóvel ao selecionar a sugestão real de bairro e cidade', () => {
+  it('selects a city without neighborhoods and searches all of its districts', () => {
     cy.viewport(1280, 900)
     cy.visit('/pt')
     cy.get('button[value="buy"]').first().click()
     cy.contains('button', 'Localização').click()
     cy.then(() =>
       cy
-        .contains('[role="menuitem"]', `Centro, ${fixture!.city}`, { timeout: 20000 })
+        .contains('[role="menuitem"]', fixture!.city, { timeout: 20000 })
+        .should('have.text', fixture!.city)
         .should('be.visible')
         .click(),
     )
@@ -135,14 +136,18 @@ describe('Home pública do marketplace', () => {
       .first()
       .should(($link) => {
         const destination = new URL($link.attr('href')!, 'http://localhost')
-        expect(destination.searchParams.get('location')).to.eq(`Centro, ${fixture!.city}`)
+        expect(destination.searchParams.get('city')).to.eq(fixture!.city)
+        expect(destination.searchParams.has('location')).to.eq(false)
       })
       .click()
     cy.location('search', { timeout: 60000 }).should((search) => {
-      expect(new URLSearchParams(search).get('location')).to.eq(`Centro, ${fixture!.city}`)
+      expect(new URLSearchParams(search).get('city')).to.eq(fixture!.city)
     })
-    cy.get('main').find('input').first().should('have.value', `Centro, ${fixture!.city}`)
-    cy.then(() => cy.contains('main', fixture!.propertyTitle).should('be.visible'))
+    cy.get('main').find('input').first().should('have.value', fixture!.city)
+    cy.then(() => {
+      cy.contains('main', fixture!.propertyTitle).should('be.visible')
+      cy.contains('main', fixture!.dualPropertyTitle).should('be.visible')
+    })
   })
 
   it('filtra a busca pública pelo código do tipo e pela cidade', () => {

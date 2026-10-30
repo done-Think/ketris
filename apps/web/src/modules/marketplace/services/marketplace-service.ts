@@ -18,6 +18,7 @@ export class MarketplaceService extends BaseService {
     const params = {
       ...(filters.purpose ? { purpose: filters.purpose } : {}),
       ...(filters.propertyType ? { propertyType: filters.propertyType } : {}),
+      ...(filters.city ? { city: filters.city } : {}),
       ...(filters.location ? { location: filters.location } : {}),
       ...(filters.minPrice !== undefined ? { minPrice: filters.minPrice } : {}),
       ...(filters.maxPrice !== undefined ? { maxPrice: filters.maxPrice } : {}),

@@ -70,6 +70,7 @@ function priceNumber(value: string): number | null {
 
 export function useSearchResults({
   purpose,
+  initialCity,
   initialLocation = '',
   initialPropertyType = null,
   initialPriceRange,
@@ -85,7 +86,8 @@ export function useSearchResults({
     ...emptySearchResultsFilters,
     propertyType: initialPropertyType,
     customMaxPrice: initialPriceRange?.max != null ? String(initialPriceRange.max) : '',
-    location: initialLocation,
+    location: initialCity ?? initialLocation,
+    city: initialCity ?? null,
     minPrice: initialPriceRange?.min ?? null,
     sortOption: 'relevancia',
     page: 1,
@@ -100,7 +102,8 @@ export function useSearchResults({
 
   const query: SearchPropertiesFilters = {
     purpose: apiPurposeByPurpose[purpose],
-    location: filters.location.trim() || undefined,
+    city: filters.city ?? undefined,
+    location: filters.city ? undefined : filters.location.trim() || undefined,
     propertyType: filters.propertyType ?? undefined,
     minPrice: filters.minPrice ?? undefined,
     maxPrice: maxPrice ?? undefined,
@@ -155,7 +158,7 @@ export function useSearchResults({
     resultCount,
     selectedPropertyId,
     setCurrentPage: (page: number) => setFilter('page', page),
-    setLocationQuery: (location: string) => patchFilters({ location, page: 1 }),
+    setLocationQuery: (location: string) => patchFilters({ location, city: null, page: 1 }),
     setSelectedPropertyId: (propertyId: string) => setFilter('selectedPropertyId', propertyId),
     setSortOption: (sortOption: SortOption) => patchFilters({ sortOption, page: 1 }),
     setViewMode,

@@ -21,6 +21,14 @@ beforeEach(() => {
 })
 
 describe('MarketplaceService', () => {
+  it('sends the selected city to the exact city filter', async () => {
+    http.get.mockResolvedValue({ properties: [], totalCount: 0, page: 1, pageSize: 10 })
+    await new MarketplaceService(client()).searchProperties({ purpose: 'SALE', city: 'Itajubá' })
+    expect(http.get).toHaveBeenCalledWith('/marketplace/properties', {
+      params: { purpose: 'SALE', city: 'Itajubá' },
+    })
+  })
+
   it('sends only the filled search filters, the page included', async () => {
     const page = { properties: [], totalCount: 0, page: 2, pageSize: 10 }
     http.get.mockResolvedValue(page)
