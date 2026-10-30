@@ -14,6 +14,7 @@ function toDashboardPurpose(purpose: Property['purpose']): CreatePropertyPurpose
 export function buildEditPropertyFormValues(property: Property): CreateDashboardPropertyFormValues {
   return {
     ownerUserId: property.ownerUserId ?? '',
+    ownerContact: property.ownerContact ?? null,
     complement: property.address?.complement ?? '',
     latitude: property.address?.latitude ?? null,
     longitude: property.address?.longitude ?? null,

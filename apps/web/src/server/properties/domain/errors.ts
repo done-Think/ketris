@@ -57,3 +57,12 @@ export class PropertyOwnerValidationError extends AppError {
     })
   }
 }
+
+export class PropertyOwnerContactValidationError extends AppError {
+  constructor() {
+    super('Selecione um contato ativo do CRM disponível para você.', {
+      status: 400,
+      code: 'PROPERTY_OWNER_CONTACT_INVALID',
+    })
+  }
+}

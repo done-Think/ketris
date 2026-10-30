@@ -126,6 +126,8 @@ export function mapProperty(api: ApiProperty): Property {
     responsibleName: api.responsibleName,
     activeContractId: api.activeContractId,
     ownerUserId: api.ownerId,
+    ownerContactId: api.ownerContactId ?? null,
+    ownerContact: api.ownerContact ?? null,
     title: api.title,
     description: api.description,
     purpose: fromApiPurpose(api.purpose),
@@ -163,6 +165,7 @@ export function toCreatePayload(
 ): components['schemas']['CreateTenantPropertyRequest'] {
   return {
     ownerId: values.ownerUserId,
+    ownerContactId: values.ownerContactId,
     title: values.title,
     description: values.description ?? null,
     purpose: toApiPurpose(values.purpose),
@@ -187,6 +190,7 @@ export function toUpdatePayload(
   const body: components['schemas']['UpdateTenantPropertyRequest'] = {}
 
   if (payload.ownerUserId !== undefined) body.ownerId = payload.ownerUserId
+  if (payload.ownerContactId !== undefined) body.ownerContactId = payload.ownerContactId
   if (payload.listing !== undefined) body.listing = toApiListing(payload.listing)
   if (payload.title !== undefined) body.title = payload.title
   if (payload.description !== undefined) body.description = payload.description

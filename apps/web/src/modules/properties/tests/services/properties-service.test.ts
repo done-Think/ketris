@@ -56,6 +56,8 @@ const mappedProperty: Property = {
   tenantId: 'tenant-1',
   responsibleUserId: 'user-1',
   ownerUserId: null,
+  ownerContactId: null,
+  ownerContact: null,
   responsibleName: 'Corretor responsável',
   activeContractId: null,
   listing: {
@@ -134,6 +136,37 @@ describe('PropertiesService', () => {
     expect(http.get).toHaveBeenCalledWith('/properties', {
       params: { page: 1, pageSize: 100, status: 'PUBLISHED', purpose: 'SALE' },
     })
+  })
+
+  it('changes only the CRM owner reference and keeps the access account returned by the API', async () => {
+    http.patch.mockResolvedValueOnce({
+      property: {
+        ...apiProperty,
+        ownerId: 'access-account',
+        ownerContactId: 'crm-contact',
+        ownerContact: { id: 'crm-contact', name: 'CRM owner' },
+      },
+    })
+    await expect(
+      service.update('property-1', { ownerContactId: 'crm-contact' }),
+    ).resolves.toMatchObject({
+      ownerUserId: 'access-account',
+      ownerContactId: 'crm-contact',
+      ownerContact: { id: 'crm-contact', name: 'CRM owner' },
+    })
+    expect(http.patch).toHaveBeenCalledWith('/properties/property-1', {
+      ownerContactId: 'crm-contact',
+    })
+  })
+
+  it('sends an explicit null to clear only the CRM contact link', async () => {
+    http.patch.mockResolvedValueOnce({ property: { ...apiProperty, ownerId: 'access-account' } })
+    await expect(service.update('property-1', { ownerContactId: null })).resolves.toMatchObject({
+      ownerUserId: 'access-account',
+      ownerContactId: null,
+      ownerContact: null,
+    })
+    expect(http.patch).toHaveBeenCalledWith('/properties/property-1', { ownerContactId: null })
   })
 
   it('gets one property by id and unwraps the response', async () => {

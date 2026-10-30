@@ -207,7 +207,8 @@
       "owner": "Owner",
       "complement": "Address complement",
       "latitude": "Latitude (optional)",
-      "longitude": "Longitude (optional)"
+      "longitude": "Longitude (optional)",
+      "ownerAccessAccount": "Account with property access (optional)"
     },
     "steps": {
       "ariaLabel": "Listing steps",
@@ -279,7 +280,10 @@
     "ownerUnavailable": "Owner unavailable",
     "ownersLoadError": "Could not load owners.",
     "mediaUploadFileError": "Could not upload \"{filename}\". Please try again.",
-    "mediaStorageUnavailableFileError": "The image service is unavailable. Could not upload \"{filename}\". Please try again later."
+    "mediaStorageUnavailableFileError": "The image service is unavailable. Could not upload \"{filename}\". Please try again later.",
+    "noOwnerAccess": "No linked access account",
+    "ownerContactHelp": "Select a CRM contact. The contact does not need a login and will not receive access automatically.",
+    "ownerAccessHelp": "This account can access the property. This link is independent of the owner contact."
   },
   "edit": {
     "title": "Edit property",

@@ -12,6 +12,8 @@ describe(
     const password = 'Property-E2E-password-123'
     const title = `Casa E2E ${unique}`
     let tenantId: string
+    let contactId: string
+    const contactName = `Proprietário CRM ${unique}`
 
     before(() => {
       cy.task('seedAuthUser', { email, password, tenantSlug: `e2e-properties-${unique}` }).then(
@@ -19,6 +21,16 @@ describe(
           tenantId = id as string
         },
       )
+      cy.request('POST', '/api/auth/login', { email, password }).then(({ body }) => {
+        cy.request({
+          method: 'POST',
+          url: '/api/crm/contacts',
+          headers: { Authorization: `Bearer ${body.accessToken}` },
+          body: { name: contactName, email: `owner-contact-${unique}@example.test`, type: 'OWNER' },
+        }).then(({ body: created }) => {
+          contactId = created.contact.id
+        })
+      })
     })
     after(() => {
       if (tenantId) cy.task('cleanupAuthUser', tenantId)
@@ -49,6 +61,13 @@ describe(
       cy.get('input[name="title"]').should('have.value', '')
       cy.contains('button', 'Próximo').click()
       cy.contains('Informe o título do anúncio').should('be.visible')
+      cy.contains('label', /^Proprietário$/)
+        .invoke('attr', 'for')
+        .then((id) => {
+          cy.get(`[id="${id}"]`).type(contactName)
+        })
+      cy.contains('[role="option"]', contactName).click()
+      cy.contains('Sem conta de acesso vinculada').should('be.visible')
       cy.get('input[name="title"]').type(title)
       cy.get('textarea[name="description"]').type(
         'Casa com jardim cadastrada pelo teste de ponta a ponta.',
@@ -85,6 +104,9 @@ describe(
       cy.wait('@createProperty').then(({ response }) => {
         expect(response?.statusCode).to.eq(201)
         expect(response?.body.property.status).to.eq('DRAFT')
+        expect(response?.body.property.ownerContactId).to.eq(contactId)
+        expect(response?.body.property.ownerContact.name).to.eq(contactName)
+        expect(response?.body.property.ownerId).to.eq(null)
         expect(response?.body.property.values.price).to.eq(2500.5)
         cy.location('pathname').should(
           'include',

@@ -82,6 +82,8 @@ export const propertySchema = z
     purpose: propertyPurposeSchema,
     type: propertyTypeSchema,
     ownerId: z.string().nullable(),
+    ownerContactId: z.string().nullable().optional(),
+    ownerContact: z.object({ id: z.string(), name: z.string() }).nullable().optional(),
     listing: propertyListingSchema,
     status: propertyStatusSchema,
     publishedAt: z.string().nullable(),

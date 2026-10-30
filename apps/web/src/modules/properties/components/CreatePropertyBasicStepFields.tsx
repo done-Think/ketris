@@ -1,4 +1,5 @@
 import { PropertyOwnerSelect } from './PropertyOwnerSelect'
+import { PropertyOwnerAccessSelect } from './PropertyOwnerAccessSelect'
 import { styles, getPurposeOptionStyles } from '../styles/create-property-basic-step-fields.styles'
 import { Controller } from 'react-hook-form'
 import {
@@ -85,6 +86,7 @@ export function CreatePropertyBasicStepFields({ control }: CreatePropertyBasicSt
 
       <Stack spacing={2.2}>
         <PropertyOwnerSelect control={control} />
+        <PropertyOwnerAccessSelect control={control} />
         <Controller
           control={control}
           name="title"

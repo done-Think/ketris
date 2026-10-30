@@ -50,6 +50,7 @@ const optionalNullableNonNegativeNumberSchema = z.number().nonnegative().nullabl
 export const createPropertyRequestSchema = z
   .object({
     ownerId: z.string().min(1).nullable().optional(),
+    ownerContactId: z.string().min(1).nullable().optional(),
     title: z.string().trim().min(1).max(200),
     description: z.string().trim().min(1).max(10000).nullable().optional(),
     purpose: propertyPurposeSchema,
