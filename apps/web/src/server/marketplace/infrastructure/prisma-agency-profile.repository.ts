@@ -135,7 +135,7 @@ export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
       prisma.tenant.findUnique({ where: { id: tenantId }, include: tenantWithProfileInclude }),
       prisma.user.findFirst({
         where: { id: actorId, tenantId, role: 'OWNER', active: true },
-        select: { email: true, emailVerifiedAt: true, phone: true, avatarUrl: true },
+        select: { email: true, emailVerifiedAt: true, phone: true, avatarUrl: true, creci: true },
       }),
     ])
 
@@ -148,6 +148,7 @@ export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
       email: profile.email ?? (owner.emailVerifiedAt ? owner.email : null),
       phone: profile.phone ?? owner.phone,
       logoUrl: profile.logoUrl ?? owner.avatarUrl,
+      legalCreci: profile.legalCreci ?? owner.creci,
     }
   }
 

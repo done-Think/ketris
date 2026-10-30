@@ -308,6 +308,7 @@ describe('PublicProfileEditorPage', () => {
           ...draftAgencyProfile,
           displayName: 'Imobiliária Horizonte',
           email: 'verified@example.com',
+          legalCreci: 'MG-12345-J',
           phone: '35997989991',
           logoUrl,
         },
@@ -316,6 +317,7 @@ describe('PublicProfileEditorPage', () => {
       renderWithTheme(<AgencyPublicProfileEditorPage />)
 
       expect(screen.getByLabelText('E-mail')).toHaveValue('verified@example.com')
+      expect(screen.getByLabelText('CRECI')).toHaveValue('MG-12345-J')
       expect(screen.getByLabelText('Telefone')).toHaveValue('(35) 99798-9991')
       expect(document.querySelector(`img[src="${logoUrl}"]`)).toBeInTheDocument()
 
@@ -333,6 +335,7 @@ describe('PublicProfileEditorPage', () => {
         expect(agencyProfileMocks.saveMutate).toHaveBeenCalledWith(
           expect.objectContaining({
             email: 'verified@example.com',
+            legalCreci: 'MG-12345-J',
             phone: '(35) 3622-1234',
             logoUrl,
           }),

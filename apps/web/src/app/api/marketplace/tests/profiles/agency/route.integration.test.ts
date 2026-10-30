@@ -44,6 +44,7 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
         passwordHash: 'hash-fake',
         role: 'OWNER',
         phone: '35997989991',
+        creci: 'MG-12345-J',
       },
     })
     ownerId = admin.id
@@ -117,6 +118,7 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
       email: ownerEmail,
       phone: '35997989991',
       logoUrl: ownerAvatarUrl,
+      legalCreci: 'MG-12345-J',
       status: 'DRAFT',
     })
     expect(await prisma.agencyPublicProfile.findUnique({ where: { tenantId } })).toBeNull()
@@ -138,11 +140,13 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
         email: ownerEmail,
         phone: '35997989991',
         logoUrl: ownerAvatarUrl,
+        legalCreci: 'MG-12345-J',
       })
       expect(await prisma.agencyPublicProfile.findUnique({ where: { tenantId } })).toMatchObject({
         phone: null,
         email: null,
         logoUrl: null,
+        legalCreci: null,
       })
     } finally {
       await prisma.agencyPublicProfile.delete({ where: { tenantId } })
@@ -213,6 +217,7 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
       phone: '(11) 90000-0000',
       email: 'contato-publico@example.com',
       logoUrl: 'https://cdn.ketris.com.br/logo.jpg',
+      legalCreci: 'SP-654321',
     })
     expect(await prisma.user.findUnique({ where: { id: ownerId } })).toMatchObject({
       email: ownerEmail,

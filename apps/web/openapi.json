@@ -3055,7 +3055,8 @@
                 "default": "pt-BR"
               },
               "profile": { "type": "string", "enum": ["owner", "agency", "developer"] },
-              "companyName": { "type": "string", "minLength": 1 }
+              "companyName": { "type": "string", "minLength": 1 },
+              "creci": { "type": "string", "minLength": 1, "maxLength": 32 }
             },
             "required": ["fullName", "email", "phone", "password", "acceptTerms", "profile"],
             "additionalProperties": false

@@ -1,3 +1,5 @@
+import type { AuthTestEmail } from '../../types/auth-mailbox'
+
 describe('Agency public profile defaults', () => {
   const suffix = Date.now()
   const email = `agency-profile-${suffix}@example.test`
@@ -5,6 +7,7 @@ describe('Agency public profile defaults', () => {
   const password = 'Agency-profile-e2e-password-123'
   let tenantId: string
   let avatarUrl: string
+  let registeredTenantId: string
 
   before(() => {
     cy.task<string>('seedAuthUser', {
@@ -33,6 +36,7 @@ describe('Agency public profile defaults', () => {
 
   after(() => {
     if (tenantId) cy.task('cleanupAuthUser', tenantId)
+    if (registeredTenantId) cy.task('cleanupAuthUser', registeredTenantId)
   })
 
   it('prefills the verified contact and photo, masks the phone and preserves edited public data', () => {
@@ -75,6 +79,53 @@ describe('Agency public profile defaults', () => {
       .find('img')
       .should('have.attr', 'src', avatarUrl)
   })
+
+  const itWithMailbox = Cypress.expose('AUTH_MAILBOX_ENABLED') ? it : it.skip
+  itWithMailbox(
+    'retains the CRECI entered at agency signup through verification and public profile saving',
+    () => {
+      const signupEmail = `agency-signup-${suffix}@example.test`
+      const creci = 'MG-54321-J'
+      cy.intercept('POST', '**/api/register').as('registerAgency')
+      cy.visit('/pt/register/details?profile=agency')
+      cy.get('input[name="fullName"]').type('Gestora da Imobiliária')
+      cy.get('input[name="companyName"]').type('Imobiliária Nova')
+      cy.get('input[name="email"]').type(signupEmail)
+      cy.get('input[name="phone"]').type('35997989991')
+      cy.get('input[name="creci"]').type(creci)
+      cy.get('input[name="password"]').type(password, { log: false })
+      cy.get('input[name="passwordConfirmation"]').type(password, { log: false })
+      cy.get('input[name="acceptTerms"]').check()
+      cy.contains('button', 'Criar conta').click()
+      cy.wait('@registerAgency').then(({ request, response }) => {
+        expect(request.body.creci).to.eq(creci)
+        expect(response?.statusCode).to.eq(201)
+        registeredTenantId = response?.body.tenantId
+      })
+      cy.contains('Confirme seu e-mail').should('be.visible')
+      cy.task<AuthTestEmail>('readAuthEmail', signupEmail, { log: false }).then(({ code }) => {
+        cy.get('input[autocomplete="one-time-code"]')
+          .closest('[role="group"]')
+          .find('input')
+          .each(($input, index) => {
+            cy.wrap($input, { log: false }).type(`{selectall}${code[index]}`, { log: false })
+          })
+        cy.contains('button', /^Confirmar$/).click()
+      })
+      cy.location('pathname').should('eq', '/pt/dashboard')
+      cy.visit('/pt/dashboard/public-profile/agency')
+      cy.get('input[name="legalCreci"]').should('have.value', creci)
+      cy.contains('button', /^Editar$/).click()
+      cy.intercept('PUT', '**/api/marketplace/profiles/agency').as('saveRegisteredProfile')
+      cy.contains('button', /^Salvar$/).click()
+      cy.wait('@saveRegisteredProfile').then(({ request, response }) => {
+        expect(request.body.legalCreci).to.eq(creci)
+        expect(response?.statusCode).to.eq(200)
+      })
+      cy.reload()
+      cy.get('input[name="legalCreci"]').should('have.value', creci)
+    },
+  )
 
   it('opens the empty broker picker below the field and publishes without a team', () => {
     const displayName = `Agency without brokers ${suffix}`

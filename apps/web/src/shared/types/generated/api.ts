@@ -13343,6 +13343,7 @@ export interface components {
           /** @enum {boolean} */
           acceptTerms: true
           companyName?: string
+          creci?: string
           /** Format: email */
           email: string
           fullName: string
