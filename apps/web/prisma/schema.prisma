@@ -573,6 +573,8 @@ model AgencyPublicProfile {
   coverage        String[]            @default([])
   segments        String[]            @default([])
   yearsInMarket   Int?
+  primaryColor    String?
+  secondaryColor  String?
   backgroundColor String?
   logoUrl         String?
   bannerUrl       String?

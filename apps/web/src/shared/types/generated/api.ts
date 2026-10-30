@@ -13343,6 +13343,7 @@ export interface components {
           /** @enum {boolean} */
           acceptTerms: true
           companyName?: string
+          creci?: string
           /** Format: email */
           email: string
           fullName: string
@@ -13486,6 +13487,8 @@ export interface components {
       legalCreci?: string | null
       logoUrl?: string | null
       phone?: string | null
+      primaryColor?: string | null
+      secondaryColor?: string | null
       /** @default [] */
       segments?: string[]
       summary?: string | null

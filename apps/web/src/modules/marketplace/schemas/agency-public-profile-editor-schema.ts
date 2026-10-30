@@ -6,7 +6,7 @@ import type { TranslationKey } from '@/i18n/types/messages.types'
 type ProfileValidationKey = TranslationKey<'marketplace.agencyProfileEditor.errors'>
 
 const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
-const INTERNAL_MARKETPLACE_MEDIA_PATH = /^\/api\/marketplace\/media\/.+/
+const INTERNAL_PROFILE_MEDIA_PATH = /^\/api\/(?:marketplace\/media\/|auth\/media\/avatars\/).+/
 
 const createRequiredTextSchema = (
   t: SchemaMessageTranslator<ProfileValidationKey>,
@@ -41,7 +41,7 @@ const createUrlSchema = (
   requirePublishFields: boolean,
 ) => {
   const isValidMediaUrl = (value: string) =>
-    z.string().url().safeParse(value).success || INTERNAL_MARKETPLACE_MEDIA_PATH.test(value)
+    z.string().url().safeParse(value).success || INTERNAL_PROFILE_MEDIA_PATH.test(value)
 
   if (!requirePublishFields) {
     return z.string().refine(isValidMediaUrl, t('urlInvalid')).or(z.literal(''))
@@ -82,12 +82,12 @@ function createAgencyPublicProfileEditorObjectSchema(
     coverage: createRequiredTextSchema(t, 'coverageRequired', requirePublishFields),
     segments: createRequiredTextSchema(t, 'segmentsRequired', requirePublishFields),
     yearsInMarket: createRequiredTextSchema(t, 'yearsInMarketRequired', requirePublishFields),
+    primaryColor: z.string().regex(HEX_COLOR_PATTERN, t('hexColorInvalid')).or(z.literal('')),
+    secondaryColor: z.string().regex(HEX_COLOR_PATTERN, t('hexColorInvalid')).or(z.literal('')),
     backgroundColor: createHexColorSchema(t, 'backgroundColorRequired', requirePublishFields),
     logoUrl: createUrlSchema(t, 'logoUrlRequired', requirePublishFields),
     bannerUrl: createUrlSchema(t, 'bannerUrlRequired', requirePublishFields),
-    team: requirePublishFields
-      ? z.array(agencyTeamMemberFieldSchema).min(1, t('teamRequired')).max(6, t('teamTooLarge'))
-      : z.array(agencyTeamMemberFieldSchema).max(6, t('teamTooLarge')),
+    team: z.array(agencyTeamMemberFieldSchema).max(6, t('teamTooLarge')),
   })
 }
 

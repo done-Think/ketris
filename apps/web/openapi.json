@@ -3055,7 +3055,8 @@
                 "default": "pt-BR"
               },
               "profile": { "type": "string", "enum": ["owner", "agency", "developer"] },
-              "companyName": { "type": "string", "minLength": 1 }
+              "companyName": { "type": "string", "minLength": 1 },
+              "creci": { "type": "string", "minLength": 1, "maxLength": 32 }
             },
             "required": ["fullName", "email", "phone", "password", "acceptTerms", "profile"],
             "additionalProperties": false
@@ -3241,6 +3242,8 @@
             "default": []
           },
           "yearsInMarket": { "type": "integer", "nullable": true, "minimum": 0 },
+          "primaryColor": { "type": "string", "nullable": true, "pattern": "^#[0-9a-fA-F]{6}$" },
+          "secondaryColor": { "type": "string", "nullable": true, "pattern": "^#[0-9a-fA-F]{6}$" },
           "backgroundColor": { "type": "string", "nullable": true, "pattern": "^#[0-9a-fA-F]{6}$" },
           "logoUrl": { "type": "string", "nullable": true, "minLength": 1 },
           "bannerUrl": { "type": "string", "nullable": true, "minLength": 1 },

@@ -16,6 +16,8 @@ const validDraft = {
   coverage: 'Jardins, Itaim Bibi',
   segments: 'Residencial, Alto padrão',
   yearsInMarket: '14',
+  primaryColor: '',
+  secondaryColor: '',
   backgroundColor: '#FFFFFF',
   logoUrl: '',
   bannerUrl: '',
@@ -25,6 +27,21 @@ const validDraft = {
 describe('agencyPublicProfileEditorSchema', () => {
   it('aceita um rascunho válido', () => {
     expect(agencyPublicProfileEditorSchema.safeParse(validDraft).success).toBe(true)
+  })
+
+  it('allows publication without featured brokers', () => {
+    const publishSchema = createAgencyPublicProfileEditorSchema((key) => key, {
+      requirePublishFields: true,
+    })
+    expect(
+      publishSchema.safeParse({
+        ...validDraft,
+        headline: 'A imobiliária que entende você',
+        logoUrl: '/api/auth/media/avatars/tenant-1/owner-1/company.png',
+        bannerUrl: '/api/marketplace/media/profiles/agencies/tenant-1/banner.png',
+        team: [],
+      }).success,
+    ).toBe(true)
   })
 
   it('aceita caminhos internos retornados pelo upload de imagens', () => {
@@ -41,6 +58,23 @@ describe('agencyPublicProfileEditorSchema', () => {
     const result = agencyPublicProfileEditorSchema.safeParse({ ...validDraft, displayName: '' })
 
     expect(result.success).toBe(false)
+  })
+
+  it('accepts the account avatar as the agency logo', () => {
+    const result = agencyPublicProfileEditorSchema.safeParse({
+      ...validDraft,
+      logoUrl: '/api/auth/media/avatars/tenant-1/owner-1/company.png',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects unrelated application paths as images', () => {
+    expect(
+      agencyPublicProfileEditorSchema.safeParse({
+        ...validDraft,
+        logoUrl: '/api/auth/users/owner-1',
+      }).success,
+    ).toBe(false)
   })
 
   it('rejeita e-mail em formato inválido', () => {

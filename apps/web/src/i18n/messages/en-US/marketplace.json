@@ -356,7 +356,10 @@
       "bannerUrl": "Banner URL",
       "team": "Featured team",
       "teamPicker": "Featured brokers",
-      "teamPickerPlaceholder": "Select up to 6 brokers"
+      "teamPickerPlaceholder": "Select up to 6 brokers",
+      "teamPickerHint": "Optional. You can publish without featured brokers and add them later.",
+      "primaryColor": "Primary color",
+      "secondaryColor": "Secondary color"
     },
     "actions": {
       "preview": "Preview",
@@ -382,8 +385,7 @@
       "yearsInMarketRequired": "Enter the years in market",
       "backgroundColorRequired": "Enter the background color",
       "logoUrlRequired": "Upload the logo",
-      "bannerUrlRequired": "Upload a cover image",
-      "teamRequired": "Select at least one featured broker"
+      "bannerUrlRequired": "Upload a cover image"
     },
     "validatedDraft": "Draft validated",
     "loadError": "Could not load the profile.",

@@ -54,6 +54,8 @@ export interface AgencyProfileTeamMemberInput {
 }
 
 export interface AgencyProfileDraft {
+  primaryColor?: string | null
+  secondaryColor?: string | null
   displayName: string
   headline: string | null
   summary: string | null

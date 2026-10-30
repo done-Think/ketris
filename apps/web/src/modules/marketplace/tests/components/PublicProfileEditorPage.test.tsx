@@ -151,6 +151,9 @@ describe('PublicProfileEditorPage', () => {
     renderWithTheme(<AgencyPublicProfileEditorPage />)
 
     expect(screen.getByRole('heading', { name: 'Editar Perfil da Imobiliária' })).toBeVisible()
+    expect(screen.getByLabelText('Cor principal')).toBeVisible()
+    expect(screen.getByLabelText('Cor secundária')).toBeVisible()
+    expect(screen.getByLabelText('Fundo da marca')).toBeVisible()
     expect(screen.getByLabelText('Nome da imobiliária')).toBeVisible()
     expect(screen.getByLabelText('CRECI')).toBeVisible()
     expect(screen.getByLabelText('Corretores em destaque')).toBeVisible()
@@ -301,6 +304,49 @@ describe('PublicProfileEditorPage', () => {
       agencyProfileMocks.publishMutate.mockClear()
     })
 
+    it('loads account defaults, masks both phone lengths and saves the inherited logo', async () => {
+      const logoUrl = '/api/auth/media/avatars/tenant-1/owner-1/company.png'
+      vi.mocked(useOwnAgencyProfile).mockReturnValue({
+        data: {
+          ...draftAgencyProfile,
+          displayName: 'Imobiliária Horizonte',
+          email: 'verified@example.com',
+          legalCreci: 'MG-12345-J',
+          phone: '35997989991',
+          logoUrl,
+        },
+      } as unknown as ReturnType<typeof useOwnAgencyProfile>)
+      const user = userEvent.setup()
+      renderWithTheme(<AgencyPublicProfileEditorPage />)
+
+      expect(screen.getByLabelText('E-mail')).toHaveValue('verified@example.com')
+      expect(screen.getByLabelText('CRECI')).toHaveValue('MG-12345-J')
+      expect(screen.getByLabelText('Telefone')).toHaveValue('(35) 99798-9991')
+      expect(document.querySelector(`img[src="${logoUrl}"]`)).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Editar' }))
+      const phone = screen.getByLabelText('Telefone')
+      await user.clear(phone)
+      await user.type(phone, '35999990000')
+      expect(phone).toHaveValue('(35) 99999-0000')
+      await user.clear(phone)
+      await user.type(phone, '3536221234')
+      expect(phone).toHaveValue('(35) 3622-1234')
+      await user.click(screen.getByRole('button', { name: 'Salvar' }))
+
+      await waitFor(() =>
+        expect(agencyProfileMocks.saveMutate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            email: 'verified@example.com',
+            legalCreci: 'MG-12345-J',
+            phone: '(35) 3622-1234',
+            logoUrl,
+          }),
+          expect.any(Object),
+        ),
+      )
+    })
+
     it('shows the required-field errors below every empty field when publishing without them', async () => {
       vi.mocked(useOwnAgencyProfile).mockReturnValue({
         data: { ...draftAgencyProfile, displayName: 'Imobiliária Horizonte' },
@@ -321,12 +367,15 @@ describe('PublicProfileEditorPage', () => {
       expect(screen.getByText('Informe a cor de fundo')).toBeVisible()
       expect(screen.getByText('Envie o logotipo')).toBeVisible()
       expect(screen.getByText('Envie uma imagem de capa')).toBeVisible()
-      expect(screen.getByText('Selecione ao menos um corretor em destaque')).toBeVisible()
+      expect(screen.getByLabelText('Corretores em destaque')).not.toHaveAttribute(
+        'aria-invalid',
+        'true',
+      )
       expect(agencyProfileMocks.saveMutate).not.toHaveBeenCalled()
       expect(agencyProfileMocks.publishMutate).not.toHaveBeenCalled()
     })
 
-    it('saves the draft and publishes when the form is valid', async () => {
+    it('saves the draft and publishes without any featured brokers', async () => {
       vi.mocked(useOwnAgencyProfile).mockReturnValue({
         data: {
           ...draftAgencyProfile,
@@ -339,11 +388,11 @@ describe('PublicProfileEditorPage', () => {
           phone: '(11) 90000-0000',
           coverage: ['Zona Sul', 'Zona Oeste'],
           segments: ['Residencial', 'Comercial'],
-          yearsInMarket: 15,
+          yearsInMarket: 0,
           backgroundColor: '#ffffff',
           logoUrl: 'https://cdn.ketris.com.br/logo.jpg',
           bannerUrl: 'https://cdn.ketris.com.br/banner.jpg',
-          team: [{ userId: 'broker-1', name: 'Marina Costa', avatarUrl: null, order: 0 }],
+          team: [],
         },
       } as unknown as ReturnType<typeof useOwnAgencyProfile>)
       agencyProfileMocks.saveMutate.mockImplementation((_payload, options) => {
@@ -357,6 +406,8 @@ describe('PublicProfileEditorPage', () => {
       await waitFor(() => expect(agencyProfileMocks.saveMutate).toHaveBeenCalledTimes(1))
       expect(agencyProfileMocks.saveMutate.mock.calls[0][0]).toMatchObject({
         displayName: 'Imobiliária Horizonte',
+        team: [],
+        yearsInMarket: 0,
       })
       await waitFor(() => expect(agencyProfileMocks.publishMutate).toHaveBeenCalledTimes(1))
     })

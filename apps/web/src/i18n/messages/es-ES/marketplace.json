@@ -356,7 +356,10 @@
       "bannerUrl": "URL del banner",
       "team": "Equipo destacado",
       "teamPicker": "Corredores destacados",
-      "teamPickerPlaceholder": "Selecciona hasta 6 corredores"
+      "teamPickerPlaceholder": "Selecciona hasta 6 corredores",
+      "teamPickerHint": "Opcional. Puedes publicar sin corredores destacados y añadirlos después.",
+      "primaryColor": "Color principal",
+      "secondaryColor": "Color secundario"
     },
     "actions": {
       "preview": "Vista previa",
@@ -382,8 +385,7 @@
       "yearsInMarketRequired": "Introduce los años en el mercado",
       "backgroundColorRequired": "Introduce el color de fondo",
       "logoUrlRequired": "Sube el logotipo",
-      "bannerUrlRequired": "Sube una imagen de portada",
-      "teamRequired": "Selecciona al menos un corredor destacado"
+      "bannerUrlRequired": "Sube una imagen de portada"
     },
     "validatedDraft": "Borrador validado",
     "loadError": "No se pudo cargar el perfil.",

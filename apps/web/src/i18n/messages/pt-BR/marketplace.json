@@ -356,7 +356,10 @@
       "bannerUrl": "URL do banner",
       "team": "Equipe em destaque",
       "teamPicker": "Corretores em destaque",
-      "teamPickerPlaceholder": "Selecione até 6 corretores"
+      "teamPickerPlaceholder": "Selecione até 6 corretores",
+      "teamPickerHint": "Opcional. Você pode publicar sem corretores em destaque e adicioná-los depois.",
+      "primaryColor": "Cor principal",
+      "secondaryColor": "Cor secundária"
     },
     "actions": {
       "preview": "Visualizar",
@@ -382,8 +385,7 @@
       "yearsInMarketRequired": "Informe os anos de mercado",
       "backgroundColorRequired": "Informe a cor de fundo",
       "logoUrlRequired": "Envie o logotipo",
-      "bannerUrlRequired": "Envie uma imagem de capa",
-      "teamRequired": "Selecione ao menos um corretor em destaque"
+      "bannerUrlRequired": "Envie uma imagem de capa"
     },
     "validatedDraft": "Rascunho validado",
     "loadError": "Não foi possível carregar o perfil.",

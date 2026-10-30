@@ -19,6 +19,7 @@ export interface GetBrokerProfileInput {
 }
 
 export interface GetOwnAgencyProfileInput {
+  actorId: string
   actorTenantId: string
   actorRole: UserRole
 }
