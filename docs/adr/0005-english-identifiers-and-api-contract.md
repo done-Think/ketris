@@ -1,7 +1,7 @@
 # ADR-0005 — Identificadores em inglês e transição do contrato HTTP
 
-Status: renome integrado à `dev` e validado em staging; retirada dos formatos legados preparada
-na branch `fix/staging-readiness`, com contrato HTTP v3, ainda aguardando publicação.
+Status: renome e retirada das entradas legadas integrados à `dev`; contrato HTTP v3 publicado
+e validado no staging em 29/10/2026, commit `4105c505` (PR #167).
 
 Data: 27/10/2026.
 
@@ -53,5 +53,5 @@ o prazo padrão renovável de 30 dias do NextAuth não é usado como prova de en
 A guarda permite o nome aposentado somente nas regressões de rejeição, incluindo a fixture
 de cookie criptografado restrita à aplicação e ao banco locais isolados. Leitores de auditoria
 e de históricos permanecem por sua finalidade própria. Nenhuma migration ou reescrita de dados
-acompanha essa alteração. A aplicação publicada ainda anuncia a versão 2 até a integração,
-o CI e a promoção do novo artefato.
+acompanha essa alteração. O [CI e a release](https://github.com/done-Think/ketris/actions/runs/40974855116)
+aprovaram o artefato `4105c505`, conferido no domínio público com contrato v3 e OpenAPI `3.0.0`.
