@@ -8,7 +8,7 @@ export const metadata = privateMetadata
 
 export default function ScopedLayout({ children }: { children: ReactNode }) {
   return (
-    <ScopedMessages namespaces={[...dashboardMessageNamespaces, 'properties']}>
+    <ScopedMessages namespaces={[...dashboardMessageNamespaces, 'properties', 'crm.autocomplete']}>
       {children}
     </ScopedMessages>
   )

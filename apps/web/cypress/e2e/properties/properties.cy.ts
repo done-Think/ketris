@@ -64,7 +64,9 @@ describe(
       cy.contains('label', /^Proprietário$/)
         .invoke('attr', 'for')
         .then((id) => {
-          cy.get(`[id="${id}"]`).type(contactName)
+          cy.get(`[id="${id}"]`).type(`no-contact-${unique}`)
+          cy.contains('Nenhum resultado.').should('be.visible')
+          cy.get(`[id="${id}"]`).clear().type(contactName)
         })
       cy.contains('[role="option"]', contactName).click()
       cy.contains('Sem conta de acesso vinculada').should('be.visible')
