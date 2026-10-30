@@ -1,28 +1,30 @@
 # Publicação coordenada da refatoração
 
 Status em 29/10/2026: última publicação automática confirmada no commit
-`87ead6ced95ae428c721cd4c5fba88ffe044342d`, após o merge do PR #164.
-A [execução 40897148130](https://github.com/done-Think/ketris/actions/runs/40897148130) aprovou
-2.902 testes unitários, 733 integrações, build e 65 cenários de navegador. A release verificou
+`4105c505a15786578dfe591a59d8b298176fee6b`, após o merge do PR #167.
+A [execução 40974855116](https://github.com/done-Think/ketris/actions/runs/40974855116) aprovou
+2.921 testes unitários, 739 integrações, build e 67 cenários de navegador. A release verificou
 o destino, não encontrou migrations pendentes, conferiu o schema, aprovou login no candidato,
 promoveu o artefato e aprovou login no domínio público. Sessão e estatísticas públicas
-responderam 200 com o SHA esperado; estatísticas exigem o contrato HTTP v2.
-Os fluxos privados de S3 e o envio SES foram exercitados nesse artefato em 29/10, conforme abaixo.
+responderam 200 com o SHA esperado; estatísticas exigem o contrato HTTP v3. Consultas externas
+conferiram esse SHA, OpenAPI `3.0.0`, recusa de v2/versão ausente com 409 e páginas PT/EN/ES com 200.
+Os fluxos privados de S3 e o envio SES foram exercitados no artefato anterior `87ead6ce` em 29/10,
+conforme abaixo. A medição inicial e o ensaio exploratório estão no
+[registro do limite distribuído](technical-debt/api-distributed-rate-limit.md).
 
-O merge posterior do PR #166 (`0c65673e`) aprovou quality e build, mas o teste de seleção
+Antes dessa publicação, o merge do PR #166 (`0c65673e`) aprovou quality e build, mas o teste de seleção
 de bairro/cidade verificou a URL antes de a navegação terminar. A
 [execução 40943395733](https://github.com/done-Think/ketris/actions/runs/40943395733) falhou
-em `auth-e2e` e ignorou `release-staging`, preservando o artefato anterior. Consultas públicas
-em 29/10 confirmaram o SHA `87ead6ce`. A branch `fix/staging-readiness` corrige a espera do
+em `auth-e2e` e ignorou `release-staging`, preservando `87ead6ce`. O PR #167 corrigiu a espera do
 teste e preserva capturas de falha como artefatos por execução/tentativa, durante sete dias.
 
-### Próxima entrega: contrato HTTP v3
+### Contrato HTTP v3 publicado
 
-Com o inventário do staging limitado ao site Ketris, esta branch prepara o corte de entradas
+Com o inventário do staging limitado ao site Ketris, o PR #167 encerrou a transição de entradas
 legadas: contrato HTTP v3, ações CRM canônicas e access tokens de tenant com `role`. Frontend, OpenAPI, tipos
-gerados e smoke de publicação passam à mesma versão. O artefato publicado `87ead6ce` ainda usa v2.
+gerados e smoke de publicação usam a mesma versão. O domínio público serve `4105c505` com v3.
 
-Após a promoção, abas com v2 recebem 409 antes do handler e devem recarregar. Cookies de tenant dependentes
+Abas com v2 recebem 409 antes do handler e devem recarregar. Cookies de tenant dependentes
 do claim aposentado exigem novo login; sessões canônicas conservam suas verificações de usuário
 e versão. Históricos antigos permanecem legíveis. A cadeia de 53 migrations não muda.
 

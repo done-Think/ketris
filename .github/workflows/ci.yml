@@ -52,8 +52,8 @@ jobs:
 
       - run: npm ci
 
-      - name: Testa as garantias da publicação de staging
-        run: node --test scripts/tests/staging-release.test.mjs
+      - name: Testa as garantias operacionais de staging sem tráfego externo
+        run: node --test scripts/tests/staging-release.test.mjs scripts/tests/explore-staging-rate-limit.test.mjs
 
       - name: Verifica nomes em inglês e exceções de compatibilidade
         run: |
