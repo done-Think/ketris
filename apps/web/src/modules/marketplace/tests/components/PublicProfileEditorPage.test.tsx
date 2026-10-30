@@ -361,12 +361,15 @@ describe('PublicProfileEditorPage', () => {
       expect(screen.getByText('Informe a cor de fundo')).toBeVisible()
       expect(screen.getByText('Envie o logotipo')).toBeVisible()
       expect(screen.getByText('Envie uma imagem de capa')).toBeVisible()
-      expect(screen.getByText('Selecione ao menos um corretor em destaque')).toBeVisible()
+      expect(screen.getByLabelText('Corretores em destaque')).not.toHaveAttribute(
+        'aria-invalid',
+        'true',
+      )
       expect(agencyProfileMocks.saveMutate).not.toHaveBeenCalled()
       expect(agencyProfileMocks.publishMutate).not.toHaveBeenCalled()
     })
 
-    it('saves the draft and publishes when the form is valid', async () => {
+    it('saves the draft and publishes without any featured brokers', async () => {
       vi.mocked(useOwnAgencyProfile).mockReturnValue({
         data: {
           ...draftAgencyProfile,
@@ -379,11 +382,11 @@ describe('PublicProfileEditorPage', () => {
           phone: '(11) 90000-0000',
           coverage: ['Zona Sul', 'Zona Oeste'],
           segments: ['Residencial', 'Comercial'],
-          yearsInMarket: 15,
+          yearsInMarket: 0,
           backgroundColor: '#ffffff',
           logoUrl: 'https://cdn.ketris.com.br/logo.jpg',
           bannerUrl: 'https://cdn.ketris.com.br/banner.jpg',
-          team: [{ userId: 'broker-1', name: 'Marina Costa', avatarUrl: null, order: 0 }],
+          team: [],
         },
       } as unknown as ReturnType<typeof useOwnAgencyProfile>)
       agencyProfileMocks.saveMutate.mockImplementation((_payload, options) => {
@@ -397,6 +400,8 @@ describe('PublicProfileEditorPage', () => {
       await waitFor(() => expect(agencyProfileMocks.saveMutate).toHaveBeenCalledTimes(1))
       expect(agencyProfileMocks.saveMutate.mock.calls[0][0]).toMatchObject({
         displayName: 'Imobiliária Horizonte',
+        team: [],
+        yearsInMarket: 0,
       })
       await waitFor(() => expect(agencyProfileMocks.publishMutate).toHaveBeenCalledTimes(1))
     })

@@ -85,9 +85,7 @@ function createAgencyPublicProfileEditorObjectSchema(
     backgroundColor: createHexColorSchema(t, 'backgroundColorRequired', requirePublishFields),
     logoUrl: createUrlSchema(t, 'logoUrlRequired', requirePublishFields),
     bannerUrl: createUrlSchema(t, 'bannerUrlRequired', requirePublishFields),
-    team: requirePublishFields
-      ? z.array(agencyTeamMemberFieldSchema).min(1, t('teamRequired')).max(6, t('teamTooLarge'))
-      : z.array(agencyTeamMemberFieldSchema).max(6, t('teamTooLarge')),
+    team: z.array(agencyTeamMemberFieldSchema).max(6, t('teamTooLarge')),
   })
 }
 

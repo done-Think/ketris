@@ -68,7 +68,7 @@ export function getEditorPanelStyles(fullRow = false): SxProps<Theme> {
 
 export const teamPickerSlotProps = {
   popper: {
-    placement: 'top-start' as const,
+    placement: 'bottom-start' as const,
     modifiers: [{ name: 'flip', enabled: false }],
   },
 }

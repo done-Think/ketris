@@ -262,7 +262,7 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
                   label={t('fields.teamPicker')}
                   placeholder={t('fields.teamPickerPlaceholder')}
                   error={Boolean(fieldState.error)}
-                  helperText={fieldState.error?.message}
+                  helperText={fieldState.error?.message ?? t('fields.teamPickerHint')}
                 />
               )}
             />

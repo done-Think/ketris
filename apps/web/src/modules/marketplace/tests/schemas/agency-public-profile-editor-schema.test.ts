@@ -27,6 +27,21 @@ describe('agencyPublicProfileEditorSchema', () => {
     expect(agencyPublicProfileEditorSchema.safeParse(validDraft).success).toBe(true)
   })
 
+  it('allows publication without featured brokers', () => {
+    const publishSchema = createAgencyPublicProfileEditorSchema((key) => key, {
+      requirePublishFields: true,
+    })
+    expect(
+      publishSchema.safeParse({
+        ...validDraft,
+        headline: 'A imobiliária que entende você',
+        logoUrl: '/api/auth/media/avatars/tenant-1/owner-1/company.png',
+        bannerUrl: '/api/marketplace/media/profiles/agencies/tenant-1/banner.png',
+        team: [],
+      }).success,
+    ).toBe(true)
+  })
+
   it('aceita caminhos internos retornados pelo upload de imagens', () => {
     const result = agencyPublicProfileEditorSchema.safeParse({
       ...validDraft,

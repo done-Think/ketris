@@ -8,6 +8,7 @@ import { prisma } from '@server/db/prisma'
 import { PrismaAgencyProfileRepository } from '@server/marketplace/infrastructure/prisma-agency-profile.repository'
 
 import { GET as getAgencyPublic } from '../../../agencies/[id]/route'
+import { GET as listAgencies } from '../../../agencies/route'
 import { GET, PUT } from '../../../profiles/agency/route'
 import { POST as publish } from '../../../profiles/agency/publish/route'
 import { POST as unpublish } from '../../../profiles/agency/unpublish/route'
@@ -246,6 +247,61 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
       { params: Promise.resolve({ id: tenantId }) },
     )
     expect(publicAfterUnpublish.status).toBe(404)
+  })
+
+  it('publishes an agency with no registered brokers and lists it publicly', async () => {
+    const agency = await prisma.tenant.create({
+      data: { name: `Agency without brokers ${randomUUID()}`, slug: `no-brokers-${randomUUID()}` },
+    })
+    try {
+      const owner = await prisma.user.create({
+        data: {
+          tenantId: agency.id,
+          name: 'Agency owner',
+          email: `owner-${randomUUID()}@example.test`,
+          passwordHash: 'unused',
+          role: 'OWNER',
+        },
+      })
+      const token = await tokenService.sign(owner)
+      const saved = await PUT(
+        buildRequest(
+          'PUT',
+          {
+            displayName: agency.name,
+            headline: 'Sua nova imobiliária',
+            summary: 'Uma imobiliária sem corretores cadastrados.',
+            legalCreci: 'MG-12345',
+            headquarters: 'Itajubá',
+            address: 'Rua Principal, 35',
+            email: owner.email,
+            coverage: ['Itajubá'],
+            segments: ['Residencial'],
+            yearsInMarket: 0,
+            backgroundColor: '#ffffff',
+            logoUrl: 'https://example.test/logo.png',
+            bannerUrl: 'https://example.test/banner.png',
+            team: [],
+          },
+          token,
+        ),
+      )
+      expect(saved.status).toBe(200)
+      const response = await publish(buildRequest('POST', undefined, token))
+      expect(response.status).toBe(200)
+      expect((await response.json()).profile).toMatchObject({ status: 'PUBLISHED', team: [] })
+
+      const directory = await listAgencies(
+        new NextRequest(
+          `http://localhost/api/marketplace/agencies?q=${encodeURIComponent(agency.name)}`,
+        ),
+      )
+      expect((await directory.json()).agencies).toEqual([
+        expect.objectContaining({ id: agency.id, team: [] }),
+      ])
+    } finally {
+      await prisma.tenant.delete({ where: { id: agency.id } })
+    }
   })
 
   it('publish retorna 422 quando faltam campos obrigatórios', async () => {

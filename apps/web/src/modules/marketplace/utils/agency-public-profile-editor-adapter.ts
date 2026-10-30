@@ -68,7 +68,7 @@ export function toFormValues(
     email: profile.email ?? '',
     coverage: profile.coverage.join(', '),
     segments: profile.segments.join(', '),
-    yearsInMarket: profile.yearsInMarket ? String(profile.yearsInMarket) : '',
+    yearsInMarket: profile.yearsInMarket != null ? String(profile.yearsInMarket) : '',
     backgroundColor: profile.backgroundColor ?? '',
     logoUrl: profile.logoUrl ?? '',
     bannerUrl: profile.bannerUrl ?? '',
