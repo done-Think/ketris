@@ -27,7 +27,12 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
-      data: { name: 'Imobiliária Perfil Agência', slug: `perfil-agencia-${randomUUID()}` },
+      data: {
+        name: 'Imobiliária Perfil Agência',
+        slug: `perfil-agencia-${randomUUID()}`,
+        primaryColor: '#112233',
+        secondaryColor: '#445566',
+      },
     })
     tenantId = tenant.id
 
@@ -120,6 +125,8 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
       logoUrl: ownerAvatarUrl,
       legalCreci: 'MG-12345-J',
       status: 'DRAFT',
+      primaryColor: '#112233',
+      secondaryColor: '#445566',
     })
     expect(await prisma.agencyPublicProfile.findUnique({ where: { tenantId } })).toBeNull()
     const publicResponse = await getAgencyPublic(
@@ -193,6 +200,8 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
           segments: ['Residencial', 'Comercial'],
           yearsInMarket: 15,
           backgroundColor: '#ffffff',
+          primaryColor: '#123456',
+          secondaryColor: '#654321',
           logoUrl: 'https://cdn.ketris.com.br/logo.jpg',
           bannerUrl: 'https://cdn.ketris.com.br/banner.jpg',
           team: [
@@ -241,6 +250,15 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
 
     expect(publicAfterPublish.status).toBe(200)
     expect(publicJson.agency.displayName).toBe('Imobiliária Perfil Agência')
+    expect(publicJson.agency).toMatchObject({
+      primaryColor: '#123456',
+      secondaryColor: '#654321',
+      backgroundColor: '#ffffff',
+    })
+    expect(await prisma.tenant.findUnique({ where: { id: tenantId } })).toMatchObject({
+      primaryColor: '#112233',
+      secondaryColor: '#445566',
+    })
     expect(publicJson.agency.team).toHaveLength(1)
     expect(publicJson.agency.stats.brokersCount).toBeGreaterThanOrEqual(2)
 
@@ -252,6 +270,32 @@ describe('/api/marketplace/profiles/agency (integração)', () => {
       { params: Promise.resolve({ id: tenantId }) },
     )
     expect(publicAfterUnpublish.status).toBe(404)
+  })
+
+  it('preserves saved colors when an older client omits them', async () => {
+    const response = await PUT(
+      buildRequest(
+        'PUT',
+        { displayName: 'Imobiliária Perfil Agência', coverage: [], segments: [], team: [] },
+        adminToken,
+      ),
+    )
+    expect(response.status).toBe(200)
+    expect((await response.json()).profile).toMatchObject({
+      primaryColor: '#123456',
+      secondaryColor: '#654321',
+    })
+  })
+
+  it('rejects invalid profile colors without altering the saved palette', async () => {
+    const response = await PUT(
+      buildRequest('PUT', { displayName: 'Agency', primaryColor: 'invalid' }, adminToken),
+    )
+    expect(response.status).toBe(400)
+    expect(await prisma.agencyPublicProfile.findUnique({ where: { tenantId } })).toMatchObject({
+      primaryColor: '#123456',
+      secondaryColor: '#654321',
+    })
   })
 
   it('publishes an agency with no registered brokers and lists it publicly', async () => {

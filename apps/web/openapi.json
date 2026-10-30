@@ -3242,6 +3242,8 @@
             "default": []
           },
           "yearsInMarket": { "type": "integer", "nullable": true, "minimum": 0 },
+          "primaryColor": { "type": "string", "nullable": true, "pattern": "^#[0-9a-fA-F]{6}$" },
+          "secondaryColor": { "type": "string", "nullable": true, "pattern": "^#[0-9a-fA-F]{6}$" },
           "backgroundColor": { "type": "string", "nullable": true, "pattern": "^#[0-9a-fA-F]{6}$" },
           "logoUrl": { "type": "string", "nullable": true, "minLength": 1 },
           "bannerUrl": { "type": "string", "nullable": true, "minLength": 1 },

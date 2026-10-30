@@ -357,7 +357,9 @@
       "team": "Featured team",
       "teamPicker": "Featured brokers",
       "teamPickerPlaceholder": "Select up to 6 brokers",
-      "teamPickerHint": "Optional. You can publish without featured brokers and add them later."
+      "teamPickerHint": "Optional. You can publish without featured brokers and add them later.",
+      "primaryColor": "Primary color",
+      "secondaryColor": "Secondary color"
     },
     "actions": {
       "preview": "Preview",

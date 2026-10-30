@@ -24,6 +24,8 @@ export class SaveAgencyProfileUseCase {
         segments: input.segments,
         yearsInMarket: input.yearsInMarket,
         backgroundColor: input.backgroundColor,
+        primaryColor: input.primaryColor,
+        secondaryColor: input.secondaryColor,
         logoUrl: input.logoUrl,
         bannerUrl: input.bannerUrl,
         team: input.team,

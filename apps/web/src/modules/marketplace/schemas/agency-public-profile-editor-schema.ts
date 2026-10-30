@@ -82,6 +82,8 @@ function createAgencyPublicProfileEditorObjectSchema(
     coverage: createRequiredTextSchema(t, 'coverageRequired', requirePublishFields),
     segments: createRequiredTextSchema(t, 'segmentsRequired', requirePublishFields),
     yearsInMarket: createRequiredTextSchema(t, 'yearsInMarketRequired', requirePublishFields),
+    primaryColor: z.string().regex(HEX_COLOR_PATTERN, t('hexColorInvalid')).or(z.literal('')),
+    secondaryColor: z.string().regex(HEX_COLOR_PATTERN, t('hexColorInvalid')).or(z.literal('')),
     backgroundColor: createHexColorSchema(t, 'backgroundColorRequired', requirePublishFields),
     logoUrl: createUrlSchema(t, 'logoUrlRequired', requirePublishFields),
     bannerUrl: createUrlSchema(t, 'bannerUrlRequired', requirePublishFields),

@@ -39,6 +39,8 @@ export const PUT = withErrorHandling(async (request: NextRequest) => {
     segments: body.segments,
     yearsInMarket: body.yearsInMarket ?? null,
     backgroundColor: body.backgroundColor ?? null,
+    primaryColor: body.primaryColor,
+    secondaryColor: body.secondaryColor,
     logoUrl: body.logoUrl ?? null,
     bannerUrl: body.bannerUrl ?? null,
     team: body.team,

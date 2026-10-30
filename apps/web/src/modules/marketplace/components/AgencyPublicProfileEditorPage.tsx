@@ -208,6 +208,20 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
           <Box sx={styles.colorFields}>
             <RhfTextField
               control={control}
+              name="primaryColor"
+              label={t('fields.primaryColor')}
+              type="color"
+              disabled={disabled}
+            />
+            <RhfTextField
+              control={control}
+              name="secondaryColor"
+              label={t('fields.secondaryColor')}
+              type="color"
+              disabled={disabled}
+            />
+            <RhfTextField
+              control={control}
               name="backgroundColor"
               label={t('fields.backgroundColor')}
               type="color"

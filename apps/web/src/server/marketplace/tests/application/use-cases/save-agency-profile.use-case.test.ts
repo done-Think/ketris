@@ -19,6 +19,8 @@ const draft = {
   segments: [],
   yearsInMarket: null,
   backgroundColor: null,
+  primaryColor: '#123456',
+  secondaryColor: '#654321',
   logoUrl: null,
   bannerUrl: null,
   team: [{ userId: 'usuario-1', order: 0 }],

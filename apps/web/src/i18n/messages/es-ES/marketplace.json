@@ -357,7 +357,9 @@
       "team": "Equipo destacado",
       "teamPicker": "Corredores destacados",
       "teamPickerPlaceholder": "Selecciona hasta 6 corredores",
-      "teamPickerHint": "Opcional. Puedes publicar sin corredores destacados y añadirlos después."
+      "teamPickerHint": "Opcional. Puedes publicar sin corredores destacados y añadirlos después.",
+      "primaryColor": "Color principal",
+      "secondaryColor": "Color secundario"
     },
     "actions": {
       "preview": "Vista previa",

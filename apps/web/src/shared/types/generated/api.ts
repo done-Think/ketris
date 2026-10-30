@@ -13487,6 +13487,8 @@ export interface components {
       legalCreci?: string | null
       logoUrl?: string | null
       phone?: string | null
+      primaryColor?: string | null
+      secondaryColor?: string | null
       /** @default [] */
       segments?: string[]
       summary?: string | null

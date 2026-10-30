@@ -15,6 +15,8 @@ export type TenantWithProfileRow = {
     coverage: string[]
     segments: string[]
     yearsInMarket: number | null
+    primaryColor: string | null
+    secondaryColor: string | null
     backgroundColor: string | null
     logoUrl: string | null
     bannerUrl: string | null

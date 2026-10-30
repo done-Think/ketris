@@ -151,6 +151,9 @@ describe('PublicProfileEditorPage', () => {
     renderWithTheme(<AgencyPublicProfileEditorPage />)
 
     expect(screen.getByRole('heading', { name: 'Editar Perfil da Imobiliária' })).toBeVisible()
+    expect(screen.getByLabelText('Cor principal')).toBeVisible()
+    expect(screen.getByLabelText('Cor secundária')).toBeVisible()
+    expect(screen.getByLabelText('Fundo da marca')).toBeVisible()
     expect(screen.getByLabelText('Nome da imobiliária')).toBeVisible()
     expect(screen.getByLabelText('CRECI')).toBeVisible()
     expect(screen.getByLabelText('Corretores em destaque')).toBeVisible()

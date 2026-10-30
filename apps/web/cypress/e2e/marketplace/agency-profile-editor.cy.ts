@@ -127,7 +127,7 @@ describe('Agency public profile defaults', () => {
     },
   )
 
-  it('opens the empty broker picker below the field and publishes without a team', () => {
+  it('saves all three agency colors, opens the picker below the field and publishes without a team', () => {
     const displayName = `Agency without brokers ${suffix}`
     cy.request({
       method: 'POST',
@@ -151,6 +151,8 @@ describe('Agency public profile defaults', () => {
           segments: ['Residencial'],
           yearsInMarket: 0,
           backgroundColor: '#ffffff',
+          primaryColor: '#112233',
+          secondaryColor: '#445566',
           logoUrl: avatarUrl,
           bannerUrl: avatarUrl,
           team: [],
@@ -168,6 +170,24 @@ describe('Agency public profile defaults', () => {
     cy.contains('button', 'Entrar').click()
     cy.location('pathname').should('eq', '/pt/dashboard/public-profile/agency')
     cy.contains('button', /^Editar$/).click()
+    for (const [name, color] of Object.entries({
+      primaryColor: '#123456',
+      secondaryColor: '#654321',
+      backgroundColor: '#fedcba',
+    })) {
+      cy.get(`input[name="${name}"]`)
+        .should('have.attr', 'type', 'color')
+        .then(($input) => {
+          const input = $input[0] as HTMLInputElement
+          const view = input.ownerDocument.defaultView!
+          Object.getOwnPropertyDescriptor(view.HTMLInputElement.prototype, 'value')!.set!.call(
+            input,
+            color,
+          )
+          input.dispatchEvent(new view.Event('input', { bubbles: true }))
+          input.dispatchEvent(new view.Event('change', { bubbles: true }))
+        })
+    }
     cy.contains(
       'Opcional. Você pode publicar sem corretores em destaque e adicioná-los depois.',
     ).should('exist')
@@ -190,12 +210,30 @@ describe('Agency public profile defaults', () => {
     }
     cy.viewport(1280, 900)
     cy.intercept('POST', '**/api/marketplace/profiles/agency/publish').as('publishProfile')
+    cy.intercept('PUT', '**/api/marketplace/profiles/agency').as('saveColors')
     cy.contains('button', /^Publicar$/).click()
+    cy.wait('@saveColors').then(({ request, response }) => {
+      expect(response?.statusCode).to.eq(200)
+      expect(request.body).to.include({
+        primaryColor: '#123456',
+        secondaryColor: '#654321',
+        backgroundColor: '#fedcba',
+      })
+    })
     cy.wait('@publishProfile').then(({ response }) => {
       expect(response?.statusCode).to.eq(200)
       expect(response?.body.profile.team).to.deep.eq([])
       expect(response?.body.profile.yearsInMarket).to.eq(0)
+      expect(response?.body.profile).to.include({
+        primaryColor: '#123456',
+        secondaryColor: '#654321',
+        backgroundColor: '#fedcba',
+      })
     })
+    cy.reload()
+    cy.get('input[name="primaryColor"]').should('have.value', '#123456')
+    cy.get('input[name="secondaryColor"]').should('have.value', '#654321')
+    cy.get('input[name="backgroundColor"]').should('have.value', '#fedcba')
     cy.visit(`/pt/imobiliarias/${tenantId}`)
     cy.get('h1').should('contain', displayName)
     cy.contains('h5', 'Equipe em destaque').should('not.exist')

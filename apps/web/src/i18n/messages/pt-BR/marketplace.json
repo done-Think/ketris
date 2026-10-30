@@ -357,7 +357,9 @@
       "team": "Equipe em destaque",
       "teamPicker": "Corretores em destaque",
       "teamPickerPlaceholder": "Selecione até 6 corretores",
-      "teamPickerHint": "Opcional. Você pode publicar sem corretores em destaque e adicioná-los depois."
+      "teamPickerHint": "Opcional. Você pode publicar sem corretores em destaque e adicioná-los depois.",
+      "primaryColor": "Cor principal",
+      "secondaryColor": "Cor secundária"
     },
     "actions": {
       "preview": "Visualizar",

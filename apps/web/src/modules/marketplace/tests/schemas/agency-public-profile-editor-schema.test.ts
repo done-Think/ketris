@@ -16,6 +16,8 @@ const validDraft = {
   coverage: 'Jardins, Itaim Bibi',
   segments: 'Residencial, Alto padrão',
   yearsInMarket: '14',
+  primaryColor: '',
+  secondaryColor: '',
   backgroundColor: '#FFFFFF',
   logoUrl: '',
   bannerUrl: '',
