@@ -23,6 +23,7 @@ export function PropertyOwnerSelect({ control }: CreatePropertyBasicStepFieldsPr
           select
           fullWidth
           label={t('fields.owner')}
+          slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
           disabled={owners.isLoading || owners.isError}
           error={Boolean(fieldState.error) || owners.isError}
           helperText={
