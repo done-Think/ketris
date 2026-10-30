@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 
-import { priceLimit } from '../../config/search-filters'
 import {
   buildSearchHref,
   formatSearchCurrency,
@@ -43,11 +42,11 @@ describe('marketplace search utils', () => {
     })
   })
 
-  it('prefers the typed location and drops unknown property types and the full price range', () => {
+  it('prefers the typed location and drops unknown types and empty price limits', () => {
     const href = buildSearchHref({
       selectedSearch: { location: 'Moema, São Paulo', propertyType: 'Studio' },
       searchDraft: { location: '  Pinheiros ', propertyType: '' },
-      priceRange: [priceLimit.min, priceLimit.max],
+      priceRange: [null, null],
     })
 
     expect(href).toEqual({ pathname: '/properties', query: { location: 'Pinheiros' } })
@@ -57,17 +56,22 @@ describe('marketplace search utils', () => {
     const href = buildSearchHref({
       selectedSearch: { location: '', propertyType: '' },
       searchDraft: { location: '', propertyType: '' },
-      priceRange: [priceLimit.min, priceLimit.max],
+      priceRange: [null, null],
       purpose: 'buy',
     })
 
     expect(href).toEqual({ pathname: '/properties', query: { purpose: 'buy' } })
   })
 
-  it('parses only well formed price ranges inside the limits', () => {
+  it('parses open and bounded price ranges without a ten-thousand ceiling', () => {
     expect(parsePriceRange('2000-8000')).toEqual({ min: 2000, max: 8000 })
-    expect(parsePriceRange(`${priceLimit.min}-${priceLimit.max}`)).toEqual({ min: null, max: null })
-    expect(parsePriceRange('8000-2000')).toEqual({ min: 8000, max: null })
+    expect(parsePriceRange('500000-2000000')).toEqual({ min: 500000, max: 2000000 })
+    expect(parsePriceRange('-750000')).toEqual({ min: null, max: 750000 })
+    expect(parsePriceRange('25000-')).toEqual({ min: 25000, max: null })
+    expect(parsePriceRange('0-10000')).toEqual({ min: 0, max: 10000 })
+    expect(parsePriceRange('0-0')).toEqual({ min: 0, max: 0 })
+    expect(parsePriceRange('2500.5-8000.75')).toEqual({ min: 2500.5, max: 8000.75 })
+    expect(parsePriceRange('8000-2000')).toEqual({ min: null, max: null })
     expect(parsePriceRange('abc')).toEqual({ min: null, max: null })
     expect(parsePriceRange(undefined)).toEqual({ min: null, max: null })
   })

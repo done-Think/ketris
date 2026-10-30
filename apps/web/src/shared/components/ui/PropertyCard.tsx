@@ -31,6 +31,7 @@ function getPropertyCardHref(href: string): LocalizedHref {
     return {
       pathname: '/properties/[id]',
       params: { id },
+      query: Object.fromEntries(new URLSearchParams(href.split('?')[1] ?? '')),
     }
   }
 

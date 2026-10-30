@@ -53,6 +53,17 @@ function createDeps(findPublishedById?: PublicPropertyRepository['findPublishedB
 }
 
 describe('GetPropertyUseCase', () => {
+  it('preserves the rental amount when exposing a dual-purpose listing', async () => {
+    const deps = createDeps(
+      vi.fn().mockResolvedValue({ ...detail, purpose: 'BOTH', price: 900000, rentalPrice: 2500 }),
+    )
+    const result = await new GetPropertyUseCase(deps.propertyRepository).execute({
+      propertyId: detail.id,
+    })
+    expect(result).toMatchObject({ purpose: 'BOTH', price: 900000, rentalPrice: 2500 })
+    expect(result).not.toHaveProperty('tenantId')
+  })
+
   it('resolves the address for an existing published property without coordinates', async () => {
     const deps = createDeps(
       vi.fn().mockResolvedValue({ ...detail, latitude: null, longitude: null }),

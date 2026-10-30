@@ -7,11 +7,15 @@ import { useTranslations } from 'next-intl'
 import { ActionTextLink, PropertyCard, SectionHeader } from '@shared/components/ui'
 
 import { useFeaturedProperties } from '../hooks/use-featured-properties'
+import { defaultSearchPurpose } from '../config/home'
+import type { HomePropertySectionProps } from '../types/search'
 import { styles } from '../styles/featured-properties-section.styles'
 
-export function FeaturedPropertiesSection() {
+export function FeaturedPropertiesSection({
+  purpose = defaultSearchPurpose,
+}: HomePropertySectionProps) {
   const t = useTranslations('marketplace.home.featured')
-  const { featuredProperties, isLoading, isError } = useFeaturedProperties()
+  const { featuredProperties, isLoading, isError } = useFeaturedProperties(purpose)
 
   if (!isLoading && (isError || featuredProperties.length === 0)) return null
 
@@ -21,7 +25,7 @@ export function FeaturedPropertiesSection() {
         <SectionHeader
           title={t('title')}
           action={
-            <ActionTextLink href="/properties">
+            <ActionTextLink href={{ pathname: '/properties', query: { purpose } }}>
               {t('viewAll')}
               <NorthEastOutlinedIcon sx={styles.northEastOutlinedIcon} />
             </ActionTextLink>

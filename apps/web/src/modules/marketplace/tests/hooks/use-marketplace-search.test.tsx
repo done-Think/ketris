@@ -1,14 +1,13 @@
 import { act, renderHook } from '@testing-library/react'
 import { expect, it } from 'vitest'
 
-import { priceLimit } from '../../config/search-filters'
 import { useMarketplaceSearch } from '../../hooks/use-marketplace-search'
 
 it('começa sem nenhum filtro pré-selecionado', () => {
   const { result } = renderHook(() => useMarketplaceSearch())
 
   expect(result.current.selectedSearch).toEqual({ location: '', propertyType: '' })
-  expect(result.current.priceRange).toEqual([priceLimit.min, priceLimit.max])
+  expect(result.current.priceRange).toEqual([null, null])
   expect(result.current.searchHref).toEqual({ pathname: '/properties', query: { purpose: 'rent' } })
 })
 
@@ -37,18 +36,22 @@ it('reabrir o mesmo menu o fecha', () => {
   expect(result.current.activeSearchMenu).toBeNull()
 })
 
-it('limita e ordena a faixa de preço', () => {
+it('accepts free price limits, supports open ranges and rejects invalid ranges', () => {
   const { result } = renderHook(() => useMarketplaceSearch())
-
-  act(() => result.current.updatePriceRange([8000, -50]))
-  expect(result.current.priceRange).toEqual([priceLimit.min, 8000])
-
-  act(() => result.current.updatePriceRange([2000, priceLimit.max * 3]))
-  expect(result.current.priceRange).toEqual([2000, priceLimit.max])
-  expect(result.current.searchHref.query).toEqual({
-    purpose: 'rent',
-    priceRange: `2000-${priceLimit.max}`,
-  })
+  expect(result.current.priceRangeLabel).toBe('Qualquer preço')
+  act(() => result.current.updatePriceRange([500000, 2000000]))
+  expect(result.current.priceRange).toEqual([500000, 2000000])
+  expect(result.current.searchHref.query.priceRange).toBe('500000-2000000')
+  act(() => result.current.updatePriceRange([null, 750000]))
+  expect(result.current.priceRangeLabel).toContain('750.000')
+  expect(result.current.searchHref.query.priceRange).toBe('-750000')
+  act(() => result.current.updatePriceRange([8000, 2000]))
+  act(() => result.current.updatePriceRange([-1, null]))
+  expect(result.current.priceRange).toEqual([null, 750000])
+  act(() => result.current.updatePriceRange([5000, null]))
+  expect(result.current.searchHref.query.priceRange).toBe('5000-')
+  act(() => result.current.updatePriceRange([null, null]))
+  expect(result.current.searchHref.query).not.toHaveProperty('priceRange')
 })
 
 it('filtra as opções pelo rótulo traduzido, ignorando acentos', () => {

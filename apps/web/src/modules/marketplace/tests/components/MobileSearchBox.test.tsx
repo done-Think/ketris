@@ -14,8 +14,8 @@ function renderMobileSearchBox(overrides: Partial<MobileSearchBoxProps> = {}) {
       location: 'Jardins, São Paulo',
       propertyType: 'APARTMENT',
     },
-    priceRange: [0, 10000],
-    priceRangeLabel: 'R$ 0 - R$ 10.000',
+    priceRange: [null, null],
+    priceRangeLabel: 'Qualquer preço',
     activeSearchMenu: null,
     searchDraft: { location: '', propertyType: '' },
     searchHref: '/properties',
@@ -53,7 +53,7 @@ describe('MobileSearchBox', () => {
     const dialog = screen.getByRole('dialog', { name: 'Buscar imóveis' })
     expect(within(dialog).getByText('Jardins, São Paulo')).toBeInTheDocument()
     expect(within(dialog).getByText('Apartamento')).toBeInTheDocument()
-    expect(within(dialog).getByText('R$ 0 - R$ 10.000')).toBeInTheDocument()
+    expect(within(dialog).getByText('Qualquer preço')).toBeInTheDocument()
     expect(within(dialog).getByRole('link', { name: 'Buscar' })).toHaveAttribute('href')
   })
 

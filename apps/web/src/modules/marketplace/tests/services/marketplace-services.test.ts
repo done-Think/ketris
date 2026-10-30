@@ -39,6 +39,19 @@ describe('MarketplaceService', () => {
     })
   })
 
+  it('preserves zero and large explicit price bounds', async () => {
+    http.get.mockResolvedValue({ properties: [], totalCount: 0, page: 1, pageSize: 10 })
+    const service = new MarketplaceService(client())
+    await service.searchProperties({ minPrice: 0, maxPrice: 0 })
+    expect(http.get).toHaveBeenLastCalledWith('/marketplace/properties', {
+      params: { minPrice: 0, maxPrice: 0 },
+    })
+    await service.searchProperties({ minPrice: 500000, maxPrice: 2000000 })
+    expect(http.get).toHaveBeenLastCalledWith('/marketplace/properties', {
+      params: { minPrice: 500000, maxPrice: 2000000 },
+    })
+  })
+
   it('unwraps the property detail and the created inquiry', async () => {
     const service = new MarketplaceService(client())
     http.get.mockResolvedValue({ property: { id: 'p1' } })

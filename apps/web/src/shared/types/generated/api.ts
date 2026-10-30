@@ -13312,6 +13312,7 @@ export interface components {
       publishedAt: string | null
       /** @enum {string} */
       purpose: 'RENT' | 'SALE' | 'BOTH'
+      rentalPrice?: number | null
       title: string
     }
     RefreshPlatformTokenRequest: {

@@ -10,7 +10,7 @@ export function getBoxStyles({ isPriceRange }: { isPriceRange: boolean }): SxPro
     top: 'calc(100% + 6px)',
     left: isPriceRange ? 'auto' : 0,
     right: isPriceRange ? 0 : 'auto',
-    width: '100%',
+    width: isPriceRange ? 360 : '100%',
     maxWidth: 'calc(100vw - 32px)',
     zIndex: zIndex.dropdown,
     display: { xs: 'none', md: 'block' },

@@ -111,7 +111,12 @@
         "priceInvalid": "Invalid price value"
       },
       "anyLocation": "Any area",
-      "anyPropertyType": "All types"
+      "anyPropertyType": "All types",
+      "anyPrice": "Any price",
+      "fromPrice": "From {price}",
+      "upToPrice": "Up to {price}",
+      "noMinPrice": "No minimum",
+      "noMaxPrice": "No maximum"
     },
     "featured": {
       "title": "Featured properties",
@@ -260,7 +265,8 @@
     "bedrooms": "{count, plural, =0 {No bedrooms} one {# bedroom} other {# bedrooms}}",
     "bathrooms": "{count, plural, =0 {No bathrooms} one {# bathroom} other {# bathrooms}}",
     "parking": "{count, plural, =0 {No parking spaces} one {# parking space} other {# parking spaces}}",
-    "monthly": "{price} / month"
+    "monthly": "{price} / month",
+    "priceOnRequest": "Price on request"
   },
   "profileEditor": {
     "previewName": "Your name",
