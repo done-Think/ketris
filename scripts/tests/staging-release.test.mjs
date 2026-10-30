@@ -8,6 +8,7 @@ import {
   planMigrations,
   runRelease,
   smokeDeployment,
+  smokePublicDeployment,
   validateCandidate,
   validateConfig,
 } from '../staging-release-lib.mjs'
@@ -329,6 +330,80 @@ test('smoke validates a real authenticated session and revokes its refresh token
   await smokeDeployment(config, fetcher)
   assert.equal(seen.at(-1).url.pathname, '/api/auth/logout')
   assert.equal(JSON.parse(seen.at(-1).options.body).refreshToken, 'private-refresh-token')
+})
+
+test('public smoke waits for the promoted SHA before authenticating exactly once', async () => {
+  const current = smokeFixture()
+  const stale = smokeFixture({ wrongSha: true })
+  const delays = []
+  let reads = 0
+  await smokePublicDeployment(
+    current.config,
+    (url, options) =>
+      url.pathname === '/api/marketplace/stats' && reads++ < 2
+        ? stale.fetcher(url, options)
+        : current.fetcher(url, options),
+    async (ms) => {
+      delays.push(ms)
+    },
+  )
+  assert.equal(reads, 3)
+  assert.deepEqual(delays, [1500, 1500])
+  assert.ok(stale.seen.every(({ options }) => options.method === 'GET'))
+  assert.equal(
+    current.seen.filter(({ url }) => url.pathname === '/api/auth/callback/credentials').length,
+    1,
+  )
+  assert.equal(current.seen.filter(({ url }) => url.pathname === '/api/auth/logout').length, 1)
+})
+
+test('public smoke stops after twenty stale reads without submitting credentials', async () => {
+  const { config, fetcher, seen } = smokeFixture({ wrongSha: true })
+  let delays = 0
+  await assert.rejects(
+    smokePublicDeployment(config, fetcher, async () => {
+      delays++
+    }),
+    /WRONG_DEPLOYMENT_SHA/,
+  )
+  assert.equal(seen.length, 20)
+  assert.equal(delays, 19)
+  assert.ok(
+    seen.every(
+      ({ url, options }) => url.pathname === '/api/marketplace/stats' && options.method === 'GET',
+    ),
+  )
+})
+
+test('public smoke never repeats login after an authentication failure', async () => {
+  const { config, fetcher, seen } = smokeFixture({ unavailable: true })
+  let delays = 0
+  await assert.rejects(
+    smokePublicDeployment(config, fetcher, async () => {
+      delays++
+    }),
+    /AUTHENTICATED_SESSION_FAILED/,
+  )
+  assert.equal(delays, 0)
+  assert.equal(
+    seen.filter(({ url }) => url.pathname === '/api/auth/callback/credentials').length,
+    1,
+  )
+  assert.equal(seen.filter(({ url }) => url.pathname === '/api/auth/logout').length, 1)
+})
+
+test('public smoke does not retry redirects or a wrong API contract', async () => {
+  for (const failure of [{ redirect: true }, { wrongVersion: true }]) {
+    const { config, fetcher, seen } = smokeFixture(failure)
+    let delays = 0
+    await assert.rejects(
+      smokePublicDeployment(config, fetcher, async () => {
+        delays++
+      }),
+    )
+    assert.equal(delays, 0)
+    assert.equal(seen.length, 1)
+  }
 })
 
 test('accepts the configured canonical callback without following it from the candidate', async () => {

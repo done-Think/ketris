@@ -11,6 +11,7 @@ import {
   requiresAutomationBypass,
   runRelease,
   smokeDeployment,
+  smokePublicDeployment,
   validateCandidate,
   validateConfig,
 } from './staging-release-lib.mjs'
@@ -227,7 +228,7 @@ export async function main() {
         console.log('Candidate promoted.')
       },
       async smokePublic() {
-        await smokeDeployment({
+        await smokePublicDeployment({
           origin: target.origin,
           sha: env.GITHUB_SHA,
           ...smokeCredentials,

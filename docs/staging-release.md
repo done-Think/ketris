@@ -92,6 +92,12 @@ produção do Ketris. Nome, IDs, Root Directory, domínio e destino PostgreSQL s
 O header `X-Ketris-Release-Sha` permite confirmar o commit do candidato e do domínio público.
 Ver [deploy pela CLI](https://vercel.com/docs/cli/deploying-from-cli).
 
+Depois de promover, a checagem pública aceita até 20 leituras de estatísticas para observar o
+SHA esperado, com intervalo de 1,5 s quando ainda recebe outro SHA. Essas novas tentativas
+ocorrem antes de qualquer requisição de autenticação. Erros de contrato, HTTP ou login
+continuam interrompendo a release; chamadas de login/logout não são repetidas. A checagem
+do candidato permanece imediata.
+
 O arquivo `apps/web/vercel.json` desabilita deployments diretos por Git da `dev`. Ao integrar
 esta branch, o CI aprovado da `dev` aciona diretamente a release. Configurar os acessos antes
 do merge e conferir os demais projetos do monorepo que usam `apps/web`. `.vercelignore` exclui
