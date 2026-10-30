@@ -20,7 +20,7 @@ function isolated() {
 
 export async function seedMarketplaceFixtures(
   prisma: PrismaClient,
-  { suffix, password }: MarketplaceFixtureInput,
+  { suffix, password, coordinates }: MarketplaceFixtureInput,
 ): Promise<MarketplaceFixtureResult> {
   isolated()
   if (!/^[a-z0-9-]+$/.test(suffix)) throw new Error('Identificador inválido.')
@@ -86,6 +86,7 @@ export async function seedMarketplaceFixtures(
           city: city,
           state: 'PR',
           zipCode: '80010-000',
+          ...coordinates,
         },
       },
     },
@@ -109,6 +110,9 @@ export async function seedMarketplaceFixtures(
           city,
           state: 'PR',
           zipCode: '80010000',
+          ...(coordinates
+            ? { latitude: coordinates.latitude + 0.01, longitude: coordinates.longitude + 0.01 }
+            : {}),
         },
       },
     },
@@ -132,6 +136,9 @@ export async function seedMarketplaceFixtures(
           city,
           state: 'PR',
           zipCode: '80010000',
+          ...(coordinates
+            ? { latitude: coordinates.latitude + 0.02, longitude: coordinates.longitude + 0.02 }
+            : {}),
         },
       },
     },

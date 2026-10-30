@@ -5,6 +5,7 @@ import { defaultHomePurpose } from './home'
 export const marketplaceQueryKeys = {
   all: ['marketplace'] as const,
   stats: () => [...marketplaceQueryKeys.all, 'stats'] as const,
+  viewerLocation: () => [...marketplaceQueryKeys.all, 'viewer-location'] as const,
   properties: () => [...marketplaceQueryKeys.all, 'properties'] as const,
   search: (filters: SearchPropertiesFilters) =>
     [...marketplaceQueryKeys.properties(), 'search', filters] as const,

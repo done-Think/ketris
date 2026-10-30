@@ -5,6 +5,7 @@ import type { z } from 'zod'
 import type { LocalizedHref } from '@shared/types/localized-href'
 import type { useMarketplaceSearch } from '../hooks/use-marketplace-search'
 import type { PropertyCardData } from '@shared/types'
+import type { MapLocation } from './map-location'
 import type { searchOptions } from '../config/search-filters'
 import type {
   createMarketplaceSearchFormSchema,
@@ -97,6 +98,8 @@ export type SearchResultsFilterFieldsProps = {
 }
 
 export type SearchResultsMapProps = {
+  locationUpdatedAt?: number
+  viewerLocation?: MapLocation
   properties: SearchResultProperty[]
   selectedPropertyId: string
   onSelectProperty: (propertyId: string) => void
@@ -104,6 +107,8 @@ export type SearchResultsMapProps = {
 }
 
 export type SearchResultsMapPanelProps = {
+  locationUpdatedAt?: number
+  viewerLocation?: MapLocation
   properties: SearchResultProperty[]
   selectedPropertyId: string
   setSelectedPropertyId: (propertyId: string) => void

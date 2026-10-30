@@ -79,6 +79,7 @@
     "cpfInvalid": "Informe um CPF válido.",
     "rateLimitUnavailable": "Serviço temporariamente indisponível.",
     "rateLimitExceeded": "Muitas requisições. Tente novamente mais tarde.",
-    "clientUpdateRequired": "A aplicação foi atualizada. Recarregue a página para continuar."
+    "clientUpdateRequired": "A aplicação foi atualizada. Recarregue a página para continuar.",
+    "coordinatesPairRequired": "Informe latitude e longitude juntas."
   }
 }

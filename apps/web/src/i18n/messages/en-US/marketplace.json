@@ -411,7 +411,9 @@
       "zoomIn": "Zoom in",
       "zoomOut": "Zoom out",
       "attribution": "Show attribution",
-      "openProperty": "Open {title}"
+      "openProperty": "Open {title}",
+      "yourLocation": "Your approximate location",
+      "showResults": "Show matching properties"
     },
     "filters": {
       "upToPrice": "Up to {price}",
@@ -456,6 +458,14 @@
       "optionInvalid": "Invalid option",
       "numbersOnly": "Numbers only",
       "numberTooLong": "Value is too long"
+    },
+    "location": {
+      "useLocation": "Use my location",
+      "locating": "Locating…",
+      "manual": "The region entered in the search takes priority.",
+      "unavailable": "We could not get your location. Choose a city or try again.",
+      "nearby": "Properties ordered by proximity.",
+      "located": "Using your location."
     }
   },
   "directory": {

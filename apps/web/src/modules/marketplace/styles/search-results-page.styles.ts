@@ -22,4 +22,5 @@ export const styles = {
     minWidth: 0,
   },
   alert: { mb: 2 },
+  location: { mb: 1.5 },
 } satisfies Record<string, SxProps<Theme>>

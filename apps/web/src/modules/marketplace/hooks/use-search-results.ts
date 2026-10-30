@@ -28,6 +28,7 @@ import type {
 } from '../types/search'
 import { mapSummaryToSearchResult } from '../utils/property-summary-adapter'
 import { useViewModePreference } from './use-view-mode-preference'
+import type { MapLocation } from '../types/map-location'
 
 const viewModeScopeByPurpose: Record<
   SearchResultsPageProps['purpose'],
@@ -68,13 +69,16 @@ function priceNumber(value: string): number | null {
   return value.trim() !== '' && Number.isFinite(parsed) && parsed >= 0 ? parsed : null
 }
 
-export function useSearchResults({
-  purpose,
-  initialCity,
-  initialLocation = '',
-  initialPropertyType = null,
-  initialPriceRange,
-}: SearchResultsPageProps) {
+export function useSearchResults(
+  {
+    purpose,
+    initialCity,
+    initialLocation = '',
+    initialPropertyType = null,
+    initialPriceRange,
+  }: SearchResultsPageProps,
+  browserLocation?: MapLocation,
+) {
   const locale = useLocale() as AppLocale
   const tFeatures = useTranslations('marketplace.propertyFeatures')
   const { viewMode, setViewMode } = useViewModePreference(viewModeScopeByPurpose[purpose])
@@ -99,8 +103,11 @@ export function useSearchResults({
   const maxPrice = customMaxPrice ?? priceFilterOptions[filters.priceOption].max
   const minArea = customMinArea ?? areaFilterOptions[filters.areaOption].min
   const minBedrooms = bedroomFilterOptions[filters.bedroomOption].min
+  const viewerLocation = !filters.city && !filters.location.trim() ? browserLocation : undefined
 
   const query: SearchPropertiesFilters = {
+    latitude: viewerLocation?.latitude,
+    longitude: viewerLocation?.longitude,
     purpose: apiPurposeByPurpose[purpose],
     city: filters.city ?? undefined,
     location: filters.city ? undefined : filters.location.trim() || undefined,
@@ -146,6 +153,7 @@ export function useSearchResults({
   ].filter(Boolean).length
 
   return {
+    viewerLocation,
     activeFiltersCount,
     currentPage,
     filters,

@@ -41,12 +41,22 @@ export async function publicPropertySearchPage(
     clauses.push(Prisma.sql`(p.title ILIKE ${term} OR p.description ILIKE ${term})`)
   }
   const where = Prisma.join(clauses, ' AND ')
+  const proximity =
+    filters.latitude !== undefined && filters.longitude !== undefined
+      ? Prisma.sql`CASE WHEN a.latitude BETWEEN -90 AND 90 AND a.longitude BETWEEN -180 AND 180 THEN
+        power(sin(radians((a.latitude - ${filters.latitude})::double precision) / 2), 2)
+        + cos(radians(${filters.latitude}::double precision)) * cos(radians(a.latitude::double precision))
+        * power(sin(radians((a.longitude - ${filters.longitude})::double precision) / 2), 2)
+      END ASC NULLS LAST,`
+      : Prisma.empty
   const order =
     filters.sortBy === 'priceAsc'
       ? Prisma.sql`${price} ASC NULLS LAST, p.id ASC`
       : filters.sortBy === 'priceDesc'
         ? Prisma.sql`${price} DESC NULLS LAST, p.id ASC`
-        : Prisma.sql`p."publishedAt" DESC, p.id ASC`
+        : filters.sortBy === 'recent'
+          ? Prisma.sql`p."publishedAt" DESC, p.id ASC`
+          : Prisma.sql`${proximity} p."publishedAt" DESC, p.id ASC`
   const rows = await db.$queryRaw<{ id: string }[]>`
     SELECT p.id FROM properties p
     LEFT JOIN property_addresses a ON a."propertyId" = p.id

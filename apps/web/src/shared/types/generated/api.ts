@@ -8145,7 +8145,9 @@ export interface paths {
         query?: {
           city?: string
           hasParking?: 'true' | 'false'
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           maxPrice?: number | null
           minArea?: number | null
           minBedrooms?: number | null
@@ -13519,7 +13521,9 @@ export interface components {
       city?: string
       /** @enum {string} */
       hasParking?: 'true' | 'false'
+      latitude?: number | null
       location?: string
+      longitude?: number | null
       maxPrice?: number | null
       minArea?: number | null
       minBedrooms?: number | null

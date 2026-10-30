@@ -45,6 +45,30 @@ function wrapper({ children }: { children: ReactNode }) {
 
 beforeEach(() => vi.resetAllMocks())
 
+it('uses proximity until the visitor enters a region, and preserves price ordering', async () => {
+  mockPages()
+  const point = { latitude: 0, longitude: 0 }
+  const { result } = renderHook(() => useSearchResults({ purpose: 'comprar' }, point), { wrapper })
+  await waitFor(() =>
+    expect(marketplaceService.searchProperties).toHaveBeenLastCalledWith(
+      expect.objectContaining({ ...point, purpose: 'SALE' }),
+    ),
+  )
+  act(() => result.current.setSortOption('menor-preco'))
+  await waitFor(() =>
+    expect(marketplaceService.searchProperties).toHaveBeenLastCalledWith(
+      expect.objectContaining({ ...point, sortBy: 'priceAsc' }),
+    ),
+  )
+  act(() => result.current.setLocationQuery('Itajubá'))
+  await waitFor(() =>
+    expect(marketplaceService.searchProperties).toHaveBeenLastCalledWith(
+      expect.objectContaining({ latitude: undefined, longitude: undefined, location: 'Itajubá' }),
+    ),
+  )
+  expect(result.current.viewerLocation).toBeUndefined()
+})
+
 it('pede ao servidor só a página atual e calcula as páginas pelo total', async () => {
   vi.mocked(marketplaceService.searchProperties).mockImplementation(async (filters = {}) => ({
     properties: [summary(`p${filters.page}`)],

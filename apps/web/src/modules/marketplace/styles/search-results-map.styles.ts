@@ -6,12 +6,30 @@ import { radius, surface } from '@shared/theme/tokens'
 
 export const styles = {
   box: {
+    position: 'relative',
     height: { xs: 360, lg: '100%' },
     overflow: 'hidden',
     border: '1px solid',
     borderColor: 'divider',
     borderRadius: `${radius.sm}px`,
     bgcolor: surface.darkDeep,
+  },
+  viewerMarker: {
+    width: 16,
+    height: 16,
+    borderRadius: '50%',
+    bgcolor: 'info.main',
+    border: '2px solid',
+    borderColor: surface.paper,
+  },
+  resultsButton: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    zIndex: 1,
+    bgcolor: surface.paper,
+    color: 'text.primary',
+    '&:hover': { bgcolor: surface.paper },
   },
 } satisfies Record<string, SxProps<Theme>>
 
