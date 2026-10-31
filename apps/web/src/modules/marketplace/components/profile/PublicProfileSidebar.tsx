@@ -7,6 +7,7 @@ import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
+import { buildPublicProfileAddress } from '@shared/utils/public-profile-handle'
 
 import type { PublicProfileSidebarProps } from '../../types/profile-sidebar'
 import { buildPublicProfileHref } from '../../utils/property-links'
@@ -21,6 +22,7 @@ export function PublicProfileSidebar({
   accentColor,
   hoverColor,
   href,
+  publicHandle,
   sourceType,
   linkDescription,
   phone,
@@ -28,14 +30,18 @@ export function PublicProfileSidebar({
   facts,
 }: PublicProfileSidebarProps) {
   const t = useTranslations('marketplace.publicProfile.sidebar')
-  const publicProfileHref = buildPublicProfileHref(href, sourceType)
+  const publicProfileHref = publicHandle
+    ? { pathname: '/p/[handle]' as const, params: { handle: publicHandle } }
+    : buildPublicProfileHref(href, sourceType)
 
   return (
     <Box sx={styles.box}>
       <Typography sx={styles.typography}>{t('publicLink')}</Typography>
       <Typography sx={styles.typography2}>{linkDescription}</Typography>
       <Box sx={styles.box2}>
-        <Typography sx={styles.typography3}>{getPublicProfileLink(href)}</Typography>
+        <Typography sx={styles.typography3}>
+          {publicHandle ? buildPublicProfileAddress(publicHandle) : getPublicProfileLink(href)}
+        </Typography>
       </Box>
       <Box component={Link} href={publicProfileHref} sx={styles.box3}>
         <Button

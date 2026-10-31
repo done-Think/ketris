@@ -80,6 +80,8 @@
     "rateLimitUnavailable": "Serviço temporariamente indisponível.",
     "rateLimitExceeded": "Muitas requisições. Tente novamente mais tarde.",
     "clientUpdateRequired": "A aplicação foi atualizada. Recarregue a página para continuar.",
-    "coordinatesPairRequired": "Informe latitude e longitude juntas."
+    "coordinatesPairRequired": "Informe latitude e longitude juntas.",
+    "publicAddressReserved": "Este endereço está reservado para a plataforma.",
+    "publicAddressTaken": "Este endereço já está em uso. Escolha outro nome."
   }
 }

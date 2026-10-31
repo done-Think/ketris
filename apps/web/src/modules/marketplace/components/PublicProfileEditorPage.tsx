@@ -23,6 +23,7 @@ import { PublicProfileEditorLoader } from './public-profile-editor/PublicProfile
 import { PublicProfileEditorPanel } from './public-profile-editor/PublicProfileEditorPanel'
 import { PublicProfileEditorShell } from './public-profile-editor/PublicProfileEditorShell'
 import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
+import { PublicProfileAddressPanel } from './public-profile-editor/PublicProfileAddressPanel'
 
 const formId = 'broker-public-profile-editor-form'
 
@@ -115,6 +116,7 @@ function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
         />
       }
     >
+      <PublicProfileAddressPanel kind="broker" />
       <PublicProfileEditorPanel title={t('fields.mainInfo')}>
         <Box sx={styles.mainFields}>
           <RhfTextField

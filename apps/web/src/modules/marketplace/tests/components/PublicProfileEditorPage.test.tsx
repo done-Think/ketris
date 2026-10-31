@@ -65,6 +65,9 @@ const draftAgencyProfile: PublicAgencyProfile = {
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
+vi.mock('../../components/public-profile-editor/PublicProfileAddressPanel', () => ({
+  PublicProfileAddressPanel: () => null,
+}))
 
 const brokerProfileMocks = vi.hoisted(() => ({
   saveMutate: vi.fn(),

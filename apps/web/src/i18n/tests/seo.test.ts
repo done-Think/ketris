@@ -54,6 +54,17 @@ describe('localized SEO and navigation', () => {
     expect(getPathname({ locale: 'pt-BR', href: '/brokers' })).toBe('/pt/corretores')
     expect(privateMetadata.robots).toEqual({ index: false, follow: false })
   })
+  it('preserves a customized profile handle when changing language', () => {
+    const href = getCurrentRouteHref(
+      '/p/[handle]',
+      { handle: 'alysson-sene' },
+      new URLSearchParams(),
+    )
+    expect(getLocaleChangePathname('es-ES', href)).toBe('/es/@alysson-sene')
+    expect(getPublicAlternates('pt-BR', href).canonical).toBe(
+      'https://ketris.example/pt/@alysson-sene',
+    )
+  })
 
   it('disables indexing for staging, preview and local hosts', () => {
     expect(isPublicIndexingEnabled()).toBe(true)
