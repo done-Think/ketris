@@ -462,7 +462,7 @@
       "numberTooLong": "Valor muito longo"
     },
     "location": {
-      "useLocation": "Usar minha localização",
+      "useLocation": "Localizar imóveis baseados na minha localização",
       "locating": "Localizando…",
       "manual": "A região informada na busca tem prioridade.",
       "unavailable": "Não foi possível obter sua localização. Escolha uma cidade ou tente novamente.",

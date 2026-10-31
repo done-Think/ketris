@@ -462,7 +462,7 @@
       "numberTooLong": "Value is too long"
     },
     "location": {
-      "useLocation": "Use my location",
+      "useLocation": "Find properties based on my location",
       "locating": "Locating…",
       "manual": "The region entered in the search takes priority.",
       "unavailable": "We could not get your location. Choose a city or try again.",
