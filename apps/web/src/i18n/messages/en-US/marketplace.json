@@ -513,5 +513,29 @@
     "remove": "Remove image",
     "hint": "JPG, PNG or WEBP.",
     "uploadError": "Could not upload the image. Try again."
+  },
+  "profileAddress": {
+    "title": "Public address",
+    "edit": "Customize address",
+    "description": "Choose a unique name to share your profile on Ketris.",
+    "label": "Address name",
+    "format": "3 to 40 characters: unaccented letters, numbers, and hyphens between words.",
+    "reserved": "This name is reserved for the platform.",
+    "taken": "This address is already in use. Choose another name.",
+    "checking": "Checking availability…",
+    "available": "Address available.",
+    "checkError": "Could not check availability. You can try saving again.",
+    "saveError": "Could not save the address. Please try again.",
+    "renameWarning": "Changing the name stops the previous address from pointing to your profile and makes it available to others. Share the new link.",
+    "publishedHint": "The address displays your profile only when it is published.",
+    "cancel": "Cancel",
+    "save": "Save address",
+    "saved": "Public address updated.",
+    "copy": "Copy link",
+    "copied": "Link copied.",
+    "copyError": "Could not copy the link. Copy the address from your browser.",
+    "retry": "Try again",
+    "loadError": "Could not load your public address.",
+    "loading": "Loading public address…"
   }
 }

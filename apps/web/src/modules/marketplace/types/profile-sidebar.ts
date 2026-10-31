@@ -4,6 +4,7 @@ export type PublicProfileSidebarProps = {
   accentColor: string
   hoverColor: string
   href: string
+  publicHandle?: string
   sourceType: PropertyBreadcrumbOriginType
   linkDescription: string
   phone: string

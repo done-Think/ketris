@@ -3933,6 +3933,33 @@
         "properties": { "tenant": { "$ref": "#/components/schemas/PlatformTenant" } },
         "required": ["tenant"]
       },
+      "OwnPublicProfileAddress": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "enum": ["broker", "agency"] },
+          "profileId": { "type": "string" },
+          "handle": { "type": "string", "nullable": true }
+        },
+        "required": ["kind", "profileId", "handle"]
+      },
+      "SavePublicProfileAddress": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 40,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        },
+        "required": ["handle"],
+        "additionalProperties": false
+      },
+      "PublicProfileAddressAvailability": {
+        "type": "object",
+        "properties": { "available": { "type": "boolean" } },
+        "required": ["available"]
+      },
       "MarketplaceStatsResponse": {
         "type": "object",
         "properties": {
@@ -7207,6 +7234,185 @@
           },
           "404": {
             "description": "Tenant não encontrado.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      }
+    },
+    "/marketplace/profiles/{kind}/address": {
+      "get": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get the current actor’s public profile address.",
+        "parameters": [
+          {
+            "schema": { "type": "string", "enum": ["broker", "agency"] },
+            "required": true,
+            "name": "kind",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Own public profile address.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OwnPublicProfileAddress" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid kind or handle.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "The actor cannot edit this profile kind.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      },
+      "put": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Claim or replace the current actor’s address. Previous handles are released immediately; no aliases are retained.",
+        "parameters": [
+          {
+            "schema": { "type": "string", "enum": ["broker", "agency"] },
+            "required": true,
+            "name": "kind",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SavePublicProfileAddress" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved public profile address.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OwnPublicProfileAddress" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid kind or handle.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "The actor cannot edit this profile kind.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "The handle is already assigned. The previous address remains unchanged.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/marketplace/profiles/{kind}/address/availability": {
+      "get": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Check availability in the shared broker and agency namespace.",
+        "parameters": [
+          {
+            "schema": { "type": "string", "enum": ["broker", "agency"] },
+            "required": true,
+            "name": "kind",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 40,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            },
+            "required": true,
+            "name": "handle",
+            "in": "query"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Availability is advisory; saving also enforces uniqueness.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PublicProfileAddressAvailability" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid kind or handle.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "The actor cannot edit this profile kind.",
             "content": {
               "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
             }

@@ -40,6 +40,7 @@ export type BrokerCardProps = BrokerProfile & {
 
 export type BrokerPublicProfilePageProps = {
   broker: BrokerProfile
+  publicHandle?: string
 }
 
 export type BrokerProfileHeroProps = {

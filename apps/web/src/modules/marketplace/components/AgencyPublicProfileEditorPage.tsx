@@ -27,6 +27,7 @@ import {
 import { AgencyPublicProfilePage } from './AgencyPublicProfilePage'
 import { PublicProfileEditorLoader } from './public-profile-editor/PublicProfileEditorLoader'
 import { PublicProfileEditorPanel } from './public-profile-editor/PublicProfileEditorPanel'
+import { PublicProfileAddressPanel } from './public-profile-editor/PublicProfileAddressPanel'
 import { PublicProfileEditorShell } from './public-profile-editor/PublicProfileEditorShell'
 import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
 
@@ -123,6 +124,7 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
         />
       }
     >
+      <PublicProfileAddressPanel kind="agency" />
       <PublicProfileEditorPanel title={t('fields.mainInfo')}>
         <Box sx={styles.mainFields}>
           <RhfTextField

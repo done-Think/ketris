@@ -44,6 +44,7 @@ model Tenant {
   maintenanceProviders          MaintenanceProvider[]
   maintenanceProviderActivities MaintenanceProviderActivity[]
   publicProfile                 AgencyPublicProfile?
+  publicAddress                 PublicProfileAddress?         @relation("AgencyPublicAddress")
   statusChanges                 TenantStatusChange[]
 
   crmAuditEvents     CrmAuditEvent[]
@@ -205,6 +206,8 @@ model User {
   responsibleLeads          Lead[]                        @relation("LeadResponsible")
   responsibleOpportunities  Opportunity[]                 @relation("OpportunityResponsible")
   publicProfile             BrokerPublicProfile?
+  publicAddress             PublicProfileAddress?         @relation("BrokerPublicAddress")
+  updatedPublicAddresses    PublicProfileAddress[]        @relation("PublicAddressUpdatedBy")
   receivedHighlights        AgencyProfileHighlight[]
   agendaAuditEvents         AgendaEventAudit[]
   canceledAgendaEvents      AgendaEvent[]                 @relation("AgendaEventCanceledBy")
@@ -592,6 +595,22 @@ model AgencyPublicProfile {
 
 // Equipe em destaque na página pública da imobiliária — vínculo real por usuário
 // (antes era texto livre casado por nome, no mock de frontend).
+model PublicProfileAddress {
+  handle         String   @id
+  brokerUserId   String?  @unique
+  agencyTenantId String?  @unique
+  updatedById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  broker    User?   @relation("BrokerPublicAddress", fields: [brokerUserId], references: [id], onDelete: Cascade)
+  agency    Tenant? @relation("AgencyPublicAddress", fields: [agencyTenantId], references: [id], onDelete: Cascade)
+  updatedBy User?   @relation("PublicAddressUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+  @@map("public_profile_addresses")
+}
+
 model AgencyProfileHighlight {
   id        String   @id @default(cuid())
   profileId String

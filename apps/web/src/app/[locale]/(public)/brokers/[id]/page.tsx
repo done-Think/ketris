@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { notFound } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
 import { getTranslations } from 'next-intl/server'
 
 import { privateMetadata, publicMetadata } from '@/i18n/seo'
@@ -30,6 +31,10 @@ const getBroker = cache(async (id: string, locale: string) => {
   }
 })
 
+const getAddress = cache((id: string) =>
+  marketplaceContainer.profileAddressUseCase.findForProfile({ kind: 'broker', profileId: id }),
+)
+
 export async function generateMetadata({ params }: LocaleRoutePageProps<{ id: string }>) {
   const { id, locale } = await params
   const t = await getTranslations({ locale, namespace: 'marketplace.metadata' })
@@ -42,8 +47,14 @@ export async function generateMetadata({ params }: LocaleRoutePageProps<{ id: st
     }
   }
 
+  const address = await getAddress(broker.id)
   return {
-    ...publicMetadata(locale, { pathname: '/brokers/[id]', params: { id } }),
+    ...publicMetadata(
+      locale,
+      address
+        ? { pathname: '/p/[handle]', params: { handle: address.handle } }
+        : { pathname: '/brokers/[id]', params: { id } },
+    ),
     title: `Ketris | ${broker.name}`,
     description: t('details.brokerDescription', {
       name: broker.name,
@@ -58,6 +69,9 @@ export default async function BrokerPage({ params }: LocaleRoutePageProps<{ id: 
   const broker = await getBroker(id, locale)
 
   if (!broker) notFound()
+  const address = await getAddress(broker.id)
+  if (address)
+    redirect({ locale, href: { pathname: '/p/[handle]', params: { handle: address.handle } } })
 
   return <BrokerPublicProfilePage broker={broker} />
 }

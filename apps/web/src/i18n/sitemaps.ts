@@ -21,6 +21,7 @@ export function buildSitemapEntries(href: NavigationHref, updatedAt?: Date): Met
 
 export function getRecordHref(kind: SitemapKind, record: PublicSitemapRecord): NavigationHref {
   if (kind === 'properties') return { pathname: '/properties/[id]', params: { id: record.id } }
+  if (record.handle) return { pathname: '/p/[handle]', params: { handle: record.handle } }
   if (kind === 'brokers') return { pathname: '/brokers/[id]', params: { id: record.id } }
   return getAgencyProfileHref(record.displayName ?? record.id, record.legalCreci ?? null, record.id)
 }

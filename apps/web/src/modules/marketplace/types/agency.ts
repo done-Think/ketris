@@ -52,6 +52,7 @@ export type AgencyCardProps = AgencyProfile & {
 
 export type AgencyPublicProfilePageProps = {
   agency: AgencyProfile
+  publicHandle?: string
 }
 
 export type AgencyProfileHeroProps = {
