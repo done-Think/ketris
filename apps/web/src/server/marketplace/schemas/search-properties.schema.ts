@@ -50,6 +50,7 @@ export const validatedSearchPropertiesQuerySchema = searchPropertiesQuerySchema.
 export const searchPropertiesResponseSchema = z
   .object({
     properties: z.array(publicPropertySummarySchema),
+    mapLocationsPending: z.boolean().optional(),
     totalCount: z.number().int().nonnegative(),
     page: z.number().int().positive(),
     pageSize: z.number().int().positive(),

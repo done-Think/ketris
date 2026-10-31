@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Box, Button } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
 import { useTranslations } from 'next-intl'
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
 import type { MapRef } from 'react-map-gl/maplibre'
@@ -28,7 +29,7 @@ function getMapMarkerLabel(price: string) {
 }
 
 function applyCamera(map: MapRef | null, camera: SearchMapCamera) {
-  if ('bounds' in camera) map?.fitBounds(camera.bounds, { padding: 48, maxZoom: 14, duration: 0 })
+  if ('bounds' in camera) map?.fitBounds(camera.bounds, { padding: 60, maxZoom: 15, duration: 0 })
   else map?.easeTo({ center: camera.center, zoom: camera.zoom, duration: 0 })
 }
 
@@ -95,11 +96,15 @@ export function SearchResultsMap({
                   component={Link}
                   href={detailsHref}
                   aria-label={t('openProperty', { title: property.title })}
+                  title={t('approximateLocation')}
+                  data-property-id={property.id}
+                  data-highlighted={selected}
                   onClick={() => onSelectProperty(property.id)}
                   onFocus={() => onSelectProperty(property.id)}
                   onMouseEnter={() => onSelectProperty(property.id)}
                   sx={getBoxStyles({ selected })}
                 >
+                  <HomeOutlinedIcon sx={styles.propertyIcon} />
                   {getMapMarkerLabel(property.price)}
                 </Box>
               </Marker>
@@ -116,6 +121,11 @@ export function SearchResultsMap({
         ) : null}
         <NavigationControl position="bottom-right" showCompass={false} />
       </Map>
+      {points.length < properties.length ? (
+        <Typography role="status" sx={styles.locationNotice}>
+          {t('unlocatedProperties')}
+        </Typography>
+      ) : null}
       {points.length > 0 ? (
         <Button
           variant="contained"

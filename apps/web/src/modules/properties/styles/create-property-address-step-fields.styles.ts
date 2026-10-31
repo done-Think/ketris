@@ -17,22 +17,9 @@ export const styles = {
     alignItems: 'start',
     gap: { xs: 1.2, md: 2 },
   },
-  coordinates: {
+  locationHint: {
     gridColumn: '1 / -1',
-    display: 'grid',
-    gridTemplateColumns: {
-      xs: 'repeat(2, minmax(0, 1fr))',
-      md: 'repeat(3, minmax(0, 1fr))',
-    },
-    alignItems: 'start',
-    columnGap: { xs: 1.2, md: 2 },
-    minWidth: 0,
-  },
-  coordinatesHint: {
-    gridColumn: { xs: '1 / -1', md: 'auto' },
-    alignSelf: { md: 'center' },
-    mt: { xs: 0.5, md: 0 },
-    mx: { xs: 1.75, md: 0 },
+    m: 0,
   },
 } satisfies Record<string, SxProps<Theme>>
 

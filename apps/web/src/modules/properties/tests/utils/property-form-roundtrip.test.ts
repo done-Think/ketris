@@ -38,6 +38,7 @@ describe('property form roundtrip', () => {
   it('sends only supported API fields without silently discarding current form data', () => {
     const payload = toPropertyPayload(buildEditPropertyFormValues(property), {
       canChooseOwner: true,
+      existingAddress: property.address,
     })
     const strictContract = createPropertyRequestSchema
       .extend({
@@ -88,7 +89,7 @@ describe('property form roundtrip', () => {
       featured: false,
     })
   })
-  it('clears stale coordinates when the address changes and accepts explicitly updated coordinates', () => {
+  it('clears stale coordinates when the address changes and preserves them for complement-only changes', () => {
     const values = buildEditPropertyFormValues(property)
     const stale = toPropertyPayload(
       { ...values, street: 'Outro endereço' },
@@ -96,10 +97,10 @@ describe('property form roundtrip', () => {
     )
     expect(stale.address).toMatchObject({ latitude: null, longitude: null })
     const updated = toPropertyPayload(
-      { ...values, street: 'Outro endereço', latitude: -23.5, longitude: -46.6 },
+      { ...values, complement: 'Apartamento 2' },
       { existingAddress: property.address },
     )
-    expect(updated.address).toMatchObject({ latitude: -23.5, longitude: -46.6 })
+    expect(updated.address).toMatchObject({ latitude: -25.4, longitude: -49.2 })
   })
 
   it('saves media in the displayed order so the first image remains the cover', () => {

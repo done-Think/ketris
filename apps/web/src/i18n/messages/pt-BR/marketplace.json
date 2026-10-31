@@ -415,7 +415,9 @@
       "attribution": "Mostrar atribuição",
       "openProperty": "Abrir {title}",
       "yourLocation": "Sua localização aproximada",
-      "showResults": "Ver imóveis encontrados"
+      "showResults": "Ver imóveis encontrados",
+      "approximateLocation": "Localização aproximada pelo endereço",
+      "unlocatedProperties": "Alguns imóveis ainda não puderam ser localizados pelo endereço e não aparecem no mapa."
     },
     "filters": {
       "upToPrice": "Até {price}",

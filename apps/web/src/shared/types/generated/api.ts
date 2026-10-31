@@ -13774,6 +13774,7 @@ export interface components {
       sortBy?: 'recent' | 'priceAsc' | 'priceDesc'
     }
     SearchPropertiesResponse: {
+      mapLocationsPending?: boolean
       page: number
       pageSize: number
       properties: components['schemas']['PublicPropertySummary'][]

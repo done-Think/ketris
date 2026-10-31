@@ -4,6 +4,30 @@ export function requireValue(condition, code) {
   if (!condition) throw new Error(code)
 }
 
+export function geocodingDeploymentArgs(env, target) {
+  const endpoint = env.GEOCODING_SEARCH_URL || target.geocoding?.searchUrl
+  if (!endpoint) return []
+  let url
+  try {
+    url = new URL(endpoint)
+  } catch {
+    throw new Error('INVALID_GEOCODING_CONFIGURATION')
+  }
+  const userAgent = env.GEOCODING_USER_AGENT || target.geocoding?.userAgent
+  requireValue(
+    url.protocol === 'https:' &&
+      !url.username &&
+      !url.password &&
+      typeof userAgent === 'string' &&
+      userAgent.length > 0 &&
+      !/[\r\n]/.test(userAgent),
+    'INVALID_GEOCODING_CONFIGURATION',
+  )
+  return ['GEOCODING_SEARCH_URL=' + url.href, 'GEOCODING_USER_AGENT=' + userAgent].flatMap(
+    (value) => ['--env', value, '--build-env', value],
+  )
+}
+
 export function validateConfig(env, target) {
   requireValue(env.GITHUB_REPOSITORY === 'done-Think/ketris', 'WRONG_REPOSITORY')
   requireValue(env.GITHUB_REF === 'refs/heads/dev', 'WRONG_BRANCH')

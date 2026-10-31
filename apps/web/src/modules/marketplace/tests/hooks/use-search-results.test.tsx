@@ -45,6 +45,47 @@ function wrapper({ children }: { children: ReactNode }) {
 
 beforeEach(() => vi.resetAllMocks())
 
+it('updates markers while the current page has pending locations and stops polling when finished', async () => {
+  vi.useFakeTimers()
+  const point = { latitude: -22.43, longitude: -45.45 }
+  vi.mocked(marketplaceService.searchProperties)
+    .mockResolvedValueOnce({
+      properties: [summary('located')],
+      totalCount: 1,
+      page: 1,
+      pageSize: 10,
+      mapLocationsPending: true,
+    })
+    .mockResolvedValue({
+      properties: [{ ...summary('located'), ...point }],
+      totalCount: 1,
+      page: 1,
+      pageSize: 10,
+      mapLocationsPending: false,
+    })
+  const { result, unmount } = renderHook(() => useSearchResults({ purpose: 'comprar' }), {
+    wrapper,
+  })
+  try {
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1)
+    })
+    expect(result.current.paginatedResults).toHaveLength(1)
+    expect(result.current.paginatedResults[0].mapCenter).toBeUndefined()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000)
+    })
+    expect(result.current.paginatedResults[0].mapCenter).toEqual(point)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10000)
+    })
+    expect(marketplaceService.searchProperties).toHaveBeenCalledTimes(2)
+  } finally {
+    unmount()
+    vi.useRealTimers()
+  }
+})
+
 it('uses proximity until the visitor enters a region, and preserves price ordering', async () => {
   mockPages()
   const point = { latitude: 0, longitude: 0 }

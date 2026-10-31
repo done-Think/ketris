@@ -25,10 +25,16 @@ import { LocalProfileMediaStorage } from './infrastructure/local-profile-media-s
 import { S3ProfileMediaStorage } from './infrastructure/s3-profile-media-storage'
 import { shouldUseLocalUploadsStorage } from '@server/shared/storage/s3-client'
 import { addressGeocoder } from '@server/shared/location/geocoder'
+import { ResolvePublishedPropertyLocationsUseCase } from './application/use-cases/resolve-published-property-locations.use-case'
+import { PrismaPublishedPropertyLocationRepository } from './infrastructure/prisma-published-property-location.repository'
 import { ProfileAddressUseCase } from './application/use-cases/profile-address.use-case'
 import { PrismaProfileAddressRepository } from './infrastructure/prisma-profile-address.repository'
 
 const propertyRepository = new PrismaPublicPropertyRepository()
+const propertyLocations = new ResolvePublishedPropertyLocationsUseCase(
+  new PrismaPublishedPropertyLocationRepository(),
+  addressGeocoder,
+)
 const inquiryRepository = new PrismaInquiryRepository()
 const brokerProfileRepository = new PrismaBrokerProfileRepository()
 const agencyProfileRepository = new PrismaAgencyProfileRepository()
@@ -38,8 +44,12 @@ const profileMediaStorage = shouldUseLocalUploadsStorage()
 
 export const marketplaceContainer = {
   profileAddressUseCase: new ProfileAddressUseCase(new PrismaProfileAddressRepository()),
-  searchPropertiesUseCase: new SearchPropertiesUseCase(propertyRepository),
-  getPropertyUseCase: new GetPropertyUseCase(propertyRepository, addressGeocoder),
+  searchPropertiesUseCase: new SearchPropertiesUseCase(propertyRepository, propertyLocations),
+  getPropertyUseCase: new GetPropertyUseCase(
+    propertyRepository,
+    addressGeocoder,
+    propertyLocations,
+  ),
   getMarketplaceStatsUseCase: new GetMarketplaceStatsUseCase(new PrismaMarketplaceStatsReader()),
   submitInquiryUseCase: new SubmitInquiryUseCase(propertyRepository, inquiryRepository),
 

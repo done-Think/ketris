@@ -5,6 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import {
   createSmokeCredentials,
   findAutomationBypass,
+  geocodingDeploymentArgs,
   requiresAutomationBypass,
   planMigrations,
   runRelease,
@@ -15,6 +16,41 @@ import {
 } from '../staging-release-lib.mjs'
 
 const smokeCredentials = { email: 'smoke@example.test', password: 'private-password-long-enough' }
+
+test('explicitly configures staging geocoding for build and runtime, with a console override', () => {
+  const target = {
+    geocoding: {
+      searchUrl: 'https://nominatim.openstreetmap.org/search',
+      userAgent: 'Ketris/1.0 (+https://github.com/done-Think/ketris)',
+    },
+  }
+  assert.deepEqual(geocodingDeploymentArgs({}, target), [
+    '--env',
+    'GEOCODING_SEARCH_URL=https://nominatim.openstreetmap.org/search',
+    '--build-env',
+    'GEOCODING_SEARCH_URL=https://nominatim.openstreetmap.org/search',
+    '--env',
+    `GEOCODING_USER_AGENT=${target.geocoding.userAgent}`,
+    '--build-env',
+    `GEOCODING_USER_AGENT=${target.geocoding.userAgent}`,
+  ])
+  assert.ok(
+    geocodingDeploymentArgs(
+      { GEOCODING_SEARCH_URL: 'https://replacement.example/search' },
+      target,
+    ).includes('GEOCODING_SEARCH_URL=https://replacement.example/search'),
+  )
+  assert.deepEqual(geocodingDeploymentArgs({}, {}), [])
+  for (const endpoint of [
+    'invalid-private-value',
+    'http://unsecured.example/search',
+    'https://user:private-password@example.test/search',
+  ]) {
+    assert.throws(() => geocodingDeploymentArgs({ GEOCODING_SEARCH_URL: endpoint }, target), {
+      message: 'INVALID_GEOCODING_CONFIGURATION',
+    })
+  }
+})
 
 test('every migration since the automatic release baseline has a reviewed expand declaration', () => {
   const target = JSON.parse(

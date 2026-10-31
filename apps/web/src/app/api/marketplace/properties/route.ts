@@ -9,8 +9,11 @@ export const dynamic = 'force-dynamic'
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const query = parseQuery(request, validatedSearchPropertiesQuerySchema)
-  const { items, totalCount, page, pageSize } =
+  const { items, totalCount, page, pageSize, mapLocationsPending } =
     await marketplaceContainer.searchPropertiesUseCase.execute(query)
 
-  return NextResponse.json({ properties: items, totalCount, page, pageSize }, { status: 200 })
+  return NextResponse.json(
+    { properties: items, totalCount, page, pageSize, mapLocationsPending },
+    { status: 200 },
+  )
 })

@@ -8,7 +8,7 @@ describe('search map camera', () => {
   it('centers on the viewer instead of a fixed city', () => {
     expect(getSearchMapCamera([pousoAlegre], itajuba)).toEqual({
       center: [-45.453, -22.425],
-      zoom: 11,
+      zoom: 14,
     })
   })
   it('fits all geocoded results when location is unavailable', () => {
@@ -18,6 +18,17 @@ describe('search map camera', () => {
         [-45.453, -22.23],
       ],
     })
+  })
+  it('keeps nearby prices visible around the viewer without zooming out to a distant city', () => {
+    const nearby = { latitude: itajuba.latitude + 0.01, longitude: itajuba.longitude + 0.01 }
+    const camera = getSearchMapCamera([nearby, pousoAlegre], itajuba)
+    expect('bounds' in camera).toBe(true)
+    if ('bounds' in camera) {
+      expect(camera.bounds[0][0]).toBeCloseTo(itajuba.longitude - 0.01)
+      expect(camera.bounds[1][0]).toBeCloseTo(nearby.longitude)
+      expect(camera.bounds[0][1]).toBeCloseTo(itajuba.latitude - 0.01)
+      expect(camera.bounds[1][1]).toBeCloseTo(nearby.latitude)
+    }
   })
   it('uses a country view without inventing a property location', () => {
     expect(getSearchMapCamera([])).toEqual({ center: [-52, -15], zoom: 3 })
@@ -29,10 +40,8 @@ describe('search map camera', () => {
         { latitude: 0, longitude: 0 },
       ]),
     ).toEqual({
-      bounds: [
-        [0, 0],
-        [0, 0],
-      ],
+      center: [0, 0],
+      zoom: 15,
     })
     expect(isValidMapLocation({ latitude: 91, longitude: 0 })).toBe(false)
   })
