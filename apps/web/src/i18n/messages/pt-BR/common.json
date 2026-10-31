@@ -58,7 +58,10 @@
         "emailInvalid": "Informe um e-mail válido."
       }
     },
-    "charges": "Cobranças"
+    "charges": "Cobranças",
+    "signingOut": "Saindo da conta…",
+    "signOutError": "Não foi possível concluir a saída. Tente novamente.",
+    "retrySignOut": "Tentar sair novamente"
   },
   "passwordVisibility": {
     "show": "Mostrar {field}",
