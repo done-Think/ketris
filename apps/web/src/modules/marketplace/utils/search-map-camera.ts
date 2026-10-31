@@ -16,50 +16,26 @@ export function getSearchMapCamera(
   viewerLocation?: MapLocation,
 ): SearchMapCamera {
   const valid = points.filter(isValidMapLocation)
-  if (viewerLocation && isValidMapLocation(viewerLocation)) {
-    const nearby = valid.filter(
-      (point) =>
-        Math.hypot(
-          point.latitude - viewerLocation.latitude,
-          (point.longitude - viewerLocation.longitude) *
-            Math.cos((viewerLocation.latitude * Math.PI) / 180),
-        ) *
-          111 <=
-        5,
-    )
-    const latitudeSpan = Math.max(
-      0,
-      ...nearby.map((point) => Math.abs(point.latitude - viewerLocation.latitude)),
-    )
-    const longitudeSpan = Math.max(
-      0,
-      ...nearby.map((point) => Math.abs(point.longitude - viewerLocation.longitude)),
-    )
-    // Keep the viewer centered while including nearby prices. Distant cities remain accessible via Show results.
-    if (latitudeSpan > 0 || longitudeSpan > 0)
-      return {
-        bounds: [
-          [viewerLocation.longitude - longitudeSpan, viewerLocation.latitude - latitudeSpan],
-          [viewerLocation.longitude + longitudeSpan, viewerLocation.latitude + latitudeSpan],
-        ],
-      }
+  // Location guides the search; the camera must include every geocoded result on the current page.
+  if (!valid.length && viewerLocation && isValidMapLocation(viewerLocation))
     return { center: [viewerLocation.longitude, viewerLocation.latitude], zoom: 14 }
-  }
   if (!valid.length)
     return {
       center: [defaultSearchMapView.longitude, defaultSearchMapView.latitude],
       zoom: defaultSearchMapView.zoom,
     }
+  const frame =
+    viewerLocation && isValidMapLocation(viewerLocation) ? [...valid, viewerLocation] : valid
   if (
-    valid.every(
-      (point) => point.latitude === valid[0].latitude && point.longitude === valid[0].longitude,
+    frame.every(
+      (point) => point.latitude === frame[0].latitude && point.longitude === frame[0].longitude,
     )
   )
-    return { center: [valid[0].longitude, valid[0].latitude], zoom: 15 }
+    return { center: [frame[0].longitude, frame[0].latitude], zoom: 15 }
   return {
     bounds: [
-      [Math.min(...valid.map((p) => p.longitude)), Math.min(...valid.map((p) => p.latitude))],
-      [Math.max(...valid.map((p) => p.longitude)), Math.max(...valid.map((p) => p.latitude))],
+      [Math.min(...frame.map((p) => p.longitude)), Math.min(...frame.map((p) => p.latitude))],
+      [Math.max(...frame.map((p) => p.longitude)), Math.max(...frame.map((p) => p.latitude))],
     ],
   }
 }

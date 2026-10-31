@@ -5,8 +5,8 @@ describe('search map camera', () => {
   const itajuba = { latitude: -22.425, longitude: -45.453 }
   const pousoAlegre = { latitude: -22.23, longitude: -45.935 }
 
-  it('centers on the viewer instead of a fixed city', () => {
-    expect(getSearchMapCamera([pousoAlegre], itajuba)).toEqual({
+  it('uses the viewer region when no property has coordinates', () => {
+    expect(getSearchMapCamera([], itajuba)).toEqual({
       center: [-45.453, -22.425],
       zoom: 14,
     })
@@ -19,16 +19,26 @@ describe('search map camera', () => {
       ],
     })
   })
-  it('keeps nearby prices visible around the viewer without zooming out to a distant city', () => {
-    const nearby = { latitude: itajuba.latitude + 0.01, longitude: itajuba.longitude + 0.01 }
-    const camera = getSearchMapCamera([nearby, pousoAlegre], itajuba)
-    expect('bounds' in camera).toBe(true)
-    if ('bounds' in camera) {
-      expect(camera.bounds[0][0]).toBeCloseTo(itajuba.longitude - 0.01)
-      expect(camera.bounds[1][0]).toBeCloseTo(nearby.longitude)
-      expect(camera.bounds[0][1]).toBeCloseTo(itajuba.latitude - 0.01)
-      expect(camera.bounds[1][1]).toBeCloseTo(nearby.latitude)
-    }
+  it('automatically includes all found properties even when one is beyond five kilometers from the viewer', () => {
+    expect(getSearchMapCamera([itajuba, pousoAlegre], itajuba)).toEqual({
+      bounds: [
+        [-45.935, -22.425],
+        [-45.453, -22.23],
+      ],
+    })
+  })
+  it('includes the viewer region and a property in another city without depending on a viewer marker', () => {
+    expect(getSearchMapCamera([pousoAlegre], itajuba)).toEqual({
+      bounds: [
+        [-45.935, -22.425],
+        [-45.453, -22.23],
+      ],
+    })
+  })
+  it('falls back safely when result coordinates and the viewer position are invalid', () => {
+    expect(
+      getSearchMapCamera([{ latitude: NaN, longitude: 0 }], { latitude: 91, longitude: 0 }),
+    ).toEqual({ center: [-52, -15], zoom: 3 })
   })
   it('uses a country view without inventing a property location', () => {
     expect(getSearchMapCamera([])).toEqual({ center: [-52, -15], zoom: 3 })

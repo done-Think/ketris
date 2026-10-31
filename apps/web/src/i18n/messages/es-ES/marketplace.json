@@ -414,8 +414,6 @@
       "zoomOut": "Alejar",
       "attribution": "Mostrar atribución",
       "openProperty": "Abrir {title}",
-      "yourLocation": "Tu ubicación aproximada",
-      "showResults": "Ver inmuebles encontrados",
       "approximateLocation": "Ubicación aproximada por dirección",
       "unlocatedProperties": "Algunos inmuebles aún no se pudieron ubicar por su dirección y no aparecen en el mapa."
     },
@@ -464,7 +462,7 @@
       "numberTooLong": "Valor demasiado largo"
     },
     "location": {
-      "useLocation": "Usar mi ubicación",
+      "useLocation": "Buscar inmuebles según mi ubicación",
       "locating": "Localizando…",
       "manual": "La región indicada en la búsqueda tiene prioridad.",
       "unavailable": "No pudimos obtener tu ubicación. Elige una ciudad o inténtalo de nuevo.",

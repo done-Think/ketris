@@ -414,8 +414,6 @@
       "zoomOut": "Zoom out",
       "attribution": "Show attribution",
       "openProperty": "Open {title}",
-      "yourLocation": "Your approximate location",
-      "showResults": "Show matching properties",
       "approximateLocation": "Approximate address location",
       "unlocatedProperties": "Some properties could not yet be located by their address and are not shown on the map."
     },
@@ -464,7 +462,7 @@
       "numberTooLong": "Value is too long"
     },
     "location": {
-      "useLocation": "Use my location",
+      "useLocation": "Find properties based on my location",
       "locating": "Locating…",
       "manual": "The region entered in the search takes priority.",
       "unavailable": "We could not get your location. Choose a city or try again.",

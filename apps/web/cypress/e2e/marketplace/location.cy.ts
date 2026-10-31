@@ -44,40 +44,9 @@ describe('Marketplace location and map', () => {
       },
     })
   }
-  it('centers on the viewer, requests nearby matches and reuses permission when switching to rent', () => {
-    cy.intercept('GET', '**/api/marketplace/properties*', (req) => {
-      if (req.query.latitude !== undefined) req.alias = 'nearby'
-    })
-    visitSearch(true)
-    cy.wait('@nearby').then(({ request }) => {
-      expect(request.query).to.include({
-        latitude: String(coordinates.latitude),
-        longitude: String(coordinates.longitude),
-        purpose: 'SALE',
-      })
-    })
-    cy.contains('Imóveis ordenados pela proximidade.').should('be.visible')
-    cy.get('[aria-label="Sua localização aproximada"]')
-      .should('be.visible')
-      .should(($point) => {
-        const map = $point.closest('.maplibregl-map')[0].getBoundingClientRect()
-        const point = $point[0].getBoundingClientRect()
-        expect(Math.abs(point.x + point.width / 2 - (map.x + map.width / 2))).to.be.lessThan(5)
-        expect(Math.abs(point.y + point.height / 2 - (map.y + map.height / 2))).to.be.lessThan(5)
-      })
-    cy.contains('a', /^Alugar$/)
-      .first()
-      .click()
-    cy.wait('@nearby').its('request.query.purpose').should('eq', 'RENT')
-    cy.get('@getPosition').should('have.been.calledOnce')
-    cy.contains(fixture.rentalPropertyTitle).should('be.visible')
-  })
-  it('keeps search usable after denial and frames the actual property markers', () => {
-    visitSearch(false)
-    cy.contains('Não foi possível obter sua localização.').should('be.visible')
-    cy.get('[aria-label="Sua localização aproximada"]').should('not.exist')
-    cy.get('.maplibregl-map [aria-label^="Abrir "]')
-      .should('have.length', 2)
+  function assertVisibleMarkers(count: number) {
+    cy.get('.maplibregl-map [data-property-id]')
+      .should('have.length', count)
       .each(($marker) => {
         cy.wrap($marker).should(($element) => {
           const map = $element.closest('.maplibregl-map')[0].getBoundingClientRect()
@@ -88,6 +57,44 @@ describe('Marketplace location and map', () => {
           expect(marker.bottom).to.be.at.most(map.bottom)
         })
       })
+  }
+  it('automatically frames results across cities without showing the viewer, and reuses permission when switching to rent', () => {
+    cy.intercept('GET', '**/api/marketplace/properties*', (req) => {
+      if (req.query.latitude !== undefined) req.alias = 'nearby'
+      req.continue((response) => {
+        const property = response.body.properties.find(
+          (item: { id: string }) => item.id === fixture.dualPropertyId,
+        )
+        if (property) Object.assign(property, { latitude: -22.23, longitude: -45.935 })
+      })
+    })
+    visitSearch(true)
+    cy.wait('@nearby').then(({ request }) => {
+      expect(request.query).to.include({
+        latitude: String(coordinates.latitude),
+        longitude: String(coordinates.longitude),
+        purpose: 'SALE',
+      })
+    })
+    cy.contains('Imóveis ordenados pela proximidade.').should('be.visible')
+    cy.get('[aria-label="Sua localização aproximada"]').should('not.exist')
+    cy.contains('button', 'Ver imóveis encontrados').should('not.exist')
+    assertVisibleMarkers(2)
+    cy.get('.maplibregl-marker').should('have.length', 2)
+    cy.contains('a', /^Alugar$/)
+      .first()
+      .click()
+    cy.wait('@nearby').its('request.query.purpose').should('eq', 'RENT')
+    cy.get('@getPosition').should('have.been.calledOnce')
+    cy.contains(fixture.rentalPropertyTitle).should('be.visible')
+    assertVisibleMarkers(2)
+    cy.get('.maplibregl-marker').should('have.length', 2)
+  })
+  it('keeps search usable after denial and frames the actual property markers', () => {
+    visitSearch(false)
+    cy.contains('Não foi possível obter sua localização.').should('be.visible')
+    cy.get('[aria-label="Sua localização aproximada"]').should('not.exist')
+    assertVisibleMarkers(2)
     cy.get('@getPosition').should('have.been.calledOnce')
   })
   it('honors an explicit city without requesting the device location', () => {
@@ -97,6 +104,22 @@ describe('Marketplace location and map', () => {
     cy.contains(fixture.propertyTitle).should('be.visible')
     cy.get('@getPosition').should('not.have.been.called')
     cy.get('[aria-label="Sua localização aproximada"]').should('not.exist')
+  })
+  it('does not show a visitor marker or a framing button when property addresses are unlocated', () => {
+    cy.intercept('GET', '**/api/marketplace/properties*', (req) => {
+      req.continue((response) => {
+        for (const property of response.body.properties) {
+          property.latitude = null
+          property.longitude = null
+        }
+      })
+    })
+    visitSearch(true)
+    cy.contains(fixture.propertyTitle).should('be.visible')
+    cy.contains('Alguns imóveis ainda não puderam ser localizados pelo endereço').should('exist')
+    cy.get('.maplibregl-marker').should('not.exist')
+    cy.contains('button', 'Ver imóveis encontrados').should('not.exist')
+    cy.get('@getPosition').should('have.been.calledOnce')
   })
   it('shows the property price on its marker and synchronizes card and marker highlights in both directions', () => {
     visitSearch(false, fixture.city)
