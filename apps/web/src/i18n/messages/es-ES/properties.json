@@ -131,10 +131,7 @@
       "rent": "ALQUILER",
       "sale": "VENTA",
       "condominium": "GASTOS COMUNES",
-      "propertyTax": "IMPUESTO",
-      "administrationFee": "TASA DE ADMINISTRACIÓN",
-      "securityDeposit": "GARANTÍA",
-      "lastAdjustment": "ÚLTIMO AJUSTE"
+      "propertyTax": "IMPUESTO"
     },
     "tabs": {
       "data": "Datos",
@@ -166,7 +163,15 @@
     "loading": "Cargando inmueble",
     "description": "Descripción",
     "amenities": "Comodidades",
-    "negotiationTerms": "Condiciones de negociación"
+    "negotiationTerms": "Condiciones de negociación",
+    "participantsLoading": "Cargando participantes del contrato…",
+    "participantsLoadError": "No se pudieron cargar los participantes del contrato.",
+    "retryParticipants": "Reintentar",
+    "participantRoles": {
+      "landlord": "Arrendador",
+      "renter": "Arrendatario",
+      "guarantor": "Fiador"
+    }
   },
   "create": {
     "postalCode": {
