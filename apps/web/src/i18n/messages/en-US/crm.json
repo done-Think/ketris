@@ -115,8 +115,7 @@
         "email": "Email",
         "phone": "Phone",
         "type": "Type",
-        "notes": "Notes",
-        "avatarUrl": "Avatar URL"
+        "notes": "Notes"
       },
       "types": {
         "OWNER": "Owner",
@@ -130,8 +129,7 @@
       "errors": {
         "nameRequired": "Name is required.",
         "emailInvalid": "Invalid email.",
-        "textTooLong": "Text exceeds the allowed limit.",
-        "avatarUrlInvalid": "Enter a valid HTTP(S) URL"
+        "textTooLong": "Text exceeds the allowed limit."
       },
       "createSuccess": "Contact created.",
       "updateSuccess": "Contact updated.",

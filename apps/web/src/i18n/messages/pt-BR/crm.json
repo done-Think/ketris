@@ -115,8 +115,7 @@
         "email": "E-mail",
         "phone": "Telefone",
         "type": "Tipo",
-        "notes": "Observações",
-        "avatarUrl": "URL do avatar"
+        "notes": "Observações"
       },
       "types": {
         "OWNER": "Proprietário",
@@ -130,8 +129,7 @@
       "errors": {
         "nameRequired": "Nome é obrigatório.",
         "emailInvalid": "E-mail inválido.",
-        "textTooLong": "O texto excede o limite permitido.",
-        "avatarUrlInvalid": "Informe uma URL HTTP(S) válida"
+        "textTooLong": "O texto excede o limite permitido."
       },
       "createSuccess": "Contato criado.",
       "updateSuccess": "Contato atualizado.",
