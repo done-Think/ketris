@@ -296,7 +296,8 @@
       "secondaryColor": "Secondary color",
       "backgroundColor": "Profile background",
       "photoUrl": "Photo URL",
-      "bannerUrl": "Banner URL"
+      "bannerUrl": "Banner URL",
+      "neighborhoodsHint": "Optional. For broader areas, enter only your service region. Separate neighborhoods with commas."
     },
     "actions": {
       "preview": "Preview",
@@ -315,7 +316,6 @@
       "availabilityRequired": "Enter your availability",
       "headlineRequired": "Enter the headline",
       "regionRequired": "Enter the service region",
-      "neighborhoodsRequired": "Enter the neighborhoods you serve",
       "specialtiesRequired": "Enter your specialties",
       "primaryColorRequired": "Enter the primary color",
       "secondaryColorRequired": "Enter the secondary color",

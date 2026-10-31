@@ -248,7 +248,10 @@ describe('PublicProfileEditorPage', () => {
       expect(screen.getByText('Informe a disponibilidade')).toBeVisible()
       expect(screen.getByText('Informe o título de destaque')).toBeVisible()
       expect(screen.getByText('Informe a região de atuação')).toBeVisible()
-      expect(screen.getByText('Informe os bairros de atuação')).toBeVisible()
+      expect(screen.getByLabelText('Bairros de atuação')).not.toHaveAttribute(
+        'aria-invalid',
+        'true',
+      )
       expect(screen.getByText('Informe as especialidades')).toBeVisible()
       expect(screen.getByText('Informe a cor principal')).toBeVisible()
       expect(screen.getByText('Informe a cor secundária')).toBeVisible()
@@ -259,7 +262,7 @@ describe('PublicProfileEditorPage', () => {
       expect(brokerProfileMocks.publishMutate).not.toHaveBeenCalled()
     })
 
-    it('saves the draft and publishes when the form is valid', async () => {
+    it('publishes a broker covering a broad region without neighborhoods', async () => {
       vi.mocked(useOwnBrokerProfile).mockReturnValue({
         data: {
           ...draftBrokerProfile,
@@ -268,8 +271,8 @@ describe('PublicProfileEditorPage', () => {
           bio: 'Especialista em imóveis residenciais.',
           phone: '11999998888',
           creci: '12345-F',
-          region: 'Zona Sul de São Paulo',
-          neighborhoods: ['Moema', 'Vila Mariana'],
+          region: 'Sul de Minas',
+          neighborhoods: [],
           specialties: ['Apartamentos', 'Cobertura'],
           availability: 'Seg a sex, 9h às 18h',
           primaryColor: '#111111',
@@ -290,6 +293,8 @@ describe('PublicProfileEditorPage', () => {
       await waitFor(() => expect(brokerProfileMocks.saveMutate).toHaveBeenCalledTimes(1))
       expect(brokerProfileMocks.saveMutate.mock.calls[0][0]).toMatchObject({
         displayName: 'Ana Souza',
+        region: 'Sul de Minas',
+        neighborhoods: [],
       })
       await waitFor(() => expect(brokerProfileMocks.publishMutate).toHaveBeenCalledTimes(1))
     })

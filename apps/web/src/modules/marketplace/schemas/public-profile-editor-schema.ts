@@ -72,7 +72,7 @@ export function createPublicProfileEditorSchema(
     creci: createRequiredTextSchema(t, 'creciRequired', requirePublishFields),
     phone: createRequiredTextSchema(t, 'phoneRequired', requirePublishFields),
     region: createRequiredTextSchema(t, 'regionRequired', requirePublishFields),
-    neighborhoods: createRequiredTextSchema(t, 'neighborhoodsRequired', requirePublishFields),
+    neighborhoods: z.string(),
     specialties: createRequiredTextSchema(t, 'specialtiesRequired', requirePublishFields),
     availability: createRequiredTextSchema(t, 'availabilityRequired', requirePublishFields),
     primaryColor: createHexColorSchema(t, 'primaryColorRequired', requirePublishFields),
