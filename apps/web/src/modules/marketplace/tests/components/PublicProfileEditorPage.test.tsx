@@ -1,8 +1,8 @@
 import { ThemeProvider } from '@mui/material'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactElement } from 'react'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
@@ -65,8 +65,21 @@ const draftAgencyProfile: PublicAgencyProfile = {
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: null, status: 'unauthenticated' }),
+}))
 vi.mock('../../components/public-profile-editor/PublicProfileAddressPanel', () => ({
   PublicProfileAddressPanel: () => null,
+}))
+
+const addressMocks = vi.hoisted(() => {
+  const handles: Record<'broker' | 'agency', string | null> = { broker: null, agency: null }
+  return { handles }
+})
+vi.mock('../../hooks/use-profile-address', () => ({
+  useOwnProfileAddress: (kind: 'broker' | 'agency') => ({
+    data: { kind, profileId: `${kind}-1`, handle: addressMocks.handles[kind] },
+  }),
 }))
 
 const brokerProfileMocks = vi.hoisted(() => ({
@@ -110,8 +123,13 @@ vi.mock('../../hooks/use-profile-media', () => ({
 }))
 
 function renderWithTheme(component: ReactElement) {
-  render(<ThemeProvider theme={theme}>{component}</ThemeProvider>)
+  return render(<ThemeProvider theme={theme}>{component}</ThemeProvider>)
 }
+
+beforeEach(() => {
+  addressMocks.handles.broker = null
+  addressMocks.handles.agency = null
+})
 
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
@@ -130,6 +148,38 @@ beforeAll(() => {
 })
 
 describe('PublicProfileEditorPage', () => {
+  it.each([
+    { kind: 'broker' as const, Component: PublicProfileEditorPage, handle: 'alyssonsene' },
+    { kind: 'agency' as const, Component: AgencyPublicProfileEditorPage, handle: 'horizonte' },
+  ])(
+    'shows and updates the saved custom link in the $kind draft preview',
+    async ({ kind, Component, handle }) => {
+      addressMocks.handles[kind] = handle
+      const user = userEvent.setup()
+      const view = renderWithTheme(<Component />)
+      await user.click(screen.getByRole('button', { name: 'Visualizar' }))
+      const preview = within(screen.getByRole('dialog'))
+      expect(preview.getByText(`/@${handle}`)).toBeVisible()
+      expect(preview.getByRole('link', { name: 'Abrir link próprio' })).toHaveAttribute(
+        'href',
+        `/p/${handle}`,
+      )
+
+      addressMocks.handles[kind] = `new-${handle}`
+      view.rerender(
+        <ThemeProvider theme={theme}>
+          <Component />
+        </ThemeProvider>,
+      )
+      expect(preview.queryByText(`/@${handle}`)).not.toBeInTheDocument()
+      expect(preview.getByText(`/@new-${handle}`)).toBeVisible()
+      expect(preview.getByRole('link', { name: 'Abrir link próprio' })).toHaveAttribute(
+        'href',
+        `/p/new-${handle}`,
+      )
+    },
+  )
+
   it('renders the broker editor with validated form controls', () => {
     renderWithTheme(<PublicProfileEditorPage />)
 

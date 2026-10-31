@@ -14,6 +14,7 @@ import {
   useUnpublishBrokerProfile,
 } from '../hooks/use-broker-profile'
 import { usePublicProfileEditor } from '../hooks/use-public-profile-editor'
+import { useOwnProfileAddress } from '../hooks/use-profile-address'
 import { createPublicProfileEditorSchema } from '../schemas/public-profile-editor-schema'
 import { styles } from '../styles/public-profile-editor.styles'
 import type { BrokerProfileEditorProps } from '../types/profile-editor'
@@ -48,6 +49,7 @@ export function PublicProfileEditorPage() {
 }
 
 function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
+  const { data: address } = useOwnProfileAddress('broker')
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.profileEditor')
   const tFeatures = useTranslations('marketplace.propertyFeatures')
@@ -106,6 +108,7 @@ function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
       onClosePreview={editor.closePreview}
       preview={
         <BrokerPublicProfilePage
+          publicHandle={address?.handle ?? undefined}
           broker={toPreviewProfile(
             editor.form.getValues(),
             profile,

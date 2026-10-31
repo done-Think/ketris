@@ -15,6 +15,7 @@ import {
   useUnpublishAgencyProfile,
 } from '../hooks/use-agency-profile'
 import { usePublicProfileEditor } from '../hooks/use-public-profile-editor'
+import { useOwnProfileAddress } from '../hooks/use-profile-address'
 import { useTenantAgents } from '../hooks/use-tenant-agents'
 import { createAgencyPublicProfileEditorSchema } from '../schemas/agency-public-profile-editor-schema'
 import { styles, teamPickerSlotProps } from '../styles/public-profile-editor.styles'
@@ -55,6 +56,7 @@ export function AgencyPublicProfileEditorPage() {
 }
 
 function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
+  const { data: address } = useOwnProfileAddress('agency')
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.agencyProfileEditor')
   const tFeatures = useTranslations('marketplace.propertyFeatures')
@@ -114,6 +116,7 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
       onClosePreview={editor.closePreview}
       preview={
         <AgencyPublicProfilePage
+          publicHandle={address?.handle ?? undefined}
           agency={toPreviewProfile(
             editor.form.getValues(),
             profile,
