@@ -27,7 +27,7 @@ export function registerProfileAddressOpenApi(registry: OpenAPIRegistry) {
   registry.registerPath({
     ...common,
     method: 'get',
-    path: '/api/marketplace/profiles/{kind}/address',
+    path: '/marketplace/profiles/{kind}/address',
     summary: 'Get the current actor’s public profile address.',
     request: { params: profileAddressParamsSchema },
     responses: {
@@ -41,7 +41,7 @@ export function registerProfileAddressOpenApi(registry: OpenAPIRegistry) {
   registry.registerPath({
     ...common,
     method: 'put',
-    path: '/api/marketplace/profiles/{kind}/address',
+    path: '/marketplace/profiles/{kind}/address',
     summary:
       'Claim or replace the current actor’s address. Previous handles are released immediately; no aliases are retained.',
     request: {
@@ -66,7 +66,7 @@ export function registerProfileAddressOpenApi(registry: OpenAPIRegistry) {
   registry.registerPath({
     ...common,
     method: 'get',
-    path: '/api/marketplace/profiles/{kind}/address/availability',
+    path: '/marketplace/profiles/{kind}/address/availability',
     summary: 'Check availability in the shared broker and agency namespace.',
     request: { params: profileAddressParamsSchema, query: profileAddressAvailabilityQuerySchema },
     responses: {

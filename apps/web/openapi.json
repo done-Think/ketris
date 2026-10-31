@@ -7244,7 +7244,7 @@
         }
       }
     },
-    "/api/marketplace/profiles/{kind}/address": {
+    "/marketplace/profiles/{kind}/address": {
       "get": {
         "tags": ["Marketplace"],
         "security": [{ "bearerAuth": [] }],
@@ -7359,7 +7359,7 @@
         }
       }
     },
-    "/api/marketplace/profiles/{kind}/address/availability": {
+    "/marketplace/profiles/{kind}/address/availability": {
       "get": {
         "tags": ["Marketplace"],
         "security": [{ "bearerAuth": [] }],

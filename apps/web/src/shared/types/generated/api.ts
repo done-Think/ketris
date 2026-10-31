@@ -579,223 +579,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/api/marketplace/profiles/{kind}/address': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Get the current actor’s public profile address. */
-    get: {
-      parameters: {
-        query?: never
-        header: {
-          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '3'
-        }
-        path: {
-          kind: 'broker' | 'agency'
-        }
-        cookie?: never
-      }
-      requestBody?: never
-      responses: {
-        /** @description Own public profile address. */
-        200: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['OwnPublicProfileAddress']
-          }
-        }
-        /** @description Invalid kind or handle. */
-        400: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-        /** @description Authentication required. */
-        401: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-        /** @description The actor cannot edit this profile kind. */
-        403: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
-        409: {
-          headers: {
-            [name: string]: unknown
-          }
-          content?: never
-        }
-      }
-    }
-    /** Claim or replace the current actor’s address. Previous handles are released immediately; no aliases are retained. */
-    put: {
-      parameters: {
-        query?: never
-        header: {
-          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '3'
-        }
-        path: {
-          kind: 'broker' | 'agency'
-        }
-        cookie?: never
-      }
-      requestBody: {
-        content: {
-          'application/json': components['schemas']['SavePublicProfileAddress']
-        }
-      }
-      responses: {
-        /** @description Saved public profile address. */
-        200: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['OwnPublicProfileAddress']
-          }
-        }
-        /** @description Invalid kind or handle. */
-        400: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-        /** @description Authentication required. */
-        401: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-        /** @description The actor cannot edit this profile kind. */
-        403: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-        /** @description The handle is already assigned. The previous address remains unchanged. */
-        409: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-      }
-    }
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/marketplace/profiles/{kind}/address/availability': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** Check availability in the shared broker and agency namespace. */
-    get: {
-      parameters: {
-        query: {
-          handle: string
-        }
-        header: {
-          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
-          'X-Ketris-Api-Version': '3'
-        }
-        path: {
-          kind: 'broker' | 'agency'
-        }
-        cookie?: never
-      }
-      requestBody?: never
-      responses: {
-        /** @description Availability is advisory; saving also enforces uniqueness. */
-        200: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['PublicProfileAddressAvailability']
-          }
-        }
-        /** @description Invalid kind or handle. */
-        400: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-        /** @description Authentication required. */
-        401: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-        /** @description The actor cannot edit this profile kind. */
-        403: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
-        409: {
-          headers: {
-            [name: string]: unknown
-          }
-          content?: never
-        }
-      }
-    }
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/auth/email-change/verify': {
     parameters: {
       query?: never
@@ -7763,6 +7546,223 @@ export interface paths {
         }
         /** @description Imagem inexistente ou chave fora do escopo permitido. */
         404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/marketplace/profiles/{kind}/address': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get the current actor’s public profile address. */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          kind: 'broker' | 'agency'
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Own public profile address. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['OwnPublicProfileAddress']
+          }
+        }
+        /** @description Invalid kind or handle. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description The actor cannot edit this profile kind. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    /** Claim or replace the current actor’s address. Previous handles are released immediately; no aliases are retained. */
+    put: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          kind: 'broker' | 'agency'
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SavePublicProfileAddress']
+        }
+      }
+      responses: {
+        /** @description Saved public profile address. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['OwnPublicProfileAddress']
+          }
+        }
+        /** @description Invalid kind or handle. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description The actor cannot edit this profile kind. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description The handle is already assigned. The previous address remains unchanged. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/marketplace/profiles/{kind}/address/availability': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Check availability in the shared broker and agency namespace. */
+    get: {
+      parameters: {
+        query: {
+          handle: string
+        }
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          kind: 'broker' | 'agency'
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Availability is advisory; saving also enforces uniqueness. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PublicProfileAddressAvailability']
+          }
+        }
+        /** @description Invalid kind or handle. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description The actor cannot edit this profile kind. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
           headers: {
             [name: string]: unknown
           }
