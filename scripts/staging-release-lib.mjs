@@ -4,6 +4,43 @@ export function requireValue(condition, code) {
   if (!condition) throw new Error(code)
 }
 
+export function createReleaseDatabase(Client, config) {
+  return async function withDatabase(operation) {
+    const client = new Client({
+      connectionTimeoutMillis: 15_000,
+      statement_timeout: 30_000,
+      query_timeout: 30_000,
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 10_000,
+      ...config,
+    })
+    const disconnected = new Promise((_, reject) => {
+      // pg can emit errors while idle, outside any query promise. Never throw from this listener.
+      client.on('error', () => reject(new Error('STAGING_DATABASE_CONNECTION_FAILED')))
+    })
+    try {
+      return await Promise.race([
+        (async () => {
+          await client.connect()
+          return operation(client)
+        })(),
+        disconnected,
+      ])
+    } catch (error) {
+      if (/^(STAGING_DATABASE_|MIGRATIONS?_|SMOKE_)/.test(error.message ?? '')) throw error
+      throw new Error(
+        error.message === 'Query read timeout'
+          ? 'STAGING_DATABASE_QUERY_TIMEOUT'
+          : 'STAGING_DATABASE_OPERATION_FAILED',
+        { cause: error },
+      )
+    } finally {
+      // A cleanup error must not replace the original phase failure or leak driver diagnostics.
+      await client.end().catch(() => {})
+    }
+  }
+}
+
 export function geocodingDeploymentArgs(env, target) {
   const endpoint = env.GEOCODING_SEARCH_URL || target.geocoding?.searchUrl
   if (!endpoint) return []
