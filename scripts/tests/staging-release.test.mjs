@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
+import { readdirSync, readFileSync } from 'node:fs'
 import {
   createSmokeCredentials,
   findAutomationBypass,
@@ -14,6 +15,26 @@ import {
 } from '../staging-release-lib.mjs'
 
 const smokeCredentials = { email: 'smoke@example.test', password: 'private-password-long-enough' }
+
+test('every migration since the automatic release baseline has a reviewed expand declaration', () => {
+  const target = JSON.parse(
+    readFileSync(new URL('../../infra/deploy/staging.json', import.meta.url)),
+  )
+  const declared = Object.keys(target.compatibleMigrations).sort()
+  assert.ok(declared.length > 0, 'The automatic release baseline must be declared.')
+  const directory = new URL('../../apps/web/prisma/migrations/', import.meta.url)
+  const files = readdirSync(directory, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name >= declared[0])
+    .sort((left, right) => left.name.localeCompare(right.name))
+    .map((entry) => ({
+      name: entry.name,
+      sql: readFileSync(new URL(`${entry.name}/migration.sql`, directory)),
+    }))
+  assert.deepEqual(
+    planMigrations(files, [], target.compatibleMigrations),
+    files.map((file) => file.name),
+  )
+})
 const sha = 'a'.repeat(40)
 const target = { databaseHost: 'staging.example.test', databaseName: 'ketris' }
 const env = {

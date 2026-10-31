@@ -65,9 +65,11 @@ nessa tentativa. O PR #163 corrigiu o repasse nominal dos secrets e a duplicaç�
 branches de trabalho; a execução bem-sucedida de 29/10 está registrada acima.
 
 ```text
-Merge na dev → quality + auth-e2e → deployment candidato sem promoção
-             → migrations pendentes → diff do schema
-             → conta de smoke isolada → login no candidato → promoção → login no domínio público
+PR → quality + auth-e2e → evidências do conteúdo testado
+Merge na dev → plan → reutiliza evidências ou executa quality + auth-e2e
+             → validation → deployment candidato sem promoção
+             → migrations pendentes → diff do schema → conta de smoke isolada
+             → login no candidato → promoção → login no domínio público
 ```
 
 O CI chama o workflow reutilizável `deploy-staging.yml` pelo mesmo SHA. A chamada automática
@@ -78,8 +80,45 @@ não depende de `workflow_dispatch` na `main`. Push de outra branch e PR não pu
 Os testes completos rodam em cada abertura, reabertura ou atualização de PR. O gatilho
 `push` fica restrito à `dev` e à `main`: branches de trabalho precisam de um PR aberto para
 executar o CI, incluindo PRs em rascunho. Isso evita executar as mesmas suítes por push e
-por atualização do PR. Depois do merge, a execução na `dev` valida o commit integrado antes
-da publicação; a execução na `main` valida o resultado integrado nessa branch.
+por atualização do PR. Depois do merge, `plan` confere se o conteúdo integrado na `dev`
+corresponde ao conteúdo já aprovado. A execução na `main` mantém os testes completos.
+
+### Reaproveitamento da validação do PR
+
+O reaproveitamento exige um PR efetivamente integrado na `dev` por aquele commit e uma
+execução bem-sucedida do workflow `ci.yml` para o último commit do PR, no mesmo repositório.
+O Git tree completo precisa coincidir: arquivos, conteúdo, permissões e configuração do CI.
+O SHA do commit pode mudar no merge; isso não altera necessariamente o conteúdo testado.
+
+Cada job registra seu próprio Git tree em um artefato imutável após concluir os testes,
+com o checkout limpo. `plan` exige evidências de **quality e E2E**, vinculadas ao PR, à mesma
+execução/tentativa e ao conteúdo integrado. O nome do artefato registra essa identidade;
+o JSON contém apenas metadados de Git e Actions, sem código, tokens ou dados da aplicação.
+Os artefatos são retidos por sete dias, mas só permitem reaproveitamento por **24 horas**.
+Falha no upload da evidência não invalida testes aprovados: o merge executa a suíte completa.
+
+Executam a suíte completa: push sem PR integrado correspondente, atualização forçada, histórico indisponível,
+push cujo primeiro pai não é o commit anterior da `dev`, fonte de outro repositório,
+CI mais recente incompleto/falho, evidência ausente/expirada, mudança de conteúdo ou falha
+de consulta/permissão no GitHub. Reexecuções parciais sem ambas as evidências da mesma
+tentativa também usam a suíte completa. Não se escolhe uma execução verde antiga para
+substituir uma execução mais recente que falhou.
+
+Mudanças em `.github/`, `scripts/ci-validation.mjs`, `scripts/ci-validation-lib.mjs` ou em
+seu teste exigem CI completo após o merge. Portanto, **o primeiro merge desta otimização
+ainda executa os testes completos**; os próximos PRs podem reaproveitar suas aprovações.
+
+O job `validation` aprova somente uma destas condições: `quality` e `auth-e2e` aprovados
+na execução atual, ou `plan` comprovando a validação do PR e ambos os jobs redundantes
+dispensados. Somente `validation` aprovado libera `release-staging`; falha/cancelamento
+nunca libera publicação. Quando há reaproveitamento, ver `quality` e `auth-e2e` como
+**skipped** é esperado, enquanto `plan`, `validation` e `release-staging` devem executar.
+Os resumos de `plan` e `validation` mostram o motivo, o Git tree e a execução reutilizada.
+
+Essa consulta usa somente o `GITHUB_TOKEN` automático, com leitura de conteúdo, Actions
+e PRs. Nenhum secret ou configuração adicional de AWS/Vercel é necessário. O deploy
+continua construindo seu próprio candidato com as configurações de staging e realizando
+migrations, conferência do schema e smoke tests antes da promoção.
 
 A chamada repassa nominalmente os três secrets obrigatórios e o override opcional de bypass.
 O job reutilizável continua vinculado ao environment `staging`, cujos valores prevalecem.
@@ -110,8 +149,9 @@ envs, credenciais locais, dumps e estados Terraform.
    aplicação; não substituir a chave que protege os dados existentes.
 2. Conferir CI verde nesta branch e o alcance da configuração da Vercel. O environment deve
    permitir a `dev` sem aprovação humana a cada execução. Preparar os acessos antes do merge.
-3. Integrar na `dev`: o CI completo precede a primeira publicação, acionada diretamente após
-   `quality` e `auth-e2e` aprovados. Não há flags de ativação ou de snapshot para cadastrar.
+3. Integrar na `dev`: o CI completo precede a primeira publicação. Nas seguintes, `plan`
+   decide entre reaproveitar a aprovação do PR ou executar os testes completos. A publicação
+   depende de `validation` aprovado. Não há flags de ativação ou de snapshot para cadastrar.
 4. Conferir o resumo do Actions, o SHA do domínio e o login. Os próximos pushes/merges na `dev`
    repetem a sequência automaticamente. Se algum acesso estiver incorreto, corrigir a
    configuração e reexecutar o CI do commit atual. A recuperação manual opcional requer a

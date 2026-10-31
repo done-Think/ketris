@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   release:
-    if: github.ref == 'refs/heads/dev' && (github.event_name == 'push' || inputs.confirm == 'RELEASE')
+    if: ${{ !cancelled() && github.ref == 'refs/heads/dev' && (github.event_name == 'push' || inputs.confirm == 'RELEASE') }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment:
