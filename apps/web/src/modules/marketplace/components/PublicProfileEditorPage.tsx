@@ -49,7 +49,8 @@ export function PublicProfileEditorPage() {
 }
 
 function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
-  const { data: address } = useOwnProfileAddress('broker')
+  const published = profile?.status === 'PUBLISHED'
+  const { data: address } = useOwnProfileAddress('broker', published)
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.profileEditor')
   const tFeatures = useTranslations('marketplace.propertyFeatures')
@@ -108,6 +109,7 @@ function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
       onClosePreview={editor.closePreview}
       preview={
         <BrokerPublicProfilePage
+          publicLinkEnabled={published}
           publicHandle={address?.handle ?? undefined}
           broker={toPreviewProfile(
             editor.form.getValues(),
@@ -119,7 +121,7 @@ function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
         />
       }
     >
-      <PublicProfileAddressPanel kind="broker" />
+      <PublicProfileAddressPanel kind="broker" published={published} />
       <PublicProfileEditorPanel title={t('fields.mainInfo')}>
         <Box sx={styles.mainFields}>
           <RhfTextField

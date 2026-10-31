@@ -16,7 +16,18 @@ import { styles } from '../../styles/profile-address.styles'
 import { PublicProfileEditorPanel } from './PublicProfileEditorPanel'
 import { PublicProfileAddressDialog } from './PublicProfileAddressDialog'
 
-export function PublicProfileAddressPanel({ kind }: ProfileAddressPanelProps) {
+export function PublicProfileAddressPanel({ kind, published }: ProfileAddressPanelProps) {
+  const t = useTranslations('marketplace.profileAddress')
+  if (!published)
+    return (
+      <PublicProfileEditorPanel fullRow title={t('title')}>
+        <Alert severity="info">{t('unpublishedHint')}</Alert>
+      </PublicProfileEditorPanel>
+    )
+  return <PublishedProfileAddressPanel kind={kind} />
+}
+
+function PublishedProfileAddressPanel({ kind }: Pick<ProfileAddressPanelProps, 'kind'>) {
   const t = useTranslations('marketplace.profileAddress')
   const locale = useLocale() as AppLocale
   const scope = useMarketplaceActorKey()

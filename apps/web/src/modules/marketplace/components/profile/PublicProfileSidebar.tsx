@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Button, Divider, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Divider, Stack, Typography } from '@mui/material'
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined'
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined'
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined'
@@ -23,6 +23,7 @@ export function PublicProfileSidebar({
   hoverColor,
   href,
   publicHandle,
+  publicLinkEnabled = true,
   sourceType,
   linkDescription,
   phone,
@@ -30,31 +31,40 @@ export function PublicProfileSidebar({
   facts,
 }: PublicProfileSidebarProps) {
   const t = useTranslations('marketplace.publicProfile.sidebar')
-  const publicProfileHref = publicHandle
-    ? { pathname: '/p/[handle]' as const, params: { handle: publicHandle } }
-    : buildPublicProfileHref(href, sourceType)
+  const addressT = useTranslations('marketplace.profileAddress')
+  const publicProfileHref = !publicLinkEnabled
+    ? null
+    : publicHandle
+      ? { pathname: '/p/[handle]' as const, params: { handle: publicHandle } }
+      : buildPublicProfileHref(href, sourceType)
 
   return (
     <Box sx={styles.box}>
       <Typography sx={styles.typography}>{t('publicLink')}</Typography>
-      <Typography sx={styles.typography2}>{linkDescription}</Typography>
-      <Box sx={styles.box2}>
-        <Typography sx={styles.typography3}>
-          {publicHandle ? buildPublicProfileAddress(publicHandle) : getPublicProfileLink(href)}
-        </Typography>
-      </Box>
-      <Box component={Link} href={publicProfileHref} sx={styles.box3}>
-        <Button
-          component="span"
-          variant="outlined"
-          color="secondary"
-          fullWidth
-          startIcon={<LinkOutlinedIcon sx={styles.linkOutlinedIcon} />}
-          sx={getButtonStyles({ accentColor, hoverColor })}
-        >
-          {t('openOwnLink')}
-        </Button>
-      </Box>
+      {publicProfileHref ? (
+        <>
+          <Typography sx={styles.typography2}>{linkDescription}</Typography>
+          <Box sx={styles.box2}>
+            <Typography sx={styles.typography3}>
+              {publicHandle ? buildPublicProfileAddress(publicHandle) : getPublicProfileLink(href)}
+            </Typography>
+          </Box>
+          <Box component={Link} href={publicProfileHref} sx={styles.box3}>
+            <Button
+              component="span"
+              variant="outlined"
+              color="secondary"
+              fullWidth
+              startIcon={<LinkOutlinedIcon sx={styles.linkOutlinedIcon} />}
+              sx={getButtonStyles({ accentColor, hoverColor })}
+            >
+              {t('openOwnLink')}
+            </Button>
+          </Box>
+        </>
+      ) : (
+        <Alert severity="info">{addressT('unpublishedHint')}</Alert>
+      )}
 
       <Divider sx={styles.divider} />
 

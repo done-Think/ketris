@@ -152,8 +152,16 @@ describe('PublicProfileEditorPage', () => {
     { kind: 'broker' as const, Component: PublicProfileEditorPage, handle: 'alyssonsene' },
     { kind: 'agency' as const, Component: AgencyPublicProfileEditorPage, handle: 'horizonte' },
   ])(
-    'shows and updates the saved custom link in the $kind draft preview',
+    'shows and updates the saved custom link in the $kind published profile preview',
     async ({ kind, Component, handle }) => {
+      if (kind === 'broker')
+        vi.mocked(useOwnBrokerProfile).mockReturnValue({
+          data: { ...draftBrokerProfile, status: 'PUBLISHED' },
+        } as ReturnType<typeof useOwnBrokerProfile>)
+      else
+        vi.mocked(useOwnAgencyProfile).mockReturnValue({
+          data: { ...draftAgencyProfile, status: 'PUBLISHED' },
+        } as ReturnType<typeof useOwnAgencyProfile>)
       addressMocks.handles[kind] = handle
       const user = userEvent.setup()
       const view = renderWithTheme(<Component />)
@@ -177,6 +185,24 @@ describe('PublicProfileEditorPage', () => {
         'href',
         `/p/new-${handle}`,
       )
+    },
+  )
+
+  it.each([PublicProfileEditorPage, AgencyPublicProfileEditorPage])(
+    'hides unusable links in an unpublished preview',
+    async (Component) => {
+      vi.mocked(useOwnBrokerProfile).mockReturnValue({ data: null } as ReturnType<
+        typeof useOwnBrokerProfile
+      >)
+      vi.mocked(useOwnAgencyProfile).mockReturnValue({ data: null } as ReturnType<
+        typeof useOwnAgencyProfile
+      >)
+      const user = userEvent.setup()
+      renderWithTheme(<Component />)
+      await user.click(screen.getByRole('button', { name: 'Visualizar' }))
+      const preview = within(screen.getByRole('dialog'))
+      expect(preview.getByText(/Publique o perfil para liberar seu link público/)).toBeVisible()
+      expect(preview.queryByRole('link', { name: 'Abrir link próprio' })).not.toBeInTheDocument()
     },
   )
 

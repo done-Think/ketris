@@ -51,6 +51,7 @@ export type AgencyCardProps = AgencyProfile & {
 }
 
 export type AgencyPublicProfilePageProps = {
+  publicLinkEnabled?: boolean
   agency: AgencyProfile
   publicHandle?: string
 }

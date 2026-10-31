@@ -536,6 +536,7 @@
     "copyError": "Não foi possível copiar. Copie o endereço pelo navegador.",
     "retry": "Tentar novamente",
     "loadError": "Não foi possível carregar seu endereço público.",
-    "loading": "Carregando endereço público…"
+    "loading": "Carregando endereço público…",
+    "unpublishedHint": "Publique o perfil para liberar seu link público e a edição do endereço personalizado. O link funciona apenas enquanto o perfil estiver publicado."
   }
 }

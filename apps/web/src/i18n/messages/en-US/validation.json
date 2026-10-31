@@ -82,6 +82,7 @@
     "clientUpdateRequired": "The application was updated. Reload the page to continue.",
     "coordinatesPairRequired": "Provide latitude and longitude together.",
     "publicAddressReserved": "This address is reserved for the platform.",
-    "publicAddressTaken": "This address is already in use. Choose another name."
+    "publicAddressTaken": "This address is already in use. Choose another name.",
+    "publicAddressPublishRequired": "Publish your profile to enable its public link and edit your custom address. The link works only while the profile is published."
   }
 }

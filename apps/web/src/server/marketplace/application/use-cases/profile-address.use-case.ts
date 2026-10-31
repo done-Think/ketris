@@ -10,6 +10,7 @@ import {
   saveProfileAddressSchema,
 } from '../../schemas/profile-address.schema'
 import { isReservedPublicProfileHandle } from '@shared/utils/public-profile-handle'
+import { PublicProfileNotPublishedError } from '../../domain/profile-address-errors'
 
 function ownTarget(input: ProfileAddressInput): PublicProfileTarget {
   if (input.kind === 'broker') {
@@ -31,6 +32,7 @@ export class ProfileAddressUseCase {
   async isAvailable(input: ProfileAddressInput & { handle: string }) {
     const target = ownTarget(input)
     const handle = publicProfileHandleSchema.parse(input.handle)
+    if (!(await this.addresses.isPublished(target))) throw new PublicProfileNotPublishedError()
     if (isReservedPublicProfileHandle(handle)) return { available: false }
     const address = await this.addresses.findByHandle(handle)
     return {
