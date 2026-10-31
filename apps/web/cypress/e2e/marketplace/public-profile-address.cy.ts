@@ -113,6 +113,15 @@ describe('Custom public profile addresses', () => {
     cy.wait('@saveAddress').its('response.statusCode').should('eq', 200)
     cy.get('[role="dialog"]').should('not.exist')
     cy.contains('a', `/@${handle}`).should('have.attr', 'href', `/@${handle}`)
+    cy.contains('button', 'Visualizar').click()
+    cy.get('[role="dialog"]').within(() => {
+      cy.contains(`/@${handle}`)
+        .scrollIntoView({ offset: { top: -100, left: 0 } })
+        .should('be.visible')
+      cy.contains('a', 'Abrir link próprio').should('have.attr', 'href', `/pt/@${handle}`)
+    })
+    cy.get('body').type('{esc}')
+    cy.get('[role="dialog"]').should('not.exist')
   }
   function expectUnavailable(handle: string) {
     // HTML-only crawlers receive a non-streamed HTTP 404.
