@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 import { ensureSmokeAccount } from './staging-smoke-account.mjs'
 import {
   createSmokeCredentials,
+  createReleaseDatabase,
   findAutomationBypass,
   geocodingDeploymentArgs,
   planMigrations,
@@ -19,7 +20,7 @@ import {
 
 const env = process.env
 
-function command(binary, args, options = {}) {
+export function command(binary, args, options = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(binary, args, {
       cwd: options.cwd,
@@ -27,15 +28,35 @@ function command(binary, args, options = {}) {
       stdio: ['ignore', 'pipe', 'pipe'],
     })
     let stdout = ''
+    let timedOut = false
+    let forceKill
+    const timeout = setTimeout(
+      () => {
+        timedOut = true
+        child.kill('SIGTERM')
+        forceKill = setTimeout(() => child.kill('SIGKILL'), 5_000)
+      },
+      options.timeoutMs ?? 20 * 60_000,
+    )
+    function cleanup() {
+      clearTimeout(timeout)
+      clearTimeout(forceKill)
+    }
     child.stdout.on('data', (data) => {
       stdout = (stdout + data).slice(-1_000_000)
     })
     // CLI/Prisma diagnostics can contain secrets. Provider logs remain in their own console.
     child.stderr.on('data', () => {})
-    child.on('error', () => reject(new Error(`COMMAND_UNAVAILABLE:${binary}`)))
-    child.on('close', (code) =>
-      code === 0 ? resolve(stdout.trim()) : reject(new Error(`COMMAND_FAILED:${binary}:${code}`)),
-    )
+    child.on('error', () => {
+      cleanup()
+      reject(new Error('COMMAND_UNAVAILABLE'))
+    })
+    child.on('close', (code) => {
+      cleanup()
+      if (timedOut) reject(new Error('COMMAND_TIMEOUT'))
+      else if (code === 0) resolve(stdout.trim())
+      else reject(new Error('COMMAND_FAILED'))
+    })
   })
 }
 
@@ -49,15 +70,13 @@ export async function main() {
     signal: AbortSignal.timeout(15_000),
   })
   requireValue(ca.ok, 'RDS_CA_UNAVAILABLE')
-  const client = new Client({
+  const withDatabase = createReleaseDatabase(Client, {
     host: databaseUrl.hostname,
     port: 5432,
     database: target.databaseName,
     user: decodeURIComponent(databaseUrl.username),
     password: decodeURIComponent(databaseUrl.password),
     ssl: { ca: await ca.text(), rejectUnauthorized: true },
-    connectionTimeoutMillis: 15_000,
-    statement_timeout: 30_000,
     application_name: 'ketris-staging-release',
   })
   const files = await Promise.all(
@@ -69,7 +88,7 @@ export async function main() {
       })),
   )
   files.sort((a, b) => a.name.localeCompare(b.name))
-  async function ledger() {
+  async function ledger(client) {
     const exists = await client.query("SELECT to_regclass('public._prisma_migrations') AS name")
     if (!exists.rows[0].name) return []
     return (
@@ -93,157 +112,162 @@ export async function main() {
   const cliAuth = ['--token', env.VERCEL_TOKEN, '--scope', env.VERCEL_ORG_ID]
   let userId
   let bypass
-  let result
-  await client.connect()
-  try {
-    result = await runRelease({
-      async preflight() {
-        const project = await providerRequest(
-          `/v9/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}`,
+  const result = await runRelease({
+    async preflight() {
+      const project = await providerRequest(
+        `/v9/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}`,
+      )
+      requireValue(
+        project.id === env.VERCEL_PROJECT_ID &&
+          project.name === target.projectName &&
+          project.accountId === env.VERCEL_ORG_ID &&
+          project.rootDirectory === 'apps/web',
+        'WRONG_VERCEL_PROJECT',
+      )
+      const domains = await providerRequest(
+        `/v9/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}/domains`,
+      )
+      requireValue(
+        domains.domains?.some((domain) => domain.name === new URL(target.origin).hostname),
+        'WRONG_STAGING_DOMAIN',
+      )
+      bypass = findAutomationBypass(project, env.VERCEL_AUTOMATION_BYPASS_SECRET)
+      if (!bypass && requiresAutomationBypass(project)) {
+        const protection = await providerRequest(
+          `/v1/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}/protection-bypass`,
+          { method: 'PATCH', body: '{}' },
         )
-        requireValue(
-          project.id === env.VERCEL_PROJECT_ID &&
-            project.name === target.projectName &&
-            project.accountId === env.VERCEL_ORG_ID &&
-            project.rootDirectory === 'apps/web',
-          'WRONG_VERCEL_PROJECT',
-        )
-        const domains = await providerRequest(
-          `/v9/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}/domains`,
-        )
-        requireValue(
-          domains.domains?.some((domain) => domain.name === new URL(target.origin).hostname),
-          'WRONG_STAGING_DOMAIN',
-        )
-        bypass = findAutomationBypass(project, env.VERCEL_AUTOMATION_BYPASS_SECRET)
-        if (!bypass && requiresAutomationBypass(project)) {
-          const protection = await providerRequest(
-            `/v1/projects/${encodeURIComponent(env.VERCEL_PROJECT_ID)}/protection-bypass`,
-            { method: 'PATCH', body: '{}' },
-          )
-          bypass = findAutomationBypass(protection)
-          requireValue(bypass, 'AUTOMATION_BYPASS_UNAVAILABLE')
-        }
-        console.log('Staging target and credentials checked.')
-      },
-      async plan() {
-        const pending = planMigrations(files, await ledger(), target.compatibleMigrations)
-        console.log(`Pending migrations: ${pending.length}`)
-        return pending
-      },
-      async prepare() {
-        await mkdir('.vercel', { recursive: true })
-        await writeFile(
-          '.vercel/project.json',
-          JSON.stringify({
-            projectId: env.VERCEL_PROJECT_ID,
-            orgId: env.VERCEL_ORG_ID,
-          }),
-          { mode: 0o600 },
-        )
-        const output = await command('vercel', [
-          'deploy',
-          '--prod',
-          '--skip-domain',
-          '--yes',
-          '--meta',
-          `githubCommitSha=${env.GITHUB_SHA}`,
-          '--meta',
-          'githubCommitRef=dev',
-          '--env',
-          `KETRIS_RELEASE_SHA=${env.GITHUB_SHA}`,
-          '--build-env',
-          `KETRIS_RELEASE_SHA=${env.GITHUB_SHA}`,
-          ...cliAuth,
-          ...geocodingArgs,
-        ])
-        const candidate = validateCandidate(output, target.projectName)
-        const deployment = await providerRequest(
-          `/v13/deployments/${encodeURIComponent(new URL(candidate).hostname)}`,
-        )
-        requireValue(
-          deployment.projectId === env.VERCEL_PROJECT_ID &&
-            deployment.target === 'production' &&
-            deployment.readyState === 'READY' &&
-            deployment.meta?.githubCommitSha === env.GITHUB_SHA,
-          'WRONG_CANDIDATE_DEPLOYMENT',
-        )
-        console.log(`Candidate ready: ${candidate}`)
-        return candidate
-      },
-      async checkCurrentHead() {
-        const response = await fetch(
-          'https://api.github.com/repos/done-Think/ketris/git/ref/heads/dev',
-          {
-            headers: {
-              Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-              'X-GitHub-Api-Version': '2022-11-28',
-            },
-            signal: AbortSignal.timeout(15_000),
+        bypass = findAutomationBypass(protection)
+        requireValue(bypass, 'AUTOMATION_BYPASS_UNAVAILABLE')
+      }
+      console.log('Staging target and credentials checked.')
+    },
+    async plan() {
+      console.log('Checking database migration history.')
+      const pending = await withDatabase(async (client) =>
+        planMigrations(files, await ledger(client), target.compatibleMigrations),
+      )
+      console.log(`Pending migrations: ${pending.length}`)
+      return pending
+    },
+    async prepare() {
+      await mkdir('.vercel', { recursive: true })
+      await writeFile(
+        '.vercel/project.json',
+        JSON.stringify({
+          projectId: env.VERCEL_PROJECT_ID,
+          orgId: env.VERCEL_ORG_ID,
+        }),
+        { mode: 0o600 },
+      )
+      const output = await command('vercel', [
+        'deploy',
+        '--prod',
+        '--skip-domain',
+        '--yes',
+        '--meta',
+        `githubCommitSha=${env.GITHUB_SHA}`,
+        '--meta',
+        'githubCommitRef=dev',
+        '--env',
+        `KETRIS_RELEASE_SHA=${env.GITHUB_SHA}`,
+        '--build-env',
+        `KETRIS_RELEASE_SHA=${env.GITHUB_SHA}`,
+        ...cliAuth,
+        ...geocodingArgs,
+      ])
+      const candidate = validateCandidate(output, target.projectName)
+      const deployment = await providerRequest(
+        `/v13/deployments/${encodeURIComponent(new URL(candidate).hostname)}`,
+      )
+      requireValue(
+        deployment.projectId === env.VERCEL_PROJECT_ID &&
+          deployment.target === 'production' &&
+          deployment.readyState === 'READY' &&
+          deployment.meta?.githubCommitSha === env.GITHUB_SHA,
+        'WRONG_CANDIDATE_DEPLOYMENT',
+      )
+      console.log(`Candidate ready: ${candidate}`)
+      return candidate
+    },
+    async checkCurrentHead() {
+      const response = await fetch(
+        'https://api.github.com/repos/done-Think/ketris/git/ref/heads/dev',
+        {
+          headers: {
+            Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+            'X-GitHub-Api-Version': '2022-11-28',
           },
-        )
+          signal: AbortSignal.timeout(15_000),
+        },
+      )
+      requireValue(
+        response.ok && (await response.json()).object?.sha === env.GITHUB_SHA,
+        'RELEASE_SUPERSEDED',
+      )
+    },
+    async migrate() {
+      console.log('Applying pending migrations with Prisma.')
+      await command(
+        process.execPath,
+        ['../../node_modules/prisma/build/index.js', 'migrate', 'deploy'],
+        { cwd: 'apps/web', timeoutMs: 5 * 60_000 },
+      )
+      console.log('Pending migrations applied.')
+    },
+    async verifyDatabase() {
+      console.log('Checking migration history after candidate build.')
+      await withDatabase(async (client) => {
         requireValue(
-          response.ok && (await response.json()).object?.sha === env.GITHUB_SHA,
-          'RELEASE_SUPERSEDED',
-        )
-      },
-      async migrate() {
-        await command(
-          process.execPath,
-          ['../../node_modules/prisma/build/index.js', 'migrate', 'deploy'],
-          { cwd: 'apps/web' },
-        )
-        console.log('Pending migrations applied.')
-      },
-      async verifyDatabase() {
-        requireValue(
-          planMigrations(files, await ledger(), target.compatibleMigrations).length === 0,
+          planMigrations(files, await ledger(client), target.compatibleMigrations).length === 0,
           'MIGRATIONS_STILL_PENDING',
         )
-        await command(
-          process.execPath,
-          [
-            '../../node_modules/prisma/build/index.js',
-            'migrate',
-            'diff',
-            '--from-config-datasource',
-            '--to-schema',
-            'prisma/schema.prisma',
-            '--exit-code',
-          ],
-          { cwd: 'apps/web' },
-        )
-        userId = await ensureSmokeAccount(client, smokeCredentials)
-      },
-      async smoke(origin) {
-        await smokeDeployment({
-          origin,
-          canonicalOrigin: target.origin,
-          sha: env.GITHUB_SHA,
-          ...smokeCredentials,
-          userId,
-          bypass,
-        })
-        console.log('Candidate database and authenticated session checked.')
-      },
-      async promote(candidate) {
-        await command('vercel', ['promote', candidate, '--yes', ...cliAuth])
-        console.log('Candidate promoted.')
-      },
-      async smokePublic() {
-        await smokePublicDeployment({
-          origin: target.origin,
-          sha: env.GITHUB_SHA,
-          ...smokeCredentials,
-          userId,
-          bypass,
-        })
-        console.log('Public domain and authenticated session checked.')
-      },
-    })
-  } finally {
-    await client.end()
-  }
+      })
+      console.log('Checking database schema with Prisma.')
+      await command(
+        process.execPath,
+        [
+          '../../node_modules/prisma/build/index.js',
+          'migrate',
+          'diff',
+          '--from-config-datasource',
+          '--to-schema',
+          'prisma/schema.prisma',
+          '--exit-code',
+        ],
+        { cwd: 'apps/web', timeoutMs: 2 * 60_000 },
+      )
+      console.log('Preparing reserved database smoke account.')
+      userId = await withDatabase((client) => ensureSmokeAccount(client, smokeCredentials))
+    },
+    async smoke(origin) {
+      await smokeDeployment({
+        origin,
+        canonicalOrigin: target.origin,
+        sha: env.GITHUB_SHA,
+        ...smokeCredentials,
+        userId,
+        bypass,
+      })
+      console.log('Candidate database and authenticated session checked.')
+    },
+    async promote(candidate) {
+      await command('vercel', ['promote', candidate, '--yes', ...cliAuth], {
+        timeoutMs: 2 * 60_000,
+      })
+      console.log('Candidate promoted.')
+    },
+    async smokePublic() {
+      await smokePublicDeployment({
+        origin: target.origin,
+        sha: env.GITHUB_SHA,
+        ...smokeCredentials,
+        userId,
+        bypass,
+      })
+      console.log('Public domain and authenticated session checked.')
+    },
+  })
   if (env.GITHUB_STEP_SUMMARY)
     await appendFile(
       env.GITHUB_STEP_SUMMARY,

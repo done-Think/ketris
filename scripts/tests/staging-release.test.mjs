@@ -2,8 +2,11 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync } from 'node:fs'
+import { EventEmitter } from 'node:events'
+import { command } from '../staging-release.mjs'
 import {
   createSmokeCredentials,
+  createReleaseDatabase,
   findAutomationBypass,
   geocodingDeploymentArgs,
   requiresAutomationBypass,
@@ -16,6 +19,154 @@ import {
 } from '../staging-release-lib.mjs'
 
 const smokeCredentials = { email: 'smoke@example.test', password: 'private-password-long-enough' }
+
+function databaseFixture() {
+  const clients = []
+  class Client extends EventEmitter {
+    constructor(config) {
+      super()
+      this.config = config
+      clients.push(this)
+    }
+    async connect() {
+      this.connected = true
+    }
+    async query() {
+      return { rows: [] }
+    }
+    async end() {
+      this.connected = false
+      this.ended = true
+    }
+  }
+  return { clients, Client, withDatabase: createReleaseDatabase(Client, {}) }
+}
+
+test('closes database sessions before the remote build, schema command and promotion', async () => {
+  const { clients, withDatabase } = databaseFixture()
+  const { actions } = actionsFixture({ pending: [] })
+  const assertClosed = () => assert.ok(clients.every((client) => client.ended))
+  actions.plan = () =>
+    withDatabase(async (client) => {
+      await client.query()
+      return []
+    })
+  actions.prepare = async () => {
+    assertClosed()
+    return 'https://candidate.example.test'
+  }
+  actions.verifyDatabase = async () => {
+    await withDatabase((client) => client.query())
+    assertClosed()
+    // Prisma runs here without an idle pg session; the following transaction uses a fresh session.
+    await withDatabase((client) => client.query())
+  }
+  actions.smoke = async () => assertClosed()
+  actions.promote = async () => assertClosed()
+  await runRelease(actions)
+  assert.equal(new Set(clients).size, 3)
+  assertClosed()
+})
+
+test('handles an asynchronous idle connection error as a release failure instead of crashing Node', async () => {
+  const { clients, withDatabase } = databaseFixture()
+  let finishOperation
+  const result = withDatabase((client) => {
+    queueMicrotask(() => client.emit('error', new Error('read ETIMEDOUT private-credentials')))
+    return new Promise((resolve) => {
+      finishOperation = resolve
+    })
+  })
+  await assert.rejects(result, { message: 'STAGING_DATABASE_CONNECTION_FAILED' })
+  assert.ok(clients[0].ended)
+  finishOperation('late result')
+})
+
+test('closes failed connections and does not leak provider diagnostics', async () => {
+  const { Client, clients } = databaseFixture()
+  Client.prototype.connect = async function () {
+    throw new Error('private-password@database.example.test')
+  }
+  await assert.rejects(
+    createReleaseDatabase(Client, {})(() => assert.fail('Must not query')),
+    { message: 'STAGING_DATABASE_OPERATION_FAILED' },
+  )
+  assert.ok(clients[0].ended)
+})
+
+test('does not retry database mutations and preserves migration/smoke guard errors', async () => {
+  for (const message of [
+    'MIGRATION_CHECKSUM_MISMATCH',
+    'MIGRATIONS_STILL_PENDING',
+    'SMOKE_USER_CONFLICT',
+    'Query read timeout',
+    'private SQL diagnostics',
+  ]) {
+    const { clients, withDatabase } = databaseFixture()
+    let attempts = 0
+    await assert.rejects(
+      withDatabase(async () => {
+        attempts++
+        throw new Error(message)
+      }),
+      {
+        message:
+          message === 'Query read timeout'
+            ? 'STAGING_DATABASE_QUERY_TIMEOUT'
+            : message === 'private SQL diagnostics'
+              ? 'STAGING_DATABASE_OPERATION_FAILED'
+              : message,
+      },
+    )
+    assert.equal(attempts, 1)
+    assert.equal(clients.length, 1)
+    assert.ok(clients[0].ended)
+  }
+})
+
+test('cleanup failure cannot hide the original database guard failure', async () => {
+  const { Client } = databaseFixture()
+  Client.prototype.end = async function () {
+    throw new Error('private shutdown diagnostics')
+  }
+  await assert.rejects(
+    createReleaseDatabase(
+      Client,
+      {},
+    )(async () => {
+      throw new Error('SMOKE_USER_CONFLICT')
+    }),
+    { message: 'SMOKE_USER_CONFLICT' },
+  )
+})
+
+test('commands return only successful stdout and redact all failed diagnostics', async () => {
+  assert.equal(
+    await command(process.execPath, [
+      '-e',
+      'console.log("candidate"); console.error("private diagnostics")',
+    ]),
+    'candidate',
+  )
+  await assert.rejects(
+    command(process.execPath, [
+      '-e',
+      'console.log("private-output"); console.error("private-error"); process.exit(2)',
+    ]),
+    { message: 'COMMAND_FAILED' },
+  )
+  await assert.rejects(command('/nonexistent-ketris-command', ['private-argument']), {
+    message: 'COMMAND_UNAVAILABLE',
+  })
+})
+
+test('stalled commands time out without letting a release proceed', async () => {
+  const { actions, calls } = actionsFixture({ pending: [] })
+  actions.verifyDatabase = () =>
+    command(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { timeoutMs: 100 })
+  await assert.rejects(runRelease(actions), { message: 'COMMAND_TIMEOUT' })
+  assert.equal(calls.includes('promote'), false)
+})
 
 test('explicitly configures staging geocoding for build and runtime, with a console override', () => {
   const target = {

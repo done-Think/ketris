@@ -16,6 +16,9 @@ A configuração webpack usa uma versão de cache própria em desenvolvimento pa
 pelo GitHub Actions, com destino fixado em `infra/deploy/staging.json`; não carrega envs locais.
 `staging-release-lib.mjs` valida destino, ledger e ordem das etapas. A fixture de autenticação
 é reconciliada por `staging-smoke-account.mjs`, separada do seed completo e de contas humanas.
+As conexões PostgreSQL são limitadas às etapas de banco, com timeout no cliente e
+tratamento de desconexões. Nenhuma sessão fica aberta durante o build remoto. Os
+comandos Prisma e Vercel também têm prazo máximo; falhas não repetem transações.
 Configuração e ativação estão em [staging-release.md](../docs/staging-release.md).
 
 Os testes de fluxo usam `node --test scripts/tests/staging-release.test.mjs`. O ensaio de banco

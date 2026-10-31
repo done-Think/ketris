@@ -196,6 +196,19 @@ Os pontos obtidos pela rua são aproximados quando o número não está mapeado.
 
 ### Novas migrations e falhas
 
+O coordenador abre conexões PostgreSQL separadas para conferir o histórico e preparar
+a conta reservada de smoke. Cada conexão é encerrada ao terminar sua etapa; nenhuma
+fica ociosa durante o build da Vercel, os comandos Prisma ou a promoção. Há timeout
+de conexão de 15 segundos, limite de consulta de 30 segundos no cliente e no servidor,
+keepalive e tratamento explícito do evento de desconexão do `pg`. Não há repetição
+automática de transações ou migrations após falhas de rede.
+
+Os comandos também têm limites: 20 minutos para criar o candidato, 5 minutos para
+migrations e 2 minutos para comparar o schema ou promover. Se o processo não encerrar
+após `SIGTERM`, recebe `SIGKILL` após 5 segundos. Qualquer falha antes da promoção mantém
+o domínio no deploy anterior. Os logs indicam a etapa, sem imprimir credenciais ou
+diagnósticos brutos dos provedores.
+
 Cada migration pendente deve declarar sua compatibilidade em `infra/deploy/staging.json`:
 
 ```json
