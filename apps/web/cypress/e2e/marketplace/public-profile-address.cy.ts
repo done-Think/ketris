@@ -134,18 +134,29 @@ describe('Custom public profile addresses', () => {
       .should('eq', 404)
   }
 
+  function publishProfile(kind: 'broker' | 'agency') {
+    cy.contains('Publique o perfil para liberar seu link público').should('be.visible')
+    cy.contains('button', 'Personalizar endereço').should('not.exist')
+    cy.contains('button', 'Copiar link').should('not.exist')
+    cy.contains('button', 'Visualizar').click()
+    cy.get('[role="dialog"]').within(() => {
+      cy.contains('Publique o perfil para liberar seu link público')
+        .scrollIntoView({ offset: { top: -100, left: 0 } })
+        .should('be.visible')
+      cy.contains('a', 'Abrir link próprio').should('not.exist')
+    })
+    cy.get('body').type('{esc}')
+    cy.intercept('POST', `**/api/marketplace/profiles/${kind}/publish`).as('publishProfile')
+    cy.contains('button', /^Publicar$/).click()
+    cy.wait('@publishProfile').its('response.statusCode').should('eq', 200)
+    cy.contains('button', 'Personalizar endereço').should('be.visible')
+  }
+
   it('publishes and renames a broker address, retires the old handle and preserves ID links', () => {
     login(brokerEmail, '/dashboard/public-profile')
-    setAddress(brokerHandle, 'broker')
     expectUnavailable(brokerHandle)
-    cy.then(() =>
-      cy.request({
-        method: 'POST',
-        url: '/api/marketplace/profiles/broker/publish',
-        headers: { Authorization: `Bearer ${brokerToken}` },
-        log: false,
-      }),
-    )
+    publishProfile('broker')
+    setAddress(brokerHandle, 'broker')
     cy.visit(`/@${brokerHandle}`)
     cy.location('pathname').should('eq', `/@${brokerHandle}`)
     cy.contains('Public Address Broker').should('be.visible')
@@ -171,25 +182,21 @@ describe('Custom public profile addresses', () => {
       }),
     )
     expectUnavailable(renamedBrokerHandle)
+    cy.visit('/pt/dashboard/public-profile')
+    publishProfile('broker')
+    cy.contains('a', `/@${renamedBrokerHandle}`).should('be.visible')
   })
 
   it('uses the same namespace for agencies and supports renaming with an empty highlighted team', () => {
     login(ownerEmail, '/dashboard/public-profile/agency')
+    expectUnavailable(agencyHandle)
+    publishProfile('agency')
     cy.contains('button', 'Personalizar endereço').click()
     cy.get('[role="dialog"] input').clear().type(renamedBrokerHandle).blur()
     cy.contains('Este endereço já está em uso. Escolha outro nome.').should('be.visible')
     cy.contains('button', 'Salvar endereço').should('be.disabled')
     cy.contains('button', /^Cancelar$/).click()
     setAddress(agencyHandle, 'agency')
-    expectUnavailable(agencyHandle)
-    cy.then(() =>
-      cy.request({
-        method: 'POST',
-        url: '/api/marketplace/profiles/agency/publish',
-        headers: { Authorization: `Bearer ${ownerToken}` },
-        log: false,
-      }),
-    )
     cy.visit(`/@${agencyHandle}`)
     cy.location('pathname').should('eq', `/@${agencyHandle}`)
     cy.contains('Public Address Agency').should('be.visible')

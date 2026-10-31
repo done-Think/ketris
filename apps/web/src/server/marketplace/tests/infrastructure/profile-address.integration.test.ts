@@ -70,7 +70,13 @@ describe('public profile addresses', () => {
     ownerToken = await authContainer.tokenService.sign(owner)
     brokerToken = await authContainer.tokenService.sign(broker)
     await prisma.brokerPublicProfile.create({
-      data: { userId: brokerId, displayName: 'Public Address Broker', status: 'DRAFT' },
+      data: { userId: brokerId, displayName: 'Public Address Broker', status: 'PUBLISHED' },
+    })
+    await prisma.brokerPublicProfile.create({
+      data: { userId: otherBrokerId, displayName: 'Other Broker', status: 'PUBLISHED' },
+    })
+    await prisma.agencyPublicProfile.create({
+      data: { tenantId, displayName: 'Address Agency', status: 'PUBLISHED' },
     })
   })
   beforeEach(async () => {
@@ -82,9 +88,15 @@ describe('public profile addresses', () => {
         ],
       },
     })
-    await prisma.brokerPublicProfile.update({
+    await prisma.brokerPublicProfile.upsert({
       where: { userId: brokerId },
-      data: { status: 'DRAFT' },
+      update: { status: 'PUBLISHED' },
+      create: { userId: brokerId, displayName: 'Public Address Broker', status: 'PUBLISHED' },
+    })
+    await prisma.agencyPublicProfile.upsert({
+      where: { tenantId },
+      update: { status: 'PUBLISHED' },
+      create: { tenantId, displayName: 'Address Agency', status: 'PUBLISHED' },
     })
   })
   afterAll(async () => {
@@ -122,6 +134,47 @@ describe('public profile addresses', () => {
     const own = await GET(request('GET', ownerToken), context('agency'))
     expect(await own.json()).toEqual({ kind: 'agency', profileId: tenantId, handle: null })
     expect(own.headers.get('Cache-Control')).toBe('no-store')
+  })
+  it.each(['broker', 'agency'] as const)(
+    'rejects address creation and availability for an unpublished %s profile',
+    async (kind) => {
+      const token = kind === 'broker' ? brokerToken : ownerToken
+      if (kind === 'broker')
+        await prisma.brokerPublicProfile.update({
+          where: { userId: brokerId },
+          data: { status: 'DRAFT' },
+        })
+      else
+        await prisma.agencyPublicProfile.update({ where: { tenantId }, data: { status: 'DRAFT' } })
+      const response = await PUT(
+        request('PUT', token, { handle: `draft-${kind}-${suffix}` }),
+        context(kind),
+      )
+      expect(response.status).toBe(409)
+      expect(await response.json()).toMatchObject({
+        error: {
+          code: 'PUBLIC_PROFILE_NOT_PUBLISHED',
+          message: expect.stringContaining('Publish your profile'),
+        },
+      })
+      const availability = await AVAILABILITY(
+        request('GET', token, undefined, `/availability?handle=draft-${kind}-${suffix}`),
+        context(kind),
+      )
+      expect(availability.status).toBe(409)
+      expect(
+        await repo.findByProfile({ kind, profileId: kind === 'broker' ? brokerId : tenantId }),
+      ).toBeNull()
+    },
+  )
+  it('does not reserve an address when the profile has never been created', async () => {
+    await prisma.brokerPublicProfile.delete({ where: { userId: brokerId } })
+    const response = await PUT(
+      request('PUT', brokerToken, { handle: `missing-${suffix}` }),
+      context(),
+    )
+    expect(response.status).toBe(409)
+    expect(await repo.findByHandle(`missing-${suffix}`)).toBeNull()
   })
   it('requires authentication and the matching profile role', async () => {
     expect((await GET(request('GET'), context())).status).toBe(401)
@@ -212,8 +265,21 @@ describe('public profile addresses', () => {
       `${loserIndex === 0 ? 'first' : 'second'}-${suffix}`,
     )
   })
-  it('does not publish a draft by assigning an address and updates sitemap URLs upon publication', async () => {
+  it('preserves a published address while unpublished and restores sitemap URLs upon republication', async () => {
     await repo.save({ kind: 'broker', profileId: brokerId }, `published-${suffix}`, brokerId)
+    await prisma.brokerPublicProfile.update({
+      where: { userId: brokerId },
+      data: { status: 'DRAFT' },
+    })
+    const blocked = await PUT(
+      request('PUT', brokerToken, { handle: `changed-${suffix}` }),
+      context(),
+    )
+    expect(blocked.status).toBe(409)
+    expect(await blocked.json()).toMatchObject({ error: { code: 'PUBLIC_PROFILE_NOT_PUBLISHED' } })
+    expect((await repo.findByProfile({ kind: 'broker', profileId: brokerId }))?.handle).toBe(
+      `published-${suffix}`,
+    )
     expect(
       (await listPublicSitemapRecords('brokers', 0)).some((record) => record.id === brokerId),
     ).toBe(false)

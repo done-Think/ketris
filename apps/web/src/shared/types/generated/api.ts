@@ -7628,7 +7628,7 @@ export interface paths {
         }
       }
     }
-    /** Claim or replace the current actor’s address. Previous handles are released immediately; no aliases are retained. */
+    /** Claim or replace the current actor’s address after publishing the profile. Previous handles are released immediately; no aliases are retained. */
     put: {
       parameters: {
         query?: never
@@ -7683,7 +7683,7 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse']
           }
         }
-        /** @description The handle is already assigned. The previous address remains unchanged. */
+        /** @description The handle is already assigned or the profile is not published. The previous address remains unchanged. */
         409: {
           headers: {
             [name: string]: unknown
@@ -7708,7 +7708,7 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** Check availability in the shared broker and agency namespace. */
+    /** Check availability for a published profile in the shared broker and agency namespace. */
     get: {
       parameters: {
         query: {
@@ -7761,12 +7761,14 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse']
           }
         }
-        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        /** @description Publish the profile before checking or editing its address. */
         409: {
           headers: {
             [name: string]: unknown
           }
-          content?: never
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
         }
       }
     }

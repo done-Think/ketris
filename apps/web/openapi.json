@@ -7300,7 +7300,7 @@
       "put": {
         "tags": ["Marketplace"],
         "security": [{ "bearerAuth": [] }],
-        "summary": "Claim or replace the current actor’s address. Previous handles are released immediately; no aliases are retained.",
+        "summary": "Claim or replace the current actor’s address after publishing the profile. Previous handles are released immediately; no aliases are retained.",
         "parameters": [
           {
             "schema": { "type": "string", "enum": ["broker", "agency"] },
@@ -7352,7 +7352,7 @@
             }
           },
           "409": {
-            "description": "The handle is already assigned. The previous address remains unchanged.",
+            "description": "The handle is already assigned or the profile is not published. The previous address remains unchanged.",
             "content": {
               "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
             }
@@ -7364,7 +7364,7 @@
       "get": {
         "tags": ["Marketplace"],
         "security": [{ "bearerAuth": [] }],
-        "summary": "Check availability in the shared broker and agency namespace.",
+        "summary": "Check availability for a published profile in the shared broker and agency namespace.",
         "parameters": [
           {
             "schema": { "type": "string", "enum": ["broker", "agency"] },
@@ -7419,7 +7419,10 @@
             }
           },
           "409": {
-            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+            "description": "Publish the profile before checking or editing its address.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
           }
         }
       }

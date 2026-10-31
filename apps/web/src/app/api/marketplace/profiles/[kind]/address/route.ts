@@ -6,7 +6,10 @@ import {
   profileAddressParamsSchema,
   saveProfileAddressSchema,
 } from '@server/marketplace/schemas/profile-address.schema'
-import { PublicProfileAddressTakenError } from '@server/marketplace/domain/profile-address-errors'
+import {
+  PublicProfileAddressTakenError,
+  PublicProfileNotPublishedError,
+} from '@server/marketplace/domain/profile-address-errors'
 import type { ProfileAddressRouteContext } from '@server/marketplace/types/profile-address'
 import { parseJsonBody, withErrorHandling } from '@server/shared/http'
 import { resolveRequestLocale } from '@server/shared/http/request-locale'
@@ -41,12 +44,21 @@ export const PUT = withErrorHandling(
       })
       return NextResponse.json(address, { headers: { 'Cache-Control': 'no-store' } })
     } catch (error) {
-      if (!(error instanceof PublicProfileAddressTakenError)) throw error
+      if (
+        !(error instanceof PublicProfileAddressTakenError) &&
+        !(error instanceof PublicProfileNotPublishedError)
+      )
+        throw error
       return NextResponse.json(
         {
           error: {
             code: error.code,
-            message: validationMessage(resolveRequestLocale(request), 'publicAddressTaken'),
+            message: validationMessage(
+              resolveRequestLocale(request),
+              error instanceof PublicProfileNotPublishedError
+                ? 'publicAddressPublishRequired'
+                : 'publicAddressTaken',
+            ),
           },
         },
         { status: 409 },

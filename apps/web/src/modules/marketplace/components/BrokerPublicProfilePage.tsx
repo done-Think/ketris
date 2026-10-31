@@ -17,7 +17,11 @@ import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
 import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 import { styles } from '../styles/broker-public-profile-page.styles'
 
-export function BrokerPublicProfilePage({ broker, publicHandle }: BrokerPublicProfilePageProps) {
+export function BrokerPublicProfilePage({
+  broker,
+  publicHandle,
+  publicLinkEnabled = true,
+}: BrokerPublicProfilePageProps) {
   const t = useTranslations('marketplace')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const accentColor = broker.primaryColor ?? brand.magenta[500]
@@ -48,6 +52,7 @@ export function BrokerPublicProfilePage({ broker, publicHandle }: BrokerPublicPr
           </Box>
 
           <PublicProfileSidebar
+            publicLinkEnabled={publicLinkEnabled}
             accentColor={accentColor}
             hoverColor={broker.backgroundColor ?? surface.app}
             href={broker.href}

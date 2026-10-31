@@ -82,6 +82,7 @@
     "clientUpdateRequired": "La aplicación se ha actualizado. Recarga la página para continuar.",
     "coordinatesPairRequired": "Indica latitud y longitud juntas.",
     "publicAddressReserved": "Esta dirección está reservada para la plataforma.",
-    "publicAddressTaken": "Esta dirección ya está en uso. Elige otro nombre."
+    "publicAddressTaken": "Esta dirección ya está en uso. Elige otro nombre.",
+    "publicAddressPublishRequired": "Publica el perfil para habilitar el enlace público y editar la dirección personalizada. El enlace solo funciona mientras el perfil esté publicado."
   }
 }

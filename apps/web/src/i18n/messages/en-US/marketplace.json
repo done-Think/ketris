@@ -536,6 +536,7 @@
     "copyError": "Could not copy the link. Copy the address from your browser.",
     "retry": "Try again",
     "loadError": "Could not load your public address.",
-    "loading": "Loading public address…"
+    "loading": "Loading public address…",
+    "unpublishedHint": "Publish your profile to enable its public link and edit your custom address. The link works only while the profile is published."
   }
 }

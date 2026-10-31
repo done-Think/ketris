@@ -43,7 +43,7 @@ export function registerProfileAddressOpenApi(registry: OpenAPIRegistry) {
     method: 'put',
     path: '/marketplace/profiles/{kind}/address',
     summary:
-      'Claim or replace the current actor’s address. Previous handles are released immediately; no aliases are retained.',
+      'Claim or replace the current actor’s address after publishing the profile. Previous handles are released immediately; no aliases are retained.',
     request: {
       params: profileAddressParamsSchema,
       body: {
@@ -54,7 +54,8 @@ export function registerProfileAddressOpenApi(registry: OpenAPIRegistry) {
     responses: {
       ...errors,
       409: {
-        description: 'The handle is already assigned. The previous address remains unchanged.',
+        description:
+          'The handle is already assigned or the profile is not published. The previous address remains unchanged.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       200: {
@@ -67,10 +68,15 @@ export function registerProfileAddressOpenApi(registry: OpenAPIRegistry) {
     ...common,
     method: 'get',
     path: '/marketplace/profiles/{kind}/address/availability',
-    summary: 'Check availability in the shared broker and agency namespace.',
+    summary:
+      'Check availability for a published profile in the shared broker and agency namespace.',
     request: { params: profileAddressParamsSchema, query: profileAddressAvailabilityQuerySchema },
     responses: {
       ...errors,
+      409: {
+        description: 'Publish the profile before checking or editing its address.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
       200: {
         description: 'Availability is advisory; saving also enforces uniqueness.',
         content: { 'application/json': { schema: profileAddressAvailabilitySchema } },

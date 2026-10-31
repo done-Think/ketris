@@ -14,21 +14,26 @@ vi.mock('../../services/profile-address-service', () => ({
   profileAddressService: { getOwn: vi.fn(), save: vi.fn(), availability: vi.fn() },
 }))
 const copy = vi.fn()
-function setup() {
+function setup(published = true) {
   const submit = vi.fn((event) => event.preventDefault())
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
-  render(
+  const tree = (isPublished: boolean) => (
     <QueryClientProvider client={client}>
       <ThemeProvider theme={theme}>
         <form onSubmit={submit}>
-          <PublicProfileAddressPanel kind="broker" />
+          <PublicProfileAddressPanel kind="broker" published={isPublished} />
         </form>
       </ThemeProvider>
-    </QueryClientProvider>,
+    </QueryClientProvider>
   )
-  return { submit, user: userEvent.setup() }
+  const view = render(tree(published))
+  return {
+    submit,
+    user: userEvent.setup(),
+    setPublished: (value: boolean) => view.rerender(tree(value)),
+  }
 }
 beforeEach(() => {
   vi.clearAllMocks()
@@ -45,6 +50,27 @@ beforeEach(() => {
   }))
 })
 describe('profile address editor', () => {
+  it('closes address editing on unpublish and restores the saved link after republishing', async () => {
+    const { user, setPublished } = setup()
+    await user.click(await screen.findByRole('button', { name: 'Personalizar endereço' }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    setPublished(false)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Copiar link' })).not.toBeInTheDocument()
+    setPublished(true)
+    expect(await screen.findByRole('link', { name: '/@current-name' })).toBeVisible()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(profileAddressService.save).not.toHaveBeenCalled()
+  })
+  it('requires publication before fetching, copying or editing a public address', () => {
+    setup(false)
+    expect(screen.getByText(/Publique o perfil para liberar seu link público/)).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Personalizar endereço' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Copiar link' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    expect(profileAddressService.getOwn).not.toHaveBeenCalled()
+  })
   it('saves independently without submitting the surrounding profile form', async () => {
     const { user, submit } = setup()
     await user.click(await screen.findByRole('button', { name: 'Personalizar endereço' }))

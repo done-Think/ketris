@@ -50,19 +50,24 @@ export function PublicProfileAddressDialog({
     availability.data?.available === false ||
     getApiErrorCode(save.error) === 'PUBLIC_PROFILE_ADDRESS_TAKEN'
   const invalid = touched && (!valid || reserved)
+  const unpublished =
+    getApiErrorCode(save.error) === 'PUBLIC_PROFILE_NOT_PUBLISHED' ||
+    getApiErrorCode(availability.error) === 'PUBLIC_PROFILE_NOT_PUBLISHED'
   const helper = invalid
     ? t(reserved ? 'reserved' : 'format')
-    : taken
-      ? t('taken')
-      : save.isError
-        ? t('saveError')
-        : availability.isFetching
-          ? t('checking')
-          : availability.isError
-            ? t('checkError')
-            : availability.data?.available
-              ? t('available')
-              : t('format')
+    : unpublished
+      ? t('unpublishedHint')
+      : taken
+        ? t('taken')
+        : save.isError
+          ? t('saveError')
+          : availability.isFetching
+            ? t('checking')
+            : availability.isError
+              ? t('checkError')
+              : availability.data?.available
+                ? t('available')
+                : t('format')
 
   return (
     <Dialog
@@ -79,7 +84,7 @@ export function PublicProfileAddressDialog({
           event.preventDefault()
           event.stopPropagation()
           setTouched(true)
-          if (!valid || reserved || taken || save.isPending) return
+          if (!valid || reserved || taken || unpublished || save.isPending) return
           save.mutate(handle, {
             onSuccess: () => {
               enqueueSnackbar(t('saved'), { variant: 'success' })
@@ -133,7 +138,14 @@ export function PublicProfileAddressDialog({
             type="submit"
             variant="contained"
             loading={save.isPending}
-            disabled={!valid || reserved || taken || save.isPending || handle === currentHandle}
+            disabled={
+              !valid ||
+              reserved ||
+              taken ||
+              unpublished ||
+              save.isPending ||
+              handle === currentHandle
+            }
           >
             {t('save')}
           </Button>

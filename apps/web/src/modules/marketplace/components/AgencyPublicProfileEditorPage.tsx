@@ -56,7 +56,8 @@ export function AgencyPublicProfileEditorPage() {
 }
 
 function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
-  const { data: address } = useOwnProfileAddress('agency')
+  const published = profile?.status === 'PUBLISHED'
+  const { data: address } = useOwnProfileAddress('agency', published)
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.agencyProfileEditor')
   const tFeatures = useTranslations('marketplace.propertyFeatures')
@@ -116,6 +117,7 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
       onClosePreview={editor.closePreview}
       preview={
         <AgencyPublicProfilePage
+          publicLinkEnabled={published}
           publicHandle={address?.handle ?? undefined}
           agency={toPreviewProfile(
             editor.form.getValues(),
@@ -127,7 +129,7 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
         />
       }
     >
-      <PublicProfileAddressPanel kind="agency" />
+      <PublicProfileAddressPanel kind="agency" published={published} />
       <PublicProfileEditorPanel title={t('fields.mainInfo')}>
         <Box sx={styles.mainFields}>
           <RhfTextField

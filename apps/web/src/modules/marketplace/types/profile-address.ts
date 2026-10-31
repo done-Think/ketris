@@ -4,8 +4,8 @@ export type OwnPublicProfileAddress = components['schemas']['OwnPublicProfileAdd
 export type PublicProfileKind = OwnPublicProfileAddress['kind']
 export type PublicProfileAddressAvailability =
   components['schemas']['PublicProfileAddressAvailability']
-export type ProfileAddressPanelProps = { kind: PublicProfileKind }
-export type ProfileAddressDialogProps = ProfileAddressPanelProps & {
+export type ProfileAddressPanelProps = { kind: PublicProfileKind; published: boolean }
+export type ProfileAddressDialogProps = Pick<ProfileAddressPanelProps, 'kind'> & {
   handle: string | null
   onClose: () => void
 }

@@ -4,11 +4,12 @@ import { profileAddressService } from '../services/profile-address-service'
 import type { PublicProfileKind } from '../types/profile-address'
 import { useMarketplaceActorKey } from './use-marketplace-actor-key'
 
-export function useOwnProfileAddress(kind: PublicProfileKind) {
+export function useOwnProfileAddress(kind: PublicProfileKind, enabled = true) {
   const actorKey = useMarketplaceActorKey()
   return useQuery({
     queryKey: marketplaceQueryKeys.ownAddress(actorKey, kind),
     queryFn: () => profileAddressService.getOwn(kind),
+    enabled,
   })
 }
 export function useProfileAddressAvailability(kind: PublicProfileKind, handle: string | null) {
