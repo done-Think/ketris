@@ -15,3 +15,4 @@ cypress/screenshots
 .local
 apps/web/.local
 /Claude outputs/
+*.pem

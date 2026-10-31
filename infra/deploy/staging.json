@@ -4,6 +4,8 @@
   "databaseHost": "ketris-staging.cubemqk8wpqi.us-east-1.rds.amazonaws.com",
   "databaseName": "ketris",
   "compatibleMigrations": {
-    "20261105090000_property_owner_contact": "Adds a nullable CRM contact reference and tenant-scoped indexes without changing existing properties, accounts, or access grants. The previous application remains compatible."
+    "20261105090000_property_owner_contact": "Adds a nullable CRM contact reference and tenant-scoped indexes without changing existing properties, accounts, or access grants. The previous application remains compatible.",
+    "20261106090000_agency_public_profile_colors": "Adds nullable public profile color columns without rewriting existing profiles. Older clients ignore the added columns and continue using the tenant palette. Retain the columns during application rollback.",
+    "20261108090000_public_profile_addresses": "Adds an initially empty public profile address registry with indexes and foreign keys, preserving existing accounts, profiles, and public identifiers. Older clients ignore the table. Retain it during application rollback to preserve chosen addresses."
   }
 }
