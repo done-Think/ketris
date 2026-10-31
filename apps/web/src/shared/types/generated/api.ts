@@ -4643,6 +4643,7 @@ export interface paths {
           page?: number
           pageSize?: number
           q?: string
+          status?: 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
@@ -12027,6 +12028,7 @@ export interface components {
       name: string
       notes?: string | null
       phone: string
+      propertyId?: string
       source: components['schemas']['LeadSource']
     }
     CreateMaintenanceProviderRequest: {
@@ -12192,6 +12194,8 @@ export interface components {
       /** @default 5 */
       pageSize?: number
       q?: string
+      /** @enum {string} */
+      status?: 'DRAFT' | 'PUBLISHED' | 'RENTED' | 'SOLD' | 'INACTIVE'
     }
     CrmPropertyPage: {
       pagination: {
@@ -12441,6 +12445,7 @@ export interface components {
       notes: string | null
       opportunityId: string | null
       phone: string
+      propertyId?: string | null
       responsibleId: string
       responsibleName?: string
       source: components['schemas']['LeadSource']

@@ -154,6 +154,7 @@ export async function seedMarketplaceFixtures(
     dualPropertyTitle: dual.title,
     city,
     brokerName,
+    brokerEmail: broker.email,
     ownerEmail,
   }
 }
@@ -184,9 +185,21 @@ export async function readMarketplaceInquiryEvidence(
     orderBy: { createdAt: 'desc' },
   })
   const latest = inquiries[0]
+  const leads = await prisma.lead.findMany({ where: { propertyId } })
 
   return {
     count: inquiries.length,
+    leadCount: leads.length,
+    linked: Boolean(
+      latest &&
+      leads.some(
+        (lead) =>
+          lead.opportunityId === latest.id &&
+          lead.responsibleId === latest.responsibleId &&
+          lead.tenantId === latest.tenantId &&
+          lead.stage === 'PROPOSAL',
+      ),
+    ),
     status: latest?.status ?? null,
     leadName: latest?.interestedName ?? null,
     leadEmail: latest?.interestedEmail ?? null,

@@ -17,6 +17,7 @@ export class PrismaCrmPropertyCatalog implements CrmPropertyCatalog {
   }
   async list(filters: CrmPropertyFilters) {
     const where = this.where()
+    if (filters.status) where.status = filters.status
     if (filters.q)
       where.OR = [
         { title: { contains: filters.q, mode: 'insensitive' } },

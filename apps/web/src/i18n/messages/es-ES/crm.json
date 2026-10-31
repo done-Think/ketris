@@ -174,7 +174,8 @@
         "interest": "Inmueble o interés",
         "budget": "Presupuesto",
         "source": "Origen",
-        "notes": "Observaciones"
+        "notes": "Observaciones",
+        "property": "Inmueble de interés"
       },
       "sources": {
         "marketplace": "Marketplace",
@@ -195,11 +196,13 @@
         "nameRequired": "Indica el nombre del lead",
         "phoneInvalid": "Indica un teléfono válido",
         "emailInvalid": "Indica un correo válido",
-        "interestRequired": "Indica el inmueble o interés",
+        "interestRequired": "Selecciona un inmueble disponible.",
         "budgetRequired": "Indica el presupuesto",
         "sourceRequired": "Indica el origen",
-        "textTooLong": "El texto supera el límite permitido."
-      }
+        "textTooLong": "El texto supera el límite permitido.",
+        "propertyUnavailable": "El inmueble seleccionado ya no está disponible o no pertenece a tu cartera. Selecciona otro inmueble."
+      },
+      "propertyHint": "Selecciona un inmueble disponible que gestiones."
     },
     "filters": {
       "all": "Todos",
@@ -228,7 +231,8 @@
       "emailLabel": "Email",
       "email": "Email",
       "convert": "Convertir en oportunidad",
-      "alreadyConverted": "Ya convertido"
+      "alreadyConverted": "Ya convertido",
+      "viewOpportunity": "Ver oportunidad"
     },
     "convert": {
       "eyebrow": "Convertir lead",

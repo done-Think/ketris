@@ -6,13 +6,28 @@ import { RhfTextField } from '@shared/components/form'
 
 import { leadSourceOptions } from '../../config/lead-creation'
 import type { CreateLeadInterestStepProps } from '../../types/lead'
+import { Controller } from 'react-hook-form'
+import { PropertyAutocomplete } from '../opportunity-detail/PropertyAutocomplete'
 
 export function CreateLeadInterestStep({ control }: CreateLeadInterestStepProps) {
   const t = useTranslations('crm.leads')
 
   return (
     <Box sx={crmStyles.boxSx}>
-      <RhfTextField control={control} name="interest" label={t('create.fields.interest')} />
+      <Controller
+        control={control}
+        name="property"
+        render={({ field, fieldState }) => (
+          <PropertyAutocomplete
+            value={field.value}
+            onChange={field.onChange}
+            availableOnly
+            label={t('create.fields.property')}
+            error={Boolean(fieldState.error)}
+            helperText={fieldState.error?.message ?? t('create.propertyHint')}
+          />
+        )}
+      />
       <RhfTextField control={control} name="budget" label={t('create.fields.budget')} />
       <RhfTextField
         control={control}

@@ -116,6 +116,8 @@ export type CreateOpportunityDialogProps = {
 }
 
 export type PropertyAutocompleteProps = {
+  availableOnly?: boolean
+  label?: string
   value: CrmPropertySummary | null
   onChange: (property: CrmPropertySummary | null) => void
   error?: boolean

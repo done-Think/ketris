@@ -86,7 +86,7 @@ function buildUseCases(db: CrmDatabase, scope: CrmScope) {
     updateContactUseCase: new UpdateContactUseCase(contactRepository, opportunityRepository),
     archiveContactUseCase: new ArchiveContactUseCase(contactRepository, opportunityRepository),
 
-    createLeadUseCase: new CreateLeadUseCase(leadRepository),
+    createLeadUseCase: new CreateLeadUseCase(leadRepository, propertyLookup),
     listLeadsUseCase: new ListLeadsUseCase(leadRepository),
     getLeadUseCase: new GetLeadUseCase(leadRepository),
     updateLeadUseCase: new UpdateLeadUseCase(leadRepository),
