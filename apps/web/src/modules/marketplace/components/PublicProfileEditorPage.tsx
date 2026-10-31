@@ -152,7 +152,7 @@ function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
             control={control}
             name="neighborhoods"
             label={t('fields.neighborhoods')}
-            helperText={t('fields.commaSeparatedHint')}
+            helperText={t('fields.neighborhoodsHint')}
             disabled={disabled}
           />
           <RhfTextField

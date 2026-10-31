@@ -59,10 +59,14 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
               ...(broker.availability
                 ? [{ label: t('publicProfile.facts.availability'), value: broker.availability }]
                 : []),
-              {
-                label: t('publicProfile.facts.neighborhoods'),
-                value: broker.neighborhoods.join(', '),
-              },
+              ...(broker.neighborhoods.length
+                ? [
+                    {
+                      label: t('publicProfile.facts.neighborhoods'),
+                      value: broker.neighborhoods.join(', '),
+                    },
+                  ]
+                : []),
               { label: t('publicProfile.facts.activeListings'), value: `${broker.activeListings}` },
               { label: t('publicProfile.facts.deals'), value: `${broker.dealsClosed}` },
             ]}

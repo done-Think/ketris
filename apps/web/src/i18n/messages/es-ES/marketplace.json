@@ -296,7 +296,8 @@
       "secondaryColor": "Color secundario",
       "backgroundColor": "Fondo del perfil",
       "photoUrl": "URL de la foto",
-      "bannerUrl": "URL del banner"
+      "bannerUrl": "URL del banner",
+      "neighborhoodsHint": "Opcional. Para zonas amplias, indica solo tu región de actuación. Separa los barrios con comas."
     },
     "actions": {
       "preview": "Vista previa",
@@ -315,7 +316,6 @@
       "availabilityRequired": "Introduce la disponibilidad",
       "headlineRequired": "Introduce el título destacado",
       "regionRequired": "Introduce la región de actuación",
-      "neighborhoodsRequired": "Introduce los barrios de actuación",
       "specialtiesRequired": "Introduce las especialidades",
       "primaryColorRequired": "Introduce el color principal",
       "secondaryColorRequired": "Introduce el color secundario",
