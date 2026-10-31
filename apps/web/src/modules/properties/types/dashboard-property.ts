@@ -79,16 +79,7 @@ export type DashboardProperty = {
     sale: string
     condominium: string
     propertyTax: string
-    administrationFee: string
-    securityDeposit: string
-    lastAdjustment: string
   }
-  participants: Array<{
-    name: string
-    role: string
-    initials: string
-    imageUrl?: string
-  }>
   activityHistory: Array<{
     label: string
     date: string
@@ -285,6 +276,11 @@ export type PropertyDetailMainPanelProps = {
 
 export type PropertyDetailSidebarProps = {
   property: DashboardProperty
+}
+
+export type PropertyContractParticipantsProps = {
+  propertyId: string
+  contractId: string
 }
 
 export type PropertyDetailPanelProps = {

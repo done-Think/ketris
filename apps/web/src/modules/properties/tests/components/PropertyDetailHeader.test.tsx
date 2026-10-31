@@ -56,11 +56,7 @@ const baseProperty: DashboardProperty = {
     sale: 'Não anunciado',
     condominium: 'R$ 1.200',
     propertyTax: 'R$ 380/mês',
-    administrationFee: 'Não informado',
-    securityDeposit: 'Não informado',
-    lastAdjustment: 'Não informado',
   },
-  participants: [],
   activityHistory: [],
 }
 
