@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
+import { LogoutToMarketplaceContext } from '@shared/lib/auth/logout-to-marketplace-context'
 
 import { MarketplaceHeader } from '../../components/MarketplaceHeader'
 
@@ -55,6 +56,32 @@ function renderMarketplaceHeader() {
 describe('MarketplaceHeader', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('delegates logout to the enclosing dashboard when the header is inside a profile preview', async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { id: 'user-1', name: 'Maria Silva', email: 'maria@example.com' },
+        expires: '2099-01-01T00:00:00Z',
+      },
+      status: 'authenticated',
+      update: vi.fn(),
+    })
+    const logout = vi.fn().mockResolvedValue(undefined)
+    render(
+      <ThemeProvider theme={theme}>
+        <LogoutToMarketplaceContext.Provider value={logout}>
+          <MarketplaceHeader activeItemId="brokers" />
+        </LogoutToMarketplaceContext.Provider>
+      </ThemeProvider>,
+    )
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Abrir perfil' }))
+    await user.click(screen.getByRole('button', { name: /sair/i }))
+    expect(logout).toHaveBeenCalledOnce()
+    expect(clearClientSession).not.toHaveBeenCalled()
+    expect(routerMock.replace).not.toHaveBeenCalled()
+    expect(routerMock.refresh).not.toHaveBeenCalled()
   })
 
   it('sem sessão: não mostra menu de perfil e deixa o Entrar como último item', () => {

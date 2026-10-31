@@ -31,6 +31,11 @@ export type AppShellProps = {
   allowLocalDashboardPreview?: boolean
 }
 
+export type LogoutTransitionProps = {
+  hasError: boolean
+  onRetry: () => void
+}
+
 export type AppShellSidebarProps = {
   collapsed: boolean
   showCollapseControl: boolean
