@@ -14,10 +14,13 @@ export interface MarketplaceFixtureResult {
   dualPropertyTitle: string
   city: string
   brokerName: string
+  brokerEmail: string
   ownerEmail: string
 }
 
 export interface MarketplaceInquiryEvidence {
+  leadCount: number
+  linked: boolean
   count: number
   status: string | null
   leadName: string | null

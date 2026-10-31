@@ -8,6 +8,10 @@ import { theme } from '@shared/theme/theme'
 
 import { CreateLeadDialog } from '../../components/CreateLeadDialog'
 import { useCreateLead } from '../../hooks/use-leads'
+import { useCrmProperties } from '../../hooks/use-opportunities'
+import { property } from '../fixtures/property'
+
+vi.mock('../../hooks/use-opportunities', () => ({ useCrmProperties: vi.fn() }))
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -50,7 +54,8 @@ async function fillContactStep(user: ReturnType<typeof userEvent.setup>) {
 }
 
 async function fillInterestStep(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText('Imóvel ou interesse'), 'Studio Pinheiros')
+  await user.click(screen.getByLabelText(/^Imóvel de interesse/))
+  await user.click(await screen.findByRole('option', { name: /Studio Pinheiros/ }))
   await user.type(screen.getByLabelText('Orçamento'), 'R$ 3.200')
 }
 
@@ -62,6 +67,10 @@ describe('CreateLeadDialog', () => {
       status: 'authenticated',
     } as unknown as ReturnType<typeof useSession>)
     mockCreateLead()
+    vi.mocked(useCrmProperties).mockReturnValue({
+      data: [{ ...property, title: 'Studio Pinheiros' }],
+      isFetching: false,
+    } as ReturnType<typeof useCrmProperties>)
   })
 
   it('renders the create lead title and the first step fields', () => {
@@ -81,7 +90,7 @@ describe('CreateLeadDialog', () => {
 
     expect(await screen.findByText('Informe o nome do lead')).toBeVisible()
     expect(screen.queryByText('Informe um e-mail válido')).not.toBeInTheDocument()
-    expect(screen.queryByLabelText('Imóvel ou interesse')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/^Imóvel de interesse/)).not.toBeInTheDocument()
   })
 
   it('walks through all three steps and shows the entered data on review', async () => {
@@ -128,6 +137,7 @@ describe('CreateLeadDialog', () => {
         phone: '(11) 98888-7777',
         email: 'beatriz@example.com',
         interest: 'Studio Pinheiros',
+        propertyId: 'property-1',
       }),
       expect.anything(),
     )
@@ -175,11 +185,11 @@ describe('CreateLeadDialog', () => {
     renderDialog()
     await user.click(screen.getByText('Revisão'))
     expect(screen.getByLabelText('Nome')).toBeVisible()
-    expect(screen.queryByLabelText('Imóvel ou interesse')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/^Imóvel de interesse/)).not.toBeInTheDocument()
     await fillContactStep(user)
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
-    expect(screen.getByLabelText('Imóvel ou interesse')).toBeVisible()
+    expect(screen.getByLabelText(/^Imóvel de interesse/)).toBeVisible()
     await user.click(screen.getByText('Revisão'))
-    expect(screen.getByLabelText('Imóvel ou interesse')).toBeVisible()
+    expect(screen.getByLabelText(/^Imóvel de interesse/)).toBeVisible()
   })
 })

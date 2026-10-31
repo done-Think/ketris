@@ -176,7 +176,8 @@
         "interest": "Property or interest",
         "budget": "Budget",
         "source": "Source",
-        "notes": "Notes"
+        "notes": "Notes",
+        "property": "Property of interest"
       },
       "sources": {
         "marketplace": "Marketplace",
@@ -197,11 +198,13 @@
         "nameRequired": "Enter the lead's name",
         "phoneInvalid": "Enter a valid phone number",
         "emailInvalid": "Enter a valid email",
-        "interestRequired": "Enter the property or interest",
+        "interestRequired": "Select an available property.",
         "budgetRequired": "Enter the budget",
         "sourceRequired": "Enter the source",
-        "textTooLong": "Text exceeds the allowed limit."
-      }
+        "textTooLong": "Text exceeds the allowed limit.",
+        "propertyUnavailable": "The selected property is no longer available or is not in your portfolio. Select another property."
+      },
+      "propertyHint": "Select an available property you manage."
     },
     "filters": {
       "all": "All",
@@ -230,7 +233,8 @@
       "emailLabel": "Email",
       "email": "Email",
       "convert": "Convert to opportunity",
-      "alreadyConverted": "Already converted"
+      "alreadyConverted": "Already converted",
+      "viewOpportunity": "View opportunity"
     },
     "convert": {
       "eyebrow": "Convert lead",

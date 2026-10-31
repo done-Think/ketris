@@ -1,6 +1,7 @@
 import type { Opportunity } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
+import { currencyOptions } from '@shared/config/currency'
 import { PostgresRateLimitStore } from '@server/security/postgres-rate-limit-store'
 import { inquiryContactRateLimitKey, inquiryContactRateLimitPolicy } from './inquiry-rate-limit'
 import {
@@ -39,7 +40,7 @@ export class PrismaInquiryRepository implements InquiryRepository {
     return prisma.$transaction(async (tx) => {
       const property = await tx.property.findFirst({
         where: { id: inquiry.propertyId, tenantId: inquiry.tenantId, status: 'PUBLISHED' },
-        select: { responsibleId: true },
+        select: { responsibleId: true, title: true },
       })
       if (!property) throw new PropertyNotFoundError()
       const store = new PostgresRateLimitStore(tx)
@@ -60,6 +61,22 @@ export class PrismaInquiryRepository implements InquiryRepository {
           proposedValue: inquiry.proposedValue,
           notes: inquiry.notes,
           status: 'SENT',
+        },
+      })
+      await tx.lead.create({
+        data: {
+          tenantId: inquiry.tenantId,
+          propertyId: inquiry.propertyId,
+          responsibleId: property.responsibleId,
+          name: inquiry.leadName,
+          email: inquiry.leadEmail.trim().toLowerCase(),
+          phone: inquiry.leadPhone ?? '',
+          interest: property.title,
+          budget: new Intl.NumberFormat('pt-BR', currencyOptions).format(inquiry.proposedValue),
+          source: 'MARKETPLACE',
+          stage: 'PROPOSAL',
+          notes: inquiry.notes,
+          opportunityId: opportunity.id,
         },
       })
       return toDomainInquiry(opportunity)
