@@ -1,4 +1,5 @@
 export interface MarketplaceFixtureInput {
+  coordinates?: { latitude: number; longitude: number }
   suffix: string
   password: string
 }

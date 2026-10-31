@@ -413,7 +413,9 @@
       "zoomIn": "Aproximar",
       "zoomOut": "Afastar",
       "attribution": "Mostrar atribuição",
-      "openProperty": "Abrir {title}"
+      "openProperty": "Abrir {title}",
+      "yourLocation": "Sua localização aproximada",
+      "showResults": "Ver imóveis encontrados"
     },
     "filters": {
       "upToPrice": "Até {price}",
@@ -458,6 +460,14 @@
       "optionInvalid": "Opção inválida",
       "numbersOnly": "Use apenas números",
       "numberTooLong": "Valor muito longo"
+    },
+    "location": {
+      "useLocation": "Usar minha localização",
+      "locating": "Localizando…",
+      "manual": "A região informada na busca tem prioridade.",
+      "unavailable": "Não foi possível obter sua localização. Escolha uma cidade ou tente novamente.",
+      "nearby": "Imóveis ordenados pela proximidade.",
+      "located": "Usando sua localização."
     }
   },
   "directory": {

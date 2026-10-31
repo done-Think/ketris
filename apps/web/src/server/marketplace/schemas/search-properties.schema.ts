@@ -1,5 +1,6 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
+import { validationRefinement } from '@server/shared/http/validation-messages'
 
 import {
   propertyPurposeSchema,
@@ -18,6 +19,8 @@ export const searchPropertiesQuerySchema = z
     propertyType: publicPropertyTypeSchema.optional(),
     city: z.string().min(1).optional(),
     location: z.string().min(1).optional(),
+    latitude: z.coerce.number().min(-90).max(90).optional(),
+    longitude: z.coerce.number().min(-180).max(180).optional(),
     minPrice: z.coerce.number().nonnegative().optional(),
     maxPrice: z.coerce.number().nonnegative().optional(),
     minBedrooms: z.coerce.number().int().nonnegative().optional(),
@@ -38,6 +41,11 @@ export const searchPropertiesQuerySchema = z
   })
   .strict()
   .openapi('SearchPropertiesQuery')
+
+export const validatedSearchPropertiesQuerySchema = searchPropertiesQuerySchema.refine(
+  ({ latitude, longitude }) => (latitude === undefined) === (longitude === undefined),
+  validationRefinement('coordinatesPairRequired'),
+)
 
 export const searchPropertiesResponseSchema = z
   .object({

@@ -16,8 +16,11 @@ export class MarketplaceService extends BaseService {
 
   searchProperties(filters: SearchPropertiesFilters = {}): Promise<ListPropertiesResponse> {
     const params = {
+      ...(filters.latitude !== undefined ? { latitude: filters.latitude } : {}),
+      ...(filters.longitude !== undefined ? { longitude: filters.longitude } : {}),
       ...(filters.purpose ? { purpose: filters.purpose } : {}),
       ...(filters.propertyType ? { propertyType: filters.propertyType } : {}),
+      ...(filters.city ? { city: filters.city } : {}),
       ...(filters.location ? { location: filters.location } : {}),
       ...(filters.minPrice !== undefined ? { minPrice: filters.minPrice } : {}),
       ...(filters.maxPrice !== undefined ? { maxPrice: filters.maxPrice } : {}),

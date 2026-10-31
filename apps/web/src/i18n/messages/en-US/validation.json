@@ -79,6 +79,7 @@
     "cpfInvalid": "Enter a valid CPF.",
     "rateLimitUnavailable": "Service temporarily unavailable.",
     "rateLimitExceeded": "Too many requests. Please try again later.",
-    "clientUpdateRequired": "The application was updated. Reload the page to continue."
+    "clientUpdateRequired": "The application was updated. Reload the page to continue.",
+    "coordinatesPairRequired": "Provide latitude and longitude together."
   }
 }

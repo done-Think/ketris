@@ -17,8 +17,9 @@ export const normalizeSearchText = (value: string) =>
 export function buildSearchHref({ selectedSearch, searchDraft, priceRange, purpose }: SearchState) {
   const query: Record<string, string> = {}
   if (purpose) query.purpose = purpose
-  const location = searchDraft.location.trim() || selectedSearch.location
+  const location = searchDraft.location.trim()
   if (location) query[searchOptions.location.query] = location
+  else if (selectedSearch.location) query.city = selectedSearch.location
   if (isMarketplacePropertyType(selectedSearch.propertyType))
     query[searchOptions.propertyType.query] = selectedSearch.propertyType
   if (isValidPriceRange(priceRange) && (priceRange[0] !== null || priceRange[1] !== null))

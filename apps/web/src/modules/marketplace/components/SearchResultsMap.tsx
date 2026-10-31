@@ -1,9 +1,10 @@
 'use client'
 
-import { useMemo } from 'react'
-import { Box } from '@mui/material'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Box, Button } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
+import type { MapRef } from 'react-map-gl/maplibre'
 
 import { Link } from '@/i18n/navigation'
 import { env } from '@config/env'
@@ -12,6 +13,12 @@ import type { SearchResultsMapProps } from '../types/search'
 import { buildPropertyDetailHref } from '../utils/property-links'
 import { getMapMarkerStyle } from '../styles/search-results-map-marker.styles'
 import { styles, getBoxStyles } from '../styles/search-results-map.styles'
+import {
+  defaultSearchMapView,
+  getSearchMapCamera,
+  isValidMapLocation,
+} from '../utils/search-map-camera'
+import type { SearchMapCamera } from '../types/map-location'
 
 const defaultMapStyleUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 const mapContainerStyle = { width: '100%', height: '100%' } as const
@@ -20,12 +27,29 @@ function getMapMarkerLabel(price: string) {
   return price.replace(/\s*\/\s*[^/]+$/, '')
 }
 
+function applyCamera(map: MapRef | null, camera: SearchMapCamera) {
+  if ('bounds' in camera) map?.fitBounds(camera.bounds, { padding: 48, maxZoom: 14, duration: 0 })
+  else map?.easeTo({ center: camera.center, zoom: camera.zoom, duration: 0 })
+}
+
 export function SearchResultsMap({
   properties,
   selectedPropertyId,
   onSelectProperty,
+  viewerLocation,
+  locationUpdatedAt,
 }: SearchResultsMapProps) {
   const t = useTranslations('marketplace.searchResults.map')
+  const mapRef = useRef<MapRef>(null)
+  const [ready, setReady] = useState(false)
+  const points = properties.flatMap(({ mapCenter }) =>
+    mapCenter && isValidMapLocation(mapCenter) ? [mapCenter] : [],
+  )
+  const cameraKey = JSON.stringify(getSearchMapCamera(points, viewerLocation))
+
+  useEffect(() => {
+    if (ready) applyCamera(mapRef.current, JSON.parse(cameraKey) as SearchMapCamera)
+  }, [ready, cameraKey, locationUpdatedAt])
   const mapStyleUrl =
     env.mapStyleUrl && !env.mapStyleUrl.includes('demotiles') ? env.mapStyleUrl : defaultMapStyleUrl
   const orderedProperties = useMemo(
@@ -39,23 +63,21 @@ export function SearchResultsMap({
   return (
     <Box sx={styles.box}>
       <Map
+        ref={mapRef}
+        onLoad={() => setReady(true)}
         locale={{
           'Map.Title': t('title'),
           'NavigationControl.ZoomIn': t('zoomIn'),
           'NavigationControl.ZoomOut': t('zoomOut'),
           'AttributionControl.ToggleAttribution': t('attribution'),
         }}
-        initialViewState={{
-          latitude: -23.5617,
-          longitude: -46.6559,
-          zoom: 12,
-        }}
+        initialViewState={defaultSearchMapView}
         mapStyle={mapStyleUrl}
         style={mapContainerStyle}
         attributionControl={true}
       >
         {orderedProperties
-          .filter((property) => property.mapCenter)
+          .filter((property) => property.mapCenter && isValidMapLocation(property.mapCenter))
           .map((property) => {
             const selected = property.id === selectedPropertyId
             const detailsHref = buildPropertyDetailHref(property.href, property.purpose)
@@ -83,8 +105,27 @@ export function SearchResultsMap({
               </Marker>
             )
           })}
+        {viewerLocation && isValidMapLocation(viewerLocation) ? (
+          <Marker
+            latitude={viewerLocation.latitude}
+            longitude={viewerLocation.longitude}
+            anchor="center"
+          >
+            <Box role="img" aria-label={t('yourLocation')} sx={styles.viewerMarker} />
+          </Marker>
+        ) : null}
         <NavigationControl position="bottom-right" showCompass={false} />
       </Map>
+      {points.length > 0 ? (
+        <Button
+          variant="contained"
+          color="inherit"
+          sx={styles.resultsButton}
+          onClick={() => applyCamera(mapRef.current, getSearchMapCamera(points))}
+        >
+          {t('showResults')}
+        </Button>
+      ) : null}
     </Box>
   )
 }
