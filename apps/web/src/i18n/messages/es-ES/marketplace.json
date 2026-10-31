@@ -414,8 +414,6 @@
       "zoomOut": "Alejar",
       "attribution": "Mostrar atribución",
       "openProperty": "Abrir {title}",
-      "yourLocation": "Tu ubicación aproximada",
-      "showResults": "Ver inmuebles encontrados",
       "approximateLocation": "Ubicación aproximada por dirección",
       "unlocatedProperties": "Algunos inmuebles aún no se pudieron ubicar por su dirección y no aparecen en el mapa."
     },

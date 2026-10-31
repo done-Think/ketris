@@ -414,8 +414,6 @@
       "zoomOut": "Zoom out",
       "attribution": "Show attribution",
       "openProperty": "Open {title}",
-      "yourLocation": "Your approximate location",
-      "showResults": "Show matching properties",
       "approximateLocation": "Approximate address location",
       "unlocatedProperties": "Some properties could not yet be located by their address and are not shown on the map."
     },

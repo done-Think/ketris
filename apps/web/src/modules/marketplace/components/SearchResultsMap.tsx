@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
 import { useTranslations } from 'next-intl'
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre'
@@ -110,31 +110,12 @@ export function SearchResultsMap({
               </Marker>
             )
           })}
-        {viewerLocation && isValidMapLocation(viewerLocation) ? (
-          <Marker
-            latitude={viewerLocation.latitude}
-            longitude={viewerLocation.longitude}
-            anchor="center"
-          >
-            <Box role="img" aria-label={t('yourLocation')} sx={styles.viewerMarker} />
-          </Marker>
-        ) : null}
         <NavigationControl position="bottom-right" showCompass={false} />
       </Map>
       {points.length < properties.length ? (
         <Typography role="status" sx={styles.locationNotice}>
           {t('unlocatedProperties')}
         </Typography>
-      ) : null}
-      {points.length > 0 ? (
-        <Button
-          variant="contained"
-          color="inherit"
-          sx={styles.resultsButton}
-          onClick={() => applyCamera(mapRef.current, getSearchMapCamera(points))}
-        >
-          {t('showResults')}
-        </Button>
       ) : null}
     </Box>
   )
