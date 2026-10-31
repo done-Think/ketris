@@ -84,6 +84,17 @@ export async function seedCrmFixtures(
       status: 'DRAFT',
     },
   })
+  const availableProperty = await prisma.property.create({
+    data: {
+      tenantId: tenant.id,
+      responsibleId: agent.id,
+      title: 'Apartamento CRM disponível',
+      purpose: 'RENT',
+      type: 'APARTMENT',
+      price: 2000,
+      status: 'PUBLISHED',
+    },
+  })
   const foreignProperty = await prisma.property.create({
     data: {
       tenantId: foreignTenant.id,
@@ -177,6 +188,8 @@ export async function seedCrmFixtures(
     agentEmail: agent.email,
     propertyId: property.id,
     propertyTitle: property.title,
+    availablePropertyId: availableProperty.id,
+    availablePropertyTitle: availableProperty.title,
     contactId,
     contactName,
     opportunityId,
@@ -212,6 +225,7 @@ export async function readCrmEvidence(
 export async function cleanupCrmFixtures(prisma: PrismaClient, tenantIds: string[]): Promise<null> {
   for (const tenantId of tenantIds) {
     await assertFixtureTenant(prisma, tenantId)
+    await prisma.lead.deleteMany({ where: { tenantId } })
     await prisma.opportunity.deleteMany({ where: { tenantId } })
     await prisma.property.deleteMany({ where: { tenantId } })
     await prisma.tenant.delete({ where: { id: tenantId } })

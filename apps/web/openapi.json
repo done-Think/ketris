@@ -952,6 +952,7 @@
           "phone": { "type": "string" },
           "email": { "type": "string", "nullable": true },
           "interest": { "type": "string" },
+          "propertyId": { "type": "string", "nullable": true },
           "budget": { "type": "string" },
           "source": { "$ref": "#/components/schemas/LeadSource" },
           "stage": { "$ref": "#/components/schemas/LeadStage" },
@@ -1107,6 +1108,7 @@
           "phone": { "type": "string", "minLength": 1, "maxLength": 32 },
           "email": { "type": "string", "nullable": true, "maxLength": 254, "format": "email" },
           "interest": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "propertyId": { "type": "string", "minLength": 1 },
           "budget": { "type": "string", "minLength": 1, "maxLength": 500 },
           "source": { "$ref": "#/components/schemas/LeadSource" },
           "notes": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 10000 }
@@ -1484,7 +1486,11 @@
         "properties": {
           "q": { "type": "string", "maxLength": 500 },
           "page": { "type": "integer", "minimum": 1, "maximum": 1000000, "default": 1 },
-          "pageSize": { "type": "integer", "default": 5 }
+          "pageSize": { "type": "integer", "default": 5 },
+          "status": {
+            "type": "string",
+            "enum": ["DRAFT", "PUBLISHED", "RENTED", "SOLD", "INACTIVE"]
+          }
         },
         "additionalProperties": false
       },
@@ -10109,6 +10115,15 @@
             "schema": { "type": "integer", "default": 5 },
             "required": false,
             "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": ["DRAFT", "PUBLISHED", "RENTED", "SOLD", "INACTIVE"]
+            },
+            "required": false,
+            "name": "status",
             "in": "query"
           },
           {

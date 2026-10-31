@@ -112,11 +112,7 @@ export function toDashboardProperty(
         formatter,
         messages.monthlySuffix,
       ),
-      administrationFee: messages.notInformed,
-      securityDeposit: messages.notInformed,
-      lastAdjustment: messages.notInformed,
     },
-    participants: [],
     activityHistory: buildActivityHistory(property, options),
   }
 }

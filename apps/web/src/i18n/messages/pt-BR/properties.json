@@ -131,10 +131,7 @@
       "rent": "ALUGUEL",
       "sale": "VENDA",
       "condominium": "CONDOMÍNIO",
-      "propertyTax": "IPTU",
-      "administrationFee": "TAXA DE ADMINISTRAÇÃO",
-      "securityDeposit": "GARANTIA",
-      "lastAdjustment": "ÚLTIMO AJUSTE"
+      "propertyTax": "IPTU"
     },
     "tabs": {
       "data": "Dados",
@@ -166,7 +163,15 @@
     "loading": "Carregando imóvel",
     "description": "Descrição",
     "amenities": "Comodidades",
-    "negotiationTerms": "Condições de negociação"
+    "negotiationTerms": "Condições de negociação",
+    "participantsLoading": "Carregando participantes do contrato…",
+    "participantsLoadError": "Não foi possível carregar os participantes do contrato.",
+    "retryParticipants": "Tentar novamente",
+    "participantRoles": {
+      "landlord": "Locador",
+      "renter": "Locatário",
+      "guarantor": "Fiador"
+    }
   },
   "create": {
     "postalCode": {

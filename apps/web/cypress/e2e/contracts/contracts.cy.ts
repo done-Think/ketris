@@ -91,7 +91,14 @@ describe('Contracts — fluxos reais com documentos privados', () => {
   it('cria, edita, exige PDF atualizado, registra assinaturas manuais e encerra preservando o financeiro', () => {
     const data = fixtures!
     expect(Cypress.expose('CONTRACTS_STORAGE_ENABLED')).to.eq(true)
+    cy.viewport(1440, 1000)
     login(data.ownerEmail)
+    cy.visit('/pt/dashboard/properties/' + data.propertyId)
+    cy.contains('Participantes').should('not.exist')
+    cy.contains('button', /^Valores$/).click()
+    cy.contains('TAXA DE ADMINISTRAÇÃO').should('not.exist')
+    cy.contains('GARANTIA').should('not.exist')
+    cy.contains('ÚLTIMO AJUSTE').should('not.exist')
     createContract(data).then((contractId) => {
       cy.intercept('PATCH', '**/api/contracts/' + contractId).as('editContract')
       cy.intercept('POST', '**/api/contracts/' + contractId + '/parties/*/sign').as('signContract')
@@ -115,11 +122,19 @@ describe('Contracts — fluxos reais com documentos privados', () => {
       cy.contains('button', 'Editar').should('not.exist')
       registerSignature().its('response.body.contract.status').should('eq', 'ACTIVE')
       cy.contains('Registro manual').should('be.visible')
+      cy.visit('/pt/dashboard/properties/' + data.propertyId)
+      cy.contains('Participantes').should('be.visible')
+      cy.contains(data.ownerName).should('be.visible')
+      cy.contains(data.leadName).should('be.visible')
+      cy.visit('/pt/dashboard/contracts/' + contractId)
       cy.contains('button', 'Encerrar contrato').click()
       cy.get('[role="dialog"]').find('textarea[name="reason"]').type('Locação concluída no teste')
       cy.get('[role="dialog"]').contains('button', 'Confirmar').click()
       cy.wait('@closeContract').its('response.body.contract.status').should('eq', 'CLOSED')
       cy.contains('Contrato encerrado').should('be.visible')
+      cy.visit('/pt/dashboard/properties/' + data.propertyId)
+      cy.contains('Participantes').should('not.exist')
+      cy.contains(data.leadName).should('not.exist')
       cy.task<ContractEvidenceResult>('readContractEvidence', contractId, { log: false }).then(
         (result) => {
           expect(result).to.include({

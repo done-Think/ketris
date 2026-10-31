@@ -10,6 +10,8 @@ export interface CrmFixtureResult {
   agentEmail: string
   propertyId: string
   propertyTitle: string
+  availablePropertyId: string
+  availablePropertyTitle: string
   contactId: string | null
   contactName: string
   opportunityId: string | null

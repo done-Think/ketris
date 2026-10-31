@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { createLeadDefaultValues, createLeadSchema } from '../../schemas/create-lead-schema'
+import { property } from '../fixtures/property'
 
 const schema = createLeadSchema((key) => key)
 
@@ -9,12 +10,15 @@ const validLeadValues = {
   name: 'Ana Costa',
   phone: '(11) 99999-9999',
   email: 'ana@ketris.com',
-  interest: 'Apartamento 3 quartos nos Jardins',
+  property,
   budget: 'R$ 4.5M',
   source: 'MARKETPLACE',
 }
 
 describe('createLeadSchema', () => {
+  it('rejects typed search text that has not been selected as a property', () => {
+    expect(schema.safeParse({ ...validLeadValues, property: 'Apartamento' }).success).toBe(false)
+  })
   it('accepts a valid lead creation payload', () => {
     expect(schema.safeParse(validLeadValues).success).toBe(true)
   })
@@ -35,7 +39,7 @@ describe('createLeadSchema', () => {
       schema.safeParse({
         ...validLeadValues,
         budget: '',
-        interest: '',
+        property: null,
         name: '',
         phone: '',
       }).success,

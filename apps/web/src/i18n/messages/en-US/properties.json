@@ -131,10 +131,7 @@
       "rent": "RENT",
       "sale": "SALE",
       "condominium": "CONDO FEE",
-      "propertyTax": "PROPERTY TAX",
-      "administrationFee": "MANAGEMENT FEE",
-      "securityDeposit": "GUARANTEE",
-      "lastAdjustment": "LAST ADJUSTMENT"
+      "propertyTax": "PROPERTY TAX"
     },
     "tabs": {
       "data": "Data",
@@ -166,7 +163,15 @@
     "loading": "Loading property",
     "description": "Description",
     "amenities": "Amenities",
-    "negotiationTerms": "Negotiation terms"
+    "negotiationTerms": "Negotiation terms",
+    "participantsLoading": "Loading contract participants…",
+    "participantsLoadError": "Could not load the contract participants.",
+    "retryParticipants": "Try again",
+    "participantRoles": {
+      "landlord": "Landlord",
+      "renter": "Tenant",
+      "guarantor": "Guarantor"
+    }
   },
   "create": {
     "postalCode": {

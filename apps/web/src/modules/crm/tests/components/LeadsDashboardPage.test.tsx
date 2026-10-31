@@ -15,6 +15,11 @@ import {
   useUpdateLeadStage,
 } from '../../hooks/use-leads'
 import type { Lead } from '../../types/lead'
+import { property } from '../fixtures/property'
+
+vi.mock('../../hooks/use-opportunities', () => ({
+  useCrmProperties: () => ({ data: [{ ...property, title: 'Casa Morumbi' }], isFetching: false }),
+}))
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -178,7 +183,8 @@ describe('LeadsDashboardPage', () => {
     await user.type(screen.getByLabelText('Telefone'), '11977776666')
     await user.type(screen.getByLabelText(/E-mail/), 'fernanda@example.com')
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
-    await user.type(screen.getByLabelText('Imóvel ou interesse'), 'Casa Morumbi')
+    await user.click(screen.getByLabelText(/^Imóvel de interesse/))
+    await user.click(await screen.findByRole('option', { name: /Casa Morumbi/ }))
     await user.type(screen.getByLabelText('Orçamento'), 'R$ 1.2M')
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     await user.click(screen.getByRole('button', { name: 'Criar lead' }))
