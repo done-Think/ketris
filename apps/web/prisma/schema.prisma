@@ -480,20 +480,21 @@ model Property {
 }
 
 model PropertyAddress {
-  id           String   @id @default(cuid())
-  tenantId     String
-  propertyId   String   @unique
-  street       String
-  number       String
-  complement   String?
-  neighborhood String
-  city         String
-  state        String
-  zipCode      String
-  latitude     Decimal? @db.Decimal(9, 6)
-  longitude    Decimal? @db.Decimal(9, 6)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String    @id @default(cuid())
+  tenantId         String
+  propertyId       String    @unique
+  street           String
+  number           String
+  complement       String?
+  neighborhood     String
+  city             String
+  state            String
+  zipCode          String
+  latitude         Decimal?  @db.Decimal(9, 6)
+  longitude        Decimal?  @db.Decimal(9, 6)
+  geocodingRetryAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   property Property @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade)
 

@@ -142,7 +142,6 @@ export type CreatePropertyStepsNavProps = {
 export type CreatePropertyStepFieldsProps = {
   getValues: UseFormGetValues<CreateDashboardPropertyFormValues>
   setValue: UseFormSetValue<CreateDashboardPropertyFormValues>
-  onAddressChange: () => void
   control: Control<CreateDashboardPropertyFormValues>
   activeStepKey: CreatePropertyStepKey
   activeStepLabel: string
@@ -156,7 +155,6 @@ export type CreatePropertyBasicStepFieldsProps = {
 export type CreatePropertyAddressStepFieldsProps = {
   getValues: UseFormGetValues<CreateDashboardPropertyFormValues>
   setValue: UseFormSetValue<CreateDashboardPropertyFormValues>
-  onAddressChange: () => void
   control: Control<CreateDashboardPropertyFormValues>
 }
 

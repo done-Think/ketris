@@ -377,6 +377,7 @@ function toAddressData(address: PropertyAddress): Prisma.PropertyAddressCreateWi
     city: address.city,
     state: address.state,
     zipCode: address.zipCode,
+    geocodingRetryAt: null,
     latitude: address.latitude ?? null,
     longitude: address.longitude ?? null,
   }

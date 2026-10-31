@@ -174,6 +174,26 @@ Se o projeto tiver proteção, reutiliza um bypass de automação existente ou o
 com o token autorizado, antes de preparar o candidato. A proteção do projeto permanece ativa;
 o valor fica em memória, sem ser escrito nos logs.
 
+### Localização dos imóveis em staging
+
+O candidato de staging recebe explicitamente `GEOCODING_SEARCH_URL` e
+`GEOCODING_USER_AGENT` no build e na execução. Os valores de teste estão em
+`infra/deploy/staging.json`; variables de mesmo nome no environment `staging` do GitHub
+permitem trocar o endpoint sem alterar o código. Essa configuração não ativa serviços em produção.
+
+Usamos o Nominatim público somente para os testes autorizados: identificação, cache e
+no máximo uma consulta por segundo para toda a aplicação, coordenada no PostgreSQL.
+Não há autocomplete nem varredura do catálogo. Veja a
+[política do Nominatim](https://operations.osmfoundation.org/policies/nominatim/).
+Ao salvar um endereço, o backend tenta obter as coordenadas. As buscas e os detalhes
+também recuperam as coordenadas de anúncios existentes, processando até dois dos
+resultados atuais por resposta e persistindo apenas se o endereço continuar igual.
+Endereços não encontrados aguardam 15 minutos antes de nova tentativa. O cliente
+consulta novamente enquanto houver outros resultados elegíveis na página.
+O CEP preenche o endereço; não fornece a posição do imóvel. Sem cobertura da rua no
+Nominatim, o anúncio permanece na lista e o mapa informa a ausência, sem inventar um ponto.
+Os pontos obtidos pela rua são aproximados quando o número não está mapeado.
+
 ### Novas migrations e falhas
 
 Cada migration pendente deve declarar sua compatibilidade em `infra/deploy/staging.json`:

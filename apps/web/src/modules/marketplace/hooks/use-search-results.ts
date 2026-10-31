@@ -126,6 +126,7 @@ export function useSearchResults(
     queryKey: marketplaceQueryKeys.search(query),
     queryFn: () => marketplaceService.searchProperties(query),
     placeholderData: keepPreviousData,
+    refetchInterval: (query) => (query.state.data?.mapLocationsPending ? 3000 : false),
   })
 
   const resultCount = propertiesQuery.data?.totalCount ?? 0

@@ -16,8 +16,6 @@ export function buildEditPropertyFormValues(property: Property): CreateDashboard
     ownerUserId: property.ownerUserId ?? '',
     ownerContact: property.ownerContact ?? null,
     complement: property.address?.complement ?? '',
-    latitude: property.address?.latitude ?? null,
-    longitude: property.address?.longitude ?? null,
     type: property.type,
     purpose: toDashboardPurpose(property.purpose),
     title: property.title,

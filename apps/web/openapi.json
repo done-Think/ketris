@@ -4026,6 +4026,7 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/PublicPropertySummary" }
           },
+          "mapLocationsPending": { "type": "boolean" },
           "totalCount": { "type": "integer", "minimum": 0 },
           "page": { "type": "integer", "minimum": 0, "exclusiveMinimum": true },
           "pageSize": { "type": "integer", "minimum": 0, "exclusiveMinimum": true }

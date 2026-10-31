@@ -169,7 +169,6 @@
     "negotiationTerms": "Condições de negociação"
   },
   "create": {
-    "coordinatesHint": "Tentaremos localizar o imóvel pelo endereço ao salvar. Se necessário, informe as duas coordenadas.",
     "postalCode": {
       "idle": "Informe o CEP e saia do campo para preencher o endereço. Confira os dados antes de salvar.",
       "loading": "Consultando CEP…",
@@ -206,8 +205,6 @@
       "commercialTerms": "Condição comercial",
       "owner": "Proprietário",
       "complement": "Complemento",
-      "latitude": "Latitude (opcional)",
-      "longitude": "Longitude (opcional)",
       "ownerAccessAccount": "Conta com acesso ao imóvel (opcional)"
     },
     "steps": {
@@ -271,8 +268,6 @@
       "titleTooLong": "O título deve ter no máximo 200 caracteres.",
       "descriptionTooLong": "A descrição deve ter no máximo 10.000 caracteres.",
       "negotiationTermTooLong": "A condição comercial deve ter no máximo 2.000 caracteres.",
-      "latitudeInvalid": "Informe uma latitude entre -90 e 90.",
-      "longitudeInvalid": "Informe uma longitude entre -180 e 180.",
       "integerRequired": "Informe um número inteiro"
     },
     "saveDraft": "Salvar rascunho",
@@ -283,7 +278,9 @@
     "mediaStorageUnavailableFileError": "O serviço de imagens está indisponível. Não foi possível enviar \"{filename}\". Tente novamente mais tarde.",
     "noOwnerAccess": "Sem conta de acesso vinculada",
     "ownerContactHelp": "Selecione um contato do CRM. O contato não precisa ter login e não receberá acesso automaticamente.",
-    "ownerAccessHelp": "Esta conta poderá acessar o imóvel. O vínculo é independente do contato proprietário."
+    "ownerAccessHelp": "Esta conta poderá acessar o imóvel. O vínculo é independente do contato proprietário.",
+    "addressLocationHint": "Usamos este endereço para localizar o imóvel automaticamente no mapa.",
+    "addressLocationUnavailable": "O imóvel foi salvo, mas o serviço de mapas ainda não encontrou este endereço. Confira os dados do endereço."
   },
   "edit": {
     "title": "Editar imóvel",

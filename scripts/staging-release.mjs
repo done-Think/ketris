@@ -6,6 +6,7 @@ import { ensureSmokeAccount } from './staging-smoke-account.mjs'
 import {
   createSmokeCredentials,
   findAutomationBypass,
+  geocodingDeploymentArgs,
   planMigrations,
   requireValue,
   requiresAutomationBypass,
@@ -41,6 +42,7 @@ function command(binary, args, options = {}) {
 export async function main() {
   const target = JSON.parse(await readFile('infra/deploy/staging.json', 'utf8'))
   const databaseUrl = validateConfig(env, target)
+  const geocodingArgs = geocodingDeploymentArgs(env, target)
   const smokeCredentials = createSmokeCredentials()
   const { Client } = createRequire(import.meta.url)('pg')
   const ca = await fetch('https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem', {
@@ -153,6 +155,7 @@ export async function main() {
           '--build-env',
           `KETRIS_RELEASE_SHA=${env.GITHUB_SHA}`,
           ...cliAuth,
+          ...geocodingArgs,
         ])
         const candidate = validateCandidate(output, target.projectName)
         const deployment = await providerRequest(

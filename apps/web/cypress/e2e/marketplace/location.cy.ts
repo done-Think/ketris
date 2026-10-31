@@ -98,4 +98,21 @@ describe('Marketplace location and map', () => {
     cy.get('@getPosition').should('not.have.been.called')
     cy.get('[aria-label="Sua localização aproximada"]').should('not.exist')
   })
+  it('shows the property price on its marker and synchronizes card and marker highlights in both directions', () => {
+    visitSearch(false, fixture.city)
+    const card = `.MuiCard-root[data-property-id="${fixture.propertyId}"]`
+    const marker = `.maplibregl-map [data-property-id="${fixture.propertyId}"]`
+    const otherCard = `.MuiCard-root[data-property-id="${fixture.dualPropertyId}"]`
+    const otherMarker = `.maplibregl-map [data-property-id="${fixture.dualPropertyId}"]`
+    cy.get(marker).should('be.visible').and('contain.text', '650.000')
+    cy.get(card).trigger('mouseover')
+    cy.get(marker).should('have.attr', 'data-highlighted', 'true')
+    cy.get(otherMarker).trigger('mouseover')
+    cy.get(otherCard).should('have.attr', 'data-highlighted', 'true')
+    cy.get(card).should('have.attr', 'data-highlighted', 'false')
+    cy.get(marker).focus()
+    cy.get(card).should('have.attr', 'data-highlighted', 'true')
+    cy.get(marker).click()
+    cy.location('pathname').should('include', fixture.propertyId)
+  })
 })
