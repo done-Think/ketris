@@ -44,6 +44,7 @@ model Tenant {
   maintenanceProviders          MaintenanceProvider[]
   maintenanceProviderActivities MaintenanceProviderActivity[]
   publicProfile                 AgencyPublicProfile?
+  publicAddress                 PublicProfileAddress?         @relation("AgencyPublicAddress")
   statusChanges                 TenantStatusChange[]
 
   crmAuditEvents     CrmAuditEvent[]
@@ -205,6 +206,8 @@ model User {
   responsibleLeads          Lead[]                        @relation("LeadResponsible")
   responsibleOpportunities  Opportunity[]                 @relation("OpportunityResponsible")
   publicProfile             BrokerPublicProfile?
+  publicAddress             PublicProfileAddress?         @relation("BrokerPublicAddress")
+  updatedPublicAddresses    PublicProfileAddress[]        @relation("PublicAddressUpdatedBy")
   receivedHighlights        AgencyProfileHighlight[]
   agendaAuditEvents         AgendaEventAudit[]
   canceledAgendaEvents      AgendaEvent[]                 @relation("AgendaEventCanceledBy")
@@ -463,6 +466,7 @@ model Property {
   address            PropertyAddress?
   media              PropertyMedia[]
   opportunities      Opportunity[]
+  leads              Lead[]
   contracts          Contract[]
   agendaEvents       AgendaEvent[]
   maintenanceTickets MaintenanceTicket[]
@@ -477,20 +481,21 @@ model Property {
 }
 
 model PropertyAddress {
-  id           String   @id @default(cuid())
-  tenantId     String
-  propertyId   String   @unique
-  street       String
-  number       String
-  complement   String?
-  neighborhood String
-  city         String
-  state        String
-  zipCode      String
-  latitude     Decimal? @db.Decimal(9, 6)
-  longitude    Decimal? @db.Decimal(9, 6)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String    @id @default(cuid())
+  tenantId         String
+  propertyId       String    @unique
+  street           String
+  number           String
+  complement       String?
+  neighborhood     String
+  city             String
+  state            String
+  zipCode          String
+  latitude         Decimal?  @db.Decimal(9, 6)
+  longitude        Decimal?  @db.Decimal(9, 6)
+  geocodingRetryAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   property Property @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade)
 
@@ -573,6 +578,8 @@ model AgencyPublicProfile {
   coverage        String[]            @default([])
   segments        String[]            @default([])
   yearsInMarket   Int?
+  primaryColor    String?
+  secondaryColor  String?
   backgroundColor String?
   logoUrl         String?
   bannerUrl       String?
@@ -590,6 +597,22 @@ model AgencyPublicProfile {
 
 // Equipe em destaque na página pública da imobiliária — vínculo real por usuário
 // (antes era texto livre casado por nome, no mock de frontend).
+model PublicProfileAddress {
+  handle         String   @id
+  brokerUserId   String?  @unique
+  agencyTenantId String?  @unique
+  updatedById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  broker    User?   @relation("BrokerPublicAddress", fields: [brokerUserId], references: [id], onDelete: Cascade)
+  agency    Tenant? @relation("AgencyPublicAddress", fields: [agencyTenantId], references: [id], onDelete: Cascade)
+  updatedBy User?   @relation("PublicAddressUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+  @@map("public_profile_addresses")
+}
+
 model AgencyProfileHighlight {
   id        String   @id @default(cuid())
   profileId String
@@ -688,14 +711,15 @@ enum LeadStage {
   PROPOSAL
 }
 
-// Contato bruto, ainda não qualificado com um imóvel específico nem valor proposto — por isso não
-// é uma Oportunidade ainda. Vira uma quando o corretor converte (ver ConvertLeadToOpportunityUseCase).
+// Contato interessado, com vínculo opcional ao imóvel de interesse. Registros legados podem não ter imóvel.
+// A conversão manual preserva o Lead de origem. Contatos do marketplace já nascem vinculados à Oportunidade.
 model Lead {
   updatedById    String?
   updatedBy      User?      @relation("LeadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   id             String     @id @default(cuid())
   tenantId       String
   responsibleId  String
+  propertyId     String?
   name           String
   phone          String
   email          String?
@@ -712,10 +736,12 @@ model Lead {
   tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsible User         @relation("LeadResponsible", fields: [responsibleId], references: [id])
   opportunity Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  property    Property?    @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: NoAction)
 
   @@index([updatedById])
   @@index([tenantId])
   @@index([tenantId, stage])
+  @@index([tenantId, propertyId])
   @@map("leads")
 }
 

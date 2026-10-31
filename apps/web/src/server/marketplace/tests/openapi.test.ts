@@ -33,7 +33,7 @@ it('documenta cada método HTTP real do Marketplace, incluindo as rotas de mídi
     for (const [, method] of readFileSync(file, 'utf8').matchAll(
       /export const (GET|POST|PATCH|DELETE|PUT)\b/g,
     ))
-      expect(document.paths[path], `${method} ${path}`).toHaveProperty(method.toLowerCase())
+      expect(document.paths, `${method} ${path}`).toHaveProperty([path, method.toLowerCase()])
   }
 })
 

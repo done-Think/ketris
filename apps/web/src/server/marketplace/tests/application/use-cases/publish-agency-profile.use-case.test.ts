@@ -37,6 +37,7 @@ function makeProfile(overrides: Partial<AgencyProfile> = {}): AgencyProfile {
 
 function createDeps(profile: AgencyProfile | null = makeProfile()) {
   const agencyProfileRepository: AgencyProfileRepository = {
+    findForEditor: vi.fn().mockResolvedValue(null),
     findPublishedById: vi.fn(),
     findPublishedBySlug: vi.fn(),
     listPublished: vi.fn(),
@@ -76,13 +77,22 @@ describe('PublishAgencyProfileUseCase', () => {
     ).rejects.toThrow(ProfilePublishValidationError)
   })
 
-  it('lança ProfilePublishValidationError quando falta cobertura, segmentos ou equipe', async () => {
-    const deps = createDeps(makeProfile({ coverage: [], segments: [], team: [] }))
+  it('lança ProfilePublishValidationError quando falta cobertura ou segmentos', async () => {
+    const deps = createDeps(makeProfile({ coverage: [], segments: [] }))
     const useCase = new PublishAgencyProfileUseCase(deps.agencyProfileRepository)
 
     await expect(
       useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER' }),
     ).rejects.toThrow(ProfilePublishValidationError)
+  })
+
+  it('publishes an agency without featured brokers', async () => {
+    const deps = createDeps(makeProfile({ team: [] }))
+    const useCase = new PublishAgencyProfileUseCase(deps.agencyProfileRepository)
+
+    const profile = await useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER' })
+
+    expect(profile).toMatchObject({ status: 'PUBLISHED', team: [] })
   })
 
   it('lança ProfilePublishValidationError quando falta o logotipo ou a imagem de capa', async () => {

@@ -1,8 +1,25 @@
 import { describe, expect, it } from 'vitest'
 
-import { searchPropertiesQuerySchema } from './search-properties.schema'
+import {
+  searchPropertiesQuerySchema,
+  validatedSearchPropertiesQuerySchema,
+} from './search-properties.schema'
 
 describe('searchPropertiesQuerySchema', () => {
+  it('requires a valid coordinate pair and accepts zero', () => {
+    expect(
+      validatedSearchPropertiesQuerySchema.parse({ latitude: '0', longitude: '0' }),
+    ).toMatchObject({ latitude: 0, longitude: 0 })
+    for (const input of [
+      { latitude: '0' },
+      { longitude: '0' },
+      { latitude: '91', longitude: '0' },
+      { latitude: '0', longitude: '181' },
+      { latitude: 'NaN', longitude: '0' },
+    ]) {
+      expect(validatedSearchPropertiesQuerySchema.safeParse(input).success).toBe(false)
+    }
+  })
   it('aceita um objeto vazio (sem filtros)', () => {
     const result = searchPropertiesQuerySchema.safeParse({})
 

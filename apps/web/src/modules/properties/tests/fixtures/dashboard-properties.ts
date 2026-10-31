@@ -62,27 +62,7 @@ export const dashboardProperties: DashboardProperty[] = [
       sale: 'Não anunciado',
       condominium: 'R$ 1.200',
       propertyTax: 'R$ 380/mês',
-      administrationFee: '8% sobre aluguel',
-      securityDeposit: '3 aluguéis',
-      lastAdjustment: 'R$ 300 há 5 dias',
     },
-    participants: [
-      {
-        name: 'Carlos Eduardo',
-        role: 'Proprietário',
-        initials: 'CE',
-        imageUrl:
-          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=96&q=80',
-      },
-      {
-        name: 'Roberto Souza',
-        role: 'Corretor',
-        initials: 'RS',
-        imageUrl:
-          'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=96&q=80',
-      },
-      { name: 'Lopes Jardins', role: 'Imobiliária', initials: 'LJ' },
-    ],
     activityHistory: [
       { label: 'Contrato ativo vinculado', date: 'há 2 horas', tone: 'success' },
       { label: 'Fotos atualizadas', date: 'há 1 dia', tone: 'accent' },
@@ -142,14 +122,7 @@ export const dashboardProperties: DashboardProperty[] = [
       sale: 'Não anunciado',
       condominium: 'R$ 680',
       propertyTax: 'R$ 180/mês',
-      administrationFee: '7% sobre aluguel',
-      securityDeposit: 'Seguro fiança',
-      lastAdjustment: 'Sem reajuste recente',
     },
-    participants: [
-      { name: 'Marina Costa', role: 'Proprietária', initials: 'MC' },
-      { name: 'Ana Paula', role: 'Corretora', initials: 'AP' },
-    ],
     activityHistory: [
       { label: 'Contrato marcado como alugado', date: 'há 1 dia', tone: 'info' },
       { label: 'Proposta aprovada', date: 'há 4 dias', tone: 'success' },
@@ -207,14 +180,7 @@ export const dashboardProperties: DashboardProperty[] = [
       sale: 'R$ 4.500.000',
       condominium: 'R$ 3.900',
       propertyTax: 'R$ 1.450/mês',
-      administrationFee: '2% na venda',
-      securityDeposit: 'Não aplicável',
-      lastAdjustment: 'Preço validado há 3 dias',
     },
-    participants: [
-      { name: 'Helena Prado', role: 'Proprietária', initials: 'HP' },
-      { name: 'Roberto Souza', role: 'Corretor', initials: 'RS' },
-    ],
     activityHistory: [
       { label: 'Imóvel ativado para venda', date: 'há 3 dias', tone: 'success' },
       { label: 'Fotos atualizadas', date: 'há 6 dias', tone: 'accent' },
@@ -272,14 +238,7 @@ export const dashboardProperties: DashboardProperty[] = [
       sale: 'R$ 3.800.000',
       condominium: 'Isento',
       propertyTax: 'R$ 980/mês',
-      administrationFee: '2% na venda',
-      securityDeposit: 'Não aplicável',
-      lastAdjustment: 'Em análise documental',
     },
-    participants: [
-      { name: 'Paulo Mendes', role: 'Proprietário', initials: 'PM' },
-      { name: 'Marcos Lima', role: 'Corretor', initials: 'ML' },
-    ],
     activityHistory: [
       { label: 'Documentação enviada para análise', date: 'há 5 dias', tone: 'warning' },
       { label: 'Cadastro do imóvel efetuado', date: 'há 2 semanas', tone: 'neutral' },
@@ -336,14 +295,7 @@ export const dashboardProperties: DashboardProperty[] = [
       sale: 'Não anunciado',
       condominium: 'R$ 520',
       propertyTax: 'R$ 140/mês',
-      administrationFee: '7% sobre aluguel',
-      securityDeposit: '2 aluguéis',
-      lastAdjustment: 'Publicação vence em 7 dias',
     },
-    participants: [
-      { name: 'Renata Ferraz', role: 'Proprietária', initials: 'RF' },
-      { name: 'Ana Paula', role: 'Corretora', initials: 'AP' },
-    ],
     activityHistory: [
       { label: 'Publicação próxima do vencimento', date: 'há 1 semana', tone: 'warning' },
       { label: 'Cadastro do imóvel efetuado', date: 'há 1 mês', tone: 'neutral' },
@@ -400,14 +352,7 @@ export const dashboardProperties: DashboardProperty[] = [
       sale: 'Não anunciado',
       condominium: 'R$ 940',
       propertyTax: 'R$ 260/mês',
-      administrationFee: '8% sobre aluguel',
-      securityDeposit: 'Cadastro pausado',
-      lastAdjustment: 'Inativado há 2 semanas',
     },
-    participants: [
-      { name: 'Clara G.', role: 'Corretora', initials: 'CG' },
-      { name: 'Vila Nova Prime', role: 'Imobiliária', initials: 'VN' },
-    ],
     activityHistory: [
       { label: 'Imóvel marcado como inativo', date: 'há 2 semanas', tone: 'error' },
       { label: 'Cadastro do imóvel efetuado', date: 'há 2 meses', tone: 'neutral' },
@@ -472,54 +417,6 @@ function translateRelativeDate(value: string, locale: string) {
   return prefix === 'Há' ? formatted.charAt(0).toUpperCase() + formatted.slice(1) : formatted
 }
 
-function translateAdministrationFee(value: string, options: DashboardPropertyMappingOptions) {
-  const rentMatch = value.match(/^(\d+)% sobre aluguel$/)
-  if (rentMatch) return options.messages.pricingDetails.feeOnRent.replace('{percent}', rentMatch[1])
-
-  const saleMatch = value.match(/^(\d+)% na venda$/)
-  if (saleMatch) return options.messages.pricingDetails.feeOnSale.replace('{percent}', saleMatch[1])
-
-  return value
-}
-
-function translateSecurityDeposit(value: string, options: DashboardPropertyMappingOptions) {
-  const installmentsMatch = value.match(/^(\d+) aluguéis$/)
-  if (installmentsMatch) {
-    return options.messages.pricingDetails.installmentsDeposit.replace(
-      '{count}',
-      installmentsMatch[1],
-    )
-  }
-
-  return translatePlaceholder(value, options)
-}
-
-function translateLastAdjustment(value: string, options: DashboardPropertyMappingOptions) {
-  const { priceValidated, listingExpires, deactivated } = options.messages.pricingDetails
-
-  const priceWithDateMatch = value.match(/^(R\$ [\d.,]+) (há .+)$/)
-  if (priceWithDateMatch) {
-    return `${priceWithDateMatch[1]} ${translateRelativeDate(priceWithDateMatch[2], options.locale)}`
-  }
-
-  const priceValidatedMatch = value.match(/^Preço validado (há .+)$/)
-  if (priceValidatedMatch) {
-    return `${priceValidated} ${translateRelativeDate(priceValidatedMatch[1], options.locale)}`
-  }
-
-  const listingExpiresMatch = value.match(/^Publicação vence (em .+)$/)
-  if (listingExpiresMatch) {
-    return `${listingExpires} ${translateRelativeDate(listingExpiresMatch[1], options.locale)}`
-  }
-
-  const deactivatedMatch = value.match(/^Inativado (há .+)$/)
-  if (deactivatedMatch) {
-    return `${deactivated} ${translateRelativeDate(deactivatedMatch[1], options.locale)}`
-  }
-
-  return translatePlaceholder(value, options)
-}
-
 function translateActivityLabel(value: string, options: DashboardPropertyMappingOptions) {
   const { activity } = options.messages
 
@@ -577,9 +474,6 @@ export function localizeDashboardPropertyFixture(
       sale: translatePlaceholder(property.pricing.sale, options),
       condominium: translatePlaceholder(property.pricing.condominium, options),
       propertyTax: translatePlaceholder(property.pricing.propertyTax, options),
-      administrationFee: translateAdministrationFee(property.pricing.administrationFee, options),
-      securityDeposit: translateSecurityDeposit(property.pricing.securityDeposit, options),
-      lastAdjustment: translateLastAdjustment(property.pricing.lastAdjustment, options),
     },
     activityHistory: property.activityHistory.map((entry) => ({
       ...entry,

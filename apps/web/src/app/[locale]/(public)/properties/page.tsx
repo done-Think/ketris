@@ -18,7 +18,7 @@ function getSelectedPurpose(searchParams: SearchResultsRoutePageProps['searchPar
 }
 
 function getSelectedLocation(searchParams: SearchResultsRoutePageProps['searchParams']) {
-  return searchParams?.location
+  return searchParams?.city ?? searchParams?.location
 }
 
 export async function generateMetadata({
@@ -55,8 +55,16 @@ export default async function PropertiesPage({
 
   return (
     <SearchResultsPage
+      key={JSON.stringify([
+        selectedPurpose,
+        resolvedSearchParams?.city,
+        selectedLocation,
+        propertyType,
+        resolvedSearchParams?.priceRange,
+      ])}
       purpose={selectedPurpose}
       initialLocation={selectedLocation}
+      initialCity={resolvedSearchParams?.city}
       initialPropertyType={isMarketplacePropertyType(propertyType) ? propertyType : null}
       initialPriceRange={parsePriceRange(resolvedSearchParams?.priceRange)}
     />

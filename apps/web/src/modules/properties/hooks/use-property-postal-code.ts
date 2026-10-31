@@ -8,7 +8,6 @@ import { normalizePostalCode } from '@shared/utils/postal-code'
 export function usePropertyPostalCode(
   getValues: UseFormGetValues<CreateDashboardPropertyFormValues>,
   setValue: UseFormSetValue<CreateDashboardPropertyFormValues>,
-  onAddressChange: () => void,
 ) {
   const active = useRef<AbortController | null>(null)
   const [status, setStatus] = useState<'idle' | 'loading' | 'notFound' | 'unavailable'>('idle')
@@ -58,7 +57,6 @@ export function usePropertyPostalCode(
           getValues(name) === initial[name] &&
           getValues(name) !== address[name]
         ) {
-          onAddressChange()
           setValue(name, address[name], { shouldDirty: true, shouldValidate: true })
         }
       }

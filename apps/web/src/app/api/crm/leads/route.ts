@@ -37,6 +37,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     phone: body.phone,
     email: body.email ?? null,
     interest: body.interest,
+    propertyId: body.propertyId,
     budget: body.budget,
     source: body.source,
     notes: body.notes ?? null,

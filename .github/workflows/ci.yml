@@ -6,13 +6,43 @@ on:
     # Working branches are validated through their PR, avoiding a second run per push.
     branches: [dev, main]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   # Once a dev release starts, another push must not interrupt its migration/promotion.
   cancel-in-progress: ${{ github.ref != 'refs/heads/dev' }}
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      reuse: ${{ steps.plan.outputs.reuse }}
+      tree: ${{ steps.plan.outputs.tree }}
+      source_run: ${{ steps.plan.outputs.source_run }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Verifica a evidência de validação do PR
+        id: plan
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/ci-validation.mjs plan
+
   quality:
+    needs: plan
+    if: needs.plan.outputs.reuse == 'false'
     runs-on: ubuntu-latest
 
     # Postgres efêmero do próprio runner — nunca o RDS de staging (ver
@@ -44,6 +74,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
 
       - uses: actions/setup-node@v6
         with:
@@ -53,7 +85,7 @@ jobs:
       - run: npm ci
 
       - name: Testa as garantias operacionais de staging sem tráfego externo
-        run: node --test scripts/tests/staging-release.test.mjs scripts/tests/explore-staging-rate-limit.test.mjs
+        run: node --test scripts/tests/ci-validation.test.mjs scripts/tests/staging-release.test.mjs scripts/tests/explore-staging-rate-limit.test.mjs
 
       - name: Verifica nomes em inglês e exceções de compatibilidade
         run: |
@@ -87,8 +119,25 @@ jobs:
       - name: Testes de integração
         run: npm run test:integration -w @ketris/web
 
+      - name: Registra o conteúdo aprovado por quality
+        if: github.event_name == 'pull_request' && github.base_ref == 'dev'
+        id: evidence
+        run: node scripts/ci-validation.mjs record quality
+
+      - name: Guarda a evidência de quality
+        if: github.event_name == 'pull_request' && github.base_ref == 'dev'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.evidence.outputs.artifact_name }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: false
+
   auth-e2e:
-    needs: quality
+    needs: [plan, quality]
+    if: needs.plan.outputs.reuse == 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     services:
@@ -135,6 +184,8 @@ jobs:
       NEXT_TELEMETRY_DISABLED: '1'
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
@@ -166,6 +217,22 @@ jobs:
           JS
           npm exec -w @ketris/web -- cypress run --browser electron --config baseUrl=http://localhost:3000 --spec 'cypress/e2e/auth/**/*.cy.ts,cypress/e2e/agenda/**/*.cy.ts,cypress/e2e/contracts/**/*.cy.ts,cypress/e2e/crm/**/*.cy.ts,cypress/e2e/maintenance/**/*.cy.ts,cypress/e2e/financial/**/*.cy.ts,cypress/e2e/properties/**/*.cy.ts,cypress/e2e/marketplace/**/*.cy.ts,cypress/e2e/platform/**/*.cy.ts,cypress/e2e/team/**/*.cy.ts,cypress/e2e/login.cy.ts'
 
+      - name: Registra o conteúdo aprovado por E2E
+        if: github.event_name == 'pull_request' && github.base_ref == 'dev'
+        id: evidence
+        run: node scripts/ci-validation.mjs record auth-e2e
+
+      - name: Guarda a evidência de E2E
+        if: github.event_name == 'pull_request' && github.base_ref == 'dev'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.evidence.outputs.artifact_name }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: false
+
       - name: Preserva as capturas de falhas do navegador
         if: failure()
         uses: actions/upload-artifact@v7
@@ -175,9 +242,32 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  validation:
+    needs: [plan, quality, auth-e2e]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Confirma a validação antes da publicação
+        id: gate
+        env:
+          CI_PLAN_RESULT: ${{ needs.plan.result }}
+          CI_REUSE: ${{ needs.plan.outputs.reuse }}
+          CI_TREE: ${{ needs.plan.outputs.tree }}
+          CI_SOURCE_RUN: ${{ needs.plan.outputs.source_run }}
+          CI_QUALITY_RESULT: ${{ needs.quality.result }}
+          CI_E2E_RESULT: ${{ needs.auth-e2e.result }}
+        run: node scripts/ci-validation.mjs gate
+
   release-staging:
-    needs: [quality, auth-e2e]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: validation
+    if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/dev' && needs.validation.result == 'success' }}
     permissions:
       contents: read
       actions: read

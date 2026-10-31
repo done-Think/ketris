@@ -296,7 +296,8 @@
       "secondaryColor": "Cor secundária",
       "backgroundColor": "Fundo do perfil",
       "photoUrl": "URL da foto",
-      "bannerUrl": "URL do banner"
+      "bannerUrl": "URL do banner",
+      "neighborhoodsHint": "Opcional. Para áreas amplas, basta informar a região de atuação. Separe bairros por vírgula."
     },
     "actions": {
       "preview": "Visualizar",
@@ -315,7 +316,6 @@
       "availabilityRequired": "Informe a disponibilidade",
       "headlineRequired": "Informe o título de destaque",
       "regionRequired": "Informe a região de atuação",
-      "neighborhoodsRequired": "Informe os bairros de atuação",
       "specialtiesRequired": "Informe as especialidades",
       "primaryColorRequired": "Informe a cor principal",
       "secondaryColorRequired": "Informe a cor secundária",
@@ -356,7 +356,10 @@
       "bannerUrl": "URL do banner",
       "team": "Equipe em destaque",
       "teamPicker": "Corretores em destaque",
-      "teamPickerPlaceholder": "Selecione até 6 corretores"
+      "teamPickerPlaceholder": "Selecione até 6 corretores",
+      "teamPickerHint": "Opcional. Você pode publicar sem corretores em destaque e adicioná-los depois.",
+      "primaryColor": "Cor principal",
+      "secondaryColor": "Cor secundária"
     },
     "actions": {
       "preview": "Visualizar",
@@ -382,8 +385,7 @@
       "yearsInMarketRequired": "Informe os anos de mercado",
       "backgroundColorRequired": "Informe a cor de fundo",
       "logoUrlRequired": "Envie o logotipo",
-      "bannerUrlRequired": "Envie uma imagem de capa",
-      "teamRequired": "Selecione ao menos um corretor em destaque"
+      "bannerUrlRequired": "Envie uma imagem de capa"
     },
     "validatedDraft": "Rascunho validado",
     "loadError": "Não foi possível carregar o perfil.",
@@ -411,7 +413,9 @@
       "zoomIn": "Aproximar",
       "zoomOut": "Afastar",
       "attribution": "Mostrar atribuição",
-      "openProperty": "Abrir {title}"
+      "openProperty": "Abrir {title}",
+      "approximateLocation": "Localização aproximada pelo endereço",
+      "unlocatedProperties": "Alguns imóveis ainda não puderam ser localizados pelo endereço e não aparecem no mapa."
     },
     "filters": {
       "upToPrice": "Até {price}",
@@ -456,6 +460,14 @@
       "optionInvalid": "Opção inválida",
       "numbersOnly": "Use apenas números",
       "numberTooLong": "Valor muito longo"
+    },
+    "location": {
+      "useLocation": "Localizar imóveis baseados na minha localização",
+      "locating": "Localizando…",
+      "manual": "A região informada na busca tem prioridade.",
+      "unavailable": "Não foi possível obter sua localização. Escolha uma cidade ou tente novamente.",
+      "nearby": "Imóveis ordenados pela proximidade.",
+      "located": "Usando sua localização."
     }
   },
   "directory": {
@@ -501,5 +513,30 @@
     "remove": "Remover imagem",
     "hint": "JPG, PNG ou WEBP.",
     "uploadError": "Não foi possível enviar a imagem. Tente novamente."
+  },
+  "profileAddress": {
+    "title": "Endereço público",
+    "edit": "Personalizar endereço",
+    "description": "Escolha um nome único para divulgar seu perfil no Ketris.",
+    "label": "Nome do endereço",
+    "format": "De 3 a 40 caracteres: letras sem acento, números e hífens entre palavras.",
+    "reserved": "Este nome está reservado para a plataforma.",
+    "taken": "Este endereço já está em uso. Escolha outro nome.",
+    "checking": "Verificando disponibilidade…",
+    "available": "Endereço disponível.",
+    "checkError": "Não foi possível verificar. Você pode tentar salvar novamente.",
+    "saveError": "Não foi possível salvar o endereço. Tente novamente.",
+    "renameWarning": "Ao trocar o nome, o endereço anterior deixa de direcionar para seu perfil e fica disponível para outras pessoas. Divulgue o novo link.",
+    "publishedHint": "O endereço só exibe seu perfil quando ele está publicado.",
+    "cancel": "Cancelar",
+    "save": "Salvar endereço",
+    "saved": "Endereço público atualizado.",
+    "copy": "Copiar link",
+    "copied": "Link copiado.",
+    "copyError": "Não foi possível copiar. Copie o endereço pelo navegador.",
+    "retry": "Tentar novamente",
+    "loadError": "Não foi possível carregar seu endereço público.",
+    "loading": "Carregando endereço público…",
+    "unpublishedHint": "Publique o perfil para liberar seu link público e a edição do endereço personalizado. O link funciona apenas enquanto o perfil estiver publicado."
   }
 }

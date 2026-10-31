@@ -4,6 +4,14 @@
   "databaseHost": "ketris-staging.cubemqk8wpqi.us-east-1.rds.amazonaws.com",
   "databaseName": "ketris",
   "compatibleMigrations": {
-    "20261105090000_property_owner_contact": "Adds a nullable CRM contact reference and tenant-scoped indexes without changing existing properties, accounts, or access grants. The previous application remains compatible."
+    "20261105090000_property_owner_contact": "Adds a nullable CRM contact reference and tenant-scoped indexes without changing existing properties, accounts, or access grants. The previous application remains compatible.",
+    "20261106090000_agency_public_profile_colors": "Adds nullable public profile color columns without rewriting existing profiles. Older clients ignore the added columns and continue using the tenant palette. Retain the columns during application rollback.",
+    "20261108090000_public_profile_addresses": "Adds an initially empty public profile address registry with indexes and foreign keys, preserving existing accounts, profiles, and public identifiers. Older clients ignore the table. Retain it during application rollback to preserve chosen addresses.",
+    "20261109090000_property_address_geocoding_retry": "Adds a nullable retry timestamp to property addresses without changing existing addresses or coordinates. Older applications ignore the column. Retain it during application rollback.",
+    "20261110090000_lead_property_reference": "Adds a nullable tenant-scoped property reference to leads and fills it from existing linked opportunities. Existing lead text, stages and opportunities are preserved; older applications ignore the new column. Retain it during application rollback."
+  },
+  "geocoding": {
+    "searchUrl": "https://nominatim.openstreetmap.org/search",
+    "userAgent": "Ketris/1.0 (+https://github.com/done-Think/ketris)"
   }
 }

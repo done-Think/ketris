@@ -58,7 +58,10 @@
         "emailInvalid": "Enter a valid email."
       }
     },
-    "charges": "Charges"
+    "charges": "Charges",
+    "signingOut": "Signing out…",
+    "signOutError": "We could not finish signing out. Please try again.",
+    "retrySignOut": "Try signing out again"
   },
   "passwordVisibility": {
     "show": "Show {field}",

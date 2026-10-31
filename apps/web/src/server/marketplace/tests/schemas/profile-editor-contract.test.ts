@@ -29,6 +29,9 @@ describe('contrato entre os editores de perfil e as rotas de salvar', () => {
     const draft = toAgencyDraft({
       ...emptyAgencyValues,
       displayName: 'Imobiliária Horizonte',
+      primaryColor: '#123456',
+      secondaryColor: '#654321',
+      backgroundColor: '#fedcba',
       coverage: 'Jardins',
       yearsInMarket: '12',
       team: [{ userId: 'usuario-1', name: 'Marina' }],

@@ -105,9 +105,15 @@ describe('LeadContactDialog', () => {
     expect(onConvertRequest).toHaveBeenCalledWith(lead)
   })
 
-  it('disables the convert button and shows "already converted" for a converted lead', () => {
+  it('opens the existing opportunity instead of offering a second conversion', () => {
     renderDialog({ lead: { ...lead, opportunityId: 'opportunity-1' } })
 
-    expect(screen.getByRole('button', { name: 'Já convertido' })).toBeDisabled()
+    expect(screen.getByRole('link', { name: 'Ver oportunidade' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/opportunity-1'),
+    )
+    expect(
+      screen.queryByRole('button', { name: 'Converter em oportunidade' }),
+    ).not.toBeInTheDocument()
   })
 })

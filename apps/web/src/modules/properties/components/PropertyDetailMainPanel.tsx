@@ -23,9 +23,6 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
     { label: t('pricing.sale'), value: property.pricing.sale },
     { label: t('pricing.condominium'), value: property.pricing.condominium },
     { label: t('pricing.propertyTax'), value: property.pricing.propertyTax },
-    { label: t('pricing.administrationFee'), value: property.pricing.administrationFee },
-    { label: t('pricing.securityDeposit'), value: property.pricing.securityDeposit },
-    { label: t('pricing.lastAdjustment'), value: property.pricing.lastAdjustment },
     ...(property.listing.negotiationTerms
       ? [{ label: t('negotiationTerms'), value: property.listing.negotiationTerms }]
       : []),

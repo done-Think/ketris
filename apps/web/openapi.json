@@ -952,6 +952,7 @@
           "phone": { "type": "string" },
           "email": { "type": "string", "nullable": true },
           "interest": { "type": "string" },
+          "propertyId": { "type": "string", "nullable": true },
           "budget": { "type": "string" },
           "source": { "$ref": "#/components/schemas/LeadSource" },
           "stage": { "$ref": "#/components/schemas/LeadStage" },
@@ -1107,6 +1108,7 @@
           "phone": { "type": "string", "minLength": 1, "maxLength": 32 },
           "email": { "type": "string", "nullable": true, "maxLength": 254, "format": "email" },
           "interest": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "propertyId": { "type": "string", "minLength": 1 },
           "budget": { "type": "string", "minLength": 1, "maxLength": 500 },
           "source": { "$ref": "#/components/schemas/LeadSource" },
           "notes": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 10000 }
@@ -1484,7 +1486,11 @@
         "properties": {
           "q": { "type": "string", "maxLength": 500 },
           "page": { "type": "integer", "minimum": 1, "maximum": 1000000, "default": 1 },
-          "pageSize": { "type": "integer", "default": 5 }
+          "pageSize": { "type": "integer", "default": 5 },
+          "status": {
+            "type": "string",
+            "enum": ["DRAFT", "PUBLISHED", "RENTED", "SOLD", "INACTIVE"]
+          }
         },
         "additionalProperties": false
       },
@@ -3055,7 +3061,8 @@
                 "default": "pt-BR"
               },
               "profile": { "type": "string", "enum": ["owner", "agency", "developer"] },
-              "companyName": { "type": "string", "minLength": 1 }
+              "companyName": { "type": "string", "minLength": 1 },
+              "creci": { "type": "string", "minLength": 1, "maxLength": 32 }
             },
             "required": ["fullName", "email", "phone", "password", "acceptTerms", "profile"],
             "additionalProperties": false
@@ -3241,6 +3248,8 @@
             "default": []
           },
           "yearsInMarket": { "type": "integer", "nullable": true, "minimum": 0 },
+          "primaryColor": { "type": "string", "nullable": true, "pattern": "^#[0-9a-fA-F]{6}$" },
+          "secondaryColor": { "type": "string", "nullable": true, "pattern": "^#[0-9a-fA-F]{6}$" },
           "backgroundColor": { "type": "string", "nullable": true, "pattern": "^#[0-9a-fA-F]{6}$" },
           "logoUrl": { "type": "string", "nullable": true, "minLength": 1 },
           "bannerUrl": { "type": "string", "nullable": true, "minLength": 1 },
@@ -3295,6 +3304,8 @@
           },
           "city": { "type": "string", "minLength": 1 },
           "location": { "type": "string", "minLength": 1 },
+          "latitude": { "type": "number", "nullable": true, "minimum": -90, "maximum": 90 },
+          "longitude": { "type": "number", "nullable": true, "minimum": -180, "maximum": 180 },
           "minPrice": { "type": "number", "nullable": true, "minimum": 0 },
           "maxPrice": { "type": "number", "nullable": true, "minimum": 0 },
           "minBedrooms": { "type": "integer", "nullable": true, "minimum": 0 },
@@ -3928,6 +3939,33 @@
         "properties": { "tenant": { "$ref": "#/components/schemas/PlatformTenant" } },
         "required": ["tenant"]
       },
+      "OwnPublicProfileAddress": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "enum": ["broker", "agency"] },
+          "profileId": { "type": "string" },
+          "handle": { "type": "string", "nullable": true }
+        },
+        "required": ["kind", "profileId", "handle"]
+      },
+      "SavePublicProfileAddress": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 40,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        },
+        "required": ["handle"],
+        "additionalProperties": false
+      },
+      "PublicProfileAddressAvailability": {
+        "type": "object",
+        "properties": { "available": { "type": "boolean" } },
+        "required": ["available"]
+      },
       "MarketplaceStatsResponse": {
         "type": "object",
         "properties": {
@@ -3994,6 +4032,7 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/PublicPropertySummary" }
           },
+          "mapLocationsPending": { "type": "boolean" },
           "totalCount": { "type": "integer", "minimum": 0 },
           "page": { "type": "integer", "minimum": 0, "exclusiveMinimum": true },
           "pageSize": { "type": "integer", "minimum": 0, "exclusiveMinimum": true }
@@ -7212,6 +7251,188 @@
         }
       }
     },
+    "/marketplace/profiles/{kind}/address": {
+      "get": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get the current actor’s public profile address.",
+        "parameters": [
+          {
+            "schema": { "type": "string", "enum": ["broker", "agency"] },
+            "required": true,
+            "name": "kind",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Own public profile address.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OwnPublicProfileAddress" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid kind or handle.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "The actor cannot edit this profile kind.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      },
+      "put": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Claim or replace the current actor’s address after publishing the profile. Previous handles are released immediately; no aliases are retained.",
+        "parameters": [
+          {
+            "schema": { "type": "string", "enum": ["broker", "agency"] },
+            "required": true,
+            "name": "kind",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SavePublicProfileAddress" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved public profile address.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OwnPublicProfileAddress" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid kind or handle.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "The actor cannot edit this profile kind.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "The handle is already assigned or the profile is not published. The previous address remains unchanged.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/marketplace/profiles/{kind}/address/availability": {
+      "get": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Check availability for a published profile in the shared broker and agency namespace.",
+        "parameters": [
+          {
+            "schema": { "type": "string", "enum": ["broker", "agency"] },
+            "required": true,
+            "name": "kind",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 40,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            },
+            "required": true,
+            "name": "handle",
+            "in": "query"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Availability is advisory; saving also enforces uniqueness.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PublicProfileAddressAvailability" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid kind or handle.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "The actor cannot edit this profile kind.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "Publish the profile before checking or editing its address.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
     "/marketplace/stats": {
       "get": {
         "tags": ["Marketplace"],
@@ -7272,6 +7493,18 @@
             "schema": { "type": "string", "minLength": 1 },
             "required": false,
             "name": "location",
+            "in": "query"
+          },
+          {
+            "schema": { "type": "number", "nullable": true, "minimum": -90, "maximum": 90 },
+            "required": false,
+            "name": "latitude",
+            "in": "query"
+          },
+          {
+            "schema": { "type": "number", "nullable": true, "minimum": -180, "maximum": 180 },
+            "required": false,
+            "name": "longitude",
             "in": "query"
           },
           {
@@ -9882,6 +10115,15 @@
             "schema": { "type": "integer", "default": 5 },
             "required": false,
             "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": ["DRAFT", "PUBLISHED", "RENTED", "SOLD", "INACTIVE"]
+            },
+            "required": false,
+            "name": "status",
             "in": "query"
           },
           {

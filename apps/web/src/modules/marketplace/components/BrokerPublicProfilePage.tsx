@@ -17,7 +17,11 @@ import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
 import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 import { styles } from '../styles/broker-public-profile-page.styles'
 
-export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps) {
+export function BrokerPublicProfilePage({
+  broker,
+  publicHandle,
+  publicLinkEnabled = true,
+}: BrokerPublicProfilePageProps) {
   const t = useTranslations('marketplace')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const accentColor = broker.primaryColor ?? brand.magenta[500]
@@ -48,9 +52,11 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
           </Box>
 
           <PublicProfileSidebar
+            publicLinkEnabled={publicLinkEnabled}
             accentColor={accentColor}
             hoverColor={broker.backgroundColor ?? surface.app}
             href={broker.href}
+            publicHandle={publicHandle}
             sourceType="broker"
             linkDescription={t('publicProfile.sidebar.brokerLinkDescription')}
             phone={broker.phone ?? ''}
@@ -59,10 +65,14 @@ export function BrokerPublicProfilePage({ broker }: BrokerPublicProfilePageProps
               ...(broker.availability
                 ? [{ label: t('publicProfile.facts.availability'), value: broker.availability }]
                 : []),
-              {
-                label: t('publicProfile.facts.neighborhoods'),
-                value: broker.neighborhoods.join(', '),
-              },
+              ...(broker.neighborhoods.length
+                ? [
+                    {
+                      label: t('publicProfile.facts.neighborhoods'),
+                      value: broker.neighborhoods.join(', '),
+                    },
+                  ]
+                : []),
               { label: t('publicProfile.facts.activeListings'), value: `${broker.activeListings}` },
               { label: t('publicProfile.facts.deals'), value: `${broker.dealsClosed}` },
             ]}

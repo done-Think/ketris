@@ -15,6 +15,8 @@ import {
 
 export function AgencyHighlightedTeam({ brand, team }: AgencyHighlightedTeamProps) {
   const t = useTranslations('marketplace.publicProfile')
+  if (team.length === 0) return null
+
   return (
     <Box sx={styles.box}>
       <Typography variant="h5" sx={styles.typography}>

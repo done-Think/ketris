@@ -3,6 +3,8 @@ import type { PropertyPurpose, PublicPropertyType, PublishedPropertySummary } fr
 export type PropertySort = 'recent' | 'priceAsc' | 'priceDesc'
 
 export interface PropertySearchFilters {
+  latitude?: number
+  longitude?: number
   purpose?: PropertyPurpose
   propertyType?: PublicPropertyType
   city?: string

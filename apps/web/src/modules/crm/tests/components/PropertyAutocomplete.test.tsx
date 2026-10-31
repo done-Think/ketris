@@ -41,6 +41,18 @@ function mockPropertiesQuery(overrides: Record<string, unknown> = {}) {
 }
 
 describe('PropertyAutocomplete', () => {
+  it('filters available properties on the server for lead creation', () => {
+    mockPropertiesQuery()
+    render(
+      <PropertyAutocomplete
+        value={null}
+        onChange={vi.fn()}
+        availableOnly
+        label="Imóvel de interesse"
+      />,
+    )
+    expect(useCrmProperties).toHaveBeenLastCalledWith({ status: 'PUBLISHED' })
+  })
   beforeEach(() => {
     vi.clearAllMocks()
     mockPropertiesQuery()

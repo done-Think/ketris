@@ -27,6 +27,8 @@ export function getCurrentRouteHref(
     return href
   }
 
+  if (pathname === '/p/[handle]' && typeof params.handle === 'string')
+    return { pathname, params: { handle: params.handle }, ...queryOptions }
   const id = typeof params.id === 'string' ? params.id : undefined
   if (!id) return { pathname: '/', ...queryOptions }
 

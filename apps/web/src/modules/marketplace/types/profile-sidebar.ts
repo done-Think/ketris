@@ -1,9 +1,11 @@
 import type { PropertyBreadcrumbOriginType } from './property-detail'
 
 export type PublicProfileSidebarProps = {
+  publicLinkEnabled?: boolean
   accentColor: string
   hoverColor: string
   href: string
+  publicHandle?: string
   sourceType: PropertyBreadcrumbOriginType
   linkDescription: string
   phone: string

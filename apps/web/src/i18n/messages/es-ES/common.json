@@ -58,7 +58,10 @@
         "emailInvalid": "Indica un correo electrónico válido."
       }
     },
-    "charges": "Cobros"
+    "charges": "Cobros",
+    "signingOut": "Cerrando sesión…",
+    "signOutError": "No pudimos cerrar la sesión. Inténtalo de nuevo.",
+    "retrySignOut": "Reintentar cerrar sesión"
   },
   "passwordVisibility": {
     "show": "Mostrar {field}",

@@ -20,7 +20,6 @@ function getPublishMissingFields(profile: AgencyProfile): string[] {
   if (!profile.backgroundColor?.trim()) missingFields.push('backgroundColor')
   if (!profile.logoUrl?.trim()) missingFields.push('logoUrl')
   if (!profile.bannerUrl?.trim()) missingFields.push('bannerUrl')
-  if (!profile.team.length) missingFields.push('team')
 
   return missingFields
 }

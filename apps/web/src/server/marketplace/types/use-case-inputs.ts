@@ -19,6 +19,7 @@ export interface GetBrokerProfileInput {
 }
 
 export interface GetOwnAgencyProfileInput {
+  actorId: string
   actorTenantId: string
   actorRole: UserRole
 }
@@ -58,7 +59,8 @@ export interface SaveBrokerProfileInput extends BrokerProfileDraft {
 
 export type SearchPropertiesInput = PropertySearchFilters & PropertySearchPage
 
-export type SearchPropertiesOutput = PropertySearchResult & PropertySearchPage
+export type SearchPropertiesOutput = PropertySearchResult &
+  PropertySearchPage & { mapLocationsPending?: boolean }
 
 export interface SubmitInquiryInput {
   website?: string

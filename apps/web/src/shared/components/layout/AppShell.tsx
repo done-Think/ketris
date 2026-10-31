@@ -2,7 +2,7 @@
 
 import { styles } from '@shared/styles/app-shell.styles'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import { Box, Drawer, IconButton, Stack, Tooltip } from '@mui/material'
 import { useSession } from 'next-auth/react'
@@ -13,6 +13,7 @@ import ketrisLogoFooter from '@shared/assets/ketris-logo-footer.png'
 import { TenantSessionBoundary } from '@shared/components/layout/TenantSessionBoundary'
 import { AppLogo } from '@shared/components/ui'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
+import { LogoutToMarketplaceContext } from '@shared/lib/auth/logout-to-marketplace-context'
 import { getRestrictedRoleAccess } from '@shared/lib/auth/restricted-role-access'
 
 import type { AppShellProps } from '@shared/types/app-shell'
@@ -22,6 +23,7 @@ import { useRetainedAuthContent } from '@shared/hooks/use-retained-auth-content'
 import { appShellNavigationItems } from './app-shell-navigation-items'
 import { AppShellSidebar } from './AppShellSidebar'
 import { DashboardNotificationsButton } from './DashboardNotificationsButton'
+import { LogoutTransition } from './LogoutTransition'
 
 export function AppShell({ children, allowLocalDashboardPreview = false }: AppShellProps) {
   const t = useTranslations('common.appShell')
@@ -39,13 +41,15 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const isRestrictedRouteBlocked = Boolean(
     restrictedAccess && !restrictedAccess.isAllowedPathname(pathname),
   )
-  useEffect(() => {
-    if (restrictedAccess && isRestrictedRouteBlocked) {
-      router.replace(restrictedAccess.home)
-    }
-  }, [restrictedAccess, isRestrictedRouteBlocked, router])
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
+  const [signOutFailed, setSignOutFailed] = useState(false)
+  const logoutPending = useRef(false)
+  useEffect(() => {
+    if (!isSigningOut && restrictedAccess && isRestrictedRouteBlocked) {
+      router.replace(restrictedAccess.home)
+    }
+  }, [restrictedAccess, isRestrictedRouteBlocked, isSigningOut, router])
   const sidebarCollapsed = useSidebarPreferencesStore((state) => state.isCollapsed)
   const toggleSidebarCollapsed = useSidebarPreferencesStore((state) => state.toggleCollapsed)
   const isPublicCrmRoute = pathname === '/crm' || pathname === '/crm/contacts'
@@ -84,101 +88,112 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   }, [isPersonalProfileRoute, pathname, visibleItems])
 
   async function handleLogoutToMarketplace() {
-    if (isSigningOut) return
-
+    if (logoutPending.current) return
+    logoutPending.current = true
     setIsSigningOut(true)
+    setSignOutFailed(false)
     setMobileOpen(false)
-    await clearClientSession()
-    router.replace('/')
-    router.refresh()
+    try {
+      await clearClientSession()
+      router.replace('/')
+    } catch {
+      logoutPending.current = false
+      setSignOutFailed(true)
+    }
   }
 
+  if (isSigningOut)
+    return (
+      <LogoutTransition hasError={signOutFailed} onRetry={() => void handleLogoutToMarketplace()} />
+    )
   if (isRestrictedRouteBlocked) return null
 
   return (
-    <Box sx={styles.box}>
-      <Box sx={styles.box2(sidebarCollapsed)}>
-        <AppShellSidebar
-          collapsed={sidebarCollapsed}
-          showCollapseControl
-          isLoading={status === 'loading'}
-          visibleItems={visibleItems}
-          activeTargetPath={activeTargetPath}
-          userName={userName}
-          userContext={userContext}
-          userInitials={userInitials}
-          userImage={session?.user?.image ?? undefined}
-          canEditProfile={!!session?.user?.id && (restrictedAccess?.canEditProfile ?? true)}
-          isPersonalProfileRoute={isPersonalProfileRoute}
-          isSigningOut={isSigningOut}
-          onNavItemClick={() => setMobileOpen(false)}
-          onEditProfile={() => {
-            setMobileOpen(false)
-            router.push('/dashboard/profile')
-          }}
-          onToggleCollapsed={toggleSidebarCollapsed}
-          onLogoutToMarketplace={handleLogoutToMarketplace}
-        />
-      </Box>
+    <LogoutToMarketplaceContext.Provider value={handleLogoutToMarketplace}>
+      <Box sx={styles.box}>
+        <Box sx={styles.box2(sidebarCollapsed)}>
+          <AppShellSidebar
+            collapsed={sidebarCollapsed}
+            showCollapseControl
+            isLoading={status === 'loading'}
+            visibleItems={visibleItems}
+            activeTargetPath={activeTargetPath}
+            userName={userName}
+            userContext={userContext}
+            userInitials={userInitials}
+            userImage={session?.user?.image ?? undefined}
+            canEditProfile={!!session?.user?.id && (restrictedAccess?.canEditProfile ?? true)}
+            isPersonalProfileRoute={isPersonalProfileRoute}
+            isSigningOut={isSigningOut}
+            onNavItemClick={() => setMobileOpen(false)}
+            onEditProfile={() => {
+              setMobileOpen(false)
+              router.push('/dashboard/profile')
+            }}
+            onToggleCollapsed={toggleSidebarCollapsed}
+            onLogoutToMarketplace={handleLogoutToMarketplace}
+          />
+        </Box>
 
-      <Stack
-        component="header"
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        sx={styles.stack}
-      >
-        <AppLogo src={ketrisLogoFooter} width={42} sx={styles.appLogo} />
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <DashboardNotificationsButton placement="navigationHeader" />
-          <Tooltip title={t('openNavigation')}>
-            <IconButton
-              aria-label={t('openNavigation')}
-              onClick={() => setMobileOpen(true)}
-              sx={styles.iconButton}
-            >
-              <MenuRoundedIcon sx={styles.menuRoundedIcon} />
-            </IconButton>
-          </Tooltip>
+        <Stack
+          component="header"
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={styles.stack}
+        >
+          <AppLogo src={ketrisLogoFooter} width={42} sx={styles.appLogo} />
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <DashboardNotificationsButton placement="navigationHeader" />
+            <Tooltip title={t('openNavigation')}>
+              <IconButton
+                aria-label={t('openNavigation')}
+                onClick={() => setMobileOpen(true)}
+                sx={styles.iconButton}
+              >
+                <MenuRoundedIcon sx={styles.menuRoundedIcon} />
+              </IconButton>
+            </Tooltip>
+          </Stack>
         </Stack>
-      </Stack>
 
-      <Drawer
-        open={mobileOpen}
-        onClose={() => setMobileOpen(false)}
-        ModalProps={{ keepMounted: true }}
-        PaperProps={{ sx: styles.paper }}
-      >
-        <AppShellSidebar
-          collapsed={false}
-          showCollapseControl={false}
-          isLoading={status === 'loading'}
-          visibleItems={visibleItems}
-          activeTargetPath={activeTargetPath}
-          userName={userName}
-          userContext={userContext}
-          userInitials={userInitials}
-          userImage={session?.user?.image ?? undefined}
-          canEditProfile={!!session?.user?.id && (restrictedAccess?.canEditProfile ?? true)}
-          isPersonalProfileRoute={isPersonalProfileRoute}
-          isSigningOut={isSigningOut}
-          onNavItemClick={() => setMobileOpen(false)}
-          onEditProfile={() => {
-            setMobileOpen(false)
-            router.push('/dashboard/profile')
-          }}
-          onToggleCollapsed={toggleSidebarCollapsed}
-          onLogoutToMarketplace={handleLogoutToMarketplace}
-        />
-      </Drawer>
+        <Drawer
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          PaperProps={{ sx: styles.paper }}
+        >
+          <AppShellSidebar
+            collapsed={false}
+            showCollapseControl={false}
+            isLoading={status === 'loading'}
+            visibleItems={visibleItems}
+            activeTargetPath={activeTargetPath}
+            userName={userName}
+            userContext={userContext}
+            userInitials={userInitials}
+            userImage={session?.user?.image ?? undefined}
+            canEditProfile={!!session?.user?.id && (restrictedAccess?.canEditProfile ?? true)}
+            isPersonalProfileRoute={isPersonalProfileRoute}
+            isSigningOut={isSigningOut}
+            onNavItemClick={() => setMobileOpen(false)}
+            onEditProfile={() => {
+              setMobileOpen(false)
+              router.push('/dashboard/profile')
+            }}
+            onToggleCollapsed={toggleSidebarCollapsed}
+            onLogoutToMarketplace={handleLogoutToMarketplace}
+          />
+        </Drawer>
 
-      <Box component="main" sx={styles.box3(sidebarCollapsed)}>
-        {retainRenterLayout || isSigningOut || isPublicCrmRoute || isLocalDashboardPreview ? (
-          children
-        ) : (
-          <TenantSessionBoundary>{children}</TenantSessionBoundary>
-        )}
+        <Box component="main" sx={styles.box3(sidebarCollapsed)}>
+          {retainRenterLayout || isPublicCrmRoute || isLocalDashboardPreview ? (
+            children
+          ) : (
+            <TenantSessionBoundary>{children}</TenantSessionBoundary>
+          )}
+        </Box>
       </Box>
-    </Box>
+    </LogoutToMarketplaceContext.Provider>
   )
 }

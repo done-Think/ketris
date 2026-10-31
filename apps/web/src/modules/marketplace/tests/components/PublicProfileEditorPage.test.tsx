@@ -1,8 +1,8 @@
 import { ThemeProvider } from '@mui/material'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactElement } from 'react'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 
@@ -65,6 +65,22 @@ const draftAgencyProfile: PublicAgencyProfile = {
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: null, status: 'unauthenticated' }),
+}))
+vi.mock('../../components/public-profile-editor/PublicProfileAddressPanel', () => ({
+  PublicProfileAddressPanel: () => null,
+}))
+
+const addressMocks = vi.hoisted(() => {
+  const handles: Record<'broker' | 'agency', string | null> = { broker: null, agency: null }
+  return { handles }
+})
+vi.mock('../../hooks/use-profile-address', () => ({
+  useOwnProfileAddress: (kind: 'broker' | 'agency') => ({
+    data: { kind, profileId: `${kind}-1`, handle: addressMocks.handles[kind] },
+  }),
+}))
 
 const brokerProfileMocks = vi.hoisted(() => ({
   saveMutate: vi.fn(),
@@ -107,8 +123,13 @@ vi.mock('../../hooks/use-profile-media', () => ({
 }))
 
 function renderWithTheme(component: ReactElement) {
-  render(<ThemeProvider theme={theme}>{component}</ThemeProvider>)
+  return render(<ThemeProvider theme={theme}>{component}</ThemeProvider>)
 }
+
+beforeEach(() => {
+  addressMocks.handles.broker = null
+  addressMocks.handles.agency = null
+})
 
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
@@ -127,6 +148,64 @@ beforeAll(() => {
 })
 
 describe('PublicProfileEditorPage', () => {
+  it.each([
+    { kind: 'broker' as const, Component: PublicProfileEditorPage, handle: 'alyssonsene' },
+    { kind: 'agency' as const, Component: AgencyPublicProfileEditorPage, handle: 'horizonte' },
+  ])(
+    'shows and updates the saved custom link in the $kind published profile preview',
+    async ({ kind, Component, handle }) => {
+      if (kind === 'broker')
+        vi.mocked(useOwnBrokerProfile).mockReturnValue({
+          data: { ...draftBrokerProfile, status: 'PUBLISHED' },
+        } as ReturnType<typeof useOwnBrokerProfile>)
+      else
+        vi.mocked(useOwnAgencyProfile).mockReturnValue({
+          data: { ...draftAgencyProfile, status: 'PUBLISHED' },
+        } as ReturnType<typeof useOwnAgencyProfile>)
+      addressMocks.handles[kind] = handle
+      const user = userEvent.setup()
+      const view = renderWithTheme(<Component />)
+      await user.click(screen.getByRole('button', { name: 'Visualizar' }))
+      const preview = within(screen.getByRole('dialog'))
+      expect(preview.getByText(`/@${handle}`)).toBeVisible()
+      expect(preview.getByRole('link', { name: 'Abrir link próprio' })).toHaveAttribute(
+        'href',
+        `/p/${handle}`,
+      )
+
+      addressMocks.handles[kind] = `new-${handle}`
+      view.rerender(
+        <ThemeProvider theme={theme}>
+          <Component />
+        </ThemeProvider>,
+      )
+      expect(preview.queryByText(`/@${handle}`)).not.toBeInTheDocument()
+      expect(preview.getByText(`/@new-${handle}`)).toBeVisible()
+      expect(preview.getByRole('link', { name: 'Abrir link próprio' })).toHaveAttribute(
+        'href',
+        `/p/new-${handle}`,
+      )
+    },
+  )
+
+  it.each([PublicProfileEditorPage, AgencyPublicProfileEditorPage])(
+    'hides unusable links in an unpublished preview',
+    async (Component) => {
+      vi.mocked(useOwnBrokerProfile).mockReturnValue({ data: null } as ReturnType<
+        typeof useOwnBrokerProfile
+      >)
+      vi.mocked(useOwnAgencyProfile).mockReturnValue({ data: null } as ReturnType<
+        typeof useOwnAgencyProfile
+      >)
+      const user = userEvent.setup()
+      renderWithTheme(<Component />)
+      await user.click(screen.getByRole('button', { name: 'Visualizar' }))
+      const preview = within(screen.getByRole('dialog'))
+      expect(preview.getByText(/Publique o perfil para liberar seu link público/)).toBeVisible()
+      expect(preview.queryByRole('link', { name: 'Abrir link próprio' })).not.toBeInTheDocument()
+    },
+  )
+
   it('renders the broker editor with validated form controls', () => {
     renderWithTheme(<PublicProfileEditorPage />)
 
@@ -151,6 +230,9 @@ describe('PublicProfileEditorPage', () => {
     renderWithTheme(<AgencyPublicProfileEditorPage />)
 
     expect(screen.getByRole('heading', { name: 'Editar Perfil da Imobiliária' })).toBeVisible()
+    expect(screen.getByLabelText('Cor principal')).toBeVisible()
+    expect(screen.getByLabelText('Cor secundária')).toBeVisible()
+    expect(screen.getByLabelText('Fundo da marca')).toBeVisible()
     expect(screen.getByLabelText('Nome da imobiliária')).toBeVisible()
     expect(screen.getByLabelText('CRECI')).toBeVisible()
     expect(screen.getByLabelText('Corretores em destaque')).toBeVisible()
@@ -245,7 +327,10 @@ describe('PublicProfileEditorPage', () => {
       expect(screen.getByText('Informe a disponibilidade')).toBeVisible()
       expect(screen.getByText('Informe o título de destaque')).toBeVisible()
       expect(screen.getByText('Informe a região de atuação')).toBeVisible()
-      expect(screen.getByText('Informe os bairros de atuação')).toBeVisible()
+      expect(screen.getByLabelText('Bairros de atuação')).not.toHaveAttribute(
+        'aria-invalid',
+        'true',
+      )
       expect(screen.getByText('Informe as especialidades')).toBeVisible()
       expect(screen.getByText('Informe a cor principal')).toBeVisible()
       expect(screen.getByText('Informe a cor secundária')).toBeVisible()
@@ -256,7 +341,7 @@ describe('PublicProfileEditorPage', () => {
       expect(brokerProfileMocks.publishMutate).not.toHaveBeenCalled()
     })
 
-    it('saves the draft and publishes when the form is valid', async () => {
+    it('publishes a broker covering a broad region without neighborhoods', async () => {
       vi.mocked(useOwnBrokerProfile).mockReturnValue({
         data: {
           ...draftBrokerProfile,
@@ -265,8 +350,8 @@ describe('PublicProfileEditorPage', () => {
           bio: 'Especialista em imóveis residenciais.',
           phone: '11999998888',
           creci: '12345-F',
-          region: 'Zona Sul de São Paulo',
-          neighborhoods: ['Moema', 'Vila Mariana'],
+          region: 'Sul de Minas',
+          neighborhoods: [],
           specialties: ['Apartamentos', 'Cobertura'],
           availability: 'Seg a sex, 9h às 18h',
           primaryColor: '#111111',
@@ -287,6 +372,8 @@ describe('PublicProfileEditorPage', () => {
       await waitFor(() => expect(brokerProfileMocks.saveMutate).toHaveBeenCalledTimes(1))
       expect(brokerProfileMocks.saveMutate.mock.calls[0][0]).toMatchObject({
         displayName: 'Ana Souza',
+        region: 'Sul de Minas',
+        neighborhoods: [],
       })
       await waitFor(() => expect(brokerProfileMocks.publishMutate).toHaveBeenCalledTimes(1))
     })
@@ -299,6 +386,49 @@ describe('PublicProfileEditorPage', () => {
       >)
       agencyProfileMocks.saveMutate.mockClear()
       agencyProfileMocks.publishMutate.mockClear()
+    })
+
+    it('loads account defaults, masks both phone lengths and saves the inherited logo', async () => {
+      const logoUrl = '/api/auth/media/avatars/tenant-1/owner-1/company.png'
+      vi.mocked(useOwnAgencyProfile).mockReturnValue({
+        data: {
+          ...draftAgencyProfile,
+          displayName: 'Imobiliária Horizonte',
+          email: 'verified@example.com',
+          legalCreci: 'MG-12345-J',
+          phone: '35997989991',
+          logoUrl,
+        },
+      } as unknown as ReturnType<typeof useOwnAgencyProfile>)
+      const user = userEvent.setup()
+      renderWithTheme(<AgencyPublicProfileEditorPage />)
+
+      expect(screen.getByLabelText('E-mail')).toHaveValue('verified@example.com')
+      expect(screen.getByLabelText('CRECI')).toHaveValue('MG-12345-J')
+      expect(screen.getByLabelText('Telefone')).toHaveValue('(35) 99798-9991')
+      expect(document.querySelector(`img[src="${logoUrl}"]`)).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Editar' }))
+      const phone = screen.getByLabelText('Telefone')
+      await user.clear(phone)
+      await user.type(phone, '35999990000')
+      expect(phone).toHaveValue('(35) 99999-0000')
+      await user.clear(phone)
+      await user.type(phone, '3536221234')
+      expect(phone).toHaveValue('(35) 3622-1234')
+      await user.click(screen.getByRole('button', { name: 'Salvar' }))
+
+      await waitFor(() =>
+        expect(agencyProfileMocks.saveMutate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            email: 'verified@example.com',
+            legalCreci: 'MG-12345-J',
+            phone: '(35) 3622-1234',
+            logoUrl,
+          }),
+          expect.any(Object),
+        ),
+      )
     })
 
     it('shows the required-field errors below every empty field when publishing without them', async () => {
@@ -321,12 +451,15 @@ describe('PublicProfileEditorPage', () => {
       expect(screen.getByText('Informe a cor de fundo')).toBeVisible()
       expect(screen.getByText('Envie o logotipo')).toBeVisible()
       expect(screen.getByText('Envie uma imagem de capa')).toBeVisible()
-      expect(screen.getByText('Selecione ao menos um corretor em destaque')).toBeVisible()
+      expect(screen.getByLabelText('Corretores em destaque')).not.toHaveAttribute(
+        'aria-invalid',
+        'true',
+      )
       expect(agencyProfileMocks.saveMutate).not.toHaveBeenCalled()
       expect(agencyProfileMocks.publishMutate).not.toHaveBeenCalled()
     })
 
-    it('saves the draft and publishes when the form is valid', async () => {
+    it('saves the draft and publishes without any featured brokers', async () => {
       vi.mocked(useOwnAgencyProfile).mockReturnValue({
         data: {
           ...draftAgencyProfile,
@@ -339,11 +472,11 @@ describe('PublicProfileEditorPage', () => {
           phone: '(11) 90000-0000',
           coverage: ['Zona Sul', 'Zona Oeste'],
           segments: ['Residencial', 'Comercial'],
-          yearsInMarket: 15,
+          yearsInMarket: 0,
           backgroundColor: '#ffffff',
           logoUrl: 'https://cdn.ketris.com.br/logo.jpg',
           bannerUrl: 'https://cdn.ketris.com.br/banner.jpg',
-          team: [{ userId: 'broker-1', name: 'Marina Costa', avatarUrl: null, order: 0 }],
+          team: [],
         },
       } as unknown as ReturnType<typeof useOwnAgencyProfile>)
       agencyProfileMocks.saveMutate.mockImplementation((_payload, options) => {
@@ -357,6 +490,8 @@ describe('PublicProfileEditorPage', () => {
       await waitFor(() => expect(agencyProfileMocks.saveMutate).toHaveBeenCalledTimes(1))
       expect(agencyProfileMocks.saveMutate.mock.calls[0][0]).toMatchObject({
         displayName: 'Imobiliária Horizonte',
+        team: [],
+        yearsInMarket: 0,
       })
       await waitFor(() => expect(agencyProfileMocks.publishMutate).toHaveBeenCalledTimes(1))
     })

@@ -31,6 +31,7 @@ export const routing = defineRouting({
   },
   pathnames: {
     '/': '/',
+    '/p/[handle]': '/@[handle]',
     '/login': '/login',
     '/register': '/register',
     '/register/details': '/register/details',

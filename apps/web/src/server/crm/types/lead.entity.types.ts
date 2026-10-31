@@ -2,6 +2,7 @@ import type { LeadSource } from './lead-source'
 export type LeadStage = 'NEW' | 'IN_CONTACT' | 'VISIT_SCHEDULED' | 'PROPOSAL'
 
 export interface Lead {
+  propertyId?: string | null
   responsibleName?: string
   id: string
   tenantId: string
@@ -20,6 +21,7 @@ export interface Lead {
 }
 
 export interface NewLead {
+  propertyId?: string | null
   tenantId: string
   responsibleId: string
   name: string

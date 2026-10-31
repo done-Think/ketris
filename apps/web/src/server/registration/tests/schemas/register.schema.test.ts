@@ -40,6 +40,18 @@ describe('registerRequestSchema', () => {
     expect(registerRequestSchema.safeParse({ ...base, profile: 'renter' }).success).toBe(true)
   })
 
+  it.each(['owner', 'agency', 'developer'] as const)(
+    'accepts an optional CRECI for %s',
+    (profile) => {
+      expect(
+        registerRequestSchema.parse({ ...base, profile, creci: ' MG-12345-J ' }),
+      ).toMatchObject({ creci: 'MG-12345-J' })
+      expect(
+        registerRequestSchema.safeParse({ ...base, profile, creci: 'x'.repeat(33) }).success,
+      ).toBe(false)
+    },
+  )
+
   it('rejeita um profile desconhecido', () => {
     expect(registerRequestSchema.safeParse({ ...base, profile: 'inexistente' }).success).toBe(false)
   })
