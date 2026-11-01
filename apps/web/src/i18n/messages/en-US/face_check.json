@@ -46,7 +46,7 @@
     },
     "camera": {
       "title": "Now let's use the camera",
-      "body": "Your browser will ask for permission. The camera is only used on this page and turns off when you finish.",
+      "body": "When you select Enable camera, allow access in your computer or phone browser. We only use the camera, without audio, and turn it off when you leave this step.",
       "tips": {
         "light": "A well-lit place, without strong light behind you",
         "original": "Have your original document ready, not a copy",
@@ -191,8 +191,8 @@
     "live": {
       "starting": "Starting camera…",
       "deniedTitle": "Camera access was blocked",
-      "unavailableTitle": "No camera found",
-      "galleryHint": "You can upload a photo already on your device.",
+      "unavailableTitle": "Unable to access the camera",
+      "galleryHint": "You can upload the document from your gallery, but the selfie and movements require a camera.",
       "noGalleryHint": "Allow camera access in your browser or continue without biometrics.",
       "chooseFile": "Upload a photo",
       "sendDocument": "Upload document",
@@ -239,7 +239,17 @@
       "captured": "Photo taken. You can return to your starting position while we analyze it.",
       "closeEnough": "Close enough. Hold still for the photo.",
       "preparingChallenges": "Preparing liveness movements…",
-      "retryChallenges": "Try loading movements again"
+      "retryChallenges": "Try loading movements again",
+      "notFoundTitle": "No camera found on this device",
+      "notFoundHint": "If your computer has no webcam, continue this verification on your phone.",
+      "deniedHint": "Allow camera access in this website’s browser settings and try again. You can also continue on your phone.",
+      "unavailableHint": "Close other apps using the camera and try again, or continue on your phone.",
+      "insecureTitle": "Open a secure link to use the camera",
+      "insecureHint": "Open the verification using the HTTPS address sent by the person responsible for the property.",
+      "unsupportedTitle": "This browser cannot access the camera",
+      "unsupportedHint": "Open the link in another browser or continue the verification on your phone.",
+      "permissionHint": "If your browser asks, allow camera access to continue.",
+      "retryCamera": "Try the camera again"
     },
     "cameraNotice": "Your document, selfie and movements will be sent for analysis and review by a member of the agency team.",
     "import": {
@@ -269,7 +279,20 @@
       "sendFront": "Analyze and send front",
       "sendBack": "Analyze and send back"
     },
-    "agencyFallback": "agency"
+    "agencyFallback": "agency",
+    "phone": {
+      "action": "Continue on phone",
+      "title": "Continue verification on your phone",
+      "instructions": "Scan the QR code with your phone camera, or copy and open the link in its browser. Then allow camera access to complete the verification.",
+      "qrLabel": "QR code to open this verification on your phone",
+      "linkLabel": "Link to this verification",
+      "privateLink": "This link is personal. Use it only on your own device and do not share it with other people.",
+      "unreachable": "This address cannot be used on your phone. Ask the person responsible for the property for an HTTPS link that your device can access.",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "copyFailed": "Unable to copy automatically. Select the address above and copy it manually.",
+      "close": "Close"
+    }
   },
   "console": {
     "nav": {

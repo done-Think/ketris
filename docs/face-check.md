@@ -34,6 +34,14 @@ O token aleatório é vinculado a uma única verificação, tem expiração e é
 armazenado como hash para consulta. O payload que contém o convite é criptografado.
 Não divulgue URLs de captura em logs, tickets ou analytics.
 
+Após o aceite do aviso, “Ativar câmera” solicita a permissão nativa do navegador
+no computador ou celular, somente para vídeo. Sem webcam, a tela orienta a usar
+o celular e oferece QR code e cópia do mesmo convite, sem serviço externo de QR.
+Permissão negada tem orientação própria e botão para tentar novamente. As
+câmeras são desligadas ao sair da etapa, inclusive quando a permissão chega
+depois que a tela foi fechada. Endereços locais ou sem HTTPS não são apresentados
+como links utilizáveis por outro aparelho.
+
 ## Persistência e imagens
 
 A migration `20261111090000_face_check_module` adiciona as tabelas próprias ao

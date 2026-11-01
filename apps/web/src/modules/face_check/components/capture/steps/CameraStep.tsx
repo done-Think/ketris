@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl'
 import { useCaptureFlow } from '../../../stores/CaptureFlowProvider'
 import type { CaptureStepProps } from '../../../types/capture.types'
 import { CaptureLayout } from '../CaptureLayout'
+import { ContinueOnPhoneButton } from '../ContinueOnPhoneButton'
 import { cameraStepStyles, stepStyles } from '../../../styles/capture.styles'
 
 const tips = ['light', 'original', 'face'] as const
@@ -24,6 +25,7 @@ export function CameraStep({ session }: CaptureStepProps) {
           <Button size="large" variant="contained" onClick={() => goTo('document')}>
             {t('enable')}
           </Button>
+          <ContinueOnPhoneButton token={session.token} />
           <Button onClick={() => goTo('alternative')}>{t('withoutCamera')}</Button>
         </>
       }

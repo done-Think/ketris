@@ -46,7 +46,7 @@
     },
     "camera": {
       "title": "Ahora vamos a usar la cámara",
-      "body": "El navegador pedirá tu permiso. La cámara solo se usa en esta página y se apaga al terminar.",
+      "body": "Al pulsar Activar cámara, permite el acceso en el navegador del ordenador o del móvil. Solo usaremos la cámara, sin audio, y la apagaremos al salir de este paso.",
       "tips": {
         "light": "Un lugar bien iluminado, sin luz fuerte detrás de ti",
         "original": "Ten a mano el documento original, no una copia",
@@ -191,8 +191,8 @@
     "live": {
       "starting": "Encendiendo cámara…",
       "deniedTitle": "Se bloqueó el acceso a la cámara",
-      "unavailableTitle": "No encontramos una cámara",
-      "galleryHint": "Puedes enviar una foto guardada en el dispositivo.",
+      "unavailableTitle": "No se pudo acceder a la cámara",
+      "galleryHint": "Puedes enviar el documento desde la galería, pero la selfie y los movimientos necesitan una cámara.",
       "noGalleryHint": "Permite el acceso a la cámara en el navegador o continúa sin biometría.",
       "chooseFile": "Enviar una foto",
       "sendDocument": "Enviar documento",
@@ -239,7 +239,17 @@
       "captured": "Foto tomada. Puedes volver a la posición inicial mientras la analizamos.",
       "closeEnough": "Distancia suficiente. Mantén la posición para la foto.",
       "preparingChallenges": "Preparando los movimientos de la prueba de vida…",
-      "retryChallenges": "Volver a cargar los movimientos"
+      "retryChallenges": "Volver a cargar los movimientos",
+      "notFoundTitle": "No se encontró ninguna cámara en este dispositivo",
+      "notFoundHint": "Si tu ordenador no tiene webcam, continúa esta verificación desde el móvil.",
+      "deniedHint": "Permite el acceso a la cámara en la configuración de este sitio en el navegador e inténtalo de nuevo. También puedes continuar desde el móvil.",
+      "unavailableHint": "Cierra otras aplicaciones que usen la cámara e inténtalo de nuevo, o continúa desde el móvil.",
+      "insecureTitle": "Abre un enlace seguro para usar la cámara",
+      "insecureHint": "Abre la verificación con la dirección HTTPS enviada por la persona responsable del inmueble.",
+      "unsupportedTitle": "Este navegador no permite acceder a la cámara",
+      "unsupportedHint": "Abre el enlace en otro navegador o continúa la verificación desde el móvil.",
+      "permissionHint": "Si el navegador lo solicita, permite el acceso a la cámara para continuar.",
+      "retryCamera": "Intentar usar la cámara de nuevo"
     },
     "cameraNotice": "El documento, la selfie y los movimientos se enviarán para análisis y revisión por una persona de la inmobiliaria.",
     "import": {
@@ -269,7 +279,20 @@
       "sendFront": "Analizar y enviar frente",
       "sendBack": "Analizar y enviar reverso"
     },
-    "agencyFallback": "inmobiliaria"
+    "agencyFallback": "inmobiliaria",
+    "phone": {
+      "action": "Continuar desde el móvil",
+      "title": "Continúa la verificación desde el móvil",
+      "instructions": "Escanea el código QR con la cámara del móvil, o copia y abre el enlace en su navegador. Después, permite el acceso a la cámara para realizar la verificación.",
+      "qrLabel": "Código QR para abrir esta verificación en el móvil",
+      "linkLabel": "Enlace de esta verificación",
+      "privateLink": "Este enlace es personal. Úsalo solo en tu dispositivo y no lo compartas con otras personas.",
+      "unreachable": "Esta dirección no se puede usar desde el móvil. Pide a la persona responsable del inmueble un enlace HTTPS accesible desde tu dispositivo.",
+      "copy": "Copiar enlace",
+      "copied": "Enlace copiado",
+      "copyFailed": "No se pudo copiar automáticamente. Selecciona la dirección de arriba y cópiala manualmente.",
+      "close": "Cerrar"
+    }
   },
   "console": {
     "nav": {

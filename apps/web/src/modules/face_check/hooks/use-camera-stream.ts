@@ -4,9 +4,11 @@ import type { CameraFacing, CameraStream, CameraStreamStatus } from '../types/ca
 import { attachStream, grabVideoFrame, stopStream } from '../utils/image-capture'
 
 function statusForError(error: unknown): CameraStreamStatus {
-  return error instanceof DOMException && error.name === 'NotAllowedError'
-    ? 'denied'
-    : 'unavailable'
+  const name = error && typeof error === 'object' && 'name' in error ? error.name : null
+  if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError')
+    return 'denied'
+  if (name === 'NotFoundError' || name === 'DevicesNotFoundError') return 'notFound'
+  return 'unavailable'
 }
 
 export function useCameraStream(facing: CameraFacing): CameraStream {
@@ -19,11 +21,18 @@ export function useCameraStream(facing: CameraFacing): CameraStream {
   useEffect(() => {
     let cancelled = false
     let opened: MediaStream | null = null
+    let removeTrackListeners = () => {}
 
     async function start() {
       try {
-        if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia)
-          throw new Error('NO_CAMERA_API')
+        if (!window.isSecureContext) {
+          setFailure('insecure')
+          return
+        }
+        if (!navigator.mediaDevices?.getUserMedia) {
+          setFailure('unsupported')
+          return
+        }
         opened = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } },
@@ -32,6 +41,17 @@ export function useCameraStream(facing: CameraFacing): CameraStream {
           stopStream(opened)
 
           return
+        }
+        const ended = () => {
+          if (!cancelled) {
+            setFailure('unavailable')
+            setShowing(false)
+          }
+        }
+        opened.getVideoTracks().forEach((track) => track.addEventListener('ended', ended))
+        const active = opened
+        removeTrackListeners = () => {
+          active.getVideoTracks().forEach((track) => track.removeEventListener('ended', ended))
         }
         setStream(opened)
       } catch (error) {
@@ -43,6 +63,7 @@ export function useCameraStream(facing: CameraFacing): CameraStream {
 
     return () => {
       cancelled = true
+      removeTrackListeners()
       stopStream(opened)
     }
   }, [facing, attempt])

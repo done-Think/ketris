@@ -50,7 +50,12 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
   const { goTo, livenessStep, advanceLiveness, resetLiveness, retryChallenges } = useCaptureFlow(
     (state) => state,
   )
-  const { status: cameraStatus, attachVideo, grabFrame } = useCameraStream('user')
+  const {
+    status: cameraStatus,
+    attachVideo,
+    grabFrame,
+    restart: retryCamera,
+  } = useCameraStream('user')
   const selfieAccepted = livenessStep > 0
   const challenges = useLivenessChallenges(session.token, selfieAccepted)
   const upload = useUploadSelfie(session.token)
@@ -257,13 +262,16 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
         </Box>
       </Box>
 
-      {cameraStatus === 'denied' || cameraStatus === 'unavailable' ? (
+      {cameraStatus !== 'live' && cameraStatus !== 'starting' ? (
         <Box sx={liveStyles.selfieNotice}>
           <CameraFallback
+            token={session.token}
             status={cameraStatus}
             allowGallery={false}
             onFile={() => undefined}
             onAlternative={() => goTo('alternative')}
+            onRetry={retryCamera}
+            disabled={busy}
           />
         </Box>
       ) : (

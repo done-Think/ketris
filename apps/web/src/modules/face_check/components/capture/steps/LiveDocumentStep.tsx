@@ -36,7 +36,7 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
   const { goTo, side, documentType, chooseDocument, markCaptured } = useCaptureFlow(
     (state) => state,
   )
-  const { status: cameraStatus, attachVideo, grabFrame } = useCameraStream('environment')
+  const { status: cameraStatus, attachVideo, grabFrame, restart } = useCameraStream('environment')
   const upload = useUploadDocumentImage(session.token)
   const [captureFailed, setCaptureFailed] = useState(false)
   const [preparing, setPreparing] = useState(false)
@@ -144,6 +144,7 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
           sx={[
             liveStyles.documentFrame,
             ...(orientation === 'portrait' ? [liveStyles.portraitFrame] : []),
+            ...(!live ? [liveStyles.inactiveFrame] : []),
           ]}
         >
           <Box
@@ -165,11 +166,13 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
             />
           ) : (
             <CameraFallback
+              token={session.token}
               status={cameraStatus}
               allowGallery={session.allowGalleryUpload}
               galleryInFooter
               onFile={pickFile}
               onAlternative={() => goTo('alternative')}
+              onRetry={restart}
               disabled={busy}
             />
           )}

@@ -28,8 +28,14 @@ function create(agent = false) {
     login(agent ? result.agentEmail : result.ownerEmail)
   })
   cy.visit('/pt/dashboard/face_check')
+  cy.intercept('GET', '**/api/face_check/properties').as('availableProperties')
   cy.contains('button', 'Nova verificação').click()
-  cy.get('input[name="propertyId"]').parent().find('[role="combobox"]').click()
+  cy.wait('@availableProperties').its('response.statusCode').should('eq', 200)
+  cy.get('input[name="propertyId"]')
+    .parent()
+    .find('[role="combobox"]')
+    .should('not.have.attr', 'aria-disabled', 'true')
+    .click()
   cy.contains('[role="option"]', 'Imóvel de outro tenant').should('not.exist')
   if (agent) cy.contains('[role="option"]', 'Casa da gestão CRM').should('not.exist')
   cy.contains('[role="option"]', 'Apartamento CRM disponível').click()
@@ -53,6 +59,48 @@ afterEach(() => {
 })
 
 describe('Face Check real authorization and invited capture', () => {
+  for (const camera of [
+    { error: 'NotFoundError', title: 'Nenhuma câmera encontrada neste dispositivo', width: 1440 },
+    { error: 'NotAllowedError', title: 'A câmera foi bloqueada', width: 390 },
+  ]) {
+    it(`requests camera permission after consent and handles ${camera.error}`, () => {
+      create()
+      cy.clearCookies()
+      cy.viewport(camera.width, 844)
+      cy.then(() =>
+        cy.visit(`/pt/face_check/verify/${created!.token}`, {
+          onBeforeLoad(window) {
+            const permission = cy
+              .stub(window.navigator.mediaDevices, 'getUserMedia')
+              .as('cameraPermission')
+            permission.rejects(Object.assign(new Error('Test camera'), { name: camera.error }))
+          },
+        }),
+      )
+      cy.get('@cameraPermission').should('not.have.been.called')
+      cy.contains('button', 'Começar').click()
+      cy.get('[role="dialog"]').within(() => {
+        cy.contains('label', 'Entendi e estou de acordo!').click()
+        cy.contains('button', 'Continuar').click()
+      })
+      cy.contains('button', 'Ativar câmera').should('be.visible')
+      cy.get('@cameraPermission').should('not.have.been.called')
+      cy.contains('button', 'Ativar câmera').click()
+      cy.get('@cameraPermission').should('have.been.calledOnce')
+      cy.contains(camera.title).should('be.visible')
+      cy.contains('button', 'Continuar pelo celular').should('be.visible').click()
+      cy.get('[role="dialog"]').should('be.visible')
+      // The local HTTP test origin cannot be opened safely by a different phone.
+      cy.contains('Este endereço não pode ser usado no celular.').should('be.visible')
+      cy.get('button[aria-label="Tirar foto"]').should('be.disabled')
+      cy.document().then((document) => {
+        expect(document.documentElement.scrollWidth).to.be.at.most(
+          document.documentElement.clientWidth,
+        )
+      })
+    })
+  }
+
   it('limits agent properties and persists consent and a request for human assistance', () => {
     create(true)
     cy.clearCookies()

@@ -46,7 +46,7 @@
     },
     "camera": {
       "title": "Agora vamos usar a câmera",
-      "body": "O navegador vai pedir sua permissão. A câmera só é usada nesta página e desliga quando você terminar.",
+      "body": "Ao tocar em Ativar câmera, permita o acesso no navegador do computador ou celular. Usaremos somente a câmera, sem áudio, e ela será desligada ao sair desta etapa.",
       "tips": {
         "light": "Lugar bem iluminado, sem luz forte atrás de você",
         "original": "Documento original em mãos (não vale cópia)",
@@ -191,8 +191,18 @@
     "live": {
       "starting": "Ligando a câmera…",
       "deniedTitle": "A câmera foi bloqueada",
-      "unavailableTitle": "Não encontramos uma câmera",
-      "galleryHint": "Você pode enviar uma foto que já está no aparelho.",
+      "unavailableTitle": "Não foi possível acessar a câmera",
+      "notFoundTitle": "Nenhuma câmera encontrada neste dispositivo",
+      "notFoundHint": "Se o computador não tem webcam, continue esta verificação pelo celular.",
+      "deniedHint": "Permita o acesso à câmera nas configurações deste site no navegador e tente novamente. Você também pode continuar pelo celular.",
+      "unavailableHint": "Feche outros aplicativos que usam a câmera e tente novamente, ou continue pelo celular.",
+      "insecureTitle": "Abra um link seguro para usar a câmera",
+      "insecureHint": "Abra a verificação pelo endereço HTTPS enviado pelo responsável pelo imóvel.",
+      "unsupportedTitle": "Este navegador não permite acessar a câmera",
+      "unsupportedHint": "Abra o link em outro navegador ou continue a verificação pelo celular.",
+      "permissionHint": "Se o navegador pedir, permita o acesso à câmera para continuar.",
+      "retryCamera": "Tentar câmera novamente",
+      "galleryHint": "Você pode enviar o documento pela galeria, mas a selfie e os movimentos precisam de câmera.",
       "noGalleryHint": "Libere a câmera no navegador ou siga pelo caminho sem biometria.",
       "chooseFile": "Enviar uma foto",
       "sendDocument": "Enviar documento",
@@ -240,6 +250,19 @@
       "closeEnough": "Distância suficiente. Segure firme para tirar a foto.",
       "preparingChallenges": "Preparando os movimentos da prova de vida…",
       "retryChallenges": "Tentar carregar movimentos novamente"
+    },
+    "phone": {
+      "action": "Continuar pelo celular",
+      "title": "Continue a verificação pelo celular",
+      "instructions": "Leia o QR code com a câmera do celular ou copie e abra o link no navegador do aparelho. Depois, permita o acesso à câmera para fazer a verificação.",
+      "qrLabel": "QR code para abrir esta verificação no celular",
+      "linkLabel": "Link desta verificação",
+      "privateLink": "Este link é pessoal. Use apenas no seu aparelho e não compartilhe com outras pessoas.",
+      "unreachable": "Este endereço não pode ser usado no celular. Solicite ao responsável pelo imóvel um link HTTPS acessível pelo seu aparelho.",
+      "copy": "Copiar link",
+      "copied": "Link copiado",
+      "copyFailed": "Não foi possível copiar automaticamente. Selecione o endereço acima e copie manualmente.",
+      "close": "Fechar"
     },
     "cameraNotice": "Documento, selfie e movimentos serão enviados para análise e revisão por uma pessoa da imobiliária.",
     "import": {

@@ -104,7 +104,8 @@ export interface DocumentImageUploadInput extends DocumentUploadInput {
 
 export type CameraFacing = 'environment' | 'user'
 
-export type CameraStreamStatus = 'starting' | 'live' | 'denied' | 'unavailable'
+export type CameraStreamStatus =
+  'starting' | 'live' | 'denied' | 'notFound' | 'insecure' | 'unsupported' | 'unavailable'
 
 export interface CameraStream {
   status: CameraStreamStatus
@@ -120,12 +121,20 @@ export interface FaceProximityOptions {
 }
 
 export interface CameraFallbackProps {
+  token: string
   status: CameraStreamStatus
   allowGallery: boolean
   galleryInFooter?: boolean
   onFile: (file: File) => void
   onAlternative: () => void
+  onRetry: () => void
   disabled?: boolean
+}
+
+export interface ContinueOnPhoneButtonProps {
+  token: string
+  disabled?: boolean
+  dark?: boolean
 }
 
 export interface DocumentIntroProps {

@@ -401,8 +401,8 @@ export const liveCaptureStyles = {
     objectFit: 'cover',
   },
   notice: {
-    position: 'absolute',
-    inset: 0,
+    position: 'relative',
+    minHeight: 300,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -414,6 +414,7 @@ export const liveCaptureStyles = {
     color: surface.lightText,
   },
   noticeIcon: { fontSize: 36, color: capture.mutedText },
+  inactiveFrame: { aspectRatio: 'auto', minHeight: 300 },
   noticeTitle: { fontSize: 16, fontWeight: 500 },
   noticeText: { fontSize: 13, color: capture.mutedText, maxWidth: 300 },
   galleryButton: {
