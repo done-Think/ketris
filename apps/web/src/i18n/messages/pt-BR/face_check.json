@@ -58,6 +58,8 @@
     "document": {
       "titleFront": "Frente do {doc}",
       "titleBack": "Verso do {doc}",
+      "rgFrontHint": "No RG, fotografe primeiro o lado com a foto do titular. Enquadre o documento inteiro, com as bordas visíveis.",
+      "rgBackHint": "Agora vire o RG e fotografe o lado oposto ao que você enviou primeiro.",
       "typeLabel": "Tipo de documento",
       "types": {
         "RG": "RG",

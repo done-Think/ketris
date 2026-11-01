@@ -14,7 +14,7 @@ from document_reading import (
     crop_card,
     summarize_document,
 )
-from document_orientation import orient_document, read_document_regions, text_orientation_score
+from document_orientation import orient_document, oriented_text, read_document_regions, text_orientation_score
 from text_regions import TextDetector, TextReader
 
 PHOTO_KINDS = ("front", "back", "selfie")
@@ -272,12 +272,11 @@ class PhotoInspector:
             if corners is not None:
                 card = crop_card(image, corners)
                 card_share = cv2.contourArea(corners) / float(image.shape[0] * image.shape[1])
-        metrics, hashes, boxes = self._measure(image, kind, card, card_share)
+        metrics, hashes, text_source, boxes = self._measure(image, kind, card, card_share)
         document = None
         if kind != "selfie" and self._text_reader is not None:
-            source = image if card is None else card
             reading = read_document_regions(
-                image, self._text_detector, self._text_reader, card is not None, source, boxes, corners,
+                image, self._text_detector, self._text_reader, card is not None, text_source, boxes, corners,
             )
             if not reading.card_detected:
                 labels = text_orientation_score(reading.rows)[1]
@@ -317,7 +316,7 @@ class PhotoInspector:
         kind: str,
         card: Optional[np.ndarray] = None,
         card_share: float = 1.0,
-    ) -> tuple[PhotoMetrics, list[str], list[np.ndarray]]:
+    ) -> tuple[PhotoMetrics, list[str], np.ndarray, list[np.ndarray]]:
         height, width = image.shape[:2]
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         source = image if card is None else card
@@ -336,16 +335,22 @@ class PhotoInspector:
         selfie_faces = counted_faces(faces)
         if kind == "selfie" and self._anti_spoof and len(selfie_faces) == 1:
             real_probability = self._anti_spoof.real_probability(image, selfie_faces[0].box)
-        boxes = self._text_detector.boxes(source) if self._text_detector else []
+        text_source = source
+        if kind != "selfie" and self._text_detector is not None and self._text_reader is not None:
+            # Legacy RG portraits and printed fields need not share an orientation.
+            # Measure/read upright text without rotating the face used for matching.
+            text_source, boxes, _ = oriented_text(source, self._text_detector, self._text_reader)
+        else:
+            boxes = self._text_detector.boxes(source) if self._text_detector else []
         metrics = PhotoMetrics(
             opened=True,
             width=width,
             height=height,
-            brightness=float(gray.mean()) if kind == "selfie" else document_brightness(source, boxes),
+            brightness=float(gray.mean()) if kind == "selfie" else document_brightness(text_source, boxes),
             brightness_source="text" if kind != "selfie" and len(boxes) >= RULES.document_min_text_regions else "image",
             sharpness=sharpness_of(gray),
             faces=faces,
             text_regions=len(boxes),
             real_probability=real_probability,
         )
-        return metrics, [dhash(gray), dhash(cv2.flip(gray, 1))], boxes
+        return metrics, [dhash(gray), dhash(cv2.flip(gray, 1))], text_source, boxes

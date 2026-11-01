@@ -25,6 +25,7 @@ import { DocumentIntro } from '../DocumentIntro'
 import { DocumentImportDialog } from '../DocumentImportDialog'
 import { GalleryButton } from '../GalleryButton'
 import { PhotoErrorNotice } from '../PhotoErrorNotice'
+import { ContinueOnPhoneButton } from '../ContinueOnPhoneButton'
 import {
   documentStepStyles as styles,
   liveCaptureStyles as liveStyles,
@@ -36,7 +37,13 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
   const { goTo, side, documentType, chooseDocument, markCaptured } = useCaptureFlow(
     (state) => state,
   )
-  const { status: cameraStatus, attachVideo, grabFrame, restart } = useCameraStream('environment')
+  const {
+    status: cameraStatus,
+    aspectRatio,
+    attachVideo,
+    grabFrame,
+    restart,
+  } = useCameraStream('environment')
   const upload = useUploadDocumentImage(session.token)
   const [captureFailed, setCaptureFailed] = useState(false)
   const [preparing, setPreparing] = useState(false)
@@ -117,6 +124,7 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
               accept="image/jpeg,image/png,image/heic,image/heif,application/pdf,.pdf"
             />
           ) : null}
+          {live ? <ContinueOnPhoneButton token={session.token} disabled={busy} dark /> : null}
         </>
       }
     >
@@ -141,11 +149,7 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
 
       <Box sx={styles.stage}>
         <Box
-          sx={[
-            liveStyles.documentFrame,
-            ...(orientation === 'portrait' ? [liveStyles.portraitFrame] : []),
-            ...(!live ? [liveStyles.inactiveFrame] : []),
-          ]}
+          sx={[liveStyles.documentFrame(aspectRatio), ...(!live ? [liveStyles.inactiveFrame] : [])]}
         >
           <Box
             component="video"
@@ -157,13 +161,7 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
             sx={liveStyles.video}
           />
           {live ? (
-            <Box
-              aria-hidden="true"
-              sx={[
-                liveStyles.documentGuide,
-                ...(orientation === 'portrait' ? [liveStyles.portraitGuide] : []),
-              ]}
-            />
+            <Box aria-hidden="true" sx={liveStyles.documentGuide(orientation, aspectRatio)} />
           ) : (
             <CameraFallback
               token={session.token}

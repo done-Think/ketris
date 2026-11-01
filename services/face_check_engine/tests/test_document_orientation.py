@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 
@@ -115,3 +116,43 @@ class OrientationTest(unittest.TestCase):
             with self.subTest(turns=turns):
                 actual = inspector.orient_document(np.rot90(self.upright, turns).copy())
                 np.testing.assert_array_equal(actual, self.upright)
+
+    def test_measures_printed_text_upright_without_turning_the_document_portrait_sideways(self):
+        text_upright = np.full((700, 1000, 3), 180, np.uint8)
+        text_upright[0, 0] = 10
+        portrait_upright = np.rot90(text_upright).copy()
+        lines = [
+            'carteiradeidentidade', 'republicafederativadobrasil',
+            'assinaturadotitular', 'minasgerais',
+        ]
+        boxes = [np.array([[40, y], [600, y], [600, y + 25], [40, y + 25]], np.float32)
+                 for y in (100, 200, 300, 400)]
+        face = np.array([100, 100, 40, 60, 108, 120, 132, 120, 120, 135, 110, 145, 130, 145, .95])
+
+        class Pipeline:
+            def detect(inner, image):
+                faces = [face] if np.array_equal(image, portrait_upright) else []
+                return DetectedFaces(image, 1, faces)
+
+        class Detector:
+            def boxes(inner, image):
+                return boxes if np.array_equal(image, text_upright) else []
+
+        class Reader:
+            def read(inner, image, box):
+                return lines[next(index for index, candidate in enumerate(boxes) if np.array_equal(box, candidate))]
+
+            def reread_narrow(inner, image, box):
+                return []
+
+        inspector = PhotoInspector(Pipeline(), Detector(), text_reader=Reader())
+        with (
+            patch('inspection.card_candidates', return_value=[]),
+            patch('document_orientation.card_candidates', return_value=[]),
+            patch('inspection.sharpness_of', return_value=100),
+        ):
+            result = inspector.inspect(portrait_upright, 'front')
+        self.assertEqual(result['issues'], [])
+        self.assertEqual(result['metrics']['textRegions'], len(lines))
+        self.assertEqual(len(result['metrics']['faces']), 1)
+        self.assertEqual(result['document']['documentType'], 'RG')

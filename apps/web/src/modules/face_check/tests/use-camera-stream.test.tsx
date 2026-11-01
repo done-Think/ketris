@@ -46,6 +46,26 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('camera permissions and hardware', () => {
+  it('reports the decoded frame proportions and updates them after device rotation', async () => {
+    const { stream } = media()
+    getUserMedia.mockResolvedValue(stream)
+    const view = renderHook(() => useCameraStream('environment'))
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalledOnce())
+    const video = document.createElement('video')
+    Object.defineProperties(video, {
+      videoWidth: { value: 1280, configurable: true },
+      videoHeight: { value: 720, configurable: true },
+    })
+    act(() => view.result.current.attachVideo(video))
+    fireEvent.loadedMetadata(video)
+    expect(view.result.current.aspectRatio).toBeCloseTo(16 / 9)
+    Object.defineProperties(video, { videoWidth: { value: 720 }, videoHeight: { value: 1280 } })
+    fireEvent(video, new Event('resize'))
+    expect(view.result.current.aspectRatio).toBeCloseTo(9 / 16)
+    expect(getUserMedia).toHaveBeenCalledOnce()
+    view.unmount()
+  })
+
   it.each(['environment', 'user'] as const)(
     'requests permission for %s without audio and stops on unmount',
     async (facing) => {

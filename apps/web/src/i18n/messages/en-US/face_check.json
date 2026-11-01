@@ -58,6 +58,8 @@
     "document": {
       "titleFront": "Front of {doc}",
       "titleBack": "Back of {doc}",
+      "rgFrontHint": "For an RG, start with the side showing the holder's photo. Include the entire document with all edges visible.",
+      "rgBackHint": "Now turn the RG over and photograph the opposite side to the one you sent first.",
       "typeLabel": "Document type",
       "types": {
         "RG": "RG",

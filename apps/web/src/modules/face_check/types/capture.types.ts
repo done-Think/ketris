@@ -117,6 +117,7 @@ export type CameraStreamStatus =
 
 export interface CameraStream {
   status: CameraStreamStatus
+  aspectRatio: number | null
   attachVideo: (node: HTMLVideoElement | null) => void
   grabFrame: () => Promise<Blob>
   restart: () => void

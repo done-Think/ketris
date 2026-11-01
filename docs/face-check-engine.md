@@ -11,6 +11,19 @@ autenticação de usuários, sessões, desafios, storage, revisão, auditoria e
 decisões. O token privado do motor, `FACE_CHECK_ENGINE_TOKEN`, autentica somente
 o backend via Bearer. Ele não é um token público nem de sessão de usuário.
 
+A orientação do rosto no RG antigo pode ser diferente da orientação do texto.
+O motor mantém a foto do titular na posição correta para detecção/comparação
+facial e orienta separadamente o quadro usado pelo OCR. A contagem de regiões
+de texto e a medição de luminosidade usam esse mesmo quadro legível; texto
+girado não deve ser tratado como texto ausente. Os limites de qualidade,
+detecção de rosto, comparação e revisão manual permanecem iguais.
+
+A prévia do documento preserva a proporção real do vídeo e mostra o mesmo
+quadro que será fotografado. O controle retrato/paisagem muda a guia de
+enquadramento. Solicitar uma resolução ideal maior não aumenta a resolução
+nativa da câmera; para documentos pequenos, o fluxo permite continuar no
+celular também durante a captura.
+
 O contrato do piloto foi mantido em `POST /match`, `/inspect`,
 `/document-regions`, `/liveness` e `/proximity`. Os resultados incluem as
 métricas originais e `experimental: true`, `calibrated: false`. O resultado

@@ -15,7 +15,11 @@ import {
   surface,
 } from './tokens'
 
-import type { CapturePresentationVariant, ResultIllustrationProps } from '../types/capture.types'
+import type {
+  CapturePresentationVariant,
+  DocumentOrientation,
+  ResultIllustrationProps,
+} from '../types/capture.types'
 
 export const documentImportStyles = {
   sides: {
@@ -385,30 +389,28 @@ export const liveCaptureStyles = {
       '&:hover': { bgcolor: surface.darkModeText },
     },
   },
-  portraitFrame: { maxWidth: { xs: 320, md: 360 }, aspectRatio: '3 / 4' },
-  portraitGuide: { width: '70%', aspectRatio: '1 / 1.55' },
-  documentFrame: {
+  documentFrame: (aspectRatio: number | null) => ({
     position: 'relative',
     width: '100%',
-    maxWidth: 640,
-    aspectRatio: '4 / 3',
+    maxWidth: Math.min(640, 560 * (aspectRatio ?? 4 / 3)),
+    aspectRatio: aspectRatio ?? 4 / 3,
     borderRadius: `${radius.lg}px`,
     bgcolor: capture.viewport,
     overflow: 'hidden',
-  },
-  documentGuide: {
+  }),
+  documentGuide: (orientation: DocumentOrientation, aspectRatio: number | null) => ({
     position: 'absolute',
     left: '50%',
     top: '50%',
     transform: 'translate(-50%, -50%)',
-    width: '84%',
-    aspectRatio: '1.55',
+    width: `${84 * Math.min(1, (orientation === 'portrait' ? 1 / 1.55 : 1.55) / (aspectRatio ?? 4 / 3))}%`,
+    aspectRatio: orientation === 'portrait' ? 1 / 1.55 : 1.55,
     border: '3px solid',
     borderColor: capture.guideIdle,
     borderRadius: `${radius.sm}px`,
     boxShadow: `0 0 0 100vmax ${alpha.graphite[52]}`,
     pointerEvents: 'none',
-  },
+  }),
   selfieBackgroundAlert: {
     bgcolor: supportColor.errorSoft,
     color: semanticInk.errorText,
@@ -420,7 +422,7 @@ export const liveCaptureStyles = {
     inset: 0,
     width: '100%',
     height: '100%',
-    objectFit: 'cover',
+    objectFit: 'contain',
   },
   notice: {
     position: 'relative',

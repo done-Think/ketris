@@ -37,6 +37,11 @@ export function DocumentIntro({ options, selected, side, onChoose }: DocumentInt
           {t('sides.back')}
         </Box>
       </Box>
+      {selected === 'RG' ? (
+        <Typography sx={styles.hint}>
+          {t(side === 'front' ? 'rgFrontHint' : 'rgBackHint')}
+        </Typography>
+      ) : null}
     </Box>
   )
 }

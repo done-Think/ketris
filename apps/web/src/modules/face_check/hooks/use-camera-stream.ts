@@ -18,6 +18,7 @@ export function useCameraStream(facing: CameraFacing): CameraStream {
   const [video, setVideo] = useState<HTMLVideoElement | null>(null)
   const [attempt, setAttempt] = useState(0)
   const [showing, setShowing] = useState(false)
+  const [aspectRatio, setAspectRatio] = useState<number | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -77,10 +78,25 @@ export function useCameraStream(facing: CameraFacing): CameraStream {
 
   useEffect(() => {
     if (!video) return
-    const show = () => setShowing(true)
+    const measure = () => {
+      setAspectRatio(
+        video.videoWidth > 0 && video.videoHeight > 0 ? video.videoWidth / video.videoHeight : null,
+      )
+    }
+    const show = () => {
+      measure()
+      setShowing(true)
+    }
+    measure()
+    video.addEventListener('loadedmetadata', measure)
+    video.addEventListener('resize', measure)
     video.addEventListener('loadeddata', show)
 
-    return () => video.removeEventListener('loadeddata', show)
+    return () => {
+      video.removeEventListener('loadedmetadata', measure)
+      video.removeEventListener('resize', measure)
+      video.removeEventListener('loadeddata', show)
+    }
   }, [video])
 
   const grabFrame = useCallback(() => grabVideoFrame(video), [video])
@@ -88,9 +104,10 @@ export function useCameraStream(facing: CameraFacing): CameraStream {
     setStream(null)
     setFailure(null)
     setShowing(false)
+    setAspectRatio(null)
     setAttempt((value) => value + 1)
   }, [])
   const status: CameraStreamStatus = failure ?? (stream && showing ? 'live' : 'starting')
 
-  return { status, attachVideo: setVideo, grabFrame, restart }
+  return { status, aspectRatio, attachVideo: setVideo, grabFrame, restart }
 }
