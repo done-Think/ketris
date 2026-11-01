@@ -55,7 +55,13 @@ describe('camera permissions and hardware', () => {
       await waitFor(() => expect(getUserMedia).toHaveBeenCalledOnce())
       expect(getUserMedia).toHaveBeenCalledWith({
         audio: false,
-        video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        video: {
+          facingMode: { ideal: facing },
+          width: { ideal: 3840, min: 1280 },
+          height: { ideal: 2160, min: 720 },
+          resizeMode: { ideal: 'none' },
+          frameRate: { ideal: 30, max: 30 },
+        },
       })
       const video = document.createElement('video')
       act(() => view.result.current.attachVideo(video))
@@ -76,6 +82,43 @@ describe('camera permissions and hardware', () => {
     getUserMedia.mockRejectedValue(new DOMException('Camera error', name))
     const { result } = renderHook(() => useCameraStream('user'))
     await waitFor(() => expect(result.current.status).toBe(status))
+    expect(getUserMedia).toHaveBeenCalledOnce()
+  })
+
+  it.each(['OverconstrainedError', 'ConstraintNotSatisfiedError'])(
+    'keeps a lower-resolution camera usable after %s without requesting audio',
+    async (name) => {
+      const { stream, track } = media()
+      getUserMedia.mockRejectedValueOnce({ name }).mockResolvedValueOnce(stream)
+      const view = renderHook(() => useCameraStream('user'))
+      await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(2))
+      const fallback = getUserMedia.mock.calls[1][0]
+      expect(fallback).toMatchObject({ audio: false, video: { facingMode: { ideal: 'user' } } })
+      expect(fallback.video.width).not.toHaveProperty('min')
+      expect(fallback.video.height).not.toHaveProperty('min')
+      const video = document.createElement('video')
+      act(() => view.result.current.attachVideo(video))
+      fireEvent.loadedData(video)
+      await waitFor(() => expect(view.result.current.status).toBe('live'))
+      view.unmount()
+      expect(track.stop).toHaveBeenCalledOnce()
+    },
+  )
+
+  it('does not retry resolution negotiation after the capture screen is closed', async () => {
+    let reject!: (reason: unknown) => void
+    getUserMedia.mockImplementationOnce(
+      () =>
+        new Promise((_resolve, fail) => {
+          reject = fail
+        }),
+    )
+    const view = renderHook(() => useCameraStream('user'))
+    view.unmount()
+    await act(async () => {
+      reject(new DOMException('Unsupported resolution', 'OverconstrainedError'))
+    })
+    expect(getUserMedia).toHaveBeenCalledOnce()
   })
 
   it('does not request media in an insecure context or unsupported browser', async () => {

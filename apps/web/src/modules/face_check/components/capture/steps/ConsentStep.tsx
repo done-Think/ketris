@@ -129,7 +129,7 @@ export function ConsentStep({ session }: CaptureStepProps) {
             name="accepted"
             render={({ field }) => (
               <FormControlLabel
-                sx={stepStyles.consentLabel(field.value)}
+                sx={stepStyles.consentLabel}
                 control={
                   <Checkbox
                     required

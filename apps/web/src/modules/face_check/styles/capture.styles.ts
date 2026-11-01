@@ -184,18 +184,15 @@ export const stepStyles = {
   checkItem: { display: 'flex', gap: 1.25, alignItems: 'center', fontSize: 14 },
   checkIcon: { color: brand.semantic.success, fontSize: 18 },
   spacer: { flex: 1 },
-  consentLabel: (checked: boolean) => ({
+  consentLabel: {
     m: 0,
-    p: 1.5,
-    alignItems: 'flex-start',
-    bgcolor: surface.paper,
-    border: '1px solid',
-    borderColor: checked ? 'primary.main' : 'divider',
-    borderRadius: `${radius.md}px`,
-    '& .MuiFormControlLabel-label': { fontSize: 14, lineHeight: 1.5, pt: 0.75 },
-  }),
+    mt: 1,
+    alignItems: 'center',
+    '& .MuiCheckbox-root': { p: 1, ml: -1 },
+    '& .MuiFormControlLabel-label': { fontSize: 14, lineHeight: 1.5 },
+  },
   errorText: { fontSize: 12, color: semanticInk.errorText },
-} satisfies Record<string, SxProps<Theme> | ((...args: never[]) => SxProps<Theme>)>
+} satisfies Record<string, SxProps<Theme>>
 
 export const cameraStepStyles = {
   preview: {

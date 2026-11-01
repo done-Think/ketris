@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import type { CameraFacing, CameraStream, CameraStreamStatus } from '../types/capture.types'
 import { attachStream, grabVideoFrame, stopStream } from '../utils/image-capture'
+import { cameraConstraints, isCameraConstraintError } from '../utils/camera-constraints'
 
 function statusForError(error: unknown): CameraStreamStatus {
   const name = error && typeof error === 'object' && 'name' in error ? error.name : null
@@ -33,10 +34,14 @@ export function useCameraStream(facing: CameraFacing): CameraStream {
           setFailure('unsupported')
           return
         }
-        opened = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } },
-        })
+        try {
+          opened = await navigator.mediaDevices.getUserMedia(cameraConstraints(facing, true))
+        } catch (error) {
+          if (cancelled) return
+          if (!isCameraConstraintError(error)) throw error
+          // Keep lower-resolution cameras usable without retrying denied permissions.
+          opened = await navigator.mediaDevices.getUserMedia(cameraConstraints(facing, false))
+        }
         if (cancelled) {
           stopStream(opened)
 
