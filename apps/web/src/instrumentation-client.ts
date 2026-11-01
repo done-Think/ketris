@@ -24,30 +24,39 @@ const replayOptions: Parameters<typeof Sentry.replayIntegration>[0] = {
     !faceCheckBrowserPrivacyActive() && !containsFaceCheckTelemetry(event),
 }
 
+function addReplay() {
+  // Without a transport (for example, no local DSN), init does not register integrations.
+  // Construct only after the client is enabled: Replay rejects a second construction,
+  // even when its first instance was never registered and getReplay() returns undefined.
+  if (!Sentry.isEnabled() || Sentry.getReplay()) return
+  Sentry.addIntegration(Sentry.replayIntegration(replayOptions))
+}
+
 const privacy = installFaceCheckBrowserPrivacy({
   getReplay: () => Sentry.getReplay(),
-  addReplay: () => Sentry.addIntegration(Sentry.replayIntegration(replayOptions)),
+  addReplay,
   clearBreadcrumbs: () => {
     Sentry.getCurrentScope().clearBreadcrumbs()
     Sentry.getIsolationScope().clearBreadcrumbs()
   },
 })
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  environment: process.env.NEXT_PUBLIC_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development',
-  tracesSampler: faceCheckTracesSampler(process.env.NODE_ENV === 'development' ? 1.0 : 0.1),
-  beforeSend: beforeSendFaceCheckEvent,
-  beforeSendTransaction: beforeSendFaceCheckTransaction,
-  beforeBreadcrumb: beforeFaceCheckBreadcrumb,
-  beforeSendLog: beforeFaceCheckLog,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
-  integrations: [
-    faceCheckPrivacyIntegration(),
-    ...(faceCheckBrowserPrivacyActive() ? [] : [Sentry.replayIntegration(replayOptions)]),
-  ],
-})
+if (!Sentry.isInitialized()) {
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    environment: process.env.NEXT_PUBLIC_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development',
+    tracesSampler: faceCheckTracesSampler(process.env.NODE_ENV === 'development' ? 1.0 : 0.1),
+    beforeSend: beforeSendFaceCheckEvent,
+    beforeSendTransaction: beforeSendFaceCheckTransaction,
+    beforeBreadcrumb: beforeFaceCheckBreadcrumb,
+    beforeSendLog: beforeFaceCheckLog,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+    integrations: [faceCheckPrivacyIntegration()],
+  })
+}
+
+if (!faceCheckBrowserPrivacyActive()) addReplay()
 
 export const onRouterTransitionStart = (href: string, navigationType: string) => {
   if (!privacy.transition(href)) Sentry.captureRouterTransitionStart(href, navigationType)
