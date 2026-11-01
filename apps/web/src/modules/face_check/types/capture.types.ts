@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { StoreApi } from 'zustand'
+import type { FaceGuideGeometry } from './face-framing.types'
 
 import type {
   CaptureMode,
@@ -90,6 +91,7 @@ export interface FaceViewportProps {
   ring: FaceRing
   arrow: 'left' | 'right' | null
   media: ReactNode
+  onGeometryChange?: (geometry: FaceGuideGeometry | null) => void
 }
 
 export interface DocumentUploadInput {
@@ -120,6 +122,7 @@ export interface CameraStream {
   aspectRatio: number | null
   attachVideo: (node: HTMLVideoElement | null) => void
   grabFrame: () => Promise<Blob>
+  sampleFrame: () => Promise<Blob>
   restart: () => void
 }
 

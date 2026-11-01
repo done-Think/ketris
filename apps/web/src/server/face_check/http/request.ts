@@ -8,6 +8,7 @@ import {
   maxUploadBodyBytes,
 } from '../config/upload-limits'
 import type { CapturedImage } from '../types/face-match.types'
+import type { CapturedImageLimits } from '../types/face-framing.types'
 
 export async function readBodyBytes(
   request: Request,
@@ -76,14 +77,20 @@ export async function photoForm(request: Request): Promise<Record<string, unknow
   return Object.fromEntries(entries)
 }
 
-export async function capturedImage(value: unknown): Promise<CapturedImage> {
+export async function capturedImage(
+  value: unknown,
+  limits: CapturedImageLimits = {
+    maxBytes: maxCapturePhotoBytes,
+    maxPixels: maxCapturePhotoPixels,
+  },
+): Promise<CapturedImage> {
   const types: Record<string, string> = { 'image/jpeg': 'jpeg', 'image/png': 'png' }
   if (!(value instanceof Blob) || !types[value.type] || value.size === 0)
     throw new FaceCheckError('INVALID_IMAGE', 400)
-  if (value.size > maxCapturePhotoBytes) throw new FaceCheckError('PAYLOAD_TOO_LARGE', 413)
+  if (value.size > limits.maxBytes) throw new FaceCheckError('PAYLOAD_TOO_LARGE', 413)
   const bytes = Buffer.from(await value.arrayBuffer())
   try {
-    const image = sharp(bytes, { limitInputPixels: maxCapturePhotoPixels, failOn: 'warning' })
+    const image = sharp(bytes, { limitInputPixels: limits.maxPixels, failOn: 'warning' })
     const metadata = await image.metadata()
     if (
       metadata.format !== types[value.type] ||
@@ -92,7 +99,7 @@ export async function capturedImage(value: unknown): Promise<CapturedImage> {
       !metadata.height ||
       metadata.width < 32 ||
       metadata.height < 32 ||
-      metadata.width * metadata.height > maxCapturePhotoPixels
+      metadata.width * metadata.height > limits.maxPixels
     )
       throw new Error('INVALID_IMAGE')
     // Decode all pixels, not only the header, before the engine or object storage receives bytes.

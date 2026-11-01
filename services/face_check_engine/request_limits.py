@@ -103,6 +103,7 @@ def validate_payload(path: str, payload: Any) -> None:
         "/document-regions": ({"image"}, {"image"}),
         "/liveness": ({"selfie", "frames"}, {"selfie"}),
         "/proximity": ({"selfie", "image"}, {"selfie", "image"}),
+        "/framing": ({"image"}, {"image"}),
     }
     allowed, photos = fields[path]
     if payload.keys() - allowed:
@@ -131,4 +132,9 @@ def validate_payload(path: str, payload: Any) -> None:
             seen.add(challenge)
             validate_image_bytes(decode_base64_field(frame, "image"))
     for field in photos:
-        validate_image_bytes(decode_base64_field(payload, field))
+        data = decode_base64_field(payload, field)
+        validate_image_bytes(data)
+        if path == "/framing":
+            width, height = image_dimensions(data)
+            if len(data) > 512 * 1024 or width * height > 1024 * 1024:
+                raise PayloadTooLarge("FRAMING_IMAGE_TOO_LARGE")

@@ -5944,6 +5944,160 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/face_check/capture/{token}/framing': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Get transient face placement feedback after document capture. Preview images are not stored; this does not verify identity. Maximum 512 KiB and one megapixel.
+     * @description The single-session capture token is the credential. Expiration, current requester/property eligibility, origin and distributed rate limits are checked server-side.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          token: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'multipart/form-data': {
+            /**
+             * Format: binary
+             * @description JPEG/PNG, at most 3 MiB and 16 million decoded pixels.
+             */
+            image: string
+          }
+        }
+      }
+      responses: {
+        /** @description Capture response. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              face: {
+                height: number
+                width: number
+                x: number
+                y: number
+              } | null
+              faceCount: number
+              height: number
+              width: number
+            }
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        410: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        413: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        429: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        503: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/face_check/capture/{token}/liveness': {
     parameters: {
       query?: never

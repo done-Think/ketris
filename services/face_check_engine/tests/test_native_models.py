@@ -62,13 +62,13 @@ class NativeModelsTest(unittest.TestCase):
         )
         thread.start()
 
-        def post_inspection(authorization=None):
+        def post_inspection(authorization=None, path='/inspect', body=payload):
             connection = http.client.HTTPConnection('127.0.0.1', server.server_port, timeout=30)
             headers = {'Content-Type': 'application/json'}
             if authorization is not None:
                 headers['Authorization'] = authorization
             try:
-                connection.request('POST', '/inspect', body=payload, headers=headers)
+                connection.request('POST', path, body=body, headers=headers)
                 response = connection.getresponse()
                 return response.status, json.loads(response.read())
             finally:
@@ -84,6 +84,15 @@ class NativeModelsTest(unittest.TestCase):
             self.assertTrue(result['experimental'])
             self.assertFalse(result['calibrated'])
             self.assertNotIn('passed', result)
+            framing_body = json.dumps({'image': base64.b64encode(encoded.tobytes()).decode('ascii')})
+            self.assertEqual(post_inspection(None, '/framing', framing_body), (401, {'code': 'UNAUTHORIZED'}))
+            status, framing = post_inspection(f'Bearer {token}', '/framing', framing_body)
+            self.assertEqual(status, 200)
+            self.assertEqual(framing['faceCount'], 0)
+            self.assertIsNone(framing['face'])
+            self.assertEqual((framing['width'], framing['height']), (640, 480))
+            self.assertTrue(framing['experimental'])
+            self.assertNotIn('passed', framing)
         finally:
             server.shutdown()
             server.server_close()

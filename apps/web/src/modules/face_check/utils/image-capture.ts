@@ -77,6 +77,17 @@ export async function fileToJpeg(file: File): Promise<Blob> {
   }
 }
 
+export function grabPreviewFrame(video: HTMLVideoElement | null): Promise<Blob> {
+  if (!video || !video.videoWidth || !video.videoHeight)
+    return Promise.reject(new Error('CAMERA_NOT_READY'))
+  const scale = Math.min(1, 640 / Math.max(video.videoWidth, video.videoHeight))
+  return drawToJpeg(
+    video,
+    Math.max(1, Math.round(video.videoWidth * scale)),
+    Math.max(1, Math.round(video.videoHeight * scale)),
+  )
+}
+
 export function stopStream(stream: MediaStream | null) {
   stream?.getTracks().forEach((track) => track.stop())
 }

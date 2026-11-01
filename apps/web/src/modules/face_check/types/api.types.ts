@@ -25,6 +25,7 @@ export type ApiErrorCode =
   | VerificationErrorCode
   | 'PAYLOAD_TOO_LARGE'
   | 'VALIDATION_ERROR'
+  | 'RATE_LIMITED'
   | 'NETWORK_ERROR'
   | 'UNKNOWN'
   | 'PERSISTENCE_BUSY'

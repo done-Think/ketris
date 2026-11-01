@@ -70,6 +70,14 @@ Todas as análises exigem `Authorization: Bearer <FACE_CHECK_ENGINE_TOKEN>`,
 | `POST /document-regions` | `image`: base64 | `regions` |
 | `POST /liveness` | `selfie`: base64, `frames`: `[{challenge, image}]` | `passed`, `issues`, `limits`, `liveScore`, `frames` |
 | `POST /proximity` | `selfie`, `image`: base64 | `ready`, `closerRatio` |
+| `POST /framing` | `image`: base64, até 512 KiB e 1 megapixel | `width`, `height`, `faceCount`, `face`: limites normalizados ou `null` |
+
+O enquadramento usa somente a detecção YuNet, sem reconhecimento, embeddings ou
+armazenamento da prévia. O BFF exige consentimento e os dois lados do documento,
+verifica novamente a sessão após a análise e aplica uma cota própria às prévias.
+O navegador compensa o recorte e o espelhamento da câmera antes de comparar o
+rosto com o oval; duas amostras consecutivas são necessárias para indicar boa posição.
+Esse retorno não substitui a inspeção da selfie, a prova de vida ou a revisão.
 
 Toda saída de análise acrescenta `experimental: true` e `calibrated: false` no
 nível superior. Os schemas Zod que removem chaves extras continuam compatíveis.

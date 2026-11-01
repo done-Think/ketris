@@ -7,6 +7,7 @@ import type { VerificationDependencies } from '../types/verification.types'
 import { analyzeSessionUseCase } from './application/use-cases/analysis'
 import { documentRegionsUseCase } from './application/use-cases/document-regions'
 import { livenessProximityUseCase } from './application/use-cases/liveness-proximity'
+import { selfieFramingUseCase } from './application/use-cases/selfie-framing'
 import {
   consentUseCase,
   getCaptureSessionUseCase,
@@ -53,6 +54,7 @@ export function buildVerificationUseCases(deps: VerificationDependencies) {
 
   return {
     livenessProximityUseCase: livenessProximityUseCase(deps),
+    selfieFramingUseCase: selfieFramingUseCase(deps),
     documentRegionsUseCase: documentRegionsUseCase(deps),
     listSessionsUseCase: listSessionsUseCase(deps),
     getSessionUseCase: getSessionUseCase(deps),

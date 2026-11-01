@@ -14,7 +14,7 @@ import {
   tokenParamsSchema,
 } from './schemas/api.schemas'
 import { documentRegionsResultSchema } from './schemas/document-import.schemas'
-import { livenessProximitySchema } from './schemas/face-match.schemas'
+import { faceFramingSchema, livenessProximitySchema } from './schemas/face-match.schemas'
 
 const timestamp = z.string().datetime()
 const status = z.enum([
@@ -397,6 +397,14 @@ export function registerFaceCheckOpenApi(registry: OpenAPIRegistry) {
     '/document-regions',
     'Suggest document crops without approving identity.',
     documentRegionsResultSchema,
+    multipartImage,
+    true,
+  )
+  captureRoute(
+    'post',
+    '/framing',
+    'Get transient face placement feedback after document capture. Preview images are not stored; this does not verify identity. Maximum 512 KiB and one megapixel.',
+    faceFramingSchema,
     multipartImage,
     true,
   )

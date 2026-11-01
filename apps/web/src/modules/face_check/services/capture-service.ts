@@ -9,6 +9,7 @@ import type {
 import type { ChallengesResponse } from '../types/api.types'
 import type { DocumentRegionsResult } from '../types/document-import.types'
 import type { LivenessProximityResult } from '../types/liveness-proximity.types'
+import type { FaceFramingResult } from '../types/face-framing.types'
 import type {
   DocumentImageUploadInput,
   LivenessFrameInput,
@@ -67,6 +68,13 @@ function photoForm(name: string, image: Blob, metadata: Record<string, string> =
 }
 
 export const captureService = {
+  framing: (token: string, image: Blob, signal: AbortSignal) => {
+    if (image.size > 512 * 1024) throw new ApiError('PAYLOAD_TOO_LARGE', 413)
+    return request<FaceFramingResult>(`${capturePath(token)}/framing`, photoForm('image', image), {
+      signal,
+      timeout: 4000,
+    })
+  },
   proximity: (token: string, image: Blob, signal: AbortSignal) =>
     request<LivenessProximityResult>(`${capturePath(token)}/proximity`, photoForm('image', image), {
       signal,

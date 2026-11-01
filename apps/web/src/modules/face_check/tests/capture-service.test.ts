@@ -36,6 +36,28 @@ describe('public face_check uploads', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('sends a cancellable small framing probe without dashboard credentials', async () => {
+    const controller = new AbortController()
+    await captureService.framing(
+      'token',
+      new Blob(['preview'], { type: 'image/jpeg' }),
+      controller.signal,
+    )
+    const [path, request] = fetchMock.mock.calls[0]
+    expect(path).toBe('/api/face_check/capture/token/framing')
+    expect(request.credentials).toBe('omit')
+    expect(request.cache).toBe('no-store')
+    expect([...request.body.keys()]).toEqual(['image'])
+    expect(() =>
+      captureService.framing(
+        'token',
+        new Blob([new Uint8Array(512 * 1024 + 1)]),
+        controller.signal,
+      ),
+    ).toThrowError(expect.objectContaining({ code: 'PAYLOAD_TOO_LARGE' }))
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
+
   it('returns an expired token error without attempting a session refresh', async () => {
     fetchMock.mockResolvedValue({
       ok: false,

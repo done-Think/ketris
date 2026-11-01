@@ -25,7 +25,15 @@ nativa da câmera; para documentos pequenos, o fluxo permite continuar no
 celular também durante a captura.
 
 O contrato do piloto foi mantido em `POST /match`, `/inspect`,
-`/document-regions`, `/liveness` e `/proximity`. Os resultados incluem as
+`/document-regions`, `/liveness` e `/proximity`. O Ketris acrescenta `/framing`
+para orientar o posicionamento inicial da selfie com detecção YuNet. As prévias
+são reduzidas para até 640 pixels no lado maior e não são armazenadas. O BFF
+exige consentimento, frente e verso do documento e uma sessão de captura vigente,
+com cota separada para não consumir as tentativas de envio. O navegador compara
+o rosto com o oval visível, compensando recorte e espelhamento, e adapta as
+instruções a computador ou celular em português, inglês e espanhol.
+
+Os resultados incluem as
 métricas originais e `experimental: true`, `calibrated: false`. O resultado
 `passed` de liveness não autoriza aprovação automática: há bypass conhecido no
 cenário t3 do piloto e nenhuma validação de robustez ou taxa de erro é alegada.

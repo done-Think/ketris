@@ -113,7 +113,7 @@ export function captureLayoutStyles(
       pt: { xs: 2, md: 2.5 },
       display: 'flex',
       flexDirection: { xs: 'column', sm: 'row' },
-      flexWrap: 'wrap',
+      flexWrap: { xs: 'nowrap', sm: 'wrap' },
       alignItems: { xs: 'stretch', sm: 'center' },
       justifyContent: 'flex-start',
       gap: 1.25,
@@ -125,7 +125,7 @@ export function captureLayoutStyles(
         minHeight: 44,
         minWidth: { sm: 160 },
       },
-      '& > .MuiTypography-root, & > .MuiAlert-root': { flexBasis: '100%' },
+      '& > .MuiTypography-root, & > .MuiAlert-root': { flexBasis: { xs: 'auto', sm: '100%' } },
     },
   } satisfies Record<string, SxProps<Theme>>
 }
@@ -470,6 +470,9 @@ export const selfieStepStyles = {
   hint: (variant: 'warn' | 'active' | 'ok') => ({
     minHeight: 44,
     px: 2.25,
+    py: 0.75,
+    textAlign: 'center',
+    justifyContent: 'center',
     borderRadius: `${radius.full}px`,
     display: 'flex',
     alignItems: 'center',

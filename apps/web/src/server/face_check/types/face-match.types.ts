@@ -14,6 +14,7 @@ import type {
 } from '@server/face_check/types/session.types'
 import type { DocumentRegionsResult } from '@server/face_check/types/document-import.types'
 import type { LivenessProximityResult } from '@server/face_check/types/liveness-proximity.types'
+import type { FaceFramingResult } from './face-framing.types'
 
 export interface DetectedFace {
   opened: boolean
@@ -62,6 +63,7 @@ export interface LivenessResult {
 }
 
 export interface FaceEngine {
+  framing?(image: Uint8Array): Promise<FaceFramingResult>
   proximity?(selfie: Uint8Array, image: Uint8Array): Promise<LivenessProximityResult>
   documentRegions?(image: Uint8Array): Promise<DocumentRegionsResult>
   match(document: Uint8Array, selfie: Uint8Array): Promise<FaceMatchResult>

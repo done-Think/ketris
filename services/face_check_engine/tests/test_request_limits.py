@@ -46,6 +46,7 @@ class RequestLimitsTest(unittest.TestCase):
             ('/match', {'document': IMAGE, 'selfie': IMAGE}),
             ('/inspect', {'kind': 'front', 'image': IMAGE, 'expected': {'name': 'Synthetic Test', 'cpf': '00000000000'}}),
             ('/document-regions', {'image': IMAGE}),
+            ('/framing', {'image': IMAGE}),
             ('/proximity', {'selfie': IMAGE, 'image': IMAGE}),
             ('/liveness', {'selfie': IMAGE, 'frames': [{'challenge': 'closer', 'image': IMAGE}]}),
         ):
@@ -57,6 +58,14 @@ class RequestLimitsTest(unittest.TestCase):
             with self.subTest(frames=frames), self.assertRaises(InvalidRequest):
                 validate_payload('/liveness', {'selfie': IMAGE, 'frames': frames})
         validate_payload('/liveness', {'selfie': IMAGE, 'frames': [{'challenge': challenge, 'image': IMAGE} for challenge in ('closer', 'turnLeft', 'turnRight')]})
+
+    def test_framing_has_smaller_image_limits_and_no_client_identity_fields(self):
+        for raw in (png_header(1025, 1024), png_header() + bytes(512 * 1024)):
+            with self.subTest(size=len(raw)), self.assertRaises(PayloadTooLarge):
+                validate_payload('/framing', {'image': base64.b64encode(raw).decode()})
+        for extra in ({'passed': True}, {'expected': {'name': 'Synthetic Test'}}):
+            with self.subTest(extra=extra), self.assertRaises(InvalidRequest):
+                validate_payload('/framing', {'image': IMAGE, **extra})
 
     def test_unknown_fields_and_invalid_expected_person_are_rejected(self):
         for payload in ([], {'kind': [], 'image': IMAGE}, {'kind': 'selfie', 'image': IMAGE, 'expected': []}, {'kind': 'selfie', 'image': IMAGE, 'expected': {'name': 'a' * 201}}, {'kind': 'selfie', 'image': IMAGE, 'extra': True}):

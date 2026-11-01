@@ -46,6 +46,7 @@ type ConsoleOperation =
   | 'settings-get'
   | 'settings-put'
 type CaptureOperation =
+  | 'framing'
   | 'capture'
   | 'consent'
   | 'document'
@@ -164,7 +165,11 @@ export function captureHandler(operation: CaptureOperation) {
       'proximity',
       'document-regions',
     ].includes(operation)
-    await limiter.consume(getTrustedClientAddress(request.headers), token, upload)
+    await limiter.consume(
+      getTrustedClientAddress(request.headers),
+      token,
+      operation === 'framing' ? 'feedback' : upload,
+    )
     const container = await faceCheckContainer({ token })
     if (operation === 'capture')
       return NextResponse.json(await container.getCaptureSessionUseCase.execute(token))
@@ -199,6 +204,14 @@ export function captureHandler(operation: CaptureOperation) {
     }
     // All count and scope checks precede reading or decoding the multipart request.
     const form = await photoForm(request)
+    if (operation === 'framing') {
+      const body = livenessProximityFormSchema.strict().parse(form)
+      const image = await capturedImage(body.image, {
+        maxBytes: 512 * 1024,
+        maxPixels: 1024 * 1024,
+      })
+      return NextResponse.json(await container.selfieFramingUseCase.execute(token, image.bytes))
+    }
     if (operation === 'document') {
       const body = documentImageFormSchema.strict().parse(form)
       await container.uploadDocumentPhotoUseCase.execute(

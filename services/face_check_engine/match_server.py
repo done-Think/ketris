@@ -87,6 +87,11 @@ def proximity_payload(engine: Engine, payload: dict[str, Any]) -> dict[str, Any]
     return engine.liveness.proximity(decode_photo(payload, "selfie"), decode_photo(payload, "image"))
 
 
+def framing_payload(engine: Engine, payload: dict[str, Any]) -> dict[str, Any]:
+    from framing import face_framing
+    return face_framing(engine.pipeline, decode_photo(payload, "image"))
+
+
 def analyse(engine: Engine, operation: Any, payload: dict[str, Any]) -> dict[str, Any]:
     # The transport owns the shared pipeline lock. OCR caches/budgets live only
     # for this request, including on error, and never retain a capture afterwards.
@@ -96,6 +101,7 @@ def analyse(engine: Engine, operation: Any, payload: dict[str, Any]) -> dict[str
 
 def build_routes(engine: Engine) -> dict[str, Any]:
     return {
+        "/framing": partial(analyse, engine, framing_payload),
         "/match": partial(analyse, engine, match_payload),
         "/inspect": partial(analyse, engine, inspect_payload),
         "/document-regions": partial(analyse, engine, regions_payload),

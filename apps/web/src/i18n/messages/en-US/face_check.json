@@ -91,12 +91,12 @@
         "closer": "Bring your face closer to the camera"
       },
       "hints": {
-        "position": "Bring the phone a little closer",
+        "position": "Fit your face inside the oval.",
         "blink": "Blink slowly…",
         "turnLeft": "Turn your face to your left",
         "turnRight": "Turn your face to your right",
         "done": "Your selfie is ready",
-        "closer": "Bring the phone closer to your face"
+        "closer": "Move your face a little closer to the camera."
       },
       "stepLabel": {
         "position": "Positioning",
@@ -105,7 +105,18 @@
       },
       "send": "Send for analysis",
       "restart": "Start again",
-      "cantDo": "I cannot complete this step"
+      "cantDo": "I cannot complete this step",
+      "framing": {
+        "checking": "Fit your face inside the oval.",
+        "notFound": "We cannot see your face. Look at the camera and fit your face inside the oval.",
+        "multipleFaces": "More than one person is visible. Stay alone in the frame.",
+        "offCenter": "Center your face inside the oval.",
+        "ready": "Your face is well positioned. Hold still and take the selfie.",
+        "tooFar": "{device, select, mobile {Move your phone a little closer to your face.} other {Move a little closer to the camera.}}",
+        "tooClose": "{device, select, mobile {Move your phone a little farther from your face.} other {Move a little farther from the camera.}}",
+        "unavailable": "We could not check the framing. Fit your face inside the oval and take the selfie.",
+        "closer": "{device, select, mobile {Bring your phone a little closer to your face.} other {Move your face a little closer to the camera.}}"
+      }
     },
     "submit": {
       "titleRunning": "Uploading and analyzing",
@@ -217,7 +228,7 @@
         "looksLikeSelfie": "This does not look like a document. Photograph the full document on a flat surface.",
         "selfieFaceNotFound": "We could not find your face. Look at the camera in a well-lit place.",
         "multipleFaces": "More than one person appeared. Take the selfie alone.",
-        "faceTooSmall": "Your face is too small. Bring the phone closer and fit your face inside the oval.",
+        "faceTooSmall": "Your face looks too small. Move closer to the camera and fit your face inside the oval.",
         "tooDark": "The photo is too dark. Move to a brighter place.",
         "tooBright": "The photo is too bright. Avoid strong light or direct glare.",
         "blurry": "The photo is blurry or out of focus. Hold still and try again.",
@@ -230,7 +241,7 @@
         "livenessExpired": "The 15-second movement window expired. Let's try the movements again.",
         "livenessIncomplete": "One of the movement photos is missing. Let's try again.",
         "spoofSuspected": "This may be a photo of a screen or printout. Take a selfie directly of your face.",
-        "livenessNotCloser": "We did not detect your face moving closer. Bring the phone closer and try again.",
+        "livenessNotCloser": "We did not detect your face getting closer. Move your face closer to the camera and try again.",
         "livenessSpoofSuspected": "One photo may be from a screen or printout. Repeat the movements directly with your face.",
         "livenessOutOfOrder": "The movements were out of order. Let's try again.",
         "documentShapeNotFound": "We could not identify a document shape. Photograph the full document on a flat surface and try again."
@@ -781,7 +792,8 @@
       "AGENCY_NAME_MISSING": "Add the agency name in settings before creating a verification.",
       "CONSENT_TERMS_OUTDATED": "The consent information has changed. Reload this page and read it again.",
       "DOCUMENT_TYPE_NOT_ACCEPTED": "This document type is not accepted. Use the type requested by the agency, the same for front and back.",
-      "PAYLOAD_TOO_LARGE": "Each photo must be 3 MiB or less. Take it again."
+      "PAYLOAD_TOO_LARGE": "Each photo must be 3 MiB or less. Take it again.",
+      "RATE_LIMITED": "Too many requests. Wait a moment and try again."
     },
     "validation": {
       "nameRequired": "Enter the name of the person being verified.",

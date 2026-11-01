@@ -108,6 +108,49 @@ describe('face_check encryption and evidence privacy', () => {
 })
 
 describe('face_check ingress protections', () => {
+  it('bounds feedback image bytes and decoded pixels more tightly than evidence uploads', async () => {
+    const limits = { maxBytes: 512 * 1024, maxPixels: 1024 * 1024 }
+    const png = await sharp({
+      create: { width: 640, height: 360, channels: 3, background: 'white' },
+    })
+      .png()
+      .toBuffer()
+    expect((await capturedImage(new Blob([png], { type: 'image/png' }), limits)).bytes.length).toBe(
+      png.length,
+    )
+    await expect(
+      capturedImage(new Blob([new Uint8Array(limits.maxBytes + 1)], { type: 'image/png' }), limits),
+    ).rejects.toMatchObject({ status: 413 })
+    const tooLarge = await sharp({
+      create: { width: 1025, height: 1024, channels: 3, background: 'white' },
+    })
+      .png()
+      .toBuffer()
+    await expect(
+      capturedImage(new Blob([tooLarge], { type: 'image/png' }), limits),
+    ).rejects.toMatchObject({ code: 'INVALID_IMAGE' })
+  })
+
+  it('limits feedback probes without consuming the evidence upload quota', async () => {
+    const counters = new Map<string, number>()
+    const database = {
+      faceCheckRateLimit: {
+        upsert: async ({ where }: { where: { key: string } }) => {
+          const count = (counters.get(where.key) ?? 0) + 1
+          counters.set(where.key, count)
+          return { count }
+        },
+        deleteMany: async () => ({ count: 0 }),
+      },
+    } as unknown as FaceCheckDatabase
+    const limiter = new CaptureRateLimit(database, randomBytes(32), () => 123_000)
+    for (let count = 0; count < 60; count++) await limiter.consume('ip', 'token', 'feedback')
+    await expect(limiter.consume('ip', 'token', 'feedback')).rejects.toMatchObject({
+      code: 'RATE_LIMITED',
+    })
+    await expect(limiter.consume('ip', 'token', true)).resolves.toBeUndefined()
+    expect(counters.size).toBe(4)
+  })
   it('requires propertyId and rejects injected tenant, role and approval fields', () => {
     expect(createSessionBodySchema.parse(createInput)).toMatchObject({
       propertyId: 'property-1',

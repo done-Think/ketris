@@ -1,5 +1,21 @@
 import { z } from 'zod'
 
+export const faceFramingSchema = z
+  .object({
+    width: z.number().int().positive(),
+    height: z.number().int().positive(),
+    faceCount: z.number().int().min(0).max(10),
+    face: z
+      .object({
+        x: z.number().finite().min(-2).max(2),
+        y: z.number().finite().min(-2).max(2),
+        width: z.number().finite().positive().max(4),
+        height: z.number().finite().positive().max(4),
+      })
+      .nullable(),
+  })
+  .refine((result) => (result.faceCount === 0) === (result.face === null))
+
 export const livenessProximitySchema = z.object({
   ready: z.boolean(),
   closerRatio: z.number().finite().positive().nullable(),

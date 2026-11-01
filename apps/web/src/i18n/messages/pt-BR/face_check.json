@@ -91,12 +91,12 @@
         "closer": "Aproxime o rosto da câmera"
       },
       "hints": {
-        "position": "Aproxime um pouco o celular",
+        "position": "Encaixe seu rosto dentro do oval.",
         "blink": "Pisque devagar…",
         "turnLeft": "Vire o rosto para a sua esquerda",
         "turnRight": "Vire o rosto para a sua direita",
         "done": "Tudo certo com a selfie",
-        "closer": "Traga o celular para mais perto do rosto"
+        "closer": "Aproxime seu rosto um pouco mais da câmera."
       },
       "stepLabel": {
         "position": "Posicionamento",
@@ -105,7 +105,18 @@
       },
       "send": "Enviar para análise",
       "restart": "Fazer de novo",
-      "cantDo": "Não consigo fazer este passo"
+      "cantDo": "Não consigo fazer este passo",
+      "framing": {
+        "checking": "Encaixe seu rosto dentro do oval.",
+        "notFound": "Não encontramos seu rosto. Olhe para a câmera e encaixe-o no oval.",
+        "multipleFaces": "Apareceu mais de uma pessoa. Fique sozinho na imagem.",
+        "offCenter": "Centralize seu rosto dentro do oval.",
+        "ready": "Rosto bem posicionado. Mantenha-se assim e tire a selfie.",
+        "tooFar": "{device, select, mobile {Aproxime um pouco o celular do rosto.} other {Aproxime-se um pouco da câmera.}}",
+        "tooClose": "{device, select, mobile {Afaste um pouco o celular do rosto.} other {Afaste-se um pouco da câmera.}}",
+        "unavailable": "Não foi possível analisar o enquadramento. Encaixe seu rosto no oval e tire a selfie.",
+        "closer": "{device, select, mobile {Traga o celular um pouco mais perto do rosto.} other {Aproxime seu rosto um pouco mais da câmera.}}"
+      }
     },
     "submit": {
       "titleRunning": "Enviando e analisando",
@@ -227,7 +238,7 @@
         "looksLikeSelfie": "Isso não parece um documento. Fotografe o documento inteiro, apoiado numa superfície.",
         "selfieFaceNotFound": "Não encontramos o seu rosto. Olhe para a câmera, em um lugar com boa luz.",
         "multipleFaces": "Apareceu mais de uma pessoa. Tire a selfie sozinho.",
-        "faceTooSmall": "Seu rosto ficou muito pequeno. Aproxime o celular e encaixe o rosto no oval.",
+        "faceTooSmall": "Seu rosto ficou muito pequeno. Aproxime-se da câmera e encaixe o rosto no oval.",
         "tooDark": "A foto ficou escura. Vá para um lugar mais iluminado.",
         "tooBright": "A foto ficou clara demais. Evite luz forte ou reflexo direto.",
         "blurry": "A foto ficou tremida ou fora de foco. Segure firme e tente de novo.",
@@ -240,7 +251,7 @@
         "livenessExpired": "O tempo para o movimento acabou (15 segundos). Vamos fazer os movimentos de novo.",
         "livenessIncomplete": "Faltou uma das fotos dos movimentos. Vamos fazer de novo.",
         "spoofSuspected": "Esta foto parece ter sido tirada de uma tela ou de uma foto impressa. Tire a selfie direto do seu rosto.",
-        "livenessNotCloser": "Não percebemos o rosto mais perto. Aproxime mais o celular e tente de novo.",
+        "livenessNotCloser": "Não percebemos o rosto mais perto. Aproxime seu rosto da câmera e tente de novo.",
         "livenessSpoofSuspected": "Uma das fotos parece ter sido tirada de uma tela ou de uma foto impressa. Vamos fazer os movimentos de novo, direto com o seu rosto.",
         "livenessOutOfOrder": "Os movimentos saíram da ordem pedida. Vamos fazer de novo.",
         "documentShapeNotFound": "Não identificamos o formato de um documento. Fotografe o documento inteiro, apoiado em uma superfície, e tente novamente."
@@ -781,7 +792,8 @@
       "AGENCY_NAME_MISSING": "Informe o nome da imobiliária nas configurações antes de criar uma verificação.",
       "CONSENT_TERMS_OUTDATED": "O termo desta página mudou. Recarregue a página e leia o termo de novo.",
       "DOCUMENT_TYPE_NOT_ACCEPTED": "Este tipo de documento não é aceito nesta verificação. Use o documento pedido pela imobiliária, o mesmo na frente e no verso.",
-      "PAYLOAD_TOO_LARGE": "Cada foto deve ter no máximo 3 MiB. Capture novamente."
+      "PAYLOAD_TOO_LARGE": "Cada foto deve ter no máximo 3 MiB. Capture novamente.",
+      "RATE_LIMITED": "Muitas solicitações em pouco tempo. Aguarde um momento e tente novamente."
     },
     "validation": {
       "nameRequired": "Informe o nome de quem vai fazer a verificação.",

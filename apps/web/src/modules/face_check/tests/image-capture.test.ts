@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { drawToJpeg, grabVideoFrame } from '../utils/image-capture'
+import { drawToJpeg, grabPreviewFrame, grabVideoFrame } from '../utils/image-capture'
 import { maxCapturePhotoBytes } from '../utils/upload-limits'
 
 const drawImage = vi.fn()
@@ -25,6 +25,16 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks())
 
 describe('camera photo detail and upload budget', () => {
+  it('uses small uncropped feedback probes while preserving full-size evidence capture', async () => {
+    const video = document.createElement('video')
+    Object.defineProperties(video, { videoWidth: { value: 1920 }, videoHeight: { value: 1080 } })
+    await grabPreviewFrame(video)
+    await grabVideoFrame(video)
+    expect(frames.map(({ width, height }) => [width, height])).toEqual([
+      [640, 360],
+      [1920, 1080],
+    ])
+  })
   it.each([
     [1920, 1080],
     [3840, 2160],

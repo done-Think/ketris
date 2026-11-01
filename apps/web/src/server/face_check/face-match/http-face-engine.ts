@@ -6,6 +6,7 @@ import { documentRegionsResultSchema } from '../schemas/document-import.schemas'
 
 import {
   faceMatchResultSchema,
+  faceFramingSchema,
   livenessResultSchema,
   livenessProximitySchema,
   photoInspectionSchema,
@@ -31,6 +32,15 @@ export class HttpFaceEngine implements FaceEngine {
     private readonly timeoutMs = defaultTimeoutMs,
     private readonly serviceToken: string = '',
   ) {}
+
+  async framing(image: Uint8Array) {
+    return this.post(
+      '/framing',
+      { image: toBase64(image) },
+      faceFramingSchema,
+      Math.min(this.timeoutMs, 2500),
+    )
+  }
 
   async proximity(selfie: Uint8Array, image: Uint8Array) {
     return this.post(

@@ -91,12 +91,12 @@
         "closer": "Acerca el rostro a la cámara"
       },
       "hints": {
-        "position": "Acerca un poco el teléfono",
+        "position": "Coloca tu rostro dentro del óvalo.",
         "blink": "Parpadea lentamente…",
         "turnLeft": "Gira el rostro hacia tu izquierda",
         "turnRight": "Gira el rostro hacia tu derecha",
         "done": "La selfie está lista",
-        "closer": "Acerca el teléfono al rostro"
+        "closer": "Acerca tu rostro un poco más a la cámara."
       },
       "stepLabel": {
         "position": "Posicionamiento",
@@ -105,7 +105,18 @@
       },
       "send": "Enviar para análisis",
       "restart": "Volver a empezar",
-      "cantDo": "No puedo hacer este paso"
+      "cantDo": "No puedo hacer este paso",
+      "framing": {
+        "checking": "Coloca tu rostro dentro del óvalo.",
+        "notFound": "No encontramos tu rostro. Mira a la cámara y coloca tu rostro dentro del óvalo.",
+        "multipleFaces": "Aparece más de una persona. Quédate solo en la imagen.",
+        "offCenter": "Centra tu rostro dentro del óvalo.",
+        "ready": "Tu rostro está bien colocado. Mantén la posición y toma la selfie.",
+        "tooFar": "{device, select, mobile {Acerca un poco el móvil al rostro.} other {Acércate un poco a la cámara.}}",
+        "tooClose": "{device, select, mobile {Aleja un poco el móvil del rostro.} other {Aléjate un poco de la cámara.}}",
+        "unavailable": "No pudimos comprobar el encuadre. Coloca tu rostro dentro del óvalo y toma la selfie.",
+        "closer": "{device, select, mobile {Acerca un poco más el móvil al rostro.} other {Acerca tu rostro un poco más a la cámara.}}"
+      }
     },
     "submit": {
       "titleRunning": "Enviando y analizando",
@@ -217,7 +228,7 @@
         "looksLikeSelfie": "Esto no parece un documento. Fotografía el documento entero sobre una superficie.",
         "selfieFaceNotFound": "No encontramos tu rostro. Mira a la cámara en un lugar bien iluminado.",
         "multipleFaces": "Apareció más de una persona. Toma la selfie a solas.",
-        "faceTooSmall": "Tu rostro se ve muy pequeño. Acerca el teléfono y coloca el rostro dentro del óvalo.",
+        "faceTooSmall": "Tu rostro se ve demasiado pequeño. Acércate a la cámara y colócalo dentro del óvalo.",
         "tooDark": "La foto está oscura. Ve a un lugar más iluminado.",
         "tooBright": "La foto está demasiado clara. Evita luz fuerte o reflejos directos.",
         "blurry": "La foto está movida o desenfocada. Mantén la cámara firme e inténtalo de nuevo.",
@@ -230,7 +241,7 @@
         "livenessExpired": "Se agotaron los 15 segundos para el movimiento. Vamos a repetir los movimientos.",
         "livenessIncomplete": "Falta una foto de los movimientos. Vamos a repetirlos.",
         "spoofSuspected": "Parece una foto de una pantalla o una imagen impresa. Toma la selfie directamente de tu rostro.",
-        "livenessNotCloser": "No detectamos el rostro más cerca. Acerca más el teléfono e inténtalo de nuevo.",
+        "livenessNotCloser": "No detectamos el rostro más cerca. Acerca tu rostro a la cámara e inténtalo de nuevo.",
         "livenessSpoofSuspected": "Una foto parece provenir de una pantalla o imagen impresa. Repite los movimientos directamente con tu rostro.",
         "livenessOutOfOrder": "Los movimientos se hicieron fuera de orden. Vamos a repetirlos.",
         "documentShapeNotFound": "No identificamos la forma de un documento. Fotografía el documento entero sobre una superficie e inténtalo de nuevo."
@@ -781,7 +792,8 @@
       "AGENCY_NAME_MISSING": "Indica el nombre de la inmobiliaria en configuración antes de crear una verificación.",
       "CONSENT_TERMS_OUTDATED": "El consentimiento ha cambiado. Recarga la página y léelo de nuevo.",
       "DOCUMENT_TYPE_NOT_ACCEPTED": "Este tipo de documento no está permitido. Usa el solicitado por la inmobiliaria, el mismo en el frente y reverso.",
-      "PAYLOAD_TOO_LARGE": "Cada foto debe tener un máximo de 3 MiB. Vuelve a tomarla."
+      "PAYLOAD_TOO_LARGE": "Cada foto debe tener un máximo de 3 MiB. Vuelve a tomarla.",
+      "RATE_LIMITED": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo."
     },
     "validation": {
       "nameRequired": "Indica el nombre de quien realizará la verificación.",

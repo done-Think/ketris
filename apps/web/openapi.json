@@ -16914,6 +16914,151 @@
         }
       }
     },
+    "/face_check/capture/{token}/framing": {
+      "post": {
+        "tags": ["Face Check Capture"],
+        "summary": "Get transient face placement feedback after document capture. Preview images are not stored; this does not verify identity. Maximum 512 KiB and one megapixel.",
+        "description": "The single-session capture token is the credential. Expiration, current requester/property eligibility, origin and distributed rate limits are checked server-side.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 64,
+              "maxLength": 64,
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "description": "JPEG/PNG, at most 3 MiB and 16 million decoded pixels.",
+                    "format": "binary"
+                  }
+                },
+                "required": ["image"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Capture response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "width": { "type": "integer", "minimum": 0, "exclusiveMinimum": true },
+                    "height": { "type": "integer", "minimum": 0, "exclusiveMinimum": true },
+                    "faceCount": { "type": "integer", "minimum": 0, "maximum": 10 },
+                    "face": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "x": { "type": "number", "minimum": -2, "maximum": 2 },
+                        "y": { "type": "number", "minimum": -2, "maximum": 2 },
+                        "width": {
+                          "type": "number",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 4
+                        },
+                        "height": {
+                          "type": "number",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 4
+                        }
+                      },
+                      "required": ["x", "y", "width", "height"]
+                    }
+                  },
+                  "required": ["width", "height", "faceCount", "face"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "401": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "403": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "404": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "409": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "410": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "413": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "422": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "429": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "503": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          }
+        }
+      }
+    },
     "/face_check/capture/{token}/submit": {
       "post": {
         "tags": ["Face Check Capture"],

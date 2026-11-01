@@ -11,6 +11,9 @@ import { useCameraStream } from '../../../hooks/use-camera-stream'
 import { useCountdown } from '../../../hooks/use-countdown'
 import { useCaptureSound } from '../../../hooks/use-capture-sound'
 import { useFaceProximity } from '../../../hooks/use-face-proximity'
+import { useSelfieFraming } from '../../../hooks/use-selfie-framing'
+import { useCaptureDevice } from '../../../hooks/use-capture-device'
+import type { FaceGuideGeometry } from '../../../types/face-framing.types'
 import {
   useSubmitCapture,
   useUploadLivenessFrame,
@@ -54,6 +57,7 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
     status: cameraStatus,
     attachVideo,
     grabFrame,
+    sampleFrame,
     restart: retryCamera,
   } = useCameraStream('user')
   const selfieAccepted = livenessStep > 0
@@ -64,6 +68,8 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
   const [captureFailed, setCaptureFailed] = useState(false)
   const [preparing, setPreparing] = useState(false)
   const [capturedPhase, setCapturedPhase] = useState<SelfiePhase | null>(null)
+  const [geometry, setGeometry] = useState<FaceGuideGeometry | null>(null)
+  const device = useCaptureDevice()
   const sound = useCaptureSound()
   const countdown = useCountdown(challengeCountdownSeconds)
   const list = challenges.data ?? []
@@ -75,7 +81,6 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
     enabled: live && phase === 'closer' && !preparing && !frame.isPending && !challenges.isFetching,
     grabFrame,
   })
-  const ring = phase === 'closer' && proximity.ready ? 'ok' : ringFor(phase)
   const captured = capturedPhase === phase && (upload.isPending || frame.isPending)
   const busy =
     upload.isPending ||
@@ -85,6 +90,22 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
     awaitingChallenges ||
     preparing ||
     countdown.remaining !== null
+  const framing = useSelfieFraming({
+    token: session.token,
+    enabled: live && phase === 'position' && !busy,
+    sampleFrame,
+    geometry,
+  })
+  const ring =
+    phase === 'position'
+      ? framing === 'ready'
+        ? 'ok'
+        : framing === 'checking' || framing === 'unavailable'
+          ? 'active'
+          : 'warn'
+      : phase === 'closer' && proximity.ready
+        ? 'ok'
+        : ringFor(phase)
   const arrow = phase === 'turnLeft' ? 'left' : phase === 'turnRight' ? 'right' : null
   const showBackgroundHint =
     phase === 'position' &&
@@ -278,6 +299,7 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
         <FaceViewport
           ring={ring}
           arrow={arrow}
+          onGeometryChange={setGeometry}
           media={
             <Box
               component="video"
@@ -296,9 +318,13 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
         <Box component="span" sx={styles.hint(ring)}>
           {captured
             ? tLive('captured')
-            : phase === 'closer' && proximity.ready
-              ? tLive('closeEnough')
-              : t(`hints.${phase}`)}
+            : phase === 'position'
+              ? t(`framing.${framing}`, { device })
+              : phase === 'closer' && proximity.ready
+                ? tLive('closeEnough')
+                : phase === 'closer'
+                  ? t('framing.closer', { device })
+                  : t(`hints.${phase}`)}
         </Box>
       </Box>
       {captureFailed ? (
