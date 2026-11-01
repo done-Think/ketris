@@ -1,0 +1,46 @@
+name: Face Check retention
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: face-check-retention-staging
+  cancel-in-progress: false
+
+jobs:
+  dispatch-dev:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      # Scheduled workflows run from the default branch; execute the cleanup on
+      # dev so the existing staging deployment-branch restriction remains intact.
+      - run: node scripts/face-check-retention.mjs dispatch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  cleanup-staging:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    environment: staging
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: node scripts/face-check-retention.mjs cleanup
+        env:
+          FACE_CHECK_RETENTION_SECRET: ${{ secrets.FACE_CHECK_RETENTION_SECRET }}

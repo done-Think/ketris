@@ -17,6 +17,19 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async headers() {
+    return [
+      {
+        source: '/:locale/face_check/verify/:path*',
+        headers: [
+          { key: 'Permissions-Policy', value: 'camera=(self), microphone=()' },
+          { key: 'Referrer-Policy', value: 'no-referrer' },
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+        ],
+      },
+    ]
+  },
   async redirects() {
     return JSON.parse(
       readFileSync(new URL('./src/i18n/route-redirects.json', import.meta.url), 'utf8'),

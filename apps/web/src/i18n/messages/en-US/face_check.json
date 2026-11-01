@@ -1,0 +1,772 @@
+{
+  "capture": {
+    "header": {
+      "back": "Back",
+      "brand": "Face Check"
+    },
+    "progress": {
+      "label": "Step {current} of {total} · {name}",
+      "names": {
+        "consent": "Consent",
+        "document": "Document",
+        "selfie": "Selfie",
+        "submit": "Submission"
+      }
+    },
+    "loading": "Loading verification",
+    "unavailable": "Link unavailable",
+    "backHome": "Back to home",
+    "consent": {
+      "title": "Let's review your document and selfie",
+      "intro": "{agency} requested this verification for {reference}. It takes about 3 minutes.",
+      "sectionLabel": "What you need to know",
+      "items": {
+        "collect": {
+          "title": "What we collect",
+          "body": "Document photos, a selfie, movements and retakes, including rejected photos, form the evidence history. We do not record video or audio."
+        },
+        "purpose": {
+          "title": "Why",
+          "body": "To support the agency's review of the document holder and their interest in the property."
+        },
+        "retention": {
+          "title": "How long",
+          "body": "Images are deleted when validation is completed or, if manual review is required, within 7 days."
+        }
+      },
+      "privacyLink": "Image use and deletion",
+      "pilotNotice": "The document, selfie and movements help the team review your request. A person makes the final decision.",
+      "checkbox": "I have read and agree to the use of my image and document for this verification.",
+      "start": "Start",
+      "alternative": "I cannot or do not want to use the camera",
+      "privacyBody": "Your images will be used only for this verification, with restricted access and no public disclosure. They will be deleted when validation is completed or, if manual review is required, within 7 days.",
+      "close": "Close",
+      "acknowledgement": "I understand and agree!",
+      "continue": "Continue"
+    },
+    "camera": {
+      "title": "Now let's use the camera",
+      "body": "Your browser will ask for permission. The camera is only used on this page and turns off when you finish.",
+      "tips": {
+        "light": "A well-lit place, without strong light behind you",
+        "original": "Have your original document ready, not a copy",
+        "face": "No sunglasses, cap or mask"
+      },
+      "enable": "Enable camera",
+      "withoutCamera": "Continue without a camera"
+    },
+    "document": {
+      "titleFront": "Front of {doc}",
+      "titleBack": "Back of {doc}",
+      "typeLabel": "Document type",
+      "types": {
+        "RG": "RG",
+        "CNH": "CNH",
+        "RNE": "RNE / CRNM"
+      },
+      "sides": {
+        "front": "Front",
+        "back": "Back"
+      },
+      "shutter": "Take photo",
+      "uploading": "Uploading photo"
+    },
+    "documentReview": {
+      "title": "Can you read everything?",
+      "body": "Check that the name, number and photo are visible without glare or cropping.",
+      "sideLabel": "{side} of {doc}",
+      "retake": "Retake",
+      "confirm": "Use these photos",
+      "photoLabel": "{side} of {doc}, captured photo"
+    },
+    "selfie": {
+      "titles": {
+        "position": "Fit your face inside the oval",
+        "blink": "Blink slowly twice",
+        "turnLeft": "Turn your face to the left",
+        "turnRight": "Turn your face to the right",
+        "done": "Done!",
+        "closer": "Bring your face closer to the camera"
+      },
+      "hints": {
+        "position": "Bring the phone a little closer",
+        "blink": "Blink slowly…",
+        "turnLeft": "Turn your face to your left",
+        "turnRight": "Turn your face to your right",
+        "done": "Your selfie is ready",
+        "closer": "Bring the phone closer to your face"
+      },
+      "stepLabel": {
+        "position": "Positioning",
+        "challenge": "Challenge {current} of {total}",
+        "done": "Completed"
+      },
+      "send": "Send for analysis",
+      "restart": "Start again",
+      "cantDo": "I cannot complete this step"
+    },
+    "submit": {
+      "titleRunning": "Uploading and analyzing",
+      "titleDone": "Analysis complete",
+      "body": "Keep this page open. If your connection drops, reopen the same link to continue.",
+      "progressLabel": "Submission progress",
+      "steps": {
+        "document": "Document photos",
+        "selfie": "Selfie",
+        "liveness": "Liveness check",
+        "analysis": "Analysis"
+      },
+      "stepStatus": {
+        "waiting": "Waiting",
+        "sending": "Uploading… {percent}%",
+        "analysing": "Comparing document and selfie…",
+        "done": "Completed"
+      },
+      "viewResult": "View result",
+      "analysing": "Analyzing…"
+    },
+    "result": {
+      "protocol": "Reference number",
+      "closeHint": "You can now close this page.",
+      "approved": {
+        "title": "Verification approved by the team",
+        "body": "The {agency} team reviewed your information and recorded its approval. Contact the agency for the next steps."
+      },
+      "review": {
+        "title": "We received your information",
+        "body": "A member of the {agency} team will review your verification. There is nothing else you need to do now.",
+        "nextTitle": "What happens next",
+        "next": {
+          "one": "The team reviews the photos you sent.",
+          "two": "You receive a response through the channel agreed with the agency.",
+          "three": "If anything is missing, the team will send a new link."
+        }
+      },
+      "rejected": {
+        "title": "Verification closed",
+        "body": "{agency} will contact you with the next steps."
+      },
+      "expired": {
+        "title": "This link is no longer active",
+        "body": "Ask {agency} for a new verification link."
+      },
+      "redo": {
+        "title": "Let's take the photo again",
+        "reasons": {
+          "documentIllegible": "The document photo was hard to read. This can happen because of glare or low light.",
+          "selfieQuality": "We could not see your face clearly. Try a brighter place.",
+          "reopenedByAgency": "{agency} enabled another attempt. Let's retake the document photos and selfie.",
+          "lowSimilarity": "Document and selfie similarity was 10% or less. Retake the document, selfie and movements in good light. If it remains low, a person will review the history."
+        },
+        "tipsTitle": "Tips for your next attempt",
+        "tips": {
+          "one": "Place the document on a dark, non-reflective table.",
+          "two": "Stand near a window, without direct light on the document.",
+          "three": "Remove the document's plastic cover."
+        },
+        "attemptsLeft": "You have {left} of {max} attempts remaining",
+        "retry": "Try again",
+        "human": "Request a review by a person"
+      }
+    },
+    "alternative": {
+      "title": "That's okay, there is another way",
+      "body": "A member of the agency team can verify your identity without a camera. This may take longer.",
+      "reasonLegend": "Tell us why, if you wish",
+      "reasons": {
+        "noCamera": "I have no camera or it does not work",
+        "accessibility": "I cannot perform the requested movements",
+        "noConsent": "I do not want to send biometric data",
+        "other": "Another reason"
+      },
+      "contactLabel": "Best way to reach you",
+      "contactPlaceholder": "Phone or email",
+      "submit": "Request verification by a person",
+      "sentTitle": "Request sent",
+      "sentBody": "{agency} will contact you to continue with a person. Photos already submitted remain in the verification history.",
+      "errors": {
+        "contactTooLong": "Use no more than 120 characters."
+      }
+    },
+    "live": {
+      "starting": "Starting camera…",
+      "deniedTitle": "Camera access was blocked",
+      "unavailableTitle": "No camera found",
+      "galleryHint": "You can upload a photo already on your device.",
+      "noGalleryHint": "Allow camera access in your browser or continue without biometrics.",
+      "chooseFile": "Upload a photo",
+      "sendDocument": "Upload document",
+      "orientationLabel": "Document orientation",
+      "landscape": "Landscape",
+      "portrait": "Portrait",
+      "documentPortraitHint": "Position the document upright, fully inside the frame without glare, then tap the button.",
+      "withoutCamera": "Continue without a camera",
+      "documentHint": "Fit the entire document inside the frame without glare, then tap the button.",
+      "selfieBackgroundHint": "Take your selfie against a plain background, without pictures or writing.",
+      "documentPreview": "Rear camera preview",
+      "selfiePreview": "Front camera preview",
+      "takeSelfie": "Take selfie",
+      "captureFailed": "We could not use this photo. Try again.",
+      "checking": "Checking photo…",
+      "issues": {
+        "unreadable": "We could not open this image. Take the photo again.",
+        "lowResolution": "The photo resolution is too low. Move the camera closer and try again.",
+        "documentFaceNotFound": "We could not find a face on the document. Photograph the side with your photo, fully visible and without glare.",
+        "looksLikeSelfie": "This does not look like a document. Photograph the full document on a flat surface.",
+        "selfieFaceNotFound": "We could not find your face. Look at the camera in a well-lit place.",
+        "multipleFaces": "More than one person appeared. Take the selfie alone.",
+        "faceTooSmall": "Your face is too small. Bring the phone closer and fit your face inside the oval.",
+        "tooDark": "The photo is too dark. Move to a brighter place.",
+        "tooBright": "The photo is too bright. Avoid strong light or direct glare.",
+        "blurry": "The photo is blurry or out of focus. Hold still and try again.",
+        "duplicatePhoto": "This photo was used in another step. Take a new photo.",
+        "looksLikeDocument": "This looks like a document photo. Take a selfie of your face.",
+        "documentTextNotFound": "We could not read the document. Photograph the full document with its text visible.",
+        "livenessFaceNotFound": "We could not find your face in one of the photos. Keep your entire face visible and try again.",
+        "livenessDifferentPerson": "The face changed between photos. Perform the movements alone and try again.",
+        "livenessNotTurned": "We did not detect the requested movement. Turn your face a little further and try again.",
+        "livenessExpired": "The 15-second movement window expired. Let's try the movements again.",
+        "livenessIncomplete": "One of the movement photos is missing. Let's try again.",
+        "spoofSuspected": "This may be a photo of a screen or printout. Take a selfie directly of your face.",
+        "livenessNotCloser": "We did not detect your face moving closer. Bring the phone closer and try again.",
+        "livenessSpoofSuspected": "One photo may be from a screen or printout. Repeat the movements directly with your face.",
+        "livenessOutOfOrder": "The movements were out of order. Let's try again.",
+        "documentShapeNotFound": "We could not identify a document shape. Photograph the full document on a flat surface and try again."
+      },
+      "takeChallenge": "Take photo",
+      "challengeHint": "Tap Take photo, perform the movement and hold still. The photo is taken after 3 seconds. You have 15 seconds for each movement.",
+      "holdStill": "Hold still… {seconds}",
+      "captured": "Photo taken. You can return to your starting position while we analyze it.",
+      "closeEnough": "Close enough. Hold still for the photo.",
+      "preparingChallenges": "Preparing liveness movements…",
+      "retryChallenges": "Try loading movements again"
+    },
+    "cameraNotice": "Your document, selfie and movements will be sent for analysis and review by a member of the agency team.",
+    "import": {
+      "frontTitle": "Crop the front of the document",
+      "backTitle": "Crop the back of the document",
+      "help": "Set Crop 1 for the front and Crop 2 for the back. Each side keeps its own area and page. Drag on the image or adjust the percentage values. Send the front before the back.",
+      "page": "Page",
+      "loading": "Preparing page and looking for the document",
+      "fileSize": "Choose a file up to 20 MB.",
+      "pageLimit": "Choose a PDF with up to 20 pages.",
+      "password": "This PDF is password-protected. Upload a copy without a password.",
+      "invalid": "We could not open this file. Try another PDF or a JPG or PNG image.",
+      "detectionFailed": "We could not suggest a crop. Adjust the area manually; analysis is still required when submitting.",
+      "detected": "We suggested an area for this side. Check the crop and adjust before sending.",
+      "noRegions": "No suggested area for this side. Select the area manually before sending.",
+      "sides": "Document crops",
+      "frontCrop": "Crop 1 — Front",
+      "backCrop": "Crop 2 — Back",
+      "frontFirst": "You can adjust the back now. Send the front before sending the back.",
+      "preview": "Document page with selected crop area",
+      "x": "Left (%)",
+      "y": "Top (%)",
+      "width": "Width (%)",
+      "height": "Height (%)",
+      "cancel": "Close",
+      "sending": "Analyzing crop…",
+      "sendFront": "Analyze and send front",
+      "sendBack": "Analyze and send back"
+    },
+    "agencyFallback": "agency"
+  },
+  "console": {
+    "nav": {
+      "label": "Face Check navigation",
+      "overview": "Overview",
+      "sessions": "Sessions",
+      "review": "Review",
+      "settings": "Settings"
+    },
+    "documents": {
+      "ANY": "Any",
+      "RG": "RG",
+      "CNH": "CNH",
+      "RNE": "RNE / CRNM"
+    },
+    "reviewReasons": {
+      "nearThreshold": "Similarity below the threshold",
+      "alternativePath": "Assistance without biometrics",
+      "livenessInconclusive": "Inconclusive liveness check",
+      "attemptsExhausted": "No attempts remaining",
+      "experimentalMatch": "Experimental analysis: a person always decides",
+      "faceNotFound": "Face not found in the document or selfie",
+      "analysisUnavailable": "Analysis service unavailable",
+      "tooManyRejections": "Many photos rejected during upload",
+      "localCaptureOnly": "Image review required",
+      "lowSimilarityRepeated": "Similarity at or below 10% after a new attempt",
+      "verificationChecksFailed": "Other checks require review",
+      "documentManualReview": "Document accepted after three rejected photos: manual review required",
+      "autoApprovalPaused": "Analysis complete: awaiting human review"
+    },
+    "overview": {
+      "title": "Overview",
+      "subtitle": "Last 7 days",
+      "newVerification": "New verification",
+      "pilotWarning": "Analysis supports the review of evidence. Approval requires a human decision by the agency team.",
+      "kpis": {
+        "label": "Metrics",
+        "completed": {
+          "label": "Completed sessions",
+          "caption": "approved, rejected and requested retakes"
+        },
+        "autoApproval": {
+          "label": "Team approvals",
+          "caption": "{approved} of {total} completed"
+        },
+        "inReview": {
+          "label": "In the review queue",
+          "caption": "oldest {since}",
+          "empty": "queue empty"
+        },
+        "decisionTime": {
+          "label": "Time to decision",
+          "value": "{minutes}m{seconds}s",
+          "caption": "median time from submission to decision"
+        },
+        "redo": {
+          "label": "Retake requests",
+          "caption": "during the period"
+        },
+        "emptyValue": "—"
+      },
+      "chart": {
+        "title": "Sessions completed per day",
+        "showTable": "View as table",
+        "showChart": "View chart",
+        "day": "Day",
+        "total": "Total",
+        "series": {
+          "approved": "Approved",
+          "rejected": "Rejected",
+          "redo": "Retake requested"
+        },
+        "empty": "No completed sessions yet. Create a verification to get started."
+      },
+      "queue": {
+        "title": "Awaiting review",
+        "seeAll": "View queue",
+        "empty": "No sessions awaiting review."
+      }
+    },
+    "newVerification": {
+      "eyebrow": "Face Check",
+      "title": "New verification",
+      "createdTitle": "Link created",
+      "close": "Close",
+      "fields": {
+        "personName": "Person's name",
+        "reference": "Reference (optional)",
+        "referencePlaceholder": "For example: request number",
+        "contact": "Person's contact (optional)",
+        "contactPlaceholder": "Email or phone",
+        "acceptedDocument": "Accepted document",
+        "expiresInHours": "Link valid for",
+        "cpf": "CPF (optional)",
+        "cpfPlaceholder": "000.000.000-00",
+        "cpfHelp": "Only used to check the CPF printed on the document.",
+        "propertyId": "Property",
+        "purpose": "Purpose"
+      },
+      "documentOptions": {
+        "ANY": "Any (RG, CNH, RNE)",
+        "RG": "RG only",
+        "CNH": "CNH only",
+        "RNE": "RNE / CRNM only"
+      },
+      "expiryOptions": {
+        "24": "24 hours",
+        "48": "48 hours",
+        "168": "7 days"
+      },
+      "dataMinimization": "Select the property for this request. CPF is optional and is used to check the document.",
+      "cancel": "Cancel",
+      "submit": "Generate link",
+      "qrLabel": "QR code containing the verification link",
+      "createdBody": "Verification link for {name}. Scan the QR code with a phone or send the link.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "expiresAt": "Valid until {date} · single use",
+      "openAsPerson": "Open capture in a new tab",
+      "goToSessions": "Go to sessions",
+      "networkNotice": "Share the link with the person. This panel updates automatically as capture progresses.",
+      "purposeOptions": {
+        "RENT": "Rent",
+        "BUY": "Buy"
+      },
+      "loadingProperties": "Loading available properties",
+      "noProperties": "No properties are available for your account. Add a property or check its assignment with the agency."
+    },
+    "sessions": {
+      "title": "Sessions",
+      "subtitle": "All verifications available to your account",
+      "reviewTitle": "Review queue",
+      "reviewSubtitle": "Oldest first · a person approves, requests a retake or rejects",
+      "newVerification": "New verification",
+      "filtersLabel": "Filter by status",
+      "filterChip": "{label} · {count}",
+      "filters": {
+        "all": "All",
+        "review": "In review",
+        "open": "In progress",
+        "redo": "Retake",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "closed": "Expired"
+      },
+      "searchPlaceholder": "Search name or reference",
+      "searchLabel": "Search by name or reference",
+      "columns": {
+        "person": "Person",
+        "status": "Status",
+        "document": "Document",
+        "createdAt": "Created at",
+        "updatedAt": "Last updated",
+        "waiting": "In queue",
+        "attempts": "Attempts",
+        "actions": "Actions"
+      },
+      "noReference": "No reference",
+      "alternative": "Without biometrics",
+      "attemptsValue": "{used} of {max}",
+      "review": "Review",
+      "open": "Open",
+      "empty": "No sessions match these filters.",
+      "urlHint": "Filters, search and page are saved in the URL so you can share this view.",
+      "emptyAll": "No sessions yet. Use New verification to create the first."
+    },
+    "detail": {
+      "backToReview": "Review queue",
+      "backToSessions": "Sessions",
+      "noReference": "No reference",
+      "alternative": "Without biometrics",
+      "meta": "{reference} · {document} · created {created} · attempt {used} of {max} · reference {protocol}",
+      "evidence": {
+        "title": "Evidence",
+        "reveal": "Show images",
+        "revealedNotice": "Viewing recorded in the audit log",
+        "alternative": "The person chose assistance without biometrics. Previously submitted photos remain in the history.",
+        "empty": "No images available. Photos may not have been sent yet.",
+        "labels": {
+          "front": "Front of document",
+          "back": "Back of document",
+          "selfie": "Selfie",
+          "liveness": "Liveness check"
+        },
+        "quality": "quality {value}",
+        "locked": "Image hidden until you select Show images",
+        "deleted": "Images deleted under the retention policy",
+        "retentionNotice": "Photos and movements are available during verification for up to 7 days, and are deleted when the final decision is recorded. Viewing is logged for auditing.",
+        "attempt": "Attempt {attempt}",
+        "photo": "Photo {number} · {label}",
+        "openPhoto": "Open {label} at full size",
+        "statuses": {
+          "pending": "Under analysis",
+          "accepted": "Photo accepted",
+          "rejected": "Photo rejected",
+          "unavailable": "Analysis unavailable"
+        },
+        "movements": {
+          "turnLeft": "Movement: turn left",
+          "turnRight": "Movement: turn right",
+          "closer": "Movement: bring face closer",
+          "blink": "Movement: blink"
+        },
+        "diagnostics": {
+          "title": "Analysis measurements",
+          "value": "{value} {limit}",
+          "failed": "did not pass",
+          "limits": {
+            "min": "(min. {value})",
+            "max": "(max. {value})",
+            "range": "(between {min} and {max})"
+          },
+          "rows": {
+            "resolution": "Shortest side (px)",
+            "brightness": "Lighting",
+            "documentBrightness": "Lighting in text areas",
+            "sharpness": "Sharpness",
+            "textRegions": "Text areas",
+            "documentFace": "Faces on document",
+            "faceSize": "Face size in photo",
+            "eyeDistance": "Distance between eyes (px)",
+            "realProbability": "Anti-spoofing score",
+            "turn": "Head turn",
+            "closer": "Moving closer",
+            "samePerson": "Same person as the selfie"
+          }
+        }
+      },
+      "signals": {
+        "title": "Analysis signals",
+        "subtitle": "Calculated on the server.",
+        "subtitleWithReason": "Calculated on the server. Review reason: {reason}.",
+        "empty": "No signals available.",
+        "pixels": "{value} px",
+        "aria": "{label}: {value}, threshold {threshold}, {verdict}",
+        "threshold": "/ {threshold}",
+        "passed": "Passed",
+        "below": "Below",
+        "items": {
+          "faceMatch": {
+            "label": "Document × selfie",
+            "help": "Similarity score between document and selfie. Supports image review; a person makes the decision."
+          },
+          "liveness": {
+            "label": "Liveness check",
+            "help": "random active challenges"
+          },
+          "documentQuality": {
+            "label": "Document quality",
+            "help": "focus, glare, framing"
+          },
+          "selfieQuality": {
+            "label": "Selfie quality",
+            "help": "lighting, sharpness, pose"
+          },
+          "interocularDistance": {
+            "label": "Distance between eyes",
+            "help": "measured distance between eyes in the image"
+          },
+          "documentInterocularDistance": {
+            "label": "Eyes in document photo",
+            "help": "face size on document"
+          },
+          "passiveLiveness": {
+            "label": "Passive liveness check",
+            "help": "likelihood of a real face rather than a screen or photo (uncalibrated MiniFASNet)"
+          }
+        },
+        "noThreshold": "no calibrated threshold",
+        "ariaNoThreshold": "{label}: {value}, no calibrated threshold",
+        "policy": "Similarity is not a probability of identity. The ranges guide retakes and review; final approval requires a team member.",
+        "historyTitle": "Similarity by attempt",
+        "attemptResult": "Attempt {attempt}: {score} · {status} · {at}",
+        "unavailable": "not calculated",
+        "policyCaption": "supports human review"
+      },
+      "decision": {
+        "title": "Decision",
+        "question": "What should happen with this verification?",
+        "choices": {
+          "approve": {
+            "label": "Approve",
+            "help": "Records approval following human review",
+            "done": "approved",
+            "confirm": "Approve the verification for {name}?"
+          },
+          "redo": {
+            "label": "Request a retake",
+            "help": "The person can use the same link to retry ({attemptsLeft} attempts left)",
+            "done": "retake requested",
+            "confirm": "Request a new capture for {name}?"
+          },
+          "reject": {
+            "label": "Reject",
+            "help": "Closes verification. Only a person can reject it",
+            "done": "rejected",
+            "confirm": "Reject the verification for {name}? The decision is recorded in the audit log."
+          }
+        },
+        "reasonRequired": "Reason *",
+        "reasonOptional": "Reason (optional)",
+        "reasonPlaceholder": "Select…",
+        "reasons": {
+          "match": "Face matches document",
+          "mismatch": "Face does not match document",
+          "illegible": "Illegible document",
+          "tampered": "Document shows signs of tampering",
+          "liveness": "Unconvincing liveness check"
+        },
+        "note": "Internal note",
+        "notePlaceholder": "Visible only to the team",
+        "submit": "Record decision",
+        "confirmTitle": "Confirm decision",
+        "back": "Back",
+        "confirm": "Confirm",
+        "summary": "Verification {decision} by {actor} on {date}.",
+        "autoApproved": "Approval recorded by the agency team.",
+        "notReady": "A decision can be recorded when the session is in review.",
+        "reopenedSummary": "Another attempt enabled by {actor} on {date}.",
+        "reopen": {
+          "button": "Allow another attempt",
+          "help": "If rejection was a mistake or another attempt is appropriate, the person can retry ({attemptsLeft} attempts left).",
+          "noAttempts": "No remaining attempts to enable.",
+          "confirmTitle": "Allow another attempt",
+          "confirm": "Allow another attempt for {name}? The rejection will no longer apply and the person can retake the photos.",
+          "back": "Back"
+        },
+        "manualOverride": {
+          "help": "Use manual approval when the analysis requires review. Review the evidence and provide a reason and justification; your user and decision will be recorded in the audit log.",
+          "choose": "Use audited manual approval",
+          "reviewed": "I reviewed the available evidence and accept responsibility for this manual approval.",
+          "confirm": "This manual approval will be recorded in the audit log with your user, reason and justification."
+        }
+      },
+      "timeline": {
+        "title": "Timeline and audit log",
+        "decision": "Decision: {decision}",
+        "events": {
+          "created": "Session created",
+          "consented": "Link opened and consent accepted",
+          "documentSent": "Document submitted",
+          "selfieSent": "Selfie and liveness check submitted",
+          "submitted": "Capture submitted for analysis",
+          "autoApproved": "Analysis result recorded",
+          "autoReview": "Automatic analysis: sent for review",
+          "autoRedo": "Automatic analysis: retake requested",
+          "alternativeRequested": "Requested verification without biometrics",
+          "evidenceViewed": "Evidence viewed",
+          "decision": "Decision recorded",
+          "expired": "Link expired",
+          "livenessVerified": "Liveness checked through face movements",
+          "reopened": "Another attempt enabled"
+        },
+        "actors": {
+          "system": "System",
+          "operator": "Agency team"
+        },
+        "reason": "Reason: {reason}",
+        "note": "Note: {note}",
+        "consentTerms": "Consent accepted: version {version}",
+        "alternativeReasons": {
+          "noCamera": "No camera",
+          "accessibility": "Accessibility",
+          "noConsent": "Did not consent to biometrics",
+          "other": "Another reason"
+        },
+        "manualOverride": "Manual approval following evidence review and justification"
+      },
+      "openCapture": "Open capture in a new tab",
+      "alerts": {
+        "title": "Review alerts",
+        "nearIdenticalFaces": "The document and selfie faces are almost identical: the same photo may have been reused.",
+        "manyRejectedPhotos": "Several photos were rejected during upload. Review carefully.",
+        "documentManualReview": "Capture continued after three photos of one document side were rejected. Review all three images in the evidence; manual review is required.",
+        "possibleSpoof": "The selfie or a movement photo may have come from a screen or printed photo. Review the images.",
+        "documentShapeNotFound": "No document shape (RG, CNH or CIN) was found in the photos.",
+        "documentTypeMismatch": "The detected document appears to differ from the selected type.",
+        "nameNotFoundOnDocument": "The person's name was not found on the document.",
+        "cpfMismatch": "The CPF read from the document does not match the provided CPF.",
+        "lowSimilarityRepeated": "Similarity remained low (10% or less). Review the photos from each attempt before deciding.",
+        "lowSimilarity": "Similarity is 10% or less and no attempts remain. Review the photos before deciding."
+      },
+      "documentCheck": {
+        "title": "Document check",
+        "subtitle": "Experimental automatic reading. Review the images before deciding.",
+        "empty": "No document photo has been analyzed in this attempt.",
+        "notRead": "The submitted document could not be read. Check the images and rejection reasons in the evidence.",
+        "unavailable": "Analysis of one document photo was unavailable. Results below include only available readings from this attempt.",
+        "ok": "Matches",
+        "notOk": "Does not match",
+        "unknown": "Not read",
+        "card": {
+          "label": "Document shape",
+          "help": "rectangle with RG, CNH or CIN proportions"
+        },
+        "type": {
+          "label": "Document type",
+          "read": "read as {type}",
+          "notRead": "could not be identified from the text"
+        },
+        "name": {
+          "label": "Name on document",
+          "help": "looking for “{name}”"
+        },
+        "cpf": {
+          "label": "CPF on document",
+          "help": "compared with provided CPF ({cpf})",
+          "notRead": "no CPF number read; provided: {cpf}",
+          "notInformed": "No CPF provided when creating verification"
+        }
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Agency verification rules",
+      "save": "Save changes",
+      "saved": "Changes saved",
+      "thresholds": {
+        "title": "Analysis parameters",
+        "subtitle": "Document and liveness analysis support human review.",
+        "faceMatchThreshold": "Document × selfie similarity",
+        "faceMatchHelp": "Fixed 30% analysis reference, read only. Final approval always requires a human decision.",
+        "maxAttempts": "Attempts per session"
+      },
+      "capture": {
+        "title": "Capture",
+        "gallery": "Allow photos from gallery",
+        "galleryHelp": "Allows importing document photos or PDFs. The selfie and movements still use the camera.",
+        "galleryOn": "Document import is enabled. Review evidence before deciding."
+      },
+      "limits": {
+        "title": "How verification works",
+        "items": {
+          "injection": "A browser cannot prove an image came from a physical camera; virtual cameras and injected deepfakes may be used.",
+          "serverDecides": "The server analyzes evidence and the team records the final decision.",
+          "uploads": "Photos pass through the backend and never go directly from the browser to storage."
+        }
+      },
+      "agency": {
+        "title": "Agency",
+        "subtitle": "The name appears in the consent information and capture notices.",
+        "name": "Agency name"
+      },
+      "ownerOnly": "Only the account owner can change these settings."
+    }
+  },
+  "common": {
+    "status": {
+      "CREATED": "Waiting",
+      "IN_PROGRESS": "In progress",
+      "SUBMITTED": "Submitted",
+      "PROCESSING": "Processing",
+      "RESUBMISSION_REQUESTED": "Retake",
+      "REVIEW": "In review",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "EXPIRED": "Expired",
+      "ABANDONED": "Abandoned"
+    },
+    "errors": {
+      "SESSION_NOT_FOUND": "We could not find this verification. Check the link with the agency.",
+      "SESSION_EXPIRED": "This link has expired. Ask the agency for a new one.",
+      "SESSION_NOT_IN_REVIEW": "This session is no longer in review. Refresh the page.",
+      "INVALID_CAPTURE_STATE": "This step is not available now. Reload the page to continue.",
+      "NO_ATTEMPTS_LEFT": "No attempts remain for this verification.",
+      "UNKNOWN": "Something went wrong. Try again shortly.",
+      "VALIDATION_ERROR": "Some submitted information is invalid. Check it and try again.",
+      "NETWORK_ERROR": "Could not connect to the server. Check your connection and try again.",
+      "IMAGE_REQUIRED": "This step requires a photo. Take it again.",
+      "EVIDENCE_NOT_REVEALED": "Select Show images before opening the evidence.",
+      "EVIDENCE_NOT_FOUND": "This image is no longer available.",
+      "PHOTO_REJECTED": "This photo was not accepted. Take it again.",
+      "ANALYSIS_UNAVAILABLE": "The analysis service is unavailable. Try again shortly; this step has not been confirmed.",
+      "ANALYSIS_TIMEOUT": "Analysis timed out. Wait a moment and try again. This step has not been confirmed.",
+      "ANALYSIS_FAILED": "An error occurred during analysis. Try again. This step has not been confirmed.",
+      "ANALYSIS_INVALID_RESPONSE": "The analysis service returned an invalid response. Try again. This step has not been confirmed.",
+      "LIVENESS_FAILED": "The liveness check was not confirmed. Try again.",
+      "SESSION_NOT_REJECTED": "Another attempt can only be enabled for a rejected verification. Refresh the page.",
+      "VERIFICATION_INCOMPLETE": "Document, liveness check and similarity must be available before approval.",
+      "PERSISTENCE_BUSY": "Another operation is finishing. Wait a moment and try again.",
+      "PERSISTENCE_UNAVAILABLE": "Could not save or retrieve this verification. Try again shortly.",
+      "AGENCY_NAME_MISSING": "Add the agency name in settings before creating a verification.",
+      "CONSENT_TERMS_OUTDATED": "The consent information has changed. Reload this page and read it again.",
+      "DOCUMENT_TYPE_NOT_ACCEPTED": "This document type is not accepted. Use the type requested by the agency, the same for front and back.",
+      "PAYLOAD_TOO_LARGE": "Each photo must be 3 MiB or less. Take it again."
+    },
+    "validation": {
+      "nameRequired": "Enter the name of the person being verified.",
+      "tooLong": "Text is too long.",
+      "decisionRequired": "Choose a decision.",
+      "reasonRequired": "Choose a reason for the decision.",
+      "cpfInvalid": "Invalid CPF. Check the numbers.",
+      "agencyNameRequired": "Enter the agency name.",
+      "propertyRequired": "Select a property available to your account.",
+      "manualOverrideNoteRequired": "Provide at least 10 characters explaining the manual approval.",
+      "evidenceReviewRequired": "Confirm that you reviewed the evidence before approving manually.",
+      "manualOverrideRequired": "This analysis requires audited manual approval. Select that option to continue."
+    }
+  }
+}

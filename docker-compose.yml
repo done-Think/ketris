@@ -12,5 +12,25 @@ services:
     volumes:
       - ketris_pgdata:/var/lib/postgresql/data
 
+  face_check_engine:
+    profiles: ['face_check']
+    build:
+      context: ./services/face_check_engine
+    env_file:
+      - path: ./services/face_check_engine/.env
+        required: false
+    ports:
+      - '127.0.0.1:8765:8765'
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: ['ALL']
+    cpus: 1.0
+    mem_limit: 1536m
+    pids_limit: 128
+
 volumes:
   ketris_pgdata:

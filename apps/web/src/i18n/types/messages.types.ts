@@ -5,6 +5,7 @@ import type contracts from '../messages/pt-BR/contracts.json'
 import type charges from '../messages/pt-BR/charges.json'
 import type crm from '../messages/pt-BR/crm.json'
 import type dashboard from '../messages/pt-BR/dashboard.json'
+import type face_check from '../messages/pt-BR/face_check.json'
 import type marketplace from '../messages/pt-BR/marketplace.json'
 import type platform from '../messages/pt-BR/platform.json'
 import type properties from '../messages/pt-BR/properties.json'
@@ -19,6 +20,7 @@ export type AppMessages = {
   charges: typeof charges
   crm: typeof crm
   dashboard: typeof dashboard
+  face_check: typeof face_check
   marketplace: typeof marketplace
   platform: typeof platform
   properties: typeof properties

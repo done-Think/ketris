@@ -14,6 +14,7 @@ async function loadRealMessages() {
     'auth',
     'crm',
     'dashboard',
+    'face_check',
     'charges',
     'marketplace',
     'platform',

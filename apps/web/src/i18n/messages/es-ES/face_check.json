@@ -1,0 +1,772 @@
+{
+  "capture": {
+    "header": {
+      "back": "Volver",
+      "brand": "Face Check"
+    },
+    "progress": {
+      "label": "Paso {current} de {total} · {name}",
+      "names": {
+        "consent": "Consentimiento",
+        "document": "Documento",
+        "selfie": "Selfie",
+        "submit": "Envío"
+      }
+    },
+    "loading": "Cargando verificación",
+    "unavailable": "Enlace no disponible",
+    "backHome": "Volver al inicio",
+    "consent": {
+      "title": "Vamos a revisar tu documento y selfie",
+      "intro": "{agency} solicitó esta verificación para {reference}. Toma unos 3 minutos.",
+      "sectionLabel": "Lo que debes saber",
+      "items": {
+        "collect": {
+          "title": "Qué recopilamos",
+          "body": "Las fotos del documento, selfie, movimientos y nuevas capturas, incluidas las fotos rechazadas, forman el historial de evidencias. No grabamos video ni audio."
+        },
+        "purpose": {
+          "title": "Para qué",
+          "body": "Para ayudar a la inmobiliaria a revisar al titular del documento y su interés en el inmueble."
+        },
+        "retention": {
+          "title": "Por cuánto tiempo",
+          "body": "Las imágenes se eliminan al concluir la validación o, si se requiere revisión manual, en un plazo máximo de 7 días."
+        }
+      },
+      "privacyLink": "Uso y eliminación de imágenes",
+      "pilotNotice": "El documento, la selfie y los movimientos ayudan al equipo a revisar tu solicitud. La decisión final la toma una persona.",
+      "checkbox": "He leído y acepto el uso de mi imagen y documento para esta verificación.",
+      "start": "Comenzar",
+      "alternative": "No puedo o no quiero usar la cámara",
+      "privacyBody": "Tus imágenes se usarán solo para esta verificación, con acceso restringido y sin divulgación pública. Se eliminarán al concluir la validación o, si se requiere revisión manual, en un plazo máximo de 7 días.",
+      "close": "Cerrar",
+      "acknowledgement": "¡Entendí y estoy de acuerdo!",
+      "continue": "Continuar"
+    },
+    "camera": {
+      "title": "Ahora vamos a usar la cámara",
+      "body": "El navegador pedirá tu permiso. La cámara solo se usa en esta página y se apaga al terminar.",
+      "tips": {
+        "light": "Un lugar bien iluminado, sin luz fuerte detrás de ti",
+        "original": "Ten a mano el documento original, no una copia",
+        "face": "Sin gafas de sol, gorra ni mascarilla"
+      },
+      "enable": "Activar cámara",
+      "withoutCamera": "Continuar sin cámara"
+    },
+    "document": {
+      "titleFront": "Frente del {doc}",
+      "titleBack": "Reverso del {doc}",
+      "typeLabel": "Tipo de documento",
+      "types": {
+        "RG": "RG",
+        "CNH": "CNH",
+        "RNE": "RNE / CRNM"
+      },
+      "sides": {
+        "front": "Frente",
+        "back": "Reverso"
+      },
+      "shutter": "Tomar foto",
+      "uploading": "Enviando foto"
+    },
+    "documentReview": {
+      "title": "¿Se puede leer todo?",
+      "body": "Comprueba que el nombre, número y foto se vean sin reflejos ni cortes.",
+      "sideLabel": "{side} del {doc}",
+      "retake": "Volver a tomar",
+      "confirm": "Usar estas fotos",
+      "photoLabel": "{side} del {doc}, foto capturada"
+    },
+    "selfie": {
+      "titles": {
+        "position": "Coloca tu rostro dentro del óvalo",
+        "blink": "Parpadea lentamente dos veces",
+        "turnLeft": "Gira el rostro hacia la izquierda",
+        "turnRight": "Gira el rostro hacia la derecha",
+        "done": "¡Listo!",
+        "closer": "Acerca el rostro a la cámara"
+      },
+      "hints": {
+        "position": "Acerca un poco el teléfono",
+        "blink": "Parpadea lentamente…",
+        "turnLeft": "Gira el rostro hacia tu izquierda",
+        "turnRight": "Gira el rostro hacia tu derecha",
+        "done": "La selfie está lista",
+        "closer": "Acerca el teléfono al rostro"
+      },
+      "stepLabel": {
+        "position": "Posicionamiento",
+        "challenge": "Desafío {current} de {total}",
+        "done": "Completado"
+      },
+      "send": "Enviar para análisis",
+      "restart": "Volver a empezar",
+      "cantDo": "No puedo hacer este paso"
+    },
+    "submit": {
+      "titleRunning": "Enviando y analizando",
+      "titleDone": "Análisis finalizado",
+      "body": "No cierres esta página. Si se pierde la conexión, abre el mismo enlace para continuar.",
+      "progressLabel": "Progreso del envío",
+      "steps": {
+        "document": "Fotos del documento",
+        "selfie": "Selfie",
+        "liveness": "Prueba de vida",
+        "analysis": "Análisis"
+      },
+      "stepStatus": {
+        "waiting": "En espera",
+        "sending": "Enviando… {percent}%",
+        "analysing": "Comparando documento y selfie…",
+        "done": "Completado"
+      },
+      "viewResult": "Ver resultado",
+      "analysing": "Analizando…"
+    },
+    "result": {
+      "protocol": "Número de protocolo",
+      "closeHint": "Ya puedes cerrar esta página.",
+      "approved": {
+        "title": "Verificación aprobada por el equipo",
+        "body": "El equipo de {agency} revisó los datos y registró la aprobación. Contacta a la inmobiliaria para los próximos pasos."
+      },
+      "review": {
+        "title": "Recibimos tus datos",
+        "body": "Una persona del equipo de {agency} revisará la verificación. No necesitas hacer nada más por ahora.",
+        "nextTitle": "Qué pasa ahora",
+        "next": {
+          "one": "El equipo revisa las fotos que enviaste.",
+          "two": "Recibes la respuesta por el canal acordado con la inmobiliaria.",
+          "three": "Si falta algo, el equipo enviará un nuevo enlace."
+        }
+      },
+      "rejected": {
+        "title": "Verificación finalizada",
+        "body": "{agency} se pondrá en contacto contigo para los próximos pasos."
+      },
+      "expired": {
+        "title": "Este enlace ya no está activo",
+        "body": "Pide a {agency} un nuevo enlace de verificación."
+      },
+      "redo": {
+        "title": "Vamos a tomar la foto de nuevo",
+        "reasons": {
+          "documentIllegible": "La foto del documento es difícil de leer. Puede deberse a reflejos o poca luz.",
+          "selfieQuality": "No pudimos ver tu rostro con claridad. Prueba en un lugar más iluminado.",
+          "reopenedByAgency": "{agency} habilitó un nuevo intento. Vamos a repetir las fotos del documento y la selfie.",
+          "lowSimilarity": "La similitud entre el documento y la selfie fue del 10% o menos. Repite el documento, selfie y movimientos con buena luz. Si sigue baja, una persona revisará el historial."
+        },
+        "tipsTitle": "Consejos para el próximo intento",
+        "tips": {
+          "one": "Apoya el documento sobre una mesa oscura y sin brillo.",
+          "two": "Acércate a una ventana, sin luz directa sobre el documento.",
+          "three": "Retira la funda de plástico del documento."
+        },
+        "attemptsLeft": "Te quedan {left} de {max} intentos",
+        "retry": "Volver a intentar",
+        "human": "Solicitar revisión por una persona"
+      }
+    },
+    "alternative": {
+      "title": "Está bien, hay otra manera",
+      "body": "Una persona de la inmobiliaria puede verificar tu identidad sin cámara. Puede tomar más tiempo.",
+      "reasonLegend": "Cuéntanos el motivo, si deseas",
+      "reasons": {
+        "noCamera": "No tengo cámara o no funciona",
+        "accessibility": "No puedo hacer los movimientos solicitados",
+        "noConsent": "No quiero enviar biometría",
+        "other": "Otro motivo"
+      },
+      "contactLabel": "Mejor forma de contacto",
+      "contactPlaceholder": "Teléfono o correo electrónico",
+      "submit": "Solicitar verificación por una persona",
+      "sentTitle": "Solicitud enviada",
+      "sentBody": "{agency} se pondrá en contacto contigo para continuar con atención humana. Las fotos ya enviadas permanecen en el historial.",
+      "errors": {
+        "contactTooLong": "Usa un máximo de 120 caracteres."
+      }
+    },
+    "live": {
+      "starting": "Encendiendo cámara…",
+      "deniedTitle": "Se bloqueó el acceso a la cámara",
+      "unavailableTitle": "No encontramos una cámara",
+      "galleryHint": "Puedes enviar una foto guardada en el dispositivo.",
+      "noGalleryHint": "Permite el acceso a la cámara en el navegador o continúa sin biometría.",
+      "chooseFile": "Enviar una foto",
+      "sendDocument": "Enviar documento",
+      "orientationLabel": "Orientación del documento",
+      "landscape": "Horizontal",
+      "portrait": "Vertical",
+      "documentPortraitHint": "Coloca el documento en vertical, entero dentro del marco y sin reflejos, y toca el botón.",
+      "withoutCamera": "Continuar sin cámara",
+      "documentHint": "Coloca el documento entero dentro del marco, sin reflejos, y toca el botón.",
+      "selfieBackgroundHint": "Toma la selfie con un fondo liso, sin dibujos ni texto.",
+      "documentPreview": "Vista previa de la cámara trasera",
+      "selfiePreview": "Vista previa de la cámara frontal",
+      "takeSelfie": "Tomar selfie",
+      "captureFailed": "No pudimos usar esta foto. Inténtalo de nuevo.",
+      "checking": "Revisando foto…",
+      "issues": {
+        "unreadable": "No pudimos abrir esta imagen. Toma la foto de nuevo.",
+        "lowResolution": "La resolución de la foto es baja. Acerca la cámara e inténtalo de nuevo.",
+        "documentFaceNotFound": "No encontramos un rostro en el documento. Fotografía el lado con tu foto, entero y sin reflejos.",
+        "looksLikeSelfie": "Esto no parece un documento. Fotografía el documento entero sobre una superficie.",
+        "selfieFaceNotFound": "No encontramos tu rostro. Mira a la cámara en un lugar bien iluminado.",
+        "multipleFaces": "Apareció más de una persona. Toma la selfie a solas.",
+        "faceTooSmall": "Tu rostro se ve muy pequeño. Acerca el teléfono y coloca el rostro dentro del óvalo.",
+        "tooDark": "La foto está oscura. Ve a un lugar más iluminado.",
+        "tooBright": "La foto está demasiado clara. Evita luz fuerte o reflejos directos.",
+        "blurry": "La foto está movida o desenfocada. Mantén la cámara firme e inténtalo de nuevo.",
+        "duplicatePhoto": "Esta foto ya se usó en otro paso. Toma una foto nueva.",
+        "looksLikeDocument": "Esto parece la foto de un documento. Toma una selfie de tu rostro.",
+        "documentTextNotFound": "No pudimos leer los datos. Fotografía el documento entero con el texto visible.",
+        "livenessFaceNotFound": "No encontramos tu rostro en una de las fotos. Mantén el rostro entero en pantalla e inténtalo de nuevo.",
+        "livenessDifferentPerson": "El rostro cambió entre las fotos. Haz los movimientos a solas e inténtalo de nuevo.",
+        "livenessNotTurned": "No detectamos el movimiento solicitado. Gira un poco más el rostro e inténtalo de nuevo.",
+        "livenessExpired": "Se agotaron los 15 segundos para el movimiento. Vamos a repetir los movimientos.",
+        "livenessIncomplete": "Falta una foto de los movimientos. Vamos a repetirlos.",
+        "spoofSuspected": "Parece una foto de una pantalla o una imagen impresa. Toma la selfie directamente de tu rostro.",
+        "livenessNotCloser": "No detectamos el rostro más cerca. Acerca más el teléfono e inténtalo de nuevo.",
+        "livenessSpoofSuspected": "Una foto parece provenir de una pantalla o imagen impresa. Repite los movimientos directamente con tu rostro.",
+        "livenessOutOfOrder": "Los movimientos se hicieron fuera de orden. Vamos a repetirlos.",
+        "documentShapeNotFound": "No identificamos la forma de un documento. Fotografía el documento entero sobre una superficie e inténtalo de nuevo."
+      },
+      "takeChallenge": "Tomar foto",
+      "challengeHint": "Toca Tomar foto, haz el movimiento y mantén la posición. La foto se toma a los 3 segundos. Tienes 15 segundos por movimiento.",
+      "holdStill": "Mantén la posición… {seconds}",
+      "captured": "Foto tomada. Puedes volver a la posición inicial mientras la analizamos.",
+      "closeEnough": "Distancia suficiente. Mantén la posición para la foto.",
+      "preparingChallenges": "Preparando los movimientos de la prueba de vida…",
+      "retryChallenges": "Volver a cargar los movimientos"
+    },
+    "cameraNotice": "El documento, la selfie y los movimientos se enviarán para análisis y revisión por una persona de la inmobiliaria.",
+    "import": {
+      "frontTitle": "Recortar el frente del documento",
+      "backTitle": "Recortar el reverso del documento",
+      "help": "Ajusta el Recorte 1 para el frente y el Recorte 2 para el reverso. Cada lado conserva su área y página. Arrastra sobre la imagen o ajusta los porcentajes. Envía el frente antes del reverso.",
+      "page": "Página",
+      "loading": "Preparando página y buscando el documento",
+      "fileSize": "Elige un archivo de hasta 20 MB.",
+      "pageLimit": "Elige un PDF con hasta 20 páginas.",
+      "password": "Este PDF está protegido por contraseña. Envía una copia sin contraseña.",
+      "invalid": "No pudimos abrir este archivo. Prueba otro PDF o una imagen JPG o PNG.",
+      "detectionFailed": "No pudimos sugerir recortes. Ajusta el área manualmente; el análisis seguirá siendo necesario al enviar.",
+      "detected": "Sugerimos un área para este lado. Comprueba el recorte y ajústalo antes de enviar.",
+      "noRegions": "No encontramos un área sugerida para este lado. Márcala manualmente antes de enviar.",
+      "sides": "Recortes del documento",
+      "frontCrop": "Recorte 1 — Frente",
+      "backCrop": "Recorte 2 — Reverso",
+      "frontFirst": "Puedes ajustar el reverso ahora. Envía el frente antes del reverso.",
+      "preview": "Página del documento con el área de recorte seleccionada",
+      "x": "Izquierda (%)",
+      "y": "Arriba (%)",
+      "width": "Ancho (%)",
+      "height": "Alto (%)",
+      "cancel": "Cerrar",
+      "sending": "Analizando recorte…",
+      "sendFront": "Analizar y enviar frente",
+      "sendBack": "Analizar y enviar reverso"
+    },
+    "agencyFallback": "inmobiliaria"
+  },
+  "console": {
+    "nav": {
+      "label": "Navegación de Face Check",
+      "overview": "Resumen",
+      "sessions": "Sesiones",
+      "review": "Revisión",
+      "settings": "Configuración"
+    },
+    "documents": {
+      "ANY": "Cualquiera",
+      "RG": "RG",
+      "CNH": "CNH",
+      "RNE": "RNE / CRNM"
+    },
+    "reviewReasons": {
+      "nearThreshold": "Similitud inferior al umbral",
+      "alternativePath": "Atención sin biometría",
+      "livenessInconclusive": "Prueba de vida no concluyente",
+      "attemptsExhausted": "Intentos agotados",
+      "experimentalMatch": "Análisis experimental: siempre decide una persona",
+      "faceNotFound": "Rostro no encontrado en el documento o selfie",
+      "analysisUnavailable": "Servicio de análisis no disponible",
+      "tooManyRejections": "Varias fotos rechazadas durante el envío",
+      "localCaptureOnly": "Es necesario revisar las imágenes",
+      "lowSimilarityRepeated": "Similitud del 10% o menos tras un nuevo intento",
+      "verificationChecksFailed": "Las demás comprobaciones requieren revisión",
+      "documentManualReview": "Documento aceptado tras tres fotos rechazadas: revisión manual obligatoria",
+      "autoApprovalPaused": "Análisis finalizado: pendiente de revisión humana"
+    },
+    "overview": {
+      "title": "Resumen",
+      "subtitle": "Últimos 7 días",
+      "newVerification": "Nueva verificación",
+      "pilotWarning": "El análisis ayuda a revisar las evidencias. La aprobación requiere una decisión humana del equipo de la inmobiliaria.",
+      "kpis": {
+        "label": "Indicadores",
+        "completed": {
+          "label": "Sesiones finalizadas",
+          "caption": "aprobadas, rechazadas y con nueva captura solicitada"
+        },
+        "autoApproval": {
+          "label": "Aprobaciones del equipo",
+          "caption": "{approved} de {total} finalizadas"
+        },
+        "inReview": {
+          "label": "En la cola de revisión",
+          "caption": "la más antigua {since}",
+          "empty": "cola vacía"
+        },
+        "decisionTime": {
+          "label": "Tiempo hasta la decisión",
+          "value": "{minutes}m{seconds}s",
+          "caption": "mediana desde el envío hasta la decisión"
+        },
+        "redo": {
+          "label": "Solicitudes de nueva captura",
+          "caption": "durante el período"
+        },
+        "emptyValue": "—"
+      },
+      "chart": {
+        "title": "Sesiones finalizadas por día",
+        "showTable": "Ver como tabla",
+        "showChart": "Ver gráfico",
+        "day": "Día",
+        "total": "Total",
+        "series": {
+          "approved": "Aprobadas",
+          "rejected": "Rechazadas",
+          "redo": "Nueva captura solicitada"
+        },
+        "empty": "Todavía no hay sesiones finalizadas. Crea una verificación para comenzar."
+      },
+      "queue": {
+        "title": "Pendientes de revisión",
+        "seeAll": "Ver cola",
+        "empty": "No hay sesiones pendientes de revisión."
+      }
+    },
+    "newVerification": {
+      "eyebrow": "Face Check",
+      "title": "Nueva verificación",
+      "createdTitle": "Enlace creado",
+      "close": "Cerrar",
+      "fields": {
+        "personName": "Nombre de la persona",
+        "reference": "Referencia (opcional)",
+        "referencePlaceholder": "Ej.: número de atención",
+        "contact": "Contacto de la persona (opcional)",
+        "contactPlaceholder": "Correo electrónico o teléfono",
+        "acceptedDocument": "Documento aceptado",
+        "expiresInHours": "Vigencia del enlace",
+        "cpf": "CPF (opcional)",
+        "cpfPlaceholder": "000.000.000-00",
+        "cpfHelp": "Solo se usa para comprobar el CPF impreso en el documento.",
+        "propertyId": "Inmueble",
+        "purpose": "Finalidad"
+      },
+      "documentOptions": {
+        "ANY": "Cualquiera (RG, CNH, RNE)",
+        "RG": "Solo RG",
+        "CNH": "Solo CNH",
+        "RNE": "Solo RNE / CRNM"
+      },
+      "expiryOptions": {
+        "24": "24 horas",
+        "48": "48 horas",
+        "168": "7 días"
+      },
+      "dataMinimization": "Selecciona el inmueble de la solicitud. El CPF es opcional y se usa para comprobar el documento.",
+      "cancel": "Cancelar",
+      "submit": "Generar enlace",
+      "qrLabel": "Código QR con el enlace de verificación",
+      "createdBody": "Enlace de verificación para {name}. Escanea el código QR con el teléfono o envía el enlace.",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "expiresAt": "Válido hasta {date} · uso único",
+      "openAsPerson": "Abrir captura en otra pestaña",
+      "goToSessions": "Ir a sesiones",
+      "networkNotice": "Comparte el enlace con la persona. El panel se actualiza automáticamente a medida que avanza la captura.",
+      "purposeOptions": {
+        "RENT": "Alquilar",
+        "BUY": "Comprar"
+      },
+      "loadingProperties": "Cargando inmuebles disponibles",
+      "noProperties": "No hay inmuebles disponibles para tu acceso. Añade un inmueble o consulta su asignación con la inmobiliaria."
+    },
+    "sessions": {
+      "title": "Sesiones",
+      "subtitle": "Todas las verificaciones disponibles para tu cuenta",
+      "reviewTitle": "Cola de revisión",
+      "reviewSubtitle": "Las más antiguas primero · una persona aprueba, pide otra captura o rechaza",
+      "newVerification": "Nueva verificación",
+      "filtersLabel": "Filtrar por estado",
+      "filterChip": "{label} · {count}",
+      "filters": {
+        "all": "Todas",
+        "review": "En revisión",
+        "open": "En curso",
+        "redo": "Repetir",
+        "approved": "Aprobadas",
+        "rejected": "Rechazadas",
+        "closed": "Caducadas"
+      },
+      "searchPlaceholder": "Buscar nombre o referencia",
+      "searchLabel": "Buscar por nombre o referencia",
+      "columns": {
+        "person": "Persona",
+        "status": "Estado",
+        "document": "Documento",
+        "createdAt": "Creada el",
+        "updatedAt": "Última actualización",
+        "waiting": "En cola",
+        "attempts": "Intentos",
+        "actions": "Acciones"
+      },
+      "noReference": "Sin referencia",
+      "alternative": "Sin biometría",
+      "attemptsValue": "{used} de {max}",
+      "review": "Revisar",
+      "open": "Abrir",
+      "empty": "No hay sesiones que coincidan con estos filtros.",
+      "urlHint": "Los filtros, la búsqueda y la página se guardan en la URL para compartir esta vista.",
+      "emptyAll": "Todavía no hay sesiones. Usa Nueva verificación para crear la primera."
+    },
+    "detail": {
+      "backToReview": "Cola de revisión",
+      "backToSessions": "Sesiones",
+      "noReference": "Sin referencia",
+      "alternative": "Sin biometría",
+      "meta": "{reference} · {document} · creada {created} · intento {used} de {max} · protocolo {protocol}",
+      "evidence": {
+        "title": "Evidencias",
+        "reveal": "Mostrar imágenes",
+        "revealedNotice": "Visualización registrada en la auditoría",
+        "alternative": "La persona eligió atención sin biometría. Las fotos ya enviadas permanecen en el historial.",
+        "empty": "No hay imágenes disponibles. Puede que aún no se hayan enviado las fotos.",
+        "labels": {
+          "front": "Frente del documento",
+          "back": "Reverso del documento",
+          "selfie": "Selfie",
+          "liveness": "Prueba de vida"
+        },
+        "quality": "calidad {value}",
+        "locked": "Imagen oculta hasta seleccionar Mostrar imágenes",
+        "deleted": "Imágenes eliminadas según el plazo de conservación",
+        "retentionNotice": "Las fotos y los movimientos están disponibles durante la verificación, hasta 7 días, y se eliminan al registrar la decisión final. La visualización queda registrada en la auditoría.",
+        "attempt": "Intento {attempt}",
+        "photo": "Foto {number} · {label}",
+        "openPhoto": "Abrir {label} en tamaño completo",
+        "statuses": {
+          "pending": "En análisis",
+          "accepted": "Foto aceptada",
+          "rejected": "Foto rechazada",
+          "unavailable": "Análisis no disponible"
+        },
+        "movements": {
+          "turnLeft": "Movimiento: girar a la izquierda",
+          "turnRight": "Movimiento: girar a la derecha",
+          "closer": "Movimiento: acercar el rostro",
+          "blink": "Movimiento: parpadear"
+        },
+        "diagnostics": {
+          "title": "Medidas del análisis",
+          "value": "{value} {limit}",
+          "failed": "no pasó",
+          "limits": {
+            "min": "(mín. {value})",
+            "max": "(máx. {value})",
+            "range": "(entre {min} y {max})"
+          },
+          "rows": {
+            "resolution": "Lado menor (px)",
+            "brightness": "Luz",
+            "documentBrightness": "Luz en las áreas de texto",
+            "sharpness": "Nitidez",
+            "textRegions": "Áreas de texto",
+            "documentFace": "Rostros en el documento",
+            "faceSize": "Tamaño del rostro en la foto",
+            "eyeDistance": "Distancia entre los ojos (px)",
+            "realProbability": "Puntuación antifraude",
+            "turn": "Giro de la cabeza",
+            "closer": "Acercamiento",
+            "samePerson": "Misma persona de la selfie"
+          }
+        }
+      },
+      "signals": {
+        "title": "Señales del análisis",
+        "subtitle": "Calculadas en el servidor.",
+        "subtitleWithReason": "Calculadas en el servidor. Motivo de revisión: {reason}.",
+        "empty": "No hay señales disponibles.",
+        "pixels": "{value} px",
+        "aria": "{label}: {value}, umbral {threshold}, {verdict}",
+        "threshold": "/ {threshold}",
+        "passed": "Pasó",
+        "below": "Por debajo",
+        "items": {
+          "faceMatch": {
+            "label": "Documento × selfie",
+            "help": "Puntuación de similitud entre documento y selfie. Ayuda a revisar las imágenes; decide una persona."
+          },
+          "liveness": {
+            "label": "Prueba de vida",
+            "help": "desafíos activos aleatorios"
+          },
+          "documentQuality": {
+            "label": "Calidad del documento",
+            "help": "enfoque, reflejos y encuadre"
+          },
+          "selfieQuality": {
+            "label": "Calidad de la selfie",
+            "help": "luz, nitidez y pose"
+          },
+          "interocularDistance": {
+            "label": "Distancia entre los ojos",
+            "help": "distancia medida entre los ojos en la imagen"
+          },
+          "documentInterocularDistance": {
+            "label": "Ojos en la foto del documento",
+            "help": "tamaño del rostro en el documento"
+          },
+          "passiveLiveness": {
+            "label": "Prueba de vida pasiva",
+            "help": "indicio de rostro real frente a pantalla o foto (MiniFASNet sin calibrar)"
+          }
+        },
+        "noThreshold": "sin umbral calibrado",
+        "ariaNoThreshold": "{label}: {value}, sin umbral calibrado",
+        "policy": "La similitud no es una probabilidad de identidad. Los rangos orientan la nueva captura y la revisión; la aprobación final requiere una persona del equipo.",
+        "historyTitle": "Similitud por intento",
+        "attemptResult": "Intento {attempt}: {score} · {status} · {at}",
+        "unavailable": "no calculada",
+        "policyCaption": "apoyo a la revisión humana"
+      },
+      "decision": {
+        "title": "Decisión",
+        "question": "¿Qué hacer con esta verificación?",
+        "choices": {
+          "approve": {
+            "label": "Aprobar",
+            "help": "Registra la aprobación de la revisión humana",
+            "done": "aprobada",
+            "confirm": "¿Aprobar la verificación de {name}?"
+          },
+          "redo": {
+            "label": "Solicitar nueva captura",
+            "help": "La persona puede usar el mismo enlace para repetir ({attemptsLeft} intentos restantes)",
+            "done": "nueva captura solicitada",
+            "confirm": "¿Solicitar una nueva captura para {name}?"
+          },
+          "reject": {
+            "label": "Rechazar",
+            "help": "Finaliza la verificación. Solo una persona puede rechazarla",
+            "done": "rechazada",
+            "confirm": "¿Rechazar la verificación de {name}? La decisión queda registrada en la auditoría."
+          }
+        },
+        "reasonRequired": "Motivo *",
+        "reasonOptional": "Motivo (opcional)",
+        "reasonPlaceholder": "Seleccionar…",
+        "reasons": {
+          "match": "El rostro coincide con el documento",
+          "mismatch": "El rostro no coincide con el documento",
+          "illegible": "Documento ilegible",
+          "tampered": "Documento con señales de alteración",
+          "liveness": "Prueba de vida no convincente"
+        },
+        "note": "Nota interna",
+        "notePlaceholder": "Visible solo para el equipo",
+        "submit": "Registrar decisión",
+        "confirmTitle": "Confirmar decisión",
+        "back": "Volver",
+        "confirm": "Confirmar",
+        "summary": "Verificación {decision} por {actor} el {date}.",
+        "autoApproved": "Aprobación registrada por el equipo de la inmobiliaria.",
+        "notReady": "La decisión estará disponible cuando la sesión esté en revisión.",
+        "reopenedSummary": "Nuevo intento habilitado por {actor} el {date}.",
+        "reopen": {
+          "button": "Habilitar otro intento",
+          "help": "Si el rechazo fue un error o corresponde otro intento, la persona puede repetir la captura ({attemptsLeft} intentos restantes).",
+          "noAttempts": "No quedan intentos para habilitar.",
+          "confirmTitle": "Habilitar otro intento",
+          "confirm": "¿Habilitar otro intento para {name}? El rechazo dejará de aplicarse y la persona podrá repetir las fotos.",
+          "back": "Volver"
+        },
+        "manualOverride": {
+          "help": "Usa la aprobación manual cuando el análisis requiera revisión. Revisa las evidencias e indica un motivo y una justificación; tu usuario y la decisión quedarán registrados en la auditoría.",
+          "choose": "Usar aprobación manual auditada",
+          "reviewed": "Revisé las evidencias disponibles y asumo la responsabilidad por esta aprobación manual.",
+          "confirm": "Esta aprobación manual quedará registrada en la auditoría con tu usuario, motivo y justificación."
+        }
+      },
+      "timeline": {
+        "title": "Cronología y auditoría",
+        "decision": "Decisión: {decision}",
+        "events": {
+          "created": "Sesión creada",
+          "consented": "Enlace abierto y consentimiento aceptado",
+          "documentSent": "Documento enviado",
+          "selfieSent": "Selfie y prueba de vida enviadas",
+          "submitted": "Captura enviada para análisis",
+          "autoApproved": "Resultado del análisis registrado",
+          "autoReview": "Análisis automático: enviada a revisión",
+          "autoRedo": "Análisis automático: nueva captura solicitada",
+          "alternativeRequested": "Solicitó verificación sin biometría",
+          "evidenceViewed": "Evidencias consultadas",
+          "decision": "Decisión registrada",
+          "expired": "Enlace caducado",
+          "livenessVerified": "Prueba de vida comprobada con movimientos del rostro",
+          "reopened": "Nuevo intento habilitado"
+        },
+        "actors": {
+          "system": "Sistema",
+          "operator": "Equipo de la inmobiliaria"
+        },
+        "reason": "Motivo: {reason}",
+        "note": "Nota: {note}",
+        "consentTerms": "Consentimiento aceptado: versión {version}",
+        "alternativeReasons": {
+          "noCamera": "Sin cámara",
+          "accessibility": "Accesibilidad",
+          "noConsent": "No aceptó la biometría",
+          "other": "Otro motivo"
+        },
+        "manualOverride": "Aprobación manual tras revisión de evidencias y justificación"
+      },
+      "openCapture": "Abrir captura en otra pestaña",
+      "alerts": {
+        "title": "Alertas para la revisión",
+        "nearIdenticalFaces": "El rostro del documento y la selfie son casi idénticos: puede haberse reutilizado la misma foto.",
+        "manyRejectedPhotos": "Varias fotos fueron rechazadas durante el envío. Revisa con atención.",
+        "documentManualReview": "La captura avanzó tras tres fotos rechazadas de un lado del documento. Revisa las tres imágenes en las evidencias; se requiere revisión manual.",
+        "possibleSpoof": "La selfie o una foto de los movimientos puede provenir de una pantalla o imagen impresa. Revisa las imágenes.",
+        "documentShapeNotFound": "No encontramos la forma de un documento (RG, CNH o CIN) en las fotos.",
+        "documentTypeMismatch": "El documento detectado parece ser de un tipo distinto al seleccionado.",
+        "nameNotFoundOnDocument": "No se encontró el nombre de la persona en el documento.",
+        "cpfMismatch": "El CPF leído en el documento no coincide con el registrado.",
+        "lowSimilarityRepeated": "La similitud se mantuvo baja (10% o menos). Revisa las fotos de los intentos antes de decidir.",
+        "lowSimilarity": "Similitud del 10% o menos y sin intentos disponibles. Revisa las fotos antes de decidir."
+      },
+      "documentCheck": {
+        "title": "Comprobación del documento",
+        "subtitle": "Lectura automática experimental. Comprueba las imágenes antes de decidir.",
+        "empty": "Todavía no se ha analizado una foto del documento en este intento.",
+        "notRead": "No se pudo leer el documento enviado. Revisa las imágenes y los motivos de rechazo en las evidencias.",
+        "unavailable": "El análisis de una foto del documento no estuvo disponible. Los resultados muestran solo las lecturas disponibles de este intento.",
+        "ok": "Coincide",
+        "notOk": "No coincide",
+        "unknown": "Sin lectura",
+        "card": {
+          "label": "Forma del documento",
+          "help": "rectángulo con proporciones de RG, CNH o CIN"
+        },
+        "type": {
+          "label": "Tipo de documento",
+          "read": "leído como {type}",
+          "notRead": "no se pudo identificar por el texto"
+        },
+        "name": {
+          "label": "Nombre en el documento",
+          "help": "busca “{name}”"
+        },
+        "cpf": {
+          "label": "CPF en el documento",
+          "help": "compara con el CPF registrado ({cpf})",
+          "notRead": "no se leyó ningún CPF; registrado: {cpf}",
+          "notInformed": "No se informó el CPF al crear la verificación"
+        }
+      }
+    },
+    "settings": {
+      "title": "Configuración",
+      "subtitle": "Reglas de verificación de la inmobiliaria",
+      "save": "Guardar cambios",
+      "saved": "Cambios guardados",
+      "thresholds": {
+        "title": "Parámetros del análisis",
+        "subtitle": "El análisis del documento y la prueba de vida ayudan a la revisión humana.",
+        "faceMatchThreshold": "Similitud documento × selfie",
+        "faceMatchHelp": "Referencia fija del 30% para el análisis, de solo lectura. La aprobación final siempre requiere una decisión humana.",
+        "maxAttempts": "Intentos por sesión"
+      },
+      "capture": {
+        "title": "Captura",
+        "gallery": "Permitir fotos de la galería",
+        "galleryHelp": "Permite importar documentos en foto o PDF. La selfie y los movimientos siguen usando la cámara.",
+        "galleryOn": "La importación de documentos está habilitada. Revisa las evidencias antes de decidir."
+      },
+      "limits": {
+        "title": "Cómo funciona la verificación",
+        "items": {
+          "injection": "El navegador no puede demostrar que la imagen procede de una cámara física; pueden usarse cámaras virtuales o deepfakes inyectados.",
+          "serverDecides": "El servidor analiza las evidencias y el equipo registra la decisión final.",
+          "uploads": "Las fotos pasan por el backend y nunca van directamente del navegador al almacenamiento."
+        }
+      },
+      "agency": {
+        "title": "Inmobiliaria",
+        "subtitle": "El nombre aparece en el consentimiento y los avisos de la captura.",
+        "name": "Nombre de la inmobiliaria"
+      },
+      "ownerOnly": "Solo el propietario de la cuenta puede cambiar esta configuración."
+    }
+  },
+  "common": {
+    "status": {
+      "CREATED": "En espera",
+      "IN_PROGRESS": "En curso",
+      "SUBMITTED": "Enviada",
+      "PROCESSING": "Procesando",
+      "RESUBMISSION_REQUESTED": "Repetir",
+      "REVIEW": "En revisión",
+      "APPROVED": "Aprobada",
+      "REJECTED": "Rechazada",
+      "EXPIRED": "Caducada",
+      "ABANDONED": "Abandonada"
+    },
+    "errors": {
+      "SESSION_NOT_FOUND": "No encontramos esta verificación. Consulta el enlace con la inmobiliaria.",
+      "SESSION_EXPIRED": "Este enlace caducó. Pide uno nuevo a la inmobiliaria.",
+      "SESSION_NOT_IN_REVIEW": "Esta sesión ya no está en revisión. Actualiza la página.",
+      "INVALID_CAPTURE_STATE": "Este paso no está disponible ahora. Recarga la página para continuar.",
+      "NO_ATTEMPTS_LEFT": "Se agotaron los intentos de esta verificación.",
+      "UNKNOWN": "Algo salió mal. Inténtalo de nuevo en unos instantes.",
+      "VALIDATION_ERROR": "Algunos datos enviados no son válidos. Compruébalos e inténtalo de nuevo.",
+      "NETWORK_ERROR": "No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
+      "IMAGE_REQUIRED": "Falta la foto de este paso. Vuelve a tomarla.",
+      "EVIDENCE_NOT_REVEALED": "Selecciona Mostrar imágenes antes de abrir las evidencias.",
+      "EVIDENCE_NOT_FOUND": "Esta imagen ya no está disponible.",
+      "PHOTO_REJECTED": "Esta foto no fue aceptada. Vuelve a tomarla.",
+      "ANALYSIS_UNAVAILABLE": "El servicio de análisis no está disponible. Inténtalo en unos instantes; este paso no se ha confirmado.",
+      "ANALYSIS_TIMEOUT": "Se agotó el tiempo de análisis. Espera un momento e inténtalo de nuevo. Este paso no se ha confirmado.",
+      "ANALYSIS_FAILED": "Se produjo un error durante el análisis. Inténtalo de nuevo. Este paso no se ha confirmado.",
+      "ANALYSIS_INVALID_RESPONSE": "El servicio de análisis devolvió una respuesta no válida. Inténtalo de nuevo. Este paso no se ha confirmado.",
+      "LIVENESS_FAILED": "No se confirmó la prueba de vida. Inténtalo de nuevo.",
+      "SESSION_NOT_REJECTED": "Solo se puede habilitar otro intento en una verificación rechazada. Actualiza la página.",
+      "VERIFICATION_INCOMPLETE": "El documento, la prueba de vida y la similitud deben estar disponibles antes de aprobar.",
+      "PERSISTENCE_BUSY": "Hay otra operación en curso. Espera un momento e inténtalo de nuevo.",
+      "PERSISTENCE_UNAVAILABLE": "No se pudo guardar ni recuperar la verificación. Inténtalo de nuevo en unos instantes.",
+      "AGENCY_NAME_MISSING": "Indica el nombre de la inmobiliaria en configuración antes de crear una verificación.",
+      "CONSENT_TERMS_OUTDATED": "El consentimiento ha cambiado. Recarga la página y léelo de nuevo.",
+      "DOCUMENT_TYPE_NOT_ACCEPTED": "Este tipo de documento no está permitido. Usa el solicitado por la inmobiliaria, el mismo en el frente y reverso.",
+      "PAYLOAD_TOO_LARGE": "Cada foto debe tener un máximo de 3 MiB. Vuelve a tomarla."
+    },
+    "validation": {
+      "nameRequired": "Indica el nombre de quien realizará la verificación.",
+      "tooLong": "El texto es demasiado largo.",
+      "decisionRequired": "Elige una decisión.",
+      "reasonRequired": "Elige el motivo de la decisión.",
+      "cpfInvalid": "CPF no válido. Comprueba los números.",
+      "agencyNameRequired": "Indica el nombre de la inmobiliaria.",
+      "propertyRequired": "Selecciona un inmueble disponible para tu cuenta.",
+      "manualOverrideNoteRequired": "Escribe una justificación de al menos 10 caracteres para la aprobación manual.",
+      "evidenceReviewRequired": "Confirma que revisaste las evidencias antes de aprobar manualmente.",
+      "manualOverrideRequired": "Este análisis requiere aprobación manual auditada. Selecciona esa opción para continuar."
+    }
+  }
+}

@@ -30,6 +30,12 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
       allow: '/',
       disallow: [
         '/api/',
+        ...locales.map((locale) =>
+          getPathname({
+            locale,
+            href: { pathname: '/face_check/verify/[token]', params: { token: '*' } },
+          }),
+        ),
         ...locales.flatMap((locale) => privateRoutes.map((href) => getPathname({ locale, href }))),
       ],
     },

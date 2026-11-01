@@ -45,6 +45,9 @@ model Tenant {
   maintenanceProviderActivities MaintenanceProviderActivity[]
   publicProfile                 AgencyPublicProfile?
   publicAddress                 PublicProfileAddress?         @relation("AgencyPublicAddress")
+  faceCheckSessions             FaceCheckSession[]
+  faceCheckSettings             FaceCheckSettings?
+  faceCheckRateLimits           FaceCheckRateLimit[]
   statusChanges                 TenantStatusChange[]
 
   crmAuditEvents     CrmAuditEvent[]
@@ -250,6 +253,7 @@ model User {
   sourceTransfers           PortfolioTransfer[]           @relation("PortfolioTransferSource")
   targetTransfers           PortfolioTransfer[]           @relation("PortfolioTransferTarget")
   authoredTransfers         PortfolioTransfer[]           @relation("PortfolioTransferAuthor")
+  requestedFaceChecks       FaceCheckSession[]
 
   @@unique([tenantId, email])
   @@unique([id, tenantId])
@@ -470,6 +474,7 @@ model Property {
   contracts          Contract[]
   agendaEvents       AgendaEvent[]
   maintenanceTickets MaintenanceTicket[]
+  faceCheckSessions  FaceCheckSession[]
 
   @@unique([id, tenantId])
   @@index([tenantId])
@@ -1563,4 +1568,59 @@ model PortfolioTransfer {
   @@index([targetId])
   @@index([authorId])
   @@map("portfolio_transfers")
+}
+
+// Identity verification metadata stays scoped; sensitive payload and tokens are encrypted separately.
+model FaceCheckSession {
+  id                    String    @id
+  tenantId              String
+  propertyId            String
+  requestedById         String
+  tokenHash             String    @unique
+  status                String
+  revision              Int       @default(0)
+  expiresAt             DateTime
+  encryptedRecord       String    @db.Text
+  leaseId               String?
+  leaseExpiresAt        DateTime?
+  evidenceExpiresAt     DateTime?
+  evidenceDeletedAt     DateTime?
+  evidencePurgePending  Boolean   @default(false)
+  evidencePurgeAttempts Int       @default(0)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  property    Property @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  requestedBy User     @relation(fields: [requestedById, tenantId], references: [id, tenantId], onDelete: NoAction)
+
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, propertyId])
+  @@index([requestedById, tenantId])
+  @@index([expiresAt])
+  @@index([evidencePurgePending, evidenceExpiresAt])
+  @@map("face_check_sessions")
+}
+
+model FaceCheckSettings {
+  tenantId        String   @id
+  encryptedRecord String   @db.Text
+  updatedAt       DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("face_check_settings")
+}
+
+// Distributed fixed windows: hash contains neither IP address nor capture token.
+model FaceCheckRateLimit {
+  key       String   @id
+  tenantId  String?
+  count     Int      @default(1)
+  expiresAt DateTime
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@map("face_check_rate_limits")
 }

@@ -20,6 +20,7 @@ import type { AppShellProps } from '@shared/types/app-shell'
 import { getInitials } from '@shared/utils/get-initials'
 import { useSidebarPreferencesStore } from '@shared/stores/sidebar-preferences-store'
 import { useRetainedAuthContent } from '@shared/hooks/use-retained-auth-content'
+import { useFaceCheckNavigation } from '@shared/hooks/use-face-check-navigation'
 import { appShellNavigationItems } from './app-shell-navigation-items'
 import { AppShellSidebar } from './AppShellSidebar'
 import { DashboardNotificationsButton } from './DashboardNotificationsButton'
@@ -30,6 +31,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const pathname = usePathname()
   const router = useRouter()
   const { data: session, status } = useSession()
+  const canUseFaceCheck = useFaceCheckNavigation()
   const restrictedAccess =
     session?.scope === 'tenant' ? getRestrictedRoleAccess(session.role) : null
   const isRenter = session?.scope === 'tenant' && session.role === 'RENTER'
@@ -67,9 +69,11 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     if (isLocalDashboardPreview) return appShellNavigationItems
 
     return appShellNavigationItems.filter(
-      (item) => !item.roles || (session?.role && item.roles.includes(session.role)),
+      (item) =>
+        (item.href !== '/dashboard/face_check' || canUseFaceCheck) &&
+        (!item.roles || (session?.role && item.roles.includes(session.role))),
     )
-  }, [isLocalDashboardPreview, restrictedAccess, session])
+  }, [isLocalDashboardPreview, restrictedAccess, session, canUseFaceCheck])
   const activeTargetPath = useMemo(() => {
     if (isPersonalProfileRoute) return null
 

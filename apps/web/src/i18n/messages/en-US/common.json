@@ -61,7 +61,8 @@
     "charges": "Charges",
     "signingOut": "Signing out…",
     "signOutError": "We could not finish signing out. Please try again.",
-    "retrySignOut": "Try signing out again"
+    "retrySignOut": "Try signing out again",
+    "faceCheck": "Face Check"
   },
   "passwordVisibility": {
     "show": "Show {field}",

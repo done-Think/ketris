@@ -18,6 +18,7 @@ import { registerPlatformOpenApi } from '@server/platform/openapi'
 import { registerPropertiesOpenApi } from '@server/properties/openapi'
 import { registerRegistrationOpenApi } from '@server/registration/openapi'
 import { registerTeamOpenApi } from '@server/team/openapi'
+import { registerFaceCheckOpenApi } from '@server/face_check/openapi'
 import './zod-extend'
 import { registerContractComponents } from './contract-components'
 
@@ -42,6 +43,7 @@ registerMaintenanceOpenApi(registry)
 registerAgencyDashboardOpenApi(registry)
 registerDashboardOpenApi(registry)
 registerTeamOpenApi(registry)
+registerFaceCheckOpenApi(registry)
 registerContractComponents(registry)
 
 export function generateOpenApiDocument() {

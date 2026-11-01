@@ -225,6 +225,7 @@ export async function readCrmEvidence(
 export async function cleanupCrmFixtures(prisma: PrismaClient, tenantIds: string[]): Promise<null> {
   for (const tenantId of tenantIds) {
     await assertFixtureTenant(prisma, tenantId)
+    await prisma.faceCheckSession.deleteMany({ where: { tenantId } })
     await prisma.lead.deleteMany({ where: { tenantId } })
     await prisma.opportunity.deleteMany({ where: { tenantId } })
     await prisma.property.deleteMany({ where: { tenantId } })

@@ -17,6 +17,7 @@ export type AppShellNavHref =
   | '/dashboard/agenda'
   | '/dashboard/finance'
   | '/dashboard/finance/charges'
+  | '/dashboard/face_check'
   | '/dashboard/maintenance'
 
 export type AppShellNavItem = {

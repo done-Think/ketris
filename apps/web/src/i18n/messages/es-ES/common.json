@@ -61,7 +61,8 @@
     "charges": "Cobros",
     "signingOut": "Cerrando sesión…",
     "signOutError": "No pudimos cerrar la sesión. Inténtalo de nuevo.",
-    "retrySignOut": "Reintentar cerrar sesión"
+    "retrySignOut": "Reintentar cerrar sesión",
+    "faceCheck": "Face Check"
   },
   "passwordVisibility": {
     "show": "Mostrar {field}",

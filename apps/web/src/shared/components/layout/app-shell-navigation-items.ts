@@ -9,6 +9,7 @@ import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
+import FaceRetouchingNaturalOutlinedIcon from '@mui/icons-material/FaceRetouchingNaturalOutlined'
 
 import { agencyStaffRoles } from '@server/auth/domain/roles'
 import type { AppShellNavItem } from '@shared/types/app-shell'
@@ -45,6 +46,12 @@ export const appShellNavigationItems: readonly AppShellNavItem[] = [
     href: '/dashboard/contracts',
     icon: DescriptionOutlinedIcon,
     roles: ['OWNER', 'AGENT', 'PROPERTY_OWNER'],
+  },
+  {
+    labelKey: 'faceCheck',
+    href: '/dashboard/face_check',
+    icon: FaceRetouchingNaturalOutlinedIcon,
+    roles: ['OWNER', 'AGENT'],
   },
   {
     labelKey: 'publicProfile',

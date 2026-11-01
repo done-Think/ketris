@@ -16,3 +16,6 @@ cypress/screenshots
 apps/web/.local
 /Claude outputs/
 *.pem
+
+# Generated PDF.js runtime assets (prepared before dev/build).
+apps/web/public/face_check/pdf/
