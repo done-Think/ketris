@@ -1,11 +1,14 @@
 import { randomUUID } from 'node:crypto'
 import { requireEvidenceRetentionConfiguration } from '../config/retention'
 import type { Prisma } from '@prisma/client'
+import type { AppLocale } from '@/i18n/types/locale.types'
 import type { SessionKey, SessionRecord, SessionRepository } from '../types/verification.types'
 import { FaceCheckError } from '../http/errors'
 import { FaceCheckAccessScope } from './access-scope'
 import { captureTokenHash, DataCipher } from './data-cipher'
+import { PrismaFaceCheckCandidateLookup } from './prisma-candidate-lookup'
 import { evidenceRetentionMs, manualOverrideAllowed } from '../verification/domain/evidence-policy'
+import { faceCheckContactEmail } from '../utils/contact-email'
 
 // Engine requests run while this expiring database lease is held. No interactive transaction
 // or PostgreSQL connection stays open across S3/OCR/HTTP awaits. Finalization uses revision CAS.
@@ -20,6 +23,7 @@ export class PrismaSessionRepository implements SessionRepository {
     private readonly access: FaceCheckAccessScope,
     private readonly cipher: DataCipher,
     private readonly clock = Date.now,
+    private readonly invitationLocale: AppLocale = 'pt-BR',
   ) {}
 
   private async where(key: SessionKey): Promise<Prisma.FaceCheckSessionWhereInput> {
@@ -115,12 +119,16 @@ export class PrismaSessionRepository implements SessionRepository {
     const actor = await this.access.property(record.session.propertyId)
     for (const event of record.session.timeline)
       if (event.actor === 'operator') event.actor = actor.actorId
+    const candidateUserId = await new PrismaFaceCheckCandidateLookup(
+      this.access.database,
+    ).findForContact(actor.tenantId, record.session.contact)
     await this.access.database.faceCheckSession.create({
       data: {
         id: record.session.id,
         tenantId: actor.tenantId,
         propertyId: record.session.propertyId,
         requestedById: actor.actorId,
+        candidateUserId,
         tokenHash: captureTokenHash(record.session.token),
         status: record.session.status,
         expiresAt: new Date(record.session.expiresAt),
@@ -128,6 +136,16 @@ export class PrismaSessionRepository implements SessionRepository {
           record,
           `session:${actor.tenantId}:${record.session.id}`,
         ),
+        ...(faceCheckContactEmail(record.session.contact)
+          ? {
+              invitationEmails: {
+                create: {
+                  tokenHash: captureTokenHash(record.session.token),
+                  locale: this.invitationLocale,
+                },
+              },
+            }
+          : {}),
       },
     })
   }

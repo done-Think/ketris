@@ -50,6 +50,7 @@ export const routing = defineRouting({
     '/dashboard/finance/charges': '/dashboard/finance/charges',
     '/dashboard/finance/charges/[id]': '/dashboard/finance/charges/[id]',
     '/dashboard/face_check': '/dashboard/face_check',
+    '/dashboard/face_check/my-verifications': '/dashboard/face_check/my-verifications',
     '/dashboard/face_check/sessions': '/dashboard/face_check/sessions',
     '/dashboard/face_check/sessions/[id]': '/dashboard/face_check/sessions/[id]',
     '/dashboard/face_check/settings': '/dashboard/face_check/settings',

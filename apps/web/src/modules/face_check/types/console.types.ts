@@ -1,4 +1,3 @@
-import type { SvgIconComponent } from '@mui/icons-material'
 import type { ReactNode } from 'react'
 
 import type {
@@ -11,21 +10,8 @@ import type {
   VerificationSettings,
 } from './index'
 
-export type ConsoleNavKey = 'overview' | 'sessions' | 'review' | 'settings'
-
-export interface ConsoleNavItem {
-  key: ConsoleNavKey
-  href: string
-  Icon: SvgIconComponent
-}
-
 export interface ConsoleShellProps {
   children: ReactNode
-}
-
-export interface ConsoleNavProps {
-  reviewActive: boolean
-  onNavigate?: () => void
 }
 
 export interface ReadableSearchParams {

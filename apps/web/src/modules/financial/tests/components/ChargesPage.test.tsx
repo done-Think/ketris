@@ -22,6 +22,9 @@ vi.mock('@/i18n/navigation', async () => ({
   ...(await vi.importActual<typeof import('@/i18n/navigation')>('@/i18n/navigation')),
   useRouter: () => ({ push: mocks.push }),
 }))
+vi.mock('@shared/hooks/use-dashboard-face-check-notifications', () => ({
+  useDashboardFaceCheckNotifications: () => [],
+}))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))

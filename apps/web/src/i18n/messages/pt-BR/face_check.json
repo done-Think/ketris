@@ -419,7 +419,8 @@
         "BUY": "Comprar"
       },
       "loadingProperties": "Carregando imóveis disponíveis",
-      "noProperties": "Nenhum imóvel disponível para seu acesso. Cadastre um imóvel ou confira a atribuição com a imobiliária."
+      "noProperties": "Nenhum imóvel disponível para seu acesso. Cadastre um imóvel ou confira a atribuição com a imobiliária.",
+      "contactEmailHelp": "Use um e-mail para enviar o convite automaticamente. Telefones não recebem e-mail."
     },
     "sessions": {
       "title": "Sessões",
@@ -791,5 +792,35 @@
       "evidenceReviewRequired": "Confirme que você revisou as evidências antes de aprovar manualmente.",
       "manualOverrideRequired": "Esta análise exige aprovação manual auditada. Selecione essa opção para continuar."
     }
+  },
+  "candidate": {
+    "title": "Minhas verificações",
+    "subtitle": "Envie os documentos e faça a selfie das solicitações de imóveis vinculadas à sua conta.",
+    "empty": "Você não tem verificações vinculadas a esta conta. Use o mesmo e-mail informado ao responsável pelo imóvel ou abra o convite recebido.",
+    "requestedBy": "Solicitado por {name}",
+    "pending": "Para continuar, tenha seu documento em mãos e permita o uso da câmera quando solicitado.",
+    "processing": "Sua verificação está sendo analisada. Você pode acompanhar o andamento.",
+    "expiresAt": "Convite válido até {date}",
+    "start": "Enviar documentação",
+    "continue": "Continuar verificação",
+    "view": "Ver andamento",
+    "expired": "Este convite expirou. Peça ao responsável pelo imóvel um novo convite.",
+    "finished": "Esta verificação foi concluída. Consulte o resultado indicado acima.",
+    "unavailable": "Este link não está disponível. Peça ao responsável pelo imóvel um novo convite."
+  },
+  "emailInvitation": {
+    "subject": "Ketris | Convite para verificação",
+    "title": "Sua verificação de identidade",
+    "greeting": "Olá, {name}.",
+    "greetingGeneric": "Olá.",
+    "agencyFallback": "A imobiliária",
+    "intro": "{agency} convidou você a enviar seus documentos e fazer uma selfie para uma solicitação de imóvel.",
+    "guidance": "Tenha seu documento original em mãos e abra o link em um aparelho com câmera. A equipe responsável revisará a verificação.",
+    "cta": "Iniciar verificação",
+    "expires": "Este link é válido até {date}.",
+    "security": "Este convite é pessoal. Não compartilhe o link.",
+    "fallback": "Se o botão não funcionar, copie e cole este endereço no navegador:",
+    "ignore": "Se você não esperava esta solicitação, ignore este e-mail ou fale com a imobiliária.",
+    "team": "Equipe Ketris"
   }
 }

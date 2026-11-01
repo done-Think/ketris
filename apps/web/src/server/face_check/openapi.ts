@@ -3,6 +3,7 @@ import { z } from 'zod'
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
 import {
   alternativeBodySchema,
+  candidateVerificationCountsSchema,
   consentBodySchema,
   createSessionBodySchema,
   decisionBodySchema,
@@ -146,7 +147,7 @@ export function registerFaceCheckOpenApi(registry: OpenAPIRegistry) {
         ...errors,
         [responseStatus]: {
           description:
-            'Tenant-scoped response. Agents can access only their current property portfolio.',
+            'Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata.',
           content: json(schema),
         },
       },
@@ -157,10 +158,39 @@ export function registerFaceCheckOpenApi(registry: OpenAPIRegistry) {
     '/access',
     'Check current account eligibility for Face Check.',
     z.object({
-      allowed: z.literal(true),
-      role: z.enum(['OWNER', 'AGENT']),
-      accountType: z.enum(['AGENCY', 'BROKER']),
+      allowed: z.boolean(),
+      candidateVerifications: z.boolean(),
+      role: z.enum(['OWNER', 'AGENT', 'RENTER', 'PROPERTY_OWNER']).optional(),
+      accountType: z.enum(['AGENCY', 'BROKER', 'INDIVIDUAL']).optional(),
     }),
+  )
+  consoleRoute(
+    'get',
+    '/my-verifications',
+    'List only verifications explicitly associated with the current verified candidate account. Does not grant provider console access.',
+    z
+      .object({
+        items: z.array(
+          z
+            .object({
+              id: z.string().uuid(),
+              propertyTitle: z.string(),
+              agencyName: z.string(),
+              status,
+              createdAt: timestamp,
+              expiresAt: timestamp,
+              captureUrl: z.string().url().nullable(),
+            })
+            .strict(),
+        ),
+      })
+      .strict(),
+  )
+  consoleRoute(
+    'get',
+    '/my-verifications/count',
+    'Count all explicitly associated verifications and those with a currently valid capture link. Returns only counts; pending eligibility checks expiry, capture deadline, requester eligibility and encrypted payload integrity.',
+    candidateVerificationCountsSchema,
   )
   consoleRoute(
     'get',

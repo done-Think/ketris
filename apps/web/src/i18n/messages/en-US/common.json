@@ -62,7 +62,13 @@
     "signingOut": "Signing out…",
     "signOutError": "We could not finish signing out. Please try again.",
     "retrySignOut": "Try signing out again",
-    "faceCheck": "Face Check"
+    "faceCheck": "Face Check",
+    "faceCheckSessions": "Sessions",
+    "faceCheckReview": "Review",
+    "faceCheckSettings": "Settings",
+    "faceCheckMyVerifications": "My verifications",
+    "expandNavigationSection": "Expand {section} options",
+    "collapseNavigationSection": "Collapse {section} options"
   },
   "passwordVisibility": {
     "show": "Show {field}",

@@ -6,6 +6,20 @@ import {
 } from '@shared/lib/auth/restricted-role-access'
 
 describe('restricted-role-access', () => {
+  it.each(['RENTER', 'PROPERTY_OWNER'] as const)(
+    'allows %s to access only their own Face Check page',
+    (role) => {
+      const access = getRestrictedRoleAccess(role)
+      expect(access?.navigationHrefs).toContain('/dashboard/face_check/my-verifications')
+      expect(access?.isAllowedPathname('/dashboard/face_check/my-verifications')).toBe(true)
+      for (const path of [
+        '/dashboard/face_check',
+        '/dashboard/face_check/sessions',
+        '/dashboard/face_check/settings',
+      ])
+        expect(access?.isAllowedPathname(path)).toBe(false)
+    },
+  )
   it.each(['OWNER', 'AGENT', undefined] as const)('não restringe %s', (role) => {
     expect(getRestrictedRoleAccess(role)).toBeNull()
     expect(getRoleHomePathname(role, '/dashboard')).toBe('/dashboard')

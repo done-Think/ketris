@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 2
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
       - name: Verifica a evidência de validação do PR
         id: plan
         env:
@@ -79,17 +79,17 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
           cache: npm
 
       - run: npm ci
 
       - name: Testa as garantias operacionais de staging sem tráfego externo
-        run: node --test scripts/tests/ci-validation.test.mjs scripts/tests/staging-release.test.mjs scripts/tests/explore-staging-rate-limit.test.mjs scripts/tests/face-check-retention.test.mjs
+        run: node --test scripts/tests/ci-validation.test.mjs scripts/tests/staging-release.test.mjs scripts/tests/explore-staging-rate-limit.test.mjs scripts/tests/face-check-retention.test.mjs scripts/tests/face-check-invitation-emails.test.mjs
 
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Testa a borda privada do motor Face Check sem modelos
         working-directory: services/face_check_engine
@@ -175,42 +175,42 @@ jobs:
       DATABASE_URL: postgresql://ketris:ketris@localhost:55432/ketris?schema=public
       NEXTAUTH_URL: http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
-      NEXT_PUBLIC_API_URL: ''
+      NEXT_PUBLIC_API_URL: ""
       NEXTAUTH_SECRET: ci-nextauth-secret
       AUTH_TOKEN_SECRET: ci-auth-token-secret
       PLATFORM_TOKEN_SECRET: ci-platform-token-secret
       PASSWORD_RESET_TOKEN_SECRET: ci-password-reset-token-secret
       CONTRACTS_DATA_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-      AUTH_RATE_LIMIT_MAX: '1000'
+      AUTH_RATE_LIMIT_MAX: "1000"
       FACE_CHECK_DATA_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
       FACE_CHECK_S3_BUCKET_NAME: face-check-private-e2e
       FACE_CHECK_RETENTION_SECRET: face-check-e2e-retention-secret-32-bytes
       FACE_CHECK_ENGINE_URL: http://127.0.0.1:9
       FACE_CHECK_ENGINE_TOKEN: face-check-e2e-engine-token-32-bytes
-      API_RATE_LIMIT_MAX: '20000'
-      MARKETPLACE_INQUIRY_RATE_LIMIT_MAX: '1000'
-      AUTH_E2E_MAILBOX_PORT: '3101'
-      CONTRACTS_E2E_STORAGE_PORT: '3102'
+      API_RATE_LIMIT_MAX: "20000"
+      MARKETPLACE_INQUIRY_RATE_LIMIT_MAX: "1000"
+      AUTH_E2E_MAILBOX_PORT: "3101"
+      CONTRACTS_E2E_STORAGE_PORT: "3102"
       AWS_ENDPOINT_URL_S3: http://127.0.0.1:3102
       S3_BUCKET_NAME: contracts-private-e2e
-      KETRIS_E2E_ISOLATED_DB: '1'
+      KETRIS_E2E_ISOLATED_DB: "1"
       AWS_ENDPOINT_URL: http://127.0.0.1:3101
       AWS_ENDPOINT_URL_SES: http://127.0.0.1:3101
-      AWS_IGNORE_CONFIGURED_ENDPOINT_URLS: 'false'
+      AWS_IGNORE_CONFIGURED_ENDPOINT_URLS: "false"
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: ci-local-only
       AWS_SECRET_ACCESS_KEY: ci-local-only
       SES_FROM_EMAIL: auth-ci@example.test
-      KETRIS_BUILD_WORKERS: '1'
-      KETRIS_BUILD_LOW_MEMORY: '1'
-      NEXT_TELEMETRY_DISABLED: '1'
+      KETRIS_BUILD_WORKERS: "1"
+      KETRIS_BUILD_LOW_MEMORY: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v6
         with:
           ref: ${{ github.sha }}
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
           cache: npm
       - run: npm ci
       - run: npm run db:deploy -w @ketris/web
@@ -275,7 +275,7 @@ jobs:
           ref: ${{ github.sha }}
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
       - name: Confirma a validação antes da publicação
         id: gate
         env:

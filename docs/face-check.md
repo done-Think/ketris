@@ -8,6 +8,31 @@ Não há sessões em memória, Supabase ou resultados simulados neste módulo.
 
 ## Acesso e rotas
 
+No menu lateral, **Face Check** abre a visão geral. **Sessões**, **Revisão** e
+**Configurações** são subitens; não existe uma segunda barra de navegação no conteúdo.
+
+A pessoa convidada encontra **Minhas verificações** em
+`/dashboard/face_check/my-verifications` quando houver solicitações vinculadas à conta.
+A associação usa o e-mail exato do contato informado ao criar a verificação e uma conta
+ativa com e-mail confirmado: prefere uma correspondência única na imobiliária e,
+na ausência dela, exige uma correspondência global única. Nomes, telefones e e-mails
+ambíguos não concedem acesso. Convites existentes continuam acessíveis pelo link;
+a migration não tenta inferir vínculos a partir dos registros históricos criptografados.
+O candidato vê somente imóvel, solicitante, situação, datas e convite próprio válido;
+não recebe documentos, CPF, auditoria nem acesso à revisão da imobiliária. Sessões
+em análise mostram o andamento, sem reabrir a captura.
+
+O sininho mostra um aviso enquanto houver verificações próprias aptas à captura.
+Ele consulta apenas contadores, sem trazer dados pessoais ou links de convite para
+outras telas. Clicar no aviso abre a captura válida mais recente, após conferir
+novamente a conta e a autorização no servidor. Se ela já tiver sido concluída ou
+expirado, a pessoa vê a lista atualizada. O menu **Minhas verificações** permanece
+disponível como acesso independente da notificação.
+
+A proteção do Sentry mantém a gravação e os envios privados bloqueados sem alterar
+os atributos do `<html>` antes da hidratação. As raízes do módulo mantêm seus
+marcadores de privacidade renderizados pelo React.
+
 O menu aparece para contas AGENCY e BROKER ativas/em avaliação, usuários OWNER
 ou AGENT ativos, aprovados e com e-mail verificado. A construtora é cadastrada
 como AGENCY no modelo atual. O administrador global, locatários e contas pessoais
@@ -41,6 +66,32 @@ Permissão negada tem orientação própria e botão para tentar novamente. As
 câmeras são desligadas ao sair da etapa, inclusive quando a permissão chega
 depois que a tela foi fechada. Endereços locais ou sem HTTPS não são apresentados
 como links utilizáveis por outro aparelho.
+
+## Convites por e-mail
+
+Criar uma verificação com um contato de e-mail válido registra o convite na
+mesma transação da sessão. Contatos por telefone continuam permitidos, sem envio
+de e-mail. O idioma da interface usada na criação define o template e o link
+em português, inglês ou espanhol.
+
+O envio usa o SES, a região AWS e o remetente `SES_FROM_EMAIL` existentes. O
+template contém a solicitação da imobiliária, validade e link para iniciar;
+não inclui CPF, documentos ou imagens. Destinatário e token continuam cifrados
+no registro da sessão; a fila contém somente referências e estado de entrega.
+
+A aplicação tenta o envio logo após criar a sessão, com orçamento de três segundos.
+Falhas preservam a verificação e deixam o convite para retentativa com backoff.
+O worker confere novamente o emissor, imóvel, destinatário vinculado, token e
+prazo, cancelando convites inválidos ou já em análise/concluídos. Lease e estado
+`SENT` evitam processamento concorrente e reenvio de mensagens confirmadas.
+O aceite do SES e a atualização no banco não são atômicos: um timeout ou crash
+nesse intervalo pode causar uma duplicata rara; não há garantia de exatamente um envio.
+
+O endpoint interno `GET /api/internal/face_check/invitations` usa o mesmo segredo
+de manutenção da retenção e retorna apenas contagens. O workflow de retenção
+também executa `scripts/face-check-invitation-emails.mjs`; na configuração atual,
+essa retentativa de contingência é horária. O envio inicial não depende do cron.
+Os testes usam um simulador local do protocolo SES, sem disparar mensagens reais.
 
 ## Persistência e imagens
 

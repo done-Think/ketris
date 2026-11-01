@@ -419,7 +419,8 @@
         "BUY": "Comprar"
       },
       "loadingProperties": "Cargando inmuebles disponibles",
-      "noProperties": "No hay inmuebles disponibles para tu acceso. Añade un inmueble o consulta su asignación con la inmobiliaria."
+      "noProperties": "No hay inmuebles disponibles para tu acceso. Añade un inmueble o consulta su asignación con la inmobiliaria.",
+      "contactEmailHelp": "Usa un correo electrónico para enviar la invitación automáticamente. Los teléfonos no reciben correo."
     },
     "sessions": {
       "title": "Sesiones",
@@ -791,5 +792,35 @@
       "evidenceReviewRequired": "Confirma que revisaste las evidencias antes de aprobar manualmente.",
       "manualOverrideRequired": "Este análisis requiere aprobación manual auditada. Selecciona esa opción para continuar."
     }
+  },
+  "candidate": {
+    "title": "Mis verificaciones",
+    "subtitle": "Envía los documentos y hazte una selfie para las solicitudes de inmuebles vinculadas a tu cuenta.",
+    "empty": "No hay verificaciones vinculadas a esta cuenta. Usa el correo facilitado a la persona responsable del inmueble o abre la invitación recibida.",
+    "requestedBy": "Solicitada por {name}",
+    "pending": "Ten tu documento a mano y permite el acceso a la cámara cuando se solicite.",
+    "processing": "Tu verificación se está revisando. Puedes consultar su progreso.",
+    "expiresAt": "Invitación válida hasta {date}",
+    "start": "Enviar documentación",
+    "continue": "Continuar verificación",
+    "view": "Ver progreso",
+    "expired": "Esta invitación ha caducado. Pide a la persona responsable del inmueble una nueva invitación.",
+    "finished": "Esta verificación ha finalizado. Consulta el resultado indicado arriba.",
+    "unavailable": "Este enlace no está disponible. Pide a la persona responsable del inmueble una nueva invitación."
+  },
+  "emailInvitation": {
+    "subject": "Ketris | Invitación para verificación",
+    "title": "Tu verificación de identidad",
+    "greeting": "Hola, {name}.",
+    "greetingGeneric": "Hola.",
+    "agencyFallback": "La inmobiliaria",
+    "intro": "{agency} te invitó a enviar tus documentos y tomar una selfie para una solicitud de inmueble.",
+    "guidance": "Ten a mano tu documento de identidad original y abre el enlace en un dispositivo con cámara. El equipo responsable revisará la verificación.",
+    "cta": "Iniciar verificación",
+    "expires": "Este enlace es válido hasta el {date}.",
+    "security": "Esta invitación es personal. No compartas el enlace.",
+    "fallback": "Si el botón no funciona, copia y pega esta dirección en tu navegador:",
+    "ignore": "Si no esperabas esta solicitud, ignora este correo o contacta a la inmobiliaria.",
+    "team": "El equipo de Ketris"
   }
 }

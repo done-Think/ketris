@@ -1,6 +1,6 @@
-import { consoleHandler } from '@server/face_check/http/controller'
+import { faceCheckAccessHandler } from '@server/face_check/http/candidate-controller'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export const GET = consoleHandler('access')
+export const GET = faceCheckAccessHandler

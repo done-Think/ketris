@@ -57,7 +57,14 @@ export const consoleService = {
       httpClient.get(`${base}/sessions/${encodeURIComponent(id)}`, { signal, timeout: 110000 }),
     ),
   createSession: (input: CreateSessionInput) =>
-    privateRequest(() => httpClient.post<CreatedSession>(`${base}/sessions`, input)),
+    privateRequest(() =>
+      httpClient.post<CreatedSession>(`${base}/sessions`, input, {
+        headers: {
+          'Accept-Language':
+            typeof document === 'undefined' ? 'pt-BR' : document.documentElement.lang || 'pt-BR',
+        },
+      }),
+    ),
   recordEvidenceView: (id: string) =>
     sessionRequest(() =>
       httpClient.post(`${base}/sessions/${encodeURIComponent(id)}/evidence-view`),

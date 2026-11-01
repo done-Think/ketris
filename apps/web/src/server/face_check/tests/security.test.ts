@@ -121,6 +121,7 @@ describe('face_check ingress protections', () => {
       { role: 'OWNER' },
       { status: 'APPROVED' },
       { requestedById: 'other' },
+      { candidateUserId: 'other' },
     ])
       expect(createSessionBodySchema.safeParse({ ...createInput, ...extra }).success).toBe(false)
   })

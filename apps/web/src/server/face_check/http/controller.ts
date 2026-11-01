@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@server/db/prisma'
 import { getTrustedClientAddress } from '@server/security/client-key'
+import { resolveRequestLocale } from '@server/shared/http/request-locale'
 import { requireFaceCheckActor } from '../require-face-check-actor'
 import { PrismaFaceCheckPropertyCatalog } from '../infrastructure/prisma-property-catalog'
 import { captureTokenHash, DataCipher } from '../infrastructure/data-cipher'
 import { CaptureRateLimit } from '../infrastructure/capture-rate-limit'
 import { faceCheckContainer } from '../container'
+import { attemptCreatedFaceCheckInvitationEmail } from '../invitation-emails'
 import {
   alternativeBodySchema,
   consentBodySchema,
@@ -32,7 +34,6 @@ export interface FaceCheckRouteContext {
   params: Promise<Record<string, string>>
 }
 type ConsoleOperation =
-  | 'access'
   | 'properties'
   | 'sessions-list'
   | 'sessions-create'
@@ -61,13 +62,13 @@ export function consoleHandler(operation: ConsoleOperation) {
   return withFaceCheckErrors(async (request: NextRequest, context: FaceCheckRouteContext) => {
     assertMutationOrigin(request, false)
     const actor = await requireFaceCheckActor(request)
-    if (operation === 'access')
-      return NextResponse.json({ allowed: true, role: actor.role, accountType: actor.accountType })
     if (operation === 'properties')
       return NextResponse.json(await new PrismaFaceCheckPropertyCatalog(prisma).list(actor))
     if (operation === 'settings-put' && actor.role !== 'OWNER')
       throw new FaceCheckError('FORBIDDEN', 403)
-    const container = await faceCheckContainer({ actor })
+    const container = await faceCheckContainer({ actor }, prisma, {
+      invitationLocale: resolveRequestLocale(request),
+    })
     switch (operation) {
       case 'sessions-list': {
         const query = sessionListQuerySchema.parse(
@@ -87,6 +88,7 @@ export function consoleHandler(operation: ConsoleOperation) {
         // Validate the configured public URL before creating a durable session.
         buildCaptureUrl(request, '0'.repeat(64))
         const session = await container.createSessionUseCase.execute(body)
+        await attemptCreatedFaceCheckInvitationEmail(session.id)
         return NextResponse.json(
           { session, captureUrl: buildCaptureUrl(request, session.token) },
           { status: 201 },

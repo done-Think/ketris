@@ -24,10 +24,14 @@
   },
   "notificationsCenter": {
     "tooltip": "Notifications",
-    "ariaLabel": "Open dashboard notifications",
-    "title": "Dashboard alerts",
-    "subtitle": "Today visits and assigned appointments",
-    "empty": "No alerts to show."
+    "ariaLabel": "Open notifications",
+    "title": "Notifications",
+    "subtitle": "Pending verifications, today’s visits and assigned appointments",
+    "empty": "No alerts to show.",
+    "faceCheckVerification": {
+      "title": "{count, plural, one {Pending verification} other {Pending verifications}}",
+      "message": "{count, plural, one {You have one pending verification. Click to submit your documents and take a selfie.} other {You have # pending verifications. Click to start the next one.}}"
+    }
   },
   "overview": {
     "title": "Dashboard",

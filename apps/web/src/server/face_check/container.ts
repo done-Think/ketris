@@ -1,5 +1,6 @@
 import { randomBytes, randomInt, randomUUID } from 'node:crypto'
 import { prisma } from '@server/db/prisma'
+import type { AppLocale } from '@/i18n/types/locale.types'
 import type { FaceCheckScope, FaceCheckDatabase } from './types/access'
 import { FaceCheckAccessScope } from './infrastructure/access-scope'
 import { DataCipher } from './infrastructure/data-cipher'
@@ -16,11 +17,12 @@ import { purgeFaceCheckEvidence } from './purge'
 export async function faceCheckContainer(
   scope: FaceCheckScope,
   database: FaceCheckDatabase = prisma,
+  options: { invitationLocale?: AppLocale } = {},
 ) {
   const access = new FaceCheckAccessScope(database, scope)
   const settingsScope = await access.settings()
   const cipher = DataCipher.fromEnvironment()
-  const sessions = new PrismaSessionRepository(access, cipher)
+  const sessions = new PrismaSessionRepository(access, cipher, Date.now, options.invitationLocale)
   const settings = new PrismaSettingsRepository(access, cipher)
   const bucket = process.env.FACE_CHECK_S3_BUCKET_NAME
   const photos = bucket

@@ -5,3 +5,4 @@ export {
   FaceCheckSettingsPage,
   FaceCheckCapturePage,
 } from './components/FaceCheckPages'
+export { MyVerificationsPage as FaceCheckMyVerificationsPage } from './components/candidate/MyVerificationsPage'

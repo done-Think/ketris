@@ -62,7 +62,13 @@
     "signingOut": "Saindo da conta…",
     "signOutError": "Não foi possível concluir a saída. Tente novamente.",
     "retrySignOut": "Tentar sair novamente",
-    "faceCheck": "Face Check"
+    "faceCheck": "Face Check",
+    "faceCheckSessions": "Sessões",
+    "faceCheckReview": "Revisão",
+    "faceCheckSettings": "Configurações",
+    "faceCheckMyVerifications": "Minhas verificações",
+    "expandNavigationSection": "Expandir opções de {section}",
+    "collapseNavigationSection": "Recolher opções de {section}"
   },
   "passwordVisibility": {
     "show": "Mostrar {field}",

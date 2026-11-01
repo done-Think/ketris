@@ -1,13 +1,19 @@
-export type DashboardNotificationKind = 'todayVisit' | 'assignedEvent'
+export type DashboardNotificationKind = 'todayVisit' | 'assignedEvent' | 'faceCheckVerification'
 
 export type DashboardNotificationHref = {
-  pathname: '/dashboard/agenda' | '/dashboard/finance' | '/dashboard/leads' | '/dashboard/proposals'
+  pathname:
+    | '/dashboard/agenda'
+    | '/dashboard/finance'
+    | '/dashboard/leads'
+    | '/dashboard/proposals'
+    | '/dashboard/face_check/my-verifications'
   query?: {
     dueId?: string
     entryId?: string
     eventId?: string
     leadId?: string
     proposalId?: string
+    start?: 'next'
   }
 }
 

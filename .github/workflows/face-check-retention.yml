@@ -2,7 +2,7 @@ name: Face Check retention
 
 on:
   schedule:
-    - cron: '17 * * * *'
+    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
       # Scheduled workflows run from the default branch; execute the cleanup on
       # dev so the existing staging deployment-branch restriction remains intact.
       - run: node scripts/face-check-retention.mjs dispatch
@@ -40,7 +40,12 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
       - run: node scripts/face-check-retention.mjs cleanup
+        env:
+          FACE_CHECK_RETENTION_SECRET: ${{ secrets.FACE_CHECK_RETENTION_SECRET }}
+      - name: Process pending verification invitations
+        if: ${{ !cancelled() }}
+        run: node scripts/face-check-invitation-emails.mjs
         env:
           FACE_CHECK_RETENTION_SECRET: ${{ secrets.FACE_CHECK_RETENTION_SECRET }}

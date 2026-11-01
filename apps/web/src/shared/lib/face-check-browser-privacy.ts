@@ -21,7 +21,6 @@ export interface FaceCheckBrowserPrivacySdk {
 export function installFaceCheckBrowserPrivacy(sdk: FaceCheckBrowserPrivacySdk) {
   let protectedPage = false
   let pendingFaceNavigation = false
-  let htmlWasAlreadyBlocked = false
   let generation = 0
   let previousMode: 'session' | 'buffer' | undefined
   let stop: Promise<void> = Promise.resolve()
@@ -31,8 +30,8 @@ export function installFaceCheckBrowserPrivacy(sdk: FaceCheckBrowserPrivacySdk) 
     protectedPage = true
     generation += 1
     setFaceCheckBrowserPrivacy(true)
-    htmlWasAlreadyBlocked = document.documentElement.classList.contains('sentry-block')
-    document.documentElement.classList.add('sentry-block')
+    // Instrumentation runs before hydration. Never change React-owned root attributes.
+    // Recording callbacks and the transport deny private data, including portalled dialogs.
     sdk.clearBreadcrumbs()
     const replay = sdk.getReplay()
     previousMode = replay?.getRecordingMode()
@@ -52,7 +51,6 @@ export function installFaceCheckBrowserPrivacy(sdk: FaceCheckBrowserPrivacySdk) 
       return
     sdk.clearBreadcrumbs()
     protectedPage = false
-    if (!htmlWasAlreadyBlocked) document.documentElement.classList.remove('sentry-block')
     setFaceCheckBrowserPrivacy(false)
     const replay = sdk.getReplay()
     if (!replay) sdk.addReplay()

@@ -186,7 +186,7 @@ function NewVerificationContent({ onClose }: NewVerificationContentProps) {
                 label={t('fields.contact')}
                 placeholder={t('fields.contactPlaceholder')}
                 error={!!fieldState.error}
-                helperText={errorText(fieldState.error?.message)}
+                helperText={errorText(fieldState.error?.message) ?? t('contactEmailHelp')}
               />
             )}
           />

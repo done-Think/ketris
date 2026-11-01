@@ -17,7 +17,6 @@ import {
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
-import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
@@ -28,6 +27,7 @@ import { AppLogo } from '@shared/components/ui'
 import type { HomeHeaderProps } from '@shared/types/home-header'
 import { getInitials } from '@shared/utils/get-initials'
 import { LanguageSelector } from './LanguageSelector'
+import { DashboardNotificationsButton } from './DashboardNotificationsButton'
 
 export function HomeHeader({
   navigationItems,
@@ -42,7 +42,7 @@ export function HomeHeader({
   const closeMobileMenu = () => setIsMobileMenuOpen(false)
   const t = useTranslations('marketplace.header')
   const { data: session, status } = useSession()
-  const showNotifications = status === 'authenticated'
+  const showNotifications = status === 'authenticated' && session?.scope === 'tenant'
   const announcePropertyHref = status === 'authenticated' ? '/dashboard/properties' : '/login'
   const canAnnounceProperty = session?.role !== 'RENTER'
 
@@ -96,9 +96,7 @@ export function HomeHeader({
               </Button>
             ) : null}
             {showNotifications ? (
-              <IconButton aria-label={t('notifications')} size="small" sx={styles.iconButton}>
-                <NotificationsNoneOutlinedIcon sx={styles.notificationsNoneOutlinedIcon} />
-              </IconButton>
+              <DashboardNotificationsButton placement="navigationHeader" />
             ) : null}
             {userProfile && profileButtonRef && onToggleProfile ? (
               <Box

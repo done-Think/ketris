@@ -11,6 +11,33 @@ vi.mock('@shared/lib/api/http-client', () => ({
 describe('face_check authenticated evidence', () => {
   afterEach(() => vi.clearAllMocks())
 
+  it.each(['pt-BR', 'en-US', 'es-ES'])(
+    'creates invitations using the selected interface language %s',
+    async (locale) => {
+      const original = document.documentElement.lang
+      const input = {
+        propertyId: 'property',
+        purpose: 'RENT' as const,
+        personName: 'Person',
+        cpf: '',
+        reference: '',
+        contact: 'candidate@example.test',
+        acceptedDocument: 'ANY' as const,
+        expiresInHours: 24,
+      }
+      vi.mocked(httpClient.post).mockResolvedValue({})
+      try {
+        document.documentElement.lang = locale
+        await consoleService.createSession(input)
+        expect(httpClient.post).toHaveBeenCalledWith('/face_check/sessions', input, {
+          headers: { 'Accept-Language': locale },
+        })
+      } finally {
+        document.documentElement.lang = original
+      }
+    },
+  )
+
   it('downloads evidence through the shared authenticated client as a cancellable blob', async () => {
     const blob = new Blob(['private image'], { type: 'image/jpeg' })
     vi.mocked(httpClient.get).mockResolvedValue(blob)

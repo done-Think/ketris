@@ -197,6 +197,32 @@ export async function seedCrmFixtures(
     foreignOpportunityId: foreignOpportunity.id,
   }
 }
+
+export async function seedCrmFaceCheckCandidates(
+  prisma: PrismaClient,
+  input: { tenantId: string; suffix: string; password: string },
+) {
+  await assertFixtureTenant(prisma, input.tenantId)
+  if (!/^[a-z0-9-]+$/.test(input.suffix)) throw new Error('Invalid fixture identifier.')
+  const passwordHash = await bcrypt.hash(input.password, 10)
+  const emails = [
+    `candidate-${input.suffix}@crm.example.test`,
+    `other-${input.suffix}@crm.example.test`,
+  ]
+  for (const email of emails)
+    await prisma.user.create({
+      data: {
+        tenantId: input.tenantId,
+        name: 'Face Check candidate',
+        email,
+        passwordHash,
+        role: 'RENTER',
+        emailVerifiedAt: new Date(),
+        membershipApprovedAt: new Date(),
+      },
+    })
+  return { email: emails[0], otherEmail: emails[1] }
+}
 export async function readCrmEvidence(
   prisma: PrismaClient,
   { tenantId, contactId }: { tenantId: string; contactId: string },

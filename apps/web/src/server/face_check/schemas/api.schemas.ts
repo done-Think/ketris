@@ -17,6 +17,10 @@ export const tokenParamsSchema = z.object({
 
 export const idParamsSchema = z.object({ id: z.string().uuid() })
 
+export const candidateVerificationCountsSchema = z
+  .object({ count: z.number().int().min(0), pendingCount: z.number().int().min(0) })
+  .strict()
+
 export const documentUploadBodySchema = z.object({
   side: z.enum(['front', 'back']),
   documentType,

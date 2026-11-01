@@ -29,6 +29,9 @@ export const styles = {
       flex: 1,
       minHeight: 0,
       gap: 0.5,
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      pb: 0.5,
       '@media (max-height: 760px)': { gap: 0.25 },
     }) as const,
   skeleton: (collapsed: boolean) =>
@@ -122,4 +125,49 @@ export const styles = {
     '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
   },
   logoutOutlinedIcon: { fontSize: iconSize.sm },
+  navigationGroup: { flexShrink: 0, width: '100%' },
+  navigationGroupRow: {
+    display: 'flex',
+    alignItems: 'center',
+    minHeight: 44,
+    position: 'relative',
+  },
+  navigationGroupParent: (collapsed: boolean) =>
+    ({
+      flex: collapsed ? '0 0 44px' : 1,
+      minWidth: 0,
+      minHeight: 44,
+      width: collapsed ? 44 : 'auto',
+      mx: collapsed ? 'auto' : 0,
+      gap: collapsed ? 0 : 1.5,
+    }) as const,
+  navigationGroupToggle: (collapsed: boolean) =>
+    ({
+      flexShrink: 0,
+      width: collapsed ? 24 : 28,
+      height: collapsed ? 24 : 32,
+      position: collapsed ? 'absolute' : 'static',
+      right: 0,
+      top: collapsed ? '50%' : 'auto',
+      transform: collapsed ? 'translateY(-50%)' : 'none',
+      p: 0,
+      color: alpha.white[62],
+      '&:hover': { bgcolor: alpha.white[8], color: surface.lightText },
+    }) as const,
+  navigationGroupChevron: (expanded: boolean) =>
+    ({
+      fontSize: iconSize.md,
+      transform: expanded ? 'rotate(180deg)' : 'none',
+      transition: 'transform 160ms ease',
+    }) as const,
+  navigationChildren: (collapsed: boolean) =>
+    ({ pl: collapsed ? 0 : 2.5, gap: 0.25, mt: 0.25, mb: 0.5 }) as const,
+  navigationChild: (collapsed: boolean) =>
+    ({
+      flex: '0 0 auto',
+      minHeight: 40,
+      width: collapsed ? 44 : '100%',
+      px: collapsed ? 0 : 1.25,
+    }) as const,
+  navigationChildLabel: { fontSize: 13 },
 } as const

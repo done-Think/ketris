@@ -14,6 +14,9 @@ vi.mock('../../hooks/use-properties', () => ({
   usePublishProperty: () => ({ isPending: false, mutateAsync: vi.fn() }),
   useUnpublishProperty: () => ({ isPending: false, mutateAsync: vi.fn() }),
 }))
+vi.mock('@shared/hooks/use-dashboard-face-check-notifications', () => ({
+  useDashboardFaceCheckNotifications: () => [],
+}))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))

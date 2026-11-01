@@ -1,4 +1,5 @@
 import { getPathname } from '@/i18n/navigation'
+import type { AppLocale } from '@/i18n/types/locale.types'
 import { resolveRequestLocale } from '@server/shared/http/request-locale'
 import { FaceCheckError } from './errors'
 
@@ -41,6 +42,10 @@ function allowsIsolatedE2ECaptureOrigin(origin: URL) {
 }
 
 export function buildCaptureUrl(request: Request, token: string) {
+  return buildCaptureUrlForLocale(resolveRequestLocale(request), token)
+}
+
+export function buildCaptureUrlForLocale(locale: AppLocale, token: string) {
   const configured = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL
   if (!configured) throw new FaceCheckError('STORAGE_UNAVAILABLE', 503)
   let origin: URL
@@ -58,7 +63,7 @@ export function buildCaptureUrl(request: Request, token: string) {
   )
     throw new FaceCheckError('STORAGE_UNAVAILABLE', 503)
   const pathname = getPathname({
-    locale: resolveRequestLocale(request),
+    locale,
     href: { pathname: '/face_check/verify/[token]', params: { token } },
   })
   return new URL(pathname, origin.origin).toString()

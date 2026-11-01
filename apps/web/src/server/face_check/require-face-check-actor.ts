@@ -40,7 +40,9 @@ export async function resolveFaceCheckActor(
   }
 }
 
-export async function requireFaceCheckActor(request: NextRequest): Promise<FaceCheckActor> {
+export async function readFaceCheckRequestIdentity(
+  request: NextRequest,
+): Promise<{ userId: string; tenantId: string }> {
   let userId: string | undefined
   let tenantId: string | undefined
   if (request.headers.has('authorization')) {
@@ -55,5 +57,9 @@ export async function requireFaceCheckActor(request: NextRequest): Promise<FaceC
     }
   }
   if (!userId || !tenantId) throw new FaceCheckError('UNAUTHORIZED', 401)
-  return resolveFaceCheckActor({ userId, tenantId })
+  return { userId, tenantId }
+}
+
+export async function requireFaceCheckActor(request: NextRequest): Promise<FaceCheckActor> {
+  return resolveFaceCheckActor(await readFaceCheckRequestIdentity(request))
 }

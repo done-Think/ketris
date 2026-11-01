@@ -4977,7 +4977,7 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description Tenant-scoped response. Agents can access only their current property portfolio. */
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
         200: {
           headers: {
             [name: string]: unknown
@@ -4985,11 +4985,11 @@ export interface paths {
           content: {
             'application/json': {
               /** @enum {string} */
-              accountType: 'AGENCY' | 'BROKER'
-              /** @enum {boolean} */
-              allowed: true
+              accountType?: 'AGENCY' | 'BROKER' | 'INDIVIDUAL'
+              allowed: boolean
+              candidateVerifications: boolean
               /** @enum {string} */
-              role: 'OWNER' | 'AGENT'
+              role?: 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER'
             }
           }
         }
@@ -6671,7 +6671,7 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description Tenant-scoped response. Agents can access only their current property portfolio. */
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
         200: {
           headers: {
             [name: string]: unknown
@@ -6797,6 +6797,292 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/face_check/my-verifications': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List only verifications explicitly associated with the current verified candidate account. Does not grant provider console access. */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              items: {
+                agencyName: string
+                /** Format: uri */
+                captureUrl: string | null
+                /** Format: date-time */
+                createdAt: string
+                /** Format: date-time */
+                expiresAt: string
+                /** Format: uuid */
+                id: string
+                propertyTitle: string
+                /** @enum {string} */
+                status:
+                  | 'CREATED'
+                  | 'IN_PROGRESS'
+                  | 'SUBMITTED'
+                  | 'PROCESSING'
+                  | 'RESUBMISSION_REQUESTED'
+                  | 'REVIEW'
+                  | 'APPROVED'
+                  | 'REJECTED'
+                  | 'EXPIRED'
+                  | 'ABANDONED'
+              }[]
+            }
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        410: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        413: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        429: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        503: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/face_check/my-verifications/count': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Count all explicitly associated verifications and those with a currently valid capture link. Returns only counts; pending eligibility checks expiry, capture deadline, requester eligibility and encrypted payload integrity. */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              count: number
+              pendingCount: number
+            }
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        410: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        413: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        429: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        503: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/face_check/properties': {
     parameters: {
       query?: never
@@ -6817,7 +7103,7 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description Tenant-scoped response. Agents can access only their current property portfolio. */
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
         200: {
           headers: {
             [name: string]: unknown
@@ -6955,7 +7241,7 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description Tenant-scoped response. Agents can access only their current property portfolio. */
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
         200: {
           headers: {
             [name: string]: unknown
@@ -7095,7 +7381,7 @@ export interface paths {
         }
       }
       responses: {
-        /** @description Tenant-scoped response. Agents can access only their current property portfolio. */
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
         201: {
           headers: {
             [name: string]: unknown
@@ -7228,7 +7514,7 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description Tenant-scoped response. Agents can access only their current property portfolio. */
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
         200: {
           headers: {
             [name: string]: unknown
@@ -7374,7 +7660,7 @@ export interface paths {
         }
       }
       responses: {
-        /** @description Tenant-scoped response. Agents can access only their current property portfolio. */
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
         200: {
           headers: {
             [name: string]: unknown
@@ -7507,7 +7793,7 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description Tenant-scoped response. Agents can access only their current property portfolio. */
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
         200: {
           headers: {
             [name: string]: unknown
@@ -7773,7 +8059,7 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description Tenant-scoped response. Agents can access only their current property portfolio. */
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
         200: {
           headers: {
             [name: string]: unknown
@@ -7902,7 +8188,7 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description Tenant-scoped response. Agents can access only their current property portfolio. */
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
         200: {
           headers: {
             [name: string]: unknown
@@ -8025,7 +8311,7 @@ export interface paths {
         }
       }
       responses: {
-        /** @description Tenant-scoped response. Agents can access only their current property portfolio. */
+        /** @description Authenticated response with operation-specific authorization. Provider console routes remain tenant-scoped; candidate routes expose only explicitly associated self-service metadata. */
         200: {
           headers: {
             [name: string]: unknown

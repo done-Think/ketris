@@ -13,6 +13,33 @@ afterEach(() => {
 })
 
 describe('FaceCheck browser recording isolation', () => {
+  it('preserves the server-rendered root attributes before hydration and while navigating', async () => {
+    const root = document.documentElement
+    const original = root.getAttribute('class')
+    root.className = 'roboto-variable space-grotesk-variable'
+    const attributes = root.getAttributeNames().map((name) => [name, root.getAttribute(name)])
+    window.history.replaceState({}, '', '/pt/dashboard/face_check')
+    const sdk = { getReplay: () => undefined, addReplay: vi.fn(), clearBreadcrumbs: vi.fn() }
+    const privacy = installFaceCheckBrowserPrivacy(sdk)
+    try {
+      expect(faceCheckBrowserPrivacyActive()).toBe(true)
+      expect(root.getAttributeNames().map((name) => [name, root.getAttribute(name)])).toEqual(
+        attributes,
+      )
+      privacy.transition('/pt/dashboard')
+      window.history.replaceState({}, '', '/pt/dashboard')
+      window.dispatchEvent(new PopStateEvent('popstate'))
+      await vi.waitFor(() => expect(faceCheckBrowserPrivacyActive()).toBe(false))
+      expect(root.getAttributeNames().map((name) => [name, root.getAttribute(name)])).toEqual(
+        attributes,
+      )
+    } finally {
+      privacy.stop()
+      if (original === null) root.removeAttribute('class')
+      else root.setAttribute('class', original)
+    }
+  })
+
   it('stops without flushing before a private navigation and resumes only after private DOM is gone', async () => {
     window.history.replaceState({}, '', '/pt/dashboard')
     let finishStop!: () => void

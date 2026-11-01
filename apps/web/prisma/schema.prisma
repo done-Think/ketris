@@ -254,6 +254,7 @@ model User {
   targetTransfers           PortfolioTransfer[]           @relation("PortfolioTransferTarget")
   authoredTransfers         PortfolioTransfer[]           @relation("PortfolioTransferAuthor")
   requestedFaceChecks       FaceCheckSession[]
+  candidateFaceChecks       FaceCheckSession[] @relation("FaceCheckCandidate")
 
   @@unique([tenantId, email])
   @@unique([id, tenantId])
@@ -1576,6 +1577,7 @@ model FaceCheckSession {
   tenantId              String
   propertyId            String
   requestedById         String
+  candidateUserId       String?
   tokenHash             String    @unique
   status                String
   revision              Int       @default(0)
@@ -1593,13 +1595,43 @@ model FaceCheckSession {
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   property    Property @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade)
   requestedBy User     @relation(fields: [requestedById, tenantId], references: [id, tenantId], onDelete: NoAction)
+  // A verified candidate can intentionally belong to a personal account in another tenant.
+  candidateUser User? @relation("FaceCheckCandidate", fields: [candidateUserId], references: [id], onDelete: SetNull)
+  invitationEmails FaceCheckInvitationEmail[]
 
+  @@unique([id, tenantId])
   @@index([tenantId, status, createdAt])
   @@index([tenantId, propertyId])
   @@index([requestedById, tenantId])
+  @@index([candidateUserId, createdAt])
   @@index([expiresAt])
   @@index([evidencePurgePending, evidenceExpiresAt])
   @@map("face_check_sessions")
+}
+
+// Delivery metadata only. Recipient and capture token remain inside the encrypted session.
+model FaceCheckInvitationEmail {
+  id             String    @id @default(cuid())
+  sessionId      String
+  tenantId       String
+  tokenHash      String
+  locale         String
+  status         String    @default("PENDING")
+  attempts       Int       @default(0)
+  nextAttemptAt  DateTime  @default(now())
+  leaseId        String?
+  leaseExpiresAt DateTime?
+  sentAt         DateTime?
+  lastErrorCode  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  session FaceCheckSession @relation(fields: [sessionId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@unique([sessionId, tokenHash])
+  @@index([status, nextAttemptAt])
+  @@index([leaseExpiresAt])
+  @@map("face_check_invitation_emails")
 }
 
 model FaceCheckSettings {
