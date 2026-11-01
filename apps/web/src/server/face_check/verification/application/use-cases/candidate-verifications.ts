@@ -11,7 +11,7 @@ export class ListMyFaceCheckVerificationsUseCase {
 
   async execute(
     candidate: FaceCheckCandidate,
-    captureUrl: (token: string) => string,
+    captureUrl: (token: string, id: string) => string,
   ): Promise<{ items: FaceCheckCandidateVerification[] }> {
     const rows = await this.verifications.list(candidate)
     return {
@@ -22,7 +22,7 @@ export class ListMyFaceCheckVerificationsUseCase {
         status: row.status,
         createdAt: row.createdAt,
         expiresAt: row.expiresAt,
-        captureUrl: row.captureToken ? captureUrl(row.captureToken) : null,
+        captureUrl: row.captureToken ? captureUrl(row.captureToken, row.id) : null,
       })),
     }
   }

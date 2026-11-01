@@ -1,6 +1,10 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { buildCaptureUrl, buildCaptureUrlForLocale } from '../http/capture-url'
+import {
+  buildCaptureUrl,
+  buildCaptureUrlForLocale,
+  buildCandidateCaptureUrl,
+} from '../http/capture-url'
 
 const token = 'a'.repeat(64)
 const request = (language = 'pt-BR') =>
@@ -18,6 +22,19 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs())
 
 describe('FaceCheck capture links in production builds and isolated E2E', () => {
+  it.each([
+    ['pt-BR', 'pt'],
+    ['en-US', 'en'],
+    ['es-ES', 'es'],
+  ] as const)(
+    'builds a private dashboard capture link in %s without the invitation token',
+    (locale, prefix) => {
+      vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://trusted.example.test')
+      expect(buildCandidateCaptureUrl(request(locale), 'owned-session')).toBe(
+        `https://trusted.example.test/${prefix}/dashboard/face_check/my-verifications/owned-session`,
+      )
+    },
+  )
   it('builds a persisted-locale worker link solely from the trusted configured origin', () => {
     vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://trusted.example.test')
     expect(buildCaptureUrlForLocale('es-ES', token)).toBe(

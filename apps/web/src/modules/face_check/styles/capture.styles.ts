@@ -15,7 +15,7 @@ import {
   surface,
 } from './tokens'
 
-import type { ResultIllustrationProps } from '../types/capture.types'
+import type { CapturePresentationVariant, ResultIllustrationProps } from '../types/capture.types'
 
 export const documentImportStyles = {
   sides: {
@@ -51,70 +51,92 @@ export const documentImportStyles = {
   coordinates: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 },
 } satisfies Record<string, SxProps<Theme> | ((...args: never[]) => SxProps<Theme>)>
 
-export function captureLayoutStyles(tone: StepProgressTone) {
+export function captureLayoutStyles(
+  tone: StepProgressTone,
+  variant: CapturePresentationVariant = 'standalone',
+) {
   const isDark = tone === 'dark'
+  const isDashboard = variant === 'dashboard'
 
   return {
     page: {
-      minHeight: '100dvh',
+      boxSizing: 'border-box',
+      minHeight: isDashboard ? 'auto' : '100dvh',
+      width: '100%',
+      minWidth: 0,
       bgcolor: isDark ? capture.stage : surface.app,
       display: 'flex',
       justifyContent: 'center',
+      p: isDashboard ? { xs: 2, sm: 3.5 } : { xs: 0, sm: 3, md: 4 },
     },
     column: {
+      boxSizing: 'border-box',
       width: '100%',
+      minWidth: 0,
       maxWidth: layout.captureMaxWidth,
-      minHeight: '100dvh',
+      minHeight: isDashboard
+        ? 'auto'
+        : { xs: '100dvh', sm: 'calc(100dvh - 48px)', md: 'calc(100dvh - 64px)' },
       display: 'flex',
       flexDirection: 'column',
-      bgcolor: isDark ? capture.stage : surface.app,
+      gap: { xs: 2, md: 2.5 },
+      p: { xs: 2, sm: 3, md: 4 },
+      bgcolor: isDark ? capture.stage : surface.paper,
       color: isDark ? surface.darkModeText : 'text.primary',
-      borderInline: { sm: '1px solid' },
-      borderColor: { sm: isDark ? surface.darkDivider : 'divider' },
+      borderStyle: 'solid',
+      borderWidth: { xs: isDashboard ? 1 : 0, sm: 1 },
+      borderColor: isDark ? surface.darkDivider : 'divider',
+      borderRadius: { xs: isDashboard ? `${radius.lg}px` : 0, sm: `${radius.lg}px` },
     },
     header: {
-      height: layout.captureHeaderHeight,
+      minHeight: layout.captureHeaderHeight,
       flexShrink: 0,
       display: 'grid',
-      gridTemplateColumns: '44px 1fr 44px',
+      gridTemplateColumns: '44px minmax(0, 1fr) 44px',
       alignItems: 'center',
-      px: 0.5,
-      bgcolor: isDark ? 'transparent' : surface.paper,
-      borderBottom: isDark ? 'none' : '1px solid',
-      borderColor: 'divider',
+      borderBottom: '1px solid',
+      borderColor: isDark ? surface.darkDivider : 'divider',
     },
-    backButton: { color: 'inherit', width: 44, height: 44 },
-    brand: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 1,
-    },
+    dashboardHeading: { display: 'flex', alignItems: 'center', gap: 1, minHeight: 44 },
+    dashboardTitle: { fontFamily: fontFamily.display, fontSize: 16, fontWeight: 700, m: 0 },
+    backButton: { color: 'inherit', width: 44, height: 44, flexShrink: 0 },
+    brand: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 },
     brandName: { fontFamily: fontFamily.display, fontSize: 16, fontWeight: 700 },
-    main: {
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 2,
-      px: 2.5,
-      pb: 2.5,
-    },
+    main: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 3 } },
     footer: {
       flexShrink: 0,
-      position: 'sticky',
-      bottom: 0,
-      px: 2.5,
-      pt: 1.5,
-      pb: 3,
+      position: 'static',
+      pt: { xs: 2, md: 2.5 },
       display: 'flex',
-      flexDirection: 'column',
-      gap: 1,
-      bgcolor: isDark ? capture.stage : surface.paper,
-      borderTop: isDark ? 'none' : '1px solid',
-      borderColor: 'divider',
+      flexDirection: { xs: 'column', sm: 'row' },
+      flexWrap: 'wrap',
+      alignItems: { xs: 'stretch', sm: 'center' },
+      justifyContent: 'flex-start',
+      gap: 1.25,
+      pb: 'env(safe-area-inset-bottom, 0px)',
+      borderTop: '1px solid',
+      borderColor: isDark ? surface.darkDivider : 'divider',
+      '& > .MuiButton-root': {
+        width: { xs: '100%', sm: 'auto' },
+        minHeight: 44,
+        minWidth: { sm: 160 },
+      },
+      '& > .MuiTypography-root, & > .MuiAlert-root': { flexBasis: '100%' },
     },
   } satisfies Record<string, SxProps<Theme>>
 }
+
+export const consentStyles = {
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 0.9fr) minmax(0, 1.1fr)' },
+    gap: { xs: 2.5, md: 4 },
+    alignItems: 'start',
+    minWidth: 0,
+  },
+  summary: { display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 },
+  information: { minWidth: 0 },
+} satisfies Record<string, SxProps<Theme>>
 
 export const stepStyles = {
   intro: { display: 'flex', flexDirection: 'column', gap: 0.75, pt: 1 },
@@ -131,7 +153,7 @@ export const stepStyles = {
     lineHeight: 1.2,
     color: surface.darkModeText,
   },
-  body: { fontSize: 14, lineHeight: 1.55, color: 'text.secondary' },
+  body: { fontSize: 14, lineHeight: 1.55, color: 'text.secondary', maxWidth: '76ch' },
   card: {
     bgcolor: surface.paper,
     border: '1px solid',
@@ -177,7 +199,10 @@ export const stepStyles = {
 
 export const cameraStepStyles = {
   preview: {
-    height: 200,
+    height: { xs: 180, md: 240 },
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     borderRadius: `${radius.lg}px`,
     bgcolor: brand.graphite[700],
     color: brand.magenta[400],
@@ -363,12 +388,12 @@ export const liveCaptureStyles = {
       '&:hover': { bgcolor: surface.darkModeText },
     },
   },
-  portraitFrame: { maxWidth: 320, aspectRatio: '3 / 4' },
+  portraitFrame: { maxWidth: { xs: 320, md: 360 }, aspectRatio: '3 / 4' },
   portraitGuide: { width: '70%', aspectRatio: '1 / 1.55' },
   documentFrame: {
     position: 'relative',
     width: '100%',
-    maxWidth: 420,
+    maxWidth: 640,
     aspectRatio: '4 / 3',
     borderRadius: `${radius.lg}px`,
     bgcolor: capture.viewport,
@@ -536,9 +561,10 @@ export const resultStepStyles = {
     '& svg': { fontSize: 44 },
   }),
   title: { fontFamily: fontFamily.display, fontSize: 26, fontWeight: 700, lineHeight: 1.2 },
-  body: { fontSize: 15, lineHeight: 1.55, color: 'text.secondary', maxWidth: 320 },
+  body: { fontSize: 15, lineHeight: 1.55, color: 'text.secondary', maxWidth: 640 },
   card: {
     width: '100%',
+    maxWidth: 720,
     bgcolor: surface.paper,
     border: '1px solid',
     borderColor: 'divider',

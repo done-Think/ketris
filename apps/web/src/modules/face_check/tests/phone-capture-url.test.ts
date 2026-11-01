@@ -2,6 +2,15 @@ import { expect, it } from 'vitest'
 import { phoneCaptureUrl } from '../utils/phone-capture-url'
 
 const token = 'a'.repeat(64)
+it('shares the portable invitation when capture is inside the authenticated dashboard', () => {
+  expect(
+    phoneCaptureUrl(
+      'https://ketris.example/pt/dashboard/face_check/my-verifications/session?private=value',
+      token,
+      'pt-BR',
+    ),
+  ).toBe(`https://ketris.example/pt/face_check/verify/${token}`)
+})
 it.each([
   ['pt-BR', 'pt'],
   ['en-US', 'en'],

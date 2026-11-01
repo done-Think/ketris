@@ -34,10 +34,10 @@ export default async function MyVerificationsPage({
     const locale = await getLocale()
     const { items } = await new ListMyFaceCheckVerificationsUseCase(
       new PrismaCandidateVerificationRepository(prisma),
-    ).execute(candidate, (token) =>
+    ).execute(candidate, (_token, id) =>
       getPathname({
         locale,
-        href: { pathname: '/face_check/verify/[token]', params: { token } },
+        href: { pathname: '/dashboard/face_check/my-verifications/[id]', params: { id } },
       }),
     )
     const pending = items.find((item) => item.captureUrl)

@@ -68,6 +68,28 @@ export class PrismaCandidateVerificationRepository implements FaceCheckCandidate
     return this.database.faceCheckSession.count({ where: await this.where(candidate) })
   }
 
+  async capture(
+    candidate: FaceCheckCandidate,
+    id: string,
+  ): Promise<{ id: string; captureToken: string | null } | null> {
+    const row = await this.database.faceCheckSession.findFirst({
+      where: { ...(await this.where(candidate)), id },
+      select: candidateSelect,
+    })
+    return row ? { id: row.id, captureToken: this.captureData(row).captureToken } : null
+  }
+
+  async findByToken(candidate: FaceCheckCandidate, token: string): Promise<{ id: string } | null> {
+    const where = await this.where(candidate)
+    if (!/^[a-f0-9]{64}$/.test(token)) return null
+    const row = await this.database.faceCheckSession.findFirst({
+      where: { ...where, tokenHash: captureTokenHash(token) },
+      select: { id: true },
+    })
+    // This identifies the candidate's page even after capture closes. It never grants a token.
+    return row ? { id: row.id } : null
+  }
+
   private captureData(
     row: CandidateRow,
   ): Pick<FaceCheckCandidateVerificationData, 'status' | 'captureToken'> {

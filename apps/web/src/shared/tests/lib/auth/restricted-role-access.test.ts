@@ -12,6 +12,12 @@ describe('restricted-role-access', () => {
       const access = getRestrictedRoleAccess(role)
       expect(access?.navigationHrefs).toContain('/dashboard/face_check/my-verifications')
       expect(access?.isAllowedPathname('/dashboard/face_check/my-verifications')).toBe(true)
+      expect(access?.isAllowedPathname('/dashboard/face_check/my-verifications/verification')).toBe(
+        true,
+      )
+      expect(
+        access?.isAllowedPathname('/dashboard/face_check/my-verifications/verification/extra'),
+      ).toBe(false)
       for (const path of [
         '/dashboard/face_check',
         '/dashboard/face_check/sessions',

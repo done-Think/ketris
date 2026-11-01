@@ -162,6 +162,6 @@ export const capture = {
 export const layout = {
   sidebarWidth: 240,
   mobileHeaderHeight: 64,
-  captureMaxWidth: 480,
+  captureMaxWidth: 1200,
   captureHeaderHeight: 56,
 } as const

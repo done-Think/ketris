@@ -45,7 +45,7 @@ export function buildCaptureUrl(request: Request, token: string) {
   return buildCaptureUrlForLocale(resolveRequestLocale(request), token)
 }
 
-export function buildCaptureUrlForLocale(locale: AppLocale, token: string) {
+function trustedCaptureOrigin() {
   const configured = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL
   if (!configured) throw new FaceCheckError('STORAGE_UNAVAILABLE', 503)
   let origin: URL
@@ -62,9 +62,21 @@ export function buildCaptureUrlForLocale(locale: AppLocale, token: string) {
     !allowsIsolatedE2ECaptureOrigin(origin)
   )
     throw new FaceCheckError('STORAGE_UNAVAILABLE', 503)
+  return origin.origin
+}
+
+export function buildCaptureUrlForLocale(locale: AppLocale, token: string) {
   const pathname = getPathname({
     locale,
     href: { pathname: '/face_check/verify/[token]', params: { token } },
   })
-  return new URL(pathname, origin.origin).toString()
+  return new URL(pathname, trustedCaptureOrigin()).toString()
+}
+
+export function buildCandidateCaptureUrl(request: Request, id: string) {
+  const pathname = getPathname({
+    locale: resolveRequestLocale(request),
+    href: { pathname: '/dashboard/face_check/my-verifications/[id]', params: { id } },
+  })
+  return new URL(pathname, trustedCaptureOrigin()).toString()
 }

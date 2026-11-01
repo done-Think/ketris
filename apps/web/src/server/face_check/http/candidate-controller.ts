@@ -8,7 +8,7 @@ import {
   GetMyFaceCheckVerificationCountsUseCase,
   ListMyFaceCheckVerificationsUseCase,
 } from '../verification/application/use-cases/candidate-verifications'
-import { buildCaptureUrl } from './capture-url'
+import { buildCandidateCaptureUrl } from './capture-url'
 import { withFaceCheckErrors } from './with-face-check-errors'
 
 export const faceCheckAccessHandler = withFaceCheckErrors(async (request: NextRequest) => {
@@ -25,7 +25,7 @@ export const myFaceCheckVerificationsHandler = withFaceCheckErrors(async (reques
   return NextResponse.json(
     await new ListMyFaceCheckVerificationsUseCase(
       new PrismaCandidateVerificationRepository(prisma),
-    ).execute(candidate, (token) => buildCaptureUrl(request, token)),
+    ).execute(candidate, (_token, id) => buildCandidateCaptureUrl(request, id)),
   )
 })
 

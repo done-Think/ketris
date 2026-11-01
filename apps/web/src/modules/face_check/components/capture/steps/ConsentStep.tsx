@@ -29,7 +29,7 @@ import { consentSchema, type ConsentFormValues } from '../../../schemas/capture.
 import { useCaptureFlow } from '../../../stores/CaptureFlowProvider'
 import type { CaptureStepProps } from '../../../types/capture.types'
 import { CaptureLayout } from '../CaptureLayout'
-import { stepStyles } from '../../../styles/capture.styles'
+import { consentStyles, stepStyles } from '../../../styles/capture.styles'
 
 const infoItems = [
   { key: 'collect', Icon: BadgeOutlinedIcon },
@@ -73,38 +73,45 @@ export function ConsentStep({ session }: CaptureStepProps) {
         </>
       }
     >
-      <Box sx={stepStyles.intro}>
-        <Typography component="h1" sx={stepStyles.title}>
-          {t('title')}
-        </Typography>
-        <Typography sx={stepStyles.body}>
-          {t('intro', { agency, reference: session.reference ?? '—' })}
-        </Typography>
-      </Box>
-
-      <Box component="section" sx={stepStyles.card} aria-label={t('sectionLabel')}>
-        {infoItems.map(({ key, Icon }) => (
-          <Box key={key} sx={stepStyles.infoRow}>
-            <Box sx={stepStyles.infoIcon}>
-              <Icon fontSize="small" />
-            </Box>
-            <Box>
-              <Typography sx={stepStyles.infoTitle}>{t(`items.${key}.title`)}</Typography>
-              <Typography sx={stepStyles.infoBody}>{t(`items.${key}.body`)}</Typography>
-            </Box>
+      <Box sx={consentStyles.grid}>
+        <Box sx={consentStyles.summary}>
+          <Box sx={stepStyles.intro}>
+            <Typography component="h1" sx={stepStyles.title}>
+              {t('title')}
+            </Typography>
+            <Typography sx={stepStyles.body}>
+              {t('intro', { agency, reference: session.reference ?? '—' })}
+            </Typography>
           </Box>
-        ))}
-        <Link
-          component="button"
-          type="button"
-          onClick={() => setPrivacyOpen(true)}
-          sx={stepStyles.link}
-        >
-          {t('privacyLink')}
-        </Link>
-      </Box>
+          <Alert severity="info">{t('pilotNotice')}</Alert>
+        </Box>
 
-      <Alert severity="info">{t('pilotNotice')}</Alert>
+        <Box
+          component="section"
+          sx={[stepStyles.card, consentStyles.information]}
+          aria-label={t('sectionLabel')}
+        >
+          {infoItems.map(({ key, Icon }) => (
+            <Box key={key} sx={stepStyles.infoRow}>
+              <Box sx={stepStyles.infoIcon}>
+                <Icon fontSize="small" />
+              </Box>
+              <Box>
+                <Typography sx={stepStyles.infoTitle}>{t(`items.${key}.title`)}</Typography>
+                <Typography sx={stepStyles.infoBody}>{t(`items.${key}.body`)}</Typography>
+              </Box>
+            </Box>
+          ))}
+          <Link
+            component="button"
+            type="button"
+            onClick={() => setPrivacyOpen(true)}
+            sx={stepStyles.link}
+          >
+            {t('privacyLink')}
+          </Link>
+        </Box>
+      </Box>
 
       <Dialog
         open={privacyOpen}

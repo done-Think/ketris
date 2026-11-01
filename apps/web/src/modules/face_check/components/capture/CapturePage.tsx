@@ -9,6 +9,7 @@ import { extractErrorCode } from '../../utils/error-code'
 
 import { useCaptureSession } from '../../hooks/use-capture-queries'
 import { CaptureFlowProvider, useCaptureFlow } from '../../stores/CaptureFlowProvider'
+import { CapturePresentationProvider } from '../../stores/CapturePresentationProvider'
 import type { CapturePageProps } from '../../types/capture.types'
 import { resolveVisibleStep } from '../../utils/resolve-visible-step'
 import { CaptureLayout } from './CaptureLayout'
@@ -84,10 +85,12 @@ function CaptureFlow({ token }: CapturePageProps) {
   }
 }
 
-export function CapturePage({ token }: CapturePageProps) {
+export function CapturePage({ token, variant = 'standalone' }: CapturePageProps) {
   return (
-    <CaptureFlowProvider key={token}>
-      <CaptureFlow token={token} />
-    </CaptureFlowProvider>
+    <CapturePresentationProvider variant={variant}>
+      <CaptureFlowProvider key={token}>
+        <CaptureFlow token={token} />
+      </CaptureFlowProvider>
+    </CapturePresentationProvider>
   )
 }

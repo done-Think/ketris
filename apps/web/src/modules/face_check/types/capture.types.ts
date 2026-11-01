@@ -53,8 +53,16 @@ export type FaceRing = 'warn' | 'active' | 'ok'
 
 export type SelfiePhase = 'position' | LivenessChallenge | 'done'
 
+export type CapturePresentationVariant = 'standalone' | 'dashboard'
+
 export interface CapturePageProps {
   token: string
+  variant?: CapturePresentationVariant
+}
+
+export interface CapturePresentationProviderProps {
+  variant?: CapturePresentationVariant
+  children: ReactNode
 }
 
 export interface CaptureFlowProviderProps {

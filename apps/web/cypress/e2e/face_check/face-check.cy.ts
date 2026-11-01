@@ -119,13 +119,52 @@ describe('Face Check real authorization and invited capture', () => {
       .contains('a', /^Face Check$/)
       .should('not.exist')
     cy.contains('a', portuguese.candidate.start).click()
-    cy.location('pathname').should('include', '/pt/face_check/verify/')
+    cy.then(() =>
+      cy
+        .location('pathname')
+        .should('eq', `/pt/dashboard/face_check/my-verifications/${created!.id}`),
+    )
+    cy.get('nav:visible').contains('a', 'Minhas verificações').should('be.visible')
     cy.contains('button', 'Começar').should('be.visible')
+    cy.document().then((document) =>
+      expect(document.documentElement.scrollWidth).to.be.at.most(
+        document.documentElement.clientWidth,
+      ),
+    )
+    cy.contains('button', 'Começar')
+      .parent()
+      .then((element) => expect(element[0].getBoundingClientRect().width).to.be.greaterThan(700))
+    cy.screenshot('face-check-dashboard-desktop', { capture: 'viewport' })
+    cy.then(() => cy.visit(`/pt/face_check/verify/${created!.token}`))
+    cy.then(() =>
+      cy
+        .location('pathname')
+        .should('eq', `/pt/dashboard/face_check/my-verifications/${created!.id}`),
+    )
+    cy.viewport(390, 844)
+    cy.contains('button', 'Começar').should('be.visible')
+    cy.document().then((document) =>
+      expect(document.documentElement.scrollWidth).to.be.at.most(
+        document.documentElement.clientWidth,
+      ),
+    )
+    cy.screenshot('face-check-dashboard-mobile', { capture: 'viewport' })
     cy.clearCookies()
     cy.then(() => login(candidate!.otherEmail))
     cy.visit('/pt/dashboard/face_check/my-verifications?start=next')
     cy.contains(portuguese.candidate.empty).should('be.visible')
     cy.contains('a', portuguese.candidate.start).should('not.exist')
+    cy.then(() =>
+      cy.request({
+        url: `/pt/dashboard/face_check/my-verifications/${created!.id}`,
+        failOnStatusCode: false,
+      }),
+    ).then((response) => {
+      // A streamed Next.js notFound can keep HTTP 200; private capture must never render.
+      expect([200, 404]).to.include(response.status)
+      expect(response.body).not.to.contain(created!.token)
+      expect(response.body).not.to.contain('data-capture-presentation="dashboard"')
+    })
     cy.request({
       url: '/api/face_check/sessions',
       headers: { 'X-Ketris-Api-Version': '3' },
@@ -152,7 +191,12 @@ describe('Face Check real authorization and invited capture', () => {
     cy.visit('/pt')
     cy.get('button[aria-label="Abrir notificações"]').click()
     cy.contains('button', 'Verificação pendente').should('be.visible').click()
-    cy.then(() => cy.location('pathname').should('eq', `/pt/face_check/verify/${created!.token}`))
+    cy.then(() =>
+      cy
+        .location('pathname')
+        .should('eq', `/pt/dashboard/face_check/my-verifications/${created!.id}`),
+    )
+    cy.get('nav:visible').contains('a', 'Minhas verificações').should('be.visible')
     cy.contains('button', 'Começar').click()
     cy.get('[role="dialog"]').within(() => {
       cy.contains('label', 'Entendi e estou de acordo!').click()

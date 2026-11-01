@@ -7,6 +7,9 @@ import type {
   FaceCheckCandidateVerificationRepository,
 } from '../types/candidate'
 import { PrismaFaceCheckCandidateLookup } from '../infrastructure/prisma-candidate-lookup'
+import { PrismaCandidateVerificationRepository } from '../infrastructure/prisma-candidate-verification-repository'
+import { DataCipher, captureTokenHash } from '../infrastructure/data-cipher'
+import { newSessionRecord } from '../verification/domain/session-rules'
 import { candidateVerificationCountsSchema } from '../schemas/api.schemas'
 import {
   GetFaceCheckAccessUseCase,
@@ -205,6 +208,186 @@ describe('FaceCheck candidate identity and permissions', () => {
       count: 0,
       pendingCount: 0,
     })
+  })
+})
+
+describe('FaceCheck single candidate verification reads', () => {
+  function captureReader() {
+    const now = Date.parse('2030-01-01T12:00:00.000Z')
+    const cipher = new DataCipher(Buffer.alloc(32, 7))
+    const record = newSessionRecord(
+      {
+        id: 'own-session',
+        personName: 'Private candidate',
+        agencyName: 'Agency',
+        cpf: null,
+        reference: null,
+        contact: null,
+        acceptedDocument: 'RG',
+        createdAt: now,
+        expiresAt: now + 60_000,
+        outcome: 'approve',
+        token: 'a'.repeat(64),
+        captureMode: 'camera',
+        maxAttempts: 3,
+      },
+      'event',
+    )
+    record.session.propertyId = 'property'
+    const row = {
+      id: record.session.id,
+      tenantId: 'provider-tenant',
+      propertyId: 'property',
+      requestedById: 'owner',
+      status: record.session.status,
+      createdAt: new Date(now),
+      expiresAt: new Date(record.session.expiresAt),
+      tokenHash: captureTokenHash(record.session.token),
+      encryptedRecord: cipher.encrypt(record, 'session:provider-tenant:own-session'),
+      property: { title: 'Private property', tenantId: 'provider-tenant', responsibleId: 'owner' },
+      tenant: { name: 'Provider', status: 'ACTIVE', accountType: 'AGENCY' },
+      requestedBy: {
+        id: 'owner',
+        tenantId: 'provider-tenant',
+        role: 'OWNER',
+        active: true,
+        emailVerifiedAt: new Date(now),
+        membershipApprovedAt: new Date(now),
+      },
+    }
+    const user = vi.fn(async ({ where }: { where: { id: string; tenantId: string } }) =>
+      where.id === candidate.userId && where.tenantId === candidate.tenantId
+        ? {
+            id: candidate.userId,
+            tenantId: candidate.tenantId,
+            role: candidate.role,
+            tenant: { accountType: candidate.accountType },
+          }
+        : null,
+    )
+    const findFirst = vi.fn(async (): Promise<typeof row | null> => row)
+    const count = vi.fn(),
+      findMany = vi.fn()
+    const database = {
+      user: { findFirst: user },
+      faceCheckSession: { findFirst, count, findMany },
+    } as unknown as FaceCheckDatabase
+    return {
+      now,
+      cipher,
+      record,
+      row,
+      user,
+      findFirst,
+      count,
+      findMany,
+      reader: new PrismaCandidateVerificationRepository(database, cipher, () => now),
+    }
+  }
+
+  it('reads one owned session by ID with a fresh candidate grant and no collection scan', async () => {
+    const h = captureReader()
+    expect(await h.reader.capture(candidate, h.row.id)).toEqual({
+      id: h.row.id,
+      captureToken: h.record.session.token,
+    })
+    expect(h.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: h.row.id,
+        candidateUserId: candidate.userId,
+        candidateUser: {
+          id: candidate.userId,
+          tenantId: candidate.tenantId,
+          active: true,
+          emailVerifiedAt: { not: null },
+          membershipApprovedAt: { not: null },
+          tenant: { status: { in: ['ACTIVE', 'TRIAL'] } },
+        },
+      },
+      select: expect.objectContaining({ id: true, encryptedRecord: true }),
+    })
+    expect(h.user).toHaveBeenCalledTimes(1)
+    expect(h.count).not.toHaveBeenCalled()
+    expect(h.findMany).not.toHaveBeenCalled()
+  })
+
+  it('looks up only the owned literal token hash and projects an ID without decrypting payloads', async () => {
+    const h = captureReader()
+    const decrypt = vi.spyOn(h.cipher, 'decrypt')
+    expect(await h.reader.findByToken(candidate, h.record.session.token)).toEqual({ id: h.row.id })
+    expect(h.findFirst).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        candidateUserId: candidate.userId,
+        tokenHash: captureTokenHash(h.record.session.token),
+      }),
+      select: { id: true },
+    })
+    expect(JSON.stringify(h.findFirst.mock.calls)).not.toContain(h.record.session.token)
+    expect(decrypt).not.toHaveBeenCalled()
+    expect(h.count).not.toHaveBeenCalled()
+    expect(h.findMany).not.toHaveBeenCalled()
+  })
+
+  it('returns null for an unknown or unrelated verification', async () => {
+    const h = captureReader()
+    h.findFirst.mockResolvedValue(null)
+    expect(await h.reader.capture(candidate, 'unknown')).toBeNull()
+    expect(await h.reader.findByToken(candidate, 'b'.repeat(64))).toBeNull()
+  })
+
+  it.each(['a'.repeat(63) + '%', 'a'.repeat(63) + '_', 'A'.repeat(64), 'unknown'])(
+    'rejects a nonliteral capture token %s without a session read',
+    async (token) => {
+      const h = captureReader()
+      expect(await h.reader.findByToken(candidate, token)).toBeNull()
+      expect(h.user).toHaveBeenCalledTimes(1)
+      expect(h.findFirst).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each(['REVIEW', 'APPROVED', 'REJECTED'] as const)(
+    'keeps an owned %s page discoverable without returning its token',
+    async (status) => {
+      const h = captureReader()
+      h.row.status = status
+      expect(await h.reader.capture(candidate, h.row.id)).toEqual({
+        id: h.row.id,
+        captureToken: null,
+      })
+      expect(await h.reader.findByToken(candidate, h.record.session.token)).toEqual({
+        id: h.row.id,
+      })
+    },
+  )
+
+  it('returns no capture token after TTL expiry, issuer revocation, payload corruption or hash mismatch', async () => {
+    for (const reason of ['expiry', 'issuer', 'corrupt', 'hash']) {
+      const h = captureReader()
+      if (reason === 'expiry') h.row.expiresAt = new Date(h.now - 1)
+      if (reason === 'issuer') h.row.requestedBy.active = false
+      if (reason === 'corrupt') h.row.encryptedRecord = 'invalid-ciphertext'
+      if (reason === 'hash') h.row.tokenHash = captureTokenHash('b'.repeat(64))
+      expect(await h.reader.capture(candidate, h.row.id), reason).toEqual({
+        id: h.row.id,
+        captureToken: null,
+      })
+    }
+  })
+
+  it('refreshes identity for both methods and rejects revoked or substituted-tenant accounts before reading a session', async () => {
+    const h = captureReader()
+    await expect(
+      h.reader.capture({ ...candidate, tenantId: 'another-tenant' }, h.row.id),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' })
+    await expect(
+      h.reader.findByToken({ ...candidate, tenantId: 'another-tenant' }, h.record.session.token),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' })
+    h.user.mockResolvedValue(null)
+    await expect(h.reader.capture(candidate, h.row.id)).rejects.toMatchObject({ code: 'FORBIDDEN' })
+    await expect(h.reader.findByToken(candidate, h.record.session.token)).rejects.toMatchObject({
+      code: 'FORBIDDEN',
+    })
+    expect(h.findFirst).not.toHaveBeenCalled()
   })
 })
 

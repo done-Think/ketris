@@ -9,6 +9,7 @@ import { SessionDetailPage } from './console/detail/SessionDetailPage'
 import { OverviewPage } from './console/overview/OverviewPage'
 import { SessionsPage } from './console/sessions/SessionsPage'
 import { SettingsPage } from './console/settings/SettingsPage'
+import type { CapturePageProps } from '../types/capture.types'
 
 export function FaceCheckOverviewPage() {
   return (
@@ -40,10 +41,10 @@ export function FaceCheckSettingsPage() {
     </ConsoleShell>
   )
 }
-export function FaceCheckCapturePage({ token }: { token: string }) {
+export function FaceCheckCapturePage({ token, variant }: CapturePageProps) {
   return (
-    <Box data-face-check-private>
-      <CapturePage token={token} />
+    <Box data-face-check-private="true" className="sentry-block">
+      <CapturePage token={token} variant={variant} />
     </Box>
   )
 }

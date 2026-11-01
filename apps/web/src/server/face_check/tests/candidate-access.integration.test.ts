@@ -2,7 +2,7 @@ import { randomBytes, randomUUID } from 'node:crypto'
 import type { PrismaClient, TenantAccountType, UserRole } from '@prisma/client'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { disposableFaceCheckDatabase } from './fixtures/disposable-database'
-import { DataCipher } from '../infrastructure/data-cipher'
+import { DataCipher, captureTokenHash } from '../infrastructure/data-cipher'
 import { FaceCheckAccessScope } from '../infrastructure/access-scope'
 import { PrismaSessionRepository } from '../infrastructure/prisma-session-repository'
 import { PrismaCandidateVerificationRepository } from '../infrastructure/prisma-candidate-verification-repository'
@@ -206,6 +206,111 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
         (await database.faceCheckSession.findUniqueOrThrow({ where: { id: record.session.id } }))
           .candidateUserId,
       ).toBe(local.id)
+    })
+
+    it('reads individual captures only for their associated candidate within the same tenant or across provider tenants', async () => {
+      const own = await createSession(email)
+      const anotherProvider = await createSession(email, otherOwner, otherPropertyId)
+      const unrelated = await createSession(otherEmail)
+      const localEmail = `${prefix}-local-capture@example.test`
+      const localUser = await user(agency, localEmail)
+      const local = await resolveFaceCheckCandidate(
+        { userId: localUser.id, tenantId: agency },
+        database,
+      )
+      const localRecord = await createSession(localEmail)
+      const neighborUser = await user(personal, `${prefix}-neighbor-capture@example.test`)
+      const neighbor = await resolveFaceCheckCandidate(
+        { userId: neighborUser.id, tenantId: personal },
+        database,
+      )
+      const repository = reader()
+      for (const record of [own, anotherProvider]) {
+        expect(await repository.capture(candidate, record.session.id)).toEqual({
+          id: record.session.id,
+          captureToken: record.session.token,
+        })
+        expect(await repository.findByToken(candidate, record.session.token)).toEqual({
+          id: record.session.id,
+        })
+        for (const other of [otherCandidate, neighbor, local]) {
+          expect(await repository.capture(other, record.session.id)).toBeNull()
+          expect(await repository.findByToken(other, record.session.token)).toBeNull()
+        }
+      }
+      expect(await repository.capture(local, localRecord.session.id)).toEqual({
+        id: localRecord.session.id,
+        captureToken: localRecord.session.token,
+      })
+      expect(await repository.findByToken(local, localRecord.session.token)).toEqual({
+        id: localRecord.session.id,
+      })
+      for (const id of [unrelated.session.id, localRecord.session.id, randomUUID()])
+        expect(await repository.capture(candidate, id)).toBeNull()
+      for (const token of [
+        unrelated.session.token,
+        localRecord.session.token,
+        randomBytes(32).toString('hex'),
+        `${own.session.token.slice(0, 63)}%`,
+        `${own.session.token.slice(0, 63)}_`,
+      ])
+        expect(await repository.findByToken(candidate, token)).toBeNull()
+    })
+
+    it('keeps individual metadata ownership while withholding expired, reviewed, final, corrupt or mismatched capture tokens', async () => {
+      const repository = reader()
+      for (const reason of [
+        'TTL',
+        'DEADLINE',
+        'REVIEW',
+        'APPROVED',
+        'REJECTED',
+        'CORRUPT',
+        'HASH',
+      ]) {
+        const record = await createSession(email)
+        if (reason === 'TTL') record.session.expiresAt = new Date(Date.now() - 1).toISOString()
+        if (reason === 'DEADLINE') {
+          record.session.status = 'IN_PROGRESS'
+          record.session.captureDeadline = new Date(Date.now() - 1).toISOString()
+        }
+        if (reason === 'REVIEW' || reason === 'APPROVED' || reason === 'REJECTED')
+          record.session.status = reason
+        await database.faceCheckSession.update({
+          where: { id: record.session.id },
+          data: {
+            status: record.session.status,
+            expiresAt: new Date(record.session.expiresAt),
+            encryptedRecord:
+              reason === 'CORRUPT'
+                ? 'invalid-ciphertext'
+                : cipher.encrypt(record, `session:${agency}:${record.session.id}`),
+            ...(reason === 'HASH'
+              ? { tokenHash: captureTokenHash(randomBytes(32).toString('hex')) }
+              : {}),
+          },
+        })
+        expect(await repository.capture(candidate, record.session.id), reason).toEqual({
+          id: record.session.id,
+          captureToken: null,
+        })
+        expect(await repository.findByToken(candidate, record.session.token), reason).toEqual(
+          reason === 'HASH' ? null : { id: record.session.id },
+        )
+      }
+      const revokedIssuer = await createSession(email)
+      await database.user.update({ where: { id: owner.actorId }, data: { active: false } })
+      try {
+        expect(await repository.capture(candidate, revokedIssuer.session.id)).toEqual({
+          id: revokedIssuer.session.id,
+          captureToken: null,
+        })
+        expect(await repository.findByToken(candidate, revokedIssuer.session.token)).toEqual({
+          id: revokedIssuer.session.id,
+        })
+      } finally {
+        await database.user.update({ where: { id: owner.actorId }, data: { active: true } })
+      }
     })
 
     it('does not link ambiguous global accounts, unverified/inactive users, names or mismatched contacts', async () => {
@@ -417,6 +522,12 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
       })
       try {
         await expect(reader().list(candidate)).rejects.toMatchObject({ code: 'FORBIDDEN' })
+        await expect(reader().capture(candidate, randomUUID())).rejects.toMatchObject({
+          code: 'FORBIDDEN',
+        })
+        await expect(
+          reader().findByToken(candidate, randomBytes(32).toString('hex')),
+        ).rejects.toMatchObject({ code: 'FORBIDDEN' })
       } finally {
         await database.user.update({
           where: { id: candidate.userId },

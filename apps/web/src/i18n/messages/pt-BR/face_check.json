@@ -292,7 +292,8 @@
       "sendFront": "Analisar e enviar frente",
       "sendBack": "Analisar e enviar verso"
     },
-    "agencyFallback": "imobiliária"
+    "agencyFallback": "imobiliária",
+    "dashboardTitle": "Verificação de identidade"
   },
   "console": {
     "nav": {

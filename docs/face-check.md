@@ -29,6 +29,13 @@ novamente a conta e a autorização no servidor. Se ela já tiver sido concluíd
 expirado, a pessoa vê a lista atualizada. O menu **Minhas verificações** permanece
 disponível como acesso independente da notificação.
 
+A captura autenticada usa `/dashboard/face_check/my-verifications/[id]`, dentro
+do layout do dashboard. Cada acesso verifica o vínculo da solicitação com a conta;
+o identificador não concede acesso a verificações de outras pessoas. O link público
+do convite redireciona para essa tela quando o titular já está logado. Sem login,
+o convite continua permitindo o fluxo portátil, inclusive pelo celular. As telas
+usam breakpoints para aproveitar o desktop e empilhar conteúdo em telas pequenas.
+
 A proteção do Sentry mantém a gravação e os envios privados bloqueados sem alterar
 os atributos do `<html>` antes da hidratação. As raízes do módulo mantêm seus
 marcadores de privacidade renderizados pelo React.

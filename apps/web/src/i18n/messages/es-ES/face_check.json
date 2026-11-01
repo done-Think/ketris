@@ -292,7 +292,8 @@
       "copied": "Enlace copiado",
       "copyFailed": "No se pudo copiar automáticamente. Selecciona la dirección de arriba y cópiala manualmente.",
       "close": "Cerrar"
-    }
+    },
+    "dashboardTitle": "Verificación de identidad"
   },
   "console": {
     "nav": {

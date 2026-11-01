@@ -292,7 +292,8 @@
       "copied": "Link copied",
       "copyFailed": "Unable to copy automatically. Select the address above and copy it manually.",
       "close": "Close"
-    }
+    },
+    "dashboardTitle": "Identity verification"
   },
   "console": {
     "nav": {
