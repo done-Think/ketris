@@ -23,6 +23,9 @@ vi.mock('next/navigation', async () => ({
     throw new Error('NOT_FOUND')
   }),
 }))
+vi.mock('@shared/hooks/use-dashboard-face-check-notifications', () => ({
+  useDashboardFaceCheckNotifications: () => [],
+}))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))

@@ -7,6 +7,9 @@ import type { ContactsListProps } from '../../types/contact'
 import { getContactListFixtures } from '../fixtures/contact-list-fixtures'
 
 vi.mock('next-auth/react', () => ({ useSession: () => ({ data: { tenantId: 'tenant-1' } }) }))
+vi.mock('@shared/hooks/use-dashboard-face-check-notifications', () => ({
+  useDashboardFaceCheckNotifications: () => [],
+}))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))

@@ -61,7 +61,14 @@
     "charges": "Cobros",
     "signingOut": "Cerrando sesión…",
     "signOutError": "No pudimos cerrar la sesión. Inténtalo de nuevo.",
-    "retrySignOut": "Reintentar cerrar sesión"
+    "retrySignOut": "Reintentar cerrar sesión",
+    "faceCheck": "Face Check",
+    "faceCheckSessions": "Sesiones",
+    "faceCheckReview": "Revisión",
+    "faceCheckSettings": "Configuración",
+    "faceCheckMyVerifications": "Mis verificaciones",
+    "expandNavigationSection": "Expandir opciones de {section}",
+    "collapseNavigationSection": "Contraer opciones de {section}"
   },
   "passwordVisibility": {
     "show": "Mostrar {field}",

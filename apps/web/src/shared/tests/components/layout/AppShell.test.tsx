@@ -43,6 +43,9 @@ vi.mock('@shared/lib/auth/clear-client-session', () => ({
   clearClientSession: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock('@shared/hooks/use-dashboard-face-check-notifications', () => ({
+  useDashboardFaceCheckNotifications: () => [],
+}))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
@@ -312,9 +315,7 @@ describe('AppShell mobile top bar', () => {
   it('shows a single notifications bell next to the menu button', () => {
     renderShell()
 
-    expect(screen.getAllByRole('button', { name: 'Abrir notificações do dashboard' })).toHaveLength(
-      1,
-    )
+    expect(screen.getAllByRole('button', { name: 'Abrir notificações' })).toHaveLength(1)
   })
 })
 

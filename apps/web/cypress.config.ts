@@ -18,6 +18,7 @@ import {
 import type { MarketplaceFixtureInput } from './cypress/types/marketplace-fixtures'
 import {
   seedCrmFixtures,
+  seedCrmFaceCheckCandidates,
   cleanupCrmFixtures,
   readCrmEvidence,
 } from './cypress/support/crm-fixtures'
@@ -129,6 +130,8 @@ export default defineConfig({
         readMarketplaceInquiryEvidence: (propertyId: string) =>
           readMarketplaceInquiryEvidence(prisma, propertyId),
         seedCrmFixtures: (input: CrmFixtureInput) => seedCrmFixtures(prisma, input),
+        seedCrmFaceCheckCandidates: (input: Parameters<typeof seedCrmFaceCheckCandidates>[1]) =>
+          seedCrmFaceCheckCandidates(prisma, input),
         cleanupCrmFixtures: (tenantIds: string[]) => cleanupCrmFixtures(prisma, tenantIds),
         readCrmEvidence: (input: { tenantId: string; contactId: string }) =>
           readCrmEvidence(prisma, input),
@@ -153,6 +156,10 @@ export default defineConfig({
           if (!mailbox)
             throw new Error('O simulador de e-mail Auth não foi habilitado para esta execução.')
           return mailbox.read(email)
+        },
+        readFaceCheckInvitationEmail(email: string) {
+          if (!mailbox) throw new Error('The local email simulator is disabled.')
+          return mailbox.readFaceCheckInvitation(email)
         },
         async seedAuthUser({
           email,

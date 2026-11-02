@@ -7,6 +7,7 @@ export function requiresApiContract(pathname: string): boolean {
     path === '/api/docs' ||
     path.startsWith('/api/docs/') ||
     path === '/api/platform/system/health' ||
+    path === '/api/internal/face_check/cleanup' ||
     /^\/api\/auth\/(csrf|providers|session|signin|signout|callback|error|verify-request)(\/|$)/.test(
       path,
     ) ||

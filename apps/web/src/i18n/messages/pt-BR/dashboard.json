@@ -24,10 +24,14 @@
   },
   "notificationsCenter": {
     "tooltip": "Notificações",
-    "ariaLabel": "Abrir notificações do dashboard",
-    "title": "Alertas do dashboard",
-    "subtitle": "Visitas de hoje e compromissos atribuídos",
-    "empty": "Nenhum alerta para exibir."
+    "ariaLabel": "Abrir notificações",
+    "title": "Notificações",
+    "subtitle": "Verificações pendentes, visitas de hoje e compromissos atribuídos",
+    "empty": "Nenhum alerta para exibir.",
+    "faceCheckVerification": {
+      "title": "{count, plural, one {Verificação pendente} other {Verificações pendentes}}",
+      "message": "{count, plural, one {Você tem uma verificação pendente. Clique para enviar seus documentos e fazer a selfie.} other {Você tem # verificações pendentes. Clique para iniciar a próxima.}}"
+    }
   },
   "overview": {
     "title": "Dashboard",
