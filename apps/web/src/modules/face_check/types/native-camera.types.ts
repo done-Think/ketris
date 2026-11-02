@@ -1,6 +1,14 @@
 export interface CameraTrackCapabilities extends MediaTrackCapabilities {
   resizeMode?: string[]
   focusMode?: string[]
+  exposureMode?: string[]
+  whiteBalanceMode?: string[]
+}
+
+export interface CameraTrackConstraints extends MediaTrackConstraints {
+  focusMode?: ConstrainDOMString
+  exposureMode?: ConstrainDOMString
+  whiteBalanceMode?: ConstrainDOMString
 }
 
 export interface BrowserFaceDetector {

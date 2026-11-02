@@ -4,6 +4,7 @@ import { maxCapturePhotoBytes } from '../utils/upload-limits'
 
 const native = new Blob(['native-photo'], { type: 'image/jpeg' })
 const takePhoto = vi.fn()
+const getPhotoCapabilities = vi.fn()
 const close = vi.fn()
 const drawImage = vi.fn()
 const track = { readyState: 'live' } as MediaStreamTrack
@@ -12,12 +13,13 @@ let video: HTMLVideoElement
 
 beforeEach(() => {
   vi.clearAllMocks()
+  getPhotoCapabilities.mockResolvedValue({ imageWidth: { max: 1920 }, imageHeight: { max: 1080 } })
   video = document.createElement('video')
   Object.defineProperties(video, { videoWidth: { value: 1280 }, videoHeight: { value: 720 } })
   vi.stubGlobal(
     'ImageCapture',
     class {
-      getPhotoCapabilities = async () => ({ imageWidth: { max: 1920 }, imageHeight: { max: 1080 } })
+      getPhotoCapabilities = getPhotoCapabilities
       takePhoto = takePhoto
     },
   )
@@ -56,6 +58,33 @@ describe('native still photo capture', () => {
     expect(image.size).toBeLessThanOrEqual(maxCapturePhotoBytes)
     expect(drawImage).toHaveBeenCalled()
     expect(close).toHaveBeenCalledOnce()
+  })
+
+  it('uses the full video frame instead of accepting a lower-resolution native photo', async () => {
+    vi.mocked(createImageBitmap).mockResolvedValue({
+      width: 640,
+      height: 480,
+      close,
+    } as ImageBitmap)
+    const image = await grabCameraPhoto(video, stream)
+    expect(image).not.toBe(native)
+    expect(drawImage).toHaveBeenCalledWith(video, 0, 0, 1280, 720)
+    expect(close).toHaveBeenCalledOnce()
+  })
+
+  it('still uses native photography when photo capability enumeration is unavailable', async () => {
+    getPhotoCapabilities.mockRejectedValue(new DOMException('No capabilities', 'NotSupportedError'))
+    expect(await grabCameraPhoto(video, stream)).toBe(native)
+    expect(takePhoto).toHaveBeenCalledWith()
+    expect(drawImage).not.toHaveBeenCalled()
+  })
+
+  it('retries native photography without an unsupported size before falling back to video', async () => {
+    takePhoto.mockRejectedValueOnce(new DOMException('Unsupported size', 'OverconstrainedError'))
+    expect(await grabCameraPhoto(video, stream)).toBe(native)
+    expect(takePhoto).toHaveBeenCalledTimes(2)
+    expect(takePhoto).toHaveBeenLastCalledWith()
+    expect(drawImage).not.toHaveBeenCalled()
   })
 
   it('falls back to the full video frame when still photography is unsupported', async () => {

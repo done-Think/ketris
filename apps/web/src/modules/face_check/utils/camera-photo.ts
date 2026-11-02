@@ -1,32 +1,62 @@
 import { drawToJpeg, grabVideoFrame } from './image-capture'
 import { maxCapturePhotoBytes, maxCapturePhotoSide } from './upload-limits'
+import { isCameraConstraintError } from './camera-constraints'
 
-async function nativePhoto(track: MediaStreamTrack) {
+async function nativePhoto(track: MediaStreamTrack, signal: AbortSignal) {
   const capture = new ImageCapture(track)
-  const capabilities = await capture.getPhotoCapabilities()
-  const width = capabilities.imageWidth?.max ?? 0
-  const height = capabilities.imageHeight?.max ?? 0
+  let settings: PhotoSettings | undefined
+  try {
+    const capabilities = await capture.getPhotoCapabilities()
+    const width = capabilities.imageWidth?.max ?? 0
+    const height = capabilities.imageHeight?.max ?? 0
+    const scale = Math.min(1, maxCapturePhotoSide / Math.max(width, height))
+    if (width > 0 && height > 0) {
+      settings = { imageWidth: Math.round(width * scale), imageHeight: Math.round(height * scale) }
+    }
+  } catch {
+    // Some cameras take native photos without exposing the optional capability query.
+  }
+  signal.throwIfAborted()
+  if (!settings) return capture.takePhoto()
+  try {
+    return await capture.takePhoto(settings)
+  } catch (error) {
+    signal.throwIfAborted()
+    if (!isCameraConstraintError(error)) throw error
+    // Independent ranges may not form a valid mode; try the device's default still-photo mode.
+    return capture.takePhoto()
+  }
+}
+
+function boundedPixels(width: number, height: number) {
   const scale = Math.min(1, maxCapturePhotoSide / Math.max(width, height))
-  return capture.takePhoto(
-    width > 0 && height > 0
-      ? { imageWidth: Math.round(width * scale), imageHeight: Math.round(height * scale) }
-      : undefined,
-  )
+  return width * height * scale * scale
 }
 
 export async function grabCameraPhoto(video: HTMLVideoElement | null, stream: MediaStream | null) {
   const track = stream?.getVideoTracks()[0]
   if (track && track.readyState === 'live' && typeof ImageCapture !== 'undefined') {
     let timer: ReturnType<typeof setTimeout> | undefined
+    const controller = new AbortController()
     try {
       const image = await Promise.race([
-        nativePhoto(track),
+        nativePhoto(track, controller.signal),
         new Promise<never>((_resolve, reject) => {
-          timer = setTimeout(() => reject(new Error('PHOTO_TIMEOUT')), 2500)
+          timer = setTimeout(() => {
+            controller.abort()
+            reject(new Error('PHOTO_TIMEOUT'))
+          }, 2500)
         }),
       ])
       const bitmap = await createImageBitmap(image)
       try {
+        if (
+          video &&
+          boundedPixels(bitmap.width, bitmap.height) <
+            boundedPixels(video.videoWidth, video.videoHeight)
+        ) {
+          return await grabVideoFrame(video)
+        }
         if (
           image.type === 'image/jpeg' &&
           image.size > 0 &&
@@ -41,6 +71,7 @@ export async function grabCameraPhoto(video: HTMLVideoElement | null, stream: Me
     } catch {
       // Still photography is optional, even when the browser exposes ImageCapture.
     } finally {
+      controller.abort()
       clearTimeout(timer)
     }
   }

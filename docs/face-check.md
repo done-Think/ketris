@@ -85,12 +85,25 @@ persistência em localStorage, IndexedDB ou cache do navegador.
 A captura tenta negociar a resolução nativa disponível no dispositivo. Quando
 suportado, `ImageCapture.takePhoto()` preserva a fotografia nativa do documento, que
 pode ter mais detalhe que o vídeo. Dispositivos sem essa API usam o quadro completo
-do vídeo. Selfie e movimentos mantêm a mesma resolução e origem de vídeo para não
+do vídeo. Uma foto nativa com menos pixels que o quadro disponível não substitui o
+vídeo de maior resolução. Se a consulta de capacidades ou uma combinação de tamanho
+não for suportada, tentamos o modo de fotografia padrão do dispositivo antes do vídeo.
+Foco, exposição e balanço de branco contínuos são solicitados apenas quando anunciados
+pelo dispositivo, independentemente da resolução; a rejeição de um controle não
+descarta os demais ajustes. Selfie e movimentos mantêm a mesma resolução e origem de vídeo para não
 distorcer a comparação de distância do rosto. Os
 limites de 3 MiB e 16 megapixels por imagem permanecem; aumentar pixels por software
 não substitui resolução óptica ou foco. A orientação ao vivo usa detecção nativa
 local quando disponível; sem ela, apresenta orientação neutra e continua permitindo
 a captura. Não há envio remoto de prévias. Recortes de PDF/galeria também são locais.
+
+O MacBook Pro de 13″ com M2 (2022, Mac14,7) tem câmera integrada de 720p, conforme as
+[especificações da Apple](https://support.apple.com/en-ie/111869). Solicitar 4K ao
+navegador não acrescenta detalhe a esse sensor. Para conferir a nitidez, compare o
+mesmo enquadramento com outro aplicativo de câmera, sem efeitos de desfoque. O
+[modo Retrato do macOS](https://support.apple.com/en-ie/105117) pode desfocar partes
+da cena; o site não controla esse efeito do sistema. Se os dados do documento
+continuarem ilegíveis, oferecemos a continuação no celular pelo mesmo convite.
 
 ## Captura dos movimentos
 

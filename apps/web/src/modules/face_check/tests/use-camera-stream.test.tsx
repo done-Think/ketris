@@ -64,7 +64,7 @@ describe('camera permissions and hardware', () => {
       expect.objectContaining({
         width: { ideal: 1920 },
         height: { ideal: 1080 },
-        resizeMode: { exact: 'none' },
+        resizeMode: { ideal: 'none' },
       }),
     )
     view.unmount()
