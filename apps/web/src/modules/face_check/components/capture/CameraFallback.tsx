@@ -8,6 +8,7 @@ import type { CameraFallbackProps } from '../../types/capture.types'
 import { liveCaptureStyles as styles } from '../../styles/capture.styles'
 import { GalleryButton } from './GalleryButton'
 import { ContinueOnPhoneButton } from './ContinueOnPhoneButton'
+import { useCaptureDevice } from '../../hooks/use-capture-device'
 
 export function CameraFallback({
   token,
@@ -20,6 +21,7 @@ export function CameraFallback({
   disabled,
 }: CameraFallbackProps) {
   const t = useTranslations('face_check.capture.live')
+  const device = useCaptureDevice()
 
   if (status === 'starting') {
     return (
@@ -59,6 +61,7 @@ export function CameraFallback({
                 : status === 'unsupported'
                   ? 'unsupportedHint'
                   : 'unavailableHint',
+          { device },
         )}
       </Typography>
       <ContinueOnPhoneButton token={token} dark disabled={disabled} />

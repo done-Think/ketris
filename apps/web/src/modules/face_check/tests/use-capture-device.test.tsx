@@ -25,6 +25,29 @@ it.each([
   },
 )
 
+it.each([
+  ['pt-BR', pt, 'celular'],
+  ['en-US', en, 'phone'],
+  ['es-ES', es, 'móvil'],
+] as const)(
+  'adapts camera recovery instructions to the current device in %s',
+  (locale, messages, phone) => {
+    const t = createTranslator({ locale, messages, namespace: 'capture.live' })
+    for (const hint of [
+      'notFoundHint',
+      'deniedHint',
+      'unavailableHint',
+      'unsupportedHint',
+    ] as const) {
+      expect(t(hint, { device: 'computer' })).toContain(phone)
+      for (const device of ['mobile', 'camera']) {
+        expect(t(hint, { device })).not.toContain(phone)
+        expect(t(hint, { device })).not.toContain('{device')
+      }
+    }
+  },
+)
+
 it('uses the browser mobile hint even with a generic user agent', () => {
   vi.stubGlobal('navigator', {
     platform: 'Linux',

@@ -19,9 +19,11 @@ import { defaultLocale, isAppLocale } from '@/i18n/routing'
 import type { ContinueOnPhoneButtonProps } from '../../types/capture.types'
 import { phoneCaptureUrl } from '../../utils/phone-capture-url'
 import { continueOnPhoneStyles as styles } from '../../styles/continue-on-phone.styles'
+import { useCaptureDevice } from '../../hooks/use-capture-device'
 
 export function ContinueOnPhoneButton({ token, disabled, dark }: ContinueOnPhoneButtonProps) {
   const t = useTranslations('face_check.capture.phone')
+  const device = useCaptureDevice()
   const currentLocale = useLocale()
   const locale = isAppLocale(currentLocale) ? currentLocale : defaultLocale
   const [open, setOpen] = useState(false)
@@ -42,6 +44,9 @@ export function ContinueOnPhoneButton({ token, disabled, dark }: ContinueOnPhone
       setCopyFailed(true)
     }
   }
+
+  // Wait for device detection so the transfer action never flashes on phones during hydration.
+  if (device !== 'computer') return null
 
   return (
     <>

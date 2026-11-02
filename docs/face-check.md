@@ -69,6 +69,9 @@ Não divulgue URLs de captura em logs, tickets ou analytics.
 Após o aceite do aviso, “Ativar câmera” solicita a permissão nativa do navegador
 no computador ou celular, somente para vídeo. Sem webcam, a tela orienta a usar
 o celular e oferece QR code e cópia do mesmo convite, sem serviço externo de QR.
+“Continuar pelo celular” aparece somente após identificar um computador. Celulares
+e tablets seguem no aparelho atual, com orientações de permissão e recuperação da
+câmera adaptadas, sem convite para transferir a verificação para outro celular.
 Permissão negada tem orientação própria e botão para tentar novamente. As
 câmeras são desligadas ao sair da etapa, inclusive quando a permissão chega
 depois que a tela foi fechada. Endereços locais ou sem HTTPS não são apresentados
