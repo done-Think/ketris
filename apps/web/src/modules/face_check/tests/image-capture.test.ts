@@ -25,6 +25,24 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks())
 
 describe('camera photo detail and upload budget', () => {
+  it('encodes only the guide area at its original pixel density', async () => {
+    const source = document.createElement('canvas')
+    await drawToJpeg(source, 1920, 1080, { x: 0.25, y: 0.25, width: 0.5, height: 0.5 })
+    expect(drawImage).toHaveBeenCalledWith(source, 480, 270, 960, 540, 0, 0, 960, 540)
+    expect(frames).toEqual([{ width: 960, height: 540, quality: 0.95 }])
+  })
+
+  it('rejects a crop outside the camera instead of accidentally saving the environment', async () => {
+    await expect(
+      drawToJpeg(document.createElement('canvas'), 1920, 1080, {
+        x: 0.5,
+        y: 0.5,
+        width: 0.75,
+        height: 0.75,
+      }),
+    ).rejects.toThrow('CAPTURE_FAILED')
+    expect(drawImage).not.toHaveBeenCalled()
+  })
   it('uses small uncropped feedback probes while preserving full-size evidence capture', async () => {
     const video = document.createElement('video')
     Object.defineProperties(video, { videoWidth: { value: 1920 }, videoHeight: { value: 1080 } })

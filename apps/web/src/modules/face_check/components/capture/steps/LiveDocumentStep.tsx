@@ -18,6 +18,7 @@ import { useCameraStream } from '../../../hooks/use-camera-stream'
 import { useCaptureFlow } from '../../../stores/CaptureFlowProvider'
 import type { CaptureStepProps, DocumentOrientation } from '../../../types/capture.types'
 import { documentOptions } from '../../../utils/document-options'
+import { documentGuideCrop } from '../../../utils/document-guide'
 import { CameraFallback } from '../CameraFallback'
 import { CaptureLayout } from '../CaptureLayout'
 import { DocumentIntro } from '../DocumentIntro'
@@ -79,7 +80,7 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
       if (mounted.current) setPreparing(false)
     }
   }
-  const shoot = () => prepareImage(grabPhoto)
+  const shoot = () => prepareImage(() => grabPhoto(documentGuideCrop(orientation, aspectRatio)))
   const pickFile = (file: File) => {
     if (session.allowGalleryUpload && !busy) setImportFile(file)
   }

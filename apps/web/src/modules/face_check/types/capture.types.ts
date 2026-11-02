@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { StoreApi } from 'zustand'
 import type { FaceGuideGeometry } from './face-framing.types'
 import type { CaptureDraftState } from './capture-draft.types'
+import type { NormalizedImageCrop } from './image-crop.types'
 
 import type {
   CaptureMode,
@@ -123,7 +124,7 @@ export interface CameraStream {
   aspectRatio: number | null
   attachVideo: (node: HTMLVideoElement | null) => void
   grabFrame: () => Promise<Blob>
-  grabPhoto: () => Promise<Blob>
+  grabPhoto: (crop?: NormalizedImageCrop) => Promise<Blob>
   sampleFrame: () => Promise<Blob>
   restart: () => void
 }

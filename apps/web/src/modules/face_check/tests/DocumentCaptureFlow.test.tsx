@@ -124,7 +124,14 @@ describe('capture, review, then confirm document photos', () => {
     await h.user.click(screen.getByRole('button', { name: 'Usar estas fotos' }))
     expect(await screen.findByText('Ready for selfie')).toBeVisible()
     expect(captureService.uploadDocumentImage).not.toHaveBeenCalled()
-    expect(photo).toHaveBeenLastCalledWith()
+    expect(photo).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        x: expect.any(Number),
+        y: expect.any(Number),
+        width: expect.any(Number),
+        height: expect.any(Number),
+      }),
+    )
     h.unmount()
     h.client.clear()
   })

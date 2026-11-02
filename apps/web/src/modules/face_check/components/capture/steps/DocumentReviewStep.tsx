@@ -6,13 +6,13 @@ import { useCaptureFlow } from '../../../stores/CaptureFlowProvider'
 import type { CaptureStepProps } from '../../../types/capture.types'
 import { CaptureLayout } from '../CaptureLayout'
 import { documentReviewStyles as styles, stepStyles } from '../../../styles/capture.styles'
+import { hasCompleteSelfieDrafts } from '../../../utils/capture-drafts'
 
 export function DocumentReviewStep({ session }: CaptureStepProps) {
   const t = useTranslations('face_check.capture.documentReview')
   const tDocument = useTranslations('face_check.capture.document')
-  const { goTo, documentType, retakeSide, previews, documentImages } = useCaptureFlow(
-    (state) => state,
-  )
+  const flow = useCaptureFlow((state) => state)
+  const { goTo, documentType, retakeSide, previews, documentImages } = flow
   const docLabel = tDocument(`types.${documentType ?? 'RG'}`)
   return (
     <CaptureLayout
@@ -24,7 +24,7 @@ export function DocumentReviewStep({ session }: CaptureStepProps) {
           size="large"
           variant="contained"
           disabled={!documentImages.front || !documentImages.back || !documentType}
-          onClick={() => goTo('selfie')}
+          onClick={() => goTo(hasCompleteSelfieDrafts(flow) ? 'captureReview' : 'selfie')}
         >
           {t('confirm')}
         </Button>

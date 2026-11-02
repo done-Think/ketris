@@ -19,6 +19,60 @@ afterEach(() => {
 })
 
 describe('local document drafts', () => {
+  it('retakes a rejected back without discarding any selfie, movement or accepted front upload', () => {
+    const store = createCaptureFlowStore()
+    const front = new Blob(['front'])
+    const selfie = new Blob(['selfie'])
+    store.getState().chooseDocument('RG')
+    store.getState().captureDocument('front', front)
+    store.getState().captureDocument('back', new Blob(['bad-back']))
+    store.getState().captureSelfie(selfie)
+    for (const pose of ['turnLeft', 'turnRight', 'closer'] as const)
+      store.getState().captureMovement(pose, new Blob([pose]))
+    const plan = {
+      planId: '11111111-1111-4111-8111-111111111111',
+      expiresAt: '2099-11-01T12:00:00Z',
+      challenges: ['turnLeft', 'turnRight', 'closer'] as ('turnLeft' | 'turnRight' | 'closer')[],
+      step: 0,
+    }
+    store.getState().setLivenessPlan(plan)
+    store.getState().rememberUpload('front', front)
+    store.getState().goTo('captureReview')
+    const previews = { ...store.getState().movementPreviews }
+    store.getState().retakeSide('back')
+    expect(store.getState()).toMatchObject({
+      selfieImage: selfie,
+      movementPreviews: previews,
+      plan,
+      uploaded: { front },
+    })
+    const replacement = new Blob(['readable-back'])
+    store.getState().captureDocument('back', replacement)
+    expect(store.getState()).toMatchObject({
+      step: 'captureReview',
+      selfieImage: selfie,
+      documentImages: { front, back: replacement },
+      uploaded: { front },
+      plan,
+    })
+  })
+
+  it('keeps local photos but requires fresh server validation when a document changes after selfie upload', () => {
+    const store = createCaptureFlowStore()
+    store.getState().chooseDocument('RG')
+    store.getState().captureDocument('front', new Blob(['front']))
+    store.getState().captureDocument('back', new Blob(['back']))
+    const selfie = new Blob(['selfie'])
+    store.getState().captureSelfie(selfie)
+    for (const pose of ['turnLeft', 'turnRight', 'closer'] as const)
+      store.getState().captureMovement(pose, new Blob([pose]))
+    store.getState().rememberUpload('selfie', selfie)
+    store.getState().retakeSide('back')
+    expect(store.getState()).toMatchObject({ plan: null, uploaded: {}, selfieImage: selfie })
+    store.getState().captureDocument('back', new Blob(['new-back']))
+    expect(store.getState().step).toBe('captureReview')
+  })
+
   it('retakes only the selected side and keeps the other photo for review', () => {
     const store = createCaptureFlowStore()
     const front = new Blob(['front'])

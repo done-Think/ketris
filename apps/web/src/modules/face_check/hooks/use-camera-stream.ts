@@ -5,6 +5,7 @@ import { attachStream, grabPreviewFrame, grabVideoFrame, stopStream } from '../u
 import { cameraConstraints, isCameraConstraintError } from '../utils/camera-constraints'
 import { configureCameraQuality } from '../utils/camera-quality'
 import { grabCameraPhoto } from '../utils/camera-photo'
+import type { NormalizedImageCrop } from '../types/image-crop.types'
 
 function statusForError(error: unknown): CameraStreamStatus {
   const name = error && typeof error === 'object' && 'name' in error ? error.name : null
@@ -108,7 +109,10 @@ export function useCameraStream(facing: CameraFacing): CameraStream {
   }, [video])
 
   const grabFrame = useCallback(() => grabVideoFrame(video), [video])
-  const grabPhoto = useCallback(() => grabCameraPhoto(video, stream), [video, stream])
+  const grabPhoto = useCallback(
+    (crop?: NormalizedImageCrop) => grabCameraPhoto(video, stream, crop),
+    [video, stream],
+  )
   const sampleFrame = useCallback(() => grabPreviewFrame(video), [video])
   const restart = useCallback(() => {
     setStream(null)

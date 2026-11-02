@@ -153,6 +153,12 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
     setCaptureFailed(false)
     void sequence.start(step)
   }
+  const preparePose = (step: number) => {
+    intro.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' })
+    setCapturedPhase(null)
+    setCaptureFailed(false)
+    void sequence.prepare(step)
+  }
   const review = () => {
     flow.syncLivenessStep(list.length + 1)
     flow.goTo('captureReview')
@@ -165,7 +171,7 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
           size="large"
           variant="contained"
           disabled={busy || !live}
-          onClick={draft ? () => capturePose(0) : () => void takeSelfie()}
+          onClick={draft ? () => preparePose(0) : () => void takeSelfie()}
           startIcon={busy ? <CircularProgress size={18} color="inherit" /> : null}
         >
           {remaining !== null
@@ -179,7 +185,6 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
             onClick={() => {
               flow.resetLiveness()
               sequence.reset()
-              void takeSelfie()
             }}
           >
             {tLive('retakeSelfie')}
@@ -192,14 +197,14 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
           size="large"
           variant="contained"
           disabled={busy || (!lastPose && !live)}
-          onClick={lastPose ? review : () => capturePose(flow.livenessStep)}
+          onClick={lastPose ? review : () => preparePose(flow.livenessStep)}
         >
           {tLive(lastPose ? 'reviewCaptures' : 'nextPose')}
         </Button>
         <Button
           sx={stepStyles.darkSecondaryAction}
           disabled={busy || !live}
-          onClick={() => capturePose()}
+          onClick={() => preparePose(Math.max(0, flow.livenessStep - 1))}
         >
           {tLive('retakePose')}
         </Button>

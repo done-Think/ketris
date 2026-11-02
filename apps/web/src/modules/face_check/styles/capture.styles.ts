@@ -1,4 +1,5 @@
 import { alpha as colorAlpha, type SxProps, type Theme } from '@mui/material'
+import { documentGuideAspect, documentGuideCrop } from '../utils/document-guide'
 
 import type { StepProgressTone } from '../types'
 import type { DocumentRegion } from '../types/document-import.types'
@@ -409,8 +410,8 @@ export const liveCaptureStyles = {
     left: '50%',
     top: '50%',
     transform: 'translate(-50%, -50%)',
-    width: `${84 * Math.min(1, (orientation === 'portrait' ? 1 / 1.55 : 1.55) / (aspectRatio ?? 4 / 3))}%`,
-    aspectRatio: orientation === 'portrait' ? 1 / 1.55 : 1.55,
+    width: `${documentGuideCrop(orientation, aspectRatio).width * 100}%`,
+    aspectRatio: documentGuideAspect(orientation),
     border: '3px solid',
     borderColor: capture.guideIdle,
     borderRadius: `${radius.sm}px`,

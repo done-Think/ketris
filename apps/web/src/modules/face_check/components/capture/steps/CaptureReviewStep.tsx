@@ -21,7 +21,7 @@ export function CaptureReviewStep({ session }: CaptureStepProps) {
     <CaptureLayout
       captureMode={session.captureMode}
       progressStep="submit"
-      onBack={send.isPending ? undefined : flow.retakeMovements}
+      onBack={send.isPending ? undefined : () => flow.retakeMovements()}
       footer={
         <Button
           size="large"
@@ -88,7 +88,7 @@ export function CaptureReviewStep({ session }: CaptureStepProps) {
                 else if (slot === 'selfie') {
                   flow.resetLiveness()
                   flow.goTo('selfie')
-                } else flow.retakeMovements()
+                } else flow.retakeMovements(slot)
               }}
             >
               {t('retake')}

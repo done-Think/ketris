@@ -101,7 +101,7 @@ describe('click-initiated pose capture', () => {
   })
 
   it('retries only the failed right pose after another click, preserving the accepted left', async () => {
-    const h = fixture()
+    const h = fixture({ planId: plan.planId, localStep: 1 })
     start.mockResolvedValue({ ...plan, challenges: [...steps], step: 1 })
     h.capture.mockImplementation(async (challenge) => {
       if (challenge === 'turnRight') throw new ApiError('LIVENESS_FAILED', 422, 'livenessNotTurned')
@@ -143,14 +143,40 @@ describe('click-initiated pose capture', () => {
     },
   )
 
-  it('does not repeat captures whose acknowledgement was lost', async () => {
+  it('shows a changed server checkpoint without taking a photo until the user reads it and clicks again', async () => {
     const h = fixture()
     start.mockResolvedValue({ ...plan, challenges: [...steps], step: 2 })
     act(() => {
       void h.result.current.start()
     })
     await advance(3000)
-    expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['closer'])
+    expect(h.capture).not.toHaveBeenCalled()
+    expect(h.options.tickSound).not.toHaveBeenCalled()
     expect(h.options.onProgress).toHaveBeenLastCalledWith(3)
+    act(() => {
+      void h.result.current.start(2)
+    })
+    await advance(3000)
+    expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['closer'])
+  })
+
+  it('prepares a next pose without audio, countdown or capture even after a long reading pause', async () => {
+    const h = fixture({ planId: plan.planId })
+    act(() => {
+      void h.result.current.prepare(1)
+    })
+    await advance(30_000)
+    expect(h.options.onProgress).toHaveBeenLastCalledWith(2)
+    expect(h.result.current.remaining).toBeNull()
+    expect(h.options.prepareSound).not.toHaveBeenCalled()
+    expect(h.options.tickSound).not.toHaveBeenCalled()
+    expect(h.capture).not.toHaveBeenCalled()
+    act(() => {
+      void h.result.current.start(1)
+    })
+    await advance(2999)
+    expect(h.capture).not.toHaveBeenCalled()
+    await advance(1)
+    expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['turnRight'])
   })
 })

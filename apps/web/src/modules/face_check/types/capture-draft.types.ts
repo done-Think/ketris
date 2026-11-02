@@ -19,5 +19,5 @@ export interface CaptureDraftState {
   captureMovement(challenge: LivenessChallenge, image: Blob): void
   setLivenessPlan(plan: DeferredLivenessPlan): void
   rememberUpload(slot: CaptureUploadSlot, image: Blob): void
-  retakeMovements(): void
+  retakeMovements(challenge?: LivenessChallenge): void
 }

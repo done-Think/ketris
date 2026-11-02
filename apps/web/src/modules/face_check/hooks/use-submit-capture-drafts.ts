@@ -10,6 +10,7 @@ import { useCaptureFlow, useCaptureRequestSignal } from '../stores/CaptureFlowPr
 import type { CaptureFlowState } from '../types/capture.types'
 import type { CaptureUploadSlot } from '../types/capture-draft.types'
 import { captureKeys } from './capture-query-keys'
+import { hasCompleteSelfieDrafts } from '../utils/capture-drafts'
 
 type Submission = Pick<
   CaptureFlowState,
@@ -20,31 +21,36 @@ export function useSubmitCaptureDrafts(token: string) {
   const client = useQueryClient()
   const getSignal = useCaptureRequestSignal()
   const remember = useCaptureFlow((state) => state.rememberUpload)
+  const setPlan = useCaptureFlow((state) => state.setLivenessPlan)
   const [stage, setStage] = useState<CaptureUploadSlot | null>(null)
   const mutation = useMutation({
     gcTime: 0,
     retry: false,
     mutationFn: async (draft: Submission) => {
-      const plan = deferredLivenessPlanSchema.safeParse(draft.plan)
       const { front, back } = draft.documentImages
       if (
-        !plan.success ||
         !draft.documentType ||
         !front ||
         !back ||
         !draft.selfieImage ||
-        plan.data.challenges.some((challenge) => !draft.movementImages[challenge])
+        !hasCompleteSelfieDrafts(draft)
       )
         throw new ApiError('IMAGE_REQUIRED', 400)
       const signal = getSignal()
       // Recover an acknowledgement lost after submission, without uploading the photos twice.
       const status = await captureService.getStatus(token, signal)
       if (status.status !== 'IN_PROGRESS') return status
+      const plan = deferredLivenessPlanSchema.safeParse(
+        draft.plan ?? (await captureService.prepareLiveness(token, true, signal)),
+      )
+      if (!plan.success) throw new ApiError('ANALYSIS_INVALID_RESPONSE', 502)
       if (Date.parse(plan.data.expiresAt) <= Date.now()) throw new ApiError('SESSION_EXPIRED', 410)
+      if (!draft.plan) setPlan(plan.data)
+      const uploaded: Submission['uploaded'] = draft.plan ? draft.uploaded : {}
       const planId = plan.data.planId
       for (const side of ['front', 'back'] as const) {
         const image = side === 'front' ? front : back
-        if (draft.uploaded[side] === image) continue
+        if (uploaded[side] === image) continue
         setStage(side)
         await captureService.uploadDocumentImage(
           token,
@@ -53,7 +59,7 @@ export function useSubmitCaptureDrafts(token: string) {
         )
         remember(side, image)
       }
-      if (draft.uploaded.selfie !== draft.selfieImage) {
+      if (uploaded.selfie !== draft.selfieImage) {
         setStage('selfie')
         await captureService.uploadSelfie(token, draft.selfieImage, signal, planId)
         remember('selfie', draft.selfieImage)

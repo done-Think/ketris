@@ -6,6 +6,8 @@ import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LiveSelfieStep } from '../components/capture/steps/LiveSelfieStep'
 import { CaptureReviewStep } from '../components/capture/steps/CaptureReviewStep'
+import { LiveDocumentStep } from '../components/capture/steps/LiveDocumentStep'
+import { DocumentReviewStep } from '../components/capture/steps/DocumentReviewStep'
 import { captureService } from '../services/capture-service'
 import { ApiError } from '../services/api-error'
 import { CaptureFlowProvider, useCaptureFlow } from '../stores/CaptureFlowProvider'
@@ -13,6 +15,7 @@ import type { CaptureSessionView } from '../types'
 
 const timing = vi.hoisted(() => ({ fast: true }))
 const grab = vi.hoisted(() => vi.fn())
+const documentPhoto = vi.hoisted(() => vi.fn())
 
 vi.mock('../services/capture-service', () => ({
   captureService: {
@@ -28,9 +31,10 @@ vi.mock('../services/capture-service', () => ({
 vi.mock('../hooks/use-camera-stream', () => ({
   useCameraStream: () => ({
     status: 'live',
+    aspectRatio: 16 / 9,
     attachVideo: vi.fn(),
     grabFrame: grab,
-    grabPhoto: async () => new Blob(['native-selfie'], { type: 'image/jpeg' }),
+    grabPhoto: documentPhoto,
   }),
 }))
 vi.mock('../hooks/use-selfie-framing', () => ({ useSelfieFraming: () => 'ready' }))
@@ -56,6 +60,9 @@ vi.mock('../components/capture/CaptureLayout', () => ({
       {footer}
     </main>
   ),
+}))
+vi.mock('../components/capture/ContinueOnPhoneButton', () => ({
+  ContinueOnPhoneButton: () => null,
 }))
 
 const challenges = ['turnLeft', 'turnRight', 'closer'] as const
@@ -93,6 +100,8 @@ function Flow() {
   if (!ready) return null
   if (flow.step === 'submit') return <p>Capture submitted</p>
   if (flow.step === 'captureReview') return <CaptureReviewStep session={session} />
+  if (flow.step === 'document') return <LiveDocumentStep session={session} />
+  if (flow.step === 'documentReview') return <DocumentReviewStep session={session} />
   return <LiveSelfieStep session={session} />
 }
 function open() {
@@ -111,6 +120,8 @@ function open() {
 async function nextPose(user: ReturnType<typeof userEvent.setup>) {
   await waitFor(() => expect(screen.getByRole('button', { name: 'Próximo' })).toBeEnabled())
   await user.click(screen.getByRole('button', { name: 'Próximo' }))
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Capturar foto' })).toBeEnabled())
+  await user.click(screen.getByRole('button', { name: 'Capturar foto' }))
 }
 async function captureAll(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole('button', { name: 'Tirar selfie' }))
@@ -125,6 +136,7 @@ beforeEach(() => {
   vi.resetAllMocks()
   timing.fast = true
   grab.mockResolvedValue(new Blob(['frame'], { type: 'image/jpeg' }))
+  documentPhoto.mockResolvedValue(new Blob(['new-document'], { type: 'image/jpeg' }))
   let id = 0
   vi.stubGlobal(
     'URL',
@@ -164,6 +176,79 @@ afterEach(() => {
 })
 
 describe('deferred selfie and movement capture', () => {
+  it('retakes only a rejected back, returns directly to final review and preserves the accepted front receipt', async () => {
+    let rejected = false
+    vi.mocked(captureService.uploadDocumentImage).mockImplementation(async (_token, input) => {
+      if (input.side === 'back' && !rejected) {
+        rejected = true
+        throw new ApiError('PHOTO_REJECTED', 422, 'documentTextNotFound')
+      }
+    })
+    const h = open()
+    await captureAll(h.user)
+    await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
+    await screen.findByText(/Não foi possível validar: Verso do documento/)
+    await h.user.click(screen.getAllByRole('button', { name: 'Refazer captura' })[1])
+    expect(await screen.findByRole('heading', { name: 'Verso do RG' })).toBeVisible()
+    expect(grab).toHaveBeenCalledTimes(4)
+    await h.user.click(screen.getByRole('button', { name: 'Tirar foto' }))
+    expect(
+      await screen.findByRole('button', { name: 'Confirmar e enviar para análise' }),
+    ).toBeEnabled()
+    expect(screen.getAllByRole('img')).toHaveLength(6)
+    expect(grab).toHaveBeenCalledTimes(4)
+    await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
+    expect(await screen.findByText('Capture submitted')).toBeVisible()
+    expect(
+      vi.mocked(captureService.uploadDocumentImage).mock.calls.map(([, input]) => input.side),
+    ).toEqual(['front', 'back', 'back'])
+    expect(captureService.uploadSelfie).toHaveBeenCalledOnce()
+    expect(documentPhoto).toHaveBeenCalledOnce()
+    h.unmount()
+    h.client.clear()
+  })
+
+  it.each(['selfie', 'submit'] as const)(
+    'revalidates existing local selfies under a new plan after a lost %s acknowledgement and a document edit',
+    async (stage) => {
+      if (stage === 'selfie')
+        vi.mocked(captureService.uploadSelfie).mockRejectedValueOnce(
+          new ApiError('NETWORK_ERROR', 0),
+        )
+      else vi.mocked(captureService.submit).mockRejectedValueOnce(new ApiError('NETWORK_ERROR', 0))
+      const h = open()
+      await captureAll(h.user)
+      await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
+      await screen.findByText(
+        'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
+      )
+      const originalSelfie = vi.mocked(captureService.uploadSelfie).mock.calls[0][1]
+      await h.user.click(screen.getAllByRole('button', { name: 'Refazer captura' })[1])
+      await h.user.click(await screen.findByRole('button', { name: 'Tirar foto' }))
+      expect(
+        await screen.findByRole('button', { name: 'Confirmar e enviar para análise' }),
+      ).toBeEnabled()
+      const newPlan = { ...plan, planId: '22222222-2222-4222-8222-222222222222' }
+      vi.mocked(captureService.prepareLiveness).mockResolvedValue(newPlan)
+      await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
+      expect(await screen.findByText('Capture submitted')).toBeVisible()
+      expect(captureService.prepareLiveness).toHaveBeenLastCalledWith(
+        'token',
+        true,
+        expect.any(AbortSignal),
+      )
+      expect(captureService.uploadSelfie).toHaveBeenLastCalledWith(
+        'token',
+        originalSelfie,
+        expect.any(AbortSignal),
+        newPlan.planId,
+      )
+      expect(grab).toHaveBeenCalledTimes(4)
+      h.unmount()
+      h.client.clear()
+    },
+  )
+
   it('keeps all six photos local until final confirmation, then submits in server-validated order', async () => {
     const h = open()
     await captureAll(h.user)
@@ -172,7 +257,7 @@ describe('deferred selfie and movement capture', () => {
     expect(captureService.uploadSelfie).not.toHaveBeenCalled()
     expect(captureService.uploadLivenessFrame).not.toHaveBeenCalled()
     expect(captureService.submit).not.toHaveBeenCalled()
-    expect(captureService.prepareLiveness).toHaveBeenCalledTimes(3)
+    expect(captureService.prepareLiveness).toHaveBeenCalledTimes(6)
     await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
     expect(await screen.findByText('Capture submitted')).toBeVisible()
     expect(
@@ -203,10 +288,13 @@ describe('deferred selfie and movement capture', () => {
       .getByRole('img', { name: 'Selfie capturada para revisão' })
       .getAttribute('src')
     await h.user.click(screen.getByRole('button', { name: 'Tirar selfie de novo' }))
-    await waitFor(() =>
-      expect(
-        screen.getByRole('img', { name: 'Selfie capturada para revisão' }),
-      ).not.toHaveAttribute('src', first),
+    expect(
+      screen.queryByRole('img', { name: 'Selfie capturada para revisão' }),
+    ).not.toBeInTheDocument()
+    await h.user.click(screen.getByRole('button', { name: 'Tirar selfie' }))
+    expect(screen.getByRole('img', { name: 'Selfie capturada para revisão' })).not.toHaveAttribute(
+      'src',
+      first,
     )
     expect(captureService.uploadSelfie).not.toHaveBeenCalled()
     expect(URL.revokeObjectURL).toHaveBeenCalled()
@@ -235,7 +323,7 @@ describe('deferred selfie and movement capture', () => {
       step: 1,
     })
     await h.user.click(screen.getAllByRole('button', { name: 'Refazer captura' })[4])
-    await h.user.click(await screen.findByRole('button', { name: 'Iniciar captura' }))
+    await h.user.click(await screen.findByRole('button', { name: 'Capturar foto' }))
     await nextPose(h.user)
     await h.user.click(await screen.findByRole('button', { name: 'Revisar todas as fotos' }))
     await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
@@ -247,7 +335,7 @@ describe('deferred selfie and movement capture', () => {
     h.client.clear()
   })
 
-  it('waits for a click and exactly three seconds for each of the four poses', async () => {
+  it('lets users read each next pose indefinitely and starts its three seconds only on Capture', async () => {
     timing.fast = false
     vi.useFakeTimers()
     const h = open()
@@ -266,6 +354,10 @@ describe('deferred selfie and movement capture', () => {
       await advance(30_000)
       expect(grab).toHaveBeenCalledTimes(count - 1)
       fireEvent.click(screen.getByRole('button', { name: 'Próximo' }))
+      await advance(30_000)
+      expect(grab).toHaveBeenCalledTimes(count - 1)
+      expect(screen.queryByRole('button', { name: /Captura em/ })).not.toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: 'Capturar foto' }))
       await advance(2999)
       expect(grab).toHaveBeenCalledTimes(count - 1)
       await advance(1)

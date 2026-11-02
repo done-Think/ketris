@@ -1,6 +1,7 @@
 import { drawToJpeg, grabVideoFrame } from './image-capture'
 import { maxCapturePhotoBytes, maxCapturePhotoSide } from './upload-limits'
 import { isCameraConstraintError } from './camera-constraints'
+import type { NormalizedImageCrop } from '../types/image-crop.types'
 
 async function nativePhoto(track: MediaStreamTrack, signal: AbortSignal) {
   const capture = new ImageCapture(track)
@@ -33,7 +34,11 @@ function boundedPixels(width: number, height: number) {
   return width * height * scale * scale
 }
 
-export async function grabCameraPhoto(video: HTMLVideoElement | null, stream: MediaStream | null) {
+export async function grabCameraPhoto(
+  video: HTMLVideoElement | null,
+  stream: MediaStream | null,
+  crop?: NormalizedImageCrop,
+) {
   const track = stream?.getVideoTracks()[0]
   if (track && track.readyState === 'live' && typeof ImageCapture !== 'undefined') {
     let timer: ReturnType<typeof setTimeout> | undefined
@@ -52,19 +57,24 @@ export async function grabCameraPhoto(video: HTMLVideoElement | null, stream: Me
       try {
         if (
           video &&
-          boundedPixels(bitmap.width, bitmap.height) <
-            boundedPixels(video.videoWidth, video.videoHeight)
+          (boundedPixels(bitmap.width, bitmap.height) <
+            boundedPixels(video.videoWidth, video.videoHeight) ||
+            // A native photo can use a different sensor area from the preview. Use the
+            // video frame when proportions differ so the guide still describes the crop.
+            (crop &&
+              Math.abs(bitmap.width / bitmap.height - video.videoWidth / video.videoHeight) > 0.01))
         ) {
-          return await grabVideoFrame(video)
+          return await grabVideoFrame(video, crop)
         }
         if (
+          !crop &&
           image.type === 'image/jpeg' &&
           image.size > 0 &&
           image.size <= maxCapturePhotoBytes &&
           Math.max(bitmap.width, bitmap.height) <= maxCapturePhotoSide
         )
           return image
-        return await drawToJpeg(bitmap, bitmap.width, bitmap.height)
+        return await drawToJpeg(bitmap, bitmap.width, bitmap.height, crop)
       } finally {
         bitmap.close()
       }
@@ -75,5 +85,5 @@ export async function grabCameraPhoto(video: HTMLVideoElement | null, stream: Me
       clearTimeout(timer)
     }
   }
-  return grabVideoFrame(video)
+  return grabVideoFrame(video, crop)
 }

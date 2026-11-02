@@ -3,6 +3,7 @@ import { createStore } from 'zustand/vanilla'
 import type { DocumentSide } from '../types'
 
 import type { CaptureFlowState, CaptureFlowStore } from '../types/capture.types'
+import { hasCompleteSelfieDrafts } from '../utils/capture-drafts'
 
 const sidesInOrder = ['front', 'back'] as const
 
@@ -30,6 +31,17 @@ function clearSelfieDrafts(state: CaptureFlowState) {
     uploaded: {},
     livenessStep: 0,
   }
+}
+
+function invalidateDocumentUpload(state: CaptureFlowState, side: DocumentSide) {
+  // The backend locks documents after accepting the selfie. A new plan will revalidate
+  // the existing local images on final confirmation, without asking for new selfies.
+  if (state.uploaded.selfie || (state.uploaded.front && state.uploaded.back))
+    return { plan: null, uploaded: {} }
+  const uploaded = { ...state.uploaded }
+  delete uploaded[side]
+  if (side === 'front') delete uploaded.back
+  return { uploaded }
 }
 
 export function createCaptureFlowStore(): CaptureFlowStore {
@@ -63,7 +75,15 @@ export function createCaptureFlowStore(): CaptureFlowStore {
       })),
     rememberUpload: (slot, image) =>
       set((state) => ({ uploaded: { ...state.uploaded, [slot]: image } })),
-    retakeMovements: () => set({ step: 'selfie', livenessStep: 1 }),
+    retakeMovements: (challenge = 'turnLeft') =>
+      set((state) => ({
+        step: 'selfie',
+        livenessStep:
+          Math.max(
+            0,
+            (state.plan?.challenges ?? ['turnLeft', 'turnRight', 'closer']).indexOf(challenge),
+          ) + 1,
+      })),
     documentImages: { front: null, back: null },
     clearImages: () =>
       set((state) => {
@@ -105,36 +125,33 @@ export function createCaptureFlowStore(): CaptureFlowStore {
         const documentImages = { ...state.documentImages, [side]: image }
         const missing = sidesInOrder.find((item) => !capturedSides.includes(item))
 
-        const reset = clearSelfieDrafts(state)
+        const invalidated = invalidateDocumentUpload(state, side)
         return missing
           ? {
-              ...reset,
+              ...invalidated,
               capturedSides,
               previews,
               documentImages,
               side: missing,
               step: 'document',
-              livenessStep: 0,
             }
           : {
-              ...reset,
+              ...invalidated,
               capturedSides,
               previews,
               documentImages,
-              step: 'documentReview',
-              livenessStep: 0,
+              step: hasCompleteSelfieDrafts(state) ? 'captureReview' : 'documentReview',
             }
       }),
     retakeSide: (side) =>
       set((state) => {
         return {
-          ...clearSelfieDrafts(state),
+          ...invalidateDocumentUpload(state, side),
           side,
           documentImages: { ...state.documentImages, [side]: null },
           step: 'document',
           capturedSides: state.capturedSides.filter((item) => item !== side),
           previews: withoutPreview(state.previews, side),
-          livenessStep: 0,
         }
       }),
     advanceLiveness: (totalChallenges) =>

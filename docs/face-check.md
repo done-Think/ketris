@@ -85,7 +85,12 @@ persistência em localStorage, IndexedDB ou cache do navegador.
 A captura tenta negociar a resolução nativa disponível no dispositivo. Quando
 suportado, `ImageCapture.takePhoto()` preserva a fotografia nativa do documento, que
 pode ter mais detalhe que o vídeo. Dispositivos sem essa API usam o quadro completo
-do vídeo. Uma foto nativa com menos pixels que o quadro disponível não substitui o
+do vídeo como origem do recorte. Na captura de documentos, somente a área da moldura
+é codificada e mantida para revisão e envio; a moldura e o recorte compartilham a
+mesma geometria, nas orientações horizontal e vertical. Se a fotografia nativa tiver
+proporções diferentes do vídeo, usamos o vídeo para manter o enquadramento mostrado.
+O recorte preserva a densidade de pixels original, sem ampliação artificial.
+Uma foto nativa com menos pixels que o quadro disponível não substitui o
 vídeo de maior resolução. Se a consulta de capacidades ou uma combinação de tamanho
 não for suportada, tentamos o modo de fotografia padrão do dispositivo antes do vídeo.
 Foco, exposição e balanço de branco contínuos são solicitados apenas quando anunciados
@@ -105,12 +110,21 @@ mesmo enquadramento com outro aplicativo de câmera, sem efeitos de desfoque. O
 da cena; o site não controla esse efeito do sistema. Se os dados do documento
 continuarem ilegíveis, oferecemos a continuação no celular pelo mesmo convite.
 
+Refazer um lado do documento mantém o outro lado, a selfie e as poses locais. Quando
+todas as demais fotos já existem, a recaptura volta diretamente à revisão final.
+O verso rejeitado é reenviado sem repetir a frente já aceita. Se a selfie já tiver
+sido aceita ou seu envio tiver ficado incerto, a edição do documento exige um novo plano na confirmação
+final e a revalidação das fotos locais existentes, sem novas selfies. Essa renovação
+preserva o prazo original e os limites de rejeição; não contorna validações.
+
 ## Captura dos movimentos
 
 A selfie e cada movimento exigem um clique antes da contagem visível de 3 segundos,
 com bipes quando o navegador permite áudio. Depois da foto, a pessoa pode conferir
-ou refazer a captura. O botão “Próximo” inicia somente a pose seguinte — esquerda,
-direita e aproximação — com uma nova contagem. Não há encadeamento automático.
+ou refazer a captura. O botão “Próximo” apenas apresenta as instruções da pose
+seguinte — esquerda, direita e aproximação — sem contagem ou foto. A pessoa pode ler
+e se posicionar sem pressa. Somente o clique em “Capturar foto” inicia os 3 segundos.
+Refazer uma pose também apresenta a câmera e aguarda esse clique. Não há encadeamento automático.
 Depois da última foto, outro clique abre a revisão final, sem enviar as imagens.
 Pausar, ocultar a aba ou perder a câmera cancela a contagem em andamento; retomar
 exige uma nova ação do usuário.

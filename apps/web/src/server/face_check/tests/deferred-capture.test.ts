@@ -28,6 +28,33 @@ async function uploadPhotos(h: Awaited<ReturnType<typeof prepared>>) {
 }
 
 describe('session-bound deferred capture', () => {
+  it('accepts a replacement for a rejected back under the same plan without losing the accepted front', async () => {
+    const h = await prepared()
+    const token = h.session.token
+    await h.cases.uploadDocumentPhotoUseCase.execute(token, 'front', 'RG', photo(1), h.plan.planId)
+    const before = await h.sessions.read({ id: h.session.id })
+    const inspect = passingEngine().inspect
+    h.inspect.mockImplementationOnce(async (...args) => ({
+      ...(await inspect(...args)),
+      issues: ['documentTextNotFound'],
+    }))
+    await expect(
+      h.cases.uploadDocumentPhotoUseCase.execute(token, 'back', 'RG', photo(2), h.plan.planId),
+    ).rejects.toMatchObject({ code: 'PHOTO_REJECTED', reason: 'documentTextNotFound' })
+    await h.cases.uploadDocumentPhotoUseCase.execute(token, 'back', 'RG', photo(5), h.plan.planId)
+    const after = await h.sessions.read({ id: h.session.id })
+    expect(after?.capture.photos.front).toEqual(before?.capture.photos.front)
+    expect(after?.capture.plan).toEqual(before?.capture.plan)
+    expect(after?.session.captureDeadline).toBe(before?.session.captureDeadline)
+    expect(after?.capture.photos.back).toBeDefined()
+    await h.cases.uploadSelfieUseCase.execute(token, photo(3), h.plan.planId)
+    await h.cases.startLivenessUseCase.execute(token, h.plan.planId)
+    for (const challenge of h.plan.challenges)
+      await h.cases.verifyLivenessFrameUseCase.execute(token, challenge, photo(4), h.plan.planId)
+    await h.cases.submitCaptureUseCase.execute(token, h.plan.planId)
+    expect((await h.sessions.read({ id: h.session.id }))?.session.status).toBe('REVIEW')
+  })
+
   it('issues a movement plan before any photos are uploaded or analyzed', async () => {
     const h = await prepared()
     expect(h.plan.challenges).toEqual(['turnLeft', 'turnRight', 'closer'])

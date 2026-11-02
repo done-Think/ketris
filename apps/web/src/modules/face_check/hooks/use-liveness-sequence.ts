@@ -32,14 +32,14 @@ export function useLivenessSequence(options: LivenessSequenceOptions) {
     }
   }, [token, enabled, stop])
 
-  const start = async (requestedStep = options.localStep) => {
+  const run = async (capturePhoto: boolean, requestedStep = options.localStep) => {
     if (!enabled || active.current || document.hidden) return
-    options.prepareSound()
+    if (capturePhoto) options.prepareSound()
     const controller = new AbortController()
     const { signal } = controller
     active.current = controller
     setRunning(true)
-    setStarted(true)
+    if (capturePhoto) setStarted(true)
     setError(null)
     try {
       if (!Number.isInteger(requestedStep) || requestedStep < 0 || requestedStep > 3)
@@ -53,7 +53,9 @@ export function useLivenessSequence(options: LivenessSequenceOptions) {
       options.onPlan(issued)
       const from = Math.max(issued.step, options.planId === issued.planId ? requestedStep : 0)
       options.onProgress(from + 1)
-      if (from >= issued.challenges.length) return
+      // Preparing the next pose never takes a photo. If another client advanced the
+      // server checkpoint, show that pose and wait for a fresh Capture click as well.
+      if (!capturePhoto || from >= issued.challenges.length || from !== requestedStep) return
       await countDown(signal, options.tickSound)
       await options.capture(issued.challenges[from], signal)
       signal.throwIfAborted()
@@ -72,7 +74,8 @@ export function useLivenessSequence(options: LivenessSequenceOptions) {
     started,
     error,
     remaining,
-    start,
+    start: (step = options.localStep) => run(true, step),
+    prepare: (step = options.localStep) => run(false, step),
     stop,
     reset: () => {
       stop()

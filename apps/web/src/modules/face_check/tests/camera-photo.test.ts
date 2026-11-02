@@ -100,6 +100,33 @@ describe('native still photo capture', () => {
     expect(drawImage).toHaveBeenCalledWith(video, 0, 0, 1280, 720)
   })
 
+  it('crops the native photo without adding preview borders or surrounding pixels', async () => {
+    const crop = { x: 0.25, y: 0.25, width: 0.5, height: 0.5 }
+    expect(await grabCameraPhoto(video, stream, crop)).not.toBe(native)
+    expect(drawImage).toHaveBeenCalledWith(
+      expect.objectContaining({ width: 1920 }),
+      480,
+      270,
+      960,
+      540,
+      0,
+      0,
+      960,
+      540,
+    )
+    expect(close).toHaveBeenCalledOnce()
+  })
+
+  it('uses the preview geometry if the native photo has a different sensor aspect ratio', async () => {
+    vi.mocked(createImageBitmap).mockResolvedValue({
+      width: 2048,
+      height: 1536,
+      close,
+    } as ImageBitmap)
+    await grabCameraPhoto(video, stream, { x: 0.25, y: 0.25, width: 0.5, height: 0.5 })
+    expect(drawImage).toHaveBeenCalledWith(video, 320, 180, 640, 360, 0, 0, 640, 360)
+  })
+
   it('does not get stuck when the device never resolves the native photography request', async () => {
     vi.useFakeTimers()
     takePhoto.mockImplementation(() => new Promise(() => {}))

@@ -4,7 +4,7 @@ import es from '../../../src/i18n/messages/es-ES/face_check.json'
 
 const token = 'd'.repeat(64)
 const path = `/api/face_check/capture/${token}`
-const challenges = ['turnLeft', 'turnRight', 'closer']
+const challenges = ['turnLeft', 'turnRight', 'closer'] as const
 const planId = '11111111-1111-4111-8111-111111111111'
 const session = {
   token,
@@ -22,13 +22,14 @@ const session = {
 
 // Synthetic camera and API only: no real images, saved consent, evidence or host sound.
 describe('click-initiated liveness poses', () => {
-  for (const [locale, messages, failRight] of [
-    ['pt', pt, false],
-    ['en', en, false],
-    ['es', es, false],
-    ['pt', pt, true],
+  for (const [locale, messages, failRight, failBack] of [
+    ['pt', pt, false, false],
+    ['en', en, false, false],
+    ['es', es, false, false],
+    ['pt', pt, true, false],
+    ['pt', pt, false, true],
   ] as const) {
-    it(`${locale}: waits for Next before each pose${failRight ? ' and resumes a failed right without repeating left' : ''}`, () => {
+    it(`${locale}: Next shows instructions and Capture starts the countdown${failRight ? ' and resumes a failed right without repeating left' : failBack ? ' and retakes only a rejected back' : ''}`, () => {
       const captures: string[] = []
       const tones: number[] = []
       let step = 0
@@ -36,11 +37,25 @@ describe('click-initiated liveness poses', () => {
       let starts = 0
       let uploads = 0
       let submitted = false
+      let backRejected = false
+      const documentSides: string[] = []
       cy.viewport(failRight ? 390 : 1440, 900)
       cy.intercept('GET', path, { body: session })
       cy.intercept('POST', `${path}/consent`, { body: session })
       cy.intercept('POST', `${path}/document`, (request) => {
         uploads++
+        const body =
+          typeof request.body === 'string' ? request.body : new TextDecoder().decode(request.body)
+        const side = body.match(/name="side"\r\n\r\n([^\r]+)/)?.[1]
+        documentSides.push(side!)
+        if (failBack && side === 'back' && !backRejected) {
+          backRejected = true
+          request.reply({
+            statusCode: 422,
+            body: { error: { code: 'PHOTO_REJECTED', reason: 'documentTextNotFound' } },
+          })
+          return
+        }
         request.reply({ statusCode: 204 })
       })
       cy.intercept('POST', `${path}/framing`, {
@@ -165,6 +180,14 @@ describe('click-initiated liveness poses', () => {
       cy.then(() => expect(tones.filter((value) => value === 880)).to.have.length(1))
       for (let index = 0; index < challenges.length; index++) {
         cy.contains('button', messages.capture.live.nextPose).should('be.enabled').click()
+        cy.contains('h1', messages.capture.selfie.titles[challenges[index]]).should('be.visible')
+        cy.contains('button', messages.capture.live.startMovements).should('be.enabled')
+        if (index === 0) {
+          cy.wait(3200)
+          cy.then(() => expect(tones.filter((value) => value === 880)).to.have.length(1))
+          cy.get('[role="status"]').should('not.exist')
+        }
+        cy.contains('button', messages.capture.live.startMovements).click()
         cy.contains(
           '[role="status"]',
           messages.capture.live.captureIn.replace('{seconds}', '3'),
@@ -179,6 +202,22 @@ describe('click-initiated liveness poses', () => {
       })
       cy.get('img').should('have.length.at.least', 6)
       cy.contains('button', messages.capture.review.send).click()
+      if (failBack) {
+        cy.contains(messages.capture.live.issues.documentTextNotFound).should('be.visible')
+        cy.contains('h2', messages.capture.review.photos.back)
+          .parent()
+          .contains('button', messages.capture.review.retake)
+          .click()
+        cy.contains('h1', messages.capture.document.titleBack.replace('{doc}', 'RG')).should(
+          'be.visible',
+        )
+        cy.get(`button[aria-label="${messages.capture.document.shutter}"]`)
+          .should('be.enabled')
+          .click()
+        cy.contains('button', messages.capture.review.send).should('be.enabled')
+        cy.then(() => expect(tones.filter((value) => value === 880)).to.have.length(4))
+        cy.contains('button', messages.capture.review.send).click()
+      }
       cy.wait('@movement')
       cy.wait('@movement')
       if (failRight) {
@@ -195,6 +234,7 @@ describe('click-initiated liveness poses', () => {
         cy.contains('h1', messages.capture.live.poseCaptured).should('be.visible')
         cy.contains('button', messages.capture.live.nextPose).should('be.enabled').click()
         cy.contains('h1', messages.capture.selfie.titles.closer).should('be.visible')
+        cy.contains('button', messages.capture.live.startMovements).click()
         cy.contains('h1', messages.capture.live.poseCaptured).should('be.visible')
         cy.contains('button', messages.capture.live.reviewCaptures).click()
         cy.contains('button', messages.capture.review.send).click()
@@ -207,6 +247,9 @@ describe('click-initiated liveness poses', () => {
           failRight ? ['turnLeft', 'turnRight', 'turnRight', 'closer'] : challenges,
         )
         expect(starts).to.equal(failRight ? 2 : 1)
+        expect(documentSides).to.deep.equal(
+          failBack ? ['front', 'back', 'back'] : ['front', 'back'],
+        )
         expect(tones.filter((value) => value === 600)).to.have.length(failRight ? 18 : 12)
         expect(tones.filter((value) => value === 880)).to.have.length(failRight ? 6 : 4)
       })
