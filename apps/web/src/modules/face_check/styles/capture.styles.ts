@@ -383,6 +383,7 @@ export const documentReviewStyles = {
 } satisfies Record<string, SxProps<Theme> | ((...args: never[]) => SxProps<Theme>)>
 
 export const liveCaptureStyles = {
+  hiddenPreview: { display: 'none' },
   orientationControl: { alignSelf: 'center' },
   orientationOption: {
     minHeight: 44,

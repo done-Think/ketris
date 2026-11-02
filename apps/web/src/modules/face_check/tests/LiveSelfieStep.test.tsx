@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -10,6 +10,9 @@ import { captureService } from '../services/capture-service'
 import { ApiError } from '../services/api-error'
 import { CaptureFlowProvider, useCaptureFlow } from '../stores/CaptureFlowProvider'
 import type { CaptureSessionView } from '../types'
+
+const timing = vi.hoisted(() => ({ fast: true }))
+const grab = vi.hoisted(() => vi.fn())
 
 vi.mock('../services/capture-service', () => ({
   captureService: {
@@ -26,7 +29,7 @@ vi.mock('../hooks/use-camera-stream', () => ({
   useCameraStream: () => ({
     status: 'live',
     attachVideo: vi.fn(),
-    grabFrame: async () => new Blob(['frame'], { type: 'image/jpeg' }),
+    grabFrame: grab,
     grabPhoto: async () => new Blob(['native-selfie'], { type: 'image/jpeg' }),
   }),
 }))
@@ -34,14 +37,16 @@ vi.mock('../hooks/use-selfie-framing', () => ({ useSelfieFraming: () => 'ready' 
 vi.mock('../hooks/use-capture-sound', () => ({
   useCaptureSound: () => ({ prepare: vi.fn(), play: vi.fn(), tick: vi.fn() }),
 }))
-vi.mock('../hooks/use-countdown', () => {
-  const clear = vi.fn()
+vi.mock('../hooks/use-countdown', async () => {
+  const actual =
+    await vi.importActual<typeof import('../hooks/use-countdown')>('../hooks/use-countdown')
   return {
-    useCountdown: () => ({
-      remaining: null,
-      run: async (_signal: AbortSignal, tick: () => void) => tick(),
-      clear,
-    }),
+    useCountdown: (seconds: number) => {
+      const countdown = actual.useCountdown(seconds)
+      return timing.fast
+        ? { ...countdown, run: async (_signal: AbortSignal, tick: () => void) => tick() }
+        : countdown
+    },
   }
 })
 vi.mock('../components/capture/CaptureLayout', () => ({
@@ -103,16 +108,23 @@ function open() {
   )
   return { ...view, client, user: userEvent.setup() }
 }
+async function nextPose(user: ReturnType<typeof userEvent.setup>) {
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Próximo' })).toBeEnabled())
+  await user.click(screen.getByRole('button', { name: 'Próximo' }))
+}
 async function captureAll(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole('button', { name: 'Tirar selfie' }))
   expect(captureService.uploadSelfie).not.toHaveBeenCalled()
-  await user.click(screen.getByRole('button', { name: 'Usar esta selfie' }))
-  await user.click(await screen.findByRole('button', { name: 'Iniciar movimentos' }))
+  await nextPose(user)
+  await nextPose(user)
+  await nextPose(user)
   await user.click(await screen.findByRole('button', { name: 'Revisar todas as fotos' }))
 }
 
 beforeEach(() => {
   vi.resetAllMocks()
+  timing.fast = true
+  grab.mockResolvedValue(new Blob(['frame'], { type: 'image/jpeg' }))
   let id = 0
   vi.stubGlobal(
     'URL',
@@ -146,6 +158,8 @@ beforeEach(() => {
 })
 afterEach(() => {
   cleanup()
+  vi.useRealTimers()
+  vi.restoreAllMocks()
   vi.unstubAllGlobals()
 })
 
@@ -158,7 +172,7 @@ describe('deferred selfie and movement capture', () => {
     expect(captureService.uploadSelfie).not.toHaveBeenCalled()
     expect(captureService.uploadLivenessFrame).not.toHaveBeenCalled()
     expect(captureService.submit).not.toHaveBeenCalled()
-    expect(captureService.prepareLiveness).toHaveBeenCalledOnce()
+    expect(captureService.prepareLiveness).toHaveBeenCalledTimes(3)
     await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
     expect(await screen.findByText('Capture submitted')).toBeVisible()
     expect(
@@ -185,8 +199,15 @@ describe('deferred selfie and movement capture', () => {
   it('retakes an unconfirmed selfie without uploading the discarded photo', async () => {
     const h = open()
     await h.user.click(await screen.findByRole('button', { name: 'Tirar selfie' }))
+    const first = screen
+      .getByRole('img', { name: 'Selfie capturada para revisão' })
+      .getAttribute('src')
     await h.user.click(screen.getByRole('button', { name: 'Tirar selfie de novo' }))
-    expect(screen.getByRole('button', { name: 'Tirar selfie' })).toBeVisible()
+    await waitFor(() =>
+      expect(
+        screen.getByRole('img', { name: 'Selfie capturada para revisão' }),
+      ).not.toHaveAttribute('src', first),
+    )
     expect(captureService.uploadSelfie).not.toHaveBeenCalled()
     expect(URL.revokeObjectURL).toHaveBeenCalled()
     h.unmount()
@@ -214,7 +235,8 @@ describe('deferred selfie and movement capture', () => {
       step: 1,
     })
     await h.user.click(screen.getAllByRole('button', { name: 'Refazer captura' })[4])
-    await h.user.click(await screen.findByRole('button', { name: 'Iniciar movimentos' }))
+    await h.user.click(await screen.findByRole('button', { name: 'Iniciar captura' }))
+    await nextPose(h.user)
     await h.user.click(await screen.findByRole('button', { name: 'Revisar todas as fotos' }))
     await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
     expect(await screen.findByText('Capture submitted')).toBeVisible()
@@ -224,4 +246,75 @@ describe('deferred selfie and movement capture', () => {
     h.unmount()
     h.client.clear()
   })
+
+  it('waits for a click and exactly three seconds for each of the four poses', async () => {
+    timing.fast = false
+    vi.useFakeTimers()
+    const h = open()
+    const advance = async (ms: number) =>
+      act(async () => {
+        await vi.advanceTimersByTimeAsync(ms)
+      })
+    await advance(30_000)
+    expect(grab).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Tirar selfie' }))
+    await advance(2999)
+    expect(grab).not.toHaveBeenCalled()
+    await advance(1)
+    expect(grab).toHaveBeenCalledTimes(1)
+    for (let count = 2; count <= 4; count++) {
+      await advance(30_000)
+      expect(grab).toHaveBeenCalledTimes(count - 1)
+      fireEvent.click(screen.getByRole('button', { name: 'Próximo' }))
+      await advance(2999)
+      expect(grab).toHaveBeenCalledTimes(count - 1)
+      await advance(1)
+      expect(grab).toHaveBeenCalledTimes(count)
+    }
+    await advance(30_000)
+    expect(grab).toHaveBeenCalledTimes(4)
+    expect(screen.getByRole('button', { name: 'Revisar todas as fotos' })).toBeVisible()
+    expect(captureService.uploadSelfie).not.toHaveBeenCalled()
+    expect(captureService.uploadLivenessFrame).not.toHaveBeenCalled()
+    expect(captureService.submit).not.toHaveBeenCalled()
+    h.unmount()
+    h.client.clear()
+  })
+
+  it.each(['pause', 'hidden', 'unmount'])(
+    'cancels the selfie countdown on %s and waits for a fresh click',
+    async (reason) => {
+      timing.fast = false
+      vi.useFakeTimers()
+      const h = open()
+      const advance = async (ms: number) =>
+        act(async () => {
+          await vi.advanceTimersByTimeAsync(ms)
+        })
+      fireEvent.click(screen.getByRole('button', { name: 'Tirar selfie' }))
+      await advance(1000)
+      if (reason === 'pause')
+        fireEvent.click(screen.getByRole('button', { name: 'Pausar captura' }))
+      if (reason === 'hidden') {
+        vi.spyOn(document, 'hidden', 'get').mockReturnValue(true)
+        fireEvent(document, new Event('visibilitychange'))
+      }
+      if (reason === 'unmount') h.unmount()
+      await advance(30_000)
+      expect(grab).not.toHaveBeenCalled()
+      if (reason === 'hidden') {
+        vi.spyOn(document, 'hidden', 'get').mockReturnValue(false)
+        fireEvent(document, new Event('visibilitychange'))
+        await advance(30_000)
+        expect(grab).not.toHaveBeenCalled()
+      }
+      if (reason !== 'unmount') {
+        fireEvent.click(screen.getByRole('button', { name: 'Tirar selfie' }))
+        await advance(3000)
+        expect(grab).toHaveBeenCalledOnce()
+      }
+      h.unmount()
+      h.client.clear()
+    },
+  )
 })

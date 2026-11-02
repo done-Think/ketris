@@ -12,7 +12,7 @@ const start = vi.mocked(captureService.prepareLiveness)
 const steps = ['turnLeft', 'turnRight', 'closer'] as const
 const plan = { planId: '11111111-1111-4111-8111-111111111111', expiresAt: '2099-11-01T12:00:00Z' }
 
-function fixture() {
+function fixture(overrides: Partial<LivenessSequenceOptions> = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const capture = vi.fn<LivenessSequenceOptions['capture']>()
   capture.mockResolvedValue(undefined)
@@ -26,6 +26,7 @@ function fixture() {
     onProgress: vi.fn(),
     prepareSound: vi.fn(),
     tickSound: vi.fn(),
+    ...overrides,
   }
   const view = renderHook((enabled: boolean) => useLivenessSequence({ ...options, enabled }), {
     initialProps: true,
@@ -51,8 +52,8 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('automatic liveness capture', () => {
-  it('captures left then right then proximity after three seconds per movement, using one click', async () => {
+describe('click-initiated pose capture', () => {
+  it('captures only one pose after three seconds and waits for another explicit click', async () => {
     const h = fixture()
     act(() => {
       void h.result.current.start()
@@ -65,20 +66,43 @@ describe('automatic liveness capture', () => {
     expect(h.capture).not.toHaveBeenCalled()
     await advance(1)
     expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['turnLeft'])
-    expect(h.result.current.remaining).toBe(3)
-    await advance(3000)
-    expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['turnLeft', 'turnRight'])
-    await advance(3000)
-    expect(h.capture.mock.calls.map(([step]) => step)).toEqual([...steps])
-    expect(h.options.tickSound).toHaveBeenCalledTimes(9)
+    expect(h.result.current.remaining).toBeNull()
+    await advance(30_000)
+    expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['turnLeft'])
+    expect(h.options.tickSound).toHaveBeenCalledTimes(3)
     expect(h.options.prepareSound).toHaveBeenCalledOnce()
-    expect(h.options.onProgress).toHaveBeenLastCalledWith(4)
+    expect(h.options.onProgress).toHaveBeenLastCalledWith(1)
     expect(h.result.current.running).toBe(false)
     expect(h.result.current.error).toBeNull()
   })
 
-  it('stops on a right-turn failure and resumes only the pending right and proximity', async () => {
+  it('requires a fresh click for right and proximity after the left photo', async () => {
+    const h = fixture({ planId: plan.planId })
+    act(() => {
+      void h.result.current.start(0)
+    })
+    await advance(30_000)
+    expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['turnLeft'])
+    act(() => {
+      void h.result.current.start(1)
+    })
+    await advance(2999)
+    expect(h.capture).toHaveBeenCalledTimes(1)
+    await advance(1)
+    await advance(30_000)
+    expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['turnLeft', 'turnRight'])
+    act(() => {
+      void h.result.current.start(2)
+    })
+    await advance(3000)
+    expect(h.capture.mock.calls.map(([step]) => step)).toEqual([...steps])
+    expect(h.options.tickSound).toHaveBeenCalledTimes(9)
+    expect(h.options.onProgress).toHaveBeenLastCalledWith(3)
+  })
+
+  it('retries only the failed right pose after another click, preserving the accepted left', async () => {
     const h = fixture()
+    start.mockResolvedValue({ ...plan, challenges: [...steps], step: 1 })
     h.capture.mockImplementation(async (challenge) => {
       if (challenge === 'turnRight') throw new ApiError('LIVENESS_FAILED', 422, 'livenessNotTurned')
     })
@@ -86,7 +110,7 @@ describe('automatic liveness capture', () => {
       void h.result.current.start()
     })
     await advance(9000)
-    expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['turnLeft', 'turnRight'])
+    expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['turnRight'])
     expect(h.result.current.running).toBe(false)
     start.mockResolvedValue({ ...plan, challenges: [...steps], step: 1 })
     h.capture.mockResolvedValue(undefined)
@@ -94,12 +118,7 @@ describe('automatic liveness capture', () => {
       void h.result.current.start()
     })
     await advance(6000)
-    expect(h.capture.mock.calls.map(([step]) => step)).toEqual([
-      'turnLeft',
-      'turnRight',
-      'turnRight',
-      'closer',
-    ])
+    expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['turnRight', 'turnRight'])
     expect(h.result.current.error).toBeNull()
   })
 
@@ -132,6 +151,6 @@ describe('automatic liveness capture', () => {
     })
     await advance(3000)
     expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['closer'])
-    expect(h.options.onProgress).toHaveBeenLastCalledWith(4)
+    expect(h.options.onProgress).toHaveBeenLastCalledWith(3)
   })
 })

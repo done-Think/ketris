@@ -32,7 +32,7 @@ export function useLivenessSequence(options: LivenessSequenceOptions) {
     }
   }, [token, enabled, stop])
 
-  const start = async () => {
+  const start = async (requestedStep = options.localStep) => {
     if (!enabled || active.current || document.hidden) return
     options.prepareSound()
     const controller = new AbortController()
@@ -42,6 +42,8 @@ export function useLivenessSequence(options: LivenessSequenceOptions) {
     setStarted(true)
     setError(null)
     try {
+      if (!Number.isInteger(requestedStep) || requestedStep < 0 || requestedStep > 3)
+        throw new ApiError('INVALID_CAPTURE_STATE', 409)
       const response = await captureService.prepareLiveness(token, !options.planId, signal)
       signal.throwIfAborted()
       const parsed = deferredLivenessPlanSchema.safeParse(response)
@@ -49,14 +51,12 @@ export function useLivenessSequence(options: LivenessSequenceOptions) {
       const issued = parsed.data
       if (Date.parse(issued.expiresAt) <= Date.now()) throw new ApiError('SESSION_EXPIRED', 410)
       options.onPlan(issued)
-      const from = Math.max(issued.step, options.planId === issued.planId ? options.localStep : 0)
+      const from = Math.max(issued.step, options.planId === issued.planId ? requestedStep : 0)
       options.onProgress(from + 1)
-      for (let index = from; index < issued.challenges.length; index++) {
-        await countDown(signal, options.tickSound)
-        await options.capture(issued.challenges[index], signal)
-        signal.throwIfAborted()
-        options.onProgress(index + 2)
-      }
+      if (from >= issued.challenges.length) return
+      await countDown(signal, options.tickSound)
+      await options.capture(issued.challenges[from], signal)
+      signal.throwIfAborted()
     } catch (failure) {
       if (!signal.aborted) setError(failure)
     } finally {

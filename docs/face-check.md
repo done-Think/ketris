@@ -94,10 +94,13 @@ a captura. Não há envio remoto de prévias. Recortes de PDF/galeria também s�
 
 ## Captura dos movimentos
 
-Depois da selfie, um clique em iniciar conduz a sequência esquerda → direita →
-aproximação. Cada movimento tem contagem visível de 3 segundos, bipes quando o
-navegador permite áudio e captura automática. Pausar, ocultar a aba ou perder
-a câmera interrompe novas capturas; retomar exige uma ação do usuário.
+A selfie e cada movimento exigem um clique antes da contagem visível de 3 segundos,
+com bipes quando o navegador permite áudio. Depois da foto, a pessoa pode conferir
+ou refazer a captura. O botão “Próximo” inicia somente a pose seguinte — esquerda,
+direita e aproximação — com uma nova contagem. Não há encadeamento automático.
+Depois da última foto, outro clique abre a revisão final, sem enviar as imagens.
+Pausar, ocultar a aba ou perder a câmera cancela a contagem em andamento; retomar
+exige uma nova ação do usuário.
 
 `POST /api/face_check/capture/{token}/liveness-plan` emite um identificador vinculado
 à sessão, antes de capturar os movimentos. Ele não recebe imagens e preserva o prazo

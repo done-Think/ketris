@@ -21,14 +21,14 @@ const session = {
 }
 
 // Synthetic camera and API only: no real images, saved consent, evidence or host sound.
-describe('one-click liveness sequence', () => {
+describe('click-initiated liveness poses', () => {
   for (const [locale, messages, failRight] of [
     ['pt', pt, false],
     ['en', en, false],
     ['es', es, false],
     ['pt', pt, true],
   ] as const) {
-    it(`${locale}: captures left then right automatically${failRight ? ' and resumes a failed right without repeating left' : ''}`, () => {
+    it(`${locale}: waits for Next before each pose${failRight ? ' and resumes a failed right without repeating left' : ''}`, () => {
       const captures: string[] = []
       const tones: number[] = []
       let step = 0
@@ -155,14 +155,23 @@ describe('one-click liveness sequence', () => {
       cy.get(`button[aria-label="${messages.capture.document.shutter}"]`).click()
       cy.contains('button', messages.capture.documentReview.confirm).click()
       cy.contains('button', messages.capture.live.takeSelfie).click()
-      cy.contains('button', messages.capture.live.confirmSelfie).click()
-      cy.contains('button', messages.capture.live.startMovements).click()
       cy.contains(
         '[role="status"]',
         messages.capture.live.captureIn.replace('{seconds}', '3'),
       ).should('be.visible')
-      cy.contains('h1', messages.capture.selfie.titles.turnRight).should('be.visible')
-      cy.contains('h1', messages.capture.selfie.titles.closer).should('be.visible')
+      cy.contains('h1', messages.capture.live.reviewSelfie).should('be.visible')
+      // Waiting longer than a countdown must never start another pose.
+      cy.wait(3200)
+      cy.then(() => expect(tones.filter((value) => value === 880)).to.have.length(1))
+      for (let index = 0; index < challenges.length; index++) {
+        cy.contains('button', messages.capture.live.nextPose).should('be.enabled').click()
+        cy.contains(
+          '[role="status"]',
+          messages.capture.live.captureIn.replace('{seconds}', '3'),
+        ).should('be.visible')
+        cy.contains('h1', messages.capture.live.poseCaptured).should('be.visible')
+        cy.then(() => expect(tones.filter((value) => value === 880)).to.have.length(index + 2))
+      }
       cy.contains('button', messages.capture.live.reviewCaptures).click()
       cy.then(() => {
         expect(uploads).to.equal(0)
@@ -183,7 +192,10 @@ describe('one-click liveness sequence', () => {
           .click()
         cy.contains('button', messages.capture.live.startMovements).click()
         cy.contains('h1', messages.capture.selfie.titles.turnRight).should('be.visible')
+        cy.contains('h1', messages.capture.live.poseCaptured).should('be.visible')
+        cy.contains('button', messages.capture.live.nextPose).should('be.enabled').click()
         cy.contains('h1', messages.capture.selfie.titles.closer).should('be.visible')
+        cy.contains('h1', messages.capture.live.poseCaptured).should('be.visible')
         cy.contains('button', messages.capture.live.reviewCaptures).click()
         cy.contains('button', messages.capture.review.send).click()
         cy.wait('@movement')
@@ -195,7 +207,7 @@ describe('one-click liveness sequence', () => {
           failRight ? ['turnLeft', 'turnRight', 'turnRight', 'closer'] : challenges,
         )
         expect(starts).to.equal(failRight ? 2 : 1)
-        expect(tones.filter((value) => value === 600)).to.have.length(failRight ? 15 : 9)
+        expect(tones.filter((value) => value === 600)).to.have.length(failRight ? 18 : 12)
         expect(tones.filter((value) => value === 880)).to.have.length(failRight ? 6 : 4)
       })
     })
