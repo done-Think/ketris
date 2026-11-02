@@ -16520,6 +16520,122 @@
         }
       }
     },
+    "/face_check/capture/{token}/liveness-start": {
+      "post": {
+        "tags": ["Face Check Capture"],
+        "summary": "Start or resume the current server-issued movement. Preserves accepted steps and the overall capture deadline.",
+        "description": "The single-session capture token is the credential. Expiration, current requester/property eligibility, origin and distributed rate limits are checked server-side.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 64,
+              "maxLength": 64,
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": {}, "additionalProperties": false }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Capture response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "challenges": {
+                      "type": "array",
+                      "items": { "type": "string", "enum": ["turnLeft", "turnRight", "closer"] }
+                    },
+                    "step": { "type": "integer", "minimum": 0, "maximum": 3 }
+                  },
+                  "required": ["challenges", "step"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "401": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "403": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "404": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "409": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "410": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "413": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "422": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "429": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "503": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          }
+        }
+      }
+    },
     "/face_check/capture/{token}/liveness-frame": {
       "post": {
         "tags": ["Face Check Capture"],

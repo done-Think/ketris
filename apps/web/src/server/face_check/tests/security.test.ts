@@ -11,7 +11,7 @@ import { LocalPhotoStore } from '../infrastructure/local-photo-store'
 import { S3PhotoStore } from '../infrastructure/s3-photo-store'
 import { CaptureRateLimit } from '../infrastructure/capture-rate-limit'
 import { capturedImage, assertMutationOrigin, photoForm, readBodyBytes } from '../http/request'
-import { createSessionBodySchema } from '../schemas/api.schemas'
+import { createSessionBodySchema, startLivenessBodySchema } from '../schemas/api.schemas'
 import { maxCapturePhotoBytes, maxUploadBodyBytes } from '../config/upload-limits'
 import type { SessionRepository } from '../types/verification.types'
 import type { FaceCheckDatabase } from '../types/access'
@@ -108,6 +108,16 @@ describe('face_check encryption and evidence privacy', () => {
 })
 
 describe('face_check ingress protections', () => {
+  it('never accepts client-supplied liveness progress, deadline or approval on start', () => {
+    expect(startLivenessBodySchema.safeParse({}).success).toBe(true)
+    for (const body of [
+      { step: 2 },
+      { challenges: ['closer'] },
+      { livenessVerified: true },
+      { captureDeadline: '2099-01-01T00:00:00Z' },
+    ])
+      expect(startLivenessBodySchema.safeParse(body).success).toBe(false)
+  })
   it('bounds feedback image bytes and decoded pixels more tightly than evidence uploads', async () => {
     const limits = { maxBytes: 512 * 1024, maxPixels: 1024 * 1024 }
     const png = await sharp({

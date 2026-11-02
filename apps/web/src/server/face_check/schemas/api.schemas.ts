@@ -5,6 +5,7 @@ import { similarityPolicy } from '@server/face_check/config/similarity-policy'
 import { isValidCpf } from '@server/face_check/utils/cpf'
 
 const documentType = z.enum(['RG', 'CNH', 'RNE'])
+export const startLivenessBodySchema = z.object({}).strict()
 
 export const tokenParamsSchema = z.object({
   token: z

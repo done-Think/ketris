@@ -6,7 +6,7 @@ import type {
   CaptureStatusView,
   ConsentInput,
 } from '../types'
-import type { ChallengesResponse } from '../types/api.types'
+import type { ChallengesResponse, LivenessSequenceState } from '../types/api.types'
 import type { DocumentRegionsResult } from '../types/document-import.types'
 import type { LivenessProximityResult } from '../types/liveness-proximity.types'
 import type { FaceFramingResult } from '../types/face-framing.types'
@@ -101,6 +101,12 @@ export const captureService = {
       .challenges,
   uploadSelfie: (token: string, image: Blob, signal?: AbortSignal) =>
     request<void>(`${capturePath(token)}/liveness`, photoForm('selfie', image), { signal }),
+  startLiveness: (token: string, signal?: AbortSignal) =>
+    request<LivenessSequenceState>(
+      `${capturePath(token)}/liveness-start`,
+      {},
+      { signal, timeout: 15000 },
+    ),
   uploadLivenessFrame: (token: string, input: LivenessFrameInput, signal?: AbortSignal) =>
     request<LivenessProgressView>(
       `${capturePath(token)}/liveness-frame`,

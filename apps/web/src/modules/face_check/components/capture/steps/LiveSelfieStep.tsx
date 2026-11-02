@@ -2,13 +2,13 @@
 
 import { Alert, Box, Button, CircularProgress, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import type { LivenessChallenge } from '../../../types'
 import { ApiError } from '../../../services/api-error'
 
 import { useCameraStream } from '../../../hooks/use-camera-stream'
-import { useCountdown } from '../../../hooks/use-countdown'
+import { useLivenessSequence } from '../../../hooks/use-liveness-sequence'
 import { useCaptureSound } from '../../../hooks/use-capture-sound'
 import { useFaceProximity } from '../../../hooks/use-face-proximity'
 import { useSelfieFraming } from '../../../hooks/use-selfie-framing'
@@ -34,8 +34,6 @@ import {
 } from '../../../styles/capture.styles'
 import { faceViewportStyles } from '../../../styles/viewports.styles'
 
-const challengeCountdownSeconds = 3
-
 function ringFor(phase: SelfiePhase): FaceRing {
   if (phase === 'position') return 'warn'
   if (phase === 'done') return 'ok'
@@ -50,7 +48,7 @@ function isChallenge(phase: SelfiePhase): phase is LivenessChallenge {
 export function LiveSelfieStep({ session }: CaptureStepProps) {
   const t = useTranslations('face_check.capture.selfie')
   const tLive = useTranslations('face_check.capture.live')
-  const { goTo, livenessStep, advanceLiveness, resetLiveness, retryChallenges } = useCaptureFlow(
+  const { goTo, livenessStep, advanceLiveness, resetLiveness, syncLivenessStep } = useCaptureFlow(
     (state) => state,
   )
   const {
@@ -69,16 +67,38 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
   const [preparing, setPreparing] = useState(false)
   const [capturedPhase, setCapturedPhase] = useState<SelfiePhase | null>(null)
   const [geometry, setGeometry] = useState<FaceGuideGeometry | null>(null)
+  const intro = useRef<HTMLDivElement>(null)
   const device = useCaptureDevice()
   const sound = useCaptureSound()
-  const countdown = useCountdown(challengeCountdownSeconds)
   const list = challenges.data ?? []
   const awaitingChallenges = selfieAccepted && !challenges.data
   const phase = resolveSelfiePhase(livenessStep, list)
   const live = cameraStatus === 'live'
+  const sequence = useLivenessSequence({
+    token: session.token,
+    enabled: live && selfieAccepted && !upload.isPending && !submit.isPending,
+    prepareSound: sound.prepare,
+    tickSound: sound.tick,
+    onProgress: syncLivenessStep,
+    capture: async (challenge, signal) => {
+      let image: Blob
+      try {
+        image = await grabFrame()
+      } catch (error) {
+        setCaptureFailed(true)
+        throw error
+      }
+      signal.throwIfAborted()
+      sound.play()
+      setCapturedPhase(challenge)
+      setCaptureFailed(false)
+      return frame.mutateAsync({ challenge, image, signal })
+    },
+  })
   const proximity = useFaceProximity({
     token: session.token,
-    enabled: live && phase === 'closer' && !preparing && !frame.isPending && !challenges.isFetching,
+    enabled:
+      live && phase === 'closer' && !sequence.running && !frame.isPending && !challenges.isFetching,
     grabFrame,
   })
   const captured = capturedPhase === phase && (upload.isPending || frame.isPending)
@@ -89,7 +109,7 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
     challenges.isFetching ||
     awaitingChallenges ||
     preparing ||
-    countdown.remaining !== null
+    sequence.running
   const framing = useSelfieFraming({
     token: session.token,
     enabled: live && phase === 'position' && !busy,
@@ -134,38 +154,9 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
       .catch(() => setCaptureFailed(true))
       .finally(() => setPreparing(false))
   }
-  const captureChallenge = (challenge: LivenessChallenge) => {
-    setPreparing(true)
-    void grabFrame()
-      .then((image) => {
-        sound.play()
-        setCapturedPhase(challenge)
-        setCaptureFailed(false)
-        frame.mutate(
-          { challenge, image },
-          {
-            onSuccess: () => {
-              proximity.reset()
-              advanceLiveness(list.length)
-            },
-            onError: () => {
-              proximity.reset()
-              retryChallenges()
-            },
-          },
-        )
-      })
-      .catch(() => setCaptureFailed(true))
-      .finally(() => setPreparing(false))
-  }
-  const takeChallenge = (challenge: LivenessChallenge) => {
-    sound.prepare()
-    setCapturedPhase(null)
-    frame.reset()
-    countdown.start(() => captureChallenge(challenge))
-  }
   const send = () => submit.mutate(undefined, { onSuccess: () => goTo('submit') })
   const restart = () => {
+    sequence.reset()
     proximity.reset()
     setCapturedPhase(null)
     upload.reset()
@@ -215,15 +206,27 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
         size="large"
         variant="contained"
         disabled={!live || busy}
-        onClick={() => takeChallenge(phase)}
+        onClick={() => {
+          intro.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' })
+          setCapturedPhase(null)
+          frame.reset()
+          void sequence.start()
+        }}
         startIcon={frame.isPending ? <CircularProgress size={18} color="inherit" /> : null}
       >
-        {countdown.remaining !== null
-          ? tLive('holdStill', { seconds: countdown.remaining })
+        {sequence.remaining !== null
+          ? tLive('captureIn', { seconds: sequence.remaining })
           : frame.isPending
             ? tLive('checking')
-            : tLive('takeChallenge')}
+            : sequence.running
+              ? tLive('sequenceRunning')
+              : tLive(sequence.started ? 'resumeMovements' : 'startMovements')}
       </Button>
+      {sequence.running ? (
+        <Button sx={stepStyles.darkSecondaryAction} onClick={sequence.stop}>
+          {tLive('pauseMovements')}
+        </Button>
+      ) : null}
     </>
   ) : (
     <>
@@ -258,7 +261,7 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
               frame.isPending ||
               submit.isPending ||
               preparing ||
-              countdown.remaining !== null
+              sequence.running
             }
             onClick={() => goTo('alternative')}
           >
@@ -267,10 +270,15 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
         </>
       }
     >
-      <Box sx={stepStyles.intro}>
+      <Box ref={intro} sx={stepStyles.intro}>
         <Typography component="h1" sx={stepStyles.darkTitle}>
           {awaitingChallenges ? tLive('preparingChallenges') : t(`titles.${phase}`)}
         </Typography>
+        {sequence.remaining !== null ? (
+          <Typography role="status" aria-live="assertive" aria-atomic sx={styles.countdown}>
+            {tLive('captureIn', { seconds: sequence.remaining })}
+          </Typography>
+        ) : null}
         <Box sx={styles.segments} aria-hidden>
           {[0, 1, 2].map((index) => (
             <Box
@@ -333,7 +341,7 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
         </Alert>
       ) : null}
       {upload.error && !showBackgroundHint ? <PhotoErrorNotice error={upload.error} /> : null}
-      {frame.error ? <PhotoErrorNotice error={frame.error} /> : null}
+      {sequence.error && !captureFailed ? <PhotoErrorNotice error={sequence.error} /> : null}
       {submit.error ? <PhotoErrorNotice error={submit.error} /> : null}
     </CaptureLayout>
   )

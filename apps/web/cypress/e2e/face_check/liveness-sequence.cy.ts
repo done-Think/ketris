@@ -1,0 +1,157 @@
+import pt from '../../../src/i18n/messages/pt-BR/face_check.json'
+import en from '../../../src/i18n/messages/en-US/face_check.json'
+import es from '../../../src/i18n/messages/es-ES/face_check.json'
+
+const token = 'd'.repeat(64)
+const path = `/api/face_check/capture/${token}`
+const challenges = ['turnLeft', 'turnRight', 'closer']
+const session = {
+  token,
+  agencyName: 'Synthetic agency',
+  reference: 'Synthetic property',
+  acceptedDocument: 'RG',
+  status: 'IN_PROGRESS',
+  captureMode: 'camera',
+  allowGalleryUpload: false,
+  attemptsLeft: 3,
+  maxAttempts: 3,
+  expiresAt: '2099-11-08T12:00:00Z',
+  redoReason: null,
+}
+
+// Synthetic camera and API only: no real images, saved consent, evidence or host sound.
+describe('one-click liveness sequence', () => {
+  for (const [locale, messages, failRight] of [
+    ['pt', pt, false],
+    ['en', en, false],
+    ['es', es, false],
+    ['pt', pt, true],
+  ] as const) {
+    it(`${locale}: captures left then right automatically${failRight ? ' and resumes a failed right without repeating left' : ''}`, () => {
+      const captures: string[] = []
+      const tones: number[] = []
+      let step = 0
+      let failed = false
+      let starts = 0
+      cy.viewport(failRight ? 390 : 1440, 900)
+      cy.intercept('GET', path, { body: session })
+      cy.intercept('POST', `${path}/consent`, { body: session })
+      cy.intercept('POST', `${path}/document`, { statusCode: 204 })
+      cy.intercept('POST', `${path}/framing`, {
+        body: { width: 640, height: 360, faceCount: 0, face: null },
+      })
+      cy.intercept('POST', `${path}/liveness`, { statusCode: 204 })
+      cy.intercept('GET', `${path}/challenges`, { body: { challenges } })
+      cy.intercept('POST', `${path}/liveness-start`, (request) => {
+        starts++
+        expect(request.body).to.deep.equal({})
+        request.reply({ body: { challenges, step } })
+      })
+      cy.intercept('POST', `${path}/liveness-frame`, (request) => {
+        const body =
+          typeof request.body === 'string' ? request.body : new TextDecoder().decode(request.body)
+        const challenge = body.match(/name="challenge"\r\n\r\n([^\r]+)/)?.[1]
+        expect(challenge).to.equal(challenges[step])
+        captures.push(challenge!)
+        if (failRight && challenge === 'turnRight' && !failed) {
+          failed = true
+          request.reply({
+            statusCode: 422,
+            body: { error: { code: 'LIVENESS_FAILED', reason: 'livenessNotTurned' } },
+          })
+          return
+        }
+        step++
+        request.reply({ body: { remaining: challenges.length - step } })
+      }).as('movement')
+      cy.visit(`/${locale}/face_check/verify/${token}`, {
+        onBeforeLoad(win) {
+          Object.defineProperty(win, 'AudioContext', {
+            configurable: true,
+            value: class {
+              state = 'running'
+              currentTime = 0
+              destination = {}
+              async resume() {}
+              async close() {
+                this.state = 'closed'
+              }
+              createOscillator() {
+                return {
+                  type: 'sine',
+                  frequency: { setValueAtTime: (value: number) => tones.push(value) },
+                  connect() {},
+                  disconnect() {},
+                  start() {},
+                  onended: null as (() => void) | null,
+                  stop() {
+                    this.onended?.()
+                  },
+                }
+              }
+              createGain() {
+                return {
+                  gain: { setValueAtTime() {}, linearRampToValueAtTime() {} },
+                  connect() {},
+                  disconnect() {},
+                }
+              }
+            },
+          })
+          const sensor = win.document.createElement('canvas')
+          sensor.width = 1280
+          sensor.height = 720
+          const context = sensor.getContext('2d')!
+          const paint = () => {
+            context.fillStyle = '#375abc'
+            context.fillRect(0, 0, 1280, 720)
+          }
+          paint()
+          const stream = sensor.captureStream(10)
+          win.setInterval(paint, 100)
+          Object.defineProperty(win.navigator, 'mediaDevices', {
+            configurable: true,
+            value: { getUserMedia: async () => stream.clone() },
+          })
+        },
+      })
+      cy.contains('button', messages.capture.consent.start).click()
+      cy.get('[role="dialog"] input[type="checkbox"]').check()
+      cy.contains('button', messages.capture.consent.continue).click()
+      cy.contains('button', messages.capture.camera.enable).click()
+      cy.get('video').should('have.prop', 'videoWidth', 1280)
+      cy.get(`button[aria-label="${messages.capture.document.shutter}"]`).click()
+      cy.contains('h1', messages.capture.document.titleBack.replace('{doc}', 'RG')).should(
+        'be.visible',
+      )
+      cy.get(`button[aria-label="${messages.capture.document.shutter}"]`).click()
+      cy.contains('button', messages.capture.documentReview.confirm).click()
+      cy.contains('button', messages.capture.live.takeSelfie).click()
+      cy.contains('button', messages.capture.live.startMovements).click()
+      cy.contains(
+        '[role="status"]',
+        messages.capture.live.captureIn.replace('{seconds}', '3'),
+      ).should('be.visible')
+      cy.wait('@movement')
+      cy.contains('h1', messages.capture.selfie.titles.turnRight).should('be.visible')
+      cy.wait('@movement')
+      if (failRight) {
+        cy.contains(messages.capture.live.issues.livenessNotTurned).should('be.visible')
+        cy.contains('button', messages.capture.live.resumeMovements).click()
+        cy.contains('h1', messages.capture.selfie.titles.turnRight).should('be.visible')
+        cy.wait('@movement')
+      }
+      cy.contains('h1', messages.capture.selfie.titles.closer).should('be.visible')
+      cy.wait('@movement')
+      cy.contains('button', messages.capture.selfie.send).should('be.enabled')
+      cy.then(() => {
+        expect(captures).to.deep.equal(
+          failRight ? ['turnLeft', 'turnRight', 'turnRight', 'closer'] : challenges,
+        )
+        expect(starts).to.equal(failRight ? 2 : 1)
+        expect(tones.filter((value) => value === 600)).to.have.length(failRight ? 12 : 9)
+        expect(tones.filter((value) => value === 880)).to.have.length(failRight ? 5 : 4)
+      })
+    })
+  }
+})

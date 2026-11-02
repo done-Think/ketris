@@ -38,6 +38,7 @@ export interface CaptureFlowState {
   markCaptured: (side: DocumentSide, preview?: string) => void
   retakeSide: (side: DocumentSide) => void
   advanceLiveness: (totalChallenges: number) => void
+  syncLivenessStep: (step: number) => void
   resetLiveness: () => void
   retryChallenges: () => void
   restartAttempt: () => void
@@ -102,6 +103,7 @@ export interface DocumentUploadInput {
 export interface LivenessFrameInput {
   challenge: LivenessChallenge
   image: Blob
+  signal?: AbortSignal
 }
 
 export interface LivenessProgressView {

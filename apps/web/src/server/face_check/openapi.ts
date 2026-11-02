@@ -378,6 +378,13 @@ export function registerFaceCheckOpenApi(registry: OpenAPIRegistry) {
   )
   captureRoute(
     'post',
+    '/liveness-start',
+    'Start or resume the current server-issued movement. Preserves accepted steps and the overall capture deadline.',
+    z.object({ challenges: z.array(challenge), step: z.number().int().min(0).max(3) }),
+    z.object({}).strict(),
+  )
+  captureRoute(
+    'post',
     '/liveness-frame',
     'Check one issued movement in the permitted order and time window.',
     z.object({ remaining: z.number().int() }),

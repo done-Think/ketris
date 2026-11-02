@@ -74,6 +74,20 @@ câmeras são desligadas ao sair da etapa, inclusive quando a permissão chega
 depois que a tela foi fechada. Endereços locais ou sem HTTPS não são apresentados
 como links utilizáveis por outro aparelho.
 
+## Captura dos movimentos
+
+Depois da selfie, um clique em iniciar conduz a sequência esquerda → direita →
+aproximação. Cada movimento tem contagem visível de 3 segundos, bipes quando o
+navegador permite áudio e captura automática. Pausar, ocultar a aba ou perder
+a câmera interrompe novas capturas; retomar exige uma ação do usuário.
+
+`POST /api/face_check/capture/{token}/liveness-start` inicia ou retoma a etapa
+pendente e retorna o progresso do servidor. O prazo de 15 segundos do movimento
+começa nessa ação; o prazo total da captura permanece igual. Cada foto continua
+sujeita à verificação de movimento, identidade e anti-spoof no backend. Falhas
+não apagam os movimentos já aceitos. A retomada sincroniza respostas perdidas
+sem repetir etapas concluídas, e o limite de rejeições mantém a revisão humana.
+
 ## Convites por e-mail
 
 Criar uma verificação com um contato de e-mail válido registra o convite na

@@ -82,7 +82,7 @@ export function useUploadLivenessFrame(token: string) {
   return useMutation({
     gcTime: 0,
     mutationFn: (input: LivenessFrameInput) =>
-      captureService.uploadLivenessFrame(token, input, getSignal()),
+      captureService.uploadLivenessFrame(token, input, input.signal ?? getSignal()),
     onError: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: captureKeys.challenges(token) }),

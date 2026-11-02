@@ -97,6 +97,7 @@ export function createCaptureFlowStore(): CaptureFlowStore {
     advanceLiveness: (totalChallenges) =>
       set((state) => ({ livenessStep: Math.min(totalChallenges + 1, state.livenessStep + 1) })),
     resetLiveness: () => set({ livenessStep: 0 }),
+    syncLivenessStep: (livenessStep) => set({ livenessStep }),
     retryChallenges: () => set({ livenessStep: 1 }),
     restartAttempt: () =>
       set((state) => {

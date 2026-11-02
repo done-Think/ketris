@@ -51,3 +51,7 @@ export interface CreatedSession {
 export interface ChallengesResponse {
   challenges: LivenessChallenge[]
 }
+
+export interface LivenessSequenceState extends ChallengesResponse {
+  step: number
+}

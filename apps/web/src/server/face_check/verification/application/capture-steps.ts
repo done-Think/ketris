@@ -237,10 +237,6 @@ export async function acceptPhoto(
 
 export function issueChallenges(deps: VerificationDependencies, record: SessionRecord) {
   const order = [...livenessPool]
-  for (let index = order.length - 1; index > 0; index -= 1) {
-    const swap = Math.floor(deps.random() * (index + 1))
-    ;[order[index], order[swap]] = [order[swap], order[index]]
-  }
   const issued = { challenges: order, step: 0, checkpointAt: deps.clock() }
   record.capture.challenges = issued
 
@@ -252,7 +248,6 @@ export function rejectLiveness(
   record: SessionRecord,
   issue: LivenessIssue,
 ): never {
-  record.capture.challenges = null
   registerRejection(record, 'liveness', deps.clock(), deps.newId())
   throw new VerificationError('LIVENESS_FAILED', issue)
 }

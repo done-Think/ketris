@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LiveSelfieStep } from '../components/capture/steps/LiveSelfieStep'
 import { CapturePage } from '../components/capture/CapturePage'
@@ -28,6 +28,7 @@ vi.mock('next-intl', async () => {
 vi.mock('../services/capture-service', () => ({
   captureService: {
     getChallenges: vi.fn(),
+    startLiveness: vi.fn(),
     uploadSelfie: vi.fn(),
     uploadLivenessFrame: vi.fn(),
     submit: vi.fn(),
@@ -43,14 +44,21 @@ vi.mock('../hooks/use-camera-stream', () => ({
   }),
 }))
 vi.mock('../hooks/use-capture-sound', () => ({
-  useCaptureSound: () => ({ prepare: vi.fn(), play: vi.fn() }),
+  useCaptureSound: () => ({ prepare: vi.fn(), play: vi.fn(), tick: vi.fn() }),
 }))
 vi.mock('../hooks/use-face-proximity', () => ({
   useFaceProximity: () => ({ ready: true, reset: vi.fn() }),
 }))
-vi.mock('../hooks/use-countdown', () => ({
-  useCountdown: () => ({ remaining: null, start: (capture: () => void) => capture() }),
-}))
+vi.mock('../hooks/use-countdown', () => {
+  const clear = vi.fn()
+  return {
+    useCountdown: () => ({
+      remaining: null,
+      run: async (_signal: AbortSignal, tick: () => void) => tick(),
+      clear,
+    }),
+  }
+})
 vi.mock('../components/capture/CaptureLayout', () => ({
   CaptureLayout: ({ children, footer }: { children: ReactNode; footer?: ReactNode }) => (
     <main>
@@ -89,6 +97,12 @@ const session: CaptureSessionView = {
 }
 
 describe('real selfie and liveness sequence', () => {
+  beforeEach(() => {
+    vi.mocked(captureService.startLiveness).mockResolvedValue({
+      challenges: ['turnLeft', 'turnRight', 'closer'],
+      step: 0,
+    })
+  })
   afterEach(() => vi.resetAllMocks())
 
   it('accepts the first selfie before fetching challenges and then captures every movement', async () => {
@@ -102,7 +116,9 @@ describe('real selfie and liveness sequence', () => {
     })
     vi.mocked(captureService.uploadLivenessFrame).mockImplementation(async (_token, input) => {
       order.push(input.challenge)
-      return { remaining: 0 }
+      return {
+        remaining: input.challenge === 'turnLeft' ? 2 : input.challenge === 'turnRight' ? 1 : 0,
+      }
     })
     vi.mocked(captureService.submit).mockResolvedValue({
       status: 'PROCESSING',
@@ -124,14 +140,7 @@ describe('real selfie and liveness sequence', () => {
     expect(selfie).toBeEnabled()
     await user.click(selfie)
     await waitFor(() => expect(order).toEqual(['selfie', 'challenges']))
-    for (const title of [
-      'Vire o rosto para a esquerda',
-      'Vire o rosto para a direita',
-      'Aproxime o rosto da câmera',
-    ]) {
-      expect(await screen.findByRole('heading', { name: title })).toBeVisible()
-      await user.click(screen.getByRole('button', { name: 'Tirar foto' }))
-    }
+    await user.click(await screen.findByRole('button', { name: 'Iniciar movimentos' }))
     await waitFor(() =>
       expect(order).toEqual(['selfie', 'challenges', 'turnLeft', 'turnRight', 'closer']),
     )
@@ -157,7 +166,7 @@ describe('real selfie and liveness sequence', () => {
       </QueryClientProvider>,
     )
     await user.click(await screen.findByRole('button', { name: 'Tirar selfie' }))
-    await user.click(await screen.findByRole('button', { name: 'Tirar foto' }))
+    await user.click(await screen.findByRole('button', { name: 'Iniciar movimentos' }))
     expect(
       await screen.findByText(
         'Não percebemos o movimento pedido. Vire o rosto um pouco mais e tente de novo.',
@@ -195,9 +204,9 @@ describe('real selfie and liveness sequence', () => {
       </QueryClientProvider>,
     )
     await user.click(await screen.findByRole('button', { name: 'Tirar selfie' }))
-    await user.click(await screen.findByRole('button', { name: 'Tirar foto' }))
+    await user.click(await screen.findByRole('button', { name: 'Iniciar movimentos' }))
     expect(await screen.findByText('Revisão humana')).toBeVisible()
-    expect(screen.queryByRole('button', { name: 'Tirar foto' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Iniciar movimentos' })).not.toBeInTheDocument()
     view.unmount()
     client.clear()
   })

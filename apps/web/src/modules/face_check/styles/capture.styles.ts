@@ -454,6 +454,7 @@ export const liveCaptureStyles = {
 } satisfies Record<string, SxProps<Theme> | ((...args: never[]) => SxProps<Theme>)>
 
 export const selfieStepStyles = {
+  countdown: { fontSize: 28, fontWeight: 700, color: surface.darkModeText, textAlign: 'center' },
   segments: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 0.75 },
   segment: (state: 'done' | 'current' | 'pending') => ({
     height: 4,

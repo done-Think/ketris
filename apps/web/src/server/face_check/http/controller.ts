@@ -19,6 +19,7 @@ import {
   idParamsSchema,
   livenessFrameFormSchema,
   livenessProximityFormSchema,
+  startLivenessBodySchema,
   overviewQuerySchema,
   selfieImageFormSchema,
   sessionListQuerySchema,
@@ -53,6 +54,7 @@ type CaptureOperation =
   | 'challenges'
   | 'liveness'
   | 'liveness-frame'
+  | 'liveness-start'
   | 'proximity'
   | 'document-regions'
   | 'submit'
@@ -186,6 +188,10 @@ export function captureHandler(operation: CaptureOperation) {
       )
     if (operation === 'challenges')
       return NextResponse.json({ challenges: await container.getChallengesUseCase.execute(token) })
+    if (operation === 'liveness-start') {
+      await jsonBody(request, startLivenessBodySchema)
+      return NextResponse.json(await container.startLivenessUseCase.execute(token))
+    }
     if (operation === 'submit') {
       await container.submitCaptureUseCase.execute(token)
       return NextResponse.json(await container.getCaptureStatusUseCase.execute(token))

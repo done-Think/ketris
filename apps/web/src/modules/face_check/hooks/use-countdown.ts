@@ -1,30 +1,21 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { abortableDelay } from '../utils/abortable-delay'
 
 export function useCountdown(seconds: number) {
   const [remaining, setRemaining] = useState<number | null>(null)
-  const onDone = useRef<(() => void) | null>(null)
-
-  useEffect(() => {
-    if (remaining === null) return
-    const timer = setTimeout(() => {
-      if (remaining > 1) {
-        setRemaining(remaining - 1)
-        return
+  const clear = useCallback(() => setRemaining(null), [])
+  const run = useCallback(
+    async (signal: AbortSignal, tick: () => void) => {
+      for (let value = seconds; value > 0; value--) {
+        signal.throwIfAborted()
+        setRemaining(value)
+        tick()
+        await abortableDelay(1000, signal)
       }
-      const done = onDone.current
-      onDone.current = null
+      signal.throwIfAborted()
       setRemaining(null)
-      done?.()
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [remaining])
-
-  return {
-    remaining,
-    start: (done: () => void) => {
-      onDone.current = done
-      setRemaining(seconds)
     },
-  }
+    [seconds],
+  )
+  return { remaining, run, clear }
 }

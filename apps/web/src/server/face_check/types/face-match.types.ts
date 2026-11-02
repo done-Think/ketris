@@ -81,6 +81,11 @@ export interface LivenessProgress {
   remaining: number
 }
 
+export interface LivenessSequenceState {
+  challenges: LivenessChallenge[]
+  step: number
+}
+
 export type RejectionCounts = Partial<Record<EvidenceKind | 'liveness', number>>
 
 export interface CapturedImage {

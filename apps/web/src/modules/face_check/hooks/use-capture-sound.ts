@@ -15,7 +15,7 @@ export function useCaptureSound() {
     }
   }, [])
 
-  const play = useCallback(() => {
+  const toneAt = useCallback((frequency: number, duration: number) => {
     const audio = context.current
     if (!audio || audio.state !== 'running') return
     try {
@@ -23,10 +23,10 @@ export function useCaptureSound() {
       const volume = audio.createGain()
       const start = audio.currentTime
       tone.type = 'sine'
-      tone.frequency.setValueAtTime(880, start)
+      tone.frequency.setValueAtTime(frequency, start)
       volume.gain.setValueAtTime(0, start)
       volume.gain.linearRampToValueAtTime(0.06, start + 0.005)
-      volume.gain.linearRampToValueAtTime(0, start + 0.1)
+      volume.gain.linearRampToValueAtTime(0, start + duration)
       tone.connect(volume)
       volume.connect(audio.destination)
       tone.onended = () => {
@@ -34,7 +34,7 @@ export function useCaptureSound() {
         volume.disconnect()
       }
       tone.start(start)
-      tone.stop(start + 0.1)
+      tone.stop(start + duration)
     } catch {
       return
     }
@@ -49,5 +49,8 @@ export function useCaptureSound() {
     [],
   )
 
-  return { prepare, play }
+  const play = useCallback(() => toneAt(880, 0.1), [toneAt])
+  const tick = useCallback(() => toneAt(600, 0.06), [toneAt])
+
+  return { prepare, play, tick }
 }
