@@ -115,7 +115,7 @@
         "ready": "Your face is well positioned. Hold still and take the selfie.",
         "tooFar": "{device, select, mobile {Move your phone a little closer to your face.} other {Move a little closer to the camera.}}",
         "tooClose": "{device, select, mobile {Move your phone a little farther from your face.} other {Move a little farther from the camera.}}",
-        "unavailable": "We could not check the framing. Fit your face inside the oval and take the selfie.",
+        "unavailable": "Fit your face inside the oval and take the selfie.",
         "closer": "{device, select, mobile {Bring your phone a little closer to your face.} other {Move your face a little closer to the camera.}}"
       }
     },

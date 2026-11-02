@@ -115,7 +115,7 @@
         "ready": "Tu rostro está bien colocado. Mantén la posición y toma la selfie.",
         "tooFar": "{device, select, mobile {Acerca un poco el móvil al rostro.} other {Acércate un poco a la cámara.}}",
         "tooClose": "{device, select, mobile {Aleja un poco el móvil del rostro.} other {Aléjate un poco de la cámara.}}",
-        "unavailable": "No pudimos comprobar el encuadre. Coloca tu rostro dentro del óvalo y toma la selfie.",
+        "unavailable": "Coloca tu rostro dentro del óvalo y toma la selfie.",
         "closer": "{device, select, mobile {Acerca un poco más el móvil al rostro.} other {Acerca tu rostro un poco más a la cámara.}}"
       }
     },
