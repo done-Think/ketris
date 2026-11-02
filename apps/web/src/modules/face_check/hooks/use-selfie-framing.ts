@@ -3,12 +3,19 @@ import { captureService } from '../services/capture-service'
 import { ApiError } from '../services/api-error'
 import { faceFramingStatus } from '../utils/face-framing'
 import type { FaceFramingStatus, SelfieFramingOptions } from '../types/face-framing.types'
+import { localFaceFraming } from '../services/local-face-framing'
 
 const sampleIntervalMs = 1500
 const rateLimitDelayMs = 60_000
 const stableSamples = 2
 
-export function useSelfieFraming({ token, enabled, sampleFrame, geometry }: SelfieFramingOptions) {
+export function useSelfieFraming({
+  token,
+  enabled,
+  sampleFrame,
+  geometry,
+  localOnly = false,
+}: SelfieFramingOptions) {
   const [feedback, setFeedback] = useState<{ token: string; status: FaceFramingStatus }>({
     token,
     status: 'checking',
@@ -26,7 +33,9 @@ export function useSelfieFraming({ token, enabled, sampleFrame, geometry }: Self
       try {
         const image = await sampleFrame()
         if (cancelled) return
-        const result = await captureService.framing(token, image, controller.signal)
+        const result = localOnly
+          ? await localFaceFraming(image)
+          : await captureService.framing(token, image, controller.signal)
         if (cancelled) return
         const measured = faceFramingStatus(result, geometry)
         readySamples = measured === 'ready' ? readySamples + 1 : 0
@@ -38,6 +47,7 @@ export function useSelfieFraming({ token, enabled, sampleFrame, geometry }: Self
         if (cancelled) return
         readySamples = 0
         setFeedback({ token, status: 'unavailable' })
+        if (localOnly) return
         if (error instanceof ApiError) {
           if ([401, 404, 410].includes(error.status) || error.code === 'INVALID_CAPTURE_STATE')
             return
@@ -55,6 +65,6 @@ export function useSelfieFraming({ token, enabled, sampleFrame, geometry }: Self
       clearTimeout(timer)
       controller?.abort()
     }
-  }, [token, enabled, sampleFrame, geometry])
+  }, [token, enabled, sampleFrame, geometry, localOnly])
   return enabled && geometry && feedback.token === token ? feedback.status : 'checking'
 }

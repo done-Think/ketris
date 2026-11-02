@@ -5682,6 +5682,8 @@ export interface paths {
              * @description JPEG/PNG, at most 3 MiB and 16 million decoded pixels.
              */
             image: string
+            /** Format: uuid */
+            planId?: string
             /** @enum {string} */
             side: 'front' | 'back'
           }
@@ -6126,6 +6128,8 @@ export interface paths {
       requestBody: {
         content: {
           'multipart/form-data': {
+            /** Format: uuid */
+            planId?: string
             /**
              * Format: binary
              * @description JPEG/PNG, at most 3 MiB and 16 million decoded pixels.
@@ -6275,6 +6279,8 @@ export interface paths {
              * @description JPEG/PNG, at most 3 MiB and 16 million decoded pixels.
              */
             image: string
+            /** Format: uuid */
+            planId?: string
           }
         }
       }
@@ -6287,6 +6293,153 @@ export interface paths {
           content: {
             'application/json': {
               remaining: number
+            }
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        410: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        413: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        429: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+        /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
+        503: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckError']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/face_check/capture/{token}/liveness-plan': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Issue or resume a session-bound plan before local movement capture. No images are uploaded; restarting preserves the consent deadline and rejection limits.
+     * @description The single-session capture token is the credential. Expiration, current requester/property eligibility, origin and distributed rate limits are checked server-side.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          token: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': {
+            restart?: boolean
+          }
+        }
+      }
+      responses: {
+        /** @description Capture response. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              challenges: ('turnLeft' | 'turnRight' | 'closer')[]
+              /** Format: date-time */
+              expiresAt: string
+              /** Format: uuid */
+              planId: string
+              step: number
             }
           }
         }
@@ -6415,7 +6568,10 @@ export interface paths {
       }
       requestBody: {
         content: {
-          'application/json': Record<string, never>
+          'application/json': {
+            /** Format: uuid */
+            planId?: string
+          }
         }
       }
       responses: {
@@ -6835,7 +6991,14 @@ export interface paths {
         }
         cookie?: never
       }
-      requestBody?: never
+      requestBody: {
+        content: {
+          'application/json': {
+            /** Format: uuid */
+            planId?: string
+          }
+        }
+      }
       responses: {
         /** @description Capture response. */
         200: {

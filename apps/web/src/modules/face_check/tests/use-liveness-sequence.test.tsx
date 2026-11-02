@@ -7,19 +7,21 @@ import { captureService } from '../services/capture-service'
 import { ApiError } from '../services/api-error'
 import type { LivenessSequenceOptions } from '../types/liveness-sequence.types'
 
-vi.mock('../services/capture-service', () => ({ captureService: { startLiveness: vi.fn() } }))
-const start = vi.mocked(captureService.startLiveness)
+vi.mock('../services/capture-service', () => ({ captureService: { prepareLiveness: vi.fn() } }))
+const start = vi.mocked(captureService.prepareLiveness)
 const steps = ['turnLeft', 'turnRight', 'closer'] as const
+const plan = { planId: '11111111-1111-4111-8111-111111111111', expiresAt: '2099-11-01T12:00:00Z' }
 
 function fixture() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const capture = vi.fn<LivenessSequenceOptions['capture']>()
-  capture.mockImplementation(async (challenge) => ({
-    remaining: 2 - steps.findIndex((step) => step === challenge),
-  }))
+  capture.mockResolvedValue(undefined)
   const options: LivenessSequenceOptions = {
     token: 'token',
     enabled: true,
+    planId: null,
+    localStep: 0,
+    onPlan: vi.fn(),
     capture,
     onProgress: vi.fn(),
     prepareSound: vi.fn(),
@@ -41,7 +43,7 @@ async function advance(ms = 0) {
 beforeEach(() => {
   vi.useFakeTimers()
   vi.clearAllMocks()
-  start.mockResolvedValue({ challenges: [...steps], step: 0 })
+  start.mockResolvedValue({ ...plan, challenges: [...steps], step: 0 })
 })
 afterEach(() => {
   cleanup()
@@ -79,7 +81,6 @@ describe('automatic liveness capture', () => {
     const h = fixture()
     h.capture.mockImplementation(async (challenge) => {
       if (challenge === 'turnRight') throw new ApiError('LIVENESS_FAILED', 422, 'livenessNotTurned')
-      return { remaining: 2 }
     })
     act(() => {
       void h.result.current.start()
@@ -87,10 +88,8 @@ describe('automatic liveness capture', () => {
     await advance(9000)
     expect(h.capture.mock.calls.map(([step]) => step)).toEqual(['turnLeft', 'turnRight'])
     expect(h.result.current.running).toBe(false)
-    start.mockResolvedValue({ challenges: [...steps], step: 1 })
-    h.capture.mockImplementation(async (challenge) => ({
-      remaining: 2 - steps.findIndex((step) => step === challenge),
-    }))
+    start.mockResolvedValue({ ...plan, challenges: [...steps], step: 1 })
+    h.capture.mockResolvedValue(undefined)
     act(() => {
       void h.result.current.start()
     })
@@ -127,7 +126,7 @@ describe('automatic liveness capture', () => {
 
   it('does not repeat captures whose acknowledgement was lost', async () => {
     const h = fixture()
-    start.mockResolvedValue({ challenges: [...steps], step: 2 })
+    start.mockResolvedValue({ ...plan, challenges: [...steps], step: 2 })
     act(() => {
       void h.result.current.start()
     })

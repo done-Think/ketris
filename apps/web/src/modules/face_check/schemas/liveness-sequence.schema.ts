@@ -7,3 +7,8 @@ export const livenessSequenceSchema = z.object({
     .refine((steps) => new Set(steps).size === steps.length),
   step: z.number().int().min(0).max(3),
 })
+
+export const deferredLivenessPlanSchema = livenessSequenceSchema.extend({
+  planId: z.string().uuid(),
+  expiresAt: z.string().datetime(),
+})

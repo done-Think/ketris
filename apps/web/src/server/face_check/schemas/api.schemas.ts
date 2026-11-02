@@ -5,7 +5,9 @@ import { similarityPolicy } from '@server/face_check/config/similarity-policy'
 import { isValidCpf } from '@server/face_check/utils/cpf'
 
 const documentType = z.enum(['RG', 'CNH', 'RNE'])
-export const startLivenessBodySchema = z.object({}).strict()
+const capturePlanId = z.string().uuid().optional()
+export const startLivenessBodySchema = z.object({ planId: capturePlanId }).strict()
+export const prepareLivenessBodySchema = z.object({ restart: z.boolean().optional() }).strict()
 
 export const tokenParamsSchema = z.object({
   token: z
@@ -25,6 +27,7 @@ export const candidateVerificationCountsSchema = z
 export const documentUploadBodySchema = z.object({
   side: z.enum(['front', 'back']),
   documentType,
+  planId: capturePlanId,
 })
 
 const acceptedImageTypes = ['image/jpeg', 'image/png']
@@ -36,11 +39,12 @@ const imageFileSchema = z
 
 export const documentImageFormSchema = documentUploadBodySchema.extend({ image: imageFileSchema })
 
-export const selfieImageFormSchema = z.object({ selfie: imageFileSchema })
+export const selfieImageFormSchema = z.object({ selfie: imageFileSchema, planId: capturePlanId })
 export const documentRegionsFormSchema = z.object({ image: imageFileSchema })
 export const livenessProximityFormSchema = z.object({ image: imageFileSchema })
 
 export const livenessFrameFormSchema = z.object({
+  planId: capturePlanId,
   challenge: z.enum(['turnLeft', 'turnRight', 'closer']),
   image: imageFileSchema,
 })

@@ -17,6 +17,7 @@ import type {
 } from '../types/capture.types'
 import { maxCapturePhotoBytes } from '../utils/upload-limits'
 import { ApiError, normalizeApiError } from './api-error'
+import type { DeferredLivenessPlan } from '../types/capture-draft.types'
 
 const capturePath = (token: string) => `/api/face_check/capture/${encodeURIComponent(token)}`
 
@@ -93,28 +94,47 @@ export const captureService = {
   uploadDocumentImage: (token: string, input: DocumentImageUploadInput, signal?: AbortSignal) =>
     request<void>(
       `${capturePath(token)}/document`,
-      photoForm('image', input.image, { side: input.side, documentType: input.documentType }),
+      photoForm('image', input.image, {
+        side: input.side,
+        documentType: input.documentType,
+        ...(input.planId ? { planId: input.planId } : {}),
+      }),
       { signal },
     ),
   getChallenges: async (token: string, signal?: AbortSignal) =>
     (await request<ChallengesResponse>(`${capturePath(token)}/challenges`, undefined, { signal }))
       .challenges,
-  uploadSelfie: (token: string, image: Blob, signal?: AbortSignal) =>
-    request<void>(`${capturePath(token)}/liveness`, photoForm('selfie', image), { signal }),
-  startLiveness: (token: string, signal?: AbortSignal) =>
+  uploadSelfie: (token: string, image: Blob, signal?: AbortSignal, planId?: string) =>
+    request<void>(
+      `${capturePath(token)}/liveness`,
+      photoForm('selfie', image, planId ? { planId } : {}),
+      { signal },
+    ),
+  prepareLiveness: (token: string, restart: boolean, signal?: AbortSignal) =>
+    request<DeferredLivenessPlan>(
+      `${capturePath(token)}/liveness-plan`,
+      { restart },
+      { signal, timeout: 15000 },
+    ),
+  startLiveness: (token: string, signal?: AbortSignal, planId?: string) =>
     request<LivenessSequenceState>(
       `${capturePath(token)}/liveness-start`,
-      {},
+      planId ? { planId } : {},
       { signal, timeout: 15000 },
     ),
   uploadLivenessFrame: (token: string, input: LivenessFrameInput, signal?: AbortSignal) =>
     request<LivenessProgressView>(
       `${capturePath(token)}/liveness-frame`,
-      photoForm('image', input.image, { challenge: input.challenge }),
+      photoForm('image', input.image, {
+        challenge: input.challenge,
+        ...(input.planId ? { planId: input.planId } : {}),
+      }),
       { signal },
     ),
-  submit: (token: string, signal?: AbortSignal) =>
-    request<CaptureStatusView>(`${capturePath(token)}/submit`, {}, { signal }),
+  submit: (token: string, signal?: AbortSignal, planId?: string) =>
+    request<CaptureStatusView>(`${capturePath(token)}/submit`, planId ? { planId } : {}, {
+      signal,
+    }),
   getStatus: (token: string, signal?: AbortSignal) =>
     request<CaptureStatusView>(`${capturePath(token)}/status`, undefined, { signal }),
   requestAlternative: (token: string, input: AlternativeRequestInput, signal?: AbortSignal) =>

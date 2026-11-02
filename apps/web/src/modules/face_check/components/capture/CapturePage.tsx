@@ -18,6 +18,7 @@ import { AlternativeStep } from './steps/AlternativeStep'
 import { CameraStep } from './steps/CameraStep'
 import { ConsentStep } from './steps/ConsentStep'
 import { DocumentReviewStep } from './steps/DocumentReviewStep'
+import { CaptureReviewStep } from './steps/CaptureReviewStep'
 import { LiveDocumentStep } from './steps/LiveDocumentStep'
 import { LiveSelfieStep } from './steps/LiveSelfieStep'
 import { ResultStep } from './steps/ResultStep'
@@ -71,7 +72,9 @@ function CaptureFlow({ token }: CapturePageProps) {
     case 'document':
       return <LiveDocumentStep session={data} />
     case 'documentReview':
-      return <DocumentReviewStep captureMode={data.captureMode} />
+      return <DocumentReviewStep session={data} />
+    case 'captureReview':
+      return <CaptureReviewStep session={data} />
     case 'selfie':
       return <LiveSelfieStep session={data} />
     case 'submit':

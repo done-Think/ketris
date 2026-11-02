@@ -16232,7 +16232,8 @@
                     "format": "binary"
                   },
                   "side": { "type": "string", "enum": ["front", "back"] },
-                  "documentType": { "type": "string", "enum": ["RG", "CNH", "RNE"] }
+                  "documentType": { "type": "string", "enum": ["RG", "CNH", "RNE"] },
+                  "planId": { "type": "string", "format": "uuid" }
                 },
                 "required": ["image", "side", "documentType"]
               }
@@ -16448,7 +16449,8 @@
                     "type": "string",
                     "description": "JPEG/PNG, at most 3 MiB and 16 million decoded pixels.",
                     "format": "binary"
-                  }
+                  },
+                  "planId": { "type": "string", "format": "uuid" }
                 },
                 "required": ["selfie"]
               }
@@ -16550,7 +16552,11 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "type": "object", "properties": {}, "additionalProperties": false }
+              "schema": {
+                "type": "object",
+                "properties": { "planId": { "type": "string", "format": "uuid" } },
+                "additionalProperties": false
+              }
             }
           }
         },
@@ -16569,6 +16575,128 @@
                     "step": { "type": "integer", "minimum": 0, "maximum": 3 }
                   },
                   "required": ["challenges", "step"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "401": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "403": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "404": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "409": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "410": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "413": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "422": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "429": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          },
+          "503": {
+            "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/FaceCheckError" } }
+            }
+          }
+        }
+      }
+    },
+    "/face_check/capture/{token}/liveness-plan": {
+      "post": {
+        "tags": ["Face Check Capture"],
+        "summary": "Issue or resume a session-bound plan before local movement capture. No images are uploaded; restarting preserves the consent deadline and rejection limits.",
+        "description": "The single-session capture token is the credential. Expiration, current requester/property eligibility, origin and distributed rate limits are checked server-side.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 64,
+              "maxLength": 64,
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "required": true,
+            "name": "token",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "restart": { "type": "boolean" } },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Capture response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "planId": { "type": "string", "format": "uuid" },
+                    "expiresAt": { "type": "string", "format": "date-time" },
+                    "challenges": {
+                      "type": "array",
+                      "items": { "type": "string", "enum": ["turnLeft", "turnRight", "closer"] }
+                    },
+                    "step": { "type": "integer", "minimum": 0, "maximum": 3 }
+                  },
+                  "required": ["planId", "expiresAt", "challenges", "step"]
                 }
               }
             }
@@ -16674,7 +16802,8 @@
                     "description": "JPEG/PNG, at most 3 MiB and 16 million decoded pixels.",
                     "format": "binary"
                   },
-                  "challenge": { "type": "string", "enum": ["turnLeft", "turnRight", "closer"] }
+                  "challenge": { "type": "string", "enum": ["turnLeft", "turnRight", "closer"] },
+                  "planId": { "type": "string", "format": "uuid" }
                 },
                 "required": ["image", "challenge"]
               }
@@ -17201,6 +17330,18 @@
             "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "planId": { "type": "string", "format": "uuid" } },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Capture response.",

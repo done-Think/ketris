@@ -74,6 +74,24 @@ câmeras são desligadas ao sair da etapa, inclusive quando a permissão chega
 depois que a tela foi fechada. Endereços locais ou sem HTTPS não são apresentados
 como links utilizáveis por outro aparelho.
 
+## Captura local e revisão antes do envio
+
+Frente, verso, selfie e movimentos ficam apenas em memória no navegador até a
+confirmação final. Fotografar não dispara upload. A pessoa pode conferir os dois
+lados, refazer apenas um deles, confirmar a selfie e revisar as seis imagens antes
+de enviar. Sair da captura ou recarregar a página descarta as fotos locais; não há
+persistência em localStorage, IndexedDB ou cache do navegador.
+
+A captura tenta negociar a resolução nativa disponível no dispositivo. Quando
+suportado, `ImageCapture.takePhoto()` preserva a fotografia nativa do documento, que
+pode ter mais detalhe que o vídeo. Dispositivos sem essa API usam o quadro completo
+do vídeo. Selfie e movimentos mantêm a mesma resolução e origem de vídeo para não
+distorcer a comparação de distância do rosto. Os
+limites de 3 MiB e 16 megapixels por imagem permanecem; aumentar pixels por software
+não substitui resolução óptica ou foco. A orientação ao vivo usa detecção nativa
+local quando disponível; sem ela, apresenta orientação neutra e continua permitindo
+a captura. Não há envio remoto de prévias. Recortes de PDF/galeria também são locais.
+
 ## Captura dos movimentos
 
 Depois da selfie, um clique em iniciar conduz a sequência esquerda → direita →
@@ -81,12 +99,22 @@ aproximação. Cada movimento tem contagem visível de 3 segundos, bipes quando 
 navegador permite áudio e captura automática. Pausar, ocultar a aba ou perder
 a câmera interrompe novas capturas; retomar exige uma ação do usuário.
 
-`POST /api/face_check/capture/{token}/liveness-start` inicia ou retoma a etapa
-pendente e retorna o progresso do servidor. O prazo de 15 segundos do movimento
-começa nessa ação; o prazo total da captura permanece igual. Cada foto continua
-sujeita à verificação de movimento, identidade e anti-spoof no backend. Falhas
-não apagam os movimentos já aceitos. A retomada sincroniza respostas perdidas
-sem repetir etapas concluídas, e o limite de rejeições mantém a revisão humana.
+`POST /api/face_check/capture/{token}/liveness-plan` emite um identificador vinculado
+à sessão, antes de capturar os movimentos. Ele não recebe imagens e preserva o prazo
+de consentimento e os limites de rejeições. Reiniciar invalida o plano anterior.
+
+Somente na confirmação final o cliente envia frente, verso, selfie e movimentos,
+em requisições individuais limitadas, vinculadas ao mesmo plano. Isso evita reduzir
+a qualidade para acomodar seis imagens em um único payload. Todas as verificações
+de documento, identidade, ordem e anti-spoof continuam no backend; não se aceita
+aprovação calculada pelo cliente. O prazo de 15 segundos entre recebimentos começa
+em `liveness-start`, após o envio da selfie. Os horários registram recebimento e
+análise, sem atestar o instante de aquisição de cada foto no dispositivo.
+
+Falhas não apagam os movimentos já aceitos. A retomada sincroniza respostas perdidas
+sem repetir etapas aceitas, e o limite de rejeições mantém a revisão humana. A
+aprovação automática permanece desativada; a sequência de fotos não constitui
+sozinha uma prova certificada de captura ao vivo.
 
 ## Convites por e-mail
 

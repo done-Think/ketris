@@ -28,6 +28,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   vi.useRealTimers()
+  vi.unstubAllGlobals()
 })
 async function advance(ms = 0) {
   await act(async () => {
@@ -36,6 +37,38 @@ async function advance(ms = 0) {
 }
 
 describe('live face placement feedback', () => {
+  it('keeps offline guidance on the device without sending preview images', async () => {
+    const close = vi.fn()
+    vi.stubGlobal(
+      'createImageBitmap',
+      vi.fn().mockResolvedValue({ width: 640, height: 360, close }),
+    )
+    vi.stubGlobal(
+      'FaceDetector',
+      class {
+        async detect() {
+          return [
+            { boundingBox: { x: 640 * 0.36, y: 360 * 0.2, width: 640 * 0.28, height: 360 * 0.6 } },
+          ]
+        }
+      },
+    )
+    const view = renderHook(() => useSelfieFraming({ ...options, localOnly: true }))
+    await advance(1500)
+    expect(view.result.current).toBe('ready')
+    expect(framing).not.toHaveBeenCalled()
+    expect(close).toHaveBeenCalledTimes(2)
+  })
+
+  it('uses neutral guidance when native detection is unavailable, without falling back to a remote upload', async () => {
+    vi.stubGlobal('FaceDetector', undefined)
+    const view = renderHook(() => useSelfieFraming({ ...options, localOnly: true }))
+    await advance(10_000)
+    expect(view.result.current).toBe('unavailable')
+    expect(framing).not.toHaveBeenCalled()
+    expect(options.sampleFrame).toHaveBeenCalledOnce()
+  })
+
   it('requires stable placement and resets the green state as soon as the face moves', async () => {
     const view = renderHook(() => useSelfieFraming(options))
     await advance()

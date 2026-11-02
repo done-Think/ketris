@@ -18,14 +18,63 @@ function withoutPreview(previews: CaptureFlowState['previews'], side: DocumentSi
   return next
 }
 
+function clearSelfieDrafts(state: CaptureFlowState) {
+  if (state.selfiePreview) releasePreview(state.selfiePreview)
+  Object.values(state.movementPreviews).forEach(releasePreview)
+  return {
+    selfieImage: null,
+    selfiePreview: null,
+    movementImages: {},
+    movementPreviews: {},
+    plan: null,
+    uploaded: {},
+    livenessStep: 0,
+  }
+}
+
 export function createCaptureFlowStore(): CaptureFlowStore {
   return createStore<CaptureFlowState>()((set) => ({
     step: 'consent',
     documentType: null,
+    selfieImage: null,
+    selfiePreview: null,
+    movementImages: {},
+    movementPreviews: {},
+    plan: null,
+    uploaded: {},
+    captureSelfie: (image) =>
+      set((state) => ({
+        ...clearSelfieDrafts(state),
+        selfieImage: image,
+        selfiePreview: URL.createObjectURL(image),
+      })),
+    captureMovement: (challenge, image) =>
+      set((state) => {
+        releasePreview(state.movementPreviews[challenge])
+        return {
+          movementImages: { ...state.movementImages, [challenge]: image },
+          movementPreviews: { ...state.movementPreviews, [challenge]: URL.createObjectURL(image) },
+        }
+      }),
+    setLivenessPlan: (plan) =>
+      set((state) => ({
+        plan,
+        ...(state.plan?.planId !== plan.planId ? { uploaded: {} } : {}),
+      })),
+    rememberUpload: (slot, image) =>
+      set((state) => ({ uploaded: { ...state.uploaded, [slot]: image } })),
+    retakeMovements: () => set({ step: 'selfie', livenessStep: 1 }),
     documentImages: { front: null, back: null },
-    setDocumentImage: (side, image) =>
-      set((state) => ({ documentImages: { ...state.documentImages, [side]: image } })),
-    clearImages: () => set({ documentImages: { front: null, back: null } }),
+    clearImages: () =>
+      set((state) => {
+        Object.values(state.previews).forEach(releasePreview)
+        return {
+          ...clearSelfieDrafts(state),
+          documentImages: { front: null, back: null },
+          previews: {},
+          capturedSides: [],
+        }
+      }),
     side: 'front',
     capturedSides: [],
     previews: {},
@@ -36,6 +85,7 @@ export function createCaptureFlowStore(): CaptureFlowStore {
         if (state.documentType === documentType) return {}
         Object.values(state.previews).forEach(releasePreview)
         return {
+          ...clearSelfieDrafts(state),
           documentType,
           documentImages: { front: null, back: null },
           capturedSides: [],
@@ -43,26 +93,22 @@ export function createCaptureFlowStore(): CaptureFlowStore {
           side: 'front',
         }
       }),
-    markCaptured: (side, preview) =>
+    captureDocument: (side, image) =>
       set((state) => {
-        const previousSides =
-          side === 'front'
-            ? state.capturedSides.filter((item) => item !== 'back')
-            : state.capturedSides
-        const previousPreviews =
-          side === 'front' ? withoutPreview(state.previews, 'back') : state.previews
-        const capturedSides = previousSides.includes(side)
-          ? previousSides
-          : [...previousSides, side]
-        const previews = preview
-          ? { ...withoutPreview(previousPreviews, side), [side]: preview }
-          : previousPreviews
-        const documentImages =
-          side === 'front' ? { ...state.documentImages, back: null } : state.documentImages
+        const capturedSides = state.capturedSides.includes(side)
+          ? state.capturedSides
+          : [...state.capturedSides, side]
+        const previews = {
+          ...withoutPreview(state.previews, side),
+          [side]: URL.createObjectURL(image),
+        }
+        const documentImages = { ...state.documentImages, [side]: image }
         const missing = sidesInOrder.find((item) => !capturedSides.includes(item))
 
+        const reset = clearSelfieDrafts(state)
         return missing
           ? {
+              ...reset,
               capturedSides,
               previews,
               documentImages,
@@ -70,22 +116,19 @@ export function createCaptureFlowStore(): CaptureFlowStore {
               step: 'document',
               livenessStep: 0,
             }
-          : { capturedSides, previews, documentImages, step: 'documentReview', livenessStep: 0 }
+          : {
+              ...reset,
+              capturedSides,
+              previews,
+              documentImages,
+              step: 'documentReview',
+              livenessStep: 0,
+            }
       }),
     retakeSide: (side) =>
       set((state) => {
-        if (side === 'front') {
-          Object.values(state.previews).forEach(releasePreview)
-          return {
-            side,
-            documentImages: { front: null, back: null },
-            step: 'document',
-            capturedSides: [],
-            previews: {},
-            livenessStep: 0,
-          }
-        }
         return {
+          ...clearSelfieDrafts(state),
           side,
           documentImages: { ...state.documentImages, [side]: null },
           step: 'document',
@@ -96,7 +139,7 @@ export function createCaptureFlowStore(): CaptureFlowStore {
       }),
     advanceLiveness: (totalChallenges) =>
       set((state) => ({ livenessStep: Math.min(totalChallenges + 1, state.livenessStep + 1) })),
-    resetLiveness: () => set({ livenessStep: 0 }),
+    resetLiveness: () => set((state) => clearSelfieDrafts(state)),
     syncLivenessStep: (livenessStep) => set({ livenessStep }),
     retryChallenges: () => set({ livenessStep: 1 }),
     restartAttempt: () =>
@@ -104,6 +147,7 @@ export function createCaptureFlowStore(): CaptureFlowStore {
         Object.values(state.previews).forEach(releasePreview)
 
         return {
+          ...clearSelfieDrafts(state),
           step: 'document',
           side: 'front',
           capturedSides: [],

@@ -23,7 +23,7 @@
       "items": {
         "collect": {
           "title": "What we collect",
-          "body": "Document photos, a selfie, movements and retakes, including rejected photos, form the evidence history. We do not record video or audio."
+          "body": "The photos you confirm and send, including retakes and images rejected during analysis, form the evidence history. Photos discarded before sending stay only in your browser. We do not record video or audio."
         },
         "purpose": {
           "title": "Why",
@@ -59,7 +59,7 @@
       "titleFront": "Front of {doc}",
       "titleBack": "Back of {doc}",
       "rgFrontHint": "For an RG, start with the side showing the holder's photo. Include the entire document with all edges visible.",
-      "rgBackHint": "Now turn the RG over and photograph the opposite side to the one you sent first.",
+      "rgBackHint": "Now turn the RG over and photograph the opposite side to the one you captured first.",
       "typeLabel": "Document type",
       "types": {
         "RG": "RG",
@@ -74,6 +74,7 @@
       "uploading": "Uploading photo"
     },
     "documentReview": {
+      "beforeSending": "Your photos have not been sent. Confirm to continue with the selfie and movements; submission happens after the final review.",
       "title": "Can you read everything?",
       "body": "Check that the name, number and photo are visible without glare or cropping.",
       "sideLabel": "{side} of {doc}",
@@ -219,6 +220,13 @@
       "documentPreview": "Rear camera preview",
       "selfiePreview": "Front camera preview",
       "takeSelfie": "Take selfie",
+      "preparingPhoto": "Preparing photo…",
+      "reviewBeforeSending": "Capture both sides. You can review and retake the photos before sending them.",
+      "reviewSelfie": "Review your selfie",
+      "selfiePhoto": "Captured selfie for review",
+      "selfieReviewHint": "Check that your whole face is clear. This photo stays in your browser until the final review.",
+      "confirmSelfie": "Use this selfie",
+      "retakeSelfie": "Retake selfie",
       "captureFailed": "We could not use this photo. Try again.",
       "checking": "Checking photo…",
       "issues": {
@@ -267,22 +275,23 @@
       "resumeMovements": "Resume movements",
       "pauseMovements": "Pause capture",
       "sequenceRunning": "Automatic sequence in progress…",
-      "captureIn": "Capture in {seconds}…"
+      "captureIn": "Capture in {seconds}…",
+      "reviewCaptures": "Review all photos"
     },
     "cameraNotice": "Your document, selfie and movements will be sent for analysis and review by a member of the agency team.",
     "import": {
       "frontTitle": "Crop the front of the document",
       "backTitle": "Crop the back of the document",
-      "help": "Set Crop 1 for the front and Crop 2 for the back. Each side keeps its own area and page. Drag on the image or adjust the percentage values. Send the front before the back.",
+      "help": "Adjust Crop 1 for the front and Crop 2 for the back. Each side keeps its own area and page. Drag on the image or adjust the percentages. Photos stay in your browser until the final review.",
       "page": "Page",
-      "loading": "Preparing page and looking for the document",
+      "loading": "Preparing page in your browser",
       "fileSize": "Choose a file up to 20 MB.",
       "pageLimit": "Choose a PDF with up to 20 pages.",
       "password": "This PDF is password-protected. Upload a copy without a password.",
       "invalid": "We could not open this file. Try another PDF or a JPG or PNG image.",
       "detectionFailed": "We could not suggest a crop. Adjust the area manually; analysis is still required when submitting.",
       "detected": "We suggested an area for this side. Check the crop and adjust before sending.",
-      "noRegions": "No suggested area for this side. Select the area manually before sending.",
+      "noRegions": "Select the document area. The crop stays in your browser until final submission.",
       "sides": "Document crops",
       "frontCrop": "Crop 1 — Front",
       "backCrop": "Crop 2 — Back",
@@ -293,9 +302,9 @@
       "width": "Width (%)",
       "height": "Height (%)",
       "cancel": "Close",
-      "sending": "Analyzing crop…",
-      "sendFront": "Analyze and send front",
-      "sendBack": "Analyze and send back"
+      "sending": "Preparing crop…",
+      "sendFront": "Use front crop",
+      "sendBack": "Use back crop"
     },
     "agencyFallback": "agency",
     "phone": {
@@ -311,7 +320,25 @@
       "copyFailed": "Unable to copy automatically. Select the address above and copy it manually.",
       "close": "Close"
     },
-    "dashboardTitle": "Identity verification"
+    "dashboardTitle": "Identity verification",
+    "review": {
+      "title": "Review before sending",
+      "body": "Check the document photos, selfie and movements. Nothing has been sent for validation. Send when you are happy with the captures.",
+      "resumeBody": "Some photos have already been sent. You can resume validation or retake a capture.",
+      "send": "Confirm and send for analysis",
+      "sending": "Sending and validating photos…",
+      "retake": "Retake capture",
+      "checking": "Checking: {photo}",
+      "failedPhoto": "Could not validate: {photo}. Check the guidance and retake the capture if needed.",
+      "photos": {
+        "front": "Document front",
+        "back": "Document back",
+        "selfie": "Selfie",
+        "turnLeft": "Face turned left",
+        "turnRight": "Face turned right",
+        "closer": "Face closer to the camera"
+      }
+    }
   },
   "console": {
     "nav": {

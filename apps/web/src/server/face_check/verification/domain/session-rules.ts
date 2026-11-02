@@ -150,6 +150,7 @@ export function renewLink(session: VerificationSession, now: number) {
 }
 
 export function clearCapture(record: SessionRecord) {
+  record.capture.plan = null
   record.capture.photos = {}
   record.capture.challenges = null
   record.capture.livenessVerified = false

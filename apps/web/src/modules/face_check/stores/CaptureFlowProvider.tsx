@@ -24,9 +24,7 @@ export function CaptureFlowProvider({ children }: CaptureFlowProviderProps) {
   useEffect(
     () => () => {
       requests.current?.abort()
-      Object.values(store.getState().previews).forEach((url) => {
-        if (url) URL.revokeObjectURL(url)
-      })
+      store.getState().clearImages()
     },
     [store],
   )

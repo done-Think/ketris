@@ -23,7 +23,7 @@
       "items": {
         "collect": {
           "title": "O que vamos coletar",
-          "body": "Fotos do documento, selfie, movimentos e recapturas, inclusive fotos recusadas, compõem o histórico de evidências. Não gravamos vídeo nem áudio."
+          "body": "As fotos que você confirmar e enviar, incluindo recapturas e imagens recusadas na análise, compõem o histórico de evidências. Fotos descartadas antes do envio ficam apenas no navegador. Não gravamos vídeo nem áudio."
         },
         "purpose": {
           "title": "Para quê",
@@ -59,7 +59,7 @@
       "titleFront": "Frente do {doc}",
       "titleBack": "Verso do {doc}",
       "rgFrontHint": "No RG, fotografe primeiro o lado com a foto do titular. Enquadre o documento inteiro, com as bordas visíveis.",
-      "rgBackHint": "Agora vire o RG e fotografe o lado oposto ao que você enviou primeiro.",
+      "rgBackHint": "Agora vire o RG e fotografe o lado oposto ao que você capturou primeiro.",
       "typeLabel": "Tipo de documento",
       "types": {
         "RG": "RG",
@@ -76,6 +76,7 @@
     "documentReview": {
       "title": "Dá para ler tudo?",
       "body": "Confira se nome, número e foto aparecem sem reflexo nem corte.",
+      "beforeSending": "As fotos ainda não foram enviadas. Confirme para continuar com a selfie e os movimentos; o envio será feito após a revisão final.",
       "sideLabel": "{side} do {doc}",
       "retake": "Tirar de novo",
       "confirm": "Usar estas fotos",
@@ -229,6 +230,13 @@
       "documentPreview": "Imagem da câmera traseira",
       "selfiePreview": "Imagem da câmera frontal",
       "takeSelfie": "Tirar selfie",
+      "preparingPhoto": "Preparando foto…",
+      "reviewBeforeSending": "Capture os dois lados. Você poderá conferir e refazer as fotos antes de enviá-las.",
+      "reviewSelfie": "Confira sua selfie",
+      "selfiePhoto": "Selfie capturada para revisão",
+      "selfieReviewHint": "Confira se o rosto está nítido e inteiro. Esta foto ficará no navegador até a revisão final.",
+      "confirmSelfie": "Usar esta selfie",
+      "retakeSelfie": "Tirar selfie de novo",
       "captureFailed": "Não conseguimos usar esta foto. Tente de novo.",
       "checking": "Conferindo a foto…",
       "issues": {
@@ -267,7 +275,8 @@
       "resumeMovements": "Retomar movimentos",
       "pauseMovements": "Pausar captura",
       "sequenceRunning": "Sequência automática em andamento…",
-      "captureIn": "Captura em {seconds}…"
+      "captureIn": "Captura em {seconds}…",
+      "reviewCaptures": "Revisar todas as fotos"
     },
     "phone": {
       "action": "Continuar pelo celular",
@@ -286,32 +295,50 @@
     "import": {
       "frontTitle": "Recortar a frente do documento",
       "backTitle": "Recortar o verso do documento",
-      "help": "Ajuste o Recorte 1 para a frente e o Recorte 2 para o verso. Cada lado mantém sua área e sua página. Você pode arrastar na imagem ou ajustar os valores em porcentagem. Envie a frente antes do verso.",
+      "help": "Ajuste o Recorte 1 para a frente e o Recorte 2 para o verso. Cada lado mantém sua área e sua página. Você pode arrastar na imagem ou ajustar os valores em porcentagem. As fotos ficam no navegador até a revisão final.",
       "page": "Página",
-      "loading": "Preparando página e procurando o documento",
+      "loading": "Preparando página no navegador",
       "fileSize": "Escolha um arquivo de até 20 MB.",
       "pageLimit": "Escolha um PDF com até 20 páginas.",
       "password": "Este PDF está protegido por senha. Envie uma cópia sem senha.",
       "invalid": "Não foi possível abrir este arquivo. Tente outro PDF ou uma imagem JPG ou PNG.",
       "detectionFailed": "Não foi possível sugerir recortes. Você pode ajustar a área manualmente; a análise ainda será necessária ao enviar.",
       "detected": "Sugerimos uma área para este lado. Confira o recorte e ajuste antes de enviar.",
-      "noRegions": "Não encontramos uma sugestão para este lado. Marque a área manualmente antes de enviar.",
+      "noRegions": "Marque a área do documento. O recorte fica no navegador até o envio final.",
       "sides": "Recortes do documento",
       "frontCrop": "Recorte 1 — Frente",
       "backCrop": "Recorte 2 — Verso",
-      "frontFirst": "Você pode ajustar o verso agora. Envie a frente antes de enviar o verso.",
+      "frontFirst": "Você pode ajustar o verso agora. Selecione primeiro o recorte da frente para continuar.",
       "preview": "Página do documento com a área de recorte selecionada",
       "x": "Esquerda (%)",
       "y": "Topo (%)",
       "width": "Largura (%)",
       "height": "Altura (%)",
       "cancel": "Fechar",
-      "sending": "Analisando recorte…",
-      "sendFront": "Analisar e enviar frente",
-      "sendBack": "Analisar e enviar verso"
+      "sending": "Preparando recorte…",
+      "sendFront": "Usar recorte da frente",
+      "sendBack": "Usar recorte do verso"
     },
     "agencyFallback": "imobiliária",
-    "dashboardTitle": "Verificação de identidade"
+    "dashboardTitle": "Verificação de identidade",
+    "review": {
+      "title": "Revise antes de enviar",
+      "body": "Confira as fotos do documento, a selfie e os movimentos. Nada foi enviado para validação. Envie quando estiver satisfeito com as capturas.",
+      "resumeBody": "Algumas fotos já foram enviadas. Você pode retomar a validação ou refazer uma captura.",
+      "send": "Confirmar e enviar para análise",
+      "sending": "Enviando e validando as fotos…",
+      "retake": "Refazer captura",
+      "checking": "Conferindo: {photo}",
+      "failedPhoto": "Não foi possível validar: {photo}. Confira a orientação e refaça a captura, se necessário.",
+      "photos": {
+        "front": "Frente do documento",
+        "back": "Verso do documento",
+        "selfie": "Selfie",
+        "turnLeft": "Rosto para a esquerda",
+        "turnRight": "Rosto para a direita",
+        "closer": "Rosto mais próximo"
+      }
+    }
   },
   "console": {
     "nav": {

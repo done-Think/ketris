@@ -1,6 +1,7 @@
 import { act, fireEvent, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useCameraStream } from '../hooks/use-camera-stream'
+import type { CameraTrackCapabilities } from '../types/native-camera.types'
 
 const getUserMedia = vi.fn()
 function media() {
@@ -46,6 +47,29 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('camera permissions and hardware', () => {
+  it('negotiates the native camera resolution after the browser opens a reduced preview', async () => {
+    const { stream, track } = media()
+    vi.spyOn(track, 'getSettings').mockReturnValue({ width: 640, height: 480 })
+    const capabilities: CameraTrackCapabilities = {
+      width: { min: 640, max: 1920 },
+      height: { min: 480, max: 1080 },
+      resizeMode: ['none', 'crop-and-scale'],
+    }
+    vi.spyOn(track, 'getCapabilities').mockReturnValue(capabilities)
+    const apply = vi.spyOn(track, 'applyConstraints')
+    getUserMedia.mockResolvedValue(stream)
+    const view = renderHook(() => useCameraStream('environment'))
+    await waitFor(() => expect(apply).toHaveBeenCalled())
+    expect(apply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        resizeMode: { exact: 'none' },
+      }),
+    )
+    view.unmount()
+  })
+
   it('reports the decoded frame proportions and updates them after device rotation', async () => {
     const { stream } = media()
     getUserMedia.mockResolvedValue(stream)

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { StoreApi } from 'zustand'
 import type { FaceGuideGeometry } from './face-framing.types'
+import type { CaptureDraftState } from './capture-draft.types'
 
 import type {
   CaptureMode,
@@ -16,6 +17,7 @@ export type CaptureStep =
   | 'camera'
   | 'document'
   | 'documentReview'
+  | 'captureReview'
   | 'selfie'
   | 'submit'
   | 'result'
@@ -23,19 +25,18 @@ export type CaptureStep =
 
 export type ProgressStepName = 'consent' | 'document' | 'selfie' | 'submit'
 
-export interface CaptureFlowState {
+export interface CaptureFlowState extends CaptureDraftState {
   step: CaptureStep
   documentType: DocumentType | null
   side: DocumentSide
   capturedSides: DocumentSide[]
   previews: Partial<Record<DocumentSide, string>>
   documentImages: Record<DocumentSide, Blob | null>
-  setDocumentImage: (side: DocumentSide, image: Blob) => void
   clearImages: () => void
   livenessStep: number
   goTo: (step: CaptureStep) => void
   chooseDocument: (documentType: DocumentType) => void
-  markCaptured: (side: DocumentSide, preview?: string) => void
+  captureDocument: (side: DocumentSide, image: Blob) => void
   retakeSide: (side: DocumentSide) => void
   advanceLiveness: (totalChallenges: number) => void
   syncLivenessStep: (step: number) => void
@@ -84,10 +85,6 @@ export interface CaptureStepProps {
   session: CaptureSessionView
 }
 
-export interface DocumentReviewStepProps {
-  captureMode?: CaptureMode
-}
-
 export interface FaceViewportProps {
   ring: FaceRing
   arrow: 'left' | 'right' | null
@@ -101,6 +98,7 @@ export interface DocumentUploadInput {
 }
 
 export interface LivenessFrameInput {
+  planId?: string
   challenge: LivenessChallenge
   image: Blob
   signal?: AbortSignal
@@ -112,6 +110,7 @@ export interface LivenessProgressView {
 
 export interface DocumentImageUploadInput extends DocumentUploadInput {
   image: Blob
+  planId?: string
 }
 
 export type CameraFacing = 'environment' | 'user'
@@ -124,6 +123,7 @@ export interface CameraStream {
   aspectRatio: number | null
   attachVideo: (node: HTMLVideoElement | null) => void
   grabFrame: () => Promise<Blob>
+  grabPhoto: () => Promise<Blob>
   sampleFrame: () => Promise<Blob>
   restart: () => void
 }

@@ -326,9 +326,14 @@ export const documentStepStyles = {
 } satisfies Record<string, SxProps<Theme> | ((...args: never[]) => SxProps<Theme>)>
 
 export const documentReviewStyles = {
+  reviewGrid: {
+    display: 'grid',
+    gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+    gap: 2,
+  },
   preview: {
     position: 'relative',
-    height: 176,
+    height: { xs: 220, md: 320 },
     borderRadius: `${radius.md}px`,
     bgcolor: brand.graphite[50],
     overflow: 'hidden',

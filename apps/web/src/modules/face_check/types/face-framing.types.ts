@@ -30,6 +30,7 @@ export type FaceFramingStatus =
 export type CaptureDevice = 'camera' | 'computer' | 'mobile'
 
 export interface SelfieFramingOptions {
+  localOnly?: boolean
   token: string
   enabled: boolean
   sampleFrame: () => Promise<Blob>

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import type { DocumentRegion } from '../types/document-import.types'
 import type { DocumentSide } from '../types/session.types'
 
-import { captureService } from '../services/capture-service'
 import type {
   DocumentCropSelections,
   DocumentImportOptions,
@@ -78,14 +77,8 @@ export function useDocumentImport({ file, token, side, busy, onConfirm }: Docume
       url = URL.createObjectURL(image)
       setPreview(url)
       setCanvas(rendered)
-      let suggestions: DocumentRegion[] = []
-      try {
-        suggestions = (
-          await captureService.documentRegions(token, image, controller.signal)
-        ).regions.slice(0, 2)
-      } catch {
-        if (!disposed) setDetectionFailed(true)
-      }
+      // Document crops remain local until the person confirms the final submission.
+      const suggestions: DocumentRegion[] = []
       if (disposed) return
       setCrops((current) => {
         const next = { ...current }

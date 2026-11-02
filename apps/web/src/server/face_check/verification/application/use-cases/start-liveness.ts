@@ -4,12 +4,14 @@ import { ensureInProgress, livenessPool } from '../../domain/session-rules'
 import { VerificationError } from '../../domain/verification-error'
 import { issueChallenges } from '../capture-steps'
 import { changeSession } from '../session-access'
+import { requireCapturePlan } from '../capture-plan'
 
 export function startLivenessUseCase(deps: VerificationDependencies) {
   return {
-    execute: (token: string): Promise<LivenessSequenceState> =>
+    execute: (token: string, planId?: string): Promise<LivenessSequenceState> =>
       changeSession(deps, { token }, (record) => {
         ensureInProgress(record.session)
+        requireCapturePlan(record, planId)
         if (record.session.captureMode !== 'camera' || !record.capture.photos.selfie)
           throw new VerificationError('INVALID_CAPTURE_STATE')
         if (record.capture.livenessVerified)

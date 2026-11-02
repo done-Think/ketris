@@ -47,10 +47,9 @@ describe('live selfie placement guidance', () => {
       cy.intercept('GET', capturePath, { body: session })
       cy.intercept('POST', `${capturePath}/consent`, { body: session })
       cy.intercept('POST', `${capturePath}/document`, { body: {} })
-      cy.intercept('POST', `${capturePath}/framing`, (request) => {
+      const measuredFace = () => {
         if (placement === 'unavailable') {
-          request.reply({ statusCode: 503, body: { error: { code: 'ANALYSIS_UNAVAILABLE' } } })
-          return
+          throw new Error('LOCAL_FRAMING_UNAVAILABLE')
         }
         const video = appWindow.document.querySelector('video')!
         const stage = video.parentElement!
@@ -68,28 +67,47 @@ describe('live selfie placement guidance', () => {
         const scale = Math.max(viewport.width / 640, viewport.height / 360)
         const displayWidth = 640 * scale
         const displayHeight = 360 * scale
-        request.reply({
-          body: {
-            width: 640,
-            height: 360,
-            faceCount: placement === 'notFound' ? 0 : placement === 'multipleFaces' ? 2 : 1,
-            face:
-              placement === 'notFound'
-                ? null
-                : {
-                    x:
-                      (viewport.width - left - width + (displayWidth - viewport.width) / 2) /
-                      displayWidth,
-                    y: (top + (displayHeight - viewport.height) / 2) / displayHeight,
-                    width: width / displayWidth,
-                    height: height / displayHeight,
-                  },
-          },
-        })
-      }).as('framing')
+        return {
+          width: 640,
+          height: 360,
+          faceCount: placement === 'notFound' ? 0 : placement === 'multipleFaces' ? 2 : 1,
+          face:
+            placement === 'notFound'
+              ? null
+              : {
+                  x:
+                    (viewport.width - left - width + (displayWidth - viewport.width) / 2) /
+                    displayWidth,
+                  y: (top + (displayHeight - viewport.height) / 2) / displayHeight,
+                  width: width / displayWidth,
+                  height: height / displayHeight,
+                },
+        }
+      }
+      cy.intercept('POST', `${capturePath}/framing`, () => {
+        throw new Error('Preview photos must remain on device')
+      })
       cy.visit(`/${locale}/face_check/verify/${token}`, {
         onBeforeLoad(win) {
           appWindow = win
+          Object.defineProperty(win, 'FaceDetector', {
+            configurable: true,
+            value: class {
+              async detect() {
+                const measured = measuredFace()
+                const face = measured.face
+                if (!face) return []
+                return Array.from({ length: measured.faceCount }, () => ({
+                  boundingBox: new DOMRect(
+                    face.x * 640,
+                    face.y * 360,
+                    face.width * 640,
+                    face.height * 360,
+                  ),
+                }))
+              }
+            },
+          })
           Object.defineProperty(win.navigator, 'userAgentData', {
             configurable: true,
             value: { mobile },

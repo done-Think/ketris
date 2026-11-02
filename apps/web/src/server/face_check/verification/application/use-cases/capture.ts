@@ -36,6 +36,7 @@ import {
   rejectLiveness,
 } from '../capture-steps'
 import { changeSession } from '../session-access'
+import { requireCapturePlan } from '../capture-plan'
 import type { analyzeSessionUseCase } from './analysis'
 
 async function captureView(deps: VerificationDependencies, record: SessionRecord) {
@@ -109,9 +110,11 @@ export function uploadDocumentPhotoUseCase(deps: VerificationDependencies) {
       side: DocumentSide,
       documentType: DocumentType,
       image: CapturedImage,
+      planId?: string,
     ) =>
       changeSession(deps, { token }, async (current) => {
         ensureInProgress(current.session)
+        requireCapturePlan(current, planId)
         if (current.session.captureMode !== 'camera')
           throw new VerificationError('INVALID_CAPTURE_STATE')
         ensureAcceptedDocument(current.session, side, documentType)
@@ -136,8 +139,9 @@ export function getChallengesUseCase(deps: VerificationDependencies) {
 
 export function uploadSelfieUseCase(deps: VerificationDependencies) {
   return {
-    execute: (token: string, selfie: CapturedImage | null) =>
+    execute: (token: string, selfie: CapturedImage | null, planId?: string) =>
       changeSession(deps, { token }, async (record) => {
+        requireCapturePlan(record, planId)
         if (record.session.captureMode !== 'camera')
           throw new VerificationError('INVALID_CAPTURE_STATE')
         if (!selfie) throw new VerificationError('IMAGE_REQUIRED')
@@ -154,10 +158,12 @@ export function verifyLivenessFrameUseCase(deps: VerificationDependencies) {
       token: string,
       challenge: LivenessChallenge,
       image: CapturedImage,
+      planId?: string,
     ): Promise<LivenessProgress> =>
       changeSession(deps, { token }, async (record) => {
         const { session, capture } = record
         ensureInProgress(session)
+        requireCapturePlan(record, planId)
         if (session.captureMode !== 'camera') throw new VerificationError('INVALID_CAPTURE_STATE')
         const evidence = await beginEvidence(deps, record, 'liveness', image, challenge)
         try {
@@ -199,10 +205,11 @@ export function submitCaptureUseCase(
   analyzeSession: ReturnType<typeof analyzeSessionUseCase>,
 ) {
   return {
-    execute: async (token: string): Promise<CaptureStatusView> => {
+    execute: async (token: string, planId?: string): Promise<CaptureStatusView> => {
       const submitted = await changeSession(deps, { token }, (record) => {
         const { session, capture } = record
         ensureInProgress(session)
+        requireCapturePlan(record, planId)
         if (session.captureMode === 'camera') {
           const photos = capture.photos
           if (!photos.front || !photos.back || !photos.selfie)
@@ -216,6 +223,7 @@ export function submitCaptureUseCase(
         session.status = 'SUBMITTED'
         session.submittedAt = iso(now)
         session.captureDeadline = null
+        capture.plan = null
         pushEvent(session, deps.newId(), 'submitted', 'person', now)
         if (session.captureMode === 'camera') session.status = 'PROCESSING'
 

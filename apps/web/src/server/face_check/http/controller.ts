@@ -20,6 +20,7 @@ import {
   livenessFrameFormSchema,
   livenessProximityFormSchema,
   startLivenessBodySchema,
+  prepareLivenessBodySchema,
   overviewQuerySchema,
   selfieImageFormSchema,
   sessionListQuerySchema,
@@ -55,6 +56,7 @@ type CaptureOperation =
   | 'liveness'
   | 'liveness-frame'
   | 'liveness-start'
+  | 'liveness-plan'
   | 'proximity'
   | 'document-regions'
   | 'submit'
@@ -189,11 +191,16 @@ export function captureHandler(operation: CaptureOperation) {
     if (operation === 'challenges')
       return NextResponse.json({ challenges: await container.getChallengesUseCase.execute(token) })
     if (operation === 'liveness-start') {
-      await jsonBody(request, startLivenessBodySchema)
-      return NextResponse.json(await container.startLivenessUseCase.execute(token))
+      const body = await jsonBody(request, startLivenessBodySchema)
+      return NextResponse.json(await container.startLivenessUseCase.execute(token, body.planId))
+    }
+    if (operation === 'liveness-plan') {
+      const body = await jsonBody(request, prepareLivenessBodySchema)
+      return NextResponse.json(await container.prepareLivenessUseCase.execute(token, body.restart))
     }
     if (operation === 'submit') {
-      await container.submitCaptureUseCase.execute(token)
+      const body = await jsonBody(request, startLivenessBodySchema)
+      await container.submitCaptureUseCase.execute(token, body.planId)
       return NextResponse.json(await container.getCaptureStatusUseCase.execute(token))
     }
     if (operation === 'status') {
@@ -225,12 +232,17 @@ export function captureHandler(operation: CaptureOperation) {
         body.side,
         body.documentType,
         await capturedImage(body.image),
+        body.planId,
       )
       return new NextResponse(null, { status: 204 })
     }
     if (operation === 'liveness') {
       const body = selfieImageFormSchema.strict().parse(form)
-      await container.uploadSelfieUseCase.execute(token, await capturedImage(body.selfie))
+      await container.uploadSelfieUseCase.execute(
+        token,
+        await capturedImage(body.selfie),
+        body.planId,
+      )
       return new NextResponse(null, { status: 204 })
     }
     if (operation === 'liveness-frame') {
@@ -240,6 +252,7 @@ export function captureHandler(operation: CaptureOperation) {
           token,
           body.challenge,
           await capturedImage(body.image),
+          body.planId,
         ),
       )
     }

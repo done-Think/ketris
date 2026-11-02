@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from 'react'
 import type { CameraFacing, CameraStream, CameraStreamStatus } from '../types/capture.types'
 import { attachStream, grabPreviewFrame, grabVideoFrame, stopStream } from '../utils/image-capture'
 import { cameraConstraints, isCameraConstraintError } from '../utils/camera-constraints'
+import { configureCameraQuality } from '../utils/camera-quality'
+import { grabCameraPhoto } from '../utils/camera-photo'
 
 function statusForError(error: unknown): CameraStreamStatus {
   const name = error && typeof error === 'object' && 'name' in error ? error.name : null
@@ -46,6 +48,12 @@ export function useCameraStream(facing: CameraFacing): CameraStream {
         if (cancelled) {
           stopStream(opened)
 
+          return
+        }
+        const track = opened.getVideoTracks()[0]
+        if (track) await configureCameraQuality(track)
+        if (cancelled) {
+          stopStream(opened)
           return
         }
         const ended = () => {
@@ -100,6 +108,7 @@ export function useCameraStream(facing: CameraFacing): CameraStream {
   }, [video])
 
   const grabFrame = useCallback(() => grabVideoFrame(video), [video])
+  const grabPhoto = useCallback(() => grabCameraPhoto(video, stream), [video, stream])
   const sampleFrame = useCallback(() => grabPreviewFrame(video), [video])
   const restart = useCallback(() => {
     setStream(null)
@@ -110,5 +119,5 @@ export function useCameraStream(facing: CameraFacing): CameraStream {
   }, [])
   const status: CameraStreamStatus = failure ?? (stream && showing ? 'live' : 'starting')
 
-  return { status, aspectRatio, attachVideo: setVideo, grabFrame, sampleFrame, restart }
+  return { status, aspectRatio, attachVideo: setVideo, grabFrame, grabPhoto, sampleFrame, restart }
 }

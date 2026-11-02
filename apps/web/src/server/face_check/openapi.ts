@@ -12,6 +12,8 @@ import {
   sessionListQuerySchema,
   settingsBodySchema,
   tokenParamsSchema,
+  prepareLivenessBodySchema,
+  startLivenessBodySchema,
 } from './schemas/api.schemas'
 import { documentRegionsResultSchema } from './schemas/document-import.schemas'
 import { faceFramingSchema, livenessProximitySchema } from './schemas/face-match.schemas'
@@ -359,6 +361,7 @@ export function registerFaceCheckOpenApi(registry: OpenAPIRegistry) {
       image: photo,
       side: z.enum(['front', 'back']),
       documentType: z.enum(['RG', 'CNH', 'RNE']),
+      planId: z.string().uuid().optional(),
     }),
     true,
   )
@@ -373,7 +376,7 @@ export function registerFaceCheckOpenApi(registry: OpenAPIRegistry) {
     '/liveness',
     'Inspect the baseline selfie.',
     undefined,
-    z.object({ selfie: photo }),
+    z.object({ selfie: photo, planId: z.string().uuid().optional() }),
     true,
   )
   captureRoute(
@@ -381,14 +384,26 @@ export function registerFaceCheckOpenApi(registry: OpenAPIRegistry) {
     '/liveness-start',
     'Start or resume the current server-issued movement. Preserves accepted steps and the overall capture deadline.',
     z.object({ challenges: z.array(challenge), step: z.number().int().min(0).max(3) }),
-    z.object({}).strict(),
+    startLivenessBodySchema,
+  )
+  captureRoute(
+    'post',
+    '/liveness-plan',
+    'Issue or resume a session-bound plan before local movement capture. No images are uploaded; restarting preserves the consent deadline and rejection limits.',
+    z.object({
+      planId: z.string().uuid(),
+      expiresAt: timestamp,
+      challenges: z.array(challenge),
+      step: z.number().int().min(0).max(3),
+    }),
+    prepareLivenessBodySchema,
   )
   captureRoute(
     'post',
     '/liveness-frame',
     'Check one issued movement in the permitted order and time window.',
     z.object({ remaining: z.number().int() }),
-    z.object({ image: photo, challenge }),
+    z.object({ image: photo, challenge, planId: z.string().uuid().optional() }),
     true,
   )
   captureRoute(
@@ -420,6 +435,7 @@ export function registerFaceCheckOpenApi(registry: OpenAPIRegistry) {
     '/submit',
     'Submit complete captures for server analysis and human review.',
     progress,
+    startLivenessBodySchema,
   )
   captureRoute('get', '/status', 'Read the actual verification status.', progress)
   captureRoute(

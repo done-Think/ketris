@@ -1,49 +1,76 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createCaptureFlowStore } from '../stores/capture-flow-store'
 
-describe('document recapture order', () => {
-  afterEach(() => vi.unstubAllGlobals())
+const revoke = vi.fn()
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.stubGlobal(
+    'URL',
+    Object.assign(class extends URL {}, {
+      createObjectURL: (image: Blob) => `blob:${image.size}`,
+      revokeObjectURL: revoke,
+    }),
+  )
+})
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+})
 
-  it('requires a new back after retaking the front and revokes both previous previews', () => {
-    const revoke = vi.fn()
-    vi.stubGlobal('URL', Object.assign(class extends URL {}, { revokeObjectURL: revoke }))
+describe('local document drafts', () => {
+  it('retakes only the selected side and keeps the other photo for review', () => {
     const store = createCaptureFlowStore()
+    const front = new Blob(['front'])
+    const back = new Blob(['back'])
     store.getState().chooseDocument('RG')
-    store.getState().markCaptured('front', 'blob:first-front')
-    store.getState().markCaptured('back', 'blob:first-back')
+    store.getState().captureDocument('front', front)
+    expect(store.getState()).toMatchObject({
+      step: 'document',
+      side: 'back',
+      documentImages: { front, back: null },
+    })
+    store.getState().captureDocument('back', back)
     expect(store.getState().step).toBe('documentReview')
     store.getState().retakeSide('front')
     expect(store.getState()).toMatchObject({
       step: 'document',
       side: 'front',
-      capturedSides: [],
-      previews: {},
+      capturedSides: ['back'],
+      documentImages: { front: null, back },
+      previews: { back: 'blob:4' },
     })
-    expect(revoke).toHaveBeenCalledWith('blob:first-front')
-    expect(revoke).toHaveBeenCalledWith('blob:first-back')
-    store.getState().markCaptured('front', 'blob:new-front')
-    expect(store.getState()).toMatchObject({
-      step: 'document',
-      side: 'back',
-      capturedSides: ['front'],
-      previews: { front: 'blob:new-front' },
-    })
-    store.getState().markCaptured('back', 'blob:new-back')
-    expect(store.getState().step).toBe('documentReview')
+    expect(revoke).toHaveBeenCalledWith('blob:5')
+    expect(revoke).not.toHaveBeenCalledWith('blob:4')
+    store.getState().captureDocument('front', new Blob(['new-front']))
+    expect(store.getState()).toMatchObject({ step: 'documentReview', documentImages: { back } })
   })
 
-  it('also invalidates the back if an imported front replaces it directly', () => {
-    vi.stubGlobal('URL', Object.assign(class extends URL {}, { revokeObjectURL: vi.fn() }))
+  it('drops both drafts and releases previews when changing document type', () => {
     const store = createCaptureFlowStore()
-    store.getState().markCaptured('front', 'blob:first-front')
-    store.getState().markCaptured('back', 'blob:first-back')
-    store.getState().markCaptured('front', 'blob:imported-front')
+    store.getState().chooseDocument('RG')
+    store.getState().captureDocument('front', new Blob(['front']))
+    store.getState().captureDocument('back', new Blob(['back']))
+    store.getState().chooseDocument('CNH')
     expect(store.getState()).toMatchObject({
-      step: 'document',
-      side: 'back',
-      capturedSides: ['front'],
+      side: 'front',
+      documentImages: { front: null, back: null },
+      previews: {},
+      capturedSides: [],
     })
-    expect(store.getState().previews.back).toBeUndefined()
+    expect(revoke).toHaveBeenCalledTimes(2)
+  })
+
+  it('releases photos and object URLs when the capture is left or restarted', () => {
+    const store = createCaptureFlowStore()
+    store.getState().captureDocument('front', new Blob(['front']))
+    store.getState().captureDocument('back', new Blob(['back']))
+    store.getState().clearImages()
+    expect(store.getState()).toMatchObject({
+      documentImages: { front: null, back: null },
+      previews: {},
+      capturedSides: [],
+    })
+    expect(revoke).toHaveBeenCalledTimes(2)
   })
 })

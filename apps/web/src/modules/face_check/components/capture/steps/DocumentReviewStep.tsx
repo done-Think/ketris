@@ -3,25 +3,27 @@
 import { Box, Button, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useCaptureFlow } from '../../../stores/CaptureFlowProvider'
-import type { DocumentReviewStepProps } from '../../../types/capture.types'
+import type { CaptureStepProps } from '../../../types/capture.types'
 import { CaptureLayout } from '../CaptureLayout'
 import { documentReviewStyles as styles, stepStyles } from '../../../styles/capture.styles'
 
-export function DocumentReviewStep({ captureMode = 'camera' }: DocumentReviewStepProps) {
+export function DocumentReviewStep({ session }: CaptureStepProps) {
   const t = useTranslations('face_check.capture.documentReview')
   const tDocument = useTranslations('face_check.capture.document')
-  const { goTo, documentType, retakeSide, previews } = useCaptureFlow((state) => state)
+  const { goTo, documentType, retakeSide, previews, documentImages } = useCaptureFlow(
+    (state) => state,
+  )
   const docLabel = tDocument(`types.${documentType ?? 'RG'}`)
   return (
     <CaptureLayout
-      captureMode={captureMode}
+      captureMode={session.captureMode}
       progressStep="document"
       onBack={() => retakeSide('back')}
       footer={
         <Button
           size="large"
           variant="contained"
-          disabled={!previews.front || !previews.back}
+          disabled={!documentImages.front || !documentImages.back || !documentType}
           onClick={() => goTo('selfie')}
         >
           {t('confirm')}
@@ -33,6 +35,7 @@ export function DocumentReviewStep({ captureMode = 'camera' }: DocumentReviewSte
           {t('title')}
         </Typography>
         <Typography sx={stepStyles.body}>{t('body')}</Typography>
+        <Typography sx={stepStyles.body}>{t('beforeSending')}</Typography>
       </Box>
       {(['front', 'back'] as const).map((side) => (
         <Box key={side} component="section" sx={stepStyles.card}>

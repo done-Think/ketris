@@ -96,7 +96,7 @@ describe('document camera framing and front-to-back capture', () => {
           image.close()
         })
       cy.get(`button[aria-label="${messages.capture.document.shutter}"]`).click()
-      cy.wait('@documentUpload').its('response.statusCode').should('eq', 200)
+      cy.get('@documentUpload.all').should('have.length', 0)
       cy.contains('h1', messages.capture.document.titleBack.replace('{doc}', 'RG'))
         .scrollIntoView()
         .should('be.visible')

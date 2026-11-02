@@ -9,6 +9,7 @@ import { documentRegionsUseCase } from './application/use-cases/document-regions
 import { livenessProximityUseCase } from './application/use-cases/liveness-proximity'
 import { selfieFramingUseCase } from './application/use-cases/selfie-framing'
 import { startLivenessUseCase } from './application/use-cases/start-liveness'
+import { prepareLivenessUseCase } from './application/use-cases/prepare-liveness'
 import {
   consentUseCase,
   getCaptureSessionUseCase,
@@ -56,6 +57,7 @@ export function buildVerificationUseCases(deps: VerificationDependencies) {
   return {
     livenessProximityUseCase: livenessProximityUseCase(deps),
     startLivenessUseCase: startLivenessUseCase(deps),
+    prepareLivenessUseCase: prepareLivenessUseCase(deps),
     selfieFramingUseCase: selfieFramingUseCase(deps),
     documentRegionsUseCase: documentRegionsUseCase(deps),
     listSessionsUseCase: listSessionsUseCase(deps),

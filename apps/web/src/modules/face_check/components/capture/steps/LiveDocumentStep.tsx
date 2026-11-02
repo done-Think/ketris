@@ -10,12 +10,11 @@ import {
   Typography,
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import type { DocumentSide } from '../../../types/session.types'
 
 import { useCameraStream } from '../../../hooks/use-camera-stream'
-import { useUploadDocumentImage } from '../../../hooks/use-capture-mutations'
 import { useCaptureFlow } from '../../../stores/CaptureFlowProvider'
 import type { CaptureStepProps, DocumentOrientation } from '../../../types/capture.types'
 import { documentOptions } from '../../../utils/document-options'
@@ -24,7 +23,6 @@ import { CaptureLayout } from '../CaptureLayout'
 import { DocumentIntro } from '../DocumentIntro'
 import { DocumentImportDialog } from '../DocumentImportDialog'
 import { GalleryButton } from '../GalleryButton'
-import { PhotoErrorNotice } from '../PhotoErrorNotice'
 import { ContinueOnPhoneButton } from '../ContinueOnPhoneButton'
 import {
   documentStepStyles as styles,
@@ -34,17 +32,24 @@ import {
 export function LiveDocumentStep({ session }: CaptureStepProps) {
   const t = useTranslations('face_check.capture.document')
   const tLive = useTranslations('face_check.capture.live')
-  const { goTo, side, documentType, chooseDocument, markCaptured } = useCaptureFlow(
+  const { goTo, side, documentType, chooseDocument, captureDocument } = useCaptureFlow(
     (state) => state,
   )
   const {
     status: cameraStatus,
     aspectRatio,
     attachVideo,
-    grabFrame,
+    grabPhoto,
     restart,
   } = useCameraStream('environment')
-  const upload = useUploadDocumentImage(session.token)
+  const mounted = useRef(false)
+  const capturing = useRef(false)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
   const [captureFailed, setCaptureFailed] = useState(false)
   const [preparing, setPreparing] = useState(false)
   const [importFile, setImportFile] = useState<File | null>(null)
@@ -52,40 +57,34 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
   const options = documentOptions(session.acceptedDocument)
   const selected = documentType ?? options[0]
   const live = cameraStatus === 'live'
-  const busy = preparing || upload.isPending
+  const busy = preparing
 
-  const send = (image: Blob) => {
+  const save = (image: Blob, capturedSide: DocumentSide) => {
     setCaptureFailed(false)
-    upload.mutate(
-      { side, documentType: selected, image },
-      {
-        onSuccess: () => {
-          if (!documentType) chooseDocument(selected)
-          markCaptured(side, URL.createObjectURL(image))
-        },
-      },
-    )
+    if (!documentType) chooseDocument(selected)
+    captureDocument(capturedSide, image)
   }
   const prepareImage = async (getImage: () => Promise<Blob>) => {
-    if (busy) return
+    if (capturing.current) return
+    capturing.current = true
     setPreparing(true)
     setCaptureFailed(false)
     try {
-      send(await getImage())
+      const image = await getImage()
+      if (mounted.current) save(image, side)
     } catch {
-      setCaptureFailed(true)
+      if (mounted.current) setCaptureFailed(true)
     } finally {
-      setPreparing(false)
+      capturing.current = false
+      if (mounted.current) setPreparing(false)
     }
   }
-  const shoot = () => prepareImage(grabFrame)
+  const shoot = () => prepareImage(grabPhoto)
   const pickFile = (file: File) => {
     if (session.allowGalleryUpload && !busy) setImportFile(file)
   }
-  const sendImported = async (image: Blob, importedSide: DocumentSide) => {
-    await upload.mutateAsync({ side: importedSide, documentType: selected, image })
-    if (!documentType) chooseDocument(selected)
-    markCaptured(importedSide, URL.createObjectURL(image))
+  const saveImported = async (image: Blob, importedSide: DocumentSide) => {
+    save(image, importedSide)
     if (importedSide === 'back') setImportFile(null)
   }
 
@@ -108,8 +107,8 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
               onClick={shoot}
               disabled={!live || busy}
             >
-              {upload.isPending ? (
-                <CircularProgress size={32} color="inherit" aria-label={t('uploading')} />
+              {preparing ? (
+                <CircularProgress size={32} color="inherit" aria-label={tLive('preparingPhoto')} />
               ) : (
                 <Box component="span" sx={styles.shutterCore} />
               )}
@@ -128,7 +127,15 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
         </>
       }
     >
-      <DocumentIntro options={options} selected={selected} side={side} onChoose={chooseDocument} />
+      <DocumentIntro
+        options={options}
+        selected={selected}
+        side={side}
+        onChoose={(type) => {
+          if (!busy) chooseDocument(type)
+        }}
+      />
+      <Typography sx={styles.hint}>{tLive('reviewBeforeSending')}</Typography>
       <ToggleButtonGroup
         exclusive
         value={orientation}
@@ -180,7 +187,6 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
             {tLive('captureFailed')}
           </Alert>
         ) : null}
-        {upload.error ? <PhotoErrorNotice error={upload.error} /> : null}
       </Box>
       {importFile && session.allowGalleryUpload ? (
         <DocumentImportDialog
@@ -189,7 +195,7 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
           side={side}
           busy={busy}
           onClose={() => setImportFile(null)}
-          onConfirm={sendImported}
+          onConfirm={saveImported}
         />
       ) : null}
     </CaptureLayout>

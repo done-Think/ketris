@@ -35,6 +35,7 @@ export interface ActivePhoto extends PhotoFingerprint {
 export type ActivePhotos = Partial<Record<EvidenceKind, ActivePhoto>>
 
 export interface CaptureState {
+  plan?: { id: string; expiresAt: string } | null
   photos: ActivePhotos
   documentReadings: Partial<Record<DocumentSide, DocumentReadingSummary>>
   challenges: IssuedChallenges | null

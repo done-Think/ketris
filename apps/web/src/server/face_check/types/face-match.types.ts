@@ -81,6 +81,11 @@ export interface LivenessProgress {
   remaining: number
 }
 
+export interface DeferredLivenessPlan extends LivenessSequenceState {
+  planId: string
+  expiresAt: string
+}
+
 export interface LivenessSequenceState {
   challenges: LivenessChallenge[]
   step: number
