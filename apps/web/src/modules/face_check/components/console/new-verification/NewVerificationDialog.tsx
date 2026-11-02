@@ -151,6 +151,29 @@ function NewVerificationContent({ onClose }: NewVerificationContentProps) {
         />
         <Controller
           control={control}
+          name="contact"
+          render={({ field, fieldState }) => (
+            <TextField
+              {...field}
+              fullWidth
+              autoComplete="email"
+              label={t('fields.contact')}
+              placeholder={t('fields.contactPlaceholder')}
+              slotProps={{
+                htmlInput: {
+                  inputMode: 'email',
+                  autoCapitalize: 'none',
+                  spellCheck: false,
+                  maxLength: 120,
+                },
+              }}
+              error={!!fieldState.error}
+              helperText={errorText(fieldState.error?.message) ?? t('contactEmailHelp')}
+            />
+          )}
+        />
+        <Controller
+          control={control}
           name="cpf"
           render={({ field, fieldState }) => (
             <TextField
@@ -174,19 +197,6 @@ function NewVerificationContent({ onClose }: NewVerificationContentProps) {
                 placeholder={t('fields.referencePlaceholder')}
                 error={!!fieldState.error}
                 helperText={errorText(fieldState.error?.message)}
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            name="contact"
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                label={t('fields.contact')}
-                placeholder={t('fields.contactPlaceholder')}
-                error={!!fieldState.error}
-                helperText={errorText(fieldState.error?.message) ?? t('contactEmailHelp')}
               />
             )}
           />

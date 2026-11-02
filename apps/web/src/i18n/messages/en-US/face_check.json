@@ -428,7 +428,7 @@
         "personName": "Person's name",
         "reference": "Reference (optional)",
         "referencePlaceholder": "For example: request number",
-        "contact": "Person's contact (optional)",
+        "contact": "Email or phone (optional)",
         "contactPlaceholder": "Email or phone",
         "acceptedDocument": "Accepted document",
         "expiresInHours": "Link valid for",
@@ -466,7 +466,7 @@
       },
       "loadingProperties": "Loading available properties",
       "noProperties": "No properties are available for your account. Add a property or check its assignment with the agency.",
-      "contactEmailHelp": "Use an email address to send the invitation automatically. Phone numbers cannot receive email."
+      "contactEmailHelp": "Enter the registered email to link the verification to the account and show a notification. The invitation is also sent by email. If you enter a phone number, share the link manually."
     },
     "sessions": {
       "title": "Sessions",

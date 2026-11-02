@@ -428,7 +428,7 @@
         "personName": "Nome da pessoa",
         "reference": "Referência (opcional)",
         "referencePlaceholder": "Ex.: número do atendimento",
-        "contact": "Contato da pessoa (opcional)",
+        "contact": "E-mail ou telefone (opcional)",
         "contactPlaceholder": "E-mail ou telefone",
         "acceptedDocument": "Documento aceito",
         "expiresInHours": "Link vale por",
@@ -466,7 +466,7 @@
       },
       "loadingProperties": "Carregando imóveis disponíveis",
       "noProperties": "Nenhum imóvel disponível para seu acesso. Cadastre um imóvel ou confira a atribuição com a imobiliária.",
-      "contactEmailHelp": "Use um e-mail para enviar o convite automaticamente. Telefones não recebem e-mail."
+      "contactEmailHelp": "Informe o e-mail cadastrado para vincular a verificação à conta e exibir a notificação. O e-mail também recebe o convite. Se informar um telefone, compartilhe o link manualmente."
     },
     "sessions": {
       "title": "Sessões",
