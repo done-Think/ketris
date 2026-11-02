@@ -82,7 +82,7 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
           agencyName: 'Agency',
           cpf: null,
           reference: null,
-          contact: null,
+          contact: 'candidate@example.test',
           acceptedDocument: 'RG',
           createdAt: Date.now(),
           expiresAt: Date.now() + 86_400_000,

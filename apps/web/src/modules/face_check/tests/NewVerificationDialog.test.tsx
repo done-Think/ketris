@@ -27,7 +27,7 @@ describe('manual verification recipient', () => {
     await user.click(screen.getByRole('option', { name: 'Test property' }))
     await user.type(screen.getByRole('textbox', { name: /Nome da pessoa/ }), 'Test Candidate')
     await user.type(email, 'candidate@ketris.test')
-    await user.click(screen.getByRole('button', { name: 'Gerar link' }))
+    await user.click(screen.getByRole('button', { name: 'Enviar convite' }))
     await waitFor(() =>
       expect(create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -39,16 +39,25 @@ describe('manual verification recipient', () => {
     )
   })
 
-  it('continues accepting a telephone contact when the invitation will be shared manually', async () => {
-    render(<NewVerificationDialog open onClose={vi.fn()} />)
-    const user = userEvent.setup()
-    await user.click(screen.getByRole('combobox', { name: /Imóvel/ }))
-    await user.click(screen.getByRole('option', { name: 'Test property' }))
-    await user.type(screen.getByRole('textbox', { name: /Nome da pessoa/ }), 'Test Candidate')
-    await user.type(screen.getByRole('textbox', { name: /e-mail/i }), '35999999999')
-    await user.click(screen.getByRole('button', { name: 'Gerar link' }))
-    await waitFor(() =>
-      expect(create).toHaveBeenCalledWith(expect.objectContaining({ contact: '35999999999' })),
-    )
-  })
+  it.each(['', '35999999999', 'not-an-email'])(
+    'does not create a verification without a valid email: %s',
+    async (contact) => {
+      render(<NewVerificationDialog open onClose={vi.fn()} />)
+      const user = userEvent.setup()
+      await user.click(screen.getByRole('combobox', { name: /Imóvel/ }))
+      await user.click(screen.getByRole('option', { name: 'Test property' }))
+      await user.type(screen.getByRole('textbox', { name: /Nome da pessoa/ }), 'Test Candidate')
+      const email = screen.getByRole('textbox', { name: /e-mail/i })
+      expect(email).toBeRequired()
+      expect(email).toHaveAttribute('type', 'email')
+      if (contact) await user.type(email, contact)
+      await user.click(screen.getByRole('button', { name: 'Enviar convite' }))
+      expect(
+        await screen.findByText(
+          contact ? 'Informe um e-mail válido.' : 'Informe o e-mail da pessoa.',
+        ),
+      ).toBeVisible()
+      expect(create).not.toHaveBeenCalled()
+    },
+  )
 })

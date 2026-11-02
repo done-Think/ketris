@@ -8,7 +8,7 @@ import { FaceCheckAccessScope } from './access-scope'
 import { captureTokenHash, DataCipher } from './data-cipher'
 import { PrismaFaceCheckCandidateLookup } from './prisma-candidate-lookup'
 import { evidenceRetentionMs, manualOverrideAllowed } from '../verification/domain/evidence-policy'
-import { faceCheckContactEmail } from '../utils/contact-email'
+import { invitationEmailSchema } from '../schemas/invitation-email.schemas'
 
 // Engine requests run while this expiring database lease is held. No interactive transaction
 // or PostgreSQL connection stays open across S3/OCR/HTTP awaits. Finalization uses revision CAS.
@@ -117,11 +117,13 @@ export class PrismaSessionRepository implements SessionRepository {
 
   async insert(record: SessionRecord) {
     const actor = await this.access.property(record.session.propertyId)
+    const email = invitationEmailSchema.parse(record.session.contact)
+    record.session.contact = email
     for (const event of record.session.timeline)
       if (event.actor === 'operator') event.actor = actor.actorId
     const candidateUserId = await new PrismaFaceCheckCandidateLookup(
       this.access.database,
-    ).findForContact(actor.tenantId, record.session.contact)
+    ).findForContact(actor.tenantId, email)
     await this.access.database.faceCheckSession.create({
       data: {
         id: record.session.id,
@@ -136,16 +138,12 @@ export class PrismaSessionRepository implements SessionRepository {
           record,
           `session:${actor.tenantId}:${record.session.id}`,
         ),
-        ...(faceCheckContactEmail(record.session.contact)
-          ? {
-              invitationEmails: {
-                create: {
-                  tokenHash: captureTokenHash(record.session.token),
-                  locale: this.invitationLocale,
-                },
-              },
-            }
-          : {}),
+        invitationEmails: {
+          create: {
+            tokenHash: captureTokenHash(record.session.token),
+            locale: this.invitationLocale,
+          },
+        },
       },
     })
   }

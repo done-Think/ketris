@@ -7823,6 +7823,7 @@ export interface paths {
           'application/json': {
             /** @enum {string} */
             acceptedDocument: 'ANY' | 'RG' | 'CNH' | 'RNE'
+            /** Format: email */
             contact: string
             /** @default  */
             cpf?: string

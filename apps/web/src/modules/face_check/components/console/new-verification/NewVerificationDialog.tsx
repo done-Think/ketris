@@ -156,6 +156,8 @@ function NewVerificationContent({ onClose }: NewVerificationContentProps) {
             <TextField
               {...field}
               fullWidth
+              required
+              type="email"
               autoComplete="email"
               label={t('fields.contact')}
               placeholder={t('fields.contactPlaceholder')}

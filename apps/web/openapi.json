@@ -15046,7 +15046,12 @@
                   "personName": { "type": "string", "minLength": 2, "maxLength": 80 },
                   "cpf": { "type": "string", "default": "" },
                   "reference": { "type": "string", "maxLength": 60 },
-                  "contact": { "type": "string", "maxLength": 120 },
+                  "contact": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "format": "email"
+                  },
                   "acceptedDocument": { "type": "string", "enum": ["ANY", "RG", "CNH", "RNE"] },
                   "expiresInHours": {
                     "anyOf": [

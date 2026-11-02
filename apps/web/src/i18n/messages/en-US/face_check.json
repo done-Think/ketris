@@ -428,8 +428,8 @@
         "personName": "Person's name",
         "reference": "Reference (optional)",
         "referencePlaceholder": "For example: request number",
-        "contact": "Email or phone (optional)",
-        "contactPlaceholder": "Email or phone",
+        "contact": "Person's email",
+        "contactPlaceholder": "name@example.com",
         "acceptedDocument": "Accepted document",
         "expiresInHours": "Link valid for",
         "cpf": "CPF (optional)",
@@ -451,7 +451,7 @@
       },
       "dataMinimization": "Select the property for this request. CPF is optional and is used to check the document.",
       "cancel": "Cancel",
-      "submit": "Generate link",
+      "submit": "Send invitation",
       "qrLabel": "QR code containing the verification link",
       "createdBody": "Verification link for {name}. Scan the QR code with a phone or send the link.",
       "copy": "Copy",
@@ -466,7 +466,8 @@
       },
       "loadingProperties": "Loading available properties",
       "noProperties": "No properties are available for your account. Add a property or check its assignment with the agency.",
-      "contactEmailHelp": "Enter the registered email to link the verification to the account and show a notification. The invitation is also sent by email. If you enter a phone number, share the link manually."
+      "contactEmailHelp": "Required to email the verification link. If the person already has an account, use its registered email to link the request and show a notification.",
+      "invitationEmailNotice": "The invitation with the verification link will be emailed to {email}."
     },
     "sessions": {
       "title": "Sessions",
@@ -828,6 +829,8 @@
       "RATE_LIMITED": "Too many requests. Wait a moment and try again."
     },
     "validation": {
+      "emailRequired": "Enter the person's email.",
+      "emailInvalid": "Enter a valid email address.",
       "nameRequired": "Enter the name of the person being verified.",
       "tooLong": "Text is too long.",
       "decisionRequired": "Choose a decision.",

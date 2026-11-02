@@ -12,7 +12,13 @@ export const newVerificationSchema = z.object({
     .trim()
     .refine((value) => value === '' || isValidCpf(value), { message: 'cpfInvalid' }),
   reference: z.string().trim().max(60, { message: 'tooLong' }),
-  contact: z.string().trim().max(120, { message: 'tooLong' }),
+  contact: z
+    .string({ required_error: 'emailRequired' })
+    .trim()
+    .min(1, { message: 'emailRequired' })
+    .max(120, { message: 'tooLong' })
+    .email({ message: 'emailInvalid' })
+    .toLowerCase(),
   acceptedDocument: z.enum(['ANY', 'RG', 'CNH', 'RNE']),
   expiresInHours: z.union([z.literal(24), z.literal(48), z.literal(168)]),
 })

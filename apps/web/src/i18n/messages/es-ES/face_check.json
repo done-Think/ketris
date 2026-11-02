@@ -428,8 +428,8 @@
         "personName": "Nombre de la persona",
         "reference": "Referencia (opcional)",
         "referencePlaceholder": "Ej.: número de atención",
-        "contact": "Correo electrónico o teléfono (opcional)",
-        "contactPlaceholder": "Correo electrónico o teléfono",
+        "contact": "Correo electrónico de la persona",
+        "contactPlaceholder": "nombre@ejemplo.com",
         "acceptedDocument": "Documento aceptado",
         "expiresInHours": "Vigencia del enlace",
         "cpf": "CPF (opcional)",
@@ -451,7 +451,7 @@
       },
       "dataMinimization": "Selecciona el inmueble de la solicitud. El CPF es opcional y se usa para comprobar el documento.",
       "cancel": "Cancelar",
-      "submit": "Generar enlace",
+      "submit": "Enviar invitación",
       "qrLabel": "Código QR con el enlace de verificación",
       "createdBody": "Enlace de verificación para {name}. Escanea el código QR con el teléfono o envía el enlace.",
       "copy": "Copiar",
@@ -466,7 +466,8 @@
       },
       "loadingProperties": "Cargando inmuebles disponibles",
       "noProperties": "No hay inmuebles disponibles para tu acceso. Añade un inmueble o consulta su asignación con la inmobiliaria.",
-      "contactEmailHelp": "Introduce el correo registrado para vincular la verificación a la cuenta y mostrar la notificación. La invitación también se envía por correo. Si introduces un teléfono, comparte el enlace manualmente."
+      "contactEmailHelp": "Obligatorio para enviar el enlace de verificación por correo. Si la persona ya tiene una cuenta, usa el correo registrado para vincular la solicitud y mostrar la notificación.",
+      "invitationEmailNotice": "La invitación con el enlace de verificación se enviará a {email}."
     },
     "sessions": {
       "title": "Sesiones",
@@ -828,6 +829,8 @@
       "RATE_LIMITED": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo."
     },
     "validation": {
+      "emailRequired": "Indica el correo electrónico de la persona.",
+      "emailInvalid": "Introduce un correo electrónico válido.",
       "nameRequired": "Indica el nombre de quien realizará la verificación.",
       "tooLong": "El texto es demasiado largo.",
       "decisionRequired": "Elige una decisión.",

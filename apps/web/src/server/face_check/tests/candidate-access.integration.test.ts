@@ -313,7 +313,7 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
       }
     })
 
-    it('does not link ambiguous global accounts, unverified/inactive users, names or mismatched contacts', async () => {
+    it('does not link ambiguous global accounts, unverified/inactive users or unmatched email addresses', async () => {
       const ambiguous = `${prefix}-ambiguous@example.test`
       await user(personal, ambiguous)
       await user(anotherPersonal, ambiguous)
@@ -321,14 +321,7 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
       await user(personal, unverified, 'RENTER', { emailVerifiedAt: null })
       const inactive = `${prefix}-inactive@example.test`
       await user(personal, inactive, 'RENTER', { active: false })
-      for (const contact of [
-        ambiguous,
-        unverified,
-        inactive,
-        `${prefix}-no-match@example.test`,
-        'Candidate fixture',
-        '+55 11 99999-9999',
-      ]) {
+      for (const contact of [ambiguous, unverified, inactive, `${prefix}-no-match@example.test`]) {
         const record = await createSession(contact)
         expect(
           (await database.faceCheckSession.findUniqueOrThrow({ where: { id: record.session.id } }))
@@ -338,6 +331,13 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
           record.session.id,
         )
       }
+    })
+
+    it('rejects creation with a name or phone instead of the required invitation email', async () => {
+      const count = await database.faceCheckSession.count({ where: { tenantId: agency } })
+      for (const contact of ['', 'Candidate fixture', '+55 11 99999-9999'])
+        await expect(createSession(contact)).rejects.toThrow()
+      expect(await database.faceCheckSession.count({ where: { tenantId: agency } })).toBe(count)
     })
 
     it('matches literal underscores even with wildcard lookalikes and never associates a non-equal pattern', async () => {
@@ -358,15 +358,11 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
       ).toBeNull()
     })
 
-    it('does not link percent-containing contacts rejected by the application email validator', async () => {
+    it('rejects creation with a contact rejected by the application email validator', async () => {
       const invalidEmail = `${prefix}-percent%literal@example.test`
       await user(personal, invalidEmail)
       await user(personal, `${prefix}-percentExpandedliteral@example.test`)
-      const invalid = await createSession(invalidEmail)
-      expect(
-        (await database.faceCheckSession.findUniqueOrThrow({ where: { id: invalid.session.id } }))
-          .candidateUserId,
-      ).toBeNull()
+      await expect(createSession(invalidEmail)).rejects.toThrow()
     })
 
     it('keeps candidate access separate from the provider console and counts without decrypting any session', async () => {

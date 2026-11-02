@@ -8,12 +8,18 @@ const input = {
   personName: 'Person Name',
   cpf: '',
   reference: '',
-  contact: '',
+  contact: 'candidate@example.test',
   acceptedDocument: 'ANY',
   expiresInHours: 24,
 }
 
 describe('face_check session creation', () => {
+  it.each(['', '   ', '35999999999', 'invalid@', 'not-an-email'])(
+    'requires a valid recipient email: %s',
+    (contact) => {
+      expect(newVerificationSchema.safeParse({ ...input, contact }).success).toBe(false)
+    },
+  )
   it('requires a selected property even when a reference was provided', () => {
     expect(
       newVerificationSchema.safeParse({ ...input, propertyId: '', reference: 'Another property' })

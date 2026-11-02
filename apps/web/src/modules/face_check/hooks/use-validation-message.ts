@@ -1,6 +1,8 @@
 import { useTranslations } from 'next-intl'
 
 const validationKeys = [
+  'emailRequired',
+  'emailInvalid',
   'nameRequired',
   'tooLong',
   'decisionRequired',

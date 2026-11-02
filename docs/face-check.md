@@ -118,9 +118,11 @@ sozinha uma prova certificada de captura ao vivo.
 
 ## Convites por e-mail
 
-Criar uma verificação com um contato de e-mail válido registra o convite na
-mesma transação da sessão. Contatos por telefone continuam permitidos, sem envio
-de e-mail. O idioma da interface usada na criação define o template e o link
+Criar uma verificação exige um e-mail válido. Formulário, API, caso de uso e
+persistência rejeitam e-mail ausente, vazio ou inválido, incluindo telefone no
+lugar do endereço. O e-mail é normalizado e o convite é registrado na mesma
+transação da sessão; uma sessão nova não pode ser criada sem o convite. Registros
+históricos continuam legíveis. O idioma da interface usada na criação define o template e o link
 em português, inglês ou espanhol.
 
 O envio usa o SES, a região AWS e o remetente `SES_FROM_EMAIL` existentes. O

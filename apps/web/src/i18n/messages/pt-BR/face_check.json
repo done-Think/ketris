@@ -428,8 +428,8 @@
         "personName": "Nome da pessoa",
         "reference": "Referência (opcional)",
         "referencePlaceholder": "Ex.: número do atendimento",
-        "contact": "E-mail ou telefone (opcional)",
-        "contactPlaceholder": "E-mail ou telefone",
+        "contact": "E-mail da pessoa",
+        "contactPlaceholder": "nome@exemplo.com",
         "acceptedDocument": "Documento aceito",
         "expiresInHours": "Link vale por",
         "cpf": "CPF (opcional)",
@@ -451,7 +451,7 @@
       },
       "dataMinimization": "Selecione o imóvel da solicitação. O CPF é opcional e serve para conferir o documento.",
       "cancel": "Cancelar",
-      "submit": "Gerar link",
+      "submit": "Enviar convite",
       "qrLabel": "QR code com o link de verificação",
       "createdBody": "Link de verificação para {name}. Aponte a câmera do celular para o QR code ou envie o link.",
       "copy": "Copiar",
@@ -466,7 +466,8 @@
       },
       "loadingProperties": "Carregando imóveis disponíveis",
       "noProperties": "Nenhum imóvel disponível para seu acesso. Cadastre um imóvel ou confira a atribuição com a imobiliária.",
-      "contactEmailHelp": "Informe o e-mail cadastrado para vincular a verificação à conta e exibir a notificação. O e-mail também recebe o convite. Se informar um telefone, compartilhe o link manualmente."
+      "contactEmailHelp": "Obrigatório para enviar o link de verificação por e-mail. Se a pessoa já tem uma conta, use o e-mail cadastrado para vincular a solicitação e exibir a notificação.",
+      "invitationEmailNotice": "O convite com o link de verificação será enviado para {email}."
     },
     "sessions": {
       "title": "Sessões",
@@ -828,6 +829,8 @@
       "RATE_LIMITED": "Muitas solicitações em pouco tempo. Aguarde um momento e tente novamente."
     },
     "validation": {
+      "emailRequired": "Informe o e-mail da pessoa.",
+      "emailInvalid": "Informe um e-mail válido.",
       "nameRequired": "Informe o nome de quem vai fazer a verificação.",
       "tooLong": "Texto longo demais.",
       "decisionRequired": "Escolha uma decisão.",

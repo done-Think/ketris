@@ -112,7 +112,7 @@ export const createInput = {
   personName: 'Test Person',
   cpf: '',
   reference: '',
-  contact: '',
+  contact: 'candidate@example.test',
   acceptedDocument: 'RG' as const,
   expiresInHours: 24,
 }

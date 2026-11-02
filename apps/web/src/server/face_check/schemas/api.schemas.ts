@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { maxCapturePhotoBytes } from '@server/face_check/config/upload-limits'
 import { similarityPolicy } from '@server/face_check/config/similarity-policy'
 import { isValidCpf } from '@server/face_check/utils/cpf'
+import { invitationEmailSchema } from './invitation-email.schemas'
 
 const documentType = z.enum(['RG', 'CNH', 'RNE'])
 const capturePlanId = z.string().uuid().optional()
@@ -80,7 +81,7 @@ export const createSessionBodySchema = z
       .default('')
       .refine((value) => value === '' || isValidCpf(value)),
     reference: z.string().trim().max(60),
-    contact: z.string().trim().max(120),
+    contact: invitationEmailSchema,
     acceptedDocument: z.enum(['ANY', 'RG', 'CNH', 'RNE']),
     expiresInHours: z.union([z.literal(24), z.literal(48), z.literal(168)]),
   })

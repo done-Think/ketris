@@ -7,6 +7,7 @@ import type {
   VerificationSession,
 } from '@server/face_check/types/session.types'
 import { cpfDigits } from '@server/face_check/utils/cpf'
+import { invitationEmailSchema } from '../../../schemas/invitation-email.schemas'
 
 import type { CapturedImage } from '../../../types/face-match.types'
 import type { VerificationDependencies } from '../../../types/verification.types'
@@ -69,6 +70,7 @@ export function getSessionUseCase(deps: VerificationDependencies) {
 export function createSessionUseCase(deps: VerificationDependencies) {
   return {
     execute: async (input: CreateSessionInput): Promise<VerificationSession> => {
+      const email = invitationEmailSchema.parse(input.contact)
       const settings = await deps.settings.get()
       if (!settings.agencyName.trim()) throw new VerificationError('AGENCY_NAME_MISSING')
       const now = deps.clock()
@@ -79,7 +81,7 @@ export function createSessionUseCase(deps: VerificationDependencies) {
           agencyName: settings.agencyName,
           cpf: cpfDigits(input.cpf ?? '') || null,
           reference: input.reference.trim() || null,
-          contact: input.contact.trim() || null,
+          contact: email,
           acceptedDocument: input.acceptedDocument,
           createdAt: now,
           expiresAt: now + input.expiresInHours * hourMs,

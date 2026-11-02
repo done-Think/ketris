@@ -174,14 +174,25 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
         expect(JSON.stringify(job)).not.toContain(value)
       for (const contact of [
         null,
+        '',
+        '   ',
         '+55 11 99999-9999',
         'Candidate Name',
         'person%name@example.test',
       ]) {
-        const skipped = await create(contact)
+        const rejected = newRecord(contact)
+        await expect(
+          new PrismaSessionRepository(
+            new FaceCheckAccessScope(database, { actor: owner }),
+            cipher,
+          ).insert(rejected),
+        ).rejects.toThrow()
+        expect(
+          await database.faceCheckSession.findUnique({ where: { id: rejected.session.id } }),
+        ).toBeNull()
         expect(
           await database.faceCheckInvitationEmail.count({
-            where: { sessionId: skipped.session.id },
+            where: { sessionId: rejected.session.id },
           }),
         ).toBe(0)
       }

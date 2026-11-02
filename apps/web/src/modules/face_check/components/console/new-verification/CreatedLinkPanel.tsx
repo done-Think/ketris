@@ -63,6 +63,9 @@ export function CreatedLinkPanel({ created, onClose }: CreatedLinkPanelProps) {
             </Typography>
           </Box>
         </Box>
+        {session.contact ? (
+          <Alert severity="info">{t('invitationEmailNotice', { email: session.contact })}</Alert>
+        ) : null}
         <Alert severity="info">{t('networkNotice')}</Alert>
       </DialogContent>
       <DialogActions sx={styles.actions}>

@@ -50,7 +50,11 @@ function create(agent = false, withCandidate = false) {
   if (agent) cy.contains('[role="option"]', 'Casa da gestão CRM').should('not.exist')
   cy.contains('[role="option"]', 'Apartamento CRM disponível').click()
   cy.get('input[name="personName"]').type('Pessoa Teste Face Check')
-  if (withCandidate) cy.then(() => cy.get('input[name="contact"]').type(candidate!.email))
+  cy.then(() =>
+    cy
+      .get('input[name="contact"]')
+      .type(withCandidate ? candidate!.email : `candidate-${Date.now()}@example.test`),
+  )
   cy.intercept('POST', '**/api/face_check/sessions').as('createVerification')
   cy.get('[role="dialog"]').contains('button', portuguese.console.newVerification.submit).click()
   cy.wait('@createVerification').then(({ response }) => {
