@@ -1592,9 +1592,10 @@ model FaceCheckSession {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  property    Property @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade)
-  requestedBy User     @relation(fields: [requestedById, tenantId], references: [id, tenantId], onDelete: NoAction)
+  // Preserve the initial migration's ON UPDATE NO ACTION for these immutable identifiers.
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  property    Property @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade, onUpdate: NoAction)
+  requestedBy User     @relation(fields: [requestedById, tenantId], references: [id, tenantId], onDelete: NoAction, onUpdate: NoAction)
   // A verified candidate can intentionally belong to a personal account in another tenant.
   candidateUser User? @relation("FaceCheckCandidate", fields: [candidateUserId], references: [id], onDelete: SetNull)
   invitationEmails FaceCheckInvitationEmail[]
@@ -1639,7 +1640,7 @@ model FaceCheckSettings {
   encryptedRecord String   @db.Text
   updatedAt       DateTime @updatedAt
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("face_check_settings")
 }
@@ -1651,7 +1652,7 @@ model FaceCheckRateLimit {
   count     Int      @default(1)
   expiresAt DateTime
 
-  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([expiresAt])
   @@map("face_check_rate_limits")
