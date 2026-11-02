@@ -18,7 +18,7 @@ export function AuthenticationUnavailable() {
     setRetrying(true)
     try {
       const session = await update()
-      if (!session?.authUnavailable) router.refresh()
+      if (session && !session.authUnavailable) router.refresh()
     } catch {
     } finally {
       setRetrying(false)
