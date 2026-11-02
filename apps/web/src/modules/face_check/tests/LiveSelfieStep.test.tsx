@@ -176,6 +176,99 @@ afterEach(() => {
 })
 
 describe('deferred selfie and movement capture', () => {
+  it.each([
+    [2, 'Tirar selfie'],
+    [3, 'Capturar foto'],
+    [4, 'Capturar foto'],
+    [5, 'Capturar foto'],
+  ] as const)(
+    'keeps all six images when photo %s is paused during its countdown and cancelled',
+    async (index, button) => {
+      const h = open()
+      await captureAll(h.user)
+      const originals = screen.getAllByRole('img').map((img) => img.getAttribute('src'))
+      timing.fast = false
+      vi.useFakeTimers()
+      fireEvent.click(screen.getAllByRole('button', { name: 'Refazer captura' })[index])
+      fireEvent.click(screen.getByRole('button', { name: button }))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000)
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Pausar captura' }))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(30_000)
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Manter foto anterior' }))
+      expect(screen.getAllByRole('img').map((img) => img.getAttribute('src'))).toEqual(originals)
+      expect(grab).toHaveBeenCalledTimes(4)
+      expect(URL.revokeObjectURL).not.toHaveBeenCalled()
+      h.unmount()
+      h.client.clear()
+    },
+  )
+
+  it.each([
+    [0, 'front', 'Tirar foto'],
+    [1, 'back', 'Tirar foto'],
+    [2, 'selfie', 'Tirar selfie'],
+    [3, 'turnLeft', 'Capturar foto'],
+    [4, 'turnRight', 'Capturar foto'],
+    [5, 'closer', 'Capturar foto'],
+  ] as const)(
+    'retakes only photo %s (%s), preserving all other preview URLs',
+    async (index, _slot, button) => {
+      const h = open()
+      await captureAll(h.user)
+      const originals = screen.getAllByRole('img').map((img) => img.getAttribute('src'))
+      await h.user.click(screen.getAllByRole('button', { name: 'Refazer captura' })[index])
+      await h.user.click(await screen.findByRole('button', { name: button }))
+      expect(
+        await screen.findByRole('button', { name: 'Confirmar e enviar para análise' }),
+      ).toBeEnabled()
+      const updated = screen.getAllByRole('img').map((img) => img.getAttribute('src'))
+      expect(updated).toHaveLength(6)
+      for (let item = 0; item < originals.length; item++) {
+        if (item === index) expect(updated[item]).not.toBe(originals[item])
+        else expect(updated[item]).toBe(originals[item])
+      }
+      expect(captureService.uploadDocumentImage).not.toHaveBeenCalled()
+      expect(captureService.uploadSelfie).not.toHaveBeenCalled()
+      expect(captureService.uploadLivenessFrame).not.toHaveBeenCalled()
+      h.unmount()
+      h.client.clear()
+    },
+  )
+
+  it.each([
+    [0, 'front', 'Tirar foto'],
+    [1, 'back', 'Tirar foto'],
+    [2, 'selfie', 'Tirar selfie'],
+    [3, 'turnLeft', 'Capturar foto'],
+    [4, 'turnRight', 'Capturar foto'],
+    [5, 'closer', 'Capturar foto'],
+  ] as const)(
+    'keeps all original photos when retaking %s (%s) fails and is cancelled',
+    async (index, slot, button) => {
+      const h = open()
+      await captureAll(h.user)
+      const originals = screen.getAllByRole('img').map((img) => img.getAttribute('src'))
+      if (slot === 'front' || slot === 'back')
+        documentPhoto.mockRejectedValueOnce(new Error('CAMERA_ERROR'))
+      else grab.mockRejectedValueOnce(new Error('CAMERA_ERROR'))
+      await h.user.click(screen.getAllByRole('button', { name: 'Refazer captura' })[index])
+      await h.user.click(await screen.findByRole('button', { name: button }))
+      await screen.findByText('Não conseguimos usar esta foto. Tente de novo.')
+      await h.user.click(screen.getByRole('button', { name: 'Manter foto anterior' }))
+      expect(
+        await screen.findByRole('button', { name: 'Confirmar e enviar para análise' }),
+      ).toBeEnabled()
+      expect(screen.getAllByRole('img').map((img) => img.getAttribute('src'))).toEqual(originals)
+      expect(URL.revokeObjectURL).not.toHaveBeenCalled()
+      h.unmount()
+      h.client.clear()
+    },
+  )
+
   it('retakes only a rejected back, returns directly to final review and preserves the accepted front receipt', async () => {
     let rejected = false
     vi.mocked(captureService.uploadDocumentImage).mockImplementation(async (_token, input) => {
@@ -302,7 +395,7 @@ describe('deferred selfie and movement capture', () => {
     h.client.clear()
   })
 
-  it('resumes a rejected right turn without re-uploading accepted photos or repeating left', async () => {
+  it('retakes only a rejected right turn and revalidates the retained set against a new server checkpoint', async () => {
     let rejected = false
     const sent: string[] = []
     vi.mocked(captureService.uploadLivenessFrame).mockImplementation(async (_token, input) => {
@@ -317,20 +410,24 @@ describe('deferred selfie and movement capture', () => {
     await captureAll(h.user)
     await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
     expect(await screen.findByText(/Não foi possível validar: Rosto para a direita/)).toBeVisible()
-    vi.mocked(captureService.prepareLiveness).mockResolvedValue({ ...plan, step: 1 })
+    vi.mocked(captureService.prepareLiveness).mockResolvedValue({
+      ...plan,
+      planId: '22222222-2222-4222-8222-222222222222',
+    })
     vi.mocked(captureService.startLiveness).mockResolvedValue({
       challenges: [...challenges],
-      step: 1,
+      step: 0,
     })
     await h.user.click(screen.getAllByRole('button', { name: 'Refazer captura' })[4])
     await h.user.click(await screen.findByRole('button', { name: 'Capturar foto' }))
-    await nextPose(h.user)
-    await h.user.click(await screen.findByRole('button', { name: 'Revisar todas as fotos' }))
-    await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
+    await h.user.click(
+      await screen.findByRole('button', { name: 'Confirmar e enviar para análise' }),
+    )
     expect(await screen.findByText('Capture submitted')).toBeVisible()
-    expect(sent).toEqual(['turnLeft', 'turnRight', 'turnRight', 'closer'])
-    expect(captureService.uploadDocumentImage).toHaveBeenCalledTimes(2)
-    expect(captureService.uploadSelfie).toHaveBeenCalledOnce()
+    expect(sent).toEqual(['turnLeft', 'turnRight', 'turnLeft', 'turnRight', 'closer'])
+    expect(captureService.uploadDocumentImage).toHaveBeenCalledTimes(4)
+    expect(captureService.uploadSelfie).toHaveBeenCalledTimes(2)
+    expect(grab).toHaveBeenCalledTimes(5)
     h.unmount()
     h.client.clear()
   })

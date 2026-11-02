@@ -7,8 +7,11 @@ export interface DeferredLivenessPlan extends LivenessSequenceState {
 }
 
 export type CaptureUploadSlot = 'front' | 'back' | 'selfie' | Exclude<LivenessChallenge, 'blink'>
+export type CaptureRetakeReturnStep = 'documentReview' | 'captureReview' | 'selfie'
 
 export interface CaptureDraftState {
+  retakeTarget: CaptureUploadSlot | null
+  retakeReturnStep: CaptureRetakeReturnStep | null
   selfieImage: Blob | null
   selfiePreview: string | null
   movementImages: Partial<Record<LivenessChallenge, Blob>>
@@ -19,5 +22,6 @@ export interface CaptureDraftState {
   captureMovement(challenge: LivenessChallenge, image: Blob): void
   setLivenessPlan(plan: DeferredLivenessPlan): void
   rememberUpload(slot: CaptureUploadSlot, image: Blob): void
-  retakeMovements(challenge?: LivenessChallenge): void
+  retakePhoto(slot: CaptureUploadSlot): void
+  cancelRetake(): void
 }

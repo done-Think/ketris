@@ -28,6 +28,65 @@ async function uploadPhotos(h: Awaited<ReturnType<typeof prepared>>) {
 }
 
 describe('session-bound deferred capture', () => {
+  it.each(['front', 'back', 'selfie', 'turnLeft', 'turnRight', 'closer'] as const)(
+    'revalidates a retained set after replacing %s without extending consent or discarding evidence history',
+    async (slot) => {
+      const h = await prepared()
+      const token = h.session.token
+      const verify = vi.spyOn(h.engine, 'verifyLiveness')
+      await uploadPhotos(h)
+      await h.cases.startLivenessUseCase.execute(token, h.plan.planId)
+      for (const challenge of h.plan.challenges)
+        await h.cases.verifyLivenessFrameUseCase.execute(token, challenge, photo(4), h.plan.planId)
+      const before = await h.sessions.read({ id: h.session.id })
+      h.advance(5000)
+      const next = await h.cases.prepareLivenessUseCase.execute(token, true)
+      expect(next.planId).not.toBe(h.plan.planId)
+      expect(next.expiresAt).toBe(h.plan.expiresAt)
+      await h.cases.uploadDocumentPhotoUseCase.execute(
+        token,
+        'front',
+        'RG',
+        photo(slot === 'front' ? 9 : 1),
+        next.planId,
+      )
+      await h.cases.uploadDocumentPhotoUseCase.execute(
+        token,
+        'back',
+        'RG',
+        photo(slot === 'back' ? 9 : 2),
+        next.planId,
+      )
+      const selfie = photo(slot === 'selfie' ? 9 : 3)
+      await h.cases.uploadSelfieUseCase.execute(token, selfie, next.planId)
+      await h.cases.startLivenessUseCase.execute(token, next.planId)
+      for (const challenge of next.challenges)
+        await h.cases.verifyLivenessFrameUseCase.execute(
+          token,
+          challenge,
+          photo(slot === challenge ? 9 : 4),
+          next.planId,
+        )
+      for (const [index, challenge] of next.challenges.entries()) {
+        const [reference, frames] = verify.mock.calls[index + 3]
+        expect(reference).toEqual(selfie.bytes)
+        expect(frames[0]).toEqual({ challenge, image: photo(slot === challenge ? 9 : 4).bytes })
+      }
+      const after = await h.sessions.read({ id: h.session.id })
+      expect(after?.capture.rejections).toEqual(before?.capture.rejections)
+      expect(after?.session.evidenceHistory).toEqual(
+        expect.arrayContaining(before!.session.evidenceHistory),
+      )
+      for (const kind of ['front', 'back', 'selfie'] as const) {
+        if (slot === kind)
+          expect(after?.capture.photos[kind]?.sha256).not.toBe(before?.capture.photos[kind]?.sha256)
+        else expect(after?.capture.photos[kind]?.sha256).toBe(before?.capture.photos[kind]?.sha256)
+      }
+      await h.cases.submitCaptureUseCase.execute(token, next.planId)
+      expect((await h.sessions.read({ id: h.session.id }))?.session.status).toBe('REVIEW')
+    },
+  )
+
   it('accepts a replacement for a rejected back under the same plan without losing the accepted front', async () => {
     const h = await prepared()
     const token = h.session.token

@@ -282,7 +282,8 @@
       "posePhoto": "Captured pose photo",
       "poseCaptured": "Photo captured",
       "nextPoseHint": "Review the photo. Click Next to read the instructions for the next pose. The countdown only starts when you click Capture photo.",
-      "allPosesCaptured": "All poses have been captured. Review the photos before sending."
+      "allPosesCaptured": "All poses have been captured. Review the photos before sending.",
+      "keepPreviousPhoto": "Keep previous photo"
     },
     "cameraNotice": "Your document, selfie and movements will be sent for analysis and review by a member of the agency team.",
     "import": {
@@ -310,7 +311,8 @@
       "cancel": "Close",
       "sending": "Preparing crop…",
       "sendFront": "Use front crop",
-      "sendBack": "Use back crop"
+      "sendBack": "Use back crop",
+      "singleSideHelp": "Adjust only the crop for the selected side. Your other photos will be kept."
     },
     "agencyFallback": "agency",
     "phone": {

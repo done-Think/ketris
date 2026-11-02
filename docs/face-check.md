@@ -113,12 +113,21 @@ mesmo enquadramento com outro aplicativo de câmera, sem efeitos de desfoque. O
 da cena; o site não controla esse efeito do sistema. Se os dados do documento
 continuarem ilegíveis, oferecemos a continuação no celular pelo mesmo convite.
 
-Refazer um lado do documento mantém o outro lado, a selfie e as poses locais. Quando
-todas as demais fotos já existem, a recaptura volta diretamente à revisão final.
-O verso rejeitado é reenviado sem repetir a frente já aceita. Se a selfie já tiver
-sido aceita ou seu envio tiver ficado incerto, a edição do documento exige um novo plano na confirmação
-final e a revalidação das fotos locais existentes, sem novas selfies. Essa renovação
-preserva o prazo original e os limites de rejeição; não contorna validações.
+Qualquer recaptura — frente, verso, selfie ou uma das três poses — mantém todas as
+fotos e prévias existentes até uma nova imagem ser obtida com sucesso. Somente a
+imagem selecionada é substituída. Falha da câmera, falha de criação da prévia,
+pausa ou cancelamento não removem nenhuma foto. “Manter foto anterior” cancela a
+recaptura e retorna à revisão original. As demais fotos não precisam ser refeitas.
+A recaptura iniciada na revisão final volta diretamente a ela; a iniciada durante
+a coleta retorna à etapa de origem. A galeria também altera somente o lado escolhido.
+
+Os comprovantes de upload e os resultados de análise são invalidados conforme a
+dependência da imagem substituída, sem apagar os arquivos locais. Uma selfie nova
+exige revalidar os movimentos preservados contra a nova referência. Alterar uma pose
+que o servidor possa ter aceitado exige novo plano na confirmação final e revalidação
+do conjunto retido. O mesmo vale para documentos alterados após o envio da selfie.
+Isso inclui confirmações perdidas por falha de rede. O prazo original, o histórico
+e os limites de rejeição continuam preservados; a recaptura não contorna validações.
 
 ## Captura dos movimentos
 

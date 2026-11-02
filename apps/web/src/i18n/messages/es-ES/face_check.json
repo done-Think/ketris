@@ -282,7 +282,8 @@
       "posePhoto": "Foto capturada de esta pose",
       "poseCaptured": "Foto capturada",
       "nextPoseHint": "Revisa la foto. Pulsa Siguiente para leer las instrucciones de la próxima pose. La cuenta solo comienza al pulsar Capturar foto.",
-      "allPosesCaptured": "Se han capturado todas las poses. Revisa las fotos antes de enviarlas."
+      "allPosesCaptured": "Se han capturado todas las poses. Revisa las fotos antes de enviarlas.",
+      "keepPreviousPhoto": "Conservar foto anterior"
     },
     "cameraNotice": "El documento, la selfie y los movimientos se enviarán para análisis y revisión por una persona de la inmobiliaria.",
     "import": {
@@ -310,7 +311,8 @@
       "cancel": "Cerrar",
       "sending": "Preparando recorte…",
       "sendFront": "Usar recorte del frente",
-      "sendBack": "Usar recorte del reverso"
+      "sendBack": "Usar recorte del reverso",
+      "singleSideHelp": "Ajusta solo el recorte del lado seleccionado. Se conservarán las otras fotos."
     },
     "agencyFallback": "inmobiliaria",
     "phone": {

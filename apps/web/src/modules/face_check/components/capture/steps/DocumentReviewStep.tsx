@@ -12,13 +12,13 @@ export function DocumentReviewStep({ session }: CaptureStepProps) {
   const t = useTranslations('face_check.capture.documentReview')
   const tDocument = useTranslations('face_check.capture.document')
   const flow = useCaptureFlow((state) => state)
-  const { goTo, documentType, retakeSide, previews, documentImages } = flow
+  const { goTo, documentType, retakePhoto, previews, documentImages } = flow
   const docLabel = tDocument(`types.${documentType ?? 'RG'}`)
   return (
     <CaptureLayout
       captureMode={session.captureMode}
       progressStep="document"
-      onBack={() => retakeSide('back')}
+      onBack={() => retakePhoto('back')}
       footer={
         <Button
           size="large"
@@ -53,7 +53,7 @@ export function DocumentReviewStep({ session }: CaptureStepProps) {
             <Typography sx={styles.sideLabel}>
               {t('sideLabel', { side: tDocument(`sides.${side}`), doc: docLabel })}
             </Typography>
-            <Button variant="outlined" color="secondary" onClick={() => retakeSide(side)}>
+            <Button variant="outlined" color="secondary" onClick={() => retakePhoto(side)}>
               {t('retake')}
             </Button>
           </Box>

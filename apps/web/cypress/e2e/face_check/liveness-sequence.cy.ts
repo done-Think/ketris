@@ -22,14 +22,15 @@ const session = {
 
 // Synthetic camera and API only: no real images, saved consent, evidence or host sound.
 describe('click-initiated liveness poses', () => {
-  for (const [locale, messages, failRight, failBack] of [
-    ['pt', pt, false, false],
-    ['en', en, false, false],
-    ['es', es, false, false],
-    ['pt', pt, true, false],
-    ['pt', pt, false, true],
+  for (const [locale, messages, failRight, failBack, retakeAll] of [
+    ['pt', pt, false, false, false],
+    ['en', en, false, false, false],
+    ['es', es, false, false, false],
+    ['pt', pt, true, false, false],
+    ['pt', pt, false, true, false],
+    ['pt', pt, false, false, true],
   ] as const) {
-    it(`${locale}: Next shows instructions and Capture starts the countdown${failRight ? ' and resumes a failed right without repeating left' : failBack ? ' and retakes only a rejected back' : ''}`, () => {
+    it(`${locale}: Next shows instructions and Capture starts the countdown${failRight ? ' and recaptures only a failed right' : failBack ? ' and retakes only a rejected back' : retakeAll ? ' and replaces each of the six photos independently' : ''}`, () => {
       const captures: string[] = []
       const tones: number[] = []
       let step = 0
@@ -39,7 +40,7 @@ describe('click-initiated liveness poses', () => {
       let submitted = false
       let backRejected = false
       const documentSides: string[] = []
-      cy.viewport(failRight ? 390 : 1440, 900)
+      cy.viewport(failRight || retakeAll ? 390 : 1440, 900)
       cy.intercept('GET', path, { body: session })
       cy.intercept('POST', `${path}/consent`, { body: session })
       cy.intercept('POST', `${path}/document`, (request) => {
@@ -81,8 +82,9 @@ describe('click-initiated liveness poses', () => {
           body: { status: 'REVIEW', progress: 100, attemptsLeft: 3, redoReason: null },
         })
       }).as('submitted')
-      cy.intercept('POST', `${path}/liveness-plan`, {
-        body: { planId, expiresAt: '2099-11-08T12:00:00Z', challenges, step: 0 },
+      cy.intercept('POST', `${path}/liveness-plan`, (request) => {
+        if (request.body.restart) step = 0
+        request.reply({ body: { planId, expiresAt: '2099-11-08T12:00:00Z', challenges, step } })
       }).as('plan')
       cy.intercept('GET', `${path}/challenges`, { body: { challenges } })
       cy.intercept('POST', `${path}/liveness-start`, (request) => {
@@ -201,6 +203,42 @@ describe('click-initiated liveness poses', () => {
         expect(captures).to.have.length(0)
       })
       cy.get('img').should('have.length.at.least', 6)
+      if (retakeAll) {
+        const photos = ['front', 'back', 'selfie', ...challenges] as const
+        for (const [index, photo] of photos.entries()) {
+          cy.get('section img').then(($images) => {
+            const originals = [...$images].map((img) => img.getAttribute('src'))
+            cy.contains('h2', messages.capture.review.photos[photo])
+              .parent()
+              .contains('button', messages.capture.review.retake)
+              .click()
+            if (photo === 'front' || photo === 'back')
+              cy.get(`button[aria-label="${messages.capture.document.shutter}"]`)
+                .should('be.enabled')
+                .click()
+            else
+              cy.contains(
+                'button',
+                photo === 'selfie'
+                  ? messages.capture.live.takeSelfie
+                  : messages.capture.live.startMovements,
+              )
+                .should('be.enabled')
+                .click()
+            cy.contains('button', messages.capture.review.send).should('be.enabled')
+            cy.get('section img').should(($updated) => {
+              expect($updated).to.have.length(6)
+              const urls = [...$updated].map((img) => img.getAttribute('src'))
+              urls.forEach((url, item) =>
+                item === index
+                  ? expect(url).not.to.equal(originals[item])
+                  : expect(url).to.equal(originals[item]),
+              )
+            })
+            cy.then(() => expect(uploads).to.equal(0))
+          })
+        }
+      }
       cy.contains('button', messages.capture.review.send).click()
       if (failBack) {
         cy.contains(messages.capture.live.issues.documentTextNotFound).should('be.visible')
@@ -222,36 +260,37 @@ describe('click-initiated liveness poses', () => {
       cy.wait('@movement')
       if (failRight) {
         cy.contains(messages.capture.live.issues.livenessNotTurned).should('be.visible')
-        cy.intercept('POST', `${path}/liveness-plan`, {
-          body: { planId, expiresAt: '2099-11-08T12:00:00Z', challenges, step: 1 },
-        })
         cy.contains('h2', messages.capture.review.photos.turnRight)
           .parent()
           .contains('button', messages.capture.review.retake)
           .click()
         cy.contains('button', messages.capture.live.startMovements).click()
         cy.contains('h1', messages.capture.selfie.titles.turnRight).should('be.visible')
-        cy.contains('h1', messages.capture.live.poseCaptured).should('be.visible')
-        cy.contains('button', messages.capture.live.nextPose).should('be.enabled').click()
-        cy.contains('h1', messages.capture.selfie.titles.closer).should('be.visible')
-        cy.contains('button', messages.capture.live.startMovements).click()
-        cy.contains('h1', messages.capture.live.poseCaptured).should('be.visible')
-        cy.contains('button', messages.capture.live.reviewCaptures).click()
+        cy.contains('button', messages.capture.review.send).should('be.enabled')
         cy.contains('button', messages.capture.review.send).click()
+        cy.wait('@movement')
         cy.wait('@movement')
       }
       cy.wait('@movement')
       cy.wait('@submitted')
       cy.then(() => {
         expect(captures).to.deep.equal(
-          failRight ? ['turnLeft', 'turnRight', 'turnRight', 'closer'] : challenges,
+          failRight ? ['turnLeft', 'turnRight', 'turnLeft', 'turnRight', 'closer'] : challenges,
         )
         expect(starts).to.equal(failRight ? 2 : 1)
         expect(documentSides).to.deep.equal(
-          failBack ? ['front', 'back', 'back'] : ['front', 'back'],
+          failBack
+            ? ['front', 'back', 'back']
+            : failRight
+              ? ['front', 'back', 'front', 'back']
+              : ['front', 'back'],
         )
-        expect(tones.filter((value) => value === 600)).to.have.length(failRight ? 18 : 12)
-        expect(tones.filter((value) => value === 880)).to.have.length(failRight ? 6 : 4)
+        expect(tones.filter((value) => value === 600)).to.have.length(
+          failRight ? 15 : retakeAll ? 24 : 12,
+        )
+        expect(tones.filter((value) => value === 880)).to.have.length(
+          failRight ? 5 : retakeAll ? 8 : 4,
+        )
       })
     })
   }

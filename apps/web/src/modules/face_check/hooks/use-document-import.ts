@@ -15,7 +15,14 @@ const manualRegions: Record<DocumentSide, DocumentRegion> = {
   back: { x: 0.1, y: 0.55, width: 0.8, height: 0.35 },
 }
 
-export function useDocumentImport({ file, token, side, busy, onConfirm }: DocumentImportOptions) {
+export function useDocumentImport({
+  file,
+  token,
+  side,
+  busy,
+  singleSide = false,
+  onConfirm,
+}: DocumentImportOptions) {
   const [source, setSource] = useState<DocumentSource | null>(null)
   const [activeSide, setActiveSide] = useState<DocumentSide>(side)
   const [crops, setCrops] = useState<DocumentCropSelections>({
@@ -120,7 +127,7 @@ export function useDocumentImport({ file, token, side, busy, onConfirm }: Docume
   }
 
   const selectSide = (nextSide: DocumentSide) => {
-    if (disabled || nextSide === activeSide) return
+    if (disabled || singleSide || nextSide === activeSide) return
     if (crops[nextSide].page !== page) resetPage()
     setUploadError(null)
     setActiveSide(nextSide)
@@ -149,7 +156,7 @@ export function useDocumentImport({ file, token, side, busy, onConfirm }: Docume
     setUploadError(null)
     try {
       await onConfirm(await cropDocument(canvas, region), activeSide)
-      if (activeSide === 'front') {
+      if (activeSide === 'front' && !singleSide) {
         if (crops.back.page !== page) resetPage()
         setActiveSide('back')
       }

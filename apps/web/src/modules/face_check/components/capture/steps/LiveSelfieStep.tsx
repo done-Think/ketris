@@ -11,7 +11,8 @@ import { useSelfieFraming } from '../../../hooks/use-selfie-framing'
 import { useCaptureDevice } from '../../../hooks/use-capture-device'
 import type { FaceGuideGeometry } from '../../../types/face-framing.types'
 import { useCaptureFlow } from '../../../stores/CaptureFlowProvider'
-import type { CaptureStepProps, SelfiePhase } from '../../../types/capture.types'
+import type { CaptureStepProps } from '../../../types/capture.types'
+import type { LivenessChallenge } from '../../../types/session.types'
 import { resolveSelfiePhase } from '../../../utils/resolve-visible-step'
 import { CameraFallback } from '../CameraFallback'
 import { CaptureLayout } from '../CaptureLayout'
@@ -43,16 +44,15 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
   const [geometry, setGeometry] = useState<FaceGuideGeometry | null>(null)
   const capturing = useRef<AbortController | null>(null)
   const { remaining: selfieRemaining, run: countSelfie, clear: clearSelfieCount } = useCountdown(3)
-  const [capturedPhase, setCapturedPhase] = useState<SelfiePhase | null>(null)
   const intro = useRef<HTMLDivElement>(null)
   const device = useCaptureDevice()
   const sound = useCaptureSound()
   const list = flow.plan?.challenges ?? [...movements]
   const phase = resolveSelfiePhase(flow.livenessStep, list)
   const live = cameraStatus === 'live'
-  const draft = phase === 'position' && flow.selfieImage !== null
+  const draft = phase === 'position' && flow.selfieImage !== null && flow.retakeTarget !== 'selfie'
   const movementPreview =
-    phase !== 'position' && phase !== 'done' && capturedPhase === phase
+    phase !== 'position' && phase !== 'done' && flow.retakeTarget !== phase
       ? flow.movementPreviews[phase]
       : null
   const preview = draft ? flow.selfiePreview : movementPreview
@@ -82,7 +82,7 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
 
   const sequence = useLivenessSequence({
     token: session.token,
-    enabled: live && flow.selfieImage !== null && !preparing,
+    enabled: live && flow.selfieImage !== null && !preparing && !flow.retakeTarget,
     planId: flow.plan?.planId ?? null,
     localStep: Math.max(0, flow.livenessStep - 1),
     onPlan: flow.setLivenessPlan,
@@ -95,7 +95,6 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
         signal.throwIfAborted()
         sound.play()
         flow.captureMovement(challenge, image)
-        setCapturedPhase(challenge)
         setCaptureFailed(false)
       } catch (error) {
         if (!signal.aborted) setCaptureFailed(true)
@@ -122,7 +121,7 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
           : 'warn'
   const arrow = phase === 'turnLeft' ? 'left' : phase === 'turnRight' ? 'right' : null
 
-  const takeSelfie = async () => {
+  const takeFacePhoto = async (challenge?: LivenessChallenge) => {
     if (capturing.current || busy || !live || document.hidden) return
     const controller = new AbortController()
     capturing.current = controller
@@ -134,7 +133,8 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
       const image = await grabFrame()
       controller.signal.throwIfAborted()
       sound.play()
-      flow.captureSelfie(image)
+      if (challenge) flow.captureMovement(challenge, image)
+      else flow.captureSelfie(image)
       setCaptureFailed(false)
     } catch {
       if (!controller.signal.aborted) setCaptureFailed(true)
@@ -149,15 +149,27 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
 
   const capturePose = (step = Math.max(0, flow.livenessStep - 1)) => {
     intro.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' })
-    setCapturedPhase(null)
     setCaptureFailed(false)
-    void sequence.start(step)
+    if (
+      flow.retakeTarget === 'turnLeft' ||
+      flow.retakeTarget === 'turnRight' ||
+      flow.retakeTarget === 'closer'
+    ) {
+      void takeFacePhoto(flow.retakeTarget)
+    } else void sequence.start(step)
   }
   const preparePose = (step: number) => {
     intro.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' })
-    setCapturedPhase(null)
     setCaptureFailed(false)
-    void sequence.prepare(step)
+    sequence.reset()
+    if (flow.movementImages[list[step]]) flow.syncLivenessStep(step + 1)
+    else void sequence.prepare(step)
+  }
+  const cancelRetake = () => {
+    stopSelfie()
+    sequence.reset()
+    setCaptureFailed(false)
+    flow.cancelRetake()
   }
   const review = () => {
     flow.syncLivenessStep(list.length + 1)
@@ -171,7 +183,7 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
           size="large"
           variant="contained"
           disabled={busy || !live}
-          onClick={draft ? () => preparePose(0) : () => void takeSelfie()}
+          onClick={draft ? () => preparePose(0) : () => void takeFacePhoto()}
           startIcon={busy ? <CircularProgress size={18} color="inherit" /> : null}
         >
           {remaining !== null
@@ -183,8 +195,8 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
             sx={stepStyles.darkSecondaryAction}
             disabled={busy}
             onClick={() => {
-              flow.resetLiveness()
               sequence.reset()
+              flow.retakePhoto('selfie')
             }}
           >
             {tLive('retakeSelfie')}
@@ -204,7 +216,12 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
         <Button
           sx={stepStyles.darkSecondaryAction}
           disabled={busy || !live}
-          onClick={() => preparePose(Math.max(0, flow.livenessStep - 1))}
+          onClick={() => {
+            if (phase === 'turnLeft' || phase === 'turnRight' || phase === 'closer') {
+              sequence.reset()
+              flow.retakePhoto(phase)
+            }
+          }}
         >
           {tLive('retakePose')}
         </Button>
@@ -236,10 +253,10 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
           sx={stepStyles.darkSecondaryAction}
           onClick={() => {
             sequence.reset()
-            flow.resetLiveness()
+            flow.retakePhoto('selfie')
           }}
         >
-          {t('restart')}
+          {tLive('retakeSelfie')}
         </Button>
       </>
     )
@@ -253,8 +270,8 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
         busy
           ? undefined
           : () => {
-              flow.resetLiveness()
-              flow.goTo('documentReview')
+              if (flow.retakeTarget) cancelRetake()
+              else flow.goTo('documentReview')
             }
       }
       footer={
@@ -269,6 +286,11 @@ export function LiveSelfieStep({ session }: CaptureStepProps) {
               }}
             >
               {tLive('pauseMovements')}
+            </Button>
+          ) : null}
+          {flow.retakeTarget ? (
+            <Button sx={stepStyles.darkSecondaryAction} disabled={busy} onClick={cancelRetake}>
+              {tLive('keepPreviousPhoto')}
             </Button>
           ) : null}
           <Button

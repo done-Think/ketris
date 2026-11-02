@@ -1,9 +1,10 @@
 import { createStore } from 'zustand/vanilla'
 
-import type { DocumentSide } from '../types'
+import type { DocumentSide, LivenessChallenge } from '../types'
 
 import type { CaptureFlowState, CaptureFlowStore } from '../types/capture.types'
 import { hasCompleteSelfieDrafts } from '../utils/capture-drafts'
+import type { CaptureUploadSlot } from '../types/capture-draft.types'
 
 const sidesInOrder = ['front', 'back'] as const
 
@@ -11,18 +12,12 @@ function releasePreview(url?: string) {
   if (url) URL.revokeObjectURL(url)
 }
 
-function withoutPreview(previews: CaptureFlowState['previews'], side: DocumentSide) {
-  releasePreview(previews[side])
-  const next = { ...previews }
-  delete next[side]
-
-  return next
-}
-
 function clearSelfieDrafts(state: CaptureFlowState) {
   if (state.selfiePreview) releasePreview(state.selfiePreview)
   Object.values(state.movementPreviews).forEach(releasePreview)
   return {
+    retakeTarget: null,
+    retakeReturnStep: null,
     selfieImage: null,
     selfiePreview: null,
     movementImages: {},
@@ -31,6 +26,40 @@ function clearSelfieDrafts(state: CaptureFlowState) {
     uploaded: {},
     livenessStep: 0,
   }
+}
+
+function finishRetake(
+  state: CaptureFlowState,
+  slot: CaptureUploadSlot | LivenessChallenge,
+): Partial<CaptureFlowState> {
+  if (state.retakeTarget !== slot) return {}
+  const step = state.retakeReturnStep ?? 'captureReview'
+  return {
+    step,
+    retakeTarget: null,
+    retakeReturnStep: null,
+    ...(step === 'captureReview' ? { livenessStep: (state.plan?.challenges.length ?? 3) + 1 } : {}),
+  }
+}
+
+function invalidateFaceUpload(
+  state: CaptureFlowState,
+  slot: CaptureUploadSlot | LivenessChallenge,
+) {
+  if (
+    slot !== 'selfie' &&
+    (state.uploaded.selfie || (state.uploaded.front && state.uploaded.back))
+  ) {
+    // A server checkpoint may already include this pose, even if its acknowledgement
+    // was lost. Revalidate the retained local set under a new plan on final confirmation.
+    return { plan: null, uploaded: {} }
+  }
+  const uploaded = { ...state.uploaded }
+  if (slot !== 'blink') delete uploaded[slot]
+  if (slot === 'selfie') {
+    for (const pose of ['turnLeft', 'turnRight', 'closer'] as const) delete uploaded[pose]
+  }
+  return { uploaded }
 }
 
 function invalidateDocumentUpload(state: CaptureFlowState, side: DocumentSide) {
@@ -48,6 +77,8 @@ export function createCaptureFlowStore(): CaptureFlowStore {
   return createStore<CaptureFlowState>()((set) => ({
     step: 'consent',
     documentType: null,
+    retakeTarget: null,
+    retakeReturnStep: null,
     selfieImage: null,
     selfiePreview: null,
     movementImages: {},
@@ -55,17 +86,30 @@ export function createCaptureFlowStore(): CaptureFlowStore {
     plan: null,
     uploaded: {},
     captureSelfie: (image) =>
-      set((state) => ({
-        ...clearSelfieDrafts(state),
-        selfieImage: image,
-        selfiePreview: URL.createObjectURL(image),
-      })),
+      set((state) => {
+        if (state.retakeTarget && state.retakeTarget !== 'selfie')
+          throw new Error('INVALID_CAPTURE_STATE')
+        const preview = URL.createObjectURL(image)
+        releasePreview(state.selfiePreview ?? undefined)
+        return {
+          ...invalidateFaceUpload(state, 'selfie'),
+          selfieImage: image,
+          selfiePreview: preview,
+          livenessStep: 0,
+          ...finishRetake(state, 'selfie'),
+        }
+      }),
     captureMovement: (challenge, image) =>
       set((state) => {
+        if (state.retakeTarget && state.retakeTarget !== challenge)
+          throw new Error('INVALID_CAPTURE_STATE')
+        const preview = URL.createObjectURL(image)
         releasePreview(state.movementPreviews[challenge])
         return {
+          ...invalidateFaceUpload(state, challenge),
           movementImages: { ...state.movementImages, [challenge]: image },
-          movementPreviews: { ...state.movementPreviews, [challenge]: URL.createObjectURL(image) },
+          movementPreviews: { ...state.movementPreviews, [challenge]: preview },
+          ...finishRetake(state, challenge),
         }
       }),
     setLivenessPlan: (plan) =>
@@ -75,15 +119,31 @@ export function createCaptureFlowStore(): CaptureFlowStore {
       })),
     rememberUpload: (slot, image) =>
       set((state) => ({ uploaded: { ...state.uploaded, [slot]: image } })),
-    retakeMovements: (challenge = 'turnLeft') =>
+    retakePhoto: (slot) =>
       set((state) => ({
-        step: 'selfie',
-        livenessStep:
-          Math.max(
-            0,
-            (state.plan?.challenges ?? ['turnLeft', 'turnRight', 'closer']).indexOf(challenge),
-          ) + 1,
+        retakeTarget: slot,
+        retakeReturnStep:
+          state.retakeReturnStep ??
+          (state.step === 'captureReview'
+            ? 'captureReview'
+            : slot === 'front' || slot === 'back'
+              ? 'documentReview'
+              : 'selfie'),
+        ...(slot === 'front' || slot === 'back'
+          ? { side: slot, step: 'document' }
+          : {
+              step: 'selfie',
+              livenessStep:
+                slot === 'selfie'
+                  ? 0
+                  : Math.max(
+                      0,
+                      (state.plan?.challenges ?? ['turnLeft', 'turnRight', 'closer']).indexOf(slot),
+                    ) + 1,
+            }),
       })),
+    cancelRetake: () =>
+      set((state) => (state.retakeTarget ? finishRetake(state, state.retakeTarget) : {})),
     documentImages: { front: null, back: null },
     clearImages: () =>
       set((state) => {
@@ -103,6 +163,7 @@ export function createCaptureFlowStore(): CaptureFlowStore {
     chooseDocument: (documentType) =>
       set((state) => {
         if (state.documentType === documentType) return {}
+        if (state.retakeTarget) throw new Error('INVALID_CAPTURE_STATE')
         Object.values(state.previews).forEach(releasePreview)
         return {
           ...clearSelfieDrafts(state),
@@ -115,17 +176,21 @@ export function createCaptureFlowStore(): CaptureFlowStore {
       }),
     captureDocument: (side, image) =>
       set((state) => {
+        if (state.retakeTarget && state.retakeTarget !== side)
+          throw new Error('INVALID_CAPTURE_STATE')
+        const preview = URL.createObjectURL(image)
         const capturedSides = state.capturedSides.includes(side)
           ? state.capturedSides
           : [...state.capturedSides, side]
         const previews = {
-          ...withoutPreview(state.previews, side),
-          [side]: URL.createObjectURL(image),
+          ...state.previews,
+          [side]: preview,
         }
         const documentImages = { ...state.documentImages, [side]: image }
         const missing = sidesInOrder.find((item) => !capturedSides.includes(item))
 
         const invalidated = invalidateDocumentUpload(state, side)
+        releasePreview(state.previews[side])
         return missing
           ? {
               ...invalidated,
@@ -134,6 +199,7 @@ export function createCaptureFlowStore(): CaptureFlowStore {
               documentImages,
               side: missing,
               step: 'document',
+              ...finishRetake(state, side),
             }
           : {
               ...invalidated,
@@ -141,22 +207,11 @@ export function createCaptureFlowStore(): CaptureFlowStore {
               previews,
               documentImages,
               step: hasCompleteSelfieDrafts(state) ? 'captureReview' : 'documentReview',
+              ...finishRetake(state, side),
             }
-      }),
-    retakeSide: (side) =>
-      set((state) => {
-        return {
-          ...invalidateDocumentUpload(state, side),
-          side,
-          documentImages: { ...state.documentImages, [side]: null },
-          step: 'document',
-          capturedSides: state.capturedSides.filter((item) => item !== side),
-          previews: withoutPreview(state.previews, side),
-        }
       }),
     advanceLiveness: (totalChallenges) =>
       set((state) => ({ livenessStep: Math.min(totalChallenges + 1, state.livenessStep + 1) })),
-    resetLiveness: () => set((state) => clearSelfieDrafts(state)),
     syncLivenessStep: (livenessStep) => set({ livenessStep }),
     retryChallenges: () => set({ livenessStep: 1 }),
     restartAttempt: () =>

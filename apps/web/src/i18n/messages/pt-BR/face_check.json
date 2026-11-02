@@ -282,7 +282,8 @@
       "posePhoto": "Foto capturada desta pose",
       "poseCaptured": "Foto capturada",
       "nextPoseHint": "Confira a foto. Clique em Próximo para ler as instruções da próxima pose. A contagem só começa ao clicar em Capturar foto.",
-      "allPosesCaptured": "Todas as poses foram capturadas. Revise as fotos antes de enviar."
+      "allPosesCaptured": "Todas as poses foram capturadas. Revise as fotos antes de enviar.",
+      "keepPreviousPhoto": "Manter foto anterior"
     },
     "phone": {
       "action": "Continuar pelo celular",
@@ -323,7 +324,8 @@
       "cancel": "Fechar",
       "sending": "Preparando recorte…",
       "sendFront": "Usar recorte da frente",
-      "sendBack": "Usar recorte do verso"
+      "sendBack": "Usar recorte do verso",
+      "singleSideHelp": "Ajuste somente o recorte do lado selecionado. As outras fotos serão mantidas."
     },
     "agencyFallback": "imobiliária",
     "dashboardTitle": "Verificação de identidade",

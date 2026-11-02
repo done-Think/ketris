@@ -38,10 +38,8 @@ export interface CaptureFlowState extends CaptureDraftState {
   goTo: (step: CaptureStep) => void
   chooseDocument: (documentType: DocumentType) => void
   captureDocument: (side: DocumentSide, image: Blob) => void
-  retakeSide: (side: DocumentSide) => void
   advanceLiveness: (totalChallenges: number) => void
   syncLivenessStep: (step: number) => void
-  resetLiveness: () => void
   retryChallenges: () => void
   restartAttempt: () => void
 }

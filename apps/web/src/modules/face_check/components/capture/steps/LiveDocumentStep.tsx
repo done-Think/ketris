@@ -3,6 +3,7 @@
 import {
   Alert,
   Box,
+  Button,
   CircularProgress,
   IconButton,
   ToggleButton,
@@ -33,9 +34,8 @@ import {
 export function LiveDocumentStep({ session }: CaptureStepProps) {
   const t = useTranslations('face_check.capture.document')
   const tLive = useTranslations('face_check.capture.live')
-  const { goTo, side, documentType, chooseDocument, captureDocument } = useCaptureFlow(
-    (state) => state,
-  )
+  const { goTo, side, documentType, chooseDocument, captureDocument, retakeTarget, cancelRetake } =
+    useCaptureFlow((state) => state)
   const {
     status: cameraStatus,
     aspectRatio,
@@ -94,7 +94,7 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
       captureMode={session.captureMode}
       tone="dark"
       progressStep="document"
-      onBack={busy ? undefined : () => goTo('camera')}
+      onBack={busy ? undefined : retakeTarget ? cancelRetake : () => goTo('camera')}
       footer={
         <>
           <Typography sx={styles.hint}>
@@ -125,15 +125,20 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
             />
           ) : null}
           {live ? <ContinueOnPhoneButton token={session.token} disabled={busy} dark /> : null}
+          {retakeTarget ? (
+            <Button sx={liveStyles.galleryButton} disabled={busy} onClick={cancelRetake}>
+              {tLive('keepPreviousPhoto')}
+            </Button>
+          ) : null}
         </>
       }
     >
       <DocumentIntro
-        options={options}
+        options={retakeTarget ? [selected] : options}
         selected={selected}
         side={side}
         onChoose={(type) => {
-          if (!busy) chooseDocument(type)
+          if (!busy && !retakeTarget) chooseDocument(type)
         }}
       />
       <Typography sx={styles.hint}>{tLive('reviewBeforeSending')}</Typography>
@@ -195,6 +200,7 @@ export function LiveDocumentStep({ session }: CaptureStepProps) {
           token={session.token}
           side={side}
           busy={busy}
+          singleSide={Boolean(retakeTarget)}
           onClose={() => setImportFile(null)}
           onConfirm={saveImported}
         />

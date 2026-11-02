@@ -12,13 +12,14 @@ export interface DocumentImportDialogProps {
   token: string
   side: DocumentSide
   busy: boolean
+  singleSide?: boolean
   onClose: () => void
   onConfirm: (image: Blob, side: DocumentSide) => Promise<void>
 }
 
 export type DocumentImportOptions = Pick<
   DocumentImportDialogProps,
-  'file' | 'token' | 'side' | 'busy' | 'onConfirm'
+  'file' | 'token' | 'side' | 'busy' | 'singleSide' | 'onConfirm'
 >
 
 export type DocumentCropPoint = Pick<DocumentRegion, 'x' | 'y'>

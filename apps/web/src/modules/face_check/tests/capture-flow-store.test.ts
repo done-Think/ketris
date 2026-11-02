@@ -39,7 +39,7 @@ describe('local document drafts', () => {
     store.getState().rememberUpload('front', front)
     store.getState().goTo('captureReview')
     const previews = { ...store.getState().movementPreviews }
-    store.getState().retakeSide('back')
+    store.getState().retakePhoto('back')
     expect(store.getState()).toMatchObject({
       selfieImage: selfie,
       movementPreviews: previews,
@@ -67,10 +67,12 @@ describe('local document drafts', () => {
     for (const pose of ['turnLeft', 'turnRight', 'closer'] as const)
       store.getState().captureMovement(pose, new Blob([pose]))
     store.getState().rememberUpload('selfie', selfie)
-    store.getState().retakeSide('back')
-    expect(store.getState()).toMatchObject({ plan: null, uploaded: {}, selfieImage: selfie })
+    store.getState().goTo('captureReview')
+    store.getState().retakePhoto('back')
+    expect(store.getState()).toMatchObject({ selfieImage: selfie })
     store.getState().captureDocument('back', new Blob(['new-back']))
     expect(store.getState().step).toBe('captureReview')
+    expect(store.getState()).toMatchObject({ plan: null, uploaded: {} })
   })
 
   it('retakes only the selected side and keeps the other photo for review', () => {
@@ -86,15 +88,15 @@ describe('local document drafts', () => {
     })
     store.getState().captureDocument('back', back)
     expect(store.getState().step).toBe('documentReview')
-    store.getState().retakeSide('front')
+    store.getState().retakePhoto('front')
     expect(store.getState()).toMatchObject({
       step: 'document',
       side: 'front',
-      capturedSides: ['back'],
-      documentImages: { front: null, back },
-      previews: { back: 'blob:4' },
+      capturedSides: ['front', 'back'],
+      documentImages: { front, back },
+      previews: { front: 'blob:5', back: 'blob:4' },
     })
-    expect(revoke).toHaveBeenCalledWith('blob:5')
+    expect(revoke).not.toHaveBeenCalledWith('blob:5')
     expect(revoke).not.toHaveBeenCalledWith('blob:4')
     store.getState().captureDocument('front', new Blob(['new-front']))
     expect(store.getState()).toMatchObject({ step: 'documentReview', documentImages: { back } })

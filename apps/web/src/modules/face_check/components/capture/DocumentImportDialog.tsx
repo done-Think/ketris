@@ -62,7 +62,7 @@ export function DocumentImportDialog(props: DocumentImportDialogProps) {
       <DialogTitle>{t(activeSide === 'front' ? 'frontTitle' : 'backTitle')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2}>
-          <Typography>{t('help')}</Typography>
+          <Typography>{t(props.singleSide ? 'singleSideHelp' : 'help')}</Typography>
           {pages > 1 ? (
             <TextField
               select
@@ -92,7 +92,7 @@ export function DocumentImportDialog(props: DocumentImportDialogProps) {
               <ToggleButtonGroup
                 exclusive
                 value={activeSide}
-                disabled={disabled}
+                disabled={disabled || props.singleSide}
                 aria-label={t('sides')}
                 sx={styles.sides}
                 onChange={(_event, value: DocumentSide | null) => {
