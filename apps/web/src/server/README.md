@@ -69,18 +69,25 @@ sensíveis de autenticação e cadastro usam uma política mais restrita que a A
   envio público de proposta (`POST /api/marketplace/properties/{id}/inquiries`), por endereço do cliente e
   com contador no PostgreSQL, como o de Auth.
 
+O fluxo “Esqueci minha senha” tem uma quota própria (`auth-password-recovery`), usando
+os mesmos valores de `AUTH_RATE_LIMIT_*`. Solicitação de código, validação e redefinição
+compartilham esse contador. Login, callbacks e refresh usam o contador de autenticação;
+esgotar um dos fluxos não bloqueia o outro. O intervalo de reenvio e a validação do código
+no backend continuam independentes do limite do proxy.
+
 O endereço do cliente vem de `x-vercel-forwarded-for` na Vercel. Fora da Vercel, só é confiável o
 cabeçalho que o proxy da frente do app define e sobrescreve (ex.: `CloudFront-Viewer-Address` no
 CloudFront, `X-Real-IP` num Nginx próprio), informado em `TRUSTED_CLIENT_IP_HEADER`. Sem essa variável,
 todos os clientes dividem o mesmo contador (`local`), o que só serve para desenvolvimento.
 
 Respostas bloqueadas retornam 429 (`RATE_LIMIT_EXCEEDED`) com headers `RateLimit-Limit`,
-`RateLimit-Remaining`, `RateLimit-Reset` e `Retry-After`. Os contadores de Auth ficam no PostgreSQL e são compartilhados entre instâncias, com incremento
+`RateLimit-Remaining`, `RateLimit-Reset` e `Retry-After`. Os contadores ficam no PostgreSQL e são compartilhados entre instâncias, com incremento
 atômico e limpeza limitada de janelas expiradas. Na Vercel, a identidade usa apenas o cabeçalho de IP
 controlado pela plataforma; fora dela, ignora cabeçalhos forjáveis e usa o agrupamento local. Uma falha
-do contador de Auth retorna 503 sem liberar a tentativa. A política geral da API mantém armazenamento
-em memória; sua substituição foi reservada para uma [branch de infraestrutura](../../../../docs/technical-debt/api-distributed-rate-limit.md)
-por decisão do produto na revisão de Agenda (T23). Nenhum serviço Redis/Upstash é necessário.
+do contador retorna 503 sem liberar a tentativa. A política geral da API também usa
+armazenamento compartilhado; os ensaios estão registrados na
+[documentação de infraestrutura](../../../../docs/technical-debt/api-distributed-rate-limit.md).
+Nenhum serviço Redis/Upstash é necessário.
 
 ## Autenticação: access token + refresh token
 

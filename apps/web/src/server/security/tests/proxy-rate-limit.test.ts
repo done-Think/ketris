@@ -67,6 +67,9 @@ describe('proxy rate limit', () => {
 
   it.each([
     '/api/auth/me/password',
+    '/api/auth/password-reset-codes',
+    '/api/auth/password-reset-codes/verify',
+    '/api/auth/reset-password',
     '/api/auth/email-verification-codes',
     '/api/auth/email-verification-codes/verify',
     '/api/auth/me/email-change',
@@ -132,24 +135,92 @@ describe('proxy rate limit', () => {
     expect((await proxy(postFrom(ip, '/api/auth/callback/credentials'))).status).toBe(429)
   })
 
-  it('uses the configured auth limit and window and allows attempts after expiration', async () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-10-24T12:00:00Z'))
-    vi.stubEnv('AUTH_RATE_LIMIT_MAX', '2')
-    vi.stubEnv('AUTH_RATE_LIMIT_WINDOW_MS', '5000')
+  it('keeps password recovery available after login, callbacks and refresh exhaust their budget', async () => {
     const { proxy } = await import('../../../proxy')
-    const ip = '203.0.113.11'
-    const request = () => postFrom(ip, '/api/auth/callback/platform-credentials')
+    const ip = '203.0.113.12'
+    const authentication = [
+      '/api/auth/login',
+      '/api/auth/callback/token-session',
+      '/api/auth/refresh',
+    ]
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      expect(
+        (await proxy(postFrom(ip, authentication[attempt % authentication.length]))).status,
+      ).not.toBe(429)
+    }
+    expect((await proxy(postFrom(ip, '/api/auth/login'))).status).toBe(429)
 
-    expect((await proxy(request())).headers.get('RateLimit-Limit')).toBe('2')
-    expect((await proxy(request())).status).not.toBe(429)
-    const blocked = await proxy(request())
-    expect(blocked.status).toBe(429)
-    expect(blocked.headers.get('Retry-After')).toBe('5')
-
-    vi.advanceTimersByTime(5000)
-    expect((await proxy(request())).status).not.toBe(429)
+    for (const [index, pathname] of [
+      '/api/auth/password-reset-codes',
+      '/api/auth/password-reset-codes/verify',
+      '/api/auth/reset-password',
+    ].entries()) {
+      const response = await proxy(postFrom(ip, pathname))
+      expect(response.status).not.toBe(429)
+      expect(response.headers.get('RateLimit-Limit')).toBe('10')
+      expect(response.headers.get('RateLimit-Remaining')).toBe(String(9 - index))
+    }
+    expect((await proxy(postFrom(ip, '/api/auth/login'))).status).toBe(429)
   })
+
+  it('shares one recovery budget across its steps, encoded paths and trailing slashes', async () => {
+    const { proxy } = await import('../../../proxy')
+    const paths = [
+      '/api/auth/password-reset-codes',
+      '/api/auth/password-reset-codes/verify',
+      '/api/auth/reset-password',
+      '/api/auth/password-reset-codes/',
+      '/api/auth/%70assword-reset-codes',
+      '/api/auth/password-reset-codes/%76erify/',
+    ]
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      expect(
+        (await proxy(postFrom('203.0.113.12', paths[attempt % paths.length]))).status,
+      ).not.toBe(429)
+    }
+    const blocked = await proxy(postFrom('203.0.113.12', '/api/auth/reset-password/'))
+    expect(blocked.status).toBe(429)
+    expect(blocked.headers.get('Retry-After')).toBe('900')
+    const login = await proxy(postFrom('203.0.113.12', '/api/auth/login'))
+    expect(login.status).not.toBe(429)
+    expect(login.headers.get('RateLimit-Remaining')).toBe('9')
+  })
+
+  it('keeps recovery available after unrelated API requests exhaust their quota', async () => {
+    vi.stubEnv('API_RATE_LIMIT_MAX', '2')
+    const { proxy } = await import('../../../proxy')
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      expect((await proxy(postFrom('203.0.113.12', '/api/face_check/sessions'))).status).not.toBe(
+        429,
+      )
+    }
+    expect((await proxy(postFrom('203.0.113.12', '/api/face_check/sessions'))).status).toBe(429)
+    const recovery = await proxy(postFrom('203.0.113.12', '/api/auth/password-reset-codes'))
+    expect(recovery.status).not.toBe(429)
+    expect(recovery.headers.get('RateLimit-Remaining')).toBe('9')
+  })
+
+  it.each(['/api/auth/callback/platform-credentials', '/api/auth/password-reset-codes'])(
+    'uses the configured auth limit and window for %s and allows attempts after expiration',
+    async (pathname) => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-10-24T12:00:00Z'))
+      vi.stubEnv('AUTH_RATE_LIMIT_MAX', '2')
+      vi.stubEnv('AUTH_RATE_LIMIT_WINDOW_MS', '5000')
+      const { proxy } = await import('../../../proxy')
+      const ip = '203.0.113.11'
+      const request = () => postFrom(ip, pathname)
+
+      expect((await proxy(request())).headers.get('RateLimit-Limit')).toBe('2')
+      expect((await proxy(request())).status).not.toBe(429)
+      const blocked = await proxy(request())
+      expect(blocked.status).toBe(429)
+      expect(blocked.headers.get('Retry-After')).toBe('5')
+
+      vi.advanceTimersByTime(5000)
+      expect((await proxy(request())).status).not.toBe(429)
+    },
+  )
   it('fails closed with 503 when any shared counter is unavailable', async () => {
     unavailable.mockImplementation(() => {
       throw new Error('database unavailable')
@@ -161,6 +232,10 @@ describe('proxy rate limit', () => {
     expect(response.status).toBe(503)
     expect(response.headers.get('Retry-After')).toBe('60')
     expect(await response.json()).toMatchObject({ error: { code: 'AUTH_RATE_LIMIT_UNAVAILABLE' } })
+    const recovery = await proxy(postFrom('203.0.113.10', '/api/auth/password-reset-codes'))
+    expect(recovery.status).toBe(503)
+    expect(recovery.headers.get('Retry-After')).toBe('60')
+    expect(await recovery.json()).toMatchObject({ error: { code: 'AUTH_RATE_LIMIT_UNAVAILABLE' } })
     const general = await proxy(postFrom('203.0.113.10', '/api/crm/leads'))
     expect(general.status).toBe(503)
     expect(await general.json()).toMatchObject({ error: { code: 'API_RATE_LIMIT_UNAVAILABLE' } })
