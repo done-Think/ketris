@@ -828,6 +828,7 @@
       "LIVENESS_FAILED": "A prova de vida não foi confirmada. Tente de novo.",
       "SESSION_NOT_REJECTED": "Só dá para liberar uma nova tentativa em uma verificação reprovada. Atualize a página.",
       "VERIFICATION_INCOMPLETE": "Documento, prova de vida e similaridade precisam estar disponíveis antes de aprovar esta verificação.",
+      "STORAGE_UNAVAILABLE": "O armazenamento seguro está indisponível.",
       "PERSISTENCE_BUSY": "Outra operação está sendo concluída. Aguarde um instante e tente novamente.",
       "PERSISTENCE_UNAVAILABLE": "Não foi possível salvar ou recuperar a verificação. Tente novamente em instantes.",
       "AGENCY_NAME_MISSING": "Informe o nome da imobiliária nas configurações antes de criar uma verificação.",

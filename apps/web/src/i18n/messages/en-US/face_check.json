@@ -828,6 +828,7 @@
       "LIVENESS_FAILED": "The liveness check was not confirmed. Try again.",
       "SESSION_NOT_REJECTED": "Another attempt can only be enabled for a rejected verification. Refresh the page.",
       "VERIFICATION_INCOMPLETE": "Document, liveness check and similarity must be available before approval.",
+      "STORAGE_UNAVAILABLE": "Secure storage is unavailable.",
       "PERSISTENCE_BUSY": "Another operation is finishing. Wait a moment and try again.",
       "PERSISTENCE_UNAVAILABLE": "Could not save or retrieve this verification. Try again shortly.",
       "AGENCY_NAME_MISSING": "Add the agency name in settings before creating a verification.",

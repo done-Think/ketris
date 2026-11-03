@@ -11,6 +11,13 @@ Não há sessões em memória, Supabase ou resultados simulados neste módulo.
 No menu lateral, **Face Check** abre a visão geral. **Sessões**, **Revisão** e
 **Configurações** são subitens; não existe uma segunda barra de navegação no conteúdo.
 
+As listas do console e a visão geral atualizam a cada 30 segundos, sem consultar
+novamente dados ainda frescos ao remontar a tela. Criar ou atualizar uma verificação
+invalida essas consultas imediatamente. O detalhe mantém a atualização de 3 segundos
+(1 segundo durante o processamento). Erros de acesso e `STORAGE_UNAVAILABLE` suspendem
+as repetições automáticas; uma nova consulta explícita pode retomá-las após a correção.
+Falhas transitórias admitem apenas uma nova tentativa, após 5 segundos.
+
 A pessoa convidada encontra **Minhas verificações** em
 `/dashboard/face_check/my-verifications` quando houver solicitações vinculadas à conta.
 A associação usa o e-mail exato do contato informado ao criar a verificação e uma conta
