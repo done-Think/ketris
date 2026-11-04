@@ -27,7 +27,6 @@ const emptyContactFormValues: ContactFormValues = {
   email: '',
   phone: '',
   type: 'RENTER',
-  avatarUrl: '',
   notes: '',
 }
 
@@ -106,13 +105,6 @@ function ContactFormDialogForm({
                   {errors.type?.message && <FormHelperText>{errors.type.message}</FormHelperText>}
                 </FormControl>
               )}
-            />
-            <TextField
-              label={t('fields.avatarUrl')}
-              type="url"
-              error={Boolean(errors.avatarUrl)}
-              helperText={errors.avatarUrl?.message}
-              {...register('avatarUrl')}
             />
             <TextField
               label={t('fields.notes')}

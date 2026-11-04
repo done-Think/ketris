@@ -7,6 +7,7 @@ const profilePathname = /^\/dashboard\/profile(?:\/.*)?$/
 const maintenancePathname = /^\/dashboard\/maintenance(?:\/[^/]+)?\/?$/
 const contractsPathname = /^\/dashboard\/contracts(?:\/(?!new(?:\/|$))[^/]+)?\/?$/
 const chargesPathname = /^\/dashboard\/finance\/charges(?:\/[^/]+)?\/?$/
+const myVerificationsPathname = /^\/dashboard\/face_check\/my-verifications(?:\/[^/]+)?\/?$/
 
 export const restrictedRoleAccess: Record<RestrictedRole, RestrictedRoleAccess> = {
   RENTER: {
@@ -16,9 +17,11 @@ export const restrictedRoleAccess: Record<RestrictedRole, RestrictedRoleAccess> 
       '/dashboard/maintenance',
       '/dashboard/agenda',
       '/dashboard/properties',
+      '/dashboard/face_check/my-verifications',
     ],
     isAllowedPathname: (pathname) =>
       pathname === '/dashboard/agenda' ||
+      myVerificationsPathname.test(pathname) ||
       chargesPathname.test(pathname) ||
       maintenancePathname.test(pathname) ||
       propertyDetailPathname.test(pathname),
@@ -34,9 +37,11 @@ export const restrictedRoleAccess: Record<RestrictedRole, RestrictedRoleAccess> 
       '/dashboard/finance/charges',
       '/dashboard/maintenance',
       '/dashboard/agenda',
+      '/dashboard/face_check/my-verifications',
     ],
     isAllowedPathname: (pathname) =>
       pathname === '/dashboard/agenda' ||
+      myVerificationsPathname.test(pathname) ||
       contractsPathname.test(pathname) ||
       chargesPathname.test(pathname) ||
       maintenancePathname.test(pathname) ||

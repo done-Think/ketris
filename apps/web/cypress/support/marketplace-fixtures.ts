@@ -20,7 +20,7 @@ function isolated() {
 
 export async function seedMarketplaceFixtures(
   prisma: PrismaClient,
-  { suffix, password }: MarketplaceFixtureInput,
+  { suffix, password, coordinates }: MarketplaceFixtureInput,
 ): Promise<MarketplaceFixtureResult> {
   isolated()
   if (!/^[a-z0-9-]+$/.test(suffix)) throw new Error('Identificador inválido.')
@@ -86,6 +86,7 @@ export async function seedMarketplaceFixtures(
           city: city,
           state: 'PR',
           zipCode: '80010-000',
+          ...coordinates,
         },
       },
     },
@@ -109,6 +110,9 @@ export async function seedMarketplaceFixtures(
           city,
           state: 'PR',
           zipCode: '80010000',
+          ...(coordinates
+            ? { latitude: coordinates.latitude + 0.01, longitude: coordinates.longitude + 0.01 }
+            : {}),
         },
       },
     },
@@ -128,10 +132,13 @@ export async function seedMarketplaceFixtures(
         create: {
           street: 'Rua do Teste',
           number: '44',
-          neighborhood: 'Centro',
+          neighborhood: 'Área Rural',
           city,
           state: 'PR',
           zipCode: '80010000',
+          ...(coordinates
+            ? { latitude: coordinates.latitude + 0.02, longitude: coordinates.longitude + 0.02 }
+            : {}),
         },
       },
     },
@@ -147,6 +154,7 @@ export async function seedMarketplaceFixtures(
     dualPropertyTitle: dual.title,
     city,
     brokerName,
+    brokerEmail: broker.email,
     ownerEmail,
   }
 }
@@ -177,9 +185,21 @@ export async function readMarketplaceInquiryEvidence(
     orderBy: { createdAt: 'desc' },
   })
   const latest = inquiries[0]
+  const leads = await prisma.lead.findMany({ where: { propertyId } })
 
   return {
     count: inquiries.length,
+    leadCount: leads.length,
+    linked: Boolean(
+      latest &&
+      leads.some(
+        (lead) =>
+          lead.opportunityId === latest.id &&
+          lead.responsibleId === latest.responsibleId &&
+          lead.tenantId === latest.tenantId &&
+          lead.stage === 'PROPOSAL',
+      ),
+    ),
     status: latest?.status ?? null,
     leadName: latest?.interestedName ?? null,
     leadEmail: latest?.interestedEmail ?? null,

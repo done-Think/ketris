@@ -116,8 +116,8 @@ async function toAgencyProfile(tenant: TenantWithProfileRow): Promise<AgencyProf
     coverage: profile?.coverage ?? [],
     segments: profile?.segments ?? [],
     yearsInMarket: profile?.yearsInMarket ?? null,
-    primaryColor: tenant.primaryColor,
-    secondaryColor: tenant.secondaryColor,
+    primaryColor: profile?.primaryColor ?? tenant.primaryColor,
+    secondaryColor: profile?.secondaryColor ?? tenant.secondaryColor,
     backgroundColor: profile?.backgroundColor ?? null,
     logoUrl: profile?.logoUrl ?? null,
     bannerUrl: profile?.bannerUrl ?? null,
@@ -130,6 +130,28 @@ async function toAgencyProfile(tenant: TenantWithProfileRow): Promise<AgencyProf
 }
 
 export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
+  async findForEditor(tenantId: string, actorId: string): Promise<AgencyProfile | null> {
+    const [tenant, owner] = await Promise.all([
+      prisma.tenant.findUnique({ where: { id: tenantId }, include: tenantWithProfileInclude }),
+      prisma.user.findFirst({
+        where: { id: actorId, tenantId, role: 'OWNER', active: true },
+        select: { email: true, emailVerifiedAt: true, phone: true, avatarUrl: true, creci: true },
+      }),
+    ])
+
+    if (!tenant || !owner) return null
+
+    const profile = await toAgencyProfile(tenant)
+
+    return {
+      ...profile,
+      email: profile.email ?? (owner.emailVerifiedAt ? owner.email : null),
+      phone: profile.phone ?? owner.phone,
+      logoUrl: profile.logoUrl ?? owner.avatarUrl,
+      legalCreci: profile.legalCreci ?? owner.creci,
+    }
+  }
+
   async findByTenantId(tenantId: string): Promise<AgencyProfile | null> {
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
@@ -249,6 +271,8 @@ export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
       segments: draft.segments,
       yearsInMarket: draft.yearsInMarket,
       backgroundColor: draft.backgroundColor,
+      primaryColor: draft.primaryColor,
+      secondaryColor: draft.secondaryColor,
       logoUrl: draft.logoUrl,
       bannerUrl: draft.bannerUrl,
     }

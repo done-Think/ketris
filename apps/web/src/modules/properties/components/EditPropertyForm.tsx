@@ -66,10 +66,15 @@ export function EditPropertyForm({ property }: EditPropertyFormProps) {
   const handleEditSubmit = async (values: CreateDashboardPropertyFormValues) => {
     if (isUploading) return
     try {
-      await updateProperty.mutateAsync(
+      const updatedProperty = await updateProperty.mutateAsync(
         toPropertyPayload(values, { existingAddress: property.address, canChooseOwner }),
       )
       enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
+      if (
+        updatedProperty.address &&
+        (updatedProperty.address.latitude === null || updatedProperty.address.longitude === null)
+      )
+        enqueueSnackbar(stepsT('addressLocationUnavailable'), { variant: 'warning' })
       router.push({ pathname: '/dashboard/properties/[id]', params: { id: propertyId } })
     } catch (error) {
       enqueueSnackbar(extractErrorMessage(error, t('updateError')), { variant: 'error' })
@@ -89,10 +94,6 @@ export function EditPropertyForm({ property }: EditPropertyFormProps) {
       <CreatePropertyStepFields
         getValues={getValues}
         setValue={setValue}
-        onAddressChange={() => {
-          setValue('latitude', null, { shouldDirty: true })
-          setValue('longitude', null, { shouldDirty: true })
-        }}
         control={control}
         activeStepKey={activeStep.key}
         activeStepLabel={stepsT(`steps.${activeStep.key}`)}

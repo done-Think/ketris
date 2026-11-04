@@ -23,6 +23,7 @@ import type { AppShellSidebarProps } from '@shared/types/app-shell'
 
 import { appShellNavigationItems } from './app-shell-navigation-items'
 import { SidebarCollapseButton } from './SidebarCollapseButton'
+import { AppShellNavigationGroup } from './AppShellNavigationGroup'
 
 import { sidebarCollapsedWidth, sidebarExpandedWidth } from '@shared/config/app-shell-layout'
 
@@ -70,10 +71,22 @@ export function AppShellSidebar({
                   sx={styles.skeleton(collapsed)}
                 />
               ))
-            : visibleItems.map(({ labelKey, href, icon: Icon }) => {
+            : visibleItems.map((item) => {
+                const { labelKey, href, icon: Icon } = item
                 const targetPath = href.split('?')[0]
                 const active = targetPath === activeTargetPath
                 const label = t(labelKey)
+
+                if (item.children?.length)
+                  return (
+                    <AppShellNavigationGroup
+                      key={labelKey}
+                      item={item}
+                      collapsed={collapsed}
+                      active={active}
+                      onNavigate={onNavItemClick}
+                    />
+                  )
 
                 return (
                   <Tooltip

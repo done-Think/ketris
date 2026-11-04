@@ -60,9 +60,7 @@ export function PriceRangeMenu({
           value={draft[1] ?? ''}
           placeholder={t('noMaxPrice')}
           error={!valid}
-          helperText={
-            !valid ? t('errors.priceInvalid') : draft[1] === null ? t('noMaxPrice') : undefined
-          }
+          helperText={!valid ? t('errors.priceInvalid') : undefined}
           onChange={(event) =>
             setDraft([draft[0], event.target.value === '' ? null : Number(event.target.value)])
           }

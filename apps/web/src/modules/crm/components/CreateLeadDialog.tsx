@@ -80,12 +80,14 @@ function CreateLeadForm({ onClose, open }: CreateLeadDialogProps) {
   }
 
   const handleCreateLead = (values: CreateLeadFormValues) => {
+    if (!values.property) return
     createLead.mutate(
       {
         name: values.name,
         phone: values.phone,
         email: values.email || null,
-        interest: values.interest,
+        interest: values.property.title,
+        propertyId: values.property.id,
         budget: values.budget,
         source: values.source,
         notes: values.notes || null,
@@ -96,7 +98,12 @@ function CreateLeadForm({ onClose, open }: CreateLeadDialogProps) {
           handleClose()
         },
         onError: (error) => {
-          enqueueSnackbar(extractErrorMessage(error, t('create.error')), { variant: 'error' })
+          enqueueSnackbar(
+            extractErrorMessage(error, t('create.error'), {
+              OPPORTUNITY_PROPERTY_NOT_FOUND: t('create.errors.propertyUnavailable'),
+            }),
+            { variant: 'error' },
+          )
         },
       },
     )

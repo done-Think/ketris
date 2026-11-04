@@ -5,7 +5,7 @@ import type {
   LeadDTO,
   PatchLeadRequestDTO,
 } from '@shared/types/generated/crm/dto'
-import type { Control } from 'react-hook-form'
+import type { Control, DeepPartialSkipArrayKey } from 'react-hook-form'
 import type { z } from 'zod'
 
 import type { createConvertLeadSchema } from '../schemas/convert-lead-schema'
@@ -158,7 +158,7 @@ export type CreateLeadInterestStepProps = {
 
 export type CreateLeadReviewStepProps = {
   control: Control<CreateLeadFormValues>
-  formValues: Partial<CreateLeadFormValues>
+  formValues: DeepPartialSkipArrayKey<CreateLeadFormValues>
 }
 
 export type LeadContactDialogProps = {

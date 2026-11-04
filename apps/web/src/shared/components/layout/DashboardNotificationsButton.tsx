@@ -5,12 +5,14 @@ import { styles } from '@shared/styles/dashboard-notifications-button.styles'
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded'
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded'
 import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded'
+import FaceRetouchingNaturalOutlinedIcon from '@mui/icons-material/FaceRetouchingNaturalOutlined'
 import { Badge, Box, Divider, IconButton, Popover, Stack, Tooltip, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 import { useRouter } from '@/i18n/navigation'
 import { useDashboardAgendaNotifications } from '@shared/hooks/use-dashboard-agenda-notifications'
+import { useDashboardFaceCheckNotifications } from '@shared/hooks/use-dashboard-face-check-notifications'
 
 import type {
   DashboardNotificationItem,
@@ -20,17 +22,17 @@ import type {
 const notificationKindIcons = {
   todayVisit: EventAvailableRoundedIcon,
   assignedEvent: PersonAddAlt1RoundedIcon,
+  faceCheckVerification: FaceRetouchingNaturalOutlinedIcon,
 }
 
-export function DashboardNotificationsButton({
+function NotificationsView({
   placement = 'pageHeader',
   notifications,
   onNotificationSelect,
 }: DashboardNotificationsButtonProps) {
   const router = useRouter()
   const t = useTranslations('dashboard.notificationsCenter')
-  const agendaNotifications = useDashboardAgendaNotifications()
-  const notificationItems = notifications ?? agendaNotifications
+  const notificationItems = notifications ?? []
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const isOpen = Boolean(anchorEl)
 
@@ -114,5 +116,24 @@ export function DashboardNotificationsButton({
         </Stack>
       </Popover>
     </>
+  )
+}
+
+function DefaultNotifications(props: Omit<DashboardNotificationsButtonProps, 'notifications'>) {
+  const faceCheckNotifications = useDashboardFaceCheckNotifications()
+  const agendaNotifications = useDashboardAgendaNotifications()
+  return (
+    <NotificationsView
+      {...props}
+      notifications={[...faceCheckNotifications, ...agendaNotifications]}
+    />
+  )
+}
+
+export function DashboardNotificationsButton(props: DashboardNotificationsButtonProps) {
+  return props.notifications === undefined ? (
+    <DefaultNotifications {...props} />
+  ) : (
+    <NotificationsView {...props} />
   )
 }

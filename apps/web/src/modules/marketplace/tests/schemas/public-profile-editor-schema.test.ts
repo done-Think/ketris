@@ -26,6 +26,20 @@ describe('publicProfileEditorSchema', () => {
     expect(publicProfileEditorSchema.safeParse(validDraft).success).toBe(true)
   })
 
+  it('allows publication with a broad region and no neighborhoods', () => {
+    const schema = createPublicProfileEditorSchema((key) => key, { requirePublishFields: true })
+    const values = {
+      ...validDraft,
+      headline: 'Especialista no Sul de Minas',
+      region: 'Sul de Minas',
+      neighborhoods: '',
+      avatarUrl: '/api/marketplace/media/profiles/brokers/user-1/avatar.png',
+      bannerUrl: '/api/marketplace/media/profiles/brokers/user-1/banner.png',
+    }
+    expect(schema.safeParse(values).success).toBe(true)
+    expect(schema.safeParse({ ...values, region: '' }).success).toBe(false)
+  })
+
   it('aceita campos opcionais em branco', () => {
     const result = publicProfileEditorSchema.safeParse({
       ...validDraft,

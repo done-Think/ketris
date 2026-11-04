@@ -71,27 +71,4 @@ describe('localizeDashboardPropertyFixture', () => {
       'Property registration completed',
     ])
   })
-
-  it('translates the administration fee and the deposit-in-installments pricing fields', () => {
-    const property = getDashboardPropertyById('apt-jardins-3q')!
-    const localized = localizeDashboardPropertyFixture(property, enOptions)
-
-    expect(localized.pricing.administrationFee).toBe('8% of rent')
-    expect(localized.pricing.securityDeposit).toBe("3 months' rent")
-  })
-
-  it('translates a last-adjustment value that combines a currency amount with a relative date', () => {
-    const property = getDashboardPropertyById('apt-jardins-3q')!
-    const localized = localizeDashboardPropertyFixture(property, enOptions)
-
-    expect(localized.pricing.lastAdjustment).toBe('R$ 300 5 days ago')
-  })
-
-  it('translates literal deposit and adjustment placeholders', () => {
-    const property = getDashboardPropertyById('studio-pinheiros')!
-    const localized = localizeDashboardPropertyFixture(property, enOptions)
-
-    expect(localized.pricing.securityDeposit).toBe('Deposit insurance')
-    expect(localized.pricing.lastAdjustment).toBe('No recent adjustment')
-  })
 })

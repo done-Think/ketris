@@ -41,6 +41,7 @@ export const registerRequestSchema = z
         ...registerBaseFields,
         profile: z.enum(['owner', 'agency', 'developer']),
         companyName: z.string().trim().min(1).optional(),
+        creci: z.string().trim().min(1).max(32).optional(),
       })
       .strict(),
     z

@@ -20,6 +20,25 @@ data "aws_iam_policy_document" "app_storage" {
     actions   = ["s3:PutObject", "s3:GetObject"]
     resources = ["${aws_s3_bucket.uploads.arn}/*"]
   }
+
+  # Face Check must erase previous versions as well as current objects. Deletion
+  # remains restricted to this prefix; contract/property uploads are unaffected.
+  statement {
+    sid       = "ListFaceCheckVersions"
+    actions   = ["s3:ListBucketVersions"]
+    resources = [aws_s3_bucket.uploads.arn]
+    condition {
+      test     = "StringLike"
+      variable = "s3:prefix"
+      values   = ["face_check/*"]
+    }
+  }
+
+  statement {
+    sid       = "DeleteFaceCheckVersions"
+    actions   = ["s3:DeleteObject", "s3:DeleteObjectVersion"]
+    resources = ["${aws_s3_bucket.uploads.arn}/face_check/*"]
+  }
 }
 
 resource "aws_iam_user_policy" "app_storage" {

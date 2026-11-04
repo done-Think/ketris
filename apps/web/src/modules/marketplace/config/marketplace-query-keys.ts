@@ -1,10 +1,12 @@
 import type { DirectoryListFilters } from '../types/directory'
 import type { SearchPropertiesFilters } from '../types/public-property'
 import { defaultHomePurpose } from './home'
+import type { PublicProfileKind } from '../types/profile-address'
 
 export const marketplaceQueryKeys = {
   all: ['marketplace'] as const,
   stats: () => [...marketplaceQueryKeys.all, 'stats'] as const,
+  viewerLocation: () => [...marketplaceQueryKeys.all, 'viewer-location'] as const,
   properties: () => [...marketplaceQueryKeys.all, 'properties'] as const,
   search: (filters: SearchPropertiesFilters) =>
     [...marketplaceQueryKeys.properties(), 'search', filters] as const,
@@ -22,6 +24,10 @@ export const marketplaceQueryKeys = {
   own: (actorKey: string) => [...marketplaceQueryKeys.all, 'own', actorKey] as const,
   ownBroker: (actorKey: string) => [...marketplaceQueryKeys.own(actorKey), 'broker'] as const,
   ownAgency: (actorKey: string) => [...marketplaceQueryKeys.own(actorKey), 'agency'] as const,
+  ownAddress: (actorKey: string, kind: PublicProfileKind) =>
+    [...marketplaceQueryKeys.own(actorKey), 'address', kind] as const,
+  addressAvailability: (actorKey: string, kind: PublicProfileKind, handle: string | null) =>
+    [...marketplaceQueryKeys.ownAddress(actorKey, kind), 'availability', handle] as const,
   tenantAgents: (actorKey: string) =>
     [...marketplaceQueryKeys.own(actorKey), 'tenant-agents'] as const,
 }

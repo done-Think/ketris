@@ -20,8 +20,6 @@ export function createDashboardPropertySchema(
     | 'descriptionRequired'
     | 'descriptionTooLong'
     | 'integerRequired'
-    | 'latitudeInvalid'
-    | 'longitudeInvalid'
     | 'mainValueRequired'
     | 'negotiationTermRequired'
     | 'negotiationTermTooLong'
@@ -57,26 +55,6 @@ export function createDashboardPropertySchema(
         .nullable()
         .default(null),
       complement: z.string().default(''),
-      latitude: z
-        .preprocess(
-          (value) => (value === '' ? null : value),
-          z.coerce
-            .number({ invalid_type_error: t('latitudeInvalid') })
-            .min(-90, t('latitudeInvalid'))
-            .max(90, t('latitudeInvalid'))
-            .nullable(),
-        )
-        .default(null),
-      longitude: z
-        .preprocess(
-          (value) => (value === '' ? null : value),
-          z.coerce
-            .number({ invalid_type_error: t('longitudeInvalid') })
-            .min(-180, t('longitudeInvalid'))
-            .max(180, t('longitudeInvalid'))
-            .nullable(),
-        )
-        .default(null),
       title: z.string().min(3, t('titleRequired')).max(200, t('titleTooLong')),
       description: z.string().min(10, t('descriptionRequired')).max(10000, t('descriptionTooLong')),
       street: z.string().min(3, t('streetRequired')),
@@ -135,8 +113,6 @@ export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormVa
   ownerUserId: '',
   ownerContact: null,
   complement: '',
-  latitude: null,
-  longitude: null,
   title: '',
   description: '',
   street: '',

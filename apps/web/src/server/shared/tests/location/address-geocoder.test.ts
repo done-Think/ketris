@@ -30,7 +30,7 @@ const result = {
   },
 }
 function setup(payload: unknown = [result]) {
-  const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(payload)))
+  const fetch = vi.fn().mockImplementation(async () => new Response(JSON.stringify(payload)))
   vi.stubGlobal('fetch', fetch)
   const quota = { consume: vi.fn().mockResolvedValue({ allowed: true }) }
   const geocoder = new NominatimAddressGeocoder(
@@ -47,6 +47,21 @@ afterEach(() => {
 })
 
 describe('address geocoding', () => {
+  it('falls back to the full address and neighborhood, respecting the shared quota for each attempt', async () => {
+    const { fetch, quota, geocoder } = setup()
+    fetch
+      .mockResolvedValueOnce(new Response('[]'))
+      .mockResolvedValueOnce(new Response(JSON.stringify([result])))
+    expect(await geocoder.locate(address)).toEqual({ latitude: -22.43, longitude: -45.45 })
+    expect(quota.consume).toHaveBeenCalledTimes(2)
+    const url = fetch.mock.calls[1][0] as URL
+    expect(url.searchParams.has('street')).toBe(false)
+    expect(url.searchParams.get('q')).toBe(
+      'Rua Padre Júlio Chevalier, 35, Anhumas, Itajubá, Minas Gerais, Brasil',
+    )
+    await geocoder.locate(address)
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
   it('queries street and number with city, state and country restrictions on the server', async () => {
     const { fetch, geocoder } = setup()
     await expect(geocoder.locate(address)).resolves.toEqual({ latitude: -22.43, longitude: -45.45 })
@@ -141,6 +156,13 @@ describe('address geocoding', () => {
     const previous = { ...address, latitude: -22.44, longitude: -45.44 }
     const current = { ...previous, zipCode: '37500000' }
     expect(await resolveAddressCoordinates(current, geocoder, previous)).toEqual(current)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('preserves saved coordinates for an unchanged address when the form omits them', async () => {
+    const { fetch, geocoder } = setup([])
+    const previous = { ...address, latitude: -22.44, longitude: -45.44 }
+    expect(await resolveAddressCoordinates(address, geocoder, previous)).toEqual(previous)
     expect(fetch).not.toHaveBeenCalled()
   })
 

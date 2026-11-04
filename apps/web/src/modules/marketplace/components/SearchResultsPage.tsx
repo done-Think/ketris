@@ -1,6 +1,7 @@
 'use client'
 
-import { Alert, Box, Button } from '@mui/material'
+import { Alert, Box, Button, Stack, Typography } from '@mui/material'
+import MyLocationRoundedIcon from '@mui/icons-material/MyLocationRounded'
 import { useTranslations } from 'next-intl'
 
 import { SiteFooter } from '@shared/components/layout'
@@ -8,6 +9,7 @@ import { SiteFooter } from '@shared/components/layout'
 import { getMarketplaceNavigationItemIdByPurpose } from '../config/navigation'
 import { useMarketplaceNavigation } from '../hooks/use-marketplace-navigation'
 import { useSearchResults } from '../hooks/use-search-results'
+import { useBrowserLocation } from '../hooks/use-browser-location'
 import type { SearchResultsPageProps } from '../types/search'
 import { MarketplaceBreadcrumbs } from './MarketplaceBreadcrumbs'
 import { MarketplaceHeader } from './MarketplaceHeader'
@@ -26,7 +28,9 @@ export function SearchResultsPage(props: SearchResultsPageProps) {
   const t = useTranslations('marketplace')
   const errorT = useTranslations('marketplace.searchResults.error')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
-  const results = useSearchResults(props)
+  const location = useBrowserLocation(!props.initialCity?.trim() && !props.initialLocation?.trim())
+  const results = useSearchResults(props, location.data)
+  const locationT = useTranslations('marketplace.searchResults.location')
   const activeItemId = getMarketplaceNavigationItemIdByPurpose(purpose)
   const purposeLabel = purpose === 'comprar' ? t('navigation.buy') : t('navigation.rent')
 
@@ -43,6 +47,32 @@ export function SearchResultsPage(props: SearchResultsPageProps) {
             locationQuery={results.filters.location}
             setLocationQuery={results.setLocationQuery}
           />
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1}
+            alignItems={{ sm: 'center' }}
+            sx={styles.location}
+          >
+            <Button
+              startIcon={<MyLocationRoundedIcon />}
+              disabled={location.isFetching}
+              onClick={() => {
+                results.setLocationQuery('')
+                void location.refetch()
+              }}
+            >
+              {location.isFetching ? locationT('locating') : locationT('useLocation')}
+            </Button>
+            <Typography variant="body2" color="text.secondary" role="status">
+              {results.filters.location.trim()
+                ? locationT('manual')
+                : location.isError
+                  ? locationT('unavailable')
+                  : results.viewerLocation
+                    ? locationT(results.sortOption === 'relevancia' ? 'nearby' : 'located')
+                    : ''}
+            </Typography>
+          </Stack>
           <SearchResultsToolbar
             filtersControl={
               <SearchResultsFilterButton
@@ -85,6 +115,8 @@ export function SearchResultsPage(props: SearchResultsPageProps) {
         </Box>
 
         <SearchResultsMapPanel
+          locationUpdatedAt={location.dataUpdatedAt}
+          viewerLocation={results.viewerLocation}
           properties={results.paginatedResults}
           selectedPropertyId={results.selectedPropertyId}
           setSelectedPropertyId={results.setSelectedPropertyId}

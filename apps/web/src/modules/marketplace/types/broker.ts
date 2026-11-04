@@ -39,7 +39,9 @@ export type BrokerCardProps = BrokerProfile & {
 }
 
 export type BrokerPublicProfilePageProps = {
+  publicLinkEnabled?: boolean
   broker: BrokerProfile
+  publicHandle?: string
 }
 
 export type BrokerProfileHeroProps = {

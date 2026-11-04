@@ -5,4 +5,5 @@ build
 coverage
 cypress/videos
 cypress/screenshots
+public/face_check/pdf
 package-lock.json

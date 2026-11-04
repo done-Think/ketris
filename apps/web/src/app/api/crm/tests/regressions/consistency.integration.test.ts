@@ -8,7 +8,7 @@ import { PATCH as editContact } from '../../contacts/[id]/route'
 import { POST as createContact, GET as listContacts } from '../../contacts/route'
 import { POST as convertLead } from '../../leads/[id]/convert/route'
 import { PATCH as editLead } from '../../leads/[id]/route'
-import { GET as listLeads } from '../../leads/route'
+import { GET as listLeads, POST as createLead } from '../../leads/route'
 import {
   DELETE as deleteOpportunity,
   PATCH as editOpportunity,
@@ -86,6 +86,7 @@ describe('CRM consistency, pagination and authorization', () => {
   })
   afterEach(() => vi.restoreAllMocks())
   afterAll(async () => {
+    await prisma.lead.deleteMany({ where: { tenantId: { in: tenants } } })
     await prisma.contract.deleteMany({ where: { tenantId: { in: tenants } } })
     await prisma.opportunity.deleteMany({ where: { tenantId: { in: tenants } } })
     await prisma.property.deleteMany({ where: { tenantId: { in: tenants } } })
@@ -98,6 +99,52 @@ describe('CRM consistency, pagination and authorization', () => {
     leadEmail: randomUUID() + '@crm.test',
     proposedValue: 1800.45,
     ...extra,
+  })
+
+  it('lists and validates only available managed properties when creating leads', async () => {
+    const ids = [propertyId, otherPropertyId, foreignPropertyId]
+    await prisma.property.updateMany({ where: { id: { in: ids } }, data: { status: 'PUBLISHED' } })
+    const body = {
+      name: 'Selected property lead fixture',
+      phone: '(11) 99999-0000',
+      propertyId,
+      interest: 'Untrusted title',
+      budget: 'R$ 1.800,45',
+      source: 'OTHER',
+    }
+    try {
+      const page = await (
+        await listProperties(request(agentToken, 'GET', 'properties?status=PUBLISHED'))
+      ).json()
+      expect(page.properties.map((item: { id: string }) => item.id)).toEqual([propertyId])
+      const response = await createLead(request(ownerToken, 'POST', 'leads', body))
+      expect(response.status).toBe(201)
+      const { lead } = await response.json()
+      expect(lead).toMatchObject({
+        propertyId,
+        responsibleId: agentId,
+        interest: 'Apartamento não publicado',
+      })
+      for (const id of [otherPropertyId, foreignPropertyId]) {
+        const denied = await createLead(
+          request(agentToken, 'POST', 'leads', { ...body, propertyId: id }),
+        )
+        expect(denied.status).toBe(404)
+      }
+      for (const status of ['DRAFT', 'RENTED', 'SOLD', 'INACTIVE'] as const) {
+        await prisma.property.update({ where: { id: propertyId }, data: { status } })
+        const denied = await createLead(request(agentToken, 'POST', 'leads', body))
+        expect(denied.status).toBe(404)
+      }
+      const unavailable = await (
+        await listProperties(request(agentToken, 'GET', 'properties?status=PUBLISHED'))
+      ).json()
+      expect(unavailable.properties).toEqual([])
+      expect(await prisma.lead.count({ where: { name: body.name, tenantId } })).toBe(1)
+    } finally {
+      await prisma.lead.deleteMany({ where: { name: body.name, tenantId } })
+      await prisma.property.updateMany({ where: { id: { in: ids } }, data: { status: 'DRAFT' } })
+    }
   })
 
   it('keeps agent-created contacts visible without granting access to another agent', async () => {

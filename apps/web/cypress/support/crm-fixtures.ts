@@ -84,6 +84,17 @@ export async function seedCrmFixtures(
       status: 'DRAFT',
     },
   })
+  const availableProperty = await prisma.property.create({
+    data: {
+      tenantId: tenant.id,
+      responsibleId: agent.id,
+      title: 'Apartamento CRM disponível',
+      purpose: 'RENT',
+      type: 'APARTMENT',
+      price: 2000,
+      status: 'PUBLISHED',
+    },
+  })
   const foreignProperty = await prisma.property.create({
     data: {
       tenantId: foreignTenant.id,
@@ -177,12 +188,40 @@ export async function seedCrmFixtures(
     agentEmail: agent.email,
     propertyId: property.id,
     propertyTitle: property.title,
+    availablePropertyId: availableProperty.id,
+    availablePropertyTitle: availableProperty.title,
     contactId,
     contactName,
     opportunityId,
     linkedOpportunityId,
     foreignOpportunityId: foreignOpportunity.id,
   }
+}
+
+export async function seedCrmFaceCheckCandidates(
+  prisma: PrismaClient,
+  input: { tenantId: string; suffix: string; password: string },
+) {
+  await assertFixtureTenant(prisma, input.tenantId)
+  if (!/^[a-z0-9-]+$/.test(input.suffix)) throw new Error('Invalid fixture identifier.')
+  const passwordHash = await bcrypt.hash(input.password, 10)
+  const emails = [
+    `candidate-${input.suffix}@crm.example.test`,
+    `other-${input.suffix}@crm.example.test`,
+  ]
+  for (const email of emails)
+    await prisma.user.create({
+      data: {
+        tenantId: input.tenantId,
+        name: 'Face Check candidate',
+        email,
+        passwordHash,
+        role: 'RENTER',
+        emailVerifiedAt: new Date(),
+        membershipApprovedAt: new Date(),
+      },
+    })
+  return { email: emails[0], otherEmail: emails[1] }
 }
 export async function readCrmEvidence(
   prisma: PrismaClient,
@@ -212,6 +251,8 @@ export async function readCrmEvidence(
 export async function cleanupCrmFixtures(prisma: PrismaClient, tenantIds: string[]): Promise<null> {
   for (const tenantId of tenantIds) {
     await assertFixtureTenant(prisma, tenantId)
+    await prisma.faceCheckSession.deleteMany({ where: { tenantId } })
+    await prisma.lead.deleteMany({ where: { tenantId } })
     await prisma.opportunity.deleteMany({ where: { tenantId } })
     await prisma.property.deleteMany({ where: { tenantId } })
     await prisma.tenant.delete({ where: { id: tenantId } })

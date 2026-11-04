@@ -29,7 +29,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
             ...details,
             profile: body.profile,
             companyName: body.companyName,
-            ...(body.profile === 'broker' ? { creci: body.creci } : {}),
+            creci: body.creci,
           })
 
   const response = await startEmailVerification(

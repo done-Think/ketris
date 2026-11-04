@@ -92,14 +92,32 @@ describe('PublishBrokerProfileUseCase', () => {
     expect(deps.brokerProfileRepository.setStatus).not.toHaveBeenCalled()
   })
 
-  it('lança ProfilePublishValidationError quando faltam bairros ou especialidades', async () => {
-    const deps = createDeps(makeProfile({ neighborhoods: [], specialties: [] }))
+  it('lança ProfilePublishValidationError quando faltam especialidades', async () => {
+    const deps = createDeps(makeProfile({ specialties: [] }))
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
     await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
       ProfilePublishValidationError,
     )
     expect(deps.brokerProfileRepository.setStatus).not.toHaveBeenCalled()
+  })
+
+  it('publishes a broad service region without neighborhoods', async () => {
+    const deps = createDeps(makeProfile({ region: 'Sul de Minas', neighborhoods: [] }))
+    const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
+    expect(await useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).toMatchObject({
+      status: 'PUBLISHED',
+      region: 'Sul de Minas',
+      neighborhoods: [],
+    })
+  })
+
+  it('still requires a service region', async () => {
+    const deps = createDeps(makeProfile({ region: null, neighborhoods: [] }))
+    const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
+    await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
+      ProfilePublishValidationError,
+    )
   })
 
   it('lança ProfilePublishValidationError quando falta a foto de perfil ou a imagem de capa', async () => {

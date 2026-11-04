@@ -22,10 +22,61 @@ const created: Lead = {
 }
 
 describe('CreateLeadUseCase', () => {
+  it('uses the selected available property and its responsible agent instead of trusting the submitted title', async () => {
+    const create = vi.fn().mockResolvedValue(created)
+    const findAvailable = vi
+      .fn()
+      .mockResolvedValue({ id: 'property-1', title: 'Imóvel cadastrado', responsibleId: 'agent-1' })
+    const useCase = new CreateLeadUseCase({ create } as unknown as LeadRepository, {
+      findAvailable,
+    })
+    await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'owner-1',
+      actorRole: 'OWNER',
+      name: 'Interessado',
+      phone: '(11) 99999-0000',
+      propertyId: 'property-1',
+      interest: 'Título adulterado',
+      budget: 'Até R$ 3.000',
+      source: 'OTHER',
+    })
+    expect(findAvailable).toHaveBeenCalledWith('tenant-1', 'property-1', undefined)
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        propertyId: 'property-1',
+        interest: 'Imóvel cadastrado',
+        responsibleId: 'agent-1',
+      }),
+    )
+  })
+
+  it('restricts an agent lookup to their own available properties and rejects stale or inaccessible selections', async () => {
+    const create = vi.fn()
+    const findAvailable = vi.fn().mockResolvedValue(null)
+    const useCase = new CreateLeadUseCase({ create } as unknown as LeadRepository, {
+      findAvailable,
+    })
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'agent-1',
+        actorRole: 'AGENT',
+        name: 'Interessado',
+        phone: '(11) 99999-0000',
+        propertyId: 'property-2',
+        interest: 'Imóvel',
+        budget: 'Até R$ 3.000',
+        source: 'OTHER',
+      }),
+    ).rejects.toMatchObject({ code: 'OPPORTUNITY_PROPERTY_NOT_FOUND' })
+    expect(findAvailable).toHaveBeenCalledWith('tenant-1', 'property-2', 'agent-1')
+    expect(create).not.toHaveBeenCalled()
+  })
   it('cria o lead com o ator autenticado como responsável', async () => {
     const create = vi.fn().mockResolvedValue(created)
     const repository = { create } as unknown as LeadRepository
-    const useCase = new CreateLeadUseCase(repository)
+    const useCase = new CreateLeadUseCase(repository, { findAvailable: vi.fn() })
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
@@ -47,7 +98,7 @@ describe('CreateLeadUseCase', () => {
   it('bloqueia RENTER ao tentar criar um lead', async () => {
     const create = vi.fn()
     const repository = { create } as unknown as LeadRepository
-    const useCase = new CreateLeadUseCase(repository)
+    const useCase = new CreateLeadUseCase(repository, { findAvailable: vi.fn() })
 
     await expect(
       useCase.execute({

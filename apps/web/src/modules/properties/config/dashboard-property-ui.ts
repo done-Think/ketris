@@ -60,17 +60,7 @@ export const propertyFormStepFields: Record<
   Array<keyof CreateDashboardPropertyFormValues>
 > = {
   basic: ['type', 'purpose', 'title', 'description', 'ownerUserId'],
-  address: [
-    'street',
-    'number',
-    'complement',
-    'neighborhood',
-    'city',
-    'state',
-    'zipCode',
-    'latitude',
-    'longitude',
-  ],
+  address: ['street', 'number', 'complement', 'neighborhood', 'city', 'state', 'zipCode'],
   features: ['bedrooms', 'bathrooms', 'parkingSpaces', 'area', 'features'],
   media: ['media'],
   values: ['mainValue', 'rentalValue', 'condominium', 'propertyTax', 'negotiationTerm'],

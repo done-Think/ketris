@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { notFound } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
 import { getTranslations } from 'next-intl/server'
 
 import { getAgencyProfileHref, privateMetadata, publicMetadata } from '@/i18n/seo'
@@ -30,6 +31,10 @@ const getAgency = cache(async (slug: string, creci: string, locale: string) => {
   }
 })
 
+const getAddress = cache((id: string) =>
+  marketplaceContainer.profileAddressUseCase.findForProfile({ kind: 'agency', profileId: id }),
+)
+
 export async function generateMetadata({
   params,
 }: LocaleRoutePageProps<{ id: string; creci: string }>) {
@@ -44,8 +49,14 @@ export async function generateMetadata({
     }
   }
 
+  const address = await getAddress(agency.id)
   return {
-    ...publicMetadata(locale, getAgencyProfileHref(agency.name, agency.legalCreci, agency.id)),
+    ...publicMetadata(
+      locale,
+      address
+        ? { pathname: '/p/[handle]', params: { handle: address.handle } }
+        : getAgencyProfileHref(agency.name, agency.legalCreci, agency.id),
+    ),
     title: `Ketris | ${agency.name}`,
     description: t('details.agencyDescription', {
       name: agency.name,
@@ -62,6 +73,9 @@ export default async function AgencySlugPage({
   const agency = await getAgency(id, creci, locale)
 
   if (!agency) notFound()
+  const address = await getAddress(agency.id)
+  if (address)
+    redirect({ locale, href: { pathname: '/p/[handle]', params: { handle: address.handle } } })
 
   return <AgencyPublicProfilePage agency={agency} />
 }

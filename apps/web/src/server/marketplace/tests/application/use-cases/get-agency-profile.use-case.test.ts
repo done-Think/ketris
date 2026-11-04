@@ -32,6 +32,7 @@ const profile: AgencyProfile = {
 
 function createDeps(findPublishedById?: AgencyProfileRepository['findPublishedById']) {
   const agencyProfileRepository: AgencyProfileRepository = {
+    findForEditor: vi.fn().mockResolvedValue(null),
     findPublishedById: findPublishedById ?? vi.fn().mockResolvedValue(profile),
     findPublishedBySlug: vi.fn().mockResolvedValue(profile),
     listPublished: vi.fn(),

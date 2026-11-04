@@ -49,7 +49,14 @@ export class NominatimAddressGeocoder implements AddressGeocoder {
 
   async locate(address: GeocodingAddress): Promise<AddressCoordinates | null> {
     const key = JSON.stringify(
-      [address.street, address.number, address.city, address.state].map(normalized),
+      [
+        address.street,
+        address.number,
+        address.city,
+        address.state,
+        address.neighborhood ?? '',
+        address.zipCode?.replace(/\D/g, '') ?? '',
+      ].map(normalized),
     )
     const cached = this.cache.get(key)
     if (cached && cached.expiresAt > Date.now()) return cached.value
@@ -67,34 +74,63 @@ export class NominatimAddressGeocoder implements AddressGeocoder {
 
   private async lookup(address: GeocodingAddress, key: string): Promise<AddressCoordinates | null> {
     try {
-      // One shared bucket for all tenants, workers and instances. Never per user/IP.
-      const quota = await this.quota.consume({ key: 'application', policy: requestPolicy })
-      if (!quota.allowed) return null
-
-      const url = new URL(this.searchUrl)
-      url.searchParams.set('format', 'jsonv2')
-      url.searchParams.set('addressdetails', '1')
-      url.searchParams.set('limit', '3')
-      url.searchParams.set('countrycodes', 'br')
-      url.searchParams.set('street', `${address.number} ${address.street}`)
-      url.searchParams.set('city', address.city)
-      url.searchParams.set('state', brazilianStates[address.state.toUpperCase()] ?? address.state)
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': this.userAgent,
-          Accept: 'application/json',
-          'Accept-Language': 'pt-BR',
-        },
-        signal: AbortSignal.timeout(4000),
-        // Persistent Next Data Cache complements the process cache and coordinates saved on the property.
-        next: { revalidate: 86400 },
-      })
-      if (!response.ok) throw new Error(`Address geocoding returned HTTP ${response.status}.`)
-      const results = resultsSchema.parse(await response.json())
-      const result = results.find((candidate) => this.matchesAddress(candidate.address, address))
-      const value = result ? { latitude: result.lat, longitude: result.lon } : null
-      this.remember(key, value, value ? 86400000 : 900000)
-      return value
+      for (const freeForm of [false, true]) {
+        // Both strategies share the same bucket across tenants, workers and instances.
+        if (freeForm) await new Promise((resolve) => setTimeout(resolve, requestPolicy.windowMs))
+        let quota = await this.quota.consume({ key: 'application', policy: requestPolicy })
+        if (!quota.allowed && quota.retryAfter > 0 && quota.retryAfter <= 2) {
+          await new Promise((resolve) => setTimeout(resolve, quota.retryAfter * 1000))
+          quota = await this.quota.consume({ key: 'application', policy: requestPolicy })
+        }
+        if (!quota.allowed) return null
+        const url = new URL(this.searchUrl)
+        url.searchParams.set('format', 'jsonv2')
+        url.searchParams.set('addressdetails', '1')
+        url.searchParams.set('limit', '3')
+        url.searchParams.set('countrycodes', 'br')
+        if (freeForm) {
+          url.searchParams.set(
+            'q',
+            [
+              address.street,
+              address.number,
+              address.neighborhood,
+              address.city,
+              brazilianStates[address.state.toUpperCase()] ?? address.state,
+              'Brasil',
+            ]
+              .filter(Boolean)
+              .join(', '),
+          )
+        } else {
+          url.searchParams.set('street', `${address.number} ${address.street}`)
+          url.searchParams.set('city', address.city)
+          url.searchParams.set(
+            'state',
+            brazilianStates[address.state.toUpperCase()] ?? address.state,
+          )
+        }
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': this.userAgent,
+            Accept: 'application/json',
+            'Accept-Language': 'pt-BR',
+          },
+          signal: AbortSignal.timeout(4000),
+          // Persistent Next Data Cache complements the process cache and coordinates saved on the property.
+          next: { revalidate: 86400 },
+        })
+        if (!response.ok) throw new Error(`Address geocoding returned HTTP ${response.status}.`)
+        const results = resultsSchema.parse(await response.json())
+        const result = results.find((candidate) => this.matchesAddress(candidate.address, address))
+        if (result) {
+          const value = { latitude: result.lat, longitude: result.lon }
+          this.remember(key, value, 86400000)
+          return value
+        }
+      }
+      this.remember(key, null, 900000)
+      return null
     } catch (error) {
       captureException(error)
       this.remember(key, null, 10000)

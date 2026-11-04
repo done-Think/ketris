@@ -6,6 +6,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
+import { LogoutToMarketplaceContext } from '@shared/lib/auth/logout-to-marketplace-context'
+
+vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
+  useDashboardAgendaNotifications: () => [],
+}))
+vi.mock('@shared/hooks/use-dashboard-face-check-notifications', () => ({
+  useDashboardFaceCheckNotifications: () => [],
+}))
 
 import { MarketplaceHeader } from '../../components/MarketplaceHeader'
 
@@ -57,6 +65,62 @@ describe('MarketplaceHeader', () => {
     vi.clearAllMocks()
   })
 
+  it('shows the actionable shared bell for an authenticated tenant renter', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { id: 'renter', name: 'Renter' },
+        scope: 'tenant',
+        tenantId: 'tenant',
+        role: 'RENTER',
+        expires: '2099-01-01T00:00:00Z',
+      },
+      status: 'authenticated',
+      update: vi.fn(),
+    })
+    renderMarketplaceHeader()
+    expect(screen.getByRole('button', { name: 'Abrir notificações' })).toBeVisible()
+  })
+
+  it('does not expose the tenant notification bell for a platform session', () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { id: 'admin', name: 'Admin' },
+        scope: 'platform',
+        expires: '2099-01-01T00:00:00Z',
+      },
+      status: 'authenticated',
+      update: vi.fn(),
+    })
+    renderMarketplaceHeader()
+    expect(screen.queryByRole('button', { name: 'Abrir notificações' })).not.toBeInTheDocument()
+  })
+
+  it('delegates logout to the enclosing dashboard when the header is inside a profile preview', async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: {
+        user: { id: 'user-1', name: 'Maria Silva', email: 'maria@example.com' },
+        expires: '2099-01-01T00:00:00Z',
+      },
+      status: 'authenticated',
+      update: vi.fn(),
+    })
+    const logout = vi.fn().mockResolvedValue(undefined)
+    render(
+      <ThemeProvider theme={theme}>
+        <LogoutToMarketplaceContext.Provider value={logout}>
+          <MarketplaceHeader activeItemId="brokers" />
+        </LogoutToMarketplaceContext.Provider>
+      </ThemeProvider>,
+    )
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Abrir perfil' }))
+    await user.click(screen.getByRole('button', { name: /sair/i }))
+    expect(logout).toHaveBeenCalledOnce()
+    expect(clearClientSession).not.toHaveBeenCalled()
+    expect(routerMock.replace).not.toHaveBeenCalled()
+    expect(routerMock.refresh).not.toHaveBeenCalled()
+  })
+
   it('sem sessão: não mostra menu de perfil e deixa o Entrar como último item', () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
@@ -66,7 +130,7 @@ describe('MarketplaceHeader', () => {
     renderMarketplaceHeader()
 
     expect(screen.queryByRole('button', { name: 'Abrir perfil' })).not.toBeInTheDocument()
-    expect(screen.queryByLabelText('notificações')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Abrir notificações')).not.toBeInTheDocument()
     expect(screen.getAllByText('BR')[0]).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'Anunciar Imóvel' })[0]).toHaveAttribute(
       'href',
@@ -97,14 +161,19 @@ describe('MarketplaceHeader', () => {
   it('com sessão: mostra o avatar com dados reais e abre o dropdown com nome/e-mail da sessão', async () => {
     const user = userEvent.setup()
     vi.mocked(useSession).mockReturnValue({
-      data: { user: { name: 'Maria Silva', email: 'maria@example.com' } },
+      data: {
+        user: { id: 'candidate', name: 'Maria Silva', email: 'maria@example.com' },
+        scope: 'tenant',
+        tenantId: 'tenant',
+        role: 'AGENT',
+      },
       status: 'authenticated',
     } as unknown as ReturnType<typeof useSession>)
 
     renderMarketplaceHeader()
 
     expect(screen.queryByRole('link', { name: 'Entrar' })).not.toBeInTheDocument()
-    expect(screen.getByLabelText('notificações')).toBeInTheDocument()
+    expect(screen.getByLabelText('Abrir notificações')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Abrir perfil' })).toHaveTextContent('MS')
     expect(screen.getAllByRole('link', { name: 'Anunciar Imóvel' })[0]).toHaveAttribute(
       'href',

@@ -8,10 +8,18 @@ export function toDashboardLead(
   locale?: AppLocale,
   format?: CrmFormatters,
 ): DashboardLead {
+  const canonicalBudget =
+    lead.source === 'MARKETPLACE' && lead.opportunityId
+      ? /^R\$\s*([\d.]+),(\d{2})$/.exec(lead.budget)
+      : null
+  const amount = canonicalBudget
+    ? Number(canonicalBudget[1].replaceAll('.', '') + '.' + canonicalBudget[2])
+    : null
   return {
     id: lead.id,
     name: lead.name,
-    budget: lead.budget,
+    budget:
+      amount !== null && Number.isFinite(amount) && format ? format.money(amount) : lead.budget,
     phone: lead.phone,
     email: lead.email ?? '',
     lastContact: format?.relative(lead.updatedAt) ?? formatLeadRelativeDate(lead.updatedAt, locale),

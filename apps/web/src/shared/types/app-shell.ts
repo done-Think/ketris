@@ -17,6 +17,10 @@ export type AppShellNavHref =
   | '/dashboard/agenda'
   | '/dashboard/finance'
   | '/dashboard/finance/charges'
+  | '/dashboard/face_check'
+  | '/dashboard/face_check/sessions'
+  | '/dashboard/face_check/settings'
+  | '/dashboard/face_check/my-verifications'
   | '/dashboard/maintenance'
 
 export type AppShellNavItem = {
@@ -24,11 +28,31 @@ export type AppShellNavItem = {
   href: AppShellNavHref
   icon: SvgIconComponent
   roles?: readonly UserRole[]
+  children?: readonly AppShellNavChild[]
+}
+
+export type AppShellNavChild = {
+  labelKey: TranslationKey<'common.appShell'>
+  href: AppShellNavHref
+  icon: SvgIconComponent
+  query?: Readonly<Record<string, string>>
+}
+
+export type AppShellNavigationGroupProps = {
+  item: AppShellNavItem
+  collapsed: boolean
+  active: boolean
+  onNavigate: () => void
 }
 
 export type AppShellProps = {
   children: ReactNode
   allowLocalDashboardPreview?: boolean
+}
+
+export type LogoutTransitionProps = {
+  hasError: boolean
+  onRetry: () => void
 }
 
 export type AppShellSidebarProps = {

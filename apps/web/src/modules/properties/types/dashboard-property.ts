@@ -79,16 +79,7 @@ export type DashboardProperty = {
     sale: string
     condominium: string
     propertyTax: string
-    administrationFee: string
-    securityDeposit: string
-    lastAdjustment: string
   }
-  participants: Array<{
-    name: string
-    role: string
-    initials: string
-    imageUrl?: string
-  }>
   activityHistory: Array<{
     label: string
     date: string
@@ -142,7 +133,6 @@ export type CreatePropertyStepsNavProps = {
 export type CreatePropertyStepFieldsProps = {
   getValues: UseFormGetValues<CreateDashboardPropertyFormValues>
   setValue: UseFormSetValue<CreateDashboardPropertyFormValues>
-  onAddressChange: () => void
   control: Control<CreateDashboardPropertyFormValues>
   activeStepKey: CreatePropertyStepKey
   activeStepLabel: string
@@ -156,7 +146,6 @@ export type CreatePropertyBasicStepFieldsProps = {
 export type CreatePropertyAddressStepFieldsProps = {
   getValues: UseFormGetValues<CreateDashboardPropertyFormValues>
   setValue: UseFormSetValue<CreateDashboardPropertyFormValues>
-  onAddressChange: () => void
   control: Control<CreateDashboardPropertyFormValues>
 }
 
@@ -287,6 +276,11 @@ export type PropertyDetailMainPanelProps = {
 
 export type PropertyDetailSidebarProps = {
   property: DashboardProperty
+}
+
+export type PropertyContractParticipantsProps = {
+  propertyId: string
+  contractId: string
 }
 
 export type PropertyDetailPanelProps = {

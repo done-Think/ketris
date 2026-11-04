@@ -54,6 +54,7 @@ export const crmPropertyDetailSchema = crmPropertySummarySchema.extend({
 
 export const crmPropertyQuerySchema = crmListQuerySchema
   .pick({ q: true, page: true, pageSize: true })
+  .extend({ status: z.enum(['DRAFT', 'PUBLISHED', 'RENTED', 'SOLD', 'INACTIVE']).optional() })
   .strict()
 export const crmPropertyPageSchema = z.object({
   properties: z.array(crmPropertySummarySchema),

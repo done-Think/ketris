@@ -5,6 +5,7 @@ import type { z } from 'zod'
 import type { LocalizedHref } from '@shared/types/localized-href'
 import type { useMarketplaceSearch } from '../hooks/use-marketplace-search'
 import type { PropertyCardData } from '@shared/types'
+import type { MapLocation } from './map-location'
 import type { searchOptions } from '../config/search-filters'
 import type {
   createMarketplaceSearchFormSchema,
@@ -38,6 +39,7 @@ export type SearchResultsFiltersFormValues = z.infer<
 
 export type SearchResultsFilters = SearchResultsFiltersFormValues & {
   location: string
+  city: string | null
   minPrice: number | null
 }
 
@@ -55,6 +57,7 @@ export type SearchResultsViewModeScope = 'rent' | 'buy' | 'brokers' | 'agencies'
 
 export type SearchResultsPageProps = {
   purpose: SearchResultPurpose
+  initialCity?: string
   initialLocation?: string
   initialPropertyType?: SearchResultsFiltersFormValues['propertyType']
   initialPriceRange?: { min: number | null; max: number | null }
@@ -62,6 +65,7 @@ export type SearchResultsPageProps = {
 
 export type SearchResultsRoutePageProps = {
   searchParams?: {
+    city?: string
     location?: string
     purpose?: string
     propertyType?: string
@@ -94,6 +98,8 @@ export type SearchResultsFilterFieldsProps = {
 }
 
 export type SearchResultsMapProps = {
+  locationUpdatedAt?: number
+  viewerLocation?: MapLocation
   properties: SearchResultProperty[]
   selectedPropertyId: string
   onSelectProperty: (propertyId: string) => void
@@ -101,6 +107,8 @@ export type SearchResultsMapProps = {
 }
 
 export type SearchResultsMapPanelProps = {
+  locationUpdatedAt?: number
+  viewerLocation?: MapLocation
   properties: SearchResultProperty[]
   selectedPropertyId: string
   setSelectedPropertyId: (propertyId: string) => void

@@ -20,7 +20,9 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import { getPathname } from '@/i18n/navigation'
+import { defaultLocale, isAppLocale } from '@/i18n/routing'
 
 import { leadStageOptions } from '../config/lead-creation'
 import type { LeadContactDialogProps } from '../types/lead'
@@ -48,6 +50,8 @@ export function LeadContactDialog({
 }: LeadContactDialogProps) {
   const t = useTranslations('crm.leads.contact')
   const tFilters = useTranslations('crm.leads.filters')
+  const requestedLocale = useLocale()
+  const locale = isAppLocale(requestedLocale) ? requestedLocale : defaultLocale
 
   if (!lead) return null
 
@@ -103,6 +107,7 @@ export function LeadContactDialog({
             <Button
               component="a"
               href={`tel:${getPhoneDigits(lead.phone)}`}
+              disabled={!getPhoneDigits(lead.phone)}
               variant="contained"
               fullWidth
               startIcon={<PhoneRoundedIcon sx={crmStyles.phoneRoundedIconSx} />}
@@ -113,6 +118,7 @@ export function LeadContactDialog({
             <Button
               component="a"
               href={`mailto:${lead.email}`}
+              disabled={!lead.email}
               variant="outlined"
               fullWidth
               startIcon={<EmailRoundedIcon sx={crmStyles.phoneRoundedIconSx} />}
@@ -123,6 +129,7 @@ export function LeadContactDialog({
             <Button
               component="a"
               href={getWhatsAppUrl(lead.phone)}
+              disabled={!getPhoneDigits(lead.phone)}
               target="_blank"
               rel="noreferrer"
               variant="outlined"
@@ -140,15 +147,28 @@ export function LeadContactDialog({
         <Button type="button" variant="outlined" color="secondary" onClick={onClose}>
           {t('cancel')}
         </Button>
-        <Button
-          type="button"
-          variant="contained"
-          disabled={isConverted}
-          startIcon={<SwapHorizRoundedIcon sx={crmStyles.phoneRoundedIconSx} />}
-          onClick={() => onConvertRequest(lead)}
-        >
-          {isConverted ? t('alreadyConverted') : t('convert')}
-        </Button>
+        {lead.opportunityId ? (
+          <Button
+            component="a"
+            href={getPathname({
+              locale,
+              href: { pathname: '/crm/opportunities/[id]', params: { id: lead.opportunityId } },
+            })}
+            variant="contained"
+            onClick={onClose}
+          >
+            {t('viewOpportunity')}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="contained"
+            startIcon={<SwapHorizRoundedIcon sx={crmStyles.phoneRoundedIconSx} />}
+            onClick={() => onConvertRequest(lead)}
+          >
+            {t('convert')}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   )

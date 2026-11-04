@@ -75,6 +75,19 @@ describe('useRegister', () => {
       expect.objectContaining({ agencyId: 'agency-1', creci: '12345-F' }),
     )
   })
+
+  it.each(['owner', 'agency', 'developer'] as const)(
+    'preserves an optional CRECI for %s',
+    async (profile) => {
+      const { result } = renderRegister()
+      await act(async () => {
+        await result.current.register({ ...values, profile, creci: ' MG-12345-J ' })
+      })
+      expect(registrationService.register).toHaveBeenCalledWith(
+        expect.objectContaining({ profile, creci: 'MG-12345-J' }),
+      )
+    },
+  )
   it('mostra aprovação pendente somente após a confirmação real, sem conceder sessão', async () => {
     const { result } = renderRegister()
     await act(async () => {

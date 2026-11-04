@@ -170,4 +170,23 @@ describe('public profile editor adapters', () => {
     })
     expect(agencyEditor.toDraft(agencyEditor.emptyValues).yearsInMarket).toBeNull()
   })
+
+  it('uses unsaved agency colors in both the request and preview', () => {
+    const values = {
+      ...agencyEditor.emptyValues,
+      displayName: 'Agency',
+      primaryColor: '#123456',
+      secondaryColor: '#654321',
+      backgroundColor: '#fedcba',
+    }
+    const colors = {
+      primaryColor: '#123456',
+      secondaryColor: '#654321',
+      backgroundColor: '#fedcba',
+    }
+    expect(agencyEditor.toDraft(values)).toMatchObject(colors)
+    expect(
+      agencyEditor.toPreviewProfile(values, null, 'pt-BR', (key) => key, 'Agency').brand,
+    ).toMatchObject(colors)
+  })
 })

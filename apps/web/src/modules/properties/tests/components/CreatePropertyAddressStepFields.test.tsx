@@ -29,20 +29,10 @@ function Wrapper({ zipCode = '' }: { zipCode?: string }) {
       zipCode,
       number: '35',
       complement: 'apto 101',
-      latitude: -23.55,
-      longitude: -46.63,
     },
   })
   return (
-    <CreatePropertyAddressStepFields
-      control={control}
-      setValue={setValue}
-      getValues={getValues}
-      onAddressChange={() => {
-        setValue('latitude', null)
-        setValue('longitude', null)
-      }}
-    />
+    <CreatePropertyAddressStepFields control={control} setValue={setValue} getValues={getValues} />
   )
 }
 function enterPostalCode(value: string) {
@@ -52,11 +42,11 @@ function enterPostalCode(value: string) {
 
 beforeEach(() => vi.resetAllMocks())
 describe('property address by postal code', () => {
-  it('formats a saved unmasked CEP without clearing the saved coordinates', () => {
+  it('formats a saved unmasked CEP and locates the address without manual coordinate fields', () => {
     render(<Wrapper zipCode="37502330" />)
     expect(screen.getByLabelText('CEP')).toHaveValue('37502-330')
-    expect(screen.getByLabelText('Latitude (opcional)')).toHaveValue(-23.55)
-    expect(screen.getByLabelText('Longitude (opcional)')).toHaveValue(-46.63)
+    expect(screen.queryByLabelText(/Latitude/)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/Longitude/)).not.toBeInTheDocument()
     expect(lookup).not.toHaveBeenCalled()
   })
 
@@ -74,7 +64,7 @@ describe('property address by postal code', () => {
     },
   )
 
-  it('fills the address on CEP blur while preserving number and complement and clearing stale coordinates', async () => {
+  it('fills the address on CEP blur while preserving number and complement without requesting coordinates', async () => {
     lookup.mockResolvedValue(address)
     render(<Wrapper />)
     enterPostalCode('37502-330')
@@ -84,8 +74,8 @@ describe('property address by postal code', () => {
     expect(screen.getByLabelText('Estado')).toHaveValue('MG')
     expect(screen.getByLabelText('Número')).toHaveValue('35')
     expect(screen.getByLabelText('Complemento')).toHaveValue('apto 101')
-    expect(screen.getByLabelText('Latitude (opcional)')).toHaveValue(null)
-    expect(screen.getByLabelText('Longitude (opcional)')).toHaveValue(null)
+    expect(screen.queryByLabelText(/Latitude/)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/Longitude/)).not.toBeInTheDocument()
     expect(lookup).toHaveBeenCalledWith('37502330', expect.any(AbortSignal))
   })
 

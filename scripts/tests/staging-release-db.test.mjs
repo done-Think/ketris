@@ -3,13 +3,18 @@ import assert from 'node:assert/strict'
 import { randomBytes } from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
+import { setTimeout as delay } from 'node:timers/promises'
 import { readFile, readdir } from 'node:fs/promises'
 import pg from 'pg'
 import bcrypt from 'bcryptjs'
 import { ensureSmokeAccount } from '../staging-smoke-account.mjs'
-import { createSmokeCredentials, planMigrations } from '../staging-release-lib.mjs'
+import {
+  createSmokeCredentials,
+  createReleaseDatabase,
+  planMigrations,
+} from '../staging-release-lib.mjs'
 
-test('real schema: validates checksums and bootstraps only its reserved smoke account', async () => {
+test('real schema: validates checksums and bootstraps only its reserved smoke account', async (t) => {
   const source = new URL(process.env.DATABASE_URL)
   assert.ok(
     ['localhost', '127.0.0.1'].includes(source.hostname),
@@ -53,6 +58,67 @@ test('real schema: validates checksums and bootstraps only its reserved smoke ac
       )
     ).rows
     assert.deepEqual(planMigrations(files, ledger, {}), [])
+
+    await t.test(
+      'opens a fresh session after the simulated build exceeds the server idle timeout',
+      async () => {
+        const withDatabase = createReleaseDatabase(pg.Client, {
+          connectionString: source.href,
+          options: '-c idle_session_timeout=50ms',
+        })
+        const pid = await withDatabase(
+          async (database) => (await database.query('SELECT pg_backend_pid() AS pid')).rows[0].pid,
+        )
+        await delay(120)
+        const nextPid = await withDatabase(
+          async (database) => (await database.query('SELECT pg_backend_pid() AS pid')).rows[0].pid,
+        )
+        assert.notEqual(pid, nextPid)
+      },
+    )
+
+    await t.test(
+      'handles a real server disconnect between queries without an unhandled pg event',
+      async () => {
+        const withDatabase = createReleaseDatabase(pg.Client, { connectionString: source.href })
+        await assert.rejects(
+          withDatabase(async (database) => {
+            const pid = (await database.query('SELECT pg_backend_pid() AS pid')).rows[0].pid
+            const ended = new Promise((resolve) => database.once('end', resolve))
+            await admin.query('SELECT pg_terminate_backend($1)', [pid])
+            await ended
+          }),
+          { message: 'STAGING_DATABASE_CONNECTION_FAILED' },
+        )
+        assert.equal((await admin.query('SELECT 1 AS alive')).rows[0].alive, 1)
+      },
+    )
+
+    await t.test(
+      'bounds slow queries on the client and reconnects without replaying the operation',
+      async () => {
+        const withDatabase = createReleaseDatabase(pg.Client, {
+          connectionString: source.href,
+          query_timeout: 40,
+        })
+        let attempts = 0
+        await assert.rejects(
+          withDatabase(async (database) => {
+            attempts++
+            await database.query('SELECT pg_sleep(0.2)')
+          }),
+          { message: 'STAGING_DATABASE_QUERY_TIMEOUT' },
+        )
+        assert.equal(attempts, 1)
+        assert.equal(
+          await withDatabase(
+            async (database) => (await database.query('SELECT 1 AS alive')).rows[0].alive,
+          ),
+          1,
+        )
+      },
+    )
+
     const credentials = createSmokeCredentials()
     const id = await ensureSmokeAccount(client, credentials)
     await ensureSmokeAccount(client, credentials)

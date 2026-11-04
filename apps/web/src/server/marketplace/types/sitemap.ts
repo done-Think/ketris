@@ -5,6 +5,7 @@ export type PublicSitemapRecord = {
   updatedAt: Date
   displayName?: string
   legalCreci?: string | null
+  handle?: string | null
 }
 
 export const sitemapPageSize = 1000

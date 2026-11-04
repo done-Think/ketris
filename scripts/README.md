@@ -16,9 +16,30 @@ A configuração webpack usa uma versão de cache própria em desenvolvimento pa
 pelo GitHub Actions, com destino fixado em `infra/deploy/staging.json`; não carrega envs locais.
 `staging-release-lib.mjs` valida destino, ledger e ordem das etapas. A fixture de autenticação
 é reconciliada por `staging-smoke-account.mjs`, separada do seed completo e de contas humanas.
+As conexões PostgreSQL são limitadas às etapas de banco, com timeout no cliente e
+tratamento de desconexões. Nenhuma sessão fica aberta durante o build remoto. Os
+comandos Prisma e Vercel também têm prazo máximo; falhas não repetem transações.
 Configuração e ativação estão em [staging-release.md](../docs/staging-release.md).
 
 Os testes de fluxo usam `node --test scripts/tests/staging-release.test.mjs`. O ensaio de banco
 usa `node --test scripts/tests/staging-release-db.test.mjs` com `DATABASE_URL` de um servidor
 PostgreSQL **local**: cria, migra e remove seu próprio database temporário, sem modificar o
 database informado na URL. Não aceita host remoto. Ambos os testes rodam no CI.
+
+## Reaproveitamento do CI
+
+`ci-validation.mjs` tem três modos usados por `ci.yml`: `plan` decide se existe evidência
+válida do PR, `record quality|auth-e2e` registra o conteúdo testado por cada job e `gate`
+confere os resultados antes do release. Não instala pacotes, baixa artefatos nem executa
+código de outro workflow. A consulta ao GitHub usa o token automático com acesso de leitura.
+
+`ci-validation-lib.mjs` valida a origem, o Git tree, os dois jobs, a tentativa, a idade e a
+identidade dos artefatos. Qualquer incerteza executa CI completo. A integração real com
+Git é ensaiada em repositórios temporários; os testes HTTP usam respostas simuladas:
+
+```sh
+node --test scripts/tests/ci-validation.test.mjs
+```
+
+As regras de transição e os estados esperados dos jobs estão em
+[staging-release.md](../docs/staging-release.md#reaproveitamento-da-validação-do-pr).

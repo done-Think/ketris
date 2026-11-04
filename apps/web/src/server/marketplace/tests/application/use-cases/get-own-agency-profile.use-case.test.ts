@@ -7,6 +7,7 @@ import { GetOwnAgencyProfileUseCase } from '../../../application/use-cases/get-o
 
 function createDeps() {
   const agencyProfileRepository: AgencyProfileRepository = {
+    findForEditor: vi.fn().mockResolvedValue(null),
     findPublishedById: vi.fn(),
     findPublishedBySlug: vi.fn(),
     listPublished: vi.fn(),
@@ -23,9 +24,9 @@ describe('GetOwnAgencyProfileUseCase', () => {
     const deps = createDeps()
     const useCase = new GetOwnAgencyProfileUseCase(deps.agencyProfileRepository)
 
-    await useCase.execute({ actorTenantId: 'tenant-1', actorRole })
+    await useCase.execute({ actorTenantId: 'tenant-1', actorId: 'owner-1', actorRole })
 
-    expect(deps.agencyProfileRepository.findByTenantId).toHaveBeenCalledWith('tenant-1')
+    expect(deps.agencyProfileRepository.findForEditor).toHaveBeenCalledWith('tenant-1', 'owner-1')
   })
 
   it.each(['AGENT', 'RENTER'] as const)(
@@ -34,9 +35,9 @@ describe('GetOwnAgencyProfileUseCase', () => {
       const deps = createDeps()
       const useCase = new GetOwnAgencyProfileUseCase(deps.agencyProfileRepository)
 
-      await expect(useCase.execute({ actorTenantId: 'tenant-1', actorRole })).rejects.toThrow(
-        ForbiddenError,
-      )
+      await expect(
+        useCase.execute({ actorTenantId: 'tenant-1', actorId: 'owner-1', actorRole }),
+      ).rejects.toThrow(ForbiddenError)
     },
   )
 })

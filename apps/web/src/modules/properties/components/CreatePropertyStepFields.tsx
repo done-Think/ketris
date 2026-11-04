@@ -13,7 +13,6 @@ export function CreatePropertyStepFields({
   getValues,
   setValue,
   control,
-  onAddressChange,
   activeStepKey,
   activeStepLabel,
   propertyPurpose,
@@ -40,7 +39,6 @@ export function CreatePropertyStepFields({
           control={control}
           getValues={getValues}
           setValue={setValue}
-          onAddressChange={onAddressChange}
         />
       ) : null}
 

@@ -17,14 +17,11 @@ export function toPropertyPayload(
     existingAddress &&
     (values.street !== existingAddress.street ||
       values.number !== existingAddress.number ||
-      values.complement !== (existingAddress.complement ?? '') ||
       values.neighborhood !== existingAddress.neighborhood ||
       values.city !== existingAddress.city ||
       values.state !== existingAddress.state ||
       normalizePostalCode(values.zipCode) !== normalizePostalCode(existingAddress.zipCode)),
   )
-  const hasNewCoordinates =
-    values.latitude !== existingAddress?.latitude || values.longitude !== existingAddress?.longitude
 
   return {
     ...(options.canChooseOwner
@@ -57,8 +54,8 @@ export function toPropertyPayload(
       city: values.city,
       state: values.state,
       zipCode,
-      latitude: addressChanged && !hasNewCoordinates ? null : values.latitude,
-      longitude: addressChanged && !hasNewCoordinates ? null : values.longitude,
+      latitude: addressChanged ? null : (existingAddress?.latitude ?? null),
+      longitude: addressChanged ? null : (existingAddress?.longitude ?? null),
     },
     media: values.media.map((item, index) => ({ ...item, order: index })),
   }

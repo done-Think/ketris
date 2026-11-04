@@ -45,6 +45,8 @@ export function SearchPropertyCard({
     <Card
       component={Link}
       href={detailsHref}
+      data-property-id={property.id}
+      data-highlighted={selected}
       onFocus={onActivate}
       onMouseEnter={onActivate}
       sx={getCardStyles({ isListView, selected })}

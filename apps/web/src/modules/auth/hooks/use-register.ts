@@ -38,6 +38,7 @@ export function useRegister() {
             : {
                 ...details,
                 profile: values.profile,
+                ...(values.creci.trim() ? { creci: values.creci.trim() } : {}),
                 ...(values.companyName?.trim() ? { companyName: values.companyName.trim() } : {}),
               },
       )

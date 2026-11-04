@@ -9,6 +9,11 @@ import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
+import FaceRetouchingNaturalOutlinedIcon from '@mui/icons-material/FaceRetouchingNaturalOutlined'
+import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded'
+import ManageSearchRoundedIcon from '@mui/icons-material/ManageSearchRounded'
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
+import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined'
 
 import { agencyStaffRoles } from '@server/auth/domain/roles'
 import type { AppShellNavItem } from '@shared/types/app-shell'
@@ -45,6 +50,35 @@ export const appShellNavigationItems: readonly AppShellNavItem[] = [
     href: '/dashboard/contracts',
     icon: DescriptionOutlinedIcon,
     roles: ['OWNER', 'AGENT', 'PROPERTY_OWNER'],
+  },
+  {
+    labelKey: 'faceCheck',
+    href: '/dashboard/face_check',
+    icon: FaceRetouchingNaturalOutlinedIcon,
+    roles: ['OWNER', 'AGENT'],
+    children: [
+      {
+        labelKey: 'faceCheckSessions',
+        href: '/dashboard/face_check/sessions',
+        icon: FormatListBulletedRoundedIcon,
+      },
+      {
+        labelKey: 'faceCheckReview',
+        href: '/dashboard/face_check/sessions',
+        query: { filter: 'review' },
+        icon: ManageSearchRoundedIcon,
+      },
+      {
+        labelKey: 'faceCheckSettings',
+        href: '/dashboard/face_check/settings',
+        icon: SettingsOutlinedIcon,
+      },
+    ],
+  },
+  {
+    labelKey: 'faceCheckMyVerifications',
+    href: '/dashboard/face_check/my-verifications',
+    icon: FactCheckOutlinedIcon,
   },
   {
     labelKey: 'publicProfile',

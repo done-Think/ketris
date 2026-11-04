@@ -14,7 +14,6 @@ function getPublishMissingFields(profile: BrokerProfile): string[] {
   if (!profile.availability?.trim()) missingFields.push('availability')
   if (!profile.headline?.trim()) missingFields.push('headline')
   if (!profile.region?.trim()) missingFields.push('region')
-  if (!profile.neighborhoods.length) missingFields.push('neighborhoods')
   if (!profile.specialties.length) missingFields.push('specialties')
   if (!profile.primaryColor?.trim()) missingFields.push('primaryColor')
   if (!profile.secondaryColor?.trim()) missingFields.push('secondaryColor')

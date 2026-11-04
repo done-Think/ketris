@@ -44,6 +44,7 @@ describe('transactional inquiry contact quota', () => {
   })
 
   afterEach(async () => {
+    await prisma.lead.deleteMany({ where: { tenantId } })
     await prisma.opportunity.deleteMany({ where: { tenantId } })
     await prisma.authRateLimitBucket.deleteMany({
       where: {
@@ -86,6 +87,7 @@ describe('transactional inquiry contact quota', () => {
     for (const result of failures)
       expect(result).toMatchObject({ reason: expect.any(InquiryQuotaExceededError) })
     expect(await prisma.opportunity.count({ where: { tenantId } })).toBe(2)
+    expect(await prisma.lead.count({ where: { tenantId } })).toBe(2)
     const bucket = await prisma.authRateLimitBucket.findUniqueOrThrow({
       where: {
         key: `marketplace-property-contact:${inquiryContactRateLimitKey(propertyId, email)}`,
@@ -119,5 +121,32 @@ describe('transactional inquiry contact quota', () => {
       }),
     ).toBeNull()
     await expect(repositories[1].create(inquiry())).resolves.toMatchObject({ leadEmail: email })
+  })
+
+  it('rolls back the opportunity and quota when persisting its lead fails', async () => {
+    await prisma.$executeRawUnsafe(
+      `CREATE FUNCTION reject_inquiry_lead_test() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.name = 'Rejected lead fixture' THEN RAISE EXCEPTION 'Fixture rejected'; END IF; RETURN NEW; END $$`,
+    )
+    await prisma.$executeRawUnsafe(
+      'CREATE TRIGGER reject_inquiry_lead_test BEFORE INSERT ON leads FOR EACH ROW EXECUTE FUNCTION reject_inquiry_lead_test()',
+    )
+    try {
+      await expect(
+        repositories[0].create(inquiry({ leadName: 'Rejected lead fixture' })),
+      ).rejects.toThrow()
+      expect(await prisma.opportunity.count({ where: { tenantId } })).toBe(0)
+      expect(await prisma.lead.count({ where: { tenantId } })).toBe(0)
+      expect(
+        await prisma.authRateLimitBucket.findUnique({
+          where: {
+            key: `marketplace-property-contact:${inquiryContactRateLimitKey(propertyId, email)}`,
+          },
+        }),
+      ).toBeNull()
+    } finally {
+      await prisma.$executeRawUnsafe('DROP TRIGGER reject_inquiry_lead_test ON leads')
+      await prisma.$executeRawUnsafe('DROP FUNCTION reject_inquiry_lead_test()')
+    }
+    await expect(repositories[0].create(inquiry())).resolves.toMatchObject({ leadEmail: email })
   })
 })

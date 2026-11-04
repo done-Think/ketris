@@ -1,12 +1,13 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
 import { useRouter } from '@/i18n/navigation'
 import { HomeHeader, ProfileModal } from '@shared/components/layout'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
+import { LogoutToMarketplaceContext } from '@shared/lib/auth/logout-to-marketplace-context'
 import type { LocalizedStringHref } from '@shared/types/localized-href'
 
 import { profileActions } from '../config/profile-actions'
@@ -36,6 +37,7 @@ function getSwitchModeAction(role: string | undefined): {
 }
 
 export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
+  const logoutToMarketplace = useContext(LogoutToMarketplaceContext)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileButtonRef = useRef<HTMLButtonElement>(null)
   const tProfileActions = useTranslations('marketplace.profile.actions')
@@ -77,6 +79,7 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
         onClick:
           action.labelKey === 'signOut'
             ? async () => {
+                if (logoutToMarketplace) return logoutToMarketplace()
                 await clearClientSession()
                 router.replace('/')
                 router.refresh()
@@ -84,7 +87,7 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
             : undefined,
       }
     })
-  }, [isAuthenticatedUser, router, session?.role, tProfileActions])
+  }, [isAuthenticatedUser, router, session?.role, tProfileActions, logoutToMarketplace])
 
   return (
     <>
