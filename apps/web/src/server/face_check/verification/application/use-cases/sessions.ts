@@ -63,7 +63,7 @@ export function listSessionsUseCase(deps: VerificationDependencies) {
 export function getSessionUseCase(deps: VerificationDependencies) {
   return {
     execute: async (id: string): Promise<VerificationSession> =>
-      (await changeSession(deps, { id }, (record) => record)).session,
+      (await readSession(deps, { id })).session,
   }
 }
 

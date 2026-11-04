@@ -13,11 +13,12 @@ import { FaceCheckError } from './http/errors'
 import { HttpFaceEngine } from './face-match/http-face-engine'
 import { buildVerificationUseCases } from './verification/container-factory'
 import { purgeFaceCheckEvidence } from './purge'
+import type { AnalysisRunner } from './types/verification.types'
 
 export async function faceCheckContainer(
   scope: FaceCheckScope,
   database: FaceCheckDatabase = prisma,
-  options: { invitationLocale?: AppLocale } = {},
+  options: { invitationLocale?: AppLocale; analyses?: AnalysisRunner } = {},
 ) {
   const access = new FaceCheckAccessScope(database, scope)
   const settingsScope = await access.settings()
@@ -47,7 +48,7 @@ export async function faceCheckContainer(
       await purgeFaceCheckEvidence({ sessionId, limit: 1 }, database)
     },
     // Await processing so serverless runtimes cannot silently discard an in-memory background task.
-    analyses: {
+    analyses: options.analyses ?? {
       start: async (task) => {
         await task()
       },

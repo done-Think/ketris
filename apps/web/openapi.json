@@ -17356,6 +17356,14 @@
               }
             }
           },
+          "202": {
+            "description": "Images received once; server analysis and human review continue after this response.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FaceCheckCaptureStatus" }
+              }
+            }
+          },
           "400": {
             "description": "Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data.",
             "content": {

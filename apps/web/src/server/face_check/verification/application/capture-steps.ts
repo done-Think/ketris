@@ -92,7 +92,7 @@ export function failEvidence(
   if (stored) stored.reason = error instanceof VerificationError ? error.reason : null
 }
 
-function updateDocumentReading(
+export function updateDocumentReading(
   record: SessionRecord,
   side: DocumentSide,
   reading: DocumentReadingSummary | null,
@@ -107,7 +107,7 @@ function updateDocumentReading(
   )
 }
 
-function repeatsAnotherPhoto(record: SessionRecord, kind: EvidenceKind, photo: ActivePhoto) {
+export function repeatsAnotherPhoto(record: SessionRecord, kind: EvidenceKind, photo: ActivePhoto) {
   return evidenceOrder.some((other) => {
     const existing = record.capture.photos[other]
 
@@ -130,7 +130,7 @@ export function recordLiveScore(record: SessionRecord, score: number | null) {
   record.capture.liveScore = current === null ? score : Math.min(current, score)
 }
 
-async function inspectPhoto(
+export async function inspectPhoto(
   deps: VerificationDependencies,
   record: SessionRecord,
   kind: EvidenceKind,

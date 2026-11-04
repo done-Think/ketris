@@ -31,6 +31,7 @@ import { capturedImage, assertMutationOrigin, jsonBody, photoForm } from './requ
 import { buildCaptureUrl } from './capture-url'
 import { withFaceCheckErrors } from './with-face-check-errors'
 import { FaceCheckError } from './errors'
+import { afterResponseAnalysis } from '../infrastructure/after-response-analysis'
 
 export interface FaceCheckRouteContext {
   params: Promise<Record<string, string>>
@@ -73,6 +74,7 @@ export function consoleHandler(operation: ConsoleOperation) {
       throw new FaceCheckError('FORBIDDEN', 403)
     const container = await faceCheckContainer({ actor }, prisma, {
       invitationLocale: resolveRequestLocale(request),
+      analyses: afterResponseAnalysis,
     })
     switch (operation) {
       case 'sessions-list': {
@@ -131,10 +133,9 @@ export function consoleHandler(operation: ConsoleOperation) {
       )
     }
     if (operation === 'session') {
-      let session = await container.getSessionUseCase.execute(id)
+      const session = await container.getSessionUseCase.execute(id)
       if (session.status === 'PROCESSING') {
-        await container.analyzeSessionUseCase.execute(id)
-        session = await container.getSessionUseCase.execute(id)
+        await afterResponseAnalysis.start(() => container.analyzeSessionUseCase.execute(id))
       }
       return NextResponse.json({ session })
     }
@@ -174,7 +175,9 @@ export function captureHandler(operation: CaptureOperation) {
       token,
       operation === 'framing' ? 'feedback' : upload,
     )
-    const container = await faceCheckContainer({ token })
+    const container = await faceCheckContainer({ token }, prisma, {
+      analyses: afterResponseAnalysis,
+    })
     if (operation === 'capture')
       return NextResponse.json(await container.getCaptureSessionUseCase.execute(token))
     if (operation === 'consent')
@@ -200,8 +203,8 @@ export function captureHandler(operation: CaptureOperation) {
     }
     if (operation === 'submit') {
       const body = await jsonBody(request, startLivenessBodySchema)
-      await container.submitCaptureUseCase.execute(token, body.planId)
-      return NextResponse.json(await container.getCaptureStatusUseCase.execute(token))
+      const status = await container.submitCaptureUseCase.execute(token, body.planId)
+      return NextResponse.json(status, { status: status.status === 'PROCESSING' ? 202 : 200 })
     }
     if (operation === 'status') {
       const status = await container.getCaptureStatusUseCase.execute(token)
@@ -210,8 +213,8 @@ export function captureHandler(operation: CaptureOperation) {
           where: { tokenHash: captureTokenHash(token) },
           select: { id: true },
         })
-        if (row) await container.analyzeSessionUseCase.execute(row.id)
-        return NextResponse.json(await container.getCaptureStatusUseCase.execute(token))
+        if (row)
+          await afterResponseAnalysis.start(() => container.analyzeSessionUseCase.execute(row.id))
       }
       return NextResponse.json(status)
     }

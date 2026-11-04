@@ -2,6 +2,7 @@ import type {
   CaptureMode,
   DocumentSide,
   EvidenceKind,
+  LivenessChallenge,
   SimulatedOutcome,
   VerificationSession,
   VerificationSettings,
@@ -36,6 +37,12 @@ export type ActivePhotos = Partial<Record<EvidenceKind, ActivePhoto>>
 
 export interface CaptureState {
   plan?: { id: string; expiresAt: string } | null
+  submissionPlanId?: string | null
+  deferred?: {
+    movements: Partial<Record<LivenessChallenge, { evidenceId: string; sha256: string }>>
+    inspected: EvidenceKind[]
+    checkedMovements: number
+  } | null
   photos: ActivePhotos
   documentReadings: Partial<Record<DocumentSide, DocumentReadingSummary>>
   challenges: IssuedChallenges | null
