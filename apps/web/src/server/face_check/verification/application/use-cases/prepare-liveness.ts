@@ -14,6 +14,8 @@ export function prepareLivenessUseCase(deps: VerificationDependencies) {
         if (!deps.faceEngine) throw new VerificationError('ANALYSIS_UNAVAILABLE')
         if (!record.capture.plan || restart) {
           record.capture.plan = { id: deps.newId(), expiresAt: record.session.captureDeadline! }
+          record.capture.submissionPlanId = null
+          record.capture.deferred = { movements: {}, inspected: [], checkedMovements: 0 }
           record.capture.photos = {}
           record.capture.documentReadings = {}
           record.capture.challenges = null

@@ -361,6 +361,48 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
       expect((await repo.read({ id: record.session.id }))?.session.reference).toBe('newer')
     })
 
+    it('loads operator and candidate snapshots while a slow analysis owns the database lease', async () => {
+      const record = await session()
+      const repo = repository(owner)
+      await repo.update({ id: record.session.id }, (working) => {
+        working.session.status = 'PROCESSING'
+        working.session.submittedAt = new Date().toISOString()
+      })
+      let entered!: () => void, release!: () => void
+      const started = new Promise<void>((resolve) => {
+        entered = resolve
+      })
+      const gate = new Promise<void>((resolve) => {
+        release = resolve
+      })
+      const analysis = repo.update({ id: record.session.id }, async (working) => {
+        entered()
+        await gate
+        working.session.status = 'REVIEW'
+      })
+      await started
+      try {
+        const deps = { ...verificationHarness().deps, sessions: repository(owner) }
+        const cases = buildVerificationUseCases(deps)
+        expect((await cases.getSessionUseCase.execute(record.session.id)).status).toBe('PROCESSING')
+        expect((await cases.getCaptureStatusUseCase.execute(record.session.token)).status).toBe(
+          'PROCESSING',
+        )
+        expect((await cases.getCaptureSessionUseCase.execute(record.session.token)).status).toBe(
+          'PROCESSING',
+        )
+        const row = await database.faceCheckSession.findUniqueOrThrow({
+          where: { id: record.session.id },
+        })
+        expect(row.leaseId).not.toBeNull()
+        expect(row.revision).toBe(1)
+      } finally {
+        release()
+        await analysis
+      }
+      expect((await repo.read({ id: record.session.id }))?.session.status).toBe('REVIEW')
+    })
+
     it('denies finalization after a portfolio transfer and retains rejected evidence when the callback throws', async () => {
       const record = await session(agent)
       const repo = repository(agent)

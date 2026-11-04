@@ -85,7 +85,7 @@ jobs:
       - run: npm ci
 
       - name: Testa as garantias operacionais de staging sem tráfego externo
-        run: node --test scripts/tests/ci-validation.test.mjs scripts/tests/staging-release.test.mjs scripts/tests/explore-staging-rate-limit.test.mjs scripts/tests/face-check-retention.test.mjs scripts/tests/face-check-invitation-emails.test.mjs
+        run: node --test scripts/tests/ci-validation.test.mjs scripts/tests/staging-release.test.mjs scripts/tests/explore-staging-rate-limit.test.mjs scripts/tests/face-check-retention.test.mjs scripts/tests/face-check-invitation-emails.test.mjs scripts/tests/face-check-analysis.test.mjs
 
       - uses: actions/setup-python@v6
         with:

@@ -7009,6 +7009,15 @@ export interface paths {
             'application/json': components['schemas']['FaceCheckCaptureStatus']
           }
         }
+        /** @description Images received once; server analysis and human review continue after this response. */
+        202: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FaceCheckCaptureStatus']
+          }
+        }
         /** @description Validation, authorization, expired evidence, busy operation or unavailable dependency. Errors contain no biometric data. */
         400: {
           headers: {

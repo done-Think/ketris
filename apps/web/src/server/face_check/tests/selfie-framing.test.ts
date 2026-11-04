@@ -87,7 +87,7 @@ describe('transient selfie placement', () => {
     })
     await expect(
       h.cases.selfieFramingUseCase.execute(h.session.token, photo(9).bytes),
-    ).rejects.toMatchObject({ code: 'INVALID_CAPTURE_STATE' })
+    ).rejects.toMatchObject({ code: 'SESSION_EXPIRED' })
     expect(h.photos.size).toBe(2)
     expect((await h.sessions.read({ id: h.session.id }))?.session.status).toBe('IN_PROGRESS')
     h.advance(-16 * 60_000)

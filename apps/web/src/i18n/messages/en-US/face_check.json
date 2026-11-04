@@ -120,6 +120,9 @@
       }
     },
     "submit": {
+      "receivedTitle": "Photos sent successfully",
+      "receivedBody": "The {agency} team has received your images and will review them. If another capture is needed, the team will contact you.",
+      "closeHint": "You can close this page. You do not need to send the photos again.",
       "titleRunning": "Uploading and analyzing",
       "titleDone": "Analysis complete",
       "body": "Keep this page open. If your connection drops, reopen the same link to continue.",
@@ -332,12 +335,12 @@
     "review": {
       "title": "Review before sending",
       "body": "Check the document photos, selfie and movements. Nothing has been sent for validation. Send when you are happy with the captures.",
-      "resumeBody": "Some photos have already been sent. You can resume validation or retake a capture.",
+      "resumeBody": "Some photos have already been received. Continue to finish sending the remaining images.",
       "send": "Confirm and send for analysis",
-      "sending": "Sending and validating photos…",
+      "sending": "Sending photos…",
       "retake": "Retake capture",
-      "checking": "Checking: {photo}",
-      "failedPhoto": "Could not validate: {photo}. Check the guidance and retake the capture if needed.",
+      "checking": "Sending: {photo}",
+      "failedPhoto": "Could not finish sending: {photo}. Try continuing; images already received will be preserved.",
       "photos": {
         "front": "Document front",
         "back": "Document back",

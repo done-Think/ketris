@@ -13,6 +13,8 @@ import { documentAlertsFor } from '../../../face-match/document-check'
 import type { FaceMatchResult } from '../../../types/face-match.types'
 import type { SessionRecord, VerificationDependencies } from '../../../types/verification.types'
 import { addAlerts, clearCapture, iso, pushEvent, renewLink } from '../../domain/session-rules'
+import { analyzeDeferredStage, hasPendingInspections } from '../analyze-deferred'
+import { evidenceUnavailable } from '../../domain/evidence-policy'
 
 async function matchPhotos(deps: VerificationDependencies, record: SessionRecord) {
   const { front, selfie } = record.capture.photos
@@ -66,47 +68,94 @@ function applyMatch(record: SessionRecord, result: FaceMatchResult) {
   session.reviewReason = documentNeedsReview ? 'documentManualReview' : decision.reviewReason
   session.redoReason = documentNeedsReview ? null : decision.redoReason
   addAlerts(session, decision.alerts)
+  // The engine supplies evidence to the reviewer; only a person may request another capture.
+  if (session.status === 'RESUBMISSION_REQUESTED') {
+    session.status = 'REVIEW'
+    session.reviewReason = 'verificationChecksFailed'
+    session.redoReason = null
+    addAlerts(session, ['lowSimilarity'])
+  }
+  const activeEvidence = new Set([
+    ...Object.values(record.capture.photos).map((photo) => photo.evidenceId),
+    ...Object.values(record.capture.deferred?.movements ?? {}).map((photo) => photo.evidenceId),
+  ])
+  if (
+    record.capture.deferred &&
+    (!record.capture.livenessVerified ||
+      session.evidenceHistory.some(
+        (item) => activeEvidence.has(item.id) && item.status !== 'accepted',
+      ))
+  ) {
+    session.status = 'REVIEW'
+    if (!documentNeedsReview) session.reviewReason = 'verificationChecksFailed'
+  }
 }
 
 export function analyzeSessionUseCase(deps: VerificationDependencies) {
   return {
-    execute: async (sessionId: string) => {
-      const pending = await deps.sessions.read({ id: sessionId })
-      if (!pending || pending.session.status !== 'PROCESSING') return
-      await deps.sessions.update({ id: sessionId }, async (record) => {
-        const { session } = record
-        if (session.status !== 'PROCESSING') return
-        const result = await matchPhotos(deps, record)
-        if (result) {
-          applyMatch(record, result)
-        } else {
-          session.signals = []
-          session.status = 'REVIEW'
-          session.reviewReason = 'analysisUnavailable'
+    execute: async (sessionId: string, budgetMs = 90_000) => {
+      const startedAt = Date.now()
+      // Checkpoints make PROCESSING a durable queue. Never hold a lease across the whole pipeline.
+      while (true) {
+        const pending = await deps.sessions.read({ id: sessionId })
+        if (!pending || pending.session.status !== 'PROCESSING') return
+        try {
+          await deps.sessions.update({ id: sessionId }, async (record) => {
+            const { session } = record
+            if (session.status !== 'PROCESSING') return
+            if (evidenceUnavailable(session, deps.clock())) {
+              session.status = 'REVIEW'
+              session.reviewReason = 'evidenceExpired'
+              return
+            }
+            if (hasPendingInspections(record)) {
+              await analyzeDeferredStage(deps, record)
+              return
+            }
+            const result = await matchPhotos(deps, record)
+            if (result) {
+              applyMatch(record, result)
+            } else {
+              session.signals = []
+              session.status = 'REVIEW'
+              session.reviewReason = 'analysisUnavailable'
+            }
+            const now = deps.clock()
+            const status = session.status as SimilarityAttempt['status']
+            session.similarityAttempts.push({
+              attempt: session.attemptsUsed,
+              similarity: result?.similarity ?? null,
+              analyzedAt: iso(now),
+              status,
+            })
+            if (status === 'APPROVED') session.decidedAt = iso(now)
+            if (status === 'RESUBMISSION_REQUESTED') renewLink(session, now)
+            pushEvent(
+              session,
+              deps.newId(),
+              status === 'APPROVED'
+                ? 'autoApproved'
+                : status === 'RESUBMISSION_REQUESTED'
+                  ? 'autoRedo'
+                  : 'autoReview',
+              'system',
+              now,
+            )
+            if (status !== 'REVIEW') clearCapture(record)
+          })
+        } catch (error) {
+          if (
+            error &&
+            typeof error === 'object' &&
+            'code' in error &&
+            error.code === 'PERSISTENCE_BUSY'
+          )
+            return
+          throw error
         }
-        const now = deps.clock()
-        const status = session.status as SimilarityAttempt['status']
-        session.similarityAttempts.push({
-          attempt: session.attemptsUsed,
-          similarity: result?.similarity ?? null,
-          analyzedAt: iso(now),
-          status,
-        })
-        if (status === 'APPROVED') session.decidedAt = iso(now)
-        if (status === 'RESUBMISSION_REQUESTED') renewLink(session, now)
-        pushEvent(
-          session,
-          deps.newId(),
-          status === 'APPROVED'
-            ? 'autoApproved'
-            : status === 'RESUBMISSION_REQUESTED'
-              ? 'autoRedo'
-              : 'autoReview',
-          'system',
-          now,
-        )
-        if (status !== 'REVIEW') clearCapture(record)
-      })
+        // Reserve enough time for a full 60-second engine call plus storage and persistence.
+        if (Date.now() - startedAt > budgetMs - 65_000) return
+      }
     },
   }
 }

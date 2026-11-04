@@ -39,7 +39,13 @@ export function useSubmitCaptureDrafts(token: string) {
       const signal = getSignal()
       // Recover an acknowledgement lost after submission, without uploading the photos twice.
       const status = await captureService.getStatus(token, signal)
-      if (status.status !== 'IN_PROGRESS') return status
+      if (['SUBMITTED', 'PROCESSING', 'REVIEW', 'APPROVED', 'REJECTED'].includes(status.status))
+        return status
+      if (status.status !== 'IN_PROGRESS')
+        throw new ApiError(
+          status.status === 'EXPIRED' ? 'SESSION_EXPIRED' : 'INVALID_CAPTURE_STATE',
+          409,
+        )
       const plan = deferredLivenessPlanSchema.safeParse(
         draft.plan ?? (await captureService.prepareLiveness(token, true, signal)),
       )
@@ -85,7 +91,19 @@ export function useSubmitCaptureDrafts(token: string) {
         remember(challenge, image)
       }
       setStage(null)
-      return captureService.submit(token, signal, planId)
+      try {
+        return await captureService.submit(token, signal, planId)
+      } catch (error) {
+        if (signal.aborted) throw error
+        // The server may have committed submission before the acknowledgement was lost.
+        const received = await captureService.getStatus(token, signal).catch(() => null)
+        if (
+          received &&
+          ['SUBMITTED', 'PROCESSING', 'REVIEW', 'APPROVED', 'REJECTED'].includes(received.status)
+        )
+          return received
+        throw error
+      }
     },
     onSuccess: (status) => client.setQueryData(captureKeys.status(token), status),
     onError: () => client.invalidateQueries({ queryKey: captureKeys.session(token) }),

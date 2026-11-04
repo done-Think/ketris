@@ -120,6 +120,9 @@
       }
     },
     "submit": {
+      "receivedTitle": "Fotos enviadas com sucesso",
+      "receivedBody": "A equipe da {agency} recebeu suas imagens e será responsável pela revisão. Se precisar de uma nova captura, a equipe entrará em contato.",
+      "closeHint": "Você já pode fechar esta página. Não é necessário enviar as fotos novamente.",
       "titleRunning": "Enviando e analisando",
       "titleDone": "Análise concluída",
       "body": "Não feche esta página. Se a internet cair, abra o mesmo link de novo para continuar.",
@@ -332,12 +335,12 @@
     "review": {
       "title": "Revise antes de enviar",
       "body": "Confira as fotos do documento, a selfie e os movimentos. Nada foi enviado para validação. Envie quando estiver satisfeito com as capturas.",
-      "resumeBody": "Algumas fotos já foram enviadas. Você pode retomar a validação ou refazer uma captura.",
+      "resumeBody": "Algumas fotos já foram recebidas. Continue para concluir o envio das imagens restantes.",
       "send": "Confirmar e enviar para análise",
-      "sending": "Enviando e validando as fotos…",
+      "sending": "Enviando as fotos…",
       "retake": "Refazer captura",
-      "checking": "Conferindo: {photo}",
-      "failedPhoto": "Não foi possível validar: {photo}. Confira a orientação e refaça a captura, se necessário.",
+      "checking": "Enviando: {photo}",
+      "failedPhoto": "Não foi possível concluir o envio de: {photo}. Tente continuar; as imagens já recebidas serão preservadas.",
       "photos": {
         "front": "Frente do documento",
         "back": "Verso do documento",

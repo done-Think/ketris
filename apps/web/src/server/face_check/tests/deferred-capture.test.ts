@@ -67,11 +67,7 @@ describe('session-bound deferred capture', () => {
           photo(slot === challenge ? 9 : 4),
           next.planId,
         )
-      for (const [index, challenge] of next.challenges.entries()) {
-        const [reference, frames] = verify.mock.calls[index + 3]
-        expect(reference).toEqual(selfie.bytes)
-        expect(frames[0]).toEqual({ challenge, image: photo(slot === challenge ? 9 : 4).bytes })
-      }
+      expect(verify).not.toHaveBeenCalled()
       const after = await h.sessions.read({ id: h.session.id })
       expect(after?.capture.rejections).toEqual(before?.capture.rejections)
       expect(after?.session.evidenceHistory).toEqual(
@@ -83,11 +79,24 @@ describe('session-bound deferred capture', () => {
         else expect(after?.capture.photos[kind]?.sha256).toBe(before?.capture.photos[kind]?.sha256)
       }
       await h.cases.submitCaptureUseCase.execute(token, next.planId)
+      for (const [index, challenge] of next.challenges.entries()) {
+        const [reference, frames] = verify.mock.calls[index]
+        expect(reference).toEqual(selfie.bytes)
+        expect(frames[0]).toEqual({ challenge, image: photo(slot === challenge ? 9 : 4).bytes })
+      }
       expect((await h.sessions.read({ id: h.session.id }))?.session.status).toBe('REVIEW')
+      await h.cases.recordEvidenceViewUseCase.execute(h.session.id)
+      expect(
+        await h.cases.decideSessionUseCase.execute(h.session.id, {
+          decision: 'approve',
+          reason: null,
+          note: 'Current photos reviewed by the responsible agent.',
+        }),
+      ).toMatchObject({ status: 'APPROVED', decisionMethod: 'MANUAL', manualOverride: false })
     },
   )
 
-  it('accepts a replacement for a rejected back under the same plan without losing the accepted front', async () => {
+  it('accepts a replacement before submission without analyzing or losing the received front', async () => {
     const h = await prepared()
     const token = h.session.token
     await h.cases.uploadDocumentPhotoUseCase.execute(token, 'front', 'RG', photo(1), h.plan.planId)
@@ -99,7 +108,8 @@ describe('session-bound deferred capture', () => {
     }))
     await expect(
       h.cases.uploadDocumentPhotoUseCase.execute(token, 'back', 'RG', photo(2), h.plan.planId),
-    ).rejects.toMatchObject({ code: 'PHOTO_REJECTED', reason: 'documentTextNotFound' })
+    ).resolves.toBeUndefined()
+    expect(h.inspect).not.toHaveBeenCalled()
     await h.cases.uploadDocumentPhotoUseCase.execute(token, 'back', 'RG', photo(5), h.plan.planId)
     const after = await h.sessions.read({ id: h.session.id })
     expect(after?.capture.photos.front).toEqual(before?.capture.photos.front)
@@ -187,7 +197,7 @@ describe('session-bound deferred capture', () => {
     expect((await h.sessions.read({ id: h.session.id }))?.session.status).toBe('REVIEW')
   })
 
-  it('preserves accepted movements when the remaining local photos need to be recaptured', async () => {
+  it('resumes received movements without making the user wait for their analysis', async () => {
     const h = await prepared()
     await uploadPhotos(h)
     await h.cases.startLivenessUseCase.execute(h.session.token, h.plan.planId)
@@ -209,9 +219,9 @@ describe('session-bound deferred capture', () => {
         photo(5),
         h.plan.planId,
       ),
-    ).rejects.toMatchObject({ code: 'LIVENESS_FAILED' })
+    ).resolves.toEqual({ remaining: 1 })
     const resumed = await h.cases.prepareLivenessUseCase.execute(h.session.token)
-    expect(resumed).toMatchObject({ planId: h.plan.planId, step: 1 })
+    expect(resumed).toMatchObject({ planId: h.plan.planId, step: 2 })
   })
 
   it('invalidates an old plan when restarting, without resetting rejection limits or extending consent', async () => {
@@ -229,7 +239,7 @@ describe('session-bound deferred capture', () => {
         photo(4),
         h.plan.planId,
       ),
-    ).rejects.toMatchObject({ code: 'LIVENESS_FAILED' })
+    ).resolves.toEqual({ remaining: 2 })
     const before = await h.sessions.read({ id: h.session.id })
     h.advance(5000)
     const next = await h.cases.prepareLivenessUseCase.execute(h.session.token, true)
