@@ -59,6 +59,21 @@ describe('RegistrationDetailsForm', () => {
     expect(submit).not.toHaveBeenCalled()
   })
 
+  it.each(['owner', 'renter', 'developer'] as const)(
+    'não exibe o campo CRECI para o perfil %s',
+    (profile) => {
+      renderForm(profile)
+
+      expect(screen.queryByLabelText(/CRECI/)).not.toBeInTheDocument()
+    },
+  )
+
+  it('exibe o campo CRECI para imobiliária', () => {
+    renderForm('agency')
+
+    expect(screen.getByLabelText(/CRECI/)).toBeInTheDocument()
+  })
+
   it('alterna a visibilidade de senha e confirmar senha de forma independente', async () => {
     const user = userEvent.setup()
     renderForm('broker')

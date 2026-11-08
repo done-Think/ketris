@@ -70,6 +70,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
     },
   })
 
+  const showCreci = profile === 'broker' || profile === 'agency'
   const showCompanyName = profile === 'agency' || profile === 'developer' || profile === 'broker'
 
   const acceptTerms = useWatch({ control, name: 'acceptTerms' })
@@ -199,23 +200,25 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
           })}
         </Box>
 
-        <AuthFormField
-          htmlFor="registration-creci"
-          label={t('creci.label')}
-          required={profile === 'broker'}
-        >
-          <RhfTextField
-            id="registration-creci"
-            control={control}
-            name="creci"
-            placeholder={t('creci.placeholder')}
-            helperText={
-              profile === 'broker' ? t('creci.requiredHelper') : t('creci.optionalHelper')
-            }
-            fullWidth
-            sx={authTextFieldSx}
-          />
-        </AuthFormField>
+        {showCreci ? (
+          <AuthFormField
+            htmlFor="registration-creci"
+            label={t('creci.label')}
+            required={profile === 'broker'}
+          >
+            <RhfTextField
+              id="registration-creci"
+              control={control}
+              name="creci"
+              placeholder={t('creci.placeholder')}
+              helperText={
+                profile === 'broker' ? t('creci.requiredHelper') : t('creci.optionalHelper')
+              }
+              fullWidth
+              sx={authTextFieldSx}
+            />
+          </AuthFormField>
+        ) : null}
 
         {profile === 'broker' ? (
           <Controller
