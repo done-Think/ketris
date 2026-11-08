@@ -6,6 +6,5 @@ export function useAgencySearch(query: string) {
   return useQuery({
     queryKey: ['register', 'agencies', query],
     queryFn: () => registrationService.searchAgencies(query),
-    enabled: query.length > 0,
   })
 }
