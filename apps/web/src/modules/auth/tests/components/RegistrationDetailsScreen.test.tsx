@@ -48,6 +48,7 @@ async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText(/Nome completo/), 'Corretor Teste')
   await user.type(screen.getByLabelText(/E-mail/), 'corretor@ketris.dev')
   await user.type(screen.getByLabelText(/Telefone/), '11999999999')
+  await user.type(screen.getByLabelText(/CPF/), '52998224725')
   await user.type(screen.getByLabelText(/^Senha/), 'senha-longa-123')
   await user.type(screen.getByPlaceholderText('Confirme a senha'), 'senha-longa-123')
   await user.type(screen.getByLabelText(/CRECI/), '00000-F')

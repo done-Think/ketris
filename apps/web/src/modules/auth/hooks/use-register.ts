@@ -24,32 +24,48 @@ export function useRegister() {
         acceptTerms: values.acceptTerms,
         locale,
       }
-      return registrationService.register(
-        values.profile === 'broker'
-          ? {
-              ...details,
-              profile: values.profile,
-              creci: values.creci,
-              ...(values.agencyId ? { agencyId: values.agencyId } : {}),
-              ...(values.companyName?.trim() ? { companyName: values.companyName.trim() } : {}),
-            }
-          : values.profile === 'renter'
-            ? { ...details, profile: values.profile }
-            : {
-                ...details,
-                profile: values.profile,
-                ...(values.profile === 'agency' && values.creci.trim()
-                  ? { creci: values.creci.trim() }
-                  : {}),
-                ...(values.companyName?.trim() ? { companyName: values.companyName.trim() } : {}),
-              },
-      )
+      const companyName = values.companyName?.trim()
+      const company = companyName ? { companyName } : {}
+      if (values.profile === 'broker')
+        return registrationService.register({
+          ...details,
+          profile: values.profile,
+          creci: values.creci,
+          cpf: values.cpf,
+          ...(values.agencyId ? { agencyId: values.agencyId } : {}),
+          ...company,
+        })
+      if (values.profile === 'renter')
+        return registrationService.register({
+          ...details,
+          profile: values.profile,
+          cpf: values.cpf,
+        })
+      if (values.profile === 'owner')
+        return registrationService.register({
+          ...details,
+          profile: values.profile,
+          cpf: values.cpf,
+        })
+      return registrationService.register({
+        ...details,
+        profile: values.profile,
+        cnpj: values.cnpj,
+        ...(values.profile === 'agency' && values.creci.trim()
+          ? { creci: values.creci.trim() }
+          : {}),
+        ...company,
+      })
     },
   })
   const code = getApiErrorCode(mutation.error)
   const messages: Record<string, string> = {
     AGENCY_NOT_FOUND: t('errors.agencyNotFound'),
     EMAIL_ALREADY_IN_USE: t('errors.emailAlreadyInUse'),
+    PHONE_ALREADY_IN_USE: t('errors.phoneAlreadyInUse'),
+    CRECI_ALREADY_IN_USE: t('errors.creciAlreadyInUse'),
+    CPF_ALREADY_IN_USE: t('errors.cpfAlreadyInUse'),
+    CNPJ_ALREADY_IN_USE: t('errors.cnpjAlreadyInUse'),
     RATE_LIMIT_EXCEEDED: t('errors.rateLimited'),
     PASSWORD_TOO_LONG: t('errors.passwordTooLong'),
   }

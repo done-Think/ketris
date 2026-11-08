@@ -12,6 +12,8 @@ const validDetails = {
   password: 'senha-segura',
   passwordConfirmation: 'senha-segura',
   creci: '',
+  cpf: '529.982.247-25',
+  cnpj: '',
   acceptTerms: true,
 }
 
@@ -68,6 +70,22 @@ describe('registrationDetailsSchema', () => {
       expect(result.error.flatten().fieldErrors.passwordConfirmation).toContain('passwordMismatch')
       expect(result.error.flatten().fieldErrors.acceptTerms).toContain('acceptTermsRequired')
     }
+  })
+
+  it('exige CPF válido para pessoas e CNPJ válido para empresas', () => {
+    const noCpf = registrationDetailsSchema.safeParse({ ...validDetails, cpf: '' })
+    expect(noCpf.success ? [] : noCpf.error.flatten().fieldErrors.cpf).toContain('cpfRequired')
+    const badCpf = registrationDetailsSchema.safeParse({ ...validDetails, cpf: '111.111.111-11' })
+    expect(badCpf.success ? [] : badCpf.error.flatten().fieldErrors.cpf).toContain('cpfInvalid')
+
+    const company = { ...validDetails, profile: 'agency' as const, cpf: '' }
+    const noCnpj = registrationDetailsSchema.safeParse(company)
+    expect(noCnpj.success ? [] : noCnpj.error.flatten().fieldErrors.cnpj).toContain('cnpjRequired')
+    const badCnpj = registrationDetailsSchema.safeParse({ ...company, cnpj: '11.222.333/0001-82' })
+    expect(badCnpj.success ? [] : badCnpj.error.flatten().fieldErrors.cnpj).toContain('cnpjInvalid')
+    expect(
+      registrationDetailsSchema.safeParse({ ...company, cnpj: '11.222.333/0001-81' }).success,
+    ).toBe(true)
   })
 
   it('routes each validation message through the translator with the right key', () => {
