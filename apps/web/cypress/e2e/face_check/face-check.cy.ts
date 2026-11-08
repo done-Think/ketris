@@ -75,7 +75,7 @@ afterEach(() => {
 })
 
 describe('Face Check real authorization and invited capture', () => {
-  it('opens the overview from the sidebar with three child links and hydrates without changing root classes', () => {
+  it('opens the overview from the sidebar with two child links and hydrates without changing root classes', () => {
     create()
     cy.visit('/pt/dashboard/face_check', {
       onBeforeLoad(window) {
@@ -90,8 +90,7 @@ describe('Face Check real authorization and invited capture', () => {
     cy.location('pathname').should('eq', '/pt/dashboard/face_check/sessions')
     cy.get('nav:visible')
       .contains('a', /^Revisão$/)
-      .click()
-    cy.location('search').should('eq', '?filter=review')
+      .should('not.exist')
     cy.get('nav:visible')
       .contains('a', /^Configurações$/)
       .click()
