@@ -11,7 +11,6 @@ import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
 import FaceRetouchingNaturalOutlinedIcon from '@mui/icons-material/FaceRetouchingNaturalOutlined'
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded'
-import ManageSearchRoundedIcon from '@mui/icons-material/ManageSearchRounded'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined'
 
@@ -61,12 +60,6 @@ export const appShellNavigationItems: readonly AppShellNavItem[] = [
         labelKey: 'faceCheckSessions',
         href: '/dashboard/face_check/sessions',
         icon: FormatListBulletedRoundedIcon,
-      },
-      {
-        labelKey: 'faceCheckReview',
-        href: '/dashboard/face_check/sessions',
-        query: { filter: 'review' },
-        icon: ManageSearchRoundedIcon,
       },
       {
         labelKey: 'faceCheckSettings',

@@ -38,7 +38,7 @@ async function matchPhotos(deps: VerificationDependencies, record: SessionRecord
   }
 }
 
-function applyMatch(record: SessionRecord, result: FaceMatchResult) {
+function applyMatch(record: SessionRecord, result: FaceMatchResult, approveAbove: number) {
   const { session } = record
   const liveScore = record.capture.liveScore
   session.signals = [
@@ -62,6 +62,7 @@ function applyMatch(record: SessionRecord, result: FaceMatchResult) {
     maxAttempts: session.maxAttempts,
     checksPassed,
     autoApproval: similarityPolicy.autoApproval,
+    approveAbove,
   })
   const documentNeedsReview = session.alerts.includes('documentManualReview')
   session.status = documentNeedsReview ? 'REVIEW' : decision.status
@@ -114,7 +115,7 @@ export function analyzeSessionUseCase(deps: VerificationDependencies) {
             }
             const result = await matchPhotos(deps, record)
             if (result) {
-              applyMatch(record, result)
+              applyMatch(record, result, (await deps.settings.get()).faceMatchThreshold)
             } else {
               session.signals = []
               session.status = 'REVIEW'
