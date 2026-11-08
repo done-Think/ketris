@@ -1,8 +1,7 @@
-import { Prisma } from '@prisma/client'
-
 import { CpfAlreadyInUseError, EmailAlreadyInUseError } from '@server/auth/domain/errors'
 import { prisma } from '@server/db/prisma'
 import { documentKey } from '@server/shared/contact-keys'
+import { uniqueViolation } from '@server/shared/prisma-unique-violation'
 import { recordUserAudit } from '@server/auth/infrastructure/user-audit'
 
 import type { TeamInvitationRepository } from '../application/ports/team-invitation-repository.port'
@@ -78,10 +77,9 @@ export class PrismaTeamInvitationRepository implements TeamInvitationRepository 
         return toStored(record)
       })
       .catch((error: unknown) => {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')
-          throw String(error.meta?.target ?? '').includes('cpf')
-            ? new CpfAlreadyInUseError()
-            : new EmailAlreadyInUseError()
+        const violated = uniqueViolation(error)
+        if (violated !== null)
+          throw violated.includes('cpf') ? new CpfAlreadyInUseError() : new EmailAlreadyInUseError()
         throw error
       })
   }

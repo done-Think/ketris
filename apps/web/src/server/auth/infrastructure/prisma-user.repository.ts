@@ -15,13 +15,13 @@ import {
   PhoneAlreadyInUseError,
 } from '../domain/errors'
 import { creciKey, documentKey, phoneKey } from '@server/shared/contact-keys'
+import { uniqueViolation } from '@server/shared/prisma-unique-violation'
 import { normalizeEmail } from '@server/shared/normalize-email'
 import type { PrismaUserRecord } from '../types/prisma-user'
 
 function uniqueConflictError(error: unknown): Error | null {
-  if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002')
-    return null
-  const target = String(error.meta?.target ?? '')
+  const target = uniqueViolation(error)
+  if (target === null) return null
   if (target.includes('phoneKey')) return new PhoneAlreadyInUseError()
   if (target.includes('creciKey')) return new CreciAlreadyInUseError()
   if (target.includes('cpf')) return new CpfAlreadyInUseError()

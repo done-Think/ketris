@@ -24,10 +24,26 @@ function details() {
     fullName: `Cadastro ${randomUUID()}`,
     email: `${randomUUID()}@signup.example.test`,
     phone: '(11) 99999-9999',
+    cpf: '529.982.247-25',
     password: 'senha-longa-123',
     acceptTerms: true,
     locale: 'pt-BR',
   }
+}
+// A valid CNPJ that is unique per call, because a company can register only once.
+function randomCnpj() {
+  const base = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10))
+  const digit = (digits: number[]) => {
+    const weights =
+      digits.length === 12
+        ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    const total = digits.reduce((sum, value, index) => sum + value * weights[index], 0) % 11
+    return total < 2 ? 0 : 11 - total
+  }
+  const first = digit(base)
+  const second = digit([...base, first])
+  return [...base, first, second].join('')
 }
 function latestCode() {
   const code = send.mock.calls.at(-1)?.[0].text?.match(/\b\d{6}\b/)?.[0]
@@ -113,6 +129,8 @@ describe('cadastro e primeiro login com confirmação real', () => {
   it('preserves agency registration CRECI and reuses it in the public profile editor after verification', async () => {
     const input = {
       ...details(),
+      cpf: undefined,
+      cnpj: randomCnpj(),
       profile: 'agency',
       companyName: 'Imobiliária Nova',
       creci: 'MG-54321-J',

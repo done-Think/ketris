@@ -210,6 +210,7 @@ describe('PrismaRegistrationRepository', () => {
     const tenant = await agency('renter-system')
     const user = await repository.createMember({
       ...memberInput(tenant.id),
+      phone: '+5511888888888',
       role: 'RENTER',
       pendingApproval: false,
       creci: undefined,

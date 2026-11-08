@@ -7,6 +7,7 @@ import { buildPublicProfileSlug } from '@shared/utils/public-profile-slug'
 
 import type { RegistrationRepository } from '../application/ports/registration-repository.port'
 import { creciKey, documentKey, phoneKey } from '@server/shared/contact-keys'
+import { uniqueViolation } from '@server/shared/prisma-unique-violation'
 
 import {
   RegistrationCnpjAlreadyInUseError,
@@ -40,8 +41,8 @@ function isUniqueConflict(error: unknown): boolean {
 
 /** Translates a unique-constraint violation into the error of the field that collided. */
 function uniqueConflictError(error: unknown): Error | null {
-  if (!isUniqueConflict(error)) return null
-  const target = String((error as Prisma.PrismaClientKnownRequestError).meta?.target ?? '')
+  const target = uniqueViolation(error)
+  if (target === null) return null
   if (target.includes('phoneKey')) return new RegistrationPhoneAlreadyInUseError()
   if (target.includes('creciKey')) return new RegistrationCreciAlreadyInUseError()
   if (target.includes('cpf')) return new RegistrationCpfAlreadyInUseError()
@@ -82,10 +83,7 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
               select: tenantSelect,
             })
             .catch((error: unknown) => {
-              const target = String(
-                (error instanceof Prisma.PrismaClientKnownRequestError && error.meta?.target) ?? '',
-              )
-              if (isUniqueConflict(error) && target.includes('cnpj'))
+              if (uniqueViolation(error)?.includes('cnpj'))
                 throw new RegistrationCnpjAlreadyInUseError()
               tenantSlugConflict = isUniqueConflict(error)
               throw error
