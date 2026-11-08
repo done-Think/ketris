@@ -27,6 +27,7 @@ function toDomainUser(user: PrismaUserRecord): User {
     active: user.active,
     membershipApprovedAt: user.membershipApprovedAt,
     tenantStatus: user.tenant.status,
+    tenantAccountType: user.tenant.accountType,
     tenantName: user.tenant.name,
     tenantSlug: user.tenant.slug,
   }
@@ -36,7 +37,7 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
   async findById(id: string): Promise<User | null> {
     const user = await prisma.user.findUnique({
       where: { id },
-      include: { tenant: { select: { status: true, name: true, slug: true } } },
+      include: { tenant: { select: { status: true, name: true, slug: true, accountType: true } } },
     })
 
     return user ? toDomainUser(user) : null
@@ -45,7 +46,7 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
   async findByEmail(email: string, tenantId?: string): Promise<User | null> {
     const users = await prisma.user.findMany({
       where: { email: normalizeEmail(email), tenantId },
-      include: { tenant: { select: { status: true, name: true, slug: true } } },
+      include: { tenant: { select: { status: true, name: true, slug: true, accountType: true } } },
       take: 2,
     })
     return users.length === 1 ? toDomainUser(users[0]) : null
@@ -54,7 +55,7 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
   async findManyByEmail(email: string): Promise<User[]> {
     const users = await prisma.user.findMany({
       where: { email: normalizeEmail(email) },
-      include: { tenant: { select: { status: true, name: true, slug: true } } },
+      include: { tenant: { select: { status: true, name: true, slug: true, accountType: true } } },
       orderBy: { id: 'asc' },
     })
     return users.map(toDomainUser)
@@ -77,7 +78,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
           orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
           skip: (query.page - 1) * query.pageSize,
           take: query.pageSize,
-          include: { tenant: { select: { status: true, name: true, slug: true } } },
+          include: {
+            tenant: { select: { status: true, name: true, slug: true, accountType: true } },
+          },
         }),
         prisma.user.count({ where }),
       ],
@@ -90,7 +93,7 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
     const users = await prisma.user.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'asc' },
-      include: { tenant: { select: { status: true, name: true, slug: true } } },
+      include: { tenant: { select: { status: true, name: true, slug: true, accountType: true } } },
     })
 
     return users.map(toDomainUser)
@@ -100,7 +103,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
     const user = await prisma
       .$transaction(async (tx) => {
         const created = await tx.user.create({
-          include: { tenant: { select: { status: true, name: true, slug: true } } },
+          include: {
+            tenant: { select: { status: true, name: true, slug: true, accountType: true } },
+          },
           data: {
             tenantId: newUser.tenantId,
             name: newUser.name,
@@ -137,7 +142,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
     return prisma.$transaction(async (tx) => {
       const credentialsChanged = Boolean(changes.passwordHash || changes.email || changes.role)
       const user = await tx.user.update({
-        include: { tenant: { select: { status: true, name: true, slug: true } } },
+        include: {
+          tenant: { select: { status: true, name: true, slug: true, accountType: true } },
+        },
         where: { id, tenantId: changes.tenantId },
         data: {
           name: changes.name,
@@ -179,7 +186,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
   async deactivate(id: string, tenantId?: string, actor?: UserAuditActor): Promise<User> {
     return prisma.$transaction(async (tx) => {
       const user = await tx.user.update({
-        include: { tenant: { select: { status: true, name: true, slug: true } } },
+        include: {
+          tenant: { select: { status: true, name: true, slug: true, accountType: true } },
+        },
         where: { id, tenantId },
         data: { active: false, sessionVersion: { increment: 1 } },
       })
@@ -201,7 +210,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
   async approveMembership(id: string, tenantId?: string, actor?: UserAuditActor): Promise<User> {
     return prisma.$transaction(async (tx) => {
       const user = await tx.user.update({
-        include: { tenant: { select: { status: true, name: true, slug: true } } },
+        include: {
+          tenant: { select: { status: true, name: true, slug: true, accountType: true } },
+        },
         where: { id, tenantId },
         data: { membershipApprovedAt: new Date() },
       })

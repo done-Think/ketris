@@ -50,13 +50,19 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 
-function mockSession(overrides?: Partial<{ role: 'OWNER' | 'AGENT' | 'RENTER' }>) {
+function mockSession(
+  overrides?: Partial<{
+    role: 'OWNER' | 'AGENT' | 'RENTER'
+    accountType: 'INDIVIDUAL' | 'BROKER' | 'AGENCY'
+  }>,
+) {
   vi.mocked(useSession).mockReturnValue({
     data: {
       user: { id: 'user-1', name: 'Ana', email: 'ana@example.com' },
       scope: 'tenant',
       tenantId: 't1',
       role: overrides?.role ?? 'OWNER',
+      accountType: overrides?.accountType ?? 'AGENCY',
     },
     status: 'authenticated',
     update: vi.fn(),
