@@ -834,6 +834,7 @@
       "PERSISTENCE_BUSY": "Outra operação está sendo concluída. Aguarde um instante e tente novamente.",
       "PERSISTENCE_UNAVAILABLE": "Não foi possível salvar ou recuperar a verificação. Tente novamente em instantes.",
       "AGENCY_NAME_MISSING": "Informe o nome da imobiliária nas configurações antes de criar uma verificação.",
+      "INVITEE_NOT_ELIGIBLE": "Este e-mail já pertence a um perfil cadastrado na plataforma. A verificação facial é exigida apenas de quem deseja alugar um imóvel.",
       "CONSENT_TERMS_OUTDATED": "O termo desta página mudou. Recarregue a página e leia o termo de novo.",
       "DOCUMENT_TYPE_NOT_ACCEPTED": "Este tipo de documento não é aceito nesta verificação. Use o documento pedido pela imobiliária, o mesmo na frente e no verso.",
       "PAYLOAD_TOO_LARGE": "Cada foto deve ter no máximo 3 MiB. Capture novamente.",

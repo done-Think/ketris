@@ -28,4 +28,19 @@ export class PrismaFaceCheckCandidateLookup {
     const global = await this.matches(email)
     return global.length === 1 && normalizeEmail(global[0].email) === email ? global[0].id : null
   }
+
+  /**
+   * Face check is only for people applying to rent. An email that already belongs to any
+   * non-renter account (owner, broker, agency member, property owner), in any tenant, is not eligible.
+   */
+  async isRegisteredNonRenter(contact: string | null): Promise<boolean> {
+    const email = faceCheckContactEmail(contact)
+    if (!email) return false
+    const rows = await this.database.$queryRaw<{ id: string }[]>(Prisma.sql`
+      SELECT "id" FROM "users"
+      WHERE lower(btrim("email")) = ${email} AND "role" <> 'RENTER'
+      LIMIT 1
+    `)
+    return rows.length > 0
+  }
 }
