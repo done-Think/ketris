@@ -17639,7 +17639,7 @@ export interface components {
           password: string
           phone: string
           /** @enum {string} */
-          profile: 'owner' | 'agency' | 'developer'
+          profile: 'owner' | 'agency' | 'developer' | 'condoManager'
         }
       | {
           /** @enum {boolean} */

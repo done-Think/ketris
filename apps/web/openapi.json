@@ -3060,7 +3060,10 @@
                 "enum": ["pt-BR", "en-US", "es-ES"],
                 "default": "pt-BR"
               },
-              "profile": { "type": "string", "enum": ["owner", "agency", "developer"] },
+              "profile": {
+                "type": "string",
+                "enum": ["owner", "agency", "developer", "condoManager"]
+              },
               "companyName": { "type": "string", "minLength": 1 },
               "creci": { "type": "string", "minLength": 1, "maxLength": 32 }
             },

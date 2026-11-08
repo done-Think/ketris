@@ -71,7 +71,11 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
   })
 
   const showCreci = profile === 'broker' || profile === 'agency'
-  const showCompanyName = profile === 'agency' || profile === 'developer' || profile === 'broker'
+  const showCompanyName =
+    profile === 'agency' ||
+    profile === 'developer' ||
+    profile === 'condoManager' ||
+    profile === 'broker'
 
   const acceptTerms = useWatch({ control, name: 'acceptTerms' })
 

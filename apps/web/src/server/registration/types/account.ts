@@ -1,6 +1,6 @@
 export type RegistrationAccountType = 'INDIVIDUAL' | 'BROKER' | 'AGENCY'
 export type RegistrationTenantStatus = 'TRIAL' | 'ACTIVE' | 'SUSPENDED' | 'CANCELED'
-export type TenantOwnerProfile = 'owner' | 'broker' | 'agency' | 'developer'
+export type TenantOwnerProfile = 'owner' | 'broker' | 'agency' | 'developer' | 'condoManager'
 
 export interface RegistrationTenant {
   id: string

@@ -6,7 +6,7 @@ import type { SchemaMessageTranslator } from '@shared/types'
 
 import { createEmailSchema } from './login-schema'
 
-const NON_BROKER_PROFILE_IDS = ['owner', 'agency', 'developer', 'renter'] as const
+const NON_BROKER_PROFILE_IDS = ['owner', 'agency', 'developer', 'condoManager', 'renter'] as const
 
 export function createRegistrationDetailsSchema(
   t: SchemaMessageTranslator<
