@@ -24,10 +24,15 @@ import type {
 import { EmailChangeDialog } from './EmailChangeDialog'
 
 const PHONE_MASK = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
+const CPF_MASK = [{ mask: '000.000.000-00' }]
+const CNPJ_MASK = [{ mask: '00.000.000/0000-00' }]
 
 export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProps) {
   const t = useTranslations('common.profilePage')
-  const { update } = useSession()
+  const { data: sessionData, update } = useSession()
+  // A company account (agency owner) is identified by CNPJ; everyone else by CPF.
+  const documentKind =
+    user.role === 'OWNER' && sessionData?.accountType === 'AGENCY' ? 'cnpj' : 'cpf'
   const { enqueueSnackbar } = useSnackbar()
   const inputId = useId()
   const [emailChangeOpen, setEmailChangeOpen] = useState(false)
@@ -35,13 +40,19 @@ export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProp
   const upload = useUploadAvatar()
   const form = useForm<CurrentUserProfileValues>({
     resolver: zodResolver(
-      createCurrentUserProfileSchema((key) => t(`errors.${key}`), user.role === 'AGENT'),
+      createCurrentUserProfileSchema(
+        (key) => t(`errors.${key}`),
+        user.role === 'AGENT',
+        documentKind,
+      ),
     ),
     defaultValues: {
       name: user.name,
       phone: user.phone ?? '',
       email: user.email,
       creci: user.creci ?? '',
+      cpf: user.cpf ?? '',
+      cnpj: user.tenantCnpj ?? '',
       avatarFile: null,
     },
   })
@@ -72,6 +83,7 @@ export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProp
         name: values.name,
         phone: values.phone,
         ...(user.role === 'AGENT' ? { creci: values.creci } : {}),
+        ...(documentKind === 'cnpj' ? { cnpj: values.cnpj } : { cpf: values.cpf }),
         avatarUrl: nextAvatarUrl,
       })
       form.reset({
@@ -79,18 +91,28 @@ export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProp
         phone: saved.phone ?? '',
         email: saved.email,
         creci: saved.creci ?? '',
+        cpf: saved.cpf ?? '',
+        cnpj: saved.tenantCnpj ?? '',
         avatarFile: null,
       })
       await update()
       enqueueSnackbar(t('profileSuccess'), { variant: 'success' })
     } catch (error) {
       const code = getApiErrorCode(error)
+      const conflicts = {
+        PHONE_ALREADY_IN_USE: 'phoneInUse',
+        CRECI_ALREADY_IN_USE: 'creciInUse',
+        CPF_ALREADY_IN_USE: 'cpfInUse',
+        CNPJ_ALREADY_IN_USE: 'cnpjInUse',
+      } as const
       const key =
         code === 'AVATAR_VALIDATION_ERROR'
           ? 'avatarFormatError'
           : code === 'FORBIDDEN' || code === 'ACCOUNT_DEACTIVATED'
             ? 'permissionError'
-            : 'profileError'
+            : code && code in conflicts
+              ? conflicts[code as keyof typeof conflicts]
+              : 'profileError'
       form.setError('root', { message: t(key) })
     }
   }
@@ -146,6 +168,27 @@ export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProp
             autoComplete="tel"
             InputProps={{ readOnly: busy }}
           />
+          {documentKind === 'cnpj' ? (
+            <RhfMaskedTextField
+              control={form.control}
+              name="cnpj"
+              label={t('cnpj')}
+              mask={CNPJ_MASK}
+              fullWidth
+              inputMode="numeric"
+              InputProps={{ readOnly: busy }}
+            />
+          ) : (
+            <RhfMaskedTextField
+              control={form.control}
+              name="cpf"
+              label={t('cpf')}
+              mask={CPF_MASK}
+              fullWidth
+              inputMode="numeric"
+              InputProps={{ readOnly: busy }}
+            />
+          )}
           {user.role === 'AGENT' ? (
             <RhfTextField
               control={form.control}
@@ -186,6 +229,8 @@ export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProp
                   phone: user.phone ?? '',
                   email: user.email,
                   creci: user.creci ?? '',
+                  cpf: user.cpf ?? '',
+                  cnpj: user.tenantCnpj ?? '',
                   avatarFile: null,
                 })
               }

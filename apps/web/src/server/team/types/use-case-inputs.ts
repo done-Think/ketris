@@ -25,6 +25,7 @@ export interface DeactivateBrokerInput extends TeamActor {
 export interface InviteBrokerInput extends TeamActor {
   name: string
   email: string
+  cpf: string
   locale: AppLocale
 }
 

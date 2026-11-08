@@ -116,6 +116,18 @@ export class CreciAlreadyInUseError extends AppError {
   }
 }
 
+export class CpfAlreadyInUseError extends AppError {
+  constructor() {
+    super('Este CPF já está em uso nesta conta.', { status: 409, code: 'CPF_ALREADY_IN_USE' })
+  }
+}
+
+export class CnpjAlreadyInUseError extends AppError {
+  constructor() {
+    super('Este CNPJ já possui cadastro.', { status: 409, code: 'CNPJ_ALREADY_IN_USE' })
+  }
+}
+
 export class InvalidRefreshTokenError extends AppError {
   constructor() {
     super('Refresh token inválido, expirado ou revogado.', {

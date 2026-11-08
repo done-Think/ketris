@@ -41,6 +41,13 @@ export class UpdateUserUseCase {
       throw new ForbiddenError('O próprio usuário não pode alterar seu papel.')
     }
 
+    if (input.cnpj !== undefined) {
+      const ownsCompany =
+        isSelfUpdate && target.role === 'OWNER' && target.tenantAccountType === 'AGENCY'
+      if (!ownsCompany)
+        throw new ForbiddenError('Só o responsável por uma conta de empresa altera o CNPJ.')
+    }
+
     if (input.email && input.email.trim().toLowerCase() !== target.email.toLowerCase()) {
       throw new EmailConfirmationRequiredError()
     }
@@ -51,6 +58,8 @@ export class UpdateUserUseCase {
       auditActor: { kind: 'USER', id: input.actorId },
       phone: input.phone,
       creci: input.creci,
+      cpf: input.cpf,
+      cnpj: input.cnpj,
       avatarUrl: input.avatarUrl,
       role: input.role,
     })

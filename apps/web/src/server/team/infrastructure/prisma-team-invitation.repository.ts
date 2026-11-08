@@ -1,4 +1,8 @@
+import { Prisma } from '@prisma/client'
+
+import { CpfAlreadyInUseError, EmailAlreadyInUseError } from '@server/auth/domain/errors'
 import { prisma } from '@server/db/prisma'
+import { documentKey } from '@server/shared/contact-keys'
 import { recordUserAudit } from '@server/auth/infrastructure/user-audit'
 
 import type { TeamInvitationRepository } from '../application/ports/team-invitation-repository.port'
@@ -40,37 +44,46 @@ export class PrismaTeamInvitationRepository implements TeamInvitationRepository 
   }
 
   async create(invitation: NewTeamInvitation): Promise<StoredTeamInvitation> {
-    return prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          tenantId: invitation.tenantId,
-          name: invitation.name,
-          email: invitation.email,
-          passwordHash: invitation.passwordHash,
-          role: 'AGENT',
-          emailVerifiedAt: null,
-          membershipApprovedAt: new Date(),
-        },
-      })
-      await recordUserAudit(tx, {
-        userId: user.id,
-        tenantId: invitation.tenantId,
-        action: 'CREATED',
-        actor: { kind: 'USER', id: invitation.actor.id },
-      })
-      const record = await tx.teamInvitation.create({
-        data: {
-          tenantId: invitation.tenantId,
+    return prisma
+      .$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            tenantId: invitation.tenantId,
+            name: invitation.name,
+            email: invitation.email,
+            cpf: documentKey(invitation.cpf),
+            passwordHash: invitation.passwordHash,
+            role: 'AGENT',
+            emailVerifiedAt: null,
+            membershipApprovedAt: new Date(),
+          },
+        })
+        await recordUserAudit(tx, {
           userId: user.id,
-          tokenHash: invitation.tokenHash,
-          expiresAt: invitation.expiresAt,
-          createdById: invitation.actor.id,
-          createdByName: invitation.actor.name,
-        },
-        select: invitationSelect,
+          tenantId: invitation.tenantId,
+          action: 'CREATED',
+          actor: { kind: 'USER', id: invitation.actor.id },
+        })
+        const record = await tx.teamInvitation.create({
+          data: {
+            tenantId: invitation.tenantId,
+            userId: user.id,
+            tokenHash: invitation.tokenHash,
+            expiresAt: invitation.expiresAt,
+            createdById: invitation.actor.id,
+            createdByName: invitation.actor.name,
+          },
+          select: invitationSelect,
+        })
+        return toStored(record)
       })
-      return toStored(record)
-    })
+      .catch((error: unknown) => {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')
+          throw String(error.meta?.target ?? '').includes('cpf')
+            ? new CpfAlreadyInUseError()
+            : new EmailAlreadyInUseError()
+        throw error
+      })
   }
 
   async findPendingByUser(tenantId: string, userId: string): Promise<StoredTeamInvitation | null> {

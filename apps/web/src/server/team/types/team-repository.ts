@@ -46,6 +46,7 @@ export interface NewTeamInvitation {
   tenantId: string
   name: string
   email: string
+  cpf: string
   passwordHash: string
   tokenHash: string
   expiresAt: Date

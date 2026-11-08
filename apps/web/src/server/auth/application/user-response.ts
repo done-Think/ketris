@@ -9,6 +9,8 @@ export function toAuthenticatedUserResponse(user: AuthenticatedUser): Authentica
     email: user.email,
     phone: user.phone ?? null,
     creci: user.creci ?? null,
+    cpf: user.cpf ?? null,
+    tenantCnpj: user.tenantCnpj ?? null,
     avatarUrl: user.avatarUrl ?? null,
     role: user.role,
     active: user.active,

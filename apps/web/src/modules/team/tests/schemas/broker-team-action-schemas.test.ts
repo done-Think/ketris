@@ -51,13 +51,24 @@ describe('broker team action schemas', () => {
     expect(deactivateSchema.safeParse({ destinationId: 'b' }).success).toBe(true)
   })
 
-  it('invites with only name and e-mail', () => {
-    expect(inviteSchema.parse({ name: ' Bruno ', email: ' bruno@ketris.dev ' })).toEqual({
+  it('invites with name, e-mail and a valid CPF', () => {
+    const cpf = '529.982.247-25'
+    expect(inviteSchema.parse({ name: ' Bruno ', email: ' bruno@ketris.dev ', cpf })).toEqual({
       name: 'Bruno',
       email: 'bruno@ketris.dev',
+      cpf,
     })
-    expect(inviteSchema.safeParse({ name: '   ', email: 'bruno@ketris.dev' }).success).toBe(false)
-    expect(inviteSchema.safeParse({ name: 'Bruno', email: 'bruno' }).success).toBe(false)
+    expect(inviteSchema.safeParse({ name: '   ', email: 'bruno@ketris.dev', cpf }).success).toBe(
+      false,
+    )
+    expect(inviteSchema.safeParse({ name: 'Bruno', email: 'bruno', cpf }).success).toBe(false)
+    expect(
+      inviteSchema.safeParse({ name: 'Bruno', email: 'bruno@ketris.dev', cpf: '' }).success,
+    ).toBe(false)
+    expect(
+      inviteSchema.safeParse({ name: 'Bruno', email: 'bruno@ketris.dev', cpf: '111.111.111-11' })
+        .success,
+    ).toBe(false)
   })
 
   it('requires a matching password of at least 8 characters to accept the invitation', () => {

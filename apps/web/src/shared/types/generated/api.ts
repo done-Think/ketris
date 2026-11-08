@@ -15446,6 +15446,7 @@ export interface components {
     AuthenticatedUserResponse: {
       active: boolean
       avatarUrl: string | null
+      cpf: string | null
       creci: string | null
       /** Format: email */
       email: string
@@ -15455,6 +15456,7 @@ export interface components {
       phone: string | null
       /** @enum {string} */
       role: 'OWNER' | 'AGENT' | 'RENTER' | 'PROPERTY_OWNER'
+      tenantCnpj: string | null
       tenantId: string
     }
     AvatarUploadRequest: {
@@ -16469,6 +16471,8 @@ export interface components {
       size: number
     }
     InviteBrokerRequest: {
+      /** @example 529.982.247-25 */
+      cpf: string
       /**
        * Format: email
        * @example marina@imobiliaria.com.br
@@ -18286,6 +18290,8 @@ export interface components {
     }
     UpdateUserRequest: {
       avatarUrl?: string | null
+      cnpj?: string
+      cpf?: string
       creci?: string | null
       /** Format: email */
       email?: string

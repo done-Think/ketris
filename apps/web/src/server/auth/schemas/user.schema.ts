@@ -24,6 +24,8 @@ export const authenticatedUserResponseSchema = z
     name: z.string(),
     phone: z.string().nullable(),
     creci: z.string().nullable(),
+    cpf: z.string().nullable(),
+    tenantCnpj: z.string().nullable(),
     email: z.string().email(),
     avatarUrl: z.string().min(1).nullable(),
     role: userRoleSchema,

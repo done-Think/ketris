@@ -49,7 +49,13 @@ describe('InviteBrokerUseCase', () => {
       hasher,
       mailer,
       () => now,
-    ).execute({ ...owner, name: ' Bruna ', email: ' Bruna@Example.test ', locale: 'pt-BR' })
+    ).execute({
+      ...owner,
+      name: ' Bruna ',
+      email: ' Bruna@Example.test ',
+      cpf: '52998224725',
+      locale: 'pt-BR',
+    })
 
     expect(result).toEqual({ brokerId: 'agent-9', emailDelivered: true })
     const created = vi.mocked(invitations.create).mock.calls[0][0]
@@ -79,7 +85,13 @@ describe('InviteBrokerUseCase', () => {
       invitations,
       hasher,
       mailer,
-    ).execute({ ...owner, name: 'Bruna', email: 'bruna@example.test', locale: 'pt-BR' })
+    ).execute({
+      ...owner,
+      name: 'Bruna',
+      email: 'bruna@example.test',
+      cpf: '52998224725',
+      locale: 'pt-BR',
+    })
 
     expect(result.emailDelivered).toBe(false)
   })
@@ -92,6 +104,7 @@ describe('InviteBrokerUseCase', () => {
         ...owner,
         name: 'Bruna',
         email: 'bruna@example.test',
+        cpf: '52998224725',
         locale: 'pt-BR',
       }),
     ).rejects.toBeInstanceOf(EmailAlreadyInUseError)

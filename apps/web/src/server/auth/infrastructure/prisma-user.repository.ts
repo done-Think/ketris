@@ -8,11 +8,13 @@ import { prisma } from '@server/db/prisma'
 import type { NewUser, UserRepository, UserUpdate } from '../application/ports/user-repository.port'
 import type { User } from '../domain/user.entity'
 import {
+  CnpjAlreadyInUseError,
+  CpfAlreadyInUseError,
   CreciAlreadyInUseError,
   EmailAlreadyInUseError,
   PhoneAlreadyInUseError,
 } from '../domain/errors'
-import { creciKey, phoneKey } from '@server/shared/contact-keys'
+import { creciKey, documentKey, phoneKey } from '@server/shared/contact-keys'
 import { normalizeEmail } from '@server/shared/normalize-email'
 import type { PrismaUserRecord } from '../types/prisma-user'
 
@@ -22,6 +24,8 @@ function uniqueConflictError(error: unknown): Error | null {
   const target = String(error.meta?.target ?? '')
   if (target.includes('phoneKey')) return new PhoneAlreadyInUseError()
   if (target.includes('creciKey')) return new CreciAlreadyInUseError()
+  if (target.includes('cpf')) return new CpfAlreadyInUseError()
+  if (target.includes('cnpj')) return new CnpjAlreadyInUseError()
   return new EmailAlreadyInUseError()
 }
 
@@ -33,6 +37,7 @@ function toDomainUser(user: PrismaUserRecord): User {
     email: user.email,
     phone: user.phone,
     creci: user.creci,
+    cpf: user.cpf,
     emailVerifiedAt: user.emailVerifiedAt ?? null,
     sessionVersion: user.sessionVersion,
     passwordHash: user.passwordHash,
@@ -42,6 +47,7 @@ function toDomainUser(user: PrismaUserRecord): User {
     membershipApprovedAt: user.membershipApprovedAt,
     tenantStatus: user.tenant.status,
     tenantAccountType: user.tenant.accountType,
+    tenantCnpj: user.tenant.cnpj,
     tenantName: user.tenant.name,
     tenantSlug: user.tenant.slug,
   }
@@ -51,7 +57,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
   async findById(id: string): Promise<User | null> {
     const user = await prisma.user.findUnique({
       where: { id },
-      include: { tenant: { select: { status: true, name: true, slug: true, accountType: true } } },
+      include: {
+        tenant: { select: { status: true, name: true, slug: true, accountType: true, cnpj: true } },
+      },
     })
 
     return user ? toDomainUser(user) : null
@@ -60,7 +68,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
   async findByEmail(email: string, tenantId?: string): Promise<User | null> {
     const users = await prisma.user.findMany({
       where: { email: normalizeEmail(email), tenantId },
-      include: { tenant: { select: { status: true, name: true, slug: true, accountType: true } } },
+      include: {
+        tenant: { select: { status: true, name: true, slug: true, accountType: true, cnpj: true } },
+      },
       take: 2,
     })
     return users.length === 1 ? toDomainUser(users[0]) : null
@@ -69,7 +79,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
   async findManyByEmail(email: string): Promise<User[]> {
     const users = await prisma.user.findMany({
       where: { email: normalizeEmail(email) },
-      include: { tenant: { select: { status: true, name: true, slug: true, accountType: true } } },
+      include: {
+        tenant: { select: { status: true, name: true, slug: true, accountType: true, cnpj: true } },
+      },
       orderBy: { id: 'asc' },
     })
     return users.map(toDomainUser)
@@ -93,7 +105,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
           skip: (query.page - 1) * query.pageSize,
           take: query.pageSize,
           include: {
-            tenant: { select: { status: true, name: true, slug: true, accountType: true } },
+            tenant: {
+              select: { status: true, name: true, slug: true, accountType: true, cnpj: true },
+            },
           },
         }),
         prisma.user.count({ where }),
@@ -107,7 +121,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
     const users = await prisma.user.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'asc' },
-      include: { tenant: { select: { status: true, name: true, slug: true, accountType: true } } },
+      include: {
+        tenant: { select: { status: true, name: true, slug: true, accountType: true, cnpj: true } },
+      },
     })
 
     return users.map(toDomainUser)
@@ -118,7 +134,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
       .$transaction(async (tx) => {
         const created = await tx.user.create({
           include: {
-            tenant: { select: { status: true, name: true, slug: true, accountType: true } },
+            tenant: {
+              select: { status: true, name: true, slug: true, accountType: true, cnpj: true },
+            },
           },
           data: {
             tenantId: newUser.tenantId,
@@ -128,6 +146,7 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
             phoneKey: phoneKey(newUser.phone),
             creci: newUser.creci,
             creciKey: creciKey(newUser.creci),
+            cpf: documentKey(newUser.cpf),
             termsAcceptedAt: newUser.termsAcceptedAt,
             emailVerifiedAt: newUser.emailVerifiedAt ?? null,
             passwordHash: newUser.passwordHash,
@@ -158,7 +177,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
         const credentialsChanged = Boolean(changes.passwordHash || changes.email || changes.role)
         const user = await tx.user.update({
           include: {
-            tenant: { select: { status: true, name: true, slug: true, accountType: true } },
+            tenant: {
+              select: { status: true, name: true, slug: true, accountType: true, cnpj: true },
+            },
           },
           where: { id, tenantId: changes.tenantId },
           data: {
@@ -171,9 +192,15 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
             ...(changes.phone !== undefined ? { phoneKey: phoneKey(changes.phone) } : {}),
             creci: changes.creci,
             ...(changes.creci !== undefined ? { creciKey: creciKey(changes.creci) } : {}),
+            ...(changes.cpf !== undefined ? { cpf: documentKey(changes.cpf) } : {}),
             sessionVersion: credentialsChanged ? { increment: 1 } : undefined,
           },
         })
+        if (changes.cnpj !== undefined) {
+          const cnpj = documentKey(changes.cnpj)
+          await tx.tenant.update({ where: { id: user.tenantId }, data: { cnpj } })
+          user.tenant.cnpj = cnpj
+        }
         if (credentialsChanged) {
           await tx.refreshToken.updateMany({
             where: { userId: id, tenantId: user.tenantId, revokedAt: null },
@@ -185,6 +212,8 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
           ...(changes.email !== undefined ? ['email'] : []),
           ...(changes.phone !== undefined ? ['phone'] : []),
           ...(changes.creci !== undefined ? ['creci'] : []),
+          ...(changes.cpf !== undefined ? ['cpf'] : []),
+          ...(changes.cnpj !== undefined ? ['cnpj'] : []),
           ...(changes.avatarUrl !== undefined ? ['avatarUrl'] : []),
           ...(changes.role !== undefined ? ['role'] : []),
           ...(changes.passwordHash !== undefined ? ['password'] : []),
@@ -207,7 +236,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
     return prisma.$transaction(async (tx) => {
       const user = await tx.user.update({
         include: {
-          tenant: { select: { status: true, name: true, slug: true, accountType: true } },
+          tenant: {
+            select: { status: true, name: true, slug: true, accountType: true, cnpj: true },
+          },
         },
         where: { id, tenantId },
         data: { active: false, sessionVersion: { increment: 1 } },
@@ -231,7 +262,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
     return prisma.$transaction(async (tx) => {
       const user = await tx.user.update({
         include: {
-          tenant: { select: { status: true, name: true, slug: true, accountType: true } },
+          tenant: {
+            select: { status: true, name: true, slug: true, accountType: true, cnpj: true },
+          },
         },
         where: { id, tenantId },
         data: { membershipApprovedAt: new Date() },

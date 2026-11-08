@@ -365,6 +365,8 @@
           "name": { "type": "string" },
           "phone": { "type": "string", "nullable": true },
           "creci": { "type": "string", "nullable": true },
+          "cpf": { "type": "string", "nullable": true },
+          "tenantCnpj": { "type": "string", "nullable": true },
           "email": { "type": "string", "format": "email" },
           "avatarUrl": { "type": "string", "nullable": true, "minLength": 1 },
           "role": { "type": "string", "enum": ["OWNER", "AGENT", "RENTER", "PROPERTY_OWNER"] },
@@ -377,6 +379,8 @@
           "name",
           "phone",
           "creci",
+          "cpf",
+          "tenantCnpj",
           "email",
           "avatarUrl",
           "role",
@@ -3560,6 +3564,8 @@
           "email": { "type": "string", "maxLength": 254, "format": "email" },
           "phone": { "type": "string", "nullable": true, "maxLength": 32 },
           "creci": { "type": "string", "nullable": true, "maxLength": 32 },
+          "cpf": { "type": "string" },
+          "cnpj": { "type": "string" },
           "avatarUrl": { "type": "string", "nullable": true, "minLength": 1 },
           "role": { "type": "string", "enum": ["OWNER", "AGENT", "PROPERTY_OWNER"] }
         },
@@ -5291,9 +5297,10 @@
             "format": "email",
             "example": "marina@imobiliaria.com.br"
           },
+          "cpf": { "type": "string", "example": "529.982.247-25" },
           "locale": { "type": "string", "enum": ["pt-BR", "en-US", "es-ES"], "example": "pt-BR" }
         },
-        "required": ["name", "email", "locale"],
+        "required": ["name", "email", "cpf", "locale"],
         "additionalProperties": false
       },
       "ResendTeamInvitationRequest": {

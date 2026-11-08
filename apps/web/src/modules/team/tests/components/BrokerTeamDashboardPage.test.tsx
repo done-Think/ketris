@@ -365,12 +365,16 @@ describe('BrokerTeamDashboardPage', () => {
     fireEvent.change(within(dialog).getByLabelText('E-mail'), {
       target: { value: 'eva@ketris.dev' },
     })
+    fireEvent.input(within(dialog).getByLabelText('CPF do corretor'), {
+      target: { value: '52998224725' },
+    })
     fireEvent.click(within(dialog).getByRole('button', { name: 'Enviar convite' }))
 
     await waitFor(() =>
       expect(service.invite).toHaveBeenCalledWith({
         name: 'Eva',
         email: 'eva@ketris.dev',
+        cpf: '529.982.247-25',
         locale: 'pt-BR',
       }),
     )
@@ -389,6 +393,9 @@ describe('BrokerTeamDashboardPage', () => {
     fireEvent.change(within(dialog).getByLabelText('Nome completo'), { target: { value: 'Eva' } })
     fireEvent.change(within(dialog).getByLabelText('E-mail'), {
       target: { value: 'eva@ketris.dev' },
+    })
+    fireEvent.input(within(dialog).getByLabelText('CPF do corretor'), {
+      target: { value: '52998224725' },
     })
     fireEvent.click(within(dialog).getByRole('button', { name: 'Enviar convite' }))
 
