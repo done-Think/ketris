@@ -1,5 +1,22 @@
 import type { AuthTestEmail } from '../../types/auth-mailbox'
 
+// A valid CNPJ that differs on every run, because a company can register only once.
+function uniqueCnpj() {
+  const base = `${Date.now()}`.slice(-8).padStart(8, '0') + '0001'
+  const digits = [...base].map(Number)
+  const check = (values: number[]) => {
+    const weights =
+      values.length === 12
+        ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    const rest = values.reduce((sum, value, index) => sum + value * weights[index], 0) % 11
+    return rest < 2 ? 0 : 11 - rest
+  }
+  const first = check(digits)
+  const second = check([...digits, first])
+  return [...digits, first, second].join('')
+}
+
 describe('Agency public profile defaults', () => {
   const suffix = Date.now()
   const email = `agency-profile-${suffix}@example.test`
@@ -92,6 +109,7 @@ describe('Agency public profile defaults', () => {
       cy.get('input[name="companyName"]').type('Imobiliária Nova')
       cy.get('input[name="email"]').type(signupEmail)
       cy.get('input[name="phone"]').type('35997989991')
+      cy.get('input[name="cnpj"]').type(uniqueCnpj())
       cy.get('input[name="creci"]').type(creci)
       cy.get('input[name="password"]').type(password, { log: false })
       cy.get('input[name="passwordConfirmation"]').type(password, { log: false })

@@ -28,6 +28,7 @@ describeWithMailbox('Auth — cadastro, sessão e prova real de e-mail', () => {
     cy.get('input[name="fullName"]').type('Proprietária E2E')
     cy.get('input[name="email"]').type(email)
     cy.get('input[name="phone"]').type('11999999999')
+    cy.get('input[name="cpf"]').type('52998224725')
     cy.get('input[name="password"]').type(password, { log: false })
     cy.get('input[name="passwordConfirmation"]').type(password, { log: false })
     cy.get('input[name="acceptTerms"]').check()

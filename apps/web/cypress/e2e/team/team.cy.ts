@@ -124,6 +124,7 @@ describe('Equipe de corretores', () => {
     cy.contains('button', 'Convidar corretor').click()
     dialog().find('input[name="name"]').type('Eva Convidada')
     dialog().find('input[name="email"]').type(invitedEmail)
+    dialog().find('input[name="cpf"]').type('52998224725')
     dialog().contains('button', 'Enviar convite').click()
     cy.then(() => cy.contains('Convite enviado para ' + invitedEmail).should('be.visible'))
     card('Eva Convidada').should('contain', 'Convite pendente')
