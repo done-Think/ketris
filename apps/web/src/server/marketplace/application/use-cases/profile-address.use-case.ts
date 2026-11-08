@@ -14,7 +14,7 @@ import { PublicProfileNotPublishedError } from '../../domain/profile-address-err
 
 function ownTarget(input: ProfileAddressInput): PublicProfileTarget {
   if (input.kind === 'broker') {
-    assertBrokerProfileAccess(input.actorRole)
+    assertBrokerProfileAccess(input.actorRole, input.actorAccountType)
     return { kind: input.kind, profileId: input.actorId }
   }
   assertAgencyProfileAccess(input.actorRole)
