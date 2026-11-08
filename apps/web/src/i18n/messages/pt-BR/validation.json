@@ -77,6 +77,7 @@
     "partyAndRenterRequired": "Informe a parte e o usuário locatário juntos.",
     "postalCodeInvalid": "Informe um CEP com 8 dígitos.",
     "cpfInvalid": "Informe um CPF válido.",
+    "cnpjInvalid": "Informe um CNPJ válido.",
     "rateLimitUnavailable": "Serviço temporariamente indisponível.",
     "rateLimitExceeded": "Muitas requisições. Tente novamente mais tarde.",
     "clientUpdateRequired": "A aplicação foi atualizada. Recarregue a página para continuar.",

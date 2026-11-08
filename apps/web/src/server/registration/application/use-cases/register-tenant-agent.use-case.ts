@@ -29,6 +29,7 @@ export class RegisterTenantAgentUseCase {
       pendingApproval: true,
       phone: input.phone,
       creci: input.creci,
+      cpf: input.cpf,
       termsAcceptedAt: new Date(),
       createBrokerProfile: true,
     })

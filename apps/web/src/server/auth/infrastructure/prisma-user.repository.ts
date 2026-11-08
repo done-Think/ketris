@@ -7,9 +7,23 @@ import { prisma } from '@server/db/prisma'
 
 import type { NewUser, UserRepository, UserUpdate } from '../application/ports/user-repository.port'
 import type { User } from '../domain/user.entity'
-import { EmailAlreadyInUseError } from '../domain/errors'
+import {
+  CreciAlreadyInUseError,
+  EmailAlreadyInUseError,
+  PhoneAlreadyInUseError,
+} from '../domain/errors'
+import { creciKey, phoneKey } from '@server/shared/contact-keys'
 import { normalizeEmail } from '@server/shared/normalize-email'
 import type { PrismaUserRecord } from '../types/prisma-user'
+
+function uniqueConflictError(error: unknown): Error | null {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002')
+    return null
+  const target = String(error.meta?.target ?? '')
+  if (target.includes('phoneKey')) return new PhoneAlreadyInUseError()
+  if (target.includes('creciKey')) return new CreciAlreadyInUseError()
+  return new EmailAlreadyInUseError()
+}
 
 function toDomainUser(user: PrismaUserRecord): User {
   return {
@@ -111,7 +125,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
             name: newUser.name,
             email: normalizeEmail(newUser.email),
             phone: newUser.phone,
+            phoneKey: phoneKey(newUser.phone),
             creci: newUser.creci,
+            creciKey: creciKey(newUser.creci),
             termsAcceptedAt: newUser.termsAcceptedAt,
             emailVerifiedAt: newUser.emailVerifiedAt ?? null,
             passwordHash: newUser.passwordHash,
@@ -130,57 +146,61 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
         return created
       })
       .catch((error: unknown) => {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')
-          throw new EmailAlreadyInUseError()
-        throw error
+        throw uniqueConflictError(error) ?? error
       })
 
     return toDomainUser(user)
   }
 
   async update(id: string, changes: UserUpdate): Promise<User> {
-    return prisma.$transaction(async (tx) => {
-      const credentialsChanged = Boolean(changes.passwordHash || changes.email || changes.role)
-      const user = await tx.user.update({
-        include: {
-          tenant: { select: { status: true, name: true, slug: true, accountType: true } },
-        },
-        where: { id, tenantId: changes.tenantId },
-        data: {
-          name: changes.name,
-          email: changes.email ? normalizeEmail(changes.email) : undefined,
-          avatarUrl: changes.avatarUrl,
-          role: changes.role,
-          passwordHash: changes.passwordHash,
-          phone: changes.phone,
-          creci: changes.creci,
-          sessionVersion: credentialsChanged ? { increment: 1 } : undefined,
-        },
-      })
-      if (credentialsChanged) {
-        await tx.refreshToken.updateMany({
-          where: { userId: id, tenantId: user.tenantId, revokedAt: null },
-          data: { revokedAt: new Date() },
+    return prisma
+      .$transaction(async (tx) => {
+        const credentialsChanged = Boolean(changes.passwordHash || changes.email || changes.role)
+        const user = await tx.user.update({
+          include: {
+            tenant: { select: { status: true, name: true, slug: true, accountType: true } },
+          },
+          where: { id, tenantId: changes.tenantId },
+          data: {
+            name: changes.name,
+            email: changes.email ? normalizeEmail(changes.email) : undefined,
+            avatarUrl: changes.avatarUrl,
+            role: changes.role,
+            passwordHash: changes.passwordHash,
+            phone: changes.phone,
+            ...(changes.phone !== undefined ? { phoneKey: phoneKey(changes.phone) } : {}),
+            creci: changes.creci,
+            ...(changes.creci !== undefined ? { creciKey: creciKey(changes.creci) } : {}),
+            sessionVersion: credentialsChanged ? { increment: 1 } : undefined,
+          },
         })
-      }
-      const changedFields = [
-        ...(changes.name !== undefined ? ['name'] : []),
-        ...(changes.email !== undefined ? ['email'] : []),
-        ...(changes.phone !== undefined ? ['phone'] : []),
-        ...(changes.creci !== undefined ? ['creci'] : []),
-        ...(changes.avatarUrl !== undefined ? ['avatarUrl'] : []),
-        ...(changes.role !== undefined ? ['role'] : []),
-        ...(changes.passwordHash !== undefined ? ['password'] : []),
-      ]
-      await recordUserAudit(tx, {
-        userId: id,
-        tenantId: user.tenantId,
-        action: 'UPDATED',
-        actor: changes.auditActor,
-        changedFields,
+        if (credentialsChanged) {
+          await tx.refreshToken.updateMany({
+            where: { userId: id, tenantId: user.tenantId, revokedAt: null },
+            data: { revokedAt: new Date() },
+          })
+        }
+        const changedFields = [
+          ...(changes.name !== undefined ? ['name'] : []),
+          ...(changes.email !== undefined ? ['email'] : []),
+          ...(changes.phone !== undefined ? ['phone'] : []),
+          ...(changes.creci !== undefined ? ['creci'] : []),
+          ...(changes.avatarUrl !== undefined ? ['avatarUrl'] : []),
+          ...(changes.role !== undefined ? ['role'] : []),
+          ...(changes.passwordHash !== undefined ? ['password'] : []),
+        ]
+        await recordUserAudit(tx, {
+          userId: id,
+          tenantId: user.tenantId,
+          action: 'UPDATED',
+          actor: changes.auditActor,
+          changedFields,
+        })
+        return toDomainUser(user)
       })
-      return toDomainUser(user)
-    })
+      .catch((error: unknown) => {
+        throw uniqueConflictError(error) ?? error
+      })
   }
 
   async deactivate(id: string, tenantId?: string, actor?: UserAuditActor): Promise<User> {

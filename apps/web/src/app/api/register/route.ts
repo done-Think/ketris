@@ -22,14 +22,17 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           ...details,
           agencyId: body.agencyId,
           creci: body.creci,
+          cpf: body.cpf,
         })
       : body.profile === 'renter'
-        ? await registrationContainer.registerRenterUseCase.execute(details)
+        ? await registrationContainer.registerRenterUseCase.execute({ ...details, cpf: body.cpf })
         : await registrationContainer.registerTenantOwnerUseCase.execute({
             ...details,
             profile: body.profile,
             companyName: body.companyName,
-            creci: body.creci,
+            creci: 'creci' in body ? body.creci : undefined,
+            cpf: 'cpf' in body ? body.cpf : undefined,
+            cnpj: 'cnpj' in body ? body.cnpj : undefined,
           })
 
   const response = await startEmailVerification(

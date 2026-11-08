@@ -20,6 +20,10 @@ export interface RegistrationAccount {
 export interface RegistrationContactInput {
   phone: string
   creci?: string
+  /** CPF, digits only, of the person behind an individual account. */
+  cpf?: string
+  /** CNPJ, digits only, of the company that owns a new tenant. */
+  cnpj?: string
   termsAcceptedAt: Date
   createBrokerProfile: boolean
 }

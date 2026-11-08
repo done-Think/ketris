@@ -3060,14 +3060,40 @@
                 "enum": ["pt-BR", "en-US", "es-ES"],
                 "default": "pt-BR"
               },
-              "profile": {
-                "type": "string",
-                "enum": ["owner", "agency", "developer", "condoManager"]
-              },
+              "profile": { "type": "string", "enum": ["owner"] },
               "companyName": { "type": "string", "minLength": 1 },
-              "creci": { "type": "string", "minLength": 1, "maxLength": 32 }
+              "cpf": { "type": "string" }
             },
-            "required": ["fullName", "email", "phone", "password", "acceptTerms", "profile"],
+            "required": ["fullName", "email", "phone", "password", "acceptTerms", "profile", "cpf"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "fullName": { "type": "string", "minLength": 3, "maxLength": 200 },
+              "email": { "type": "string", "maxLength": 254, "format": "email" },
+              "phone": { "type": "string", "maxLength": 32 },
+              "password": { "type": "string", "minLength": 8 },
+              "acceptTerms": { "type": "boolean", "enum": [true] },
+              "locale": {
+                "type": "string",
+                "enum": ["pt-BR", "en-US", "es-ES"],
+                "default": "pt-BR"
+              },
+              "profile": { "type": "string", "enum": ["agency", "developer", "condoManager"] },
+              "companyName": { "type": "string", "minLength": 1 },
+              "creci": { "type": "string", "minLength": 1, "maxLength": 32 },
+              "cnpj": { "type": "string" }
+            },
+            "required": [
+              "fullName",
+              "email",
+              "phone",
+              "password",
+              "acceptTerms",
+              "profile",
+              "cnpj"
+            ],
             "additionalProperties": false
           },
           {
@@ -3086,7 +3112,8 @@
               "profile": { "type": "string", "enum": ["broker"] },
               "companyName": { "type": "string", "minLength": 1 },
               "agencyId": { "type": "string", "minLength": 1 },
-              "creci": { "type": "string", "minLength": 1, "maxLength": 32 }
+              "creci": { "type": "string", "minLength": 1, "maxLength": 32 },
+              "cpf": { "type": "string" }
             },
             "required": [
               "fullName",
@@ -3095,7 +3122,8 @@
               "password",
               "acceptTerms",
               "profile",
-              "creci"
+              "creci",
+              "cpf"
             ],
             "additionalProperties": false
           },
@@ -3112,9 +3140,10 @@
                 "enum": ["pt-BR", "en-US", "es-ES"],
                 "default": "pt-BR"
               },
-              "profile": { "type": "string", "enum": ["renter"] }
+              "profile": { "type": "string", "enum": ["renter"] },
+              "cpf": { "type": "string" }
             },
-            "required": ["fullName", "email", "phone", "password", "acceptTerms", "profile"],
+            "required": ["fullName", "email", "phone", "password", "acceptTerms", "profile", "cpf"],
             "additionalProperties": false
           }
         ]
@@ -3323,8 +3352,7 @@
       },
       "SearchTenantsQuery": {
         "type": "object",
-        "properties": { "q": { "type": "string", "minLength": 1 } },
-        "required": ["q"]
+        "properties": { "q": { "type": "string", "maxLength": 100, "default": "" } }
       },
       "SignatureStatus": { "type": "string", "enum": ["PENDING", "SIGNED"] },
       "SignContractPartyRequest": {
@@ -10549,8 +10577,8 @@
         "description": "Rota pública. Busca por nome sem distinguir maiúsculas/minúsculas, limitada a 20 tenants AGENCY com status ACTIVE ou TRIAL. Usada no cadastro de corretor.",
         "parameters": [
           {
-            "schema": { "type": "string", "minLength": 1 },
-            "required": true,
+            "schema": { "type": "string", "maxLength": 100, "default": "" },
+            "required": false,
             "name": "q",
             "in": "query"
           },

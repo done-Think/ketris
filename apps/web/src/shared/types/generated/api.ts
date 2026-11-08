@@ -15224,8 +15224,8 @@ export interface paths {
      */
     get: {
       parameters: {
-        query: {
-          q: string
+        query?: {
+          q?: string
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
@@ -17627,6 +17627,25 @@ export interface components {
           /** @enum {boolean} */
           acceptTerms: true
           companyName?: string
+          cpf: string
+          /** Format: email */
+          email: string
+          fullName: string
+          /**
+           * @default pt-BR
+           * @enum {string}
+           */
+          locale?: 'pt-BR' | 'en-US' | 'es-ES'
+          password: string
+          phone: string
+          /** @enum {string} */
+          profile: 'owner'
+        }
+      | {
+          /** @enum {boolean} */
+          acceptTerms: true
+          cnpj: string
+          companyName?: string
           creci?: string
           /** Format: email */
           email: string
@@ -17639,13 +17658,14 @@ export interface components {
           password: string
           phone: string
           /** @enum {string} */
-          profile: 'owner' | 'agency' | 'developer' | 'condoManager'
+          profile: 'agency' | 'developer' | 'condoManager'
         }
       | {
           /** @enum {boolean} */
           acceptTerms: true
           agencyId?: string
           companyName?: string
+          cpf: string
           creci: string
           /** Format: email */
           email: string
@@ -17663,6 +17683,7 @@ export interface components {
       | {
           /** @enum {boolean} */
           acceptTerms: true
+          cpf: string
           /** Format: email */
           email: string
           fullName: string
@@ -17837,7 +17858,8 @@ export interface components {
       totalCount: number
     }
     SearchTenantsQuery: {
-      q: string
+      /** @default  */
+      q?: string
     }
     SearchTenantsResponse: {
       tenants: components['schemas']['TenantSearchResult'][]

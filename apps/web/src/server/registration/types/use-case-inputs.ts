@@ -5,6 +5,7 @@ export interface RegistrationDetailsInput {
   email: string
   password: string
   phone: string
+  cpf?: string
   acceptTerms: boolean
 }
 
@@ -19,6 +20,7 @@ export interface RegisterTenantOwnerInput extends RegistrationDetailsInput {
   profile: TenantOwnerProfile
   companyName?: string
   creci?: string
+  cnpj?: string
 }
 
 export interface SearchRegisterableTenantsInput {

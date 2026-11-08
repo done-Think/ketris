@@ -3,12 +3,27 @@ import { afterAll, describe, expect, it } from 'vitest'
 
 import { prisma } from '@server/db/prisma'
 import { PrismaRegistrationRepository } from '../../infrastructure/prisma-registration.repository'
-import { AgencyNotFoundError, RegistrationEmailAlreadyInUseError } from '../../domain/errors'
+import {
+  AgencyNotFoundError,
+  RegistrationCnpjAlreadyInUseError,
+  RegistrationCpfAlreadyInUseError,
+  RegistrationCreciAlreadyInUseError,
+  RegistrationEmailAlreadyInUseError,
+  RegistrationPhoneAlreadyInUseError,
+} from '../../domain/errors'
 import type { NewTenantWithAdmin } from '../../types/account'
 
 const repository = new PrismaRegistrationRepository()
 const prefix = `registration-${randomUUID()}`
 const acceptedAt = new Date('2026-10-24T12:00:00.000Z')
+
+function randomDigits(length: number) {
+  return Array.from({ length }, () => Math.floor(Math.random() * 10)).join('')
+}
+
+// Phone and CRECI are unique inside a tenant, so every fixture gets its own.
+const uniquePhone = () => `+55119${randomDigits(8)}`
+const uniqueCreci = () => `CRECI-${randomUUID().slice(0, 8)}`
 
 function ownerInput(suffix: string): NewTenantWithAdmin {
   return {
@@ -18,8 +33,8 @@ function ownerInput(suffix: string): NewTenantWithAdmin {
     passwordHash: 'first-test-hash',
     accountType: 'AGENCY',
     status: 'TRIAL',
-    phone: '+5511999999999',
-    creci: 'CRECI-123',
+    phone: uniquePhone(),
+    creci: uniqueCreci(),
     termsAcceptedAt: acceptedAt,
     createBrokerProfile: false,
   }
@@ -41,8 +56,8 @@ function memberInput(tenantId: string, email = `${randomUUID()}@example.test`) {
     passwordHash: 'member-test-hash',
     role: 'AGENT' as const,
     pendingApproval: true,
-    phone: '+5511888888888',
-    creci: 'CRECI-456',
+    phone: uniquePhone(),
+    creci: uniqueCreci(),
     termsAcceptedAt: acceptedAt,
     createBrokerProfile: true,
   }
@@ -257,5 +272,53 @@ describe('PrismaRegistrationRepository', () => {
     ).toBe(true)
     expect(await repository.findTenantById(results[0].id)).toEqual(results[0])
     expect(await repository.findTenantBySlug(results[0].slug)).toEqual(results[0])
+  })
+
+  describe('unique contact data', () => {
+    it('refuses a second account with the same phone or CRECI inside a tenant, however it is written', async () => {
+      const tenant = await agency('contacts')
+      await repository.createMember({
+        ...memberInput(tenant.id),
+        phone: '(35) 99999-9999',
+        creci: 'mg-12345-j',
+      })
+
+      await expect(
+        repository.createMember({ ...memberInput(tenant.id), phone: '35999999999' }),
+      ).rejects.toBeInstanceOf(RegistrationPhoneAlreadyInUseError)
+      await expect(
+        repository.createMember({ ...memberInput(tenant.id), creci: 'MG 12345 J' }),
+      ).rejects.toBeInstanceOf(RegistrationCreciAlreadyInUseError)
+    })
+
+    it('allows the same phone, CRECI and CPF in another tenant', async () => {
+      const first = await agency('contacts-a')
+      const second = await agency('contacts-b')
+      const shared = { phone: '(35) 98888-7777', creci: 'SP-777-F', cpf: '52998224725' }
+      await repository.createMember({ ...memberInput(first.id), ...shared })
+
+      await expect(
+        repository.createMember({ ...memberInput(second.id), ...shared }),
+      ).resolves.toBeDefined()
+    })
+
+    it('refuses a second account with the same CPF inside a tenant', async () => {
+      const tenant = await agency('cpf')
+      await repository.createMember({ ...memberInput(tenant.id), cpf: '52998224725' })
+
+      await expect(
+        repository.createMember({ ...memberInput(tenant.id), cpf: '529.982.247-25' }),
+      ).rejects.toBeInstanceOf(RegistrationCpfAlreadyInUseError)
+    })
+
+    it('registers one company per CNPJ across all tenants', async () => {
+      const cnpj = '11222333000181'
+      await repository.createTenantWithAdmin({ ...ownerInput('cnpj-a'), cnpj })
+
+      await expect(
+        repository.createTenantWithAdmin({ ...ownerInput('cnpj-b'), cnpj }),
+      ).rejects.toBeInstanceOf(RegistrationCnpjAlreadyInUseError)
+      expect(await prisma.tenant.count({ where: { name: `${prefix}-cnpj-b` } })).toBe(0)
+    })
   })
 })
