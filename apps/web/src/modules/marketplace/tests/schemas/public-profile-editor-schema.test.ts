@@ -7,12 +7,12 @@ const publicProfileEditorSchema = createPublicProfileEditorSchema((key) => key)
 const validDraft = {
   displayName: 'Marina Costa',
   headline: '',
-  bio: 'Corretora há 10 anos, focada em alto padrão.',
+  summary: 'Corretora há 10 anos, focada em alto padrão.',
   creci: '12345-F',
   phone: '(11) 90000-0000',
   region: 'Jardins, São Paulo',
-  neighborhoods: 'Jardins, Itaim Bibi',
-  specialties: 'Alto padrão, Aluguel',
+  coverage: 'Jardins, Itaim Bibi',
+  segments: 'Alto padrão, Aluguel',
   availability: 'Segunda a sexta, 9h às 18h',
   primaryColor: '#F30274',
   secondaryColor: '#212631',
@@ -26,16 +26,30 @@ describe('publicProfileEditorSchema', () => {
     expect(publicProfileEditorSchema.safeParse(validDraft).success).toBe(true)
   })
 
+  it('allows publication with a broad region and no coverage', () => {
+    const schema = createPublicProfileEditorSchema((key) => key, { requirePublishFields: true })
+    const values = {
+      ...validDraft,
+      headline: 'Especialista no Sul de Minas',
+      region: 'Sul de Minas',
+      coverage: '',
+      avatarUrl: '/api/marketplace/media/profiles/brokers/user-1/avatar.png',
+      bannerUrl: '/api/marketplace/media/profiles/brokers/user-1/banner.png',
+    }
+    expect(schema.safeParse(values).success).toBe(true)
+    expect(schema.safeParse({ ...values, region: '' }).success).toBe(false)
+  })
+
   it('aceita campos opcionais em branco', () => {
     const result = publicProfileEditorSchema.safeParse({
       ...validDraft,
       headline: '',
-      bio: '',
+      summary: '',
       creci: '',
       phone: '',
       region: '',
-      neighborhoods: '',
-      specialties: '',
+      coverage: '',
+      segments: '',
       availability: '',
       primaryColor: '',
       secondaryColor: '',

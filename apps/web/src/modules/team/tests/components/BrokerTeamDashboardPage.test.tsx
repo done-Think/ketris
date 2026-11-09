@@ -107,7 +107,7 @@ const bruno = teamMember({
   email: 'bruno@ketris.dev',
   phone: null,
   headline: null,
-  specialties: [],
+  segments: [],
   hasPublicProfile: false,
   goal: null,
   pace: { status: 'NO_GOAL', expectedSales: null, goalProgress: null },

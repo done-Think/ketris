@@ -25,6 +25,9 @@ const values: RegistrationDetailsFormValues = {
   password: 'senha-longa-123',
   passwordConfirmation: 'senha-longa-123',
   creci: '',
+  cpf: '529.982.247-25',
+  cnpj: '11.222.333/0001-81',
+  document: '',
   acceptTerms: true,
 }
 const verification = {
@@ -54,6 +57,7 @@ describe('useRegister', () => {
       email: values.email,
       phone: values.phone,
       password: values.password,
+      cpf: values.cpf,
       acceptTerms: true,
       locale: 'pt-BR',
     })
@@ -75,6 +79,40 @@ describe('useRegister', () => {
       expect.objectContaining({ agencyId: 'agency-1', creci: '12345-F' }),
     )
   })
+
+  it('preserves the optional CRECI for agency', async () => {
+    const { result } = renderRegister()
+    await act(async () => {
+      await result.current.register({ ...values, profile: 'agency', creci: ' MG-12345-J ' })
+    })
+    expect(registrationService.register).toHaveBeenCalledWith(
+      expect.objectContaining({ profile: 'agency', creci: 'MG-12345-J', cnpj: values.cnpj }),
+    )
+  })
+
+  it.each(['owner', 'developer'] as const)('does not send a CRECI for %s', async (profile) => {
+    const { result } = renderRegister()
+    await act(async () => {
+      await result.current.register({ ...values, profile, creci: 'MG-12345-J' })
+    })
+    expect(registrationService.register).toHaveBeenCalledWith(
+      expect.not.objectContaining({ creci: expect.anything() }),
+    )
+  })
+
+  it.each(['agency', 'developer', 'condoManager'] as const)(
+    'sends the CNPJ and never the CPF for %s',
+    async (profile) => {
+      const { result } = renderRegister()
+      await act(async () => {
+        await result.current.register({ ...values, profile })
+      })
+      const sent = vi.mocked(registrationService.register).mock.calls[0][0]
+      expect(sent).toMatchObject({ cnpj: values.cnpj })
+      expect(sent).not.toHaveProperty('cpf')
+    },
+  )
+
   it('mostra aprovação pendente somente após a confirmação real, sem conceder sessão', async () => {
     const { result } = renderRegister()
     await act(async () => {

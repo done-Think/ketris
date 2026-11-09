@@ -12,6 +12,10 @@ Gravações do CRM são serializadas por tenant com um advisory lock transaciona
 
 ## Listagem e seleção
 
+Propostas públicas do marketplace criam uma oportunidade e seu Lead de origem na mesma transação da cota de contato. Ambos ficam vinculados ao imóvel e ao responsável por ele. O Lead permanece na etapa Proposta e permite abrir a oportunidade existente, sem uma segunda conversão.
+
+O cadastro manual de Lead seleciona um imóvel disponível da carteira. A busca aceita `status=PUBLISHED` com paginação e mantém o escopo do corretor ou da gestão do tenant. O servidor valida novamente a disponibilidade e o acesso, usa o título cadastrado e atribui o Lead ao responsável pelo imóvel. O orçamento continua sendo texto livre. O campo opcional `propertyId` conserva a compatibilidade com clientes anteriores e com leads antigos sem vínculo.
+
 `GET /api/crm/contacts`, `/leads` e `/opportunities` retornam o vetor correspondente, `pagination` e `groups`. A página inicial é 1, com 5 itens; tamanhos aceitos são 5, 10 e 25. Busca, filtros e ordenação ocorrem no servidor. Os grupos das listas abrangem os registros autorizados; `summaryScope=results` fornece agregados do recorte do Kanban. Cada coluna carrega páginas adicionais sem calcular seu total somente com os cartões já carregados.
 
 A busca trata diferenças de caixa e acentuação. Tipos e status usam códigos canônicos na aplicação, com rótulos traduzidos. Datas e valores são apresentados por `next-intl`, preservando BRL e os centavos armazenados. A coluna de imóveis do contato conta imóveis distintos em oportunidades visíveis não arquivadas.
@@ -32,7 +36,9 @@ Limites aprovados: nome 200, e-mail 254, telefone 32, interesse/orçamento/orige
 
 ## Migrations e CI
 
-As migrations `20261025230000_crm_audit_and_system_activities` e `20261026010000_crm_contact_creator` são aditivas. Elas criam o histórico, o código de atividade de sistema e a autoria opcional do contato. O procedimento continua `prisma migrate deploy`, seguido do seed existente. Nenhuma variável secreta nova é necessária para CRM.
+A migration `20261110090000_lead_property_reference` adiciona a referência opcional do Lead ao imóvel, com isolamento por tenant. Leads já convertidos recebem a referência pela oportunidade vinculada; seus textos, etapas e datas são preservados. A migration usa uma transação explícita e está declarada como aditiva para o release automático do staging.
+
+As migrations `20261025230000_crm_audit_and_system_activities` e `20261026010000_crm_contact_creator` são aditivas. Elas criam o histórico, o código de atividade de sistema e a autoria opcional do contato. O release de staging aplica as migrations com `prisma migrate deploy` e conserva os cadastros existentes. Nenhuma variável secreta nova é necessária para CRM.
 
 O job de E2E existente preserva seu identificador e inclui o spec real de CRM junto de Auth, Agenda e Contracts. As fixtures verificam banco local e `KETRIS_E2E_ISOLATED_DB=1`, e somente removem tenants com o prefixo exclusivo da suíte. As validações usam banco isolado; o seed principal e os ambientes AWS permanecem sob os procedimentos existentes de deploy.
 

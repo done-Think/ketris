@@ -4,6 +4,12 @@ import { z } from 'zod'
 import { directoryPageFields } from './directory.schema'
 
 const optionalTextSchema = z.string().trim().min(1).max(2000).nullable().optional()
+const optionalColorSchema = z
+  .string()
+  .trim()
+  .regex(/^#[0-9a-fA-F]{6}$/)
+  .nullable()
+  .optional()
 
 export const saveAgencyProfileTeamMemberSchema = z
   .object({
@@ -26,6 +32,8 @@ export const saveAgencyProfileRequestSchema = z
     coverage: z.array(z.string().trim().min(1).max(80)).max(30).default([]),
     segments: z.array(z.string().trim().min(1).max(80)).max(30).default([]),
     yearsInMarket: z.number().int().nonnegative().nullable().optional(),
+    primaryColor: optionalColorSchema,
+    secondaryColor: optionalColorSchema,
     backgroundColor: z
       .string()
       .trim()

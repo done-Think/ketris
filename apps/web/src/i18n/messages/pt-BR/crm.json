@@ -115,8 +115,7 @@
         "email": "E-mail",
         "phone": "Telefone",
         "type": "Tipo",
-        "notes": "Observações",
-        "avatarUrl": "URL do avatar"
+        "notes": "Observações"
       },
       "types": {
         "OWNER": "Proprietário",
@@ -130,8 +129,7 @@
       "errors": {
         "nameRequired": "Nome é obrigatório.",
         "emailInvalid": "E-mail inválido.",
-        "textTooLong": "O texto excede o limite permitido.",
-        "avatarUrlInvalid": "Informe uma URL HTTP(S) válida"
+        "textTooLong": "O texto excede o limite permitido."
       },
       "createSuccess": "Contato criado.",
       "updateSuccess": "Contato atualizado.",
@@ -176,7 +174,8 @@
         "interest": "Imóvel ou interesse",
         "budget": "Orçamento",
         "source": "Origem",
-        "notes": "Observações"
+        "notes": "Observações",
+        "property": "Imóvel de interesse"
       },
       "sources": {
         "marketplace": "Marketplace",
@@ -197,11 +196,13 @@
         "nameRequired": "Informe o nome do lead",
         "phoneInvalid": "Informe um telefone válido",
         "emailInvalid": "Informe um e-mail válido",
-        "interestRequired": "Informe o imóvel ou interesse",
+        "interestRequired": "Selecione um imóvel disponível.",
         "budgetRequired": "Informe o orçamento",
         "sourceRequired": "Informe a origem",
-        "textTooLong": "O texto excede o limite permitido."
-      }
+        "textTooLong": "O texto excede o limite permitido.",
+        "propertyUnavailable": "O imóvel selecionado não está mais disponível ou não pertence à sua carteira. Selecione outro imóvel."
+      },
+      "propertyHint": "Selecione um imóvel disponível da sua carteira."
     },
     "filters": {
       "all": "Todos",
@@ -230,7 +231,8 @@
       "emailLabel": "E-mail",
       "email": "E-mail",
       "convert": "Converter em oportunidade",
-      "alreadyConverted": "Já convertido"
+      "alreadyConverted": "Já convertido",
+      "viewOpportunity": "Ver oportunidade"
     },
     "convert": {
       "eyebrow": "Converter lead",

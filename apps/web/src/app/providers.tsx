@@ -8,7 +8,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import 'dayjs/locale/es'
 import 'dayjs/locale/pt-br'
-import { SessionProvider } from 'next-auth/react'
+import { SessionRecoveryProvider } from '@shared/components/providers/SessionRecoveryProvider'
 import { NextIntlClientProvider, useLocale } from 'next-intl'
 import { SnackbarProvider } from 'notistack'
 import { useMemo, useState } from 'react'
@@ -28,7 +28,7 @@ export function Providers({ children }: ProvidersProps) {
     <AppRouterCacheProvider options={{ enableCssLayer: true }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <SessionProvider>
+        <SessionRecoveryProvider>
           <HttpClientSessionBridge />
           <QueryClientProvider client={queryClient}>
             <SnackbarProvider
@@ -40,7 +40,7 @@ export function Providers({ children }: ProvidersProps) {
             </SnackbarProvider>
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryClientProvider>
-        </SessionProvider>
+        </SessionRecoveryProvider>
       </ThemeProvider>
     </AppRouterCacheProvider>
   )

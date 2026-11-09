@@ -102,7 +102,14 @@ export function useTeamInvitation(token: string | null) {
 
 export function useAcceptTeamInvitation() {
   return useMutation({
-    mutationFn: ({ token, password }: { token: string; password: string }) =>
-      teamService.acceptInvitation(token, password),
+    mutationFn: ({
+      token,
+      password,
+      document,
+    }: {
+      token: string
+      password: string
+      document: string
+    }) => teamService.acceptInvitation(token, password, document),
   })
 }

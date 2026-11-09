@@ -19,6 +19,8 @@ const draft = {
   segments: [],
   yearsInMarket: null,
   backgroundColor: null,
+  primaryColor: '#123456',
+  secondaryColor: '#654321',
   logoUrl: null,
   bannerUrl: null,
   team: [{ userId: 'usuario-1', order: 0 }],
@@ -26,6 +28,7 @@ const draft = {
 
 function createDeps() {
   const agencyProfileRepository: AgencyProfileRepository = {
+    findForEditor: vi.fn().mockResolvedValue(null),
     findPublishedById: vi.fn(),
     findPublishedBySlug: vi.fn(),
     listPublished: vi.fn(),

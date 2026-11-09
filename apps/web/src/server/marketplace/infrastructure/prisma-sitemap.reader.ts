@@ -36,15 +36,40 @@ export async function listPublicSitemapRecords(
       where: publishedBrokerEligibility,
       ...pagination,
       orderBy: { id: 'asc' },
-      select: { userId: true, updatedAt: true },
+      select: {
+        userId: true,
+        updatedAt: true,
+        user: { select: { publicAddress: { select: { handle: true, updatedAt: true } } } },
+      },
     })
-    return profiles.map(({ userId, updatedAt }) => ({ id: userId, updatedAt }))
+    return profiles.map(({ userId, updatedAt, user }) => ({
+      id: userId,
+      handle: user.publicAddress?.handle ?? null,
+      updatedAt:
+        user.publicAddress && user.publicAddress.updatedAt > updatedAt
+          ? user.publicAddress.updatedAt
+          : updatedAt,
+    }))
   }
   const profiles = await prisma.agencyPublicProfile.findMany({
     where: agencyEligibility,
     ...pagination,
     orderBy: { id: 'asc' },
-    select: { tenantId: true, displayName: true, legalCreci: true, updatedAt: true },
+    select: {
+      tenantId: true,
+      displayName: true,
+      legalCreci: true,
+      updatedAt: true,
+      tenant: { select: { publicAddress: { select: { handle: true, updatedAt: true } } } },
+    },
   })
-  return profiles.map(({ tenantId, ...profile }) => ({ id: tenantId, ...profile }))
+  return profiles.map(({ tenantId, tenant, updatedAt, ...profile }) => ({
+    id: tenantId,
+    ...profile,
+    handle: tenant.publicAddress?.handle ?? null,
+    updatedAt:
+      tenant.publicAddress && tenant.publicAddress.updatedAt > updatedAt
+        ? tenant.publicAddress.updatedAt
+        : updatedAt,
+  }))
 }

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { createDocumentSchema } from '@shared/schemas/document-schema'
 import { createNewPasswordSchema } from '@shared/schemas/new-password-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 
@@ -48,13 +49,19 @@ export function createBrokerDeactivateSchema(t: SchemaMessageTranslator<'destina
 
 export function createAcceptInvitationSchema(
   t: SchemaMessageTranslator<
-    'passwordConfirmationRequired' | 'passwordMismatch' | 'passwordTooLong' | 'passwordTooShort'
+    | 'documentInvalid'
+    | 'documentRequired'
+    | 'passwordConfirmationRequired'
+    | 'passwordMismatch'
+    | 'passwordTooLong'
+    | 'passwordTooShort'
   >,
 ) {
   return z
     .object({
       password: createNewPasswordSchema(t),
       passwordConfirmation: z.string().min(1, t('passwordConfirmationRequired')),
+      document: createDocumentSchema(t),
     })
     .refine((values) => values.password === values.passwordConfirmation, {
       path: ['passwordConfirmation'],

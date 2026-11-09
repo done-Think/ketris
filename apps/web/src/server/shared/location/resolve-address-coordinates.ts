@@ -40,6 +40,9 @@ export async function resolveAddressCoordinates<T extends LocatedAddress>(
     address.latitude === previous.latitude &&
     address.longitude === previous.longitude
   if (hasAddressCoordinates(address) && !staleCoordinates) return address
+  if (!locationChanged && previous && hasAddressCoordinates(previous)) {
+    return { ...address, latitude: previous.latitude, longitude: previous.longitude }
+  }
 
   const coordinates = await geocoder.locate(address)
   return {

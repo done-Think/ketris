@@ -62,6 +62,11 @@ export function CreatePropertyDashboardPage() {
         toPropertyPayload(values, { canChooseOwner }),
       )
       enqueueSnackbar(t('createSuccess'), { variant: 'success' })
+      if (
+        property.address &&
+        (property.address.latitude === null || property.address.longitude === null)
+      )
+        enqueueSnackbar(t('addressLocationUnavailable'), { variant: 'warning' })
       router.push({ pathname: '/dashboard/properties/[id]', params: { id: property.id } })
     } catch (error) {
       enqueueSnackbar(extractErrorMessage(error, t('createError')), { variant: 'error' })
@@ -81,10 +86,6 @@ export function CreatePropertyDashboardPage() {
       <CreatePropertyStepFields
         getValues={getValues}
         setValue={setValue}
-        onAddressChange={() => {
-          setValue('latitude', null, { shouldDirty: true })
-          setValue('longitude', null, { shouldDirty: true })
-        }}
         control={control}
         activeStepKey={activeStep.key}
         activeStepLabel={t(`steps.${activeStep.key}`)}

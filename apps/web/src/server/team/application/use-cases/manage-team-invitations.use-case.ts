@@ -185,6 +185,7 @@ export class AcceptTeamInvitationUseCase {
     const accepted = await this.invitations.accept(
       tokenHash,
       await this.passwordHasher.hash(input.password),
+      input.document,
       now,
     )
     if (!accepted) throw new TeamInvitationAlreadyAcceptedError()

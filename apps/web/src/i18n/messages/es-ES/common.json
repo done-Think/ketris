@@ -58,7 +58,16 @@
         "emailInvalid": "Indica un correo electrónico válido."
       }
     },
-    "charges": "Cobros"
+    "charges": "Cobros",
+    "signingOut": "Cerrando sesión…",
+    "signOutError": "No pudimos cerrar la sesión. Inténtalo de nuevo.",
+    "retrySignOut": "Reintentar cerrar sesión",
+    "faceCheck": "Face Check",
+    "faceCheckSessions": "Sesiones",
+    "faceCheckSettings": "Configuración",
+    "faceCheckMyVerifications": "Mis verificaciones",
+    "expandNavigationSection": "Expandir opciones de {section}",
+    "collapseNavigationSection": "Contraer opciones de {section}"
   },
   "passwordVisibility": {
     "show": "Mostrar {field}",
@@ -101,6 +110,12 @@
       "nameTooLong": "Usa como máximo 200 caracteres.",
       "phoneTooLong": "Usa como máximo 32 caracteres.",
       "creciTooLong": "Usa como máximo 32 caracteres.",
+      "cpfRequired": "Introduce tu CPF.",
+      "cpfInvalid": "Introduce un CPF válido.",
+      "cnpjRequired": "Introduce el CNPJ.",
+      "cnpjInvalid": "Introduce un CNPJ válido.",
+      "documentRequired": "Introduce tu CPF o CNPJ.",
+      "documentInvalid": "Introduce un CPF o CNPJ válido.",
       "emailTooLong": "Usa como máximo 254 caracteres.",
       "passwordTooLong": "La contraseña debe tener como máximo 72 bytes. Usa menos caracteres."
     },
@@ -108,6 +123,13 @@
     "retry": "Reintentar",
     "loadError": "No se pudo cargar tu perfil.",
     "creci": "CRECI",
+    "cpf": "CPF",
+    "cnpj": "CNPJ",
+    "document": "CPF / CNPJ",
+    "phoneInUse": "Ya existe una cuenta con este teléfono.",
+    "creciInUse": "Ya existe una cuenta con este CRECI.",
+    "cpfInUse": "Ya existe una cuenta con este CPF.",
+    "cnpjInUse": "Este CNPJ ya está registrado.",
     "changeEmail": "Cambiar correo",
     "permissionError": "No tienes permiso para actualizar este perfil.",
     "newEmail": "Nuevo correo",

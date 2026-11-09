@@ -2,6 +2,9 @@ import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
+import { isValidCnpj } from '@shared/schemas/cnpj-schema'
+import { isValidDocument } from '@shared/schemas/document-schema'
+import { isValidCpf } from '@shared/schemas/cpf-schema'
 import { locales } from '@/i18n/routing'
 import { isSupportedNewPasswordLength } from '@shared/utils/password-length'
 import { pendingEmailVerificationResponseSchema } from '@server/shared/schemas/email-verification.schema'
@@ -34,13 +37,44 @@ const registerBaseFields = {
   locale: z.enum(locales).default('pt-BR'),
 }
 
+const cpfField = z
+  .string()
+  .trim()
+  .refine(isValidCpf, validationRefinement('cpfInvalid'))
+  .transform((value) => value.replace(/\D/g, ''))
+
+// A broker identifies with a CPF or with the CNPJ of their own company.
+const documentField = z
+  .string()
+  .trim()
+  .refine(isValidDocument, validationRefinement('documentInvalid'))
+  .transform((value) => value.replace(/\D/g, ''))
+
+const cnpjField = z
+  .string()
+  .trim()
+  .refine(isValidCnpj, validationRefinement('cnpjInvalid'))
+  .transform((value) => value.replace(/\D/g, ''))
+
 export const registerRequestSchema = z
   .discriminatedUnion('profile', [
+    // Individual owners are people, so they identify themselves with a CPF.
     z
       .object({
         ...registerBaseFields,
-        profile: z.enum(['owner', 'agency', 'developer']),
+        profile: z.literal('owner'),
         companyName: z.string().trim().min(1).optional(),
+        cpf: cpfField,
+      })
+      .strict(),
+    // Companies identify themselves with a CNPJ.
+    z
+      .object({
+        ...registerBaseFields,
+        profile: z.enum(['agency', 'developer', 'condoManager']),
+        companyName: z.string().trim().min(1).optional(),
+        creci: z.string().trim().min(1).max(32).optional(),
+        cnpj: cnpjField,
       })
       .strict(),
     z
@@ -50,9 +84,10 @@ export const registerRequestSchema = z
         companyName: z.string().trim().min(1).optional(),
         agencyId: z.string().trim().min(1).optional(),
         creci: z.string().trim().min(1).max(32),
+        document: documentField,
       })
       .strict(),
-    z.object({ ...registerBaseFields, profile: z.literal('renter') }).strict(),
+    z.object({ ...registerBaseFields, profile: z.literal('renter'), cpf: cpfField }).strict(),
   ])
   .openapi('RegisterRequest')
 

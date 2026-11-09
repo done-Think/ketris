@@ -49,7 +49,12 @@ describe('InviteBrokerUseCase', () => {
       hasher,
       mailer,
       () => now,
-    ).execute({ ...owner, name: ' Bruna ', email: ' Bruna@Example.test ', locale: 'pt-BR' })
+    ).execute({
+      ...owner,
+      name: ' Bruna ',
+      email: ' Bruna@Example.test ',
+      locale: 'pt-BR',
+    })
 
     expect(result).toEqual({ brokerId: 'agent-9', emailDelivered: true })
     const created = vi.mocked(invitations.create).mock.calls[0][0]
@@ -79,7 +84,12 @@ describe('InviteBrokerUseCase', () => {
       invitations,
       hasher,
       mailer,
-    ).execute({ ...owner, name: 'Bruna', email: 'bruna@example.test', locale: 'pt-BR' })
+    ).execute({
+      ...owner,
+      name: 'Bruna',
+      email: 'bruna@example.test',
+      locale: 'pt-BR',
+    })
 
     expect(result.emailDelivered).toBe(false)
   })
@@ -169,11 +179,13 @@ describe('aceite do convite', () => {
       new AcceptTeamInvitationUseCase(invitations, hasher, () => now).execute({
         token: 'token-valido-123456',
         password: 'senha-forte-123',
+        document: '52998224725',
       }),
     ).resolves.toEqual({ email: 'bruna@example.test', tenantId: 'tenant-1' })
     expect(invitations.accept).toHaveBeenCalledWith(
       hashTeamInvitationToken('token-valido-123456'),
       'hash:senha-forte-123',
+      '52998224725',
       now,
     )
   })
@@ -184,7 +196,11 @@ describe('aceite do convite', () => {
         invitationRepository({ findByTokenHash: vi.fn().mockResolvedValue(value) }),
         hasher,
         () => now,
-      ).execute({ token: 'token-valido-123456', password: 'senha-forte-123' })
+      ).execute({
+        token: 'token-valido-123456',
+        password: 'senha-forte-123',
+        document: '52998224725',
+      })
 
     await expect(make(null)).rejects.toBeInstanceOf(TeamInvitationNotFoundError)
     await expect(make({ ...stored, acceptedAt: now })).rejects.toBeInstanceOf(

@@ -51,8 +51,17 @@ describe('GET /api/tenants/search (integração)', () => {
     ).toBe(false)
   })
 
-  it('retorna 400 quando o parâmetro q está ausente', async () => {
+  it('lista as primeiras imobiliárias quando o parâmetro q está ausente', async () => {
     const response = await GET(new NextRequest('http://localhost/api/tenants/search'))
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(json.tenants)).toBe(true)
+    expect(json.tenants.length).toBeLessThanOrEqual(20)
+  })
+
+  it('rejeita um termo de busca grande demais', async () => {
+    const response = await GET(buildRequest('a'.repeat(101)))
     const json = await response.json()
 
     expect(response.status).toBe(400)

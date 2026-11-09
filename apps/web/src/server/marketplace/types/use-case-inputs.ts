@@ -1,3 +1,4 @@
+import type { TenantAccountType } from '@server/auth/types/user-access'
 import type { UserRole } from '@server/auth/domain/user.entity'
 import type { PublicPropertyDetail } from './property'
 import type { AgencyProfileDraft } from './agency-profile'
@@ -19,6 +20,7 @@ export interface GetBrokerProfileInput {
 }
 
 export interface GetOwnAgencyProfileInput {
+  actorId: string
   actorTenantId: string
   actorRole: UserRole
 }
@@ -26,6 +28,7 @@ export interface GetOwnAgencyProfileInput {
 export interface GetOwnBrokerProfileInput {
   actorId: string
   actorRole: UserRole
+  actorAccountType?: TenantAccountType
 }
 
 export interface GetPropertyInput {
@@ -43,6 +46,7 @@ export interface PublishAgencyProfileInput {
 export interface PublishBrokerProfileInput {
   actorId: string
   actorRole: UserRole
+  actorAccountType?: TenantAccountType
 }
 
 export interface SaveAgencyProfileInput extends AgencyProfileDraft {
@@ -54,11 +58,13 @@ export interface SaveAgencyProfileInput extends AgencyProfileDraft {
 export interface SaveBrokerProfileInput extends BrokerProfileDraft {
   actorId: string
   actorRole: UserRole
+  actorAccountType?: TenantAccountType
 }
 
 export type SearchPropertiesInput = PropertySearchFilters & PropertySearchPage
 
-export type SearchPropertiesOutput = PropertySearchResult & PropertySearchPage
+export type SearchPropertiesOutput = PropertySearchResult &
+  PropertySearchPage & { mapLocationsPending?: boolean }
 
 export interface SubmitInquiryInput {
   website?: string
@@ -81,6 +87,7 @@ export interface UnpublishAgencyProfileInput {
 export interface UnpublishBrokerProfileInput {
   actorId: string
   actorRole: UserRole
+  actorAccountType?: TenantAccountType
 }
 
 export type ProfileMediaTarget = 'broker-avatar' | 'broker-banner' | 'agency-logo' | 'agency-banner'
@@ -89,6 +96,7 @@ export interface UploadProfileMediaUseCaseInput {
   actorId: string
   actorTenantId: string
   actorRole: UserRole
+  actorAccountType?: TenantAccountType
   target: ProfileMediaTarget
   filename: string
   contentType: string

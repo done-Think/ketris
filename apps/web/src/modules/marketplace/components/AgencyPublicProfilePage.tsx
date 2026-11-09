@@ -20,7 +20,11 @@ import { PublicProfileMetrics } from './profile/PublicProfileMetrics'
 import { PublicProfileSidebar } from './profile/PublicProfileSidebar'
 import { styles } from '../styles/agency-public-profile-page.styles'
 
-export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps) {
+export function AgencyPublicProfilePage({
+  agency,
+  publicHandle,
+  publicLinkEnabled = true,
+}: AgencyPublicProfilePageProps) {
   const t = useTranslations('marketplace')
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
   const representedListings = buildProfileListings(agency.featuredListings)
@@ -68,9 +72,11 @@ export function AgencyPublicProfilePage({ agency }: AgencyPublicProfilePageProps
           </Box>
 
           <PublicProfileSidebar
+            publicLinkEnabled={publicLinkEnabled}
             accentColor={agency.brand.primaryColor ?? ''}
             hoverColor={agency.brand.backgroundColor ?? ''}
             href={agency.href}
+            publicHandle={publicHandle}
             sourceType="agency"
             linkDescription={t('publicProfile.sidebar.agencyLinkDescription')}
             phone={agency.phone ?? ''}

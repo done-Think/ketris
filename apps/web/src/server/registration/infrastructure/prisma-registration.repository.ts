@@ -6,8 +6,16 @@ import { normalizeEmail } from '@server/shared/normalize-email'
 import { buildPublicProfileSlug } from '@shared/utils/public-profile-slug'
 
 import type { RegistrationRepository } from '../application/ports/registration-repository.port'
+import { splitDocument } from '@shared/schemas/document-schema'
+import { creciKey, documentKey, phoneKey } from '@server/shared/contact-keys'
+import { uniqueViolation } from '@server/shared/prisma-unique-violation'
+
 import {
+  RegistrationCnpjAlreadyInUseError,
+  RegistrationCpfAlreadyInUseError,
+  RegistrationCreciAlreadyInUseError,
   RegistrationEmailAlreadyInUseError,
+  RegistrationPhoneAlreadyInUseError,
   RenterTenantNotConfiguredError,
 } from '../domain/errors'
 import { assertAgencyCanReceiveMembers } from '../domain/registration-policy'
@@ -32,6 +40,29 @@ function isUniqueConflict(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
 }
 
+/** Translates a unique-constraint violation into the error of the field that collided. */
+function uniqueConflictError(error: unknown): Error | null {
+  const target = uniqueViolation(error)
+  if (target === null) return null
+  if (target.includes('phoneKey')) return new RegistrationPhoneAlreadyInUseError()
+  if (target.includes('creciKey')) return new RegistrationCreciAlreadyInUseError()
+  if (target.includes('cpf')) return new RegistrationCpfAlreadyInUseError()
+  if (target.includes('cnpj')) return new RegistrationCnpjAlreadyInUseError()
+  return new RegistrationEmailAlreadyInUseError()
+}
+
+function contactData(input: { phone: string; creci?: string; cpf?: string; document?: string }) {
+  const personal = splitDocument(input.document ?? input.cpf ?? '')
+  return {
+    phone: input.phone,
+    phoneKey: phoneKey(input.phone),
+    creci: input.creci,
+    creciKey: creciKey(input.creci),
+    cpf: documentKey(personal.cpf),
+    cnpj: documentKey(personal.cnpj),
+  }
+}
+
 export class PrismaRegistrationRepository implements RegistrationRepository {
   async createTenantWithAdmin(
     input: NewTenantWithAdmin,
@@ -50,10 +81,13 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
                 slug,
                 accountType: input.accountType,
                 status: input.status,
+                cnpj: documentKey(input.cnpj),
               },
               select: tenantSelect,
             })
             .catch((error: unknown) => {
+              if (uniqueViolation(error)?.includes('cnpj'))
+                throw new RegistrationCnpjAlreadyInUseError()
               tenantSlugConflict = isUniqueConflict(error)
               throw error
             })
@@ -65,15 +99,14 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
                 email: normalizeEmail(input.email),
                 passwordHash: input.passwordHash,
                 role: 'OWNER',
-                phone: input.phone,
-                creci: input.creci,
+                ...contactData(input),
                 termsAcceptedAt: input.termsAcceptedAt,
                 emailVerifiedAt: null,
               },
               select: { id: true, tenantId: true, email: true },
             })
             .catch((error: unknown) => {
-              if (isUniqueConflict(error)) throw new RegistrationEmailAlreadyInUseError()
+              throw uniqueConflictError(error) ?? error
               throw error
             })
           await transaction.userAuditEvent.create({
@@ -123,8 +156,7 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
             email: normalizeEmail(input.email),
             passwordHash: input.passwordHash,
             role: input.role,
-            phone: input.phone,
-            creci: input.creci,
+            ...contactData(input),
             termsAcceptedAt: input.termsAcceptedAt,
             emailVerifiedAt: null,
             membershipApprovedAt: input.pendingApproval ? null : new Date(),
@@ -132,7 +164,7 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
           select: { id: true, tenantId: true, email: true },
         })
         .catch((error: unknown) => {
-          if (isUniqueConflict(error)) throw new RegistrationEmailAlreadyInUseError()
+          throw uniqueConflictError(error) ?? error
           throw error
         })
       await transaction.userAuditEvent.create({

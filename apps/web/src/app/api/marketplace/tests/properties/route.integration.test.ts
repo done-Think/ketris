@@ -237,4 +237,44 @@ describe('GET /api/marketplace/properties (integração)', () => {
     expect(document.paths['/marketplace/properties/{id}']).toBeDefined()
     expect(document.paths['/marketplace/properties/{id}/inquiries']).toBeDefined()
   })
+  it('selects the entire city without matching its name in other cities or neighborhoods', async () => {
+    const additional: string[] = []
+    for (const [name, targetCity, targetNeighborhood] of [
+      ['Rural property', city, 'Área Rural'],
+      ['Other municipality', `${city} Nova`, 'Centro'],
+      ['Name only in neighborhood', 'Outra cidade', city],
+    ]) {
+      const row = await prisma.property.create({
+        data: {
+          tenantId,
+          responsibleId,
+          title: name,
+          purpose: 'RENT',
+          type: 'HOUSE',
+          price: 2000,
+          status: 'PUBLISHED',
+          address: {
+            create: {
+              street: 'Rua',
+              number: '1',
+              neighborhood: targetNeighborhood,
+              city: targetCity,
+              state: 'PR',
+              zipCode: '80000000',
+            },
+          },
+        },
+      })
+      additional.push(row.id)
+    }
+    const response = await GET(
+      buildRequest(`?${new URLSearchParams({ city: city.toUpperCase() })}`),
+    )
+    expect(response.status).toBe(200)
+    const result = await response.json()
+    expect(result.totalCount).toBe(2)
+    expect(result.properties.map((p: { id: string }) => p.id).sort()).toEqual(
+      [publishedId, additional[0]].sort(),
+    )
+  })
 })

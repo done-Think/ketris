@@ -7,6 +7,7 @@ import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service
 import { prisma } from '@server/db/prisma'
 
 import { GET as getBrokerPublic } from '../../../brokers/[id]/route'
+import { GET as listBrokers } from '../../../brokers/route'
 import { GET, PUT } from '../../../profiles/broker/route'
 import { POST as publish } from '../../../profiles/broker/publish/route'
 import { POST as unpublish } from '../../../profiles/broker/unpublish/route'
@@ -87,72 +88,89 @@ describe('/api/marketplace/profiles/broker (integração)', () => {
 
   it('PUT retorna 403 quando o ator não é AGENT', async () => {
     const response = await PUT(
-      buildRequest('PUT', { displayName: 'Admin', neighborhoods: [], specialties: [] }, adminToken),
+      buildRequest('PUT', { displayName: 'Admin', coverage: [], segments: [] }, adminToken),
     )
 
     expect(response.status).toBe(403)
   })
 
-  it('salva, publica e fica visível no diretório público; despublicar esconde de novo', async () => {
-    const saveResponse = await PUT(
-      buildRequest(
-        'PUT',
-        {
-          displayName: 'Marina Costa',
-          headline: 'Especialista em Jardins',
-          bio: 'Corretora há 10 anos, focada em alto padrão.',
-          creci: 'SP-123456',
-          phone: '(11) 90000-0000',
-          region: 'Zona Sul de São Paulo',
-          neighborhoods: ['Jardins'],
-          specialties: ['Alto padrão'],
-          availability: 'Seg a sex, 9h às 18h',
-          primaryColor: '#111111',
-          secondaryColor: '#222222',
-          backgroundColor: '#ffffff',
-          avatarUrl: 'https://cdn.ketris.com.br/avatar.jpg',
-          bannerUrl: 'https://cdn.ketris.com.br/banner.jpg',
-        },
-        agentToken,
-      ),
-    )
-    const savedJson = await saveResponse.json()
+  it.each([
+    { region: 'Zona Sul de São Paulo', coverage: ['Jardins'] },
+    { region: 'Sul de Minas', coverage: [] },
+  ])(
+    'saves and publishes region $region with its optional coverage',
+    async ({ region, coverage }) => {
+      const saveResponse = await PUT(
+        buildRequest(
+          'PUT',
+          {
+            displayName: 'Marina Costa',
+            headline: 'Especialista em Jardins',
+            summary: 'Atendimento personalizado em toda a região.',
+            creci: 'SP-123456',
+            phone: '(11) 90000-0000',
+            region,
+            coverage,
+            segments: ['Alto padrão'],
+            availability: 'Seg a sex, 9h às 18h',
+            primaryColor: '#111111',
+            secondaryColor: '#222222',
+            backgroundColor: '#ffffff',
+            avatarUrl: 'https://cdn.ketris.com.br/avatar.jpg',
+            bannerUrl: 'https://cdn.ketris.com.br/banner.jpg',
+          },
+          agentToken,
+        ),
+      )
+      const savedJson = await saveResponse.json()
 
-    expect(saveResponse.status).toBe(200)
-    expect(savedJson.profile.status).toBe('DRAFT')
-    expect(savedJson.profile.displayName).toBe('Marina Costa')
+      expect(saveResponse.status).toBe(200)
+      expect(savedJson.profile.status).toBe('DRAFT')
+      expect(savedJson.profile.displayName).toBe('Marina Costa')
 
-    const publicBeforePublish = await getBrokerPublic(
-      new NextRequest(`http://localhost/api/marketplace/brokers/${agentId}`),
-      { params: Promise.resolve({ id: agentId }) },
-    )
-    expect(publicBeforePublish.status).toBe(404)
+      const publicBeforePublish = await getBrokerPublic(
+        new NextRequest(`http://localhost/api/marketplace/brokers/${agentId}`),
+        { params: Promise.resolve({ id: agentId }) },
+      )
+      expect(publicBeforePublish.status).toBe(404)
 
-    const publishResponse = await publish(buildRequest('POST', undefined, agentToken))
-    const publishedJson = await publishResponse.json()
+      const publishResponse = await publish(buildRequest('POST', undefined, agentToken))
+      const publishedJson = await publishResponse.json()
 
-    expect(publishResponse.status).toBe(200)
-    expect(publishedJson.profile.status).toBe('PUBLISHED')
+      expect(publishResponse.status).toBe(200)
+      expect(publishedJson.profile.status).toBe('PUBLISHED')
 
-    const publicAfterPublish = await getBrokerPublic(
-      new NextRequest(`http://localhost/api/marketplace/brokers/${agentId}`),
-      { params: Promise.resolve({ id: agentId }) },
-    )
-    const publicJson = await publicAfterPublish.json()
+      const publicAfterPublish = await getBrokerPublic(
+        new NextRequest(`http://localhost/api/marketplace/brokers/${agentId}`),
+        { params: Promise.resolve({ id: agentId }) },
+      )
+      const publicJson = await publicAfterPublish.json()
 
-    expect(publicAfterPublish.status).toBe(200)
-    expect(publicJson.broker.displayName).toBe('Marina Costa')
-    expect(publicJson.broker).not.toHaveProperty('tenantId')
+      expect(publicAfterPublish.status).toBe(200)
+      expect(publicJson.broker.displayName).toBe('Marina Costa')
+      expect(publicJson.broker).toMatchObject({
+        region,
+        coverage,
+        summary: 'Atendimento personalizado em toda a região.',
+      })
+      expect(publicJson.broker).not.toHaveProperty('tenantId')
+      const directory = await listBrokers(
+        new NextRequest(`http://localhost/api/marketplace/brokers?q=${encodeURIComponent(region)}`),
+      )
+      expect((await directory.json()).brokers).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: agentId, region, coverage })]),
+      )
 
-    const unpublishResponse = await unpublish(buildRequest('POST', undefined, agentToken))
-    expect(unpublishResponse.status).toBe(200)
+      const unpublishResponse = await unpublish(buildRequest('POST', undefined, agentToken))
+      expect(unpublishResponse.status).toBe(200)
 
-    const publicAfterUnpublish = await getBrokerPublic(
-      new NextRequest(`http://localhost/api/marketplace/brokers/${agentId}`),
-      { params: Promise.resolve({ id: agentId }) },
-    )
-    expect(publicAfterUnpublish.status).toBe(404)
-  })
+      const publicAfterUnpublish = await getBrokerPublic(
+        new NextRequest(`http://localhost/api/marketplace/brokers/${agentId}`),
+        { params: Promise.resolve({ id: agentId }) },
+      )
+      expect(publicAfterUnpublish.status).toBe(404)
+    },
+  )
 
   it('publish retorna 422 quando faltam campos obrigatórios', async () => {
     const otherAgent = await prisma.user.create({
@@ -177,7 +195,7 @@ describe('/api/marketplace/profiles/broker (integração)', () => {
     await PUT(
       buildRequest(
         'PUT',
-        { displayName: 'Bruna Lima', neighborhoods: [], specialties: [] },
+        { displayName: 'Bruna Lima', coverage: [], segments: [] },
         otherAgentToken,
       ),
     )

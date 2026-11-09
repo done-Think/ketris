@@ -7,17 +7,17 @@ export class SaveBrokerProfileUseCase {
   constructor(private readonly brokerProfileRepository: BrokerProfileRepository) {}
 
   async execute(input: SaveBrokerProfileInput): Promise<BrokerProfile> {
-    assertBrokerProfileAccess(input.actorRole)
+    assertBrokerProfileAccess(input.actorRole, input.actorAccountType)
 
     return this.brokerProfileRepository.save(input.actorId, {
       displayName: input.displayName,
       headline: input.headline,
-      bio: input.bio,
+      summary: input.summary,
       creci: input.creci,
       phone: input.phone,
       region: input.region,
-      neighborhoods: input.neighborhoods,
-      specialties: input.specialties,
+      coverage: input.coverage,
+      segments: input.segments,
       availability: input.availability,
       primaryColor: input.primaryColor,
       secondaryColor: input.secondaryColor,

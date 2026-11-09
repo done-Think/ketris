@@ -9,6 +9,7 @@ import { GET } from '../../stats/route'
 describe('GET /api/marketplace/stats (integração)', () => {
   let tenantId: string
   const city = `Cidade ${randomUUID().slice(0, 8)}`
+  const draftCity = `Privada ${randomUUID().slice(0, 8)}`
 
   beforeAll(async () => {
     const tenant = await prisma.tenant.create({
@@ -68,8 +69,8 @@ describe('GET /api/marketplace/stats (integração)', () => {
             create: {
               street: 'Rua das sugestões',
               number: '2',
-              neighborhood: status === 'PUBLISHED' ? 'Centro' : 'Bairro privado',
-              city,
+              neighborhood: status === 'PUBLISHED' ? 'Área Rural' : 'Bairro privado',
+              city: status === 'PUBLISHED' ? city : draftCity,
               state: 'PR',
               zipCode: '80010-000',
             },
@@ -103,11 +104,13 @@ describe('GET /api/marketplace/stats (integração)', () => {
     expect(stats.publishedProperties).toBeLessThanOrEqual(published)
   })
 
-  it('suggests only actual published locations without duplicate neighborhoods', async () => {
+  it('suggests cities once across neighborhoods and excludes unpublished cities', async () => {
     const response = await GET()
     const { locations } = await response.json()
-    expect(locations.filter((location: string) => location === `Centro, ${city}`)).toHaveLength(1)
-    expect(locations).not.toContain(`Bairro privado, ${city}`)
+    expect(locations.filter((location: string) => location === city)).toHaveLength(1)
+    expect(locations).not.toContain(`Centro, ${city}`)
+    expect(locations).not.toContain(`Área Rural, ${city}`)
+    expect(locations).not.toContain(draftCity)
     expect(locations.length).toBeLessThanOrEqual(20)
   })
 
@@ -118,16 +121,17 @@ describe('GET /api/marketplace/stats (integração)', () => {
         id: randomUUID(),
         tenantId,
         responsibleId: user.id,
-        title: 'Ranked location',
+        title: 'Ranked city',
         purpose: 'SALE' as const,
         type: 'HOUSE' as const,
         price: 1,
         status: 'PUBLISHED' as const,
-        neighborhood: `Rank ${String(index).padStart(2, '0')}`,
+        city: `Rank ${String(index).padStart(2, '0')} ${city}`,
+        neighborhood: `Bairro ${index}`,
       })),
     ).flat()
     await prisma.property.createMany({
-      data: properties.map(({ neighborhood: _neighborhood, ...property }) => property),
+      data: properties.map(({ neighborhood: _neighborhood, city: _city, ...property }) => property),
     })
     await prisma.propertyAddress.createMany({
       data: properties.map((property) => ({
@@ -136,7 +140,7 @@ describe('GET /api/marketplace/stats (integração)', () => {
         street: 'Ranking',
         number: '1',
         neighborhood: property.neighborhood,
-        city,
+        city: property.city,
         state: 'PR',
         zipCode: '80000-000',
       })),
@@ -145,7 +149,7 @@ describe('GET /api/marketplace/stats (integração)', () => {
     expect(locations).toEqual(
       Array.from(
         { length: 20 },
-        (_, index) => `Rank ${String(29 - index).padStart(2, '0')}, ${city}`,
+        (_, index) => `Rank ${String(29 - index).padStart(2, '0')} ${city}`,
       ),
     )
   })

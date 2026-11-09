@@ -87,7 +87,6 @@ export function ContactsPage() {
       phone: values.phone.trim() || null,
       type: values.type,
       notes: values.notes.trim() || null,
-      avatarUrl: values.avatarUrl?.trim() || null,
     }
 
     try {
@@ -128,7 +127,6 @@ export function ContactsPage() {
         phone: editingContact.phone ?? '',
         type: editingContact.type,
         notes: editingContact.notes ?? '',
-        avatarUrl: editingContact.avatarUrl ?? '',
       }
     : null
 

@@ -2,7 +2,15 @@ import type { FieldPath, FieldValues, UseControllerProps } from 'react-hook-form
 import type { TextFieldProps } from '@mui/material'
 import type { ReactElementProps } from 'react-imask'
 
-export type InputMask = string | Array<{ mask: string }>
+/** Digits only: whole numbers with `scale: 0`, decimals with a comma or dot otherwise. */
+export interface NumberInputMask {
+  mask: NumberConstructor
+  scale: number
+  min?: number
+  max?: number
+}
+
+export type InputMask = string | Array<{ mask: string }> | NumberInputMask
 
 export type SchemaMessageTranslator<Key extends string = string> = (key: Key) => string
 

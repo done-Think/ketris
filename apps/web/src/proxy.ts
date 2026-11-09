@@ -18,6 +18,12 @@ import {
 
 const store = new PostgresRateLimitStore()
 const handleI18nRouting = createMiddleware(routing)
+// Shareable root addresses negotiate locale without changing /@handle in the browser.
+const handlePublicAddressRouting = createMiddleware({
+  ...routing,
+  localePrefix: 'never',
+  alternateLinks: false,
+})
 
 const apiPolicy = createRateLimitPolicy(
   'api',
@@ -59,6 +65,7 @@ const authPaths = new Set([
 
 export async function proxy(request: NextRequest) {
   if (!request.nextUrl.pathname.startsWith('/api')) {
+    if (request.nextUrl.pathname.startsWith('/@')) return handlePublicAddressRouting(request)
     return handleI18nRouting(request)
   }
 

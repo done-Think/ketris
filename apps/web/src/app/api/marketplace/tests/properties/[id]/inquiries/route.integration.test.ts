@@ -83,7 +83,7 @@ describe('POST /api/marketplace/properties/[id]/inquiries (integração)', () =>
     })
   }
 
-  it('cria uma oportunidade (lead) no tenant do imóvel com status ENVIADA', async () => {
+  it('creates a proposal and its linked lead in the property tenant for an anonymous visitor', async () => {
     const response = await POST(
       buildRequest(publishedId, {
         leadName: 'Maria Silva',
@@ -108,6 +108,18 @@ describe('POST /api/marketplace/properties/[id]/inquiries (integração)', () =>
     expect(opportunity?.status).toBe('SENT')
     expect(opportunity?.interestedEmail).toBe('maria@exemplo.com')
     expect(opportunity?.proposedValue.toString()).toBe('1800')
+    const lead = await prisma.lead.findUnique({ where: { opportunityId: json.inquiry.id } })
+    expect(lead).toMatchObject({
+      tenantId,
+      responsibleId,
+      propertyId: publishedId,
+      source: 'MARKETPLACE',
+      stage: 'PROPOSAL',
+      name: 'Maria Silva',
+      email: 'maria@exemplo.com',
+      interest: 'Sala comercial publicada',
+    })
+    expect(await prisma.lead.count({ where: { opportunityId: json.inquiry.id } })).toBe(1)
   })
 
   it('retorna 404 e não cria oportunidade para um imóvel em rascunho', async () => {

@@ -44,7 +44,7 @@ export function matchesTeamSearch(member: TeamMember, search: string): boolean {
   const query = normalize(search)
   if (!query) return true
 
-  return [member.name, member.email, member.headline ?? '', ...member.specialties].some((value) =>
+  return [member.name, member.email, member.headline ?? '', ...member.segments].some((value) =>
     normalize(value).includes(query),
   )
 }

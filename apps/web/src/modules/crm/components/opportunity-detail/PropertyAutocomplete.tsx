@@ -12,12 +12,17 @@ export function PropertyAutocomplete({
   onChange,
   error,
   helperText,
+  availableOnly = false,
+  label,
 }: PropertyAutocompleteProps) {
   const t = useTranslations('crm.opportunityDetail')
   const format = useCrmFormatter()
   const [input, setInput] = useState('')
   const q = useDebouncedValue(input)
-  const query = useCrmProperties(q ? { q } : {})
+  const query = useCrmProperties({
+    ...(q ? { q } : {}),
+    ...(availableOnly ? { status: 'PUBLISHED' as const } : {}),
+  })
   return (
     <CrmAutocomplete
       value={value}
@@ -33,7 +38,7 @@ export function PropertyAutocomplete({
           .filter(Boolean)
           .join(' — ')
       }
-      label={t('fields.property')}
+      label={label ?? t('fields.property')}
       required
       loading={query.isFetching}
       loadError={query.isError}

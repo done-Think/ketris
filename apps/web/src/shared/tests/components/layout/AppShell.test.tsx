@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -43,17 +43,26 @@ vi.mock('@shared/lib/auth/clear-client-session', () => ({
   clearClientSession: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock('@shared/hooks/use-dashboard-face-check-notifications', () => ({
+  useDashboardFaceCheckNotifications: () => [],
+}))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 
-function mockSession(overrides?: Partial<{ role: 'OWNER' | 'AGENT' | 'RENTER' }>) {
+function mockSession(
+  overrides?: Partial<{
+    role: 'OWNER' | 'AGENT' | 'RENTER'
+    accountType: 'INDIVIDUAL' | 'BROKER' | 'AGENCY'
+  }>,
+) {
   vi.mocked(useSession).mockReturnValue({
     data: {
       user: { id: 'user-1', name: 'Ana', email: 'ana@example.com' },
       scope: 'tenant',
       tenantId: 't1',
       role: overrides?.role ?? 'OWNER',
+      accountType: overrides?.accountType ?? 'AGENCY',
     },
     status: 'authenticated',
     update: vi.fn(),
@@ -186,12 +195,12 @@ describe('AppShell navigation per papel', () => {
     expect(screen.getAllByText('Financeiro').length).toBeGreaterThan(0)
   })
 
-  it('AGENT não vê Dashboard, Perfil da Imobiliária nem Financeiro, mas vê Perfil Público, Pipeline e Contatos', () => {
+  it('AGENT vê o próprio Dashboard, mas não o Perfil da Imobiliária nem o Financeiro, e vê Perfil Público, Pipeline e Contatos', () => {
     mockSession({ role: 'AGENT' })
 
     renderShell()
 
-    expect(screen.queryAllByText('Dashboard')).toHaveLength(0)
+    expect(screen.getAllByText('Dashboard').length).toBeGreaterThan(0)
     expect(screen.queryAllByText('Perfil da Imobiliária')).toHaveLength(0)
     expect(screen.queryAllByText('Financeiro')).toHaveLength(0)
     expect(screen.getAllByText('Perfil Público').length).toBeGreaterThan(0)
@@ -312,9 +321,7 @@ describe('AppShell mobile top bar', () => {
   it('shows a single notifications bell next to the menu button', () => {
     renderShell()
 
-    expect(screen.getAllByRole('button', { name: 'Abrir notificações do dashboard' })).toHaveLength(
-      1,
-    )
+    expect(screen.getAllByRole('button', { name: 'Abrir notificações' })).toHaveLength(1)
   })
 })
 
@@ -428,6 +435,61 @@ describe('AppShell marketplace logout shortcut', () => {
 
     expect(clearClientSession).toHaveBeenCalledOnce()
     expect(routerMock.replace).toHaveBeenCalledWith('/')
-    expect(routerMock.refresh).toHaveBeenCalledOnce()
+    expect(routerMock.refresh).not.toHaveBeenCalled()
+  })
+
+  it('unmounts the entire dashboard while logout is pending and never renders the anonymous fallback', async () => {
+    let finishLogout: () => void = () => {}
+    vi.mocked(clearClientSession).mockReturnValueOnce(
+      new Promise((resolve) => {
+        finishLogout = resolve
+      }),
+    )
+    const user = userEvent.setup()
+    const view = renderShell()
+    await user.click(screen.getAllByRole('button', { name: /sair e voltar/i })[0])
+    expect(screen.getByRole('status')).toHaveTextContent('Saindo da conta…')
+    expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('navigation', { name: 'Navegação principal' }),
+    ).not.toBeInTheDocument()
+    expect(routerMock.replace).not.toHaveBeenCalled()
+
+    mockUnauthenticatedSession()
+    view.rerender(
+      <ThemeProvider theme={theme}>
+        <AppShell>
+          <div>Conteúdo da rota</div>
+        </AppShell>
+      </ThemeProvider>,
+    )
+    expect(screen.queryByText('Equipe Ketris')).not.toBeInTheDocument()
+    expect(screen.queryByText('Painel administrativo')).not.toBeInTheDocument()
+    expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()
+    await act(async () => {
+      finishLogout()
+    })
+    await waitFor(() => expect(routerMock.replace).toHaveBeenCalledWith('/'))
+    expect(routerMock.replace).not.toHaveBeenCalledWith('/login')
+    expect(routerMock.replace).not.toHaveBeenCalledWith('/dashboard')
+    expect(routerMock.refresh).not.toHaveBeenCalled()
+    // Client navigation can still be in flight after clearing the cookie.
+    expect(screen.getByRole('status')).toHaveTextContent('Saindo da conta…')
+    expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()
+  })
+
+  it('keeps the dashboard hidden after a failed sign-out and allows a retry', async () => {
+    vi.mocked(clearClientSession).mockRejectedValueOnce(new Error('Network unavailable'))
+    const user = userEvent.setup()
+    renderShell()
+    await user.click(screen.getAllByRole('button', { name: /sair e voltar/i })[0])
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível concluir a saída.')
+    expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()
+    expect(screen.queryByText('Equipe Ketris')).not.toBeInTheDocument()
+    expect(routerMock.replace).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'Tentar sair novamente' }))
+    await waitFor(() => expect(routerMock.replace).toHaveBeenCalledWith('/'))
+    expect(clearClientSession).toHaveBeenCalledTimes(2)
+    expect(screen.queryByText('Conteúdo da rota')).not.toBeInTheDocument()
   })
 })

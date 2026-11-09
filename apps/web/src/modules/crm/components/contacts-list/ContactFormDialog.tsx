@@ -19,15 +19,18 @@ import { useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import * as crmStyles from '../../styles/contact-form-dialog.styles'
 
+import { RhfMaskedTextField } from '@shared/components/form'
+
 import { createContactFormSchema } from '../../schemas/contact-schema'
 import type { ContactFormDialogProps, ContactFormValues } from '../../types/contact'
+
+const phoneMask = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
 
 const emptyContactFormValues: ContactFormValues = {
   name: '',
   email: '',
   phone: '',
   type: 'RENTER',
-  avatarUrl: '',
   notes: '',
 }
 
@@ -77,11 +80,11 @@ function ContactFormDialogForm({
               helperText={errors.email?.message}
               {...register('email')}
             />
-            <TextField
+            <RhfMaskedTextField
+              control={control}
+              name="phone"
               label={t('fields.phone')}
-              error={Boolean(errors.phone)}
-              helperText={errors.phone?.message}
-              {...register('phone')}
+              mask={phoneMask}
             />
             <Controller
               control={control}
@@ -106,13 +109,6 @@ function ContactFormDialogForm({
                   {errors.type?.message && <FormHelperText>{errors.type.message}</FormHelperText>}
                 </FormControl>
               )}
-            />
-            <TextField
-              label={t('fields.avatarUrl')}
-              type="url"
-              error={Boolean(errors.avatarUrl)}
-              helperText={errors.avatarUrl?.message}
-              {...register('avatarUrl')}
             />
             <TextField
               label={t('fields.notes')}

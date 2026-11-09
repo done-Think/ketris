@@ -3,6 +3,8 @@ export interface GeocodingAddress {
   number: string
   city: string
   state: string
+  neighborhood?: string
+  zipCode?: string
 }
 
 export interface AddressCoordinates {

@@ -9,6 +9,6 @@ export class GetOwnAgencyProfileUseCase {
   async execute(input: GetOwnAgencyProfileInput): Promise<AgencyProfile | null> {
     assertAgencyProfileAccess(input.actorRole)
 
-    return this.agencyProfileRepository.findByTenantId(input.actorTenantId)
+    return this.agencyProfileRepository.findForEditor(input.actorTenantId, input.actorId)
   }
 }

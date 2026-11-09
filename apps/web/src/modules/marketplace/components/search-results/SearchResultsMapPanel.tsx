@@ -11,10 +11,14 @@ export function SearchResultsMapPanel({
   selectedPropertyId,
   setSelectedPropertyId,
   searchQuery,
+  viewerLocation,
+  locationUpdatedAt,
 }: SearchResultsMapPanelProps) {
   return (
     <Box sx={styles.box}>
       <SearchResultsMap
+        locationUpdatedAt={locationUpdatedAt}
+        viewerLocation={viewerLocation}
         properties={properties}
         selectedPropertyId={selectedPropertyId}
         onSelectProperty={setSelectedPropertyId}

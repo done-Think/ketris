@@ -10,6 +10,7 @@ export interface CreateLeadInput {
   phone: string
   email?: string | null
   interest: string
+  propertyId?: string
   budget: string
   source: LeadSource
   notes?: string | null

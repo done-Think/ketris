@@ -14,6 +14,7 @@ import {
   useUnpublishBrokerProfile,
 } from '../hooks/use-broker-profile'
 import { usePublicProfileEditor } from '../hooks/use-public-profile-editor'
+import { useOwnProfileAddress } from '../hooks/use-profile-address'
 import { createPublicProfileEditorSchema } from '../schemas/public-profile-editor-schema'
 import { styles } from '../styles/public-profile-editor.styles'
 import type { BrokerProfileEditorProps } from '../types/profile-editor'
@@ -23,6 +24,7 @@ import { PublicProfileEditorLoader } from './public-profile-editor/PublicProfile
 import { PublicProfileEditorPanel } from './public-profile-editor/PublicProfileEditorPanel'
 import { PublicProfileEditorShell } from './public-profile-editor/PublicProfileEditorShell'
 import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
+import { PublicProfileAddressPanel } from './public-profile-editor/PublicProfileAddressPanel'
 
 const formId = 'broker-public-profile-editor-form'
 
@@ -47,6 +49,8 @@ export function PublicProfileEditorPage() {
 }
 
 function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
+  const published = profile?.status === 'PUBLISHED'
+  const { data: address } = useOwnProfileAddress('broker', published)
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.profileEditor')
   const tFeatures = useTranslations('marketplace.propertyFeatures')
@@ -105,6 +109,8 @@ function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
       onClosePreview={editor.closePreview}
       preview={
         <BrokerPublicProfilePage
+          publicLinkEnabled={published}
+          publicHandle={address?.handle ?? undefined}
           broker={toPreviewProfile(
             editor.form.getValues(),
             profile,
@@ -115,6 +121,7 @@ function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
         />
       }
     >
+      <PublicProfileAddressPanel kind="broker" published={published} />
       <PublicProfileEditorPanel title={t('fields.mainInfo')}>
         <Box sx={styles.mainFields}>
           <RhfTextField
@@ -150,15 +157,15 @@ function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
           />
           <RhfTextField
             control={control}
-            name="neighborhoods"
-            label={t('fields.neighborhoods')}
-            helperText={t('fields.commaSeparatedHint')}
+            name="coverage"
+            label={t('fields.coverage')}
+            helperText={t('fields.coverageHint')}
             disabled={disabled}
           />
           <RhfTextField
             control={control}
-            name="specialties"
-            label={t('fields.specialties')}
+            name="segments"
+            label={t('fields.segments')}
             helperText={t('fields.commaSeparatedHint')}
             disabled={disabled}
           />
@@ -170,8 +177,8 @@ function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
           />
           <RhfTextField
             control={control}
-            name="bio"
-            label={t('fields.bio')}
+            name="summary"
+            label={t('fields.summary')}
             multiline
             minRows={6}
             fullWidth

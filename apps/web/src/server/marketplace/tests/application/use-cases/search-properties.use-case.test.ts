@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PublishedPropertySummary } from '../../../types/property'
 import type { PublicPropertyRepository } from '../../../application/ports/public-property-repository.port'
 import { SearchPropertiesUseCase } from '../../../application/use-cases/search-properties.use-case'
+import { ResolvePublishedPropertyLocationsUseCase } from '../../../application/use-cases/resolve-published-property-locations.use-case'
 
 const summary: PublishedPropertySummary = {
   id: 'imovel-1',
@@ -36,6 +37,38 @@ function createDeps(search?: PublicPropertyRepository['search']) {
 }
 
 describe('SearchPropertiesUseCase', () => {
+  it('re-runs the database search after saving coordinates so proximity ordering and pagination remain consistent', async () => {
+    const search = vi
+      .fn()
+      .mockResolvedValueOnce({
+        items: [{ ...summary, latitude: null, longitude: null }],
+        totalCount: 1,
+      })
+      .mockResolvedValueOnce({ items: [summary], totalCount: 1 })
+    const deps = createDeps(search)
+    const locations = new ResolvePublishedPropertyLocationsUseCase(
+      {
+        findCandidates: vi
+          .fn()
+          .mockResolvedValue([{ propertyId: summary.id, address: {}, updatedAt: new Date() }]),
+        saveResult: vi.fn().mockResolvedValue(true),
+      },
+      {
+        locate: vi
+          .fn()
+          .mockResolvedValue({ latitude: summary.latitude, longitude: summary.longitude }),
+      },
+    )
+    const result = await new SearchPropertiesUseCase(deps.propertyRepository, locations).execute({
+      page: 1,
+      pageSize: 12,
+      latitude: -25.4,
+      longitude: -49.2,
+    })
+    expect(search).toHaveBeenCalledTimes(2)
+    expect(result.items[0]).toEqual(summary)
+    expect(search.mock.calls[1]).toEqual(search.mock.calls[0])
+  })
   it('separa filtros e página ao consultar o repositório e devolve a página pedida', async () => {
     const search = vi.fn().mockResolvedValue({ items: [summary], totalCount: 31 })
     const deps = createDeps(search)

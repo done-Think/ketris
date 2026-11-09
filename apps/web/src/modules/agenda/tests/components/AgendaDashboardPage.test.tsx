@@ -65,6 +65,9 @@ vi.mock('@modules/properties/hooks/use-properties', () => ({
   useProperties: vi.fn(),
 }))
 
+vi.mock('@shared/hooks/use-dashboard-face-check-notifications', () => ({
+  useDashboardFaceCheckNotifications: () => [],
+}))
 vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
@@ -443,9 +446,9 @@ describe('AgendaDashboardPage', () => {
 
     renderPage()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Abrir notificações do dashboard' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir notificações' }))
 
-    const popover = await screen.findByText('Alertas do dashboard')
+    const popover = await screen.findByText('Notificações')
     const panel = popover.closest('[role="presentation"]') ?? document.body
 
     expect(within(panel as HTMLElement).getByText('Visita marcada para hoje')).toBeVisible()

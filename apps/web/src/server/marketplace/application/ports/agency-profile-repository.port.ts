@@ -2,6 +2,7 @@ import type { DirectoryPage, DirectoryQuery } from '../../types/directory'
 import type { AgencyProfile, AgencyProfileDraft } from '../../types/agency-profile'
 
 export interface AgencyProfileRepository {
+  findForEditor(tenantId: string, actorId: string): Promise<AgencyProfile | null>
   findPublishedById(tenantId: string): Promise<AgencyProfile | null>
   findPublishedBySlug(slug: string, creci: string): Promise<AgencyProfile | null>
   listPublished(query: DirectoryQuery): Promise<DirectoryPage<AgencyProfile>>

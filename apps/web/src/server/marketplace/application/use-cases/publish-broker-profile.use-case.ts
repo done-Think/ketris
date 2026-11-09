@@ -9,13 +9,12 @@ function getPublishMissingFields(profile: BrokerProfile): string[] {
 
   if (!profile.displayName.trim()) missingFields.push('displayName')
   if (!profile.phone?.trim()) missingFields.push('phone')
-  if (!profile.bio?.trim()) missingFields.push('bio')
+  if (!profile.summary?.trim()) missingFields.push('summary')
   if (!profile.creci?.trim()) missingFields.push('creci')
   if (!profile.availability?.trim()) missingFields.push('availability')
   if (!profile.headline?.trim()) missingFields.push('headline')
   if (!profile.region?.trim()) missingFields.push('region')
-  if (!profile.neighborhoods.length) missingFields.push('neighborhoods')
-  if (!profile.specialties.length) missingFields.push('specialties')
+  if (!profile.segments.length) missingFields.push('segments')
   if (!profile.primaryColor?.trim()) missingFields.push('primaryColor')
   if (!profile.secondaryColor?.trim()) missingFields.push('secondaryColor')
   if (!profile.backgroundColor?.trim()) missingFields.push('backgroundColor')
@@ -29,7 +28,7 @@ export class PublishBrokerProfileUseCase {
   constructor(private readonly brokerProfileRepository: BrokerProfileRepository) {}
 
   async execute(input: PublishBrokerProfileInput): Promise<BrokerProfile> {
-    assertBrokerProfileAccess(input.actorRole)
+    assertBrokerProfileAccess(input.actorRole, input.actorAccountType)
 
     const profile = await this.brokerProfileRepository.findByUserId(input.actorId)
 

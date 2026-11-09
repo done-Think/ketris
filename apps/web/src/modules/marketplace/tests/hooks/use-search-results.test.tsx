@@ -45,6 +45,71 @@ function wrapper({ children }: { children: ReactNode }) {
 
 beforeEach(() => vi.resetAllMocks())
 
+it('updates markers while the current page has pending locations and stops polling when finished', async () => {
+  vi.useFakeTimers()
+  const point = { latitude: -22.43, longitude: -45.45 }
+  vi.mocked(marketplaceService.searchProperties)
+    .mockResolvedValueOnce({
+      properties: [summary('located')],
+      totalCount: 1,
+      page: 1,
+      pageSize: 10,
+      mapLocationsPending: true,
+    })
+    .mockResolvedValue({
+      properties: [{ ...summary('located'), ...point }],
+      totalCount: 1,
+      page: 1,
+      pageSize: 10,
+      mapLocationsPending: false,
+    })
+  const { result, unmount } = renderHook(() => useSearchResults({ purpose: 'comprar' }), {
+    wrapper,
+  })
+  try {
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1)
+    })
+    expect(result.current.paginatedResults).toHaveLength(1)
+    expect(result.current.paginatedResults[0].mapCenter).toBeUndefined()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000)
+    })
+    expect(result.current.paginatedResults[0].mapCenter).toEqual(point)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10000)
+    })
+    expect(marketplaceService.searchProperties).toHaveBeenCalledTimes(2)
+  } finally {
+    unmount()
+    vi.useRealTimers()
+  }
+})
+
+it('uses proximity until the visitor enters a region, and preserves price ordering', async () => {
+  mockPages()
+  const point = { latitude: 0, longitude: 0 }
+  const { result } = renderHook(() => useSearchResults({ purpose: 'comprar' }, point), { wrapper })
+  await waitFor(() =>
+    expect(marketplaceService.searchProperties).toHaveBeenLastCalledWith(
+      expect.objectContaining({ ...point, purpose: 'SALE' }),
+    ),
+  )
+  act(() => result.current.setSortOption('menor-preco'))
+  await waitFor(() =>
+    expect(marketplaceService.searchProperties).toHaveBeenLastCalledWith(
+      expect.objectContaining({ ...point, sortBy: 'priceAsc' }),
+    ),
+  )
+  act(() => result.current.setLocationQuery('Itajubá'))
+  await waitFor(() =>
+    expect(marketplaceService.searchProperties).toHaveBeenLastCalledWith(
+      expect.objectContaining({ latitude: undefined, longitude: undefined, location: 'Itajubá' }),
+    ),
+  )
+  expect(result.current.viewerLocation).toBeUndefined()
+})
+
 it('pede ao servidor só a página atual e calcula as páginas pelo total', async () => {
   vi.mocked(marketplaceService.searchProperties).mockImplementation(async (filters = {}) => ({
     properties: [summary(`p${filters.page}`)],
@@ -102,6 +167,25 @@ it('envia os filtros iniciais da URL usando o código do tipo de imóvel', async
     }),
   )
   expect(result.current.activeFiltersCount).toBe(2)
+})
+
+it('keeps a selected city separate from neighborhood text and clears that scope when edited', async () => {
+  mockPages()
+  const { result } = renderHook(
+    () => useSearchResults({ purpose: 'comprar', initialCity: 'Itajubá' }),
+    { wrapper },
+  )
+  await waitFor(() => expect(result.current.resultCount).toBe(23))
+  expect(result.current.filters.location).toBe('Itajubá')
+  expect(marketplaceService.searchProperties).toHaveBeenLastCalledWith(
+    expect.objectContaining({ city: 'Itajubá', location: undefined }),
+  )
+  act(() => result.current.setLocationQuery('Anhumas'))
+  await waitFor(() =>
+    expect(marketplaceService.searchProperties).toHaveBeenLastCalledWith(
+      expect.objectContaining({ city: undefined, location: 'Anhumas' }),
+    ),
+  )
 })
 
 it('aplica os filtros do diálogo de uma vez, volta à primeira página e descarta o preço mínimo da URL', async () => {

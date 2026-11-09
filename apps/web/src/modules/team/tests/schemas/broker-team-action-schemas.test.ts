@@ -51,7 +51,7 @@ describe('broker team action schemas', () => {
     expect(deactivateSchema.safeParse({ destinationId: 'b' }).success).toBe(true)
   })
 
-  it('invites with only name and e-mail', () => {
+  it('invites with only a name and an e-mail', () => {
     expect(inviteSchema.parse({ name: ' Bruno ', email: ' bruno@ketris.dev ' })).toEqual({
       name: 'Bruno',
       email: 'bruno@ketris.dev',
@@ -62,15 +62,34 @@ describe('broker team action schemas', () => {
 
   it('requires a matching password of at least 8 characters to accept the invitation', () => {
     expect(
-      acceptSchema.safeParse({ password: 'senha-forte', passwordConfirmation: 'senha-forte' })
-        .success,
+      acceptSchema.safeParse({
+        password: 'senha-forte',
+        passwordConfirmation: 'senha-forte',
+        document: '529.982.247-25',
+      }).success,
     ).toBe(true)
     expect(
-      acceptSchema.safeParse({ password: 'curta', passwordConfirmation: 'curta' }).success,
+      acceptSchema.safeParse({
+        password: 'curta',
+        passwordConfirmation: 'curta',
+        document: '529.982.247-25',
+      }).success,
     ).toBe(false)
     expect(
-      acceptSchema.safeParse({ password: 'senha-forte', passwordConfirmation: 'outra-senha' }).error
-        ?.issues[0]?.message,
+      acceptSchema.safeParse({
+        password: 'senha-forte',
+        passwordConfirmation: 'outra-senha',
+        document: '529.982.247-25',
+      }).error?.issues[0]?.message,
     ).toBe('passwordMismatch')
+  })
+
+  it('accepts a CPF or a CNPJ as the invited broker document and rejects anything else', () => {
+    const base = { password: 'senha-forte', passwordConfirmation: 'senha-forte' }
+    expect(acceptSchema.safeParse({ ...base, document: '529.982.247-25' }).success).toBe(true)
+    expect(acceptSchema.safeParse({ ...base, document: '11.222.333/0001-81' }).success).toBe(true)
+    expect(acceptSchema.safeParse({ ...base, document: '' }).success).toBe(false)
+    expect(acceptSchema.safeParse({ ...base, document: '111.111.111-11' }).success).toBe(false)
+    expect(acceptSchema.safeParse({ ...base, document: '11.222.333/0001-82' }).success).toBe(false)
   })
 })

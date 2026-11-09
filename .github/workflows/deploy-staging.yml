@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   release:
-    if: github.ref == 'refs/heads/dev' && (github.event_name == 'push' || inputs.confirm == 'RELEASE')
+    if: ${{ !cancelled() && github.ref == 'refs/heads/dev' && (github.event_name == 'push' || inputs.confirm == 'RELEASE') }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment:
@@ -39,6 +39,8 @@ jobs:
       CONTRACTS_DATA_ENCRYPTION_KEY: ${{ secrets.CONTRACTS_DATA_ENCRYPTION_KEY }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      GEOCODING_SEARCH_URL: ${{ vars.GEOCODING_SEARCH_URL }}
+      GEOCODING_USER_AGENT: ${{ vars.GEOCODING_USER_AGENT }}
       VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

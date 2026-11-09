@@ -53,7 +53,7 @@ describe('PrismaTeamRepository (integração)', () => {
         userId: sourceId,
         displayName: 'Marina',
         headline: 'Especialista em Jardins',
-        specialties: ['Alto padrão'],
+        segments: ['Alto padrão'],
         phone: '11999990000',
         status: 'PUBLISHED',
         publishedAt: now,
@@ -202,7 +202,7 @@ describe('PrismaTeamRepository (integração)', () => {
     expect(members.map((member) => member.name)).toEqual(['Marina', 'Thiago'])
     expect(members[0]).toMatchObject({
       headline: 'Especialista em Jardins',
-      specialties: ['Alto padrão'],
+      segments: ['Alto padrão'],
       phone: '11999990000',
       hasPublicProfile: true,
       invitation: null,
@@ -348,10 +348,13 @@ describe('PrismaTeamRepository (integração)', () => {
       role: 'AGENT',
     })
 
-    expect(await invitations.accept(tokenHash, 'hash-escolhido', new Date())).toBe(true)
-    expect(await invitations.accept(tokenHash, 'outra', new Date())).toBe(false)
+    expect(await invitations.accept(tokenHash, 'hash-escolhido', '52998224725', new Date())).toBe(
+      true,
+    )
+    expect(await invitations.accept(tokenHash, 'outra', '52998224725', new Date())).toBe(false)
     const accepted = await prisma.user.findUniqueOrThrow({ where: { id: created.userId } })
     expect(accepted.passwordHash).toBe('hash-escolhido')
+    expect(accepted).toMatchObject({ cpf: '52998224725', cnpj: null })
     expect(accepted.emailVerifiedAt).not.toBeNull()
     expect(
       (await repository.listMembers(tenantId)).find((member) => member.id === created.userId)
@@ -371,7 +374,7 @@ describe('PrismaTeamRepository (integração)', () => {
       actor: { id: ownerId, name: 'Dona' },
     })
 
-    expect(await invitations.accept(tokenHash, 'hash', new Date())).toBe(false)
+    expect(await invitations.accept(tokenHash, 'hash', '52998224725', new Date())).toBe(false)
     expect(await invitations.hasPortfolio(tenantId, created.userId)).toBe(false)
     expect(await invitations.deleteInvitedUser(tenantId, created.userId)).toBe(true)
     expect(await prisma.user.count({ where: { id: created.userId } })).toBe(0)

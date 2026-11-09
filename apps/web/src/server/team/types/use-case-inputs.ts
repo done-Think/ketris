@@ -35,6 +35,7 @@ export interface ResendTeamInvitationInput extends BrokerInput {
 export interface AcceptTeamInvitationInput {
   token: string
   password: string
+  document: string
 }
 
 export interface InviteBrokerOutput {

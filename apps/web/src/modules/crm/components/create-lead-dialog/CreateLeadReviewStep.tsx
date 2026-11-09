@@ -10,7 +10,7 @@ import { leadSourceKey } from '@shared/config/lead-sources'
 const reviewFieldKeys: readonly CreateLeadFieldName[] = [
   'name',
   'phone',
-  'interest',
+  'property',
   'budget',
   'source',
 ]
@@ -25,9 +25,11 @@ export function CreateLeadReviewStep({ control, formValues }: CreateLeadReviewSt
           <Box key={fieldKey} sx={crmStyles.boxSx2}>
             <Typography sx={crmStyles.typographySx}>{t(`create.fields.${fieldKey}`)}</Typography>
             <Typography sx={crmStyles.typographySx2}>
-              {fieldKey === 'source' && formValues.source
-                ? t(`create.sources.${leadSourceKey(formValues.source)}`)
-                : formValues[fieldKey]}
+              {fieldKey === 'property'
+                ? formValues.property?.title
+                : fieldKey === 'source' && formValues.source
+                  ? t(`create.sources.${leadSourceKey(formValues.source)}`)
+                  : formValues[fieldKey]}
             </Typography>
           </Box>
         ))}

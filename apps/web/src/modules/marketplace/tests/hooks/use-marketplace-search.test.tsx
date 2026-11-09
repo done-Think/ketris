@@ -17,12 +17,12 @@ it('seleciona valores, fecha o menu e monta o link da busca com o código do tip
   act(() => result.current.openSearchMenu('propertyType'))
   expect(result.current.activeSearchMenu).toBe('propertyType')
   act(() => result.current.selectSearchValue('propertyType', 'HOUSE'))
-  act(() => result.current.selectSearchValue('location', 'Moema, São Paulo'))
+  act(() => result.current.selectSearchValue('location', 'São Paulo'))
 
   expect(result.current.activeSearchMenu).toBeNull()
   expect(result.current.searchHref.query).toEqual({
     purpose: 'rent',
-    location: 'Moema, São Paulo',
+    city: 'São Paulo',
     propertyType: 'HOUSE',
   })
 })
@@ -55,14 +55,12 @@ it('accepts free price limits, supports open ranges and rejects invalid ranges',
 })
 
 it('filtra as opções pelo rótulo traduzido, ignorando acentos', () => {
-  const { result } = renderHook(() =>
-    useMarketplaceSearch(['Moema, São Paulo', 'Savassi, Belo Horizonte']),
-  )
+  const { result } = renderHook(() => useMarketplaceSearch(['São Paulo', 'Belo Horizonte']))
 
   act(() => result.current.setSearchDraft({ location: 'sao paulo', propertyType: 'apart' }))
 
-  expect(result.current.filterSearchOptions('location')).toContain('Moema, São Paulo')
-  expect(result.current.filterSearchOptions('location')).not.toContain('Savassi, Belo Horizonte')
+  expect(result.current.filterSearchOptions('location')).toContain('São Paulo')
+  expect(result.current.filterSearchOptions('location')).not.toContain('Belo Horizonte')
   expect(result.current.filterSearchOptions('propertyType')).toEqual(['APARTMENT'])
   expect(result.current.getSearchOptionLabel('propertyType', '')).toBe('Todos os tipos')
 })
@@ -72,9 +70,9 @@ it('uses the current published location catalog and keeps free-text searches ava
     initialProps: { locations: [] as string[] },
   })
   expect(result.current.filterSearchOptions('location')).toEqual([])
-  rerender({ locations: ['Anhumas, Itajubá', 'Centro, Itajubá'] })
-  act(() => result.current.setSearchDraft({ location: 'anhumas', propertyType: '' }))
-  expect(result.current.filterSearchOptions('location')).toEqual(['Anhumas, Itajubá'])
+  rerender({ locations: ['Itajubá', 'Pouso Alegre'] })
+  act(() => result.current.setSearchDraft({ location: 'itaju', propertyType: '' }))
+  expect(result.current.filterSearchOptions('location')).toEqual(['Itajubá'])
   act(() =>
     result.current.setSearchDraft({ location: 'Local ainda sem sugestão', propertyType: '' }),
   )

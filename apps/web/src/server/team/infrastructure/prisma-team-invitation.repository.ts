@@ -1,4 +1,11 @@
+import {
+  CnpjAlreadyInUseError,
+  CpfAlreadyInUseError,
+  EmailAlreadyInUseError,
+} from '@server/auth/domain/errors'
+import { splitDocument } from '@shared/schemas/document-schema'
 import { prisma } from '@server/db/prisma'
+import { uniqueViolation } from '@server/shared/prisma-unique-violation'
 import { recordUserAudit } from '@server/auth/infrastructure/user-audit'
 
 import type { TeamInvitationRepository } from '../application/ports/team-invitation-repository.port'
@@ -40,37 +47,42 @@ export class PrismaTeamInvitationRepository implements TeamInvitationRepository 
   }
 
   async create(invitation: NewTeamInvitation): Promise<StoredTeamInvitation> {
-    return prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          tenantId: invitation.tenantId,
-          name: invitation.name,
-          email: invitation.email,
-          passwordHash: invitation.passwordHash,
-          role: 'AGENT',
-          emailVerifiedAt: null,
-          membershipApprovedAt: new Date(),
-        },
-      })
-      await recordUserAudit(tx, {
-        userId: user.id,
-        tenantId: invitation.tenantId,
-        action: 'CREATED',
-        actor: { kind: 'USER', id: invitation.actor.id },
-      })
-      const record = await tx.teamInvitation.create({
-        data: {
-          tenantId: invitation.tenantId,
+    return prisma
+      .$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            tenantId: invitation.tenantId,
+            name: invitation.name,
+            email: invitation.email,
+            passwordHash: invitation.passwordHash,
+            role: 'AGENT',
+            emailVerifiedAt: null,
+            membershipApprovedAt: new Date(),
+          },
+        })
+        await recordUserAudit(tx, {
           userId: user.id,
-          tokenHash: invitation.tokenHash,
-          expiresAt: invitation.expiresAt,
-          createdById: invitation.actor.id,
-          createdByName: invitation.actor.name,
-        },
-        select: invitationSelect,
+          tenantId: invitation.tenantId,
+          action: 'CREATED',
+          actor: { kind: 'USER', id: invitation.actor.id },
+        })
+        const record = await tx.teamInvitation.create({
+          data: {
+            tenantId: invitation.tenantId,
+            userId: user.id,
+            tokenHash: invitation.tokenHash,
+            expiresAt: invitation.expiresAt,
+            createdById: invitation.actor.id,
+            createdByName: invitation.actor.name,
+          },
+          select: invitationSelect,
+        })
+        return toStored(record)
       })
-      return toStored(record)
-    })
+      .catch((error: unknown) => {
+        if (uniqueViolation(error) !== null) throw new EmailAlreadyInUseError()
+        throw error
+      })
   }
 
   async findPendingByUser(tenantId: string, userId: string): Promise<StoredTeamInvitation | null> {
@@ -125,31 +137,44 @@ export class PrismaTeamInvitationRepository implements TeamInvitationRepository 
     return record ? toStored(record) : null
   }
 
-  async accept(tokenHash: string, passwordHash: string, now: Date): Promise<boolean> {
-    return prisma.$transaction(async (tx) => {
-      const invitation = await tx.teamInvitation.findUnique({ where: { tokenHash } })
-      if (!invitation) return false
-      const { count } = await tx.teamInvitation.updateMany({
-        where: { id: invitation.id, acceptedAt: null, expiresAt: { gt: now } },
-        data: { acceptedAt: now },
+  async accept(
+    tokenHash: string,
+    passwordHash: string,
+    document: string,
+    now: Date,
+  ): Promise<boolean> {
+    const personal = splitDocument(document)
+    return prisma
+      .$transaction(async (tx) => {
+        const invitation = await tx.teamInvitation.findUnique({ where: { tokenHash } })
+        if (!invitation) return false
+        const { count } = await tx.teamInvitation.updateMany({
+          where: { id: invitation.id, acceptedAt: null, expiresAt: { gt: now } },
+          data: { acceptedAt: now },
+        })
+        if (!count) return false
+        await tx.user.updateMany({
+          where: { id: invitation.userId, tenantId: invitation.tenantId },
+          data: {
+            passwordHash: passwordHash,
+            cpf: personal.cpf,
+            cnpj: personal.cnpj,
+            emailVerifiedAt: now,
+            sessionVersion: { increment: 1 },
+          },
+        })
+        await recordUserAudit(tx, {
+          userId: invitation.userId,
+          tenantId: invitation.tenantId,
+          action: 'UPDATED',
+          actor: { kind: 'SELF_REGISTRATION' },
+          changedFields: ['password', 'document', 'emailVerified'],
+        })
+        return true
       })
-      if (!count) return false
-      await tx.user.updateMany({
-        where: { id: invitation.userId, tenantId: invitation.tenantId },
-        data: {
-          passwordHash: passwordHash,
-          emailVerifiedAt: now,
-          sessionVersion: { increment: 1 },
-        },
+      .catch((error: unknown) => {
+        if (uniqueViolation(error) === null) throw error
+        throw personal.cnpj ? new CnpjAlreadyInUseError() : new CpfAlreadyInUseError()
       })
-      await recordUserAudit(tx, {
-        userId: invitation.userId,
-        tenantId: invitation.tenantId,
-        action: 'UPDATED',
-        actor: { kind: 'SELF_REGISTRATION' },
-        changedFields: ['password', 'emailVerified'],
-      })
-      return true
-    })
   }
 }

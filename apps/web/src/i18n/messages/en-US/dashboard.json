@@ -24,10 +24,14 @@
   },
   "notificationsCenter": {
     "tooltip": "Notifications",
-    "ariaLabel": "Open dashboard notifications",
-    "title": "Dashboard alerts",
-    "subtitle": "Today visits and assigned appointments",
-    "empty": "No alerts to show."
+    "ariaLabel": "Open notifications",
+    "title": "Notifications",
+    "subtitle": "Pending verifications, today’s visits and assigned appointments",
+    "empty": "No alerts to show.",
+    "faceCheckVerification": {
+      "title": "{count, plural, one {Pending verification} other {Pending verifications}}",
+      "message": "{count, plural, one {You have one pending verification. Click to submit your documents and take a selfie.} other {You have # pending verifications. Click to start the next one.}}"
+    }
   },
   "overview": {
     "title": "Dashboard",
@@ -652,6 +656,10 @@
       "email": "Email",
       "password": "Password",
       "passwordConfirmation": "Confirm password",
+      "document": "CPF / CNPJ",
+      "documentRequired": "Enter your CPF or CNPJ",
+      "documentInvalid": "Enter a valid CPF or CNPJ",
+      "documentInUse": "This CPF or CNPJ is already used in this agency",
       "submit": "Set password",
       "success": "Password set! Sign in with your email and new password.",
       "login": "Go to sign in",

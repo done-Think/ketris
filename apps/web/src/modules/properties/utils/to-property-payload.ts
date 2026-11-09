@@ -17,14 +17,11 @@ export function toPropertyPayload(
     existingAddress &&
     (values.street !== existingAddress.street ||
       values.number !== existingAddress.number ||
-      values.complement !== (existingAddress.complement ?? '') ||
       values.neighborhood !== existingAddress.neighborhood ||
       values.city !== existingAddress.city ||
       values.state !== existingAddress.state ||
       normalizePostalCode(values.zipCode) !== normalizePostalCode(existingAddress.zipCode)),
   )
-  const hasNewCoordinates =
-    values.latitude !== existingAddress?.latitude || values.longitude !== existingAddress?.longitude
 
   return {
     ...(options.canChooseOwner
@@ -41,10 +38,10 @@ export function toPropertyPayload(
       allowWhatsappContact: values.publishingOptions.includes('allowWhatsappContact'),
       featured: values.publishingOptions.includes('featured'),
     },
-    bedrooms: values.bedrooms,
-    bathrooms: values.bathrooms,
-    parkingSpots: values.parkingSpaces,
-    areaSqm: values.area,
+    bedrooms: Number(values.bedrooms),
+    bathrooms: Number(values.bathrooms),
+    parkingSpots: Number(values.parkingSpaces),
+    areaSqm: Number(values.area),
     price: values.mainValue,
     rentalPrice: purpose === 'BOTH' ? values.rentalValue : null,
     condoFee: values.condominium,
@@ -57,8 +54,8 @@ export function toPropertyPayload(
       city: values.city,
       state: values.state,
       zipCode,
-      latitude: addressChanged && !hasNewCoordinates ? null : values.latitude,
-      longitude: addressChanged && !hasNewCoordinates ? null : values.longitude,
+      latitude: addressChanged ? null : (existingAddress?.latitude ?? null),
+      longitude: addressChanged ? null : (existingAddress?.longitude ?? null),
     },
     media: values.media.map((item, index) => ({ ...item, order: index })),
   }

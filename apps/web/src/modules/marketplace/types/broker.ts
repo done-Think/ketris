@@ -14,15 +14,15 @@ export type BrokerProfile = {
   primaryColor: string | null
   backgroundColor: string | null
   region: string | null
-  specialties: string[]
-  neighborhoods: string[]
+  segments: string[]
+  coverage: string[]
   activeListings: number
   dealsClosed: number
   responseTime: string | null
   rating: number | null
   phone: string | null
   availability: string | null
-  bio: string | null
+  summary: string | null
   href: string
   highlightedListings: Array<{
     title: string
@@ -39,7 +39,9 @@ export type BrokerCardProps = BrokerProfile & {
 }
 
 export type BrokerPublicProfilePageProps = {
+  publicLinkEnabled?: boolean
   broker: BrokerProfile
+  publicHandle?: string
 }
 
 export type BrokerProfileHeroProps = {

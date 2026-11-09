@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import { CRM_LIMITS } from '@server/crm/constants/validation'
 import type { SchemaMessageTranslator } from '@shared/types'
+import { createPropertySelectionSchema } from './property-schema'
 
 export function createLeadSchema(
   t: SchemaMessageTranslator<
@@ -23,11 +24,7 @@ export function createLeadSchema(
       .trim()
       .max(CRM_LIMITS.email, t('emailInvalid'))
       .refine((value) => !value || z.string().email().safeParse(value).success, t('emailInvalid')),
-    interest: z
-      .string()
-      .trim()
-      .min(3, t('interestRequired'))
-      .max(CRM_LIMITS.shortText, t('textTooLong')),
+    property: createPropertySelectionSchema(() => t('interestRequired')),
     budget: z
       .string()
       .trim()
@@ -42,7 +39,7 @@ export const createLeadDefaultValues = {
   name: '',
   phone: '',
   email: '',
-  interest: '',
+  property: null,
   budget: '',
   source: 'MARKETPLACE',
   notes: '',

@@ -29,10 +29,16 @@ describe('AgencyAutocomplete', () => {
     vi.clearAllMocks()
   })
 
-  it('não busca nada enquanto o campo está vazio', () => {
+  it('carrega as imobiliárias cadastradas assim que o campo aparece, sem digitar', async () => {
+    vi.mocked(registrationService.searchAgencies).mockResolvedValue([
+      { id: 'agency-1', name: 'Imobiliária Alameda' },
+    ])
+    const user = userEvent.setup()
     renderAutocomplete()
 
-    expect(registrationService.searchAgencies).not.toHaveBeenCalled()
+    await waitFor(() => expect(registrationService.searchAgencies).toHaveBeenCalledWith(''))
+    await user.click(screen.getByRole('combobox'))
+    expect(await screen.findByText('Imobiliária Alameda')).toBeInTheDocument()
   })
 
   it('busca (com debounce) e mostra as opções encontradas', async () => {

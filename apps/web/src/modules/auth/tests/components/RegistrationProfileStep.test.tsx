@@ -19,12 +19,12 @@ describe('RegistrationProfileStep', () => {
     renderProfileStep()
 
     expect(screen.getByRole('heading', { name: 'Qual é o seu perfil?' })).toBeInTheDocument()
-    expect(screen.getAllByRole('radio')).toHaveLength(5)
+    expect(screen.getAllByRole('radio')).toHaveLength(6)
     expect(screen.getByRole('radio', { name: 'Proprietário' })).toBeChecked()
     expect(screen.getByRole('button', { name: 'Continuar' })).toBeEnabled()
   })
 
-  it.each(['Corretor', 'Imobiliária', 'Construtora', 'Locatário'])(
+  it.each(['Corretor', 'Imobiliária', 'Construtora', 'Administradora de condomínios', 'Locatário'])(
     'permite selecionar o perfil %s pela caixa inteira',
     async (profileName) => {
       const user = userEvent.setup()

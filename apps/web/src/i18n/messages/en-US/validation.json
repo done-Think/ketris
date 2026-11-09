@@ -77,8 +77,14 @@
     "partyAndRenterRequired": "Provide the party and renter user together.",
     "postalCodeInvalid": "Enter a postal code with 8 digits.",
     "cpfInvalid": "Enter a valid CPF.",
+    "cnpjInvalid": "Enter a valid CNPJ.",
+    "documentInvalid": "Enter a valid CPF or CNPJ.",
     "rateLimitUnavailable": "Service temporarily unavailable.",
     "rateLimitExceeded": "Too many requests. Please try again later.",
-    "clientUpdateRequired": "The application was updated. Reload the page to continue."
+    "clientUpdateRequired": "The application was updated. Reload the page to continue.",
+    "coordinatesPairRequired": "Provide latitude and longitude together.",
+    "publicAddressReserved": "This address is reserved for the platform.",
+    "publicAddressTaken": "This address is already in use. Choose another name.",
+    "publicAddressPublishRequired": "Publish your profile to enable its public link and edit your custom address. The link works only while the profile is published."
   }
 }

@@ -14,5 +14,5 @@ export interface TeamInvitationRepository {
   hasPortfolio(tenantId: string, userId: string): Promise<boolean>
   deleteInvitedUser(tenantId: string, userId: string): Promise<boolean>
   findByTokenHash(tokenHash: string): Promise<StoredTeamInvitation | null>
-  accept(tokenHash: string, passwordHash: string, now: Date): Promise<boolean>
+  accept(tokenHash: string, passwordHash: string, document: string, now: Date): Promise<boolean>
 }

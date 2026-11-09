@@ -1,0 +1,17 @@
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+models/
+*.onnx
+*.part
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.pdf
+*.csv
+reports/
+captures/
+.env

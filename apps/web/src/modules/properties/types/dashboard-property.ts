@@ -31,9 +31,14 @@ export type CreatePropertyPurpose = 'RENT' | 'SALE'
 
 export type DashboardActivityTone = 'success' | 'accent' | 'info' | 'warning' | 'neutral' | 'error'
 
-export type CreateDashboardPropertyFormValues = z.infer<
-  ReturnType<typeof createDashboardPropertySchema>
->
+type NumericFormField = 'bedrooms' | 'bathrooms' | 'parkingSpaces' | 'area'
+
+/** The numeric fields start empty in the form and are coerced to numbers by the schema. */
+export type CreateDashboardPropertyFormValues = Omit<
+  z.infer<ReturnType<typeof createDashboardPropertySchema>>,
+  NumericFormField
+> &
+  Record<NumericFormField, number | ''>
 
 export type PropertiesDashboardFiltersState = {
   sortModel: GridSortModel
@@ -79,16 +84,7 @@ export type DashboardProperty = {
     sale: string
     condominium: string
     propertyTax: string
-    administrationFee: string
-    securityDeposit: string
-    lastAdjustment: string
   }
-  participants: Array<{
-    name: string
-    role: string
-    initials: string
-    imageUrl?: string
-  }>
   activityHistory: Array<{
     label: string
     date: string
@@ -142,7 +138,6 @@ export type CreatePropertyStepsNavProps = {
 export type CreatePropertyStepFieldsProps = {
   getValues: UseFormGetValues<CreateDashboardPropertyFormValues>
   setValue: UseFormSetValue<CreateDashboardPropertyFormValues>
-  onAddressChange: () => void
   control: Control<CreateDashboardPropertyFormValues>
   activeStepKey: CreatePropertyStepKey
   activeStepLabel: string
@@ -156,7 +151,6 @@ export type CreatePropertyBasicStepFieldsProps = {
 export type CreatePropertyAddressStepFieldsProps = {
   getValues: UseFormGetValues<CreateDashboardPropertyFormValues>
   setValue: UseFormSetValue<CreateDashboardPropertyFormValues>
-  onAddressChange: () => void
   control: Control<CreateDashboardPropertyFormValues>
 }
 
@@ -287,6 +281,11 @@ export type PropertyDetailMainPanelProps = {
 
 export type PropertyDetailSidebarProps = {
   property: DashboardProperty
+}
+
+export type PropertyContractParticipantsProps = {
+  propertyId: string
+  contractId: string
 }
 
 export type PropertyDetailPanelProps = {

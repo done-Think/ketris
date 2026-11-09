@@ -6,7 +6,7 @@ import { useMemo } from 'react'
 import { Controller } from 'react-hook-form'
 
 import type { AppLocale } from '@/i18n/types/locale.types'
-import { RhfTextField } from '@shared/components/form'
+import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
 
 import {
   useOwnAgencyProfile,
@@ -15,6 +15,7 @@ import {
   useUnpublishAgencyProfile,
 } from '../hooks/use-agency-profile'
 import { usePublicProfileEditor } from '../hooks/use-public-profile-editor'
+import { useOwnProfileAddress } from '../hooks/use-profile-address'
 import { useTenantAgents } from '../hooks/use-tenant-agents'
 import { createAgencyPublicProfileEditorSchema } from '../schemas/agency-public-profile-editor-schema'
 import { styles, teamPickerSlotProps } from '../styles/public-profile-editor.styles'
@@ -27,10 +28,12 @@ import {
 import { AgencyPublicProfilePage } from './AgencyPublicProfilePage'
 import { PublicProfileEditorLoader } from './public-profile-editor/PublicProfileEditorLoader'
 import { PublicProfileEditorPanel } from './public-profile-editor/PublicProfileEditorPanel'
+import { PublicProfileAddressPanel } from './public-profile-editor/PublicProfileAddressPanel'
 import { PublicProfileEditorShell } from './public-profile-editor/PublicProfileEditorShell'
 import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
 
 const formId = 'agency-public-profile-editor-form'
+const phoneMask = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
 
 export function AgencyPublicProfileEditorPage() {
   const t = useTranslations('marketplace.agencyProfileEditor')
@@ -53,6 +56,8 @@ export function AgencyPublicProfileEditorPage() {
 }
 
 function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
+  const published = profile?.status === 'PUBLISHED'
+  const { data: address } = useOwnProfileAddress('agency', published)
   const locale = useLocale() as AppLocale
   const t = useTranslations('marketplace.agencyProfileEditor')
   const tFeatures = useTranslations('marketplace.propertyFeatures')
@@ -112,6 +117,8 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
       onClosePreview={editor.closePreview}
       preview={
         <AgencyPublicProfilePage
+          publicLinkEnabled={published}
+          publicHandle={address?.handle ?? undefined}
           agency={toPreviewProfile(
             editor.form.getValues(),
             profile,
@@ -122,6 +129,7 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
         />
       }
     >
+      <PublicProfileAddressPanel kind="agency" published={published} />
       <PublicProfileEditorPanel title={t('fields.mainInfo')}>
         <Box sx={styles.mainFields}>
           <RhfTextField
@@ -155,11 +163,14 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
             label={t('fields.address')}
             disabled={disabled}
           />
-          <RhfTextField
+          <RhfMaskedTextField
             control={control}
             name="phone"
             label={t('fields.phone')}
-            disabled={disabled}
+            mask={phoneMask}
+            type="tel"
+            autoComplete="tel"
+            InputProps={{ readOnly: disabled }}
           />
           <RhfTextField
             control={control}
@@ -202,6 +213,20 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
       <Stack spacing={2}>
         <PublicProfileEditorPanel title={t('fields.appearance')}>
           <Box sx={styles.colorFields}>
+            <RhfTextField
+              control={control}
+              name="primaryColor"
+              label={t('fields.primaryColor')}
+              type="color"
+              disabled={disabled}
+            />
+            <RhfTextField
+              control={control}
+              name="secondaryColor"
+              label={t('fields.secondaryColor')}
+              type="color"
+              disabled={disabled}
+            />
             <RhfTextField
               control={control}
               name="backgroundColor"
@@ -258,7 +283,7 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
                   label={t('fields.teamPicker')}
                   placeholder={t('fields.teamPickerPlaceholder')}
                   error={Boolean(fieldState.error)}
-                  helperText={fieldState.error?.message}
+                  helperText={fieldState.error?.message ?? t('fields.teamPickerHint')}
                 />
               )}
             />

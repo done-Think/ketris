@@ -134,6 +134,7 @@ export const authOptions: NextAuthOptions = {
         token.scope = user.scope
         token.tenantId = user.tenantId
         token.role = user.role
+        token.accountType = await accountTypeOf(user.id)
         token.platformRole = user.platformRole
         token.sessionVersion = user.sessionVersion ?? 0
         delete token.authUnavailable
@@ -165,6 +166,8 @@ export const authOptions: NextAuthOptions = {
           )
             return clearSessionToken(token)
           assertUserCanAuthenticate(currentUser)
+          // Always derived from the database, never carried over from the cookie.
+          token.accountType = currentUser.tenantAccountType
           token.name = currentUser.name
           token.email = currentUser.email
           token.picture = currentUser.avatarUrl
@@ -194,6 +197,7 @@ export const authOptions: NextAuthOptions = {
       session.scope = token.authUnavailable ? undefined : token.scope
       session.tenantId = token.authUnavailable ? undefined : token.tenantId
       session.role = token.authUnavailable ? undefined : token.role
+      session.accountType = token.authUnavailable ? undefined : token.accountType
       session.platformRole = token.authUnavailable ? undefined : token.platformRole
       if (session.user && token.sub) {
         session.user.id = token.sub
@@ -244,6 +248,14 @@ async function adoptValidatedSessionTokens(token: JWT): Promise<void> {
   delete token.pendingRefreshToken
 }
 
+async function accountTypeOf(userId: string) {
+  try {
+    return (await authContainer.userRepository.findById(userId))?.tenantAccountType
+  } catch {
+    return undefined
+  }
+}
+
 function clearSessionToken(token: JWT): JWT {
   delete token.authUnavailable
   delete token.pendingAccessToken
@@ -253,6 +265,7 @@ function clearSessionToken(token: JWT): JWT {
   delete token.scope
   delete token.tenantId
   delete token.role
+  delete token.accountType
   delete token.platformRole
   delete token.sessionVersion
   return token

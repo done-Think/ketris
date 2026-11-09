@@ -131,10 +131,7 @@
       "rent": "RENT",
       "sale": "SALE",
       "condominium": "CONDO FEE",
-      "propertyTax": "PROPERTY TAX",
-      "administrationFee": "MANAGEMENT FEE",
-      "securityDeposit": "GUARANTEE",
-      "lastAdjustment": "LAST ADJUSTMENT"
+      "propertyTax": "PROPERTY TAX"
     },
     "tabs": {
       "data": "Data",
@@ -166,10 +163,17 @@
     "loading": "Loading property",
     "description": "Description",
     "amenities": "Amenities",
-    "negotiationTerms": "Negotiation terms"
+    "negotiationTerms": "Negotiation terms",
+    "participantsLoading": "Loading contract participants…",
+    "participantsLoadError": "Could not load the contract participants.",
+    "retryParticipants": "Try again",
+    "participantRoles": {
+      "landlord": "Landlord",
+      "renter": "Tenant",
+      "guarantor": "Guarantor"
+    }
   },
   "create": {
-    "coordinatesHint": "We will try to locate the property by its address when saving. If needed, enter both coordinates.",
     "postalCode": {
       "idle": "Enter the postal code and leave the field to fill in the address. Check the details before saving.",
       "loading": "Looking up postal code…",
@@ -206,8 +210,6 @@
       "commercialTerms": "Commercial terms",
       "owner": "Owner",
       "complement": "Address complement",
-      "latitude": "Latitude (optional)",
-      "longitude": "Longitude (optional)",
       "ownerAccessAccount": "Account with property access (optional)"
     },
     "steps": {
@@ -271,8 +273,6 @@
       "titleTooLong": "The title must contain at most 200 characters.",
       "descriptionTooLong": "The description must contain at most 10,000 characters.",
       "negotiationTermTooLong": "Negotiation terms must contain at most 2,000 characters.",
-      "latitudeInvalid": "Enter a latitude between -90 and 90.",
-      "longitudeInvalid": "Enter a longitude between -180 and 180.",
       "integerRequired": "Enter a whole number"
     },
     "saveDraft": "Save draft",
@@ -283,7 +283,9 @@
     "mediaStorageUnavailableFileError": "The image service is unavailable. Could not upload \"{filename}\". Please try again later.",
     "noOwnerAccess": "No linked access account",
     "ownerContactHelp": "Select a CRM contact. The contact does not need a login and will not receive access automatically.",
-    "ownerAccessHelp": "This account can access the property. This link is independent of the owner contact."
+    "ownerAccessHelp": "This account can access the property. This link is independent of the owner contact.",
+    "addressLocationHint": "We use this address to locate the property automatically on the map.",
+    "addressLocationUnavailable": "The property was saved, but the map service has not found this address yet. Please check the address details."
   },
   "edit": {
     "title": "Edit property",

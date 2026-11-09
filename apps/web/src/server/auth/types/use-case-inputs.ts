@@ -75,6 +75,10 @@ export interface ResetPasswordInput {
 export interface UpdateUserInput {
   phone?: string | null
   creci?: string | null
+  cpf?: string | null
+  /** CPF or CNPJ of the person; replaces whichever one was stored. */
+  document?: string | null
+  cnpj?: string | null
   actorId: string
   actorTenantId: string
   actorRole: UserRole
