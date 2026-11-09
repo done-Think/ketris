@@ -51,6 +51,7 @@ const user = (overrides: Partial<TenantUser>): TenantUser => ({
   email: 'roberto@ketris.dev',
   cpf: null,
   tenantCnpj: null,
+  document: null,
   avatarUrl: null,
   phone: null,
   creci: null,

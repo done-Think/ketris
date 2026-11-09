@@ -16,7 +16,6 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     actorRole: actor.role,
     name: body.name,
     email: body.email,
-    cpf: body.cpf,
     locale: body.locale,
   })
 

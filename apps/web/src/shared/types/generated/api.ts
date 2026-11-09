@@ -15276,6 +15276,8 @@ export type webhooks = Record<string, never>
 export interface components {
   schemas: {
     AcceptTeamInvitationRequest: {
+      /** @example 529.982.247-25 */
+      document: string
       password: string
       token: string
     }
@@ -15448,6 +15450,7 @@ export interface components {
       avatarUrl: string | null
       cpf: string | null
       creci: string | null
+      document: string | null
       /** Format: email */
       email: string
       id: string
@@ -16471,8 +16474,6 @@ export interface components {
       size: number
     }
     InviteBrokerRequest: {
-      /** @example 529.982.247-25 */
-      cpf: string
       /**
        * Format: email
        * @example marina@imobiliaria.com.br
@@ -17669,8 +17670,8 @@ export interface components {
           acceptTerms: true
           agencyId?: string
           companyName?: string
-          cpf: string
           creci: string
+          document: string
           /** Format: email */
           email: string
           fullName: string
@@ -18293,6 +18294,7 @@ export interface components {
       cnpj?: string
       cpf?: string
       creci?: string | null
+      document?: string
       /** Format: email */
       email?: string
       name?: string

@@ -53,7 +53,6 @@ describe('InviteBrokerUseCase', () => {
       ...owner,
       name: ' Bruna ',
       email: ' Bruna@Example.test ',
-      cpf: '52998224725',
       locale: 'pt-BR',
     })
 
@@ -89,7 +88,6 @@ describe('InviteBrokerUseCase', () => {
       ...owner,
       name: 'Bruna',
       email: 'bruna@example.test',
-      cpf: '52998224725',
       locale: 'pt-BR',
     })
 
@@ -104,7 +102,6 @@ describe('InviteBrokerUseCase', () => {
         ...owner,
         name: 'Bruna',
         email: 'bruna@example.test',
-        cpf: '52998224725',
         locale: 'pt-BR',
       }),
     ).rejects.toBeInstanceOf(EmailAlreadyInUseError)
@@ -182,11 +179,13 @@ describe('aceite do convite', () => {
       new AcceptTeamInvitationUseCase(invitations, hasher, () => now).execute({
         token: 'token-valido-123456',
         password: 'senha-forte-123',
+        document: '52998224725',
       }),
     ).resolves.toEqual({ email: 'bruna@example.test', tenantId: 'tenant-1' })
     expect(invitations.accept).toHaveBeenCalledWith(
       hashTeamInvitationToken('token-valido-123456'),
       'hash:senha-forte-123',
+      '52998224725',
       now,
     )
   })
@@ -197,7 +196,11 @@ describe('aceite do convite', () => {
         invitationRepository({ findByTokenHash: vi.fn().mockResolvedValue(value) }),
         hasher,
         () => now,
-      ).execute({ token: 'token-valido-123456', password: 'senha-forte-123' })
+      ).execute({
+        token: 'token-valido-123456',
+        password: 'senha-forte-123',
+        document: '52998224725',
+      })
 
     await expect(make(null)).rejects.toBeInstanceOf(TeamInvitationNotFoundError)
     await expect(make({ ...stored, acceptedAt: now })).rejects.toBeInstanceOf(

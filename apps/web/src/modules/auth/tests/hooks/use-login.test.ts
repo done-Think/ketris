@@ -31,6 +31,7 @@ const authenticated = {
     creci: null,
     cpf: null,
     tenantCnpj: null,
+    document: null,
   },
   accessToken: 'access-fake',
   refreshToken: 'refresh-fake',

@@ -27,6 +27,7 @@ const values: RegistrationDetailsFormValues = {
   creci: '',
   cpf: '529.982.247-25',
   cnpj: '11.222.333/0001-81',
+  document: '',
   acceptTerms: true,
 }
 const verification = {

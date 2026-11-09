@@ -76,7 +76,6 @@ export class InviteBrokerUseCase {
       tenantId: input.actorTenantId,
       name: input.name.trim(),
       email,
-      cpf: input.cpf,
       passwordHash: await this.passwordHasher.hash(generateUnusablePassword()),
       tokenHash: hashTeamInvitationToken(token),
       expiresAt: teamInvitationExpiry(this.now()),
@@ -186,6 +185,7 @@ export class AcceptTeamInvitationUseCase {
     const accepted = await this.invitations.accept(
       tokenHash,
       await this.passwordHasher.hash(input.password),
+      input.document,
       now,
     )
     if (!accepted) throw new TeamInvitationAlreadyAcceptedError()

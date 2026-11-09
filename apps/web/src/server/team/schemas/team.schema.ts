@@ -1,6 +1,6 @@
 import { validationRefinement } from '@server/shared/http/validation-messages'
-import { isValidCpf } from '@shared/schemas/cpf-schema'
 import '@server/openapi/zod-extend'
+import { isValidDocument } from '@shared/schemas/document-schema'
 import { z } from 'zod'
 
 import { locales } from '@/i18n/routing'
@@ -35,12 +35,6 @@ export const inviteBrokerRequestSchema = z
   .object({
     name: z.string().trim().min(1).max(120).openapi({ example: 'Marina Costa' }),
     email: z.string().trim().max(254).email().openapi({ example: 'marina@imobiliaria.com.br' }),
-    cpf: z
-      .string()
-      .trim()
-      .refine(isValidCpf, validationRefinement('cpfInvalid'))
-      .transform((value) => value.replace(/\D/g, ''))
-      .openapi({ example: '529.982.247-25' }),
     locale: z.enum(locales).openapi({ example: 'pt-BR' }),
   })
   .strict()
@@ -64,6 +58,13 @@ export const acceptTeamInvitationRequestSchema = z
         ? 'Senha muito longa. Use menos caracteres.'
         : 'Senha deve ter pelo menos 8 caracteres.',
     ),
+    // The invited broker identifies with a CPF or with the CNPJ of their own company.
+    document: z
+      .string()
+      .trim()
+      .refine(isValidDocument, validationRefinement('documentInvalid'))
+      .transform((value) => value.replace(/\D/g, ''))
+      .openapi({ example: '529.982.247-25' }),
   })
   .strict()
   .openapi('AcceptTeamInvitationRequest')

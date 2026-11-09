@@ -31,7 +31,7 @@ export function useRegister() {
           ...details,
           profile: values.profile,
           creci: values.creci,
-          cpf: values.cpf,
+          document: values.document,
           ...(values.agencyId ? { agencyId: values.agencyId } : {}),
           ...company,
         })

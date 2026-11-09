@@ -22,6 +22,8 @@ export interface RegistrationContactInput {
   creci?: string
   /** CPF, digits only, of the person behind an individual account. */
   cpf?: string
+  /** CPF or CNPJ, digits only, of a broker; replaces `cpf` when present. */
+  document?: string
   /** CNPJ, digits only, of the company that owns a new tenant. */
   cnpj?: string
   termsAcceptedAt: Date

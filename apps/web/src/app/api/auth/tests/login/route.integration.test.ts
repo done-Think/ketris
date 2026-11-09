@@ -68,6 +68,7 @@ describe('POST /api/auth/login (integração)', () => {
       phone: null,
       creci: null,
       cpf: null,
+      document: null,
       tenantCnpj: null,
       role: 'OWNER',
       active: true,

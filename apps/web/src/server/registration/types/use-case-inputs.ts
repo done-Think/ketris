@@ -6,6 +6,8 @@ export interface RegistrationDetailsInput {
   password: string
   phone: string
   cpf?: string
+  /** CPF or CNPJ of a broker; stored as whichever it is. */
+  document?: string
   acceptTerms: boolean
 }
 

@@ -37,6 +37,8 @@ import type {
 const PHONE_MASK = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
 const CPF_MASK = [{ mask: '000.000.000-00' }]
 const CNPJ_MASK = [{ mask: '00.000.000/0000-00' }]
+// One field for both: the mask follows what is typed, up to 11 digits it is a CPF, beyond that a CNPJ.
+const DOCUMENT_MASK = [...CPF_MASK, ...CNPJ_MASK]
 
 const passwordFields: ReadonlyArray<RegistrationPasswordField> = [
   { name: 'password', translationKey: 'password' },
@@ -69,6 +71,7 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
       creci: '',
       cpf: '',
       cnpj: '',
+      document: '',
       companyName: '',
       acceptTerms: false,
     },
@@ -158,7 +161,20 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
           </AuthFormField>
         </Box>
 
-        {showCnpj ? (
+        {profile === 'broker' ? (
+          <AuthFormField htmlFor="registration-document" label={t('document.label')} required>
+            <RhfMaskedTextField
+              id="registration-document"
+              control={control}
+              name="document"
+              mask={DOCUMENT_MASK}
+              placeholder={t('document.placeholder')}
+              inputMode="numeric"
+              fullWidth
+              sx={authTextFieldSx}
+            />
+          </AuthFormField>
+        ) : showCnpj ? (
           <AuthFormField htmlFor="registration-cnpj" label={t('cnpj.label')} required>
             <RhfMaskedTextField
               id="registration-cnpj"

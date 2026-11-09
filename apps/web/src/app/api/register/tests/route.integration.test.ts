@@ -109,7 +109,13 @@ describe('cadastro e primeiro login com confirmação real', () => {
   })
 
   it('inicializa perfil público do corretor com telefone e CRECI reais sem publicá-lo', async () => {
-    const input = { ...details(), profile: 'broker', creci: '12345-F' }
+    const input = {
+      ...details(),
+      cpf: undefined,
+      document: '529.982.247-25',
+      profile: 'broker',
+      creci: '12345-F',
+    }
     const response = await register(request('register', input))
     expect(response.status).toBe(201)
     const body = await response.json()
@@ -124,6 +130,25 @@ describe('cadastro e primeiro login com confirmação real', () => {
     expect(profile.phone).toBe(input.phone)
     expect(profile.creci).toBe(input.creci)
     expect(profile.status).toBe('DRAFT')
+  })
+
+  it('stores a broker CNPJ in its own column and leaves the CPF empty', async () => {
+    const cnpj = randomCnpj()
+    const input = {
+      ...details(),
+      cpf: undefined,
+      document: cnpj,
+      profile: 'broker',
+      creci: '45678-J',
+    }
+    const response = await register(request('register', input))
+    expect(response.status).toBe(201)
+    const body = await response.json()
+    tenants.push(body.tenantId)
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { tenantId_email: { tenantId: body.tenantId, email: input.email } },
+    })
+    expect(user).toMatchObject({ cpf: null, cnpj })
   })
 
   it('preserves agency registration CRECI and reuses it in the public profile editor after verification', async () => {
@@ -178,7 +203,14 @@ describe('cadastro e primeiro login com confirmação real', () => {
       },
     })
     tenants.push(agency.id)
-    const input = { ...details(), profile: 'broker', creci: '12345-F', agencyId: agency.id }
+    const input = {
+      ...details(),
+      cpf: undefined,
+      document: '529.982.247-25',
+      profile: 'broker',
+      creci: '12345-F',
+      agencyId: agency.id,
+    }
     const response = await register(request('register', input))
     expect(response.status).toBe(202)
     const body = await response.json()

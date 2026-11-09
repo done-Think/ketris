@@ -3,6 +3,7 @@ import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
 import { isValidCnpj } from '@shared/schemas/cnpj-schema'
+import { isValidDocument } from '@shared/schemas/document-schema'
 import { isValidCpf } from '@shared/schemas/cpf-schema'
 import { locales } from '@/i18n/routing'
 import { isSupportedNewPasswordLength } from '@shared/utils/password-length'
@@ -42,6 +43,13 @@ const cpfField = z
   .refine(isValidCpf, validationRefinement('cpfInvalid'))
   .transform((value) => value.replace(/\D/g, ''))
 
+// A broker identifies with a CPF or with the CNPJ of their own company.
+const documentField = z
+  .string()
+  .trim()
+  .refine(isValidDocument, validationRefinement('documentInvalid'))
+  .transform((value) => value.replace(/\D/g, ''))
+
 const cnpjField = z
   .string()
   .trim()
@@ -76,7 +84,7 @@ export const registerRequestSchema = z
         companyName: z.string().trim().min(1).optional(),
         agencyId: z.string().trim().min(1).optional(),
         creci: z.string().trim().min(1).max(32),
-        cpf: cpfField,
+        document: documentField,
       })
       .strict(),
     z.object({ ...registerBaseFields, profile: z.literal('renter'), cpf: cpfField }).strict(),

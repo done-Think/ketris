@@ -30,6 +30,7 @@ export class RegisterTenantAgentUseCase {
       phone: input.phone,
       creci: input.creci,
       cpf: input.cpf,
+      document: input.document,
       termsAcceptedAt: new Date(),
       createBrokerProfile: true,
     })

@@ -4,6 +4,7 @@ import { assertAvatarScope } from '../../domain/avatar-policy'
 import { AccountDeactivatedError } from '../../domain/errors'
 import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
+import { splitDocument } from '@shared/schemas/document-schema'
 
 import { EmailConfirmationRequiredError, UserNotFoundError } from '../../domain/errors'
 import { toAuthenticatedUser } from '../authenticated-user'
@@ -52,13 +53,16 @@ export class UpdateUserUseCase {
       throw new EmailConfirmationRequiredError()
     }
 
+    const personal = input.document ? splitDocument(input.document) : null
+
     const updated = await this.userRepository.update(input.userId, {
       name: input.name,
       tenantId: input.actorTenantId,
       auditActor: { kind: 'USER', id: input.actorId },
       phone: input.phone,
       creci: input.creci,
-      cpf: input.cpf,
+      cpf: personal ? personal.cpf : input.cpf,
+      personalCnpj: personal?.cnpj,
       cnpj: input.cnpj,
       avatarUrl: input.avatarUrl,
       role: input.role,

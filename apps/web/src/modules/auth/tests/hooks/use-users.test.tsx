@@ -36,6 +36,7 @@ const user = {
   creci: null,
   cpf: null,
   tenantCnpj: null,
+  document: null,
   avatarUrl: null,
 }
 function setup() {

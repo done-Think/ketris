@@ -27,6 +27,7 @@ export class RegisterTenantOwnerUseCase {
       phone: input.phone,
       creci: input.creci,
       cpf: input.cpf,
+      document: input.document,
       cnpj: input.cnpj,
       termsAcceptedAt: new Date(),
       createBrokerProfile: input.profile === 'broker',
