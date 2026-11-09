@@ -263,7 +263,7 @@
       "cityRequired": "Enter the city",
       "stateRequired": "Enter the state",
       "zipCodeRequired": "Enter the ZIP code",
-      "zipCodeInvalid": "Enter a valid Brazilian postal code, such as 37502-330.",
+      "zipCodeInvalid": "Enter a valid ZIP code",
       "zipCodeNotFound": "Postal code not found. Check the code you entered.",
       "numberInvalid": "Enter a valid value",
       "areaRequired": "Enter the usable area",

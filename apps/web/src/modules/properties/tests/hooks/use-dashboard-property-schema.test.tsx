@@ -22,7 +22,7 @@ describe('useDashboardPropertySchema', () => {
   beforeEach(() => vi.mocked(isPostalCodeNotFound).mockReturnValue(false))
 
   it('translates the message for a CEP that cannot exist', () => {
-    expect(zipCodeMessages('00000-000')).toContain('Informe um CEP válido, como 37502-330.')
+    expect(zipCodeMessages('00000-000')).toContain('Informe um CEP válido')
   })
 
   it('blocks a CEP the lookup reported as not found', () => {
