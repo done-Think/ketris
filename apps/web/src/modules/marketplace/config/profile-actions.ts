@@ -7,7 +7,7 @@ import type { ProfileAction } from '../types/user-profile'
 
 export const profileActions: ProfileAction[] = [
   { labelKey: 'support', icon: SupportAgentOutlinedIcon, href: '/dashboard/maintenance' },
-  { labelKey: 'settings', icon: SettingsOutlinedIcon, href: '/dashboard/public-profile' },
+  { labelKey: 'settings', icon: SettingsOutlinedIcon, href: '/dashboard/profile' },
   { labelKey: 'switchMode', icon: SwapHorizOutlinedIcon, href: '/properties' },
   { labelKey: 'signOut', icon: LogoutOutlinedIcon, tone: 'danger' },
 ]
