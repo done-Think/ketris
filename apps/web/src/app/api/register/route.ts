@@ -22,7 +22,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
           ...details,
           agencyId: body.agencyId,
           creci: body.creci,
-          cpf: body.cpf,
+          document: body.document,
         })
       : body.profile === 'renter'
         ? await registrationContainer.registerRenterUseCase.execute({ ...details, cpf: body.cpf })
@@ -32,6 +32,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
             companyName: body.companyName,
             creci: 'creci' in body ? body.creci : undefined,
             cpf: 'cpf' in body ? body.cpf : undefined,
+            document: 'document' in body ? body.document : undefined,
             cnpj: 'cnpj' in body ? body.cnpj : undefined,
           })
 

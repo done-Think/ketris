@@ -99,10 +99,15 @@ class TeamService extends BaseService {
       .then((data) => data.invitation)
   }
 
-  acceptInvitation(token: string, password: string): Promise<AcceptTeamInvitationResponse> {
+  acceptInvitation(
+    token: string,
+    password: string,
+    document: string,
+  ): Promise<AcceptTeamInvitationResponse> {
     return this.http.post<AcceptTeamInvitationResponse>(`${this.path}/invitations/accept`, {
       token,
       password,
+      document,
     })
   }
 }

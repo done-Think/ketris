@@ -196,7 +196,7 @@ describe('property forms', () => {
       await user.type(screen.getByLabelText(label, { selector: 'input' }), value)
     }
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
-    fireEvent.change(await screen.findByLabelText('Área útil'), { target: { value: '80' } })
+    fireEvent.input(await screen.findByLabelText('Área útil'), { target: { value: '80' } })
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     await waitFor(() => expect(screen.queryByLabelText('Área útil')).not.toBeInTheDocument())
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
@@ -241,7 +241,7 @@ describe('property forms', () => {
       await user.type(screen.getByLabelText(label, { selector: 'input' }), value)
     }
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
-    fireEvent.change(await screen.findByLabelText('Área útil'), { target: { value: '80' } })
+    fireEvent.input(await screen.findByLabelText('Área útil'), { target: { value: '80' } })
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     await waitFor(() => expect(screen.queryByLabelText('Área útil')).not.toBeInTheDocument())
     const input = container.querySelector<HTMLInputElement>('input[type="file"]')!
@@ -352,15 +352,18 @@ describe('property forms', () => {
     )
   })
 
-  it('rejects fractional room counts before leaving the features step', async () => {
+  it('accepts only digits in the numeric fields and has no spin arrows', async () => {
     const user = userEvent.setup()
     state.query.data = editableProperty
     render(<EditPropertyDashboardPage propertyId={editableProperty.id} />)
     await user.click(screen.getAllByRole('button', { name: /Características/ })[0])
-    fireEvent.change(await screen.findByLabelText('Quartos'), { target: { value: '1.5' } })
-    await user.click(screen.getByRole('button', { name: 'Próximo' }))
-    expect(await screen.findByText('Informe um número inteiro')).toBeVisible()
-    expect(screen.getByLabelText('Quartos')).toBeVisible()
-    expect(state.update).not.toHaveBeenCalled()
+    const bedrooms = await screen.findByLabelText('Quartos')
+    expect(bedrooms).toHaveAttribute('type', 'text')
+    fireEvent.input(bedrooms, { target: { value: '1abc5' } })
+    expect(bedrooms).toHaveValue('15')
+    const area = screen.getByLabelText('Área útil')
+    expect(area).toHaveAttribute('type', 'text')
+    fireEvent.input(area, { target: { value: '85,5x' } })
+    expect(area).toHaveValue('85.5')
   })
 })

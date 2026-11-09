@@ -1,4 +1,4 @@
-import { requireDashboardFeature } from '@shared/lib/auth/require-dashboard-feature'
+import { requireDashboardHome } from '@shared/lib/auth/require-dashboard-feature'
 import { ScopedMessages } from '@/i18n/scoped-messages'
 import { dashboardMessageNamespaces } from '@/i18n/message-selection'
 import { createLocalizedMetadata } from '@/i18n/metadata'
@@ -12,7 +12,7 @@ export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
 }
 
 export default async function DashboardPage() {
-  await requireDashboardFeature('dashboard')
+  await requireDashboardHome()
   return (
     <ScopedMessages
       namespaces={[

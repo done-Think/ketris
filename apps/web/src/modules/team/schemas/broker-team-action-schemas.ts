@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { createCpfSchema } from '@shared/schemas/cpf-schema'
+import { createDocumentSchema } from '@shared/schemas/document-schema'
 import { createNewPasswordSchema } from '@shared/schemas/new-password-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 
@@ -15,12 +15,11 @@ export function createBrokerGoalSchema(t: SchemaMessageTranslator<'goalError'>) 
 }
 
 export function createBrokerInviteSchema(
-  t: SchemaMessageTranslator<'cpfInvalid' | 'cpfRequired' | 'inviteEmailError' | 'inviteNameError'>,
+  t: SchemaMessageTranslator<'inviteEmailError' | 'inviteNameError'>,
 ) {
   return z.object({
     name: z.string().trim().min(1, t('inviteNameError')).max(120, t('inviteNameError')),
     email: z.string().trim().max(254, t('inviteEmailError')).email(t('inviteEmailError')),
-    cpf: createCpfSchema(t),
   })
 }
 
@@ -50,13 +49,19 @@ export function createBrokerDeactivateSchema(t: SchemaMessageTranslator<'destina
 
 export function createAcceptInvitationSchema(
   t: SchemaMessageTranslator<
-    'passwordConfirmationRequired' | 'passwordMismatch' | 'passwordTooLong' | 'passwordTooShort'
+    | 'documentInvalid'
+    | 'documentRequired'
+    | 'passwordConfirmationRequired'
+    | 'passwordMismatch'
+    | 'passwordTooLong'
+    | 'passwordTooShort'
   >,
 ) {
   return z
     .object({
       password: createNewPasswordSchema(t),
       passwordConfirmation: z.string().min(1, t('passwordConfirmationRequired')),
+      document: createDocumentSchema(t),
     })
     .refine((values) => values.password === values.passwordConfirmation, {
       path: ['passwordConfirmation'],

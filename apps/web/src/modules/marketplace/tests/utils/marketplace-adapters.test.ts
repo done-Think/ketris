@@ -135,15 +135,15 @@ describe('public profile editor adapters', () => {
     const draft = brokerEditor.toDraft({
       ...brokerEditor.emptyValues,
       displayName: 'Ana',
-      neighborhoods: ' Jardins,  Moema ,, ',
-      specialties: '',
+      coverage: ' Jardins,  Moema ,, ',
+      segments: '',
     })
 
     expect(draft).toMatchObject({
       displayName: 'Ana',
       headline: null,
-      neighborhoods: ['Jardins', 'Moema'],
-      specialties: [],
+      coverage: ['Jardins', 'Moema'],
+      segments: [],
     })
     expect(brokerEditor.toFormValues(null)).toBe(brokerEditor.emptyValues)
   })

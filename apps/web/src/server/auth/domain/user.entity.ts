@@ -13,6 +13,8 @@ export interface User extends UserAccessState {
   creci?: string | null
   /** CPF, digits only. */
   cpf?: string | null
+  /** CNPJ of the person's own company, digits only; alternative to the CPF. */
+  cnpj?: string | null
   passwordHash: string
   avatarUrl?: string | null
   role: UserRole

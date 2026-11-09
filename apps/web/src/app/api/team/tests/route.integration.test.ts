@@ -171,6 +171,7 @@ describe('/api/team (integração)', () => {
         request('/team/invitations/accept', 'POST', undefined, {
           token,
           password: 'senha-forte-123',
+          document: '529.982.247-25',
         }),
       )
     expect((await accept()).status).toBe(200)

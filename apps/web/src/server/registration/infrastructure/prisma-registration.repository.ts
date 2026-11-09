@@ -6,6 +6,7 @@ import { normalizeEmail } from '@server/shared/normalize-email'
 import { buildPublicProfileSlug } from '@shared/utils/public-profile-slug'
 
 import type { RegistrationRepository } from '../application/ports/registration-repository.port'
+import { splitDocument } from '@shared/schemas/document-schema'
 import { creciKey, documentKey, phoneKey } from '@server/shared/contact-keys'
 import { uniqueViolation } from '@server/shared/prisma-unique-violation'
 
@@ -50,13 +51,15 @@ function uniqueConflictError(error: unknown): Error | null {
   return new RegistrationEmailAlreadyInUseError()
 }
 
-function contactData(input: { phone: string; creci?: string; cpf?: string }) {
+function contactData(input: { phone: string; creci?: string; cpf?: string; document?: string }) {
+  const personal = splitDocument(input.document ?? input.cpf ?? '')
   return {
     phone: input.phone,
     phoneKey: phoneKey(input.phone),
     creci: input.creci,
     creciKey: creciKey(input.creci),
-    cpf: documentKey(input.cpf),
+    cpf: documentKey(personal.cpf),
+    cnpj: documentKey(personal.cnpj),
   }
 }
 

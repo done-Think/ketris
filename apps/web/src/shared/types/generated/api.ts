@@ -15276,6 +15276,8 @@ export type webhooks = Record<string, never>
 export interface components {
   schemas: {
     AcceptTeamInvitationRequest: {
+      /** @example 529.982.247-25 */
+      document: string
       password: string
       token: string
     }
@@ -15448,6 +15450,7 @@ export interface components {
       avatarUrl: string | null
       cpf: string | null
       creci: string | null
+      document: string | null
       /** Format: email */
       email: string
       id: string
@@ -16471,8 +16474,6 @@ export interface components {
       size: number
     }
     InviteBrokerRequest: {
-      /** @example 529.982.247-25 */
-      cpf: string
       /**
        * Format: email
        * @example marina@imobiliaria.com.br
@@ -17546,26 +17547,26 @@ export interface components {
       avatarUrl: string | null
       backgroundColor: string | null
       bannerUrl: string | null
-      bio: string | null
+      coverage: string[]
       creci: string | null
       displayName: string
       email: string
       headline: string | null
       id: string
-      neighborhoods: string[]
       phone: string | null
       primaryColor: string | null
       publishedAt: string | null
       recentListings: components['schemas']['BrokerListingSummary'][]
       region: string | null
       secondaryColor: string | null
-      specialties: string[]
+      segments: string[]
       stats: {
         activeListings: number
         dealsClosed: number
       }
       /** @enum {string} */
       status: 'DRAFT' | 'PUBLISHED'
+      summary: string | null
     }
     PublicConfirmEmailChange: {
       code: string
@@ -17669,8 +17670,8 @@ export interface components {
           acceptTerms: true
           agencyId?: string
           companyName?: string
-          cpf: string
           creci: string
+          document: string
           /** Format: email */
           email: string
           fullName: string
@@ -17814,18 +17815,18 @@ export interface components {
       avatarUrl?: string | null
       backgroundColor?: string | null
       bannerUrl?: string | null
-      bio?: string | null
+      /** @default [] */
+      coverage?: string[]
       creci?: string | null
       displayName: string
       headline?: string | null
-      /** @default [] */
-      neighborhoods?: string[]
       phone?: string | null
       primaryColor?: string | null
       region?: string | null
       secondaryColor?: string | null
       /** @default [] */
-      specialties?: string[]
+      segments?: string[]
+      summary?: string | null
     }
     SavePublicProfileAddress: {
       handle: string
@@ -17990,7 +17991,7 @@ export interface components {
         status: 'AHEAD' | 'ON_TRACK' | 'ATTENTION' | 'NO_GOAL'
       }
       phone: string | null
-      specialties: string[]
+      segments: string[]
     }
     TeamOverviewResponse: {
       members: components['schemas']['TeamMember'][]
@@ -18293,6 +18294,7 @@ export interface components {
       cnpj?: string
       cpf?: string
       creci?: string | null
+      document?: string
       /** Format: email */
       email?: string
       name?: string

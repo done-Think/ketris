@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 import { isValidCnpj } from '@shared/schemas/cnpj-schema'
 import { isValidCpf } from '@shared/schemas/cpf-schema'
+import { isValidDocument } from '@shared/schemas/document-schema'
 import { authenticatedUserResponseSchema, tenantMemberRoleSchema } from './user.schema'
 
 export const updateUserRequestSchema = z
@@ -27,6 +28,12 @@ export const updateUserRequestSchema = z
       .refine(isValidCpf, validationRefinement('cpfInvalid'))
       .transform((value) => value.replace(/\D/g, ''))
       .optional(),
+    document: z
+      .string()
+      .trim()
+      .refine(isValidDocument, validationRefinement('documentInvalid'))
+      .transform((value) => value.replace(/\D/g, ''))
+      .optional(),
     cnpj: z
       .string()
       .trim()
@@ -42,6 +49,7 @@ export const updateUserRequestSchema = z
       data.phone !== undefined ||
       data.creci !== undefined ||
       data.cpf !== undefined ||
+      data.document !== undefined ||
       data.cnpj !== undefined ||
       data.name !== undefined ||
       data.email !== undefined ||

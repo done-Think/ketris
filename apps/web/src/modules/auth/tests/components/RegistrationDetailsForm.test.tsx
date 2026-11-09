@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -56,7 +56,7 @@ describe('RegistrationDetailsForm', () => {
     expect(screen.getByText('Informe seu e-mail')).toBeInTheDocument()
     expect(screen.getByText('Informe seu telefone')).toBeInTheDocument()
     expect(screen.getByText('Informe seu CRECI')).toBeInTheDocument()
-    expect(screen.getByText('Informe seu CPF')).toBeInTheDocument()
+    expect(screen.getByText('Informe seu CPF ou CNPJ')).toBeInTheDocument()
     expect(submit).not.toHaveBeenCalled()
   })
 
@@ -122,12 +122,23 @@ describe('RegistrationDetailsForm', () => {
       creci: '',
       cpf: '529.982.247-25',
       cnpj: '',
+      document: '',
       companyName: '',
       acceptTerms: true,
     })
   }, 20000)
 
-  it.each(['owner', 'renter', 'broker'] as const)('pede CPF e não CNPJ para %s', (profile) => {
+  it('pede um único campo de CPF ou CNPJ para broker, com máscara que reconhece os dois', () => {
+    renderForm('broker')
+
+    const document = screen.getByLabelText(/CPF \/ CNPJ/)
+    fireEvent.input(document, { target: { value: '52998224725' } })
+    expect(document).toHaveValue('529.982.247-25')
+    fireEvent.input(document, { target: { value: '11222333000181' } })
+    expect(document).toHaveValue('11.222.333/0001-81')
+  })
+
+  it.each(['owner', 'renter'] as const)('pede CPF e não CNPJ para %s', (profile) => {
     renderForm(profile)
 
     expect(screen.getByLabelText(/CPF/)).toBeInTheDocument()

@@ -114,6 +114,8 @@
       "cpfInvalid": "Introduce un CPF válido.",
       "cnpjRequired": "Introduce el CNPJ.",
       "cnpjInvalid": "Introduce un CNPJ válido.",
+      "documentRequired": "Introduce tu CPF o CNPJ.",
+      "documentInvalid": "Introduce un CPF o CNPJ válido.",
       "emailTooLong": "Usa como máximo 254 caracteres.",
       "passwordTooLong": "La contraseña debe tener como máximo 72 bytes. Usa menos caracteres."
     },
@@ -123,6 +125,7 @@
     "creci": "CRECI",
     "cpf": "CPF",
     "cnpj": "CNPJ",
+    "document": "CPF / CNPJ",
     "phoneInUse": "Ya existe una cuenta con este teléfono.",
     "creciInUse": "Ya existe una cuenta con este CRECI.",
     "cpfInUse": "Ya existe una cuenta con este CPF.",

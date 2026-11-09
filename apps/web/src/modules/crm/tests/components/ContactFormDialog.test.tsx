@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -69,6 +69,22 @@ describe('ContactFormDialog', () => {
     expect(onSave.mock.calls[0]?.[0]).toEqual(
       expect.objectContaining({ name: 'Joao Souza', email: 'joao@example.com' }),
     )
+  })
+
+  it('applies the phone mask while typing', () => {
+    render(
+      <ContactFormDialog
+        open
+        initialValues={null}
+        isPending={false}
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+      />,
+    )
+
+    const phone = screen.getByLabelText(/^Telefone/)
+    fireEvent.input(phone, { target: { value: '11999998888' } })
+    expect(phone).toHaveValue('(11) 99999-8888')
   })
 
   it('disables actions while pending', () => {

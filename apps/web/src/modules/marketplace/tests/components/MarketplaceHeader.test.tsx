@@ -190,7 +190,7 @@ describe('MarketplaceHeader', () => {
     )
     expect(screen.getByRole('link', { name: /configurações/i })).toHaveAttribute(
       'href',
-      '/dashboard/public-profile',
+      '/dashboard/profile',
     )
   })
 

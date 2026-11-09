@@ -26,13 +26,22 @@ import { EmailChangeDialog } from './EmailChangeDialog'
 const PHONE_MASK = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
 const CPF_MASK = [{ mask: '000.000.000-00' }]
 const CNPJ_MASK = [{ mask: '00.000.000/0000-00' }]
+// One field for both documents; the mask follows what is typed.
+const DOCUMENT_MASK = [...CPF_MASK, ...CNPJ_MASK]
 
 export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProps) {
   const t = useTranslations('common.profilePage')
   const { data: sessionData, update } = useSession()
-  // A company account (agency owner) is identified by CNPJ; everyone else by CPF.
-  const documentKind =
-    user.role === 'OWNER' && sessionData?.accountType === 'AGENCY' ? 'cnpj' : 'cpf'
+  // An agency owner is identified by the company CNPJ and a broker by a CPF or their own CNPJ;
+  // everyone else by CPF.
+  const isBroker =
+    user.role === 'AGENT' || (user.role === 'OWNER' && sessionData?.accountType === 'BROKER')
+  const documentKind: 'cpf' | 'cnpj' | 'document' =
+    user.role === 'OWNER' && sessionData?.accountType === 'AGENCY'
+      ? 'cnpj'
+      : isBroker
+        ? 'document'
+        : 'cpf'
   const { enqueueSnackbar } = useSnackbar()
   const inputId = useId()
   const [emailChangeOpen, setEmailChangeOpen] = useState(false)
@@ -53,6 +62,7 @@ export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProp
       creci: user.creci ?? '',
       cpf: user.cpf ?? '',
       cnpj: user.tenantCnpj ?? '',
+      document: user.document ?? '',
       avatarFile: null,
     },
   })
@@ -83,7 +93,11 @@ export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProp
         name: values.name,
         phone: values.phone,
         ...(user.role === 'AGENT' ? { creci: values.creci } : {}),
-        ...(documentKind === 'cnpj' ? { cnpj: values.cnpj } : { cpf: values.cpf }),
+        ...(documentKind === 'cnpj'
+          ? { cnpj: values.cnpj }
+          : documentKind === 'document'
+            ? { document: values.document }
+            : { cpf: values.cpf }),
         avatarUrl: nextAvatarUrl,
       })
       form.reset({
@@ -93,6 +107,7 @@ export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProp
         creci: saved.creci ?? '',
         cpf: saved.cpf ?? '',
         cnpj: saved.tenantCnpj ?? '',
+        document: saved.document ?? '',
         avatarFile: null,
       })
       await update()
@@ -178,6 +193,16 @@ export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProp
               inputMode="numeric"
               InputProps={{ readOnly: busy }}
             />
+          ) : documentKind === 'document' ? (
+            <RhfMaskedTextField
+              control={form.control}
+              name="document"
+              label={t('document')}
+              mask={DOCUMENT_MASK}
+              fullWidth
+              inputMode="numeric"
+              InputProps={{ readOnly: busy }}
+            />
           ) : (
             <RhfMaskedTextField
               control={form.control}
@@ -231,6 +256,7 @@ export function CurrentUserPersonalDataForm({ user }: CurrentUserProfileFormProp
                   creci: user.creci ?? '',
                   cpf: user.cpf ?? '',
                   cnpj: user.tenantCnpj ?? '',
+                  document: user.document ?? '',
                   avatarFile: null,
                 })
               }

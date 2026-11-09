@@ -10,6 +10,7 @@ export function toAuthenticatedUserResponse(user: AuthenticatedUser): Authentica
     phone: user.phone ?? null,
     creci: user.creci ?? null,
     cpf: user.cpf ?? null,
+    document: user.cpf ?? user.cnpj ?? null,
     tenantCnpj: user.tenantCnpj ?? null,
     avatarUrl: user.avatarUrl ?? null,
     role: user.role,

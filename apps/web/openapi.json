@@ -366,6 +366,7 @@
           "phone": { "type": "string", "nullable": true },
           "creci": { "type": "string", "nullable": true },
           "cpf": { "type": "string", "nullable": true },
+          "document": { "type": "string", "nullable": true },
           "tenantCnpj": { "type": "string", "nullable": true },
           "email": { "type": "string", "format": "email" },
           "avatarUrl": { "type": "string", "nullable": true, "minLength": 1 },
@@ -380,6 +381,7 @@
           "phone",
           "creci",
           "cpf",
+          "document",
           "tenantCnpj",
           "email",
           "avatarUrl",
@@ -3117,7 +3119,7 @@
               "companyName": { "type": "string", "minLength": 1 },
               "agencyId": { "type": "string", "minLength": 1 },
               "creci": { "type": "string", "minLength": 1, "maxLength": 32 },
-              "cpf": { "type": "string" }
+              "document": { "type": "string" }
             },
             "required": [
               "fullName",
@@ -3127,7 +3129,7 @@
               "acceptTerms",
               "profile",
               "creci",
-              "cpf"
+              "document"
             ],
             "additionalProperties": false
           },
@@ -3304,17 +3306,17 @@
         "properties": {
           "displayName": { "type": "string", "minLength": 1, "maxLength": 120 },
           "headline": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 2000 },
-          "bio": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 2000 },
+          "summary": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 2000 },
           "creci": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 2000 },
           "phone": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 2000 },
           "region": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 2000 },
-          "neighborhoods": {
+          "coverage": {
             "type": "array",
             "items": { "type": "string", "minLength": 1, "maxLength": 80 },
             "maxItems": 30,
             "default": []
           },
-          "specialties": {
+          "segments": {
             "type": "array",
             "items": { "type": "string", "minLength": 1, "maxLength": 80 },
             "maxItems": 30,
@@ -3565,6 +3567,7 @@
           "phone": { "type": "string", "nullable": true, "maxLength": 32 },
           "creci": { "type": "string", "nullable": true, "maxLength": 32 },
           "cpf": { "type": "string" },
+          "document": { "type": "string" },
           "cnpj": { "type": "string" },
           "avatarUrl": { "type": "string", "nullable": true, "minLength": 1 },
           "role": { "type": "string", "enum": ["OWNER", "AGENT", "PROPERTY_OWNER"] }
@@ -4277,12 +4280,12 @@
           "email": { "type": "string" },
           "displayName": { "type": "string" },
           "headline": { "type": "string", "nullable": true },
-          "bio": { "type": "string", "nullable": true },
+          "summary": { "type": "string", "nullable": true },
           "creci": { "type": "string", "nullable": true },
           "phone": { "type": "string", "nullable": true },
           "region": { "type": "string", "nullable": true },
-          "neighborhoods": { "type": "array", "items": { "type": "string" } },
-          "specialties": { "type": "array", "items": { "type": "string" } },
+          "coverage": { "type": "array", "items": { "type": "string" } },
+          "segments": { "type": "array", "items": { "type": "string" } },
           "availability": { "type": "string", "nullable": true },
           "primaryColor": { "type": "string", "nullable": true },
           "secondaryColor": { "type": "string", "nullable": true },
@@ -4310,12 +4313,12 @@
           "email",
           "displayName",
           "headline",
-          "bio",
+          "summary",
           "creci",
           "phone",
           "region",
-          "neighborhoods",
-          "specialties",
+          "coverage",
+          "segments",
           "availability",
           "primaryColor",
           "secondaryColor",
@@ -5146,7 +5149,7 @@
           "phone": { "type": "string", "nullable": true },
           "avatarUrl": { "type": "string", "nullable": true },
           "headline": { "type": "string", "nullable": true },
-          "specialties": { "type": "array", "items": { "type": "string" } },
+          "segments": { "type": "array", "items": { "type": "string" } },
           "hasPublicProfile": { "type": "boolean" },
           "active": { "type": "boolean" },
           "invitation": {
@@ -5209,7 +5212,7 @@
           "phone",
           "avatarUrl",
           "headline",
-          "specialties",
+          "segments",
           "hasPublicProfile",
           "active",
           "invitation",
@@ -5297,10 +5300,9 @@
             "format": "email",
             "example": "marina@imobiliaria.com.br"
           },
-          "cpf": { "type": "string", "example": "529.982.247-25" },
           "locale": { "type": "string", "enum": ["pt-BR", "en-US", "es-ES"], "example": "pt-BR" }
         },
-        "required": ["name", "email", "cpf", "locale"],
+        "required": ["name", "email", "locale"],
         "additionalProperties": false
       },
       "ResendTeamInvitationRequest": {
@@ -5323,9 +5325,10 @@
         "type": "object",
         "properties": {
           "token": { "type": "string", "minLength": 16, "maxLength": 128 },
-          "password": { "type": "string", "minLength": 8 }
+          "password": { "type": "string", "minLength": 8 },
+          "document": { "type": "string", "example": "529.982.247-25" }
         },
-        "required": ["token", "password"],
+        "required": ["token", "password", "document"],
         "additionalProperties": false
       },
       "FaceCheckError": {

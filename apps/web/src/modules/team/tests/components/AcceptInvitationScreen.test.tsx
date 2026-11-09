@@ -70,6 +70,7 @@ describe('AcceptInvitationScreen', () => {
       await screen.findByText('Defina sua senha para acessar a Imobiliária Horizonte.'),
     ).toBeVisible()
     expect(screen.getByDisplayValue('eva@ketris.dev')).toBeDisabled()
+    fireEvent.input(screen.getByLabelText('CPF / CNPJ'), { target: { value: '52998224725' } })
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 'senha-forte' } })
     fireEvent.change(screen.getByLabelText('Confirmar senha'), { target: { value: 'outra' } })
     fireEvent.click(screen.getByRole('button', { name: 'Definir senha' }))
@@ -79,7 +80,11 @@ describe('AcceptInvitationScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Definir senha' }))
 
     await waitFor(() =>
-      expect(service.acceptInvitation).toHaveBeenCalledWith('token-1', 'senha-forte'),
+      expect(service.acceptInvitation).toHaveBeenCalledWith(
+        'token-1',
+        'senha-forte',
+        '529.982.247-25',
+      ),
     )
     expect(
       await screen.findByText('Senha definida! Entre com o seu e-mail e a nova senha.'),
@@ -91,7 +96,10 @@ describe('AcceptInvitationScreen', () => {
     service.previewInvitation.mockResolvedValue(preview)
     service.acceptInvitation.mockRejectedValue(new Error('boom'))
     renderScreen()
-    fireEvent.change(await screen.findByLabelText('Senha'), { target: { value: 'senha-forte' } })
+    fireEvent.input(await screen.findByLabelText('CPF / CNPJ'), {
+      target: { value: '11222333000181' },
+    })
+    fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 'senha-forte' } })
     fireEvent.change(screen.getByLabelText('Confirmar senha'), { target: { value: 'senha-forte' } })
     fireEvent.click(screen.getByRole('button', { name: 'Definir senha' }))
     expect(

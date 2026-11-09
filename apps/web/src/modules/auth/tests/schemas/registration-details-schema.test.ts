@@ -14,6 +14,7 @@ const validDetails = {
   creci: '',
   cpf: '529.982.247-25',
   cnpj: '',
+  document: '529.982.247-25',
   acceptTerms: true,
 }
 

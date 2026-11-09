@@ -27,4 +27,18 @@ describe('updateUserRequestSchema', () => {
     expect(updateUserRequestSchema.safeParse({ cpf: '111.111.111-11' }).success).toBe(false)
     expect(updateUserRequestSchema.safeParse({ cnpj: '11.222.333/0001-82' }).success).toBe(false)
   })
+
+  it('accepts a CPF or a CNPJ as the personal document and rejects anything else', () => {
+    expect(updateUserRequestSchema.parse({ document: '529.982.247-25' })).toEqual({
+      document: '52998224725',
+    })
+    expect(updateUserRequestSchema.parse({ document: '11.222.333/0001-81' })).toEqual({
+      document: '11222333000181',
+    })
+    expect(updateUserRequestSchema.safeParse({ document: '111.111.111-11' }).success).toBe(false)
+    expect(updateUserRequestSchema.safeParse({ document: '11.222.333/0001-82' }).success).toBe(
+      false,
+    )
+    expect(updateUserRequestSchema.safeParse({ document: '1234' }).success).toBe(false)
+  })
 })

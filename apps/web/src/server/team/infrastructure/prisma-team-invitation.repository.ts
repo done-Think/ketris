@@ -1,6 +1,10 @@
-import { CpfAlreadyInUseError, EmailAlreadyInUseError } from '@server/auth/domain/errors'
+import {
+  CnpjAlreadyInUseError,
+  CpfAlreadyInUseError,
+  EmailAlreadyInUseError,
+} from '@server/auth/domain/errors'
+import { splitDocument } from '@shared/schemas/document-schema'
 import { prisma } from '@server/db/prisma'
-import { documentKey } from '@server/shared/contact-keys'
 import { uniqueViolation } from '@server/shared/prisma-unique-violation'
 import { recordUserAudit } from '@server/auth/infrastructure/user-audit'
 
@@ -50,7 +54,6 @@ export class PrismaTeamInvitationRepository implements TeamInvitationRepository 
             tenantId: invitation.tenantId,
             name: invitation.name,
             email: invitation.email,
-            cpf: documentKey(invitation.cpf),
             passwordHash: invitation.passwordHash,
             role: 'AGENT',
             emailVerifiedAt: null,
@@ -77,9 +80,7 @@ export class PrismaTeamInvitationRepository implements TeamInvitationRepository 
         return toStored(record)
       })
       .catch((error: unknown) => {
-        const violated = uniqueViolation(error)
-        if (violated !== null)
-          throw violated.includes('cpf') ? new CpfAlreadyInUseError() : new EmailAlreadyInUseError()
+        if (uniqueViolation(error) !== null) throw new EmailAlreadyInUseError()
         throw error
       })
   }
@@ -136,31 +137,44 @@ export class PrismaTeamInvitationRepository implements TeamInvitationRepository 
     return record ? toStored(record) : null
   }
 
-  async accept(tokenHash: string, passwordHash: string, now: Date): Promise<boolean> {
-    return prisma.$transaction(async (tx) => {
-      const invitation = await tx.teamInvitation.findUnique({ where: { tokenHash } })
-      if (!invitation) return false
-      const { count } = await tx.teamInvitation.updateMany({
-        where: { id: invitation.id, acceptedAt: null, expiresAt: { gt: now } },
-        data: { acceptedAt: now },
+  async accept(
+    tokenHash: string,
+    passwordHash: string,
+    document: string,
+    now: Date,
+  ): Promise<boolean> {
+    const personal = splitDocument(document)
+    return prisma
+      .$transaction(async (tx) => {
+        const invitation = await tx.teamInvitation.findUnique({ where: { tokenHash } })
+        if (!invitation) return false
+        const { count } = await tx.teamInvitation.updateMany({
+          where: { id: invitation.id, acceptedAt: null, expiresAt: { gt: now } },
+          data: { acceptedAt: now },
+        })
+        if (!count) return false
+        await tx.user.updateMany({
+          where: { id: invitation.userId, tenantId: invitation.tenantId },
+          data: {
+            passwordHash: passwordHash,
+            cpf: personal.cpf,
+            cnpj: personal.cnpj,
+            emailVerifiedAt: now,
+            sessionVersion: { increment: 1 },
+          },
+        })
+        await recordUserAudit(tx, {
+          userId: invitation.userId,
+          tenantId: invitation.tenantId,
+          action: 'UPDATED',
+          actor: { kind: 'SELF_REGISTRATION' },
+          changedFields: ['password', 'document', 'emailVerified'],
+        })
+        return true
       })
-      if (!count) return false
-      await tx.user.updateMany({
-        where: { id: invitation.userId, tenantId: invitation.tenantId },
-        data: {
-          passwordHash: passwordHash,
-          emailVerifiedAt: now,
-          sessionVersion: { increment: 1 },
-        },
+      .catch((error: unknown) => {
+        if (uniqueViolation(error) === null) throw error
+        throw personal.cnpj ? new CnpjAlreadyInUseError() : new CpfAlreadyInUseError()
       })
-      await recordUserAudit(tx, {
-        userId: invitation.userId,
-        tenantId: invitation.tenantId,
-        action: 'UPDATED',
-        actor: { kind: 'SELF_REGISTRATION' },
-        changedFields: ['password', 'emailVerified'],
-      })
-      return true
-    })
   }
 }

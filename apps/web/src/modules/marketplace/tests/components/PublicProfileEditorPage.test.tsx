@@ -19,12 +19,12 @@ const draftBrokerProfile: PublicBrokerProfile = {
   email: 'broker@example.com',
   displayName: '',
   headline: null,
-  bio: null,
+  summary: null,
   creci: null,
   phone: null,
   region: null,
-  neighborhoods: [],
-  specialties: [],
+  coverage: [],
+  segments: [],
   availability: null,
   primaryColor: null,
   secondaryColor: null,
@@ -324,17 +324,14 @@ describe('PublicProfileEditorPage', () => {
 
       await user.click(screen.getByRole('button', { name: 'Publicar' }))
 
-      expect(await screen.findByText('Informe a biografia')).toBeVisible()
+      expect(await screen.findByText('Informe o resumo')).toBeVisible()
       expect(screen.getByText('Informe o telefone')).toBeVisible()
       expect(screen.getByText('Informe o CRECI')).toBeVisible()
       expect(screen.getByText('Informe a disponibilidade')).toBeVisible()
       expect(screen.getByText('Informe o título de destaque')).toBeVisible()
       expect(screen.getByText('Informe a região de atuação')).toBeVisible()
-      expect(screen.getByLabelText('Bairros de atuação')).not.toHaveAttribute(
-        'aria-invalid',
-        'true',
-      )
-      expect(screen.getByText('Informe as especialidades')).toBeVisible()
+      expect(screen.getByLabelText('Cobertura')).not.toHaveAttribute('aria-invalid', 'true')
+      expect(screen.getByText('Informe os segmentos de atuação')).toBeVisible()
       expect(screen.getByText('Informe a cor principal')).toBeVisible()
       expect(screen.getByText('Informe a cor secundária')).toBeVisible()
       expect(screen.getByText('Informe a cor de fundo')).toBeVisible()
@@ -344,18 +341,18 @@ describe('PublicProfileEditorPage', () => {
       expect(brokerProfileMocks.publishMutate).not.toHaveBeenCalled()
     })
 
-    it('publishes a broker covering a broad region without neighborhoods', async () => {
+    it('publishes a broker covering a broad region without coverage', async () => {
       vi.mocked(useOwnBrokerProfile).mockReturnValue({
         data: {
           ...draftBrokerProfile,
           displayName: 'Ana Souza',
           headline: 'Especialista em imóveis de alto padrão',
-          bio: 'Especialista em imóveis residenciais.',
+          summary: 'Especialista em imóveis residenciais.',
           phone: '11999998888',
           creci: '12345-F',
           region: 'Sul de Minas',
-          neighborhoods: [],
-          specialties: ['Apartamentos', 'Cobertura'],
+          coverage: [],
+          segments: ['Apartamentos', 'Cobertura'],
           availability: 'Seg a sex, 9h às 18h',
           primaryColor: '#111111',
           secondaryColor: '#222222',
@@ -376,7 +373,7 @@ describe('PublicProfileEditorPage', () => {
       expect(brokerProfileMocks.saveMutate.mock.calls[0][0]).toMatchObject({
         displayName: 'Ana Souza',
         region: 'Sul de Minas',
-        neighborhoods: [],
+        coverage: [],
       })
       await waitFor(() => expect(brokerProfileMocks.publishMutate).toHaveBeenCalledTimes(1))
     })

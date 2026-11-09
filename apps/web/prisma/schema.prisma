@@ -185,6 +185,7 @@ model User {
   phoneKey             String?
   creciKey             String?
   cpf                  String?
+  cnpj                 String?
   emailVerifiedAt      DateTime? @default(now())
   sessionVersion       Int       @default(0)
   termsAcceptedAt      DateTime?
@@ -260,12 +261,13 @@ model User {
   targetTransfers           PortfolioTransfer[]           @relation("PortfolioTransferTarget")
   authoredTransfers         PortfolioTransfer[]           @relation("PortfolioTransferAuthor")
   requestedFaceChecks       FaceCheckSession[]
-  candidateFaceChecks       FaceCheckSession[] @relation("FaceCheckCandidate")
+  candidateFaceChecks       FaceCheckSession[]            @relation("FaceCheckCandidate")
 
   @@unique([tenantId, email])
   @@unique([tenantId, phoneKey])
   @@unique([tenantId, creciKey])
   @@unique([tenantId, cpf])
+  @@unique([tenantId, cnpj])
   @@unique([id, tenantId])
   @@index([email])
   @@index([tenantId])
@@ -554,12 +556,14 @@ model BrokerPublicProfile {
   userId          String              @unique
   displayName     String
   headline        String?
-  bio             String?
+  // The profile summary reuses the column that used to hold the biography.
+  summary         String?             @map("bio")
   creci           String?
   phone           String?
   region          String?
-  neighborhoods   String[]            @default([])
-  specialties     String[]            @default([])
+  // Same meaning as on the agency profile; the columns keep their original names.
+  coverage        String[]            @default([]) @map("neighborhoods")
+  segments        String[]            @default([]) @map("specialties")
   availability    String?
   primaryColor    String?
   secondaryColor  String?
@@ -1602,11 +1606,11 @@ model FaceCheckSession {
   updatedAt             DateTime  @updatedAt
 
   // Preserve the initial migration's ON UPDATE NO ACTION for these immutable identifiers.
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  property    Property @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade, onUpdate: NoAction)
-  requestedBy User     @relation(fields: [requestedById, tenantId], references: [id, tenantId], onDelete: NoAction, onUpdate: NoAction)
+  tenant           Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  property         Property                   @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade, onUpdate: NoAction)
+  requestedBy      User                       @relation(fields: [requestedById, tenantId], references: [id, tenantId], onDelete: NoAction, onUpdate: NoAction)
   // A verified candidate can intentionally belong to a personal account in another tenant.
-  candidateUser User? @relation("FaceCheckCandidate", fields: [candidateUserId], references: [id], onDelete: SetNull)
+  candidateUser    User?                      @relation("FaceCheckCandidate", fields: [candidateUserId], references: [id], onDelete: SetNull)
   invitationEmails FaceCheckInvitationEmail[]
 
   @@unique([id, tenantId])

@@ -51,6 +51,7 @@ const profile: TenantUser = {
   phone: '(35) 98888-7777',
   creci: '12345',
   cpf: '52998224725',
+  document: '52998224725',
   tenantCnpj: null,
   avatarUrl: '/avatar.png',
   role: 'AGENT',
@@ -115,7 +116,7 @@ describe('CurrentUserProfilePage', () => {
         name: 'Beatriz',
         phone: '(35) 97777-6666',
         creci: '67890',
-        cpf: '529.982.247-25',
+        document: '529.982.247-25',
         avatarUrl: '/avatar.png',
       }),
     )
@@ -124,13 +125,13 @@ describe('CurrentUserProfilePage', () => {
   it('asks for a valid CPF and shows the conflict message from the server', async () => {
     vi.mocked(userService.update).mockRejectedValue(apiError('CPF_ALREADY_IN_USE'))
     await renderPage()
-    fireEvent.input(screen.getByRole('textbox', { name: 'CPF' }), {
+    fireEvent.input(screen.getByRole('textbox', { name: 'CPF / CNPJ' }), {
       target: { value: '11111111111' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
-    expect(await screen.findByText('Informe um CPF válido.')).toBeVisible()
+    expect(await screen.findByText('Informe um CPF ou CNPJ válido.')).toBeVisible()
     expect(userService.update).not.toHaveBeenCalled()
-    fireEvent.input(screen.getByRole('textbox', { name: 'CPF' }), {
+    fireEvent.input(screen.getByRole('textbox', { name: 'CPF / CNPJ' }), {
       target: { value: '52998224725' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))

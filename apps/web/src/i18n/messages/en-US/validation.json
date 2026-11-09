@@ -78,6 +78,7 @@
     "postalCodeInvalid": "Enter a postal code with 8 digits.",
     "cpfInvalid": "Enter a valid CPF.",
     "cnpjInvalid": "Enter a valid CNPJ.",
+    "documentInvalid": "Enter a valid CPF or CNPJ.",
     "rateLimitUnavailable": "Service temporarily unavailable.",
     "rateLimitExceeded": "Too many requests. Please try again later.",
     "clientUpdateRequired": "The application was updated. Reload the page to continue.",

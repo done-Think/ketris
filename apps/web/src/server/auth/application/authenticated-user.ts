@@ -10,6 +10,7 @@ export function toAuthenticatedUser(user: User): AuthenticatedUser {
     ...(user.phone !== undefined ? { phone: user.phone } : {}),
     ...(user.creci !== undefined ? { creci: user.creci } : {}),
     ...(user.cpf !== undefined ? { cpf: user.cpf } : {}),
+    ...(user.cnpj !== undefined ? { cnpj: user.cnpj } : {}),
     ...(user.tenantCnpj !== undefined ? { tenantCnpj: user.tenantCnpj } : {}),
     avatarUrl: user.avatarUrl ?? null,
     role: user.role,

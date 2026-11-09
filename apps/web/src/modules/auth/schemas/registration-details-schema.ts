@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { createNewPasswordSchema } from '@shared/schemas/new-password-schema'
 import { createCnpjSchema } from '@shared/schemas/cnpj-schema'
 import { createCpfSchema } from '@shared/schemas/cpf-schema'
+import { createDocumentSchema } from '@shared/schemas/document-schema'
 import { createPhoneSchema } from '@shared/schemas/phone-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 
@@ -18,6 +19,8 @@ export function createRegistrationDetailsSchema(
     | 'cnpjRequired'
     | 'cpfInvalid'
     | 'cpfRequired'
+    | 'documentInvalid'
+    | 'documentRequired'
     | 'creciRequired'
     | 'creciTooLong'
     | 'emailInvalid'
@@ -57,13 +60,16 @@ export function createRegistrationDetailsSchema(
         profile: z.literal('broker'),
         creci: z.string().trim().min(1, t('creciRequired')).max(32, t('creciTooLong')),
         agencyId: z.string().min(1).optional(),
-        cpf: createCpfSchema(t),
+        // A broker may use a CPF or the CNPJ of their own company.
+        document: createDocumentSchema(t),
+        cpf: unusedDocument,
         cnpj: unusedDocument,
       }),
       z.object({
         ...commonDetailsFields,
         profile: z.enum(PERSON_PROFILE_IDS),
         creci: z.string().trim().max(32, t('creciTooLong')),
+        document: unusedDocument,
         cpf: createCpfSchema(t),
         cnpj: unusedDocument,
       }),
@@ -71,6 +77,7 @@ export function createRegistrationDetailsSchema(
         ...commonDetailsFields,
         profile: z.enum(COMPANY_PROFILE_IDS),
         creci: z.string().trim().max(32, t('creciTooLong')),
+        document: unusedDocument,
         cpf: unusedDocument,
         cnpj: createCnpjSchema(t),
       }),

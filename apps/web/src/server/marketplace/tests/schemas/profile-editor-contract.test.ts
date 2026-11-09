@@ -17,8 +17,8 @@ describe('contrato entre os editores de perfil e as rotas de salvar', () => {
     const draft = toBrokerDraft({
       ...emptyBrokerValues,
       displayName: 'Marina Costa',
-      neighborhoods: 'Jardins, Moema',
-      specialties: 'Alto padrão',
+      coverage: 'Jardins, Moema',
+      segments: 'Alto padrão',
       primaryColor: '#F30274',
     })
 

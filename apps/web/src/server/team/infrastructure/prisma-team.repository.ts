@@ -144,7 +144,7 @@ export class PrismaTeamRepository implements TeamRepository {
         avatarUrl: true,
         active: true,
         publicProfile: {
-          select: { headline: true, specialties: true, phone: true, status: true },
+          select: { headline: true, segments: true, phone: true, status: true },
         },
         teamInvitation: { select: { sentAt: true, expiresAt: true, acceptedAt: true } },
       },
@@ -162,7 +162,7 @@ export class PrismaTeamRepository implements TeamRepository {
         phone: user.phone ?? user.publicProfile?.phone ?? null,
         avatarUrl: user.avatarUrl,
         headline: user.publicProfile?.headline ?? null,
-        specialties: user.publicProfile?.specialties ?? [],
+        segments: user.publicProfile?.segments ?? [],
         hasPublicProfile: user.publicProfile?.status === 'PUBLISHED',
         active: user.active,
         invitation: pending

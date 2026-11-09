@@ -25,6 +25,8 @@ export const authenticatedUserResponseSchema = z
     phone: z.string().nullable(),
     creci: z.string().nullable(),
     cpf: z.string().nullable(),
+    /** CPF or CNPJ of the person, digits only. */
+    document: z.string().nullable(),
     tenantCnpj: z.string().nullable(),
     email: z.string().email(),
     avatarUrl: z.string().min(1).nullable(),

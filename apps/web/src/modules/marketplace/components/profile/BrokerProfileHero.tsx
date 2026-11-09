@@ -30,7 +30,7 @@ export function BrokerProfileHero({ broker }: BrokerProfileHeroProps) {
       </Box>
 
       <Box sx={styles.box4}>
-        <Typography sx={styles.typography4}>{broker.bio}</Typography>
+        <Typography sx={styles.typography4}>{broker.summary}</Typography>
       </Box>
     </Box>
   )

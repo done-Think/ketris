@@ -195,12 +195,12 @@ describe('AppShell navigation per papel', () => {
     expect(screen.getAllByText('Financeiro').length).toBeGreaterThan(0)
   })
 
-  it('AGENT não vê Dashboard, Perfil da Imobiliária nem Financeiro, mas vê Perfil Público, Pipeline e Contatos', () => {
+  it('AGENT vê o próprio Dashboard, mas não o Perfil da Imobiliária nem o Financeiro, e vê Perfil Público, Pipeline e Contatos', () => {
     mockSession({ role: 'AGENT' })
 
     renderShell()
 
-    expect(screen.queryAllByText('Dashboard')).toHaveLength(0)
+    expect(screen.getAllByText('Dashboard').length).toBeGreaterThan(0)
     expect(screen.queryAllByText('Perfil da Imobiliária')).toHaveLength(0)
     expect(screen.queryAllByText('Financeiro')).toHaveLength(0)
     expect(screen.getAllByText('Perfil Público').length).toBeGreaterThan(0)

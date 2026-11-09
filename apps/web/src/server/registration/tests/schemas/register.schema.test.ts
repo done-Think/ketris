@@ -27,15 +27,19 @@ describe('registerRequestSchema', () => {
 
   it('aceita corretor autônomo (sem agencyId) e corretor entrando numa imobiliária (com agencyId)', () => {
     expect(
-      registerRequestSchema.safeParse({ ...base, profile: 'broker', creci: '12345-F', cpf })
-        .success,
+      registerRequestSchema.safeParse({
+        ...base,
+        profile: 'broker',
+        creci: '12345-F',
+        document: cpf,
+      }).success,
     ).toBe(true)
     expect(
       registerRequestSchema.safeParse({
         ...base,
         profile: 'broker',
         creci: '12345-F',
-        cpf,
+        document: cnpj,
         agencyId: 'agency-1',
       }).success,
     ).toBe(true)

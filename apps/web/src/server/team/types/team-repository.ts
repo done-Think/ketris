@@ -7,7 +7,7 @@ export interface TeamMemberRow {
   phone: string | null
   avatarUrl: string | null
   headline: string | null
-  specialties: string[]
+  segments: string[]
   hasPublicProfile: boolean
   active: boolean
   invitation: TeamMemberInvitation | null
@@ -46,7 +46,6 @@ export interface NewTeamInvitation {
   tenantId: string
   name: string
   email: string
-  cpf: string
   passwordHash: string
   tokenHash: string
   expiresAt: Date

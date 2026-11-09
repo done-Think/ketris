@@ -38,6 +38,7 @@ function toDomainUser(user: PrismaUserRecord): User {
     phone: user.phone,
     creci: user.creci,
     cpf: user.cpf,
+    cnpj: user.cnpj,
     emailVerifiedAt: user.emailVerifiedAt ?? null,
     sessionVersion: user.sessionVersion,
     passwordHash: user.passwordHash,
@@ -147,6 +148,7 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
             creci: newUser.creci,
             creciKey: creciKey(newUser.creci),
             cpf: documentKey(newUser.cpf),
+            cnpj: documentKey(newUser.cnpj),
             termsAcceptedAt: newUser.termsAcceptedAt,
             emailVerifiedAt: newUser.emailVerifiedAt ?? null,
             passwordHash: newUser.passwordHash,
@@ -193,6 +195,9 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
             creci: changes.creci,
             ...(changes.creci !== undefined ? { creciKey: creciKey(changes.creci) } : {}),
             ...(changes.cpf !== undefined ? { cpf: documentKey(changes.cpf) } : {}),
+            ...(changes.personalCnpj !== undefined
+              ? { cnpj: documentKey(changes.personalCnpj) }
+              : {}),
             sessionVersion: credentialsChanged ? { increment: 1 } : undefined,
           },
         })
@@ -212,7 +217,7 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
           ...(changes.email !== undefined ? ['email'] : []),
           ...(changes.phone !== undefined ? ['phone'] : []),
           ...(changes.creci !== undefined ? ['creci'] : []),
-          ...(changes.cpf !== undefined ? ['cpf'] : []),
+          ...(changes.cpf !== undefined || changes.personalCnpj !== undefined ? ['document'] : []),
           ...(changes.cnpj !== undefined ? ['cnpj'] : []),
           ...(changes.avatarUrl !== undefined ? ['avatarUrl'] : []),
           ...(changes.role !== undefined ? ['role'] : []),

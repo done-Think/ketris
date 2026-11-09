@@ -7,15 +7,23 @@ const notFound = vi.fn(() => {
 })
 
 vi.mock('next-auth', () => ({ getServerSession }))
+const redirect = vi.fn(() => {
+  throw new Error('NEXT_REDIRECT')
+})
+
 vi.mock('next/navigation', () => ({ notFound }))
+vi.mock('next-intl/server', () => ({ getLocale: async () => 'pt-BR' }))
+vi.mock('@/i18n/navigation', () => ({ redirect }))
 vi.mock('@shared/lib/auth/auth-options', () => ({ authOptions: {} }))
 
-const { requireDashboardFeature } = await import('@shared/lib/auth/require-dashboard-feature')
+const { requireDashboardFeature, requireDashboardHome } =
+  await import('@shared/lib/auth/require-dashboard-feature')
 
 describe('requireDashboardFeature', () => {
   beforeEach(() => {
     getServerSession.mockReset()
     notFound.mockClear()
+    redirect.mockClear()
   })
 
   it('lets an agency manager open the team screen', async () => {
@@ -40,5 +48,39 @@ describe('requireDashboardFeature', () => {
   it('hides everything when the account type is missing', async () => {
     getServerSession.mockResolvedValue({ scope: 'tenant', role: 'OWNER' })
     await expect(requireDashboardFeature('agenda')).rejects.toThrow('NEXT_NOT_FOUND')
+  })
+})
+
+describe('requireDashboardHome', () => {
+  beforeEach(() => {
+    getServerSession.mockReset()
+    notFound.mockClear()
+    redirect.mockClear()
+  })
+
+  it.each([
+    ['OWNER', 'AGENCY'],
+    ['OWNER', 'BROKER'],
+    ['AGENT', 'AGENCY'],
+  ])('keeps the overview for %s on %s accounts', async (role, accountType) => {
+    getServerSession.mockResolvedValue({ scope: 'tenant', role, accountType })
+    await expect(requireDashboardHome()).resolves.toBeUndefined()
+    expect(redirect).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['OWNER', 'INDIVIDUAL', '/dashboard/properties'],
+    ['PROPERTY_OWNER', 'AGENCY', '/dashboard/properties'],
+    ['RENTER', 'INDIVIDUAL', '/dashboard/finance/charges'],
+  ])('sends %s on %s accounts to %s instead of a 404', async (role, accountType, href) => {
+    getServerSession.mockResolvedValue({ scope: 'tenant', role, accountType })
+    await expect(requireDashboardHome()).rejects.toThrow('NEXT_REDIRECT')
+    expect(redirect).toHaveBeenCalledWith({ href, locale: 'pt-BR' })
+    expect(notFound).not.toHaveBeenCalled()
+  })
+
+  it('still hides the screen when the profile is unknown', async () => {
+    getServerSession.mockResolvedValue({ scope: 'tenant', role: 'OWNER' })
+    await expect(requireDashboardHome()).rejects.toThrow('NEXT_NOT_FOUND')
   })
 })

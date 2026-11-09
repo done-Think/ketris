@@ -67,7 +67,9 @@ export const dashboardFeaturesByProfile: Record<AccessProfile, readonly Dashboar
     'maintenance',
     'charges',
   ],
+  // The overview of a team broker is filled with their own leads and visits, not the agency's.
   AGENT: [
+    'dashboard',
     'pipeline',
     'contacts',
     'leads',
@@ -123,6 +125,12 @@ export const dashboardFeatureHrefs = {
   finance: '/dashboard/finance',
   charges: '/dashboard/finance/charges',
 } as const satisfies Record<DashboardFeature, string>
+
+/** First screen a profile may open; where `/dashboard` sends people who have no overview. */
+export function homeHrefFor(profile: AccessProfile | null): string | null {
+  const first = profile ? dashboardFeaturesByProfile[profile][0] : undefined
+  return first ? dashboardFeatureHrefs[first] : null
+}
 
 export function navigationHrefsFor(profile: AccessProfile): readonly string[] {
   return dashboardFeaturesByProfile[profile].map((feature) => dashboardFeatureHrefs[feature])

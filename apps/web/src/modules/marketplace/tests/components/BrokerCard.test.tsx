@@ -20,8 +20,8 @@ const broker: BrokerCardProps = {
   primaryColor: null,
   backgroundColor: null,
   region: 'Jardins, São Paulo',
-  specialties: ['Aluguel', 'Alto padrão'],
-  neighborhoods: ['Jardins', 'Itaim Bibi'],
+  segments: ['Aluguel', 'Alto padrão'],
+  coverage: ['Jardins', 'Itaim Bibi'],
   activeListings: 42,
   responseTime: null,
   rating: null,
@@ -29,7 +29,7 @@ const broker: BrokerCardProps = {
   phone: '(11) 99822-1104',
   email: 'marina@ketris.com.br',
   availability: 'Segunda a sexta, 9h às 18h',
-  bio: 'Atuação focada em apartamentos prontos para morar nos Jardins.',
+  summary: 'Atuação focada em apartamentos prontos para morar nos Jardins.',
   href: '/brokers/marina-costa',
   highlightedListings: [
     {
