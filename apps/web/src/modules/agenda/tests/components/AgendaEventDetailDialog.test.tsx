@@ -188,4 +188,43 @@ describe('AgendaEventDetailDialog', () => {
     expect(onClose).not.toHaveBeenCalled()
     expect(screen.getByLabelText('Motivo do cancelamento')).toHaveValue('Cliente indisponível')
   })
+
+  it('mostra o status do resultado sem expor interesse e anotações a quem não vê dados privados', () => {
+    render(
+      <ThemeProvider theme={theme}>
+        <AgendaEventDetailDialog
+          readOnly
+          event={{
+            ...event,
+            status: 'COMPLETED',
+            visitInterest: 'HIGH',
+            outcomeNotes: 'Quer proposta.',
+            outcomeRecordedBy: 'Roberto Souza',
+            outcomeRecordedAt: '2026-05-04T10:30:00.000Z',
+          }}
+          isDeleting={false}
+          isSaving={false}
+          maxDate="2026-12-31"
+          minDate="2026-01-01"
+          onClose={vi.fn()}
+          onDelete={vi.fn()}
+          onEdit={vi.fn()}
+          onScheduleFollowUp={vi.fn()}
+          open
+          propertyOptions={propertyOptions}
+        />
+      </ThemeProvider>,
+    )
+
+    expect(screen.getByText('Realizado')).toBeVisible()
+    expect(screen.queryByText('Quer proposta.')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Agendar retorno' })).not.toBeInTheDocument()
+  })
+
+  it('só oferece registrar resultado quando a página libera', () => {
+    renderDialog()
+
+    expect(screen.queryByRole('button', { name: 'Registrar resultado' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Editar' })).toBeVisible()
+  })
 })

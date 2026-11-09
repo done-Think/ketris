@@ -3,6 +3,7 @@ import type {
   RenterAgendaEventResponseDTO,
   AgendaEventsResponseDTO,
   CreateAgendaEventRequestInput,
+  RecordAgendaEventOutcomeRequestDTO,
   RescheduleAgendaEventRequestInput,
   UpdateAgendaEventRequestInput,
 } from '@shared/types/generated/agenda/http'
@@ -18,7 +19,21 @@ import type { AgendaOrganizationItem } from './agenda-organization'
 
 export type AgendaEventStatus = AgendaEventResponseDTO['status']
 
-export type AgendaEventTone = 'primary' | 'info' | 'warning'
+export type AgendaEventTone = 'primary' | 'info' | 'warning' | 'success' | 'neutral'
+
+export type AgendaEventOutcome = RecordAgendaEventOutcomeRequestDTO['outcome']
+
+export type AgendaVisitInterest = NonNullable<AgendaEventResponseDTO['visitInterest']>
+
+export type AgendaEventDisplayStatus = AgendaEventStatus | 'AWAITING_OUTCOME'
+
+export type AgendaEventDetailSubDialog = 'delete' | 'outcome' | null
+
+export type AgendaEventPresentation = {
+  displayStatus: AgendaEventDisplayStatus
+  tone: AgendaEventTone
+  StatusIcon?: import('@mui/icons-material').SvgIconComponent
+}
 export type AgendaEventAudience = AgendaEventResponseDTO['audience']
 export interface AgendaAgentOption {
   id: string
@@ -52,6 +67,10 @@ export type AgendaEvent = {
   createdBy?: string
   createdById?: string | null
   createdByRole?: AgendaEventCreatorRole
+  outcomeRecordedAt?: string | null
+  outcomeRecordedBy?: string | null
+  visitInterest?: AgendaVisitInterest | null
+  outcomeNotes?: string | null
 }
 
 export type AgendaCalendarDay = {
@@ -125,6 +144,10 @@ export type AgendaEventFormFieldsProps = {
 }
 
 export type AgendaEventDetailDialogProps = {
+  canRecordOutcome?: boolean
+  isRecordingOutcome?: boolean
+  onRecordOutcome?: (values: RecordAgendaEventOutcomeValues) => Promise<boolean>
+  onScheduleFollowUp?: (event: AgendaEvent) => void
   canManageAudience?: boolean
   agentOptions?: AgendaAgentOption[]
   agentsLoading?: boolean
@@ -199,6 +222,29 @@ export type RescheduleAgendaEventPayload = Omit<RescheduleAgendaEventRequestInpu
 }
 export type UpdateAgendaEventPayload = Omit<UpdateAgendaEventRequestInput, 'start'> & {
   start?: string
+}
+
+export type RecordAgendaEventOutcomeValues = z.infer<
+  ReturnType<
+    typeof import('../schemas/record-agenda-event-outcome-schema').buildRecordAgendaEventOutcomeSchema
+  >
+>
+export type RecordAgendaEventOutcomePayload = RecordAgendaEventOutcomeRequestDTO
+
+export type RecordAgendaEventOutcomeDialogProps = {
+  open: boolean
+  isPending: boolean
+  event: AgendaEvent
+  onClose: () => void
+  onConfirm: (values: RecordAgendaEventOutcomeValues) => void | Promise<void>
+}
+
+export type AgendaEventStatusChipProps = {
+  status: AgendaEventDisplayStatus
+}
+
+export type AgendaEventOutcomeSummaryProps = {
+  event: AgendaEvent
 }
 
 export type CancelAgendaEventValues = z.infer<

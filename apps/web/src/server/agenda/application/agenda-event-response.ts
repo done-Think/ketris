@@ -29,6 +29,11 @@ export function toAgendaEventResponse(event: AgendaEvent): AgendaEventResponseDT
     cancelledAt: event.canceledAt?.toISOString() ?? null,
     cancelledById: event.canceledById ?? null,
     cancellationReason: event.cancellationReason ?? null,
+    outcomeRecordedAt: event.outcomeRecordedAt?.toISOString() ?? null,
+    outcomeRecordedById: event.outcomeRecordedById ?? null,
+    outcomeRecordedBy: event.outcomeRecordedByName ? { name: event.outcomeRecordedByName } : null,
+    visitInterest: event.visitInterest ?? null,
+    outcomeNotes: event.outcomeNotes ?? null,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
   }

@@ -14,6 +14,11 @@ const baseApiEvent: AgendaEventApi = {
   cancelledAt: null,
   cancelledById: null,
   cancellationReason: null,
+  outcomeRecordedAt: null,
+  outcomeRecordedById: null,
+  outcomeRecordedBy: null,
+  visitInterest: null,
+  outcomeNotes: null,
   id: 'event-1',
   tenantId: 'tenant-1',
   responsibleId: 'user-1',
@@ -53,6 +58,8 @@ describe('toAgendaEvent', () => {
     ['PENDING', 'PENDING', 'warning'],
     ['RESCHEDULE', 'RESCHEDULE', 'info'],
     ['CANCELLED', 'CANCELLED', 'info'],
+    ['COMPLETED', 'COMPLETED', 'success'],
+    ['NO_SHOW', 'NO_SHOW', 'neutral'],
   ] as const)('maps API status %s to status %s and tone %s', (apiStatus, status, tone) => {
     const result = toAgendaEvent({ ...baseApiEvent, status: apiStatus })
 
@@ -117,5 +124,24 @@ describe('toAgendaEvent', () => {
   it('exposes the raw API kind for editing, even when it collapses to the same display kind as another', () => {
     expect(toAgendaEvent({ ...baseApiEvent, kind: 'OTHER' }).apiKind).toBe('OTHER')
     expect(toAgendaEvent({ ...baseApiEvent, kind: 'VISIT' }).apiKind).toBe('VISIT')
+  })
+
+  it('maps the recorded outcome with the name of who recorded it', () => {
+    const result = toAgendaEvent({
+      ...baseApiEvent,
+      status: 'COMPLETED',
+      outcomeRecordedAt: '2026-11-04T14:42:00.000Z',
+      outcomeRecordedById: 'agent-1',
+      outcomeRecordedBy: { name: 'Corretor André' },
+      visitInterest: 'MEDIUM',
+      outcomeNotes: 'Quer proposta.',
+    })
+
+    expect(result).toMatchObject({
+      outcomeRecordedAt: '2026-11-04T14:42:00.000Z',
+      outcomeRecordedBy: 'Corretor André',
+      visitInterest: 'MEDIUM',
+      outcomeNotes: 'Quer proposta.',
+    })
   })
 })

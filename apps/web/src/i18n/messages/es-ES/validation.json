@@ -60,6 +60,7 @@
     "visitDuration": "Las visitas deben durar al menos 30 minutos.",
     "cancellationReasonRequired": "Introduce el motivo de cancelación.",
     "cancellationStatusRequired": "El motivo de cancelación requiere el estado CANCELLED.",
+    "visitInterestRequiresCompleted": "El interés del cliente solo se puede informar en un evento realizado.",
     "periodEndAfterStart": "El fin del período debe ser posterior a su inicio.",
     "descriptionRequired": "Introduce una descripción para un cargo sin contrato.",
     "fileRequired": "Sube un archivo en el campo file.",

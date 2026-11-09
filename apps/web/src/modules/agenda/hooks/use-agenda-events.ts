@@ -6,6 +6,7 @@ import type {
   CreateAgendaEventPayload,
   AgendaEventMutationInput,
   CancelAgendaEventMutationInput,
+  RecordAgendaEventOutcomePayload,
   RescheduleAgendaEventPayload,
   UpdateAgendaEventPayload,
 } from '../types/agenda-event'
@@ -74,6 +75,21 @@ export function useCancelAgendaEvent(tenantId: string) {
   return useMutation({
     mutationFn: ({ id, payload }: CancelAgendaEventMutationInput) =>
       agendaService.cancel(id, payload),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) }),
+        queryClient.invalidateQueries({ queryKey: agendaQueryKeys.notificationAll }),
+      ])
+    },
+  })
+}
+
+export function useRecordAgendaEventOutcome(tenantId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, payload }: AgendaEventMutationInput<RecordAgendaEventOutcomePayload>) =>
+      agendaService.recordOutcome(id, payload),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: agendaQueryKeys.tenant(tenantId) }),

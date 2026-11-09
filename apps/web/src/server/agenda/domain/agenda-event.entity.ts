@@ -4,6 +4,7 @@ import type {
   AgendaEventAudience,
   AgendaEventStatus,
   AgendaEventKind,
+  AgendaVisitInterest,
 } from '../types/agenda-event'
 
 export interface AgendaEvent {
@@ -32,6 +33,11 @@ export interface AgendaEvent {
   canceledAt?: Date | null
   canceledById?: string | null
   cancellationReason?: string | null
+  outcomeRecordedAt?: Date | null
+  outcomeRecordedById?: string | null
+  outcomeRecordedByName?: string | null
+  visitInterest?: AgendaVisitInterest | null
+  outcomeNotes?: string | null
   createdAt: Date
   updatedAt: Date
 }

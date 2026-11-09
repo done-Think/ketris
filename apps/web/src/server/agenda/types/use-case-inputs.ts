@@ -4,6 +4,8 @@ import type {
   AgendaEventAudience,
   AgendaEventChanges,
   AgendaEventLinks,
+  AgendaEventOutcome,
+  AgendaVisitInterest,
 } from './agenda-event'
 
 export interface CancelAgendaEventInput {
@@ -49,6 +51,16 @@ export interface ListAgendaEventsInput {
   from: Date
   to: Date
   responsibleId?: string
+}
+
+export interface RecordAgendaEventOutcomeInput {
+  outcome: AgendaEventOutcome
+  visitInterest?: AgendaVisitInterest
+  notes?: string
+  actorTenantId: string
+  actorRole: UserRole
+  actorUserId: string
+  id: string
 }
 
 export interface RescheduleAgendaEventInput {

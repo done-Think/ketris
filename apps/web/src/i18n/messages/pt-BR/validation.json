@@ -60,6 +60,7 @@
     "visitDuration": "Visitas devem ter duração mínima de 30 minutos.",
     "cancellationReasonRequired": "Informe o motivo do cancelamento.",
     "cancellationStatusRequired": "O motivo exige status CANCELLED.",
+    "visitInterestRequiresCompleted": "O interesse do cliente só pode ser informado em evento realizado.",
     "periodEndAfterStart": "\"to\" deve ser depois de \"from\".",
     "descriptionRequired": "Informe uma descrição para uma cobrança avulsa (sem contrato).",
     "fileRequired": "Envie um arquivo em \"file\".",

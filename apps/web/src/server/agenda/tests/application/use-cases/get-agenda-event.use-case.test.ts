@@ -16,6 +16,7 @@ function createDeps(overrides?: { findByScopeAndId?: AgendaEventRepository['find
     update: vi.fn(),
     reschedule: vi.fn(),
     cancel: vi.fn(),
+    recordOutcome: vi.fn(),
     hasOverlap: vi.fn(),
   }
 

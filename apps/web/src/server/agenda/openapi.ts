@@ -10,6 +10,7 @@ import {
   createAgendaEventRequestSchema,
   cancelAgendaEventRequestSchema,
   listAgendaEventsQuerySchema,
+  recordAgendaEventOutcomeRequestSchema,
   rescheduleAgendaEventRequestSchema,
   updateAgendaEventRequestSchema,
 } from './schemas/agenda-event-input.schema'
@@ -191,6 +192,10 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
         description: 'Evento ou propertyId não encontrado neste tenant.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
+      409: {
+        description: 'O resultado do evento já foi registrado (AGENDA_EVENT_CLOSED).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
     },
   })
 
@@ -227,7 +232,9 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
         content: { 'application/json': { schema: errorResponseSchema } },
       },
       409: {
-        description: 'O responsável já tem outro evento agendado nesse horário.',
+        description:
+          'O responsável já tem outro evento agendado nesse horário, ou o resultado do evento já ' +
+          'foi registrado (AGENDA_EVENT_CLOSED).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
@@ -262,6 +269,64 @@ export function registerAgendaOpenApi(registry: OpenAPIRegistry): void {
       },
       404: {
         description: 'Evento não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      409: {
+        description: 'O resultado do evento já foi registrado (AGENDA_EVENT_CLOSED).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
+
+  registry.registerPath({
+    method: 'post',
+    path: '/agenda/events/{id}/outcome',
+    tags: ['Agenda'],
+    summary: 'Registra o resultado de um evento: realizado ou cliente não compareceu',
+    description:
+      'Só a equipe da imobiliária (OWNER e AGENT) registra, com as mesmas regras de acesso da edição. ' +
+      'Aceito a partir do início do evento e nunca em evento cancelado. Em visita realizada, ' +
+      'visitInterest é obrigatório; nos demais casos é recusado. NO_SHOW não se aplica a evento ' +
+      'interno. Depois do registro o evento fica fechado para edição, reagendamento e ' +
+      'cancelamento; só o OWNER pode registrar de novo para corrigir. Status, autor, data e ' +
+      'auditoria são gravados na mesma transação.',
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: agendaEventIdParamsSchema,
+      body: {
+        required: true,
+        content: { 'application/json': { schema: recordAgendaEventOutcomeRequestSchema } },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Resultado registrado.',
+        content: { 'application/json': { schema: agendaEventResponseSchema } },
+      },
+      400: {
+        description:
+          'Corpo inválido, interesse ausente em visita realizada (AGENDA_VISIT_INTEREST_REQUIRED), ' +
+          'interesse fora de visita realizada (AGENDA_VISIT_INTEREST_NOT_ALLOWED) ou ausência em ' +
+          'evento interno (AGENDA_NO_SHOW_INTERNAL_EVENT).',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      401: {
+        description: 'Access token ausente, inválido ou expirado.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Sem permissão para registrar o resultado deste evento.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      404: {
+        description: 'Evento não encontrado neste tenant.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      409: {
+        description:
+          'Evento ainda não começou (AGENDA_OUTCOME_BEFORE_START), cancelado ' +
+          '(AGENDA_OUTCOME_CANCELLED_EVENT), já com resultado para quem não é OWNER ' +
+          '(AGENDA_EVENT_CLOSED) ou alterado por outra pessoa durante o registro (CONFLICT).',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },

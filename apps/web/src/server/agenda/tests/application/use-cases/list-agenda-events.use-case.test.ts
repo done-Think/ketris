@@ -17,6 +17,7 @@ function createDeps() {
     update: vi.fn(),
     reschedule: vi.fn(),
     cancel: vi.fn(),
+    recordOutcome: vi.fn(),
     hasOverlap: vi.fn(),
   }
 
