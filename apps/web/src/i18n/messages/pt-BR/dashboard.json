@@ -684,7 +684,7 @@
       "reject": "Recusar",
       "rejectAriaLabel": "Recusar vínculo de {name}",
       "rejectTitle": "Recusar o pedido de {name}?",
-      "rejectDescription": "O cadastro de {name} nesta imobiliária é apagado e ele não entra na equipe. O e-mail fica livre para um novo pedido.",
+      "rejectDescription": "{name} não entra na equipe e o cadastro nesta imobiliária é apagado. O e-mail fica livre para um novo pedido.",
       "rejectSubmit": "Recusar pedido",
       "rejectCancel": "Voltar",
       "rejectSuccess": "Pedido de {name} recusado.",
