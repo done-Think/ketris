@@ -1,3 +1,5 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
+import { isValidCpf } from '@shared/schemas/cpf-schema'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
@@ -33,6 +35,12 @@ export const inviteBrokerRequestSchema = z
   .object({
     name: z.string().trim().min(1).max(120).openapi({ example: 'Marina Costa' }),
     email: z.string().trim().max(254).email().openapi({ example: 'marina@imobiliaria.com.br' }),
+    cpf: z
+      .string()
+      .trim()
+      .refine(isValidCpf, validationRefinement('cpfInvalid'))
+      .transform((value) => value.replace(/\D/g, ''))
+      .openapi({ example: '529.982.247-25' }),
     locale: z.enum(locales).openapi({ example: 'pt-BR' }),
   })
   .strict()

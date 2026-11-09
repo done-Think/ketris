@@ -21,7 +21,10 @@ export async function resolveFaceCheckActor(
       emailVerifiedAt: { not: null },
       membershipApprovedAt: { not: null },
       role: { in: ['OWNER', 'AGENT'] },
-      tenant: { status: { in: ['ACTIVE', 'TRIAL'] }, accountType: { in: ['AGENCY', 'BROKER'] } },
+      tenant: {
+        status: { in: ['ACTIVE', 'TRIAL'] },
+        accountType: { in: ['AGENCY', 'BROKER', 'INDIVIDUAL'] },
+      },
     },
     select: {
       id: true,

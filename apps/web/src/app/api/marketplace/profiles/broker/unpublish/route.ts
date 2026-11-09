@@ -1,3 +1,4 @@
+import { resolveActorAccountType } from '@server/auth/resolve-actor-account-type'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
@@ -12,6 +13,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   const profile = await marketplaceContainer.unpublishBrokerProfileUseCase.execute({
     actorId: actor.sub,
     actorRole: actor.role,
+    actorAccountType: await resolveActorAccountType(actor.sub),
   })
 
   return NextResponse.json({ profile }, { status: 200 })

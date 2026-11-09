@@ -141,13 +141,26 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
       }
     })
 
-    it('allows eligible agency and independent broker accounts and rejects all excluded identities', async () => {
+    it('allows eligible agency, broker and individual-owner accounts and rejects all excluded identities', async () => {
       const brokerTenant = await tenant('broker', 'BROKER')
       expect((await actor(brokerTenant, 'OWNER', 'broker')).accountType).toBe('BROKER')
       const individualTenant = await tenant('individual', 'INDIVIDUAL')
       const individual = await user(individualTenant, 'OWNER', 'individual')
+      // An individual owner screens their own prospective tenant.
+      expect(
+        (
+          await resolveFaceCheckActor(
+            { userId: individual.id, tenantId: individualTenant },
+            database,
+          )
+        ).accountType,
+      ).toBe('INDIVIDUAL')
+      const individualRenter = await user(individualTenant, 'RENTER', 'individual-renter')
       await expect(
-        resolveFaceCheckActor({ userId: individual.id, tenantId: individualTenant }, database),
+        resolveFaceCheckActor(
+          { userId: individualRenter.id, tenantId: individualTenant },
+          database,
+        ),
       ).rejects.toMatchObject({ code: 'FORBIDDEN' })
       for (const role of ['RENTER', 'PROPERTY_OWNER'] as const) {
         const excluded = await user(agency, role, role.toLowerCase())

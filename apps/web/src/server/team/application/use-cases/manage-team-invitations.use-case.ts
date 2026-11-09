@@ -76,6 +76,7 @@ export class InviteBrokerUseCase {
       tenantId: input.actorTenantId,
       name: input.name.trim(),
       email,
+      cpf: input.cpf,
       passwordHash: await this.passwordHasher.hash(generateUnusablePassword()),
       tokenHash: hashTeamInvitationToken(token),
       expiresAt: teamInvitationExpiry(this.now()),

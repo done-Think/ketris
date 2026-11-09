@@ -1,3 +1,4 @@
+import { resolveActorAccountType } from '@server/auth/resolve-actor-account-type'
 import { NextResponse, type NextRequest } from 'next/server'
 import { authContainer } from '@server/auth/container'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
@@ -26,6 +27,7 @@ export const GET = withErrorHandling(
         actorId: actor.sub,
         actorTenantId: actor.tenantId,
         actorRole: actor.role,
+        actorAccountType: await resolveActorAccountType(actor.sub),
       })
       return NextResponse.json(result, { headers: { 'Cache-Control': 'no-store' } })
     } catch (error) {

@@ -56,7 +56,23 @@ describe('RegistrationDetailsForm', () => {
     expect(screen.getByText('Informe seu e-mail')).toBeInTheDocument()
     expect(screen.getByText('Informe seu telefone')).toBeInTheDocument()
     expect(screen.getByText('Informe seu CRECI')).toBeInTheDocument()
+    expect(screen.getByText('Informe seu CPF')).toBeInTheDocument()
     expect(submit).not.toHaveBeenCalled()
+  })
+
+  it.each(['owner', 'renter', 'developer'] as const)(
+    'não exibe o campo CRECI para o perfil %s',
+    (profile) => {
+      renderForm(profile)
+
+      expect(screen.queryByLabelText(/CRECI/)).not.toBeInTheDocument()
+    },
+  )
+
+  it('exibe o campo CRECI para imobiliária', () => {
+    renderForm('agency')
+
+    expect(screen.getByLabelText(/CRECI/)).toBeInTheDocument()
   })
 
   it('alterna a visibilidade de senha e confirmar senha de forma independente', async () => {
@@ -90,6 +106,7 @@ describe('RegistrationDetailsForm', () => {
     await user.type(screen.getByLabelText(/Nome completo/), 'Maria da Silva')
     await user.type(screen.getByLabelText(/E-mail/), 'MARIA@EMAIL.COM')
     await user.type(screen.getByLabelText(/Telefone/), '11999999999')
+    await user.type(screen.getByLabelText(/CPF/), '52998224725')
     await user.type(screen.getByLabelText(/^Senha/), 'senha-segura')
     await user.type(screen.getByPlaceholderText('Confirme a senha'), 'senha-segura')
     await user.click(screen.getByRole('checkbox', { name: /Li e aceito/ }))
@@ -103,10 +120,29 @@ describe('RegistrationDetailsForm', () => {
       password: 'senha-segura',
       passwordConfirmation: 'senha-segura',
       creci: '',
+      cpf: '529.982.247-25',
+      cnpj: '',
       companyName: '',
       acceptTerms: true,
     })
   }, 20000)
+
+  it.each(['owner', 'renter', 'broker'] as const)('pede CPF e não CNPJ para %s', (profile) => {
+    renderForm(profile)
+
+    expect(screen.getByLabelText(/CPF/)).toBeInTheDocument()
+    expect(screen.queryByLabelText(/CNPJ/)).not.toBeInTheDocument()
+  })
+
+  it.each(['agency', 'developer', 'condoManager'] as const)(
+    'pede CNPJ e não CPF para %s',
+    (profile) => {
+      renderForm(profile)
+
+      expect(screen.getByLabelText(/CNPJ/)).toBeInTheDocument()
+      expect(screen.queryByLabelText(/CPF/)).not.toBeInTheDocument()
+    },
+  )
 
   it('mostra o campo de nome da empresa para imobiliária, mas não para proprietário', () => {
     const { rerender } = render(

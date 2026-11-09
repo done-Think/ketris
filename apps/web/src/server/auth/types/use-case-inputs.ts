@@ -75,6 +75,8 @@ export interface ResetPasswordInput {
 export interface UpdateUserInput {
   phone?: string | null
   creci?: string | null
+  cpf?: string | null
+  cnpj?: string | null
   actorId: string
   actorTenantId: string
   actorRole: UserRole

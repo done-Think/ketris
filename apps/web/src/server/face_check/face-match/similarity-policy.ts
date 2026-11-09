@@ -8,6 +8,7 @@ export function decideSimilarity({
   maxAttempts,
   checksPassed,
   autoApproval,
+  approveAbove = similarityPolicy.approveAbove,
 }: SimilarityDecisionInput): SimilarityDecision {
   if (similarity === null || !Number.isFinite(similarity) || similarity < -1 || similarity > 1)
     return { status: 'REVIEW', reviewReason: 'faceNotFound', redoReason: null, alerts: [] }
@@ -18,7 +19,7 @@ export function decideSimilarity({
       redoReason: null,
       alerts: [],
     }
-  if (similarity > similarityPolicy.approveAbove)
+  if (similarity > Math.max(approveAbove, similarityPolicy.approveAbove))
     return autoApproval
       ? { status: 'APPROVED', reviewReason: null, redoReason: null, alerts: [] }
       : { status: 'REVIEW', reviewReason: 'autoApprovalPaused', redoReason: null, alerts: [] }

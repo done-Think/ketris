@@ -30,10 +30,10 @@ describe('LoginForm', () => {
     expect(loginMock).not.toHaveBeenCalled()
   })
 
-  it('exibe a opção visual do Google desabilitada até a integração com o backend', () => {
+  it('oculta a opção do Google enquanto a integração com o backend não existe', () => {
     render(<LoginForm callbackUrl="/dashboard" />)
 
-    expect(screen.getByRole('button', { name: 'Continuar com Google (em breve)' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: /Google/ })).not.toBeInTheDocument()
   })
 
   it('envia credenciais normalizadas pelo schema', async () => {

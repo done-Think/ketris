@@ -76,8 +76,8 @@ export function useActivateBroker() {
 export function useInviteBroker() {
   const locale = useLocale() as AppLocale
 
-  return useTeamMutation(({ name, email }: { name: string; email: string }) =>
-    teamService.invite({ name, email, locale }),
+  return useTeamMutation(({ name, email, cpf }: { name: string; email: string; cpf: string }) =>
+    teamService.invite({ name, email, cpf, locale }),
   )
 }
 

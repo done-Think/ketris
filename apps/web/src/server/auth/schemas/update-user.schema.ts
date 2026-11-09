@@ -2,6 +2,8 @@ import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
+import { isValidCnpj } from '@shared/schemas/cnpj-schema'
+import { isValidCpf } from '@shared/schemas/cpf-schema'
 import { authenticatedUserResponseSchema, tenantMemberRoleSchema } from './user.schema'
 
 export const updateUserRequestSchema = z
@@ -19,6 +21,18 @@ export const updateUserRequestSchema = z
       .nullable()
       .optional(),
     creci: z.string().trim().max(32).nullable().optional(),
+    cpf: z
+      .string()
+      .trim()
+      .refine(isValidCpf, validationRefinement('cpfInvalid'))
+      .transform((value) => value.replace(/\D/g, ''))
+      .optional(),
+    cnpj: z
+      .string()
+      .trim()
+      .refine(isValidCnpj, validationRefinement('cnpjInvalid'))
+      .transform((value) => value.replace(/\D/g, ''))
+      .optional(),
     avatarUrl: z.string().min(1).nullable().optional(),
     role: tenantMemberRoleSchema.optional(),
   })
@@ -27,6 +41,8 @@ export const updateUserRequestSchema = z
     (data) =>
       data.phone !== undefined ||
       data.creci !== undefined ||
+      data.cpf !== undefined ||
+      data.cnpj !== undefined ||
       data.name !== undefined ||
       data.email !== undefined ||
       data.avatarUrl !== undefined ||

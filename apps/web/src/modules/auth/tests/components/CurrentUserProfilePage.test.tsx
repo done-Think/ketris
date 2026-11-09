@@ -1,3 +1,4 @@
+import { AxiosError, type AxiosResponse } from 'axios'
 import { ThemeProvider } from '@mui/material'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor, act } from '@testing-library/react'
@@ -49,6 +50,8 @@ const profile: TenantUser = {
   email: 'ana@example.com',
   phone: '(35) 98888-7777',
   creci: '12345',
+  cpf: '52998224725',
+  tenantCnpj: null,
   avatarUrl: '/avatar.png',
   role: 'AGENT',
   active: true,
@@ -67,6 +70,13 @@ async function renderPage() {
   )
   await screen.findByRole('textbox', { name: 'Nome' })
   return client
+}
+
+function apiError(code: string) {
+  return new AxiosError('error', '409', undefined, undefined, {
+    status: 409,
+    data: { error: { code } },
+  } as AxiosResponse)
 }
 
 describe('CurrentUserProfilePage', () => {
@@ -105,10 +115,26 @@ describe('CurrentUserProfilePage', () => {
         name: 'Beatriz',
         phone: '(35) 97777-6666',
         creci: '67890',
+        cpf: '529.982.247-25',
         avatarUrl: '/avatar.png',
       }),
     )
     expect(updateSession).toHaveBeenCalledWith()
+  })
+  it('asks for a valid CPF and shows the conflict message from the server', async () => {
+    vi.mocked(userService.update).mockRejectedValue(apiError('CPF_ALREADY_IN_USE'))
+    await renderPage()
+    fireEvent.input(screen.getByRole('textbox', { name: 'CPF' }), {
+      target: { value: '11111111111' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
+    expect(await screen.findByText('Informe um CPF válido.')).toBeVisible()
+    expect(userService.update).not.toHaveBeenCalled()
+    fireEvent.input(screen.getByRole('textbox', { name: 'CPF' }), {
+      target: { value: '52998224725' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
+    expect(await screen.findByText('Já existe uma conta com este CPF.')).toBeVisible()
   })
   it('preserves local edits during refetch and resets only on cancel', async () => {
     const client = await renderPage()

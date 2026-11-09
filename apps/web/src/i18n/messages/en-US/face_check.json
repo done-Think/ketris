@@ -834,6 +834,7 @@
       "PERSISTENCE_BUSY": "Another operation is finishing. Wait a moment and try again.",
       "PERSISTENCE_UNAVAILABLE": "Could not save or retrieve this verification. Try again shortly.",
       "AGENCY_NAME_MISSING": "Add the agency name in settings before creating a verification.",
+      "INVITEE_NOT_ELIGIBLE": "This email already belongs to a registered profile. Face verification is only required for people renting a property.",
       "CONSENT_TERMS_OUTDATED": "The consent information has changed. Reload this page and read it again.",
       "DOCUMENT_TYPE_NOT_ACCEPTED": "This document type is not accepted. Use the type requested by the agency, the same for front and back.",
       "PAYLOAD_TOO_LARGE": "Each photo must be 3 MiB or less. Take it again.",

@@ -29,6 +29,8 @@ const authenticated = {
     pendingApproval: false,
     phone: null,
     creci: null,
+    cpf: null,
+    tenantCnpj: null,
   },
   accessToken: 'access-fake',
   refreshToken: 'refresh-fake',

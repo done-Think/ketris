@@ -38,6 +38,8 @@ export const PATCH = withErrorHandling(async (request: NextRequest, context: Use
     avatarUrl: body.avatarUrl,
     phone: body.phone,
     creci: body.creci,
+    cpf: body.cpf,
+    cnpj: body.cnpj,
     role: body.role,
   })
 

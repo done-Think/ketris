@@ -104,6 +104,8 @@ export interface SimilarityDecisionInput {
   maxAttempts: number
   checksPassed: boolean
   autoApproval: boolean
+  /** Agency-configured similarity above which a match counts as strong. */
+  approveAbove?: number
 }
 
 export interface VerificationChecksInput {

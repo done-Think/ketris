@@ -19,4 +19,12 @@ describe('updateUserRequestSchema', () => {
     })
     expect(updateUserRequestSchema.safeParse({}).success).toBe(false)
   })
+
+  it('validates and normalizes CPF and CNPJ', () => {
+    expect(
+      updateUserRequestSchema.parse({ cpf: '529.982.247-25', cnpj: '11.222.333/0001-81' }),
+    ).toEqual({ cpf: '52998224725', cnpj: '11222333000181' })
+    expect(updateUserRequestSchema.safeParse({ cpf: '111.111.111-11' }).success).toBe(false)
+    expect(updateUserRequestSchema.safeParse({ cnpj: '11.222.333/0001-82' }).success).toBe(false)
+  })
 })

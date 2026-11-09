@@ -28,7 +28,7 @@ export class PublishBrokerProfileUseCase {
   constructor(private readonly brokerProfileRepository: BrokerProfileRepository) {}
 
   async execute(input: PublishBrokerProfileInput): Promise<BrokerProfile> {
-    assertBrokerProfileAccess(input.actorRole)
+    assertBrokerProfileAccess(input.actorRole, input.actorAccountType)
 
     const profile = await this.brokerProfileRepository.findByUserId(input.actorId)
 

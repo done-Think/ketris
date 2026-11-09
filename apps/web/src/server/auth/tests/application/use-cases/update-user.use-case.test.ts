@@ -194,4 +194,45 @@ describe('UpdateUserUseCase', () => {
     ).rejects.toMatchObject({ code: 'EMAIL_CONFIRMATION_REQUIRED', status: 409 })
     expect(deps.userRepository.update).not.toHaveBeenCalled()
   })
+
+  it('lets only the owner of a company account change the CNPJ', async () => {
+    const company: User = { ...owner, tenantAccountType: 'AGENCY' }
+    const own = createDeps({ findById: vi.fn().mockResolvedValue(company) })
+    await new UpdateUserUseCase(own.userRepository).execute({
+      actorTenantId: 'tenant-1',
+      actorId: owner.id,
+      actorRole: 'OWNER',
+      userId: owner.id,
+      cnpj: '11222333000181',
+    })
+    expect(own.userRepository.update).toHaveBeenCalledWith(
+      owner.id,
+      expect.objectContaining({ cnpj: '11222333000181' }),
+    )
+
+    const individual = createDeps({
+      findById: vi.fn().mockResolvedValue({ ...owner, tenantAccountType: 'INDIVIDUAL' }),
+    })
+    await expect(
+      new UpdateUserUseCase(individual.userRepository).execute({
+        actorTenantId: 'tenant-1',
+        actorId: owner.id,
+        actorRole: 'OWNER',
+        userId: owner.id,
+        cnpj: '11222333000181',
+      }),
+    ).rejects.toThrow()
+
+    const other = createDeps({ findById: vi.fn().mockResolvedValue(company) })
+    await expect(
+      new UpdateUserUseCase(other.userRepository).execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'someone-else',
+        actorRole: 'OWNER',
+        userId: owner.id,
+        cnpj: '11222333000181',
+      }),
+    ).rejects.toThrow()
+    expect(other.userRepository.update).not.toHaveBeenCalled()
+  })
 })

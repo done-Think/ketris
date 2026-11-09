@@ -32,6 +32,8 @@ const authenticated = {
     avatarUrl: null,
     phone: null,
     creci: null,
+    cpf: null,
+    tenantCnpj: null,
   },
   accessToken: 'access-fake',
   refreshToken: 'refresh-fake',

@@ -35,6 +35,8 @@ import type {
 } from '../types/registration'
 
 const PHONE_MASK = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
+const CPF_MASK = [{ mask: '000.000.000-00' }]
+const CNPJ_MASK = [{ mask: '00.000.000/0000-00' }]
 
 const passwordFields: ReadonlyArray<RegistrationPasswordField> = [
   { name: 'password', translationKey: 'password' },
@@ -65,12 +67,20 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
       password: '',
       passwordConfirmation: '',
       creci: '',
+      cpf: '',
+      cnpj: '',
       companyName: '',
       acceptTerms: false,
     },
   })
 
-  const showCompanyName = profile === 'agency' || profile === 'developer' || profile === 'broker'
+  const showCnpj = profile === 'agency' || profile === 'developer' || profile === 'condoManager'
+  const showCreci = profile === 'broker' || profile === 'agency'
+  const showCompanyName =
+    profile === 'agency' ||
+    profile === 'developer' ||
+    profile === 'condoManager' ||
+    profile === 'broker'
 
   const acceptTerms = useWatch({ control, name: 'acceptTerms' })
 
@@ -148,6 +158,34 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
           </AuthFormField>
         </Box>
 
+        {showCnpj ? (
+          <AuthFormField htmlFor="registration-cnpj" label={t('cnpj.label')} required>
+            <RhfMaskedTextField
+              id="registration-cnpj"
+              control={control}
+              name="cnpj"
+              mask={CNPJ_MASK}
+              placeholder={t('cnpj.placeholder')}
+              inputMode="numeric"
+              fullWidth
+              sx={authTextFieldSx}
+            />
+          </AuthFormField>
+        ) : (
+          <AuthFormField htmlFor="registration-cpf" label={t('cpf.label')} required>
+            <RhfMaskedTextField
+              id="registration-cpf"
+              control={control}
+              name="cpf"
+              mask={CPF_MASK}
+              placeholder={t('cpf.placeholder')}
+              inputMode="numeric"
+              fullWidth
+              sx={authTextFieldSx}
+            />
+          </AuthFormField>
+        )}
+
         <Box sx={styles.box4}>
           {passwordFields.map((field) => {
             const isVisible = visiblePasswordFields.has(field.name)
@@ -199,23 +237,25 @@ export function RegistrationDetailsForm({ profile, onSubmit }: RegistrationDetai
           })}
         </Box>
 
-        <AuthFormField
-          htmlFor="registration-creci"
-          label={t('creci.label')}
-          required={profile === 'broker'}
-        >
-          <RhfTextField
-            id="registration-creci"
-            control={control}
-            name="creci"
-            placeholder={t('creci.placeholder')}
-            helperText={
-              profile === 'broker' ? t('creci.requiredHelper') : t('creci.optionalHelper')
-            }
-            fullWidth
-            sx={authTextFieldSx}
-          />
-        </AuthFormField>
+        {showCreci ? (
+          <AuthFormField
+            htmlFor="registration-creci"
+            label={t('creci.label')}
+            required={profile === 'broker'}
+          >
+            <RhfTextField
+              id="registration-creci"
+              control={control}
+              name="creci"
+              placeholder={t('creci.placeholder')}
+              helperText={
+                profile === 'broker' ? t('creci.requiredHelper') : t('creci.optionalHelper')
+              }
+              fullWidth
+              sx={authTextFieldSx}
+            />
+          </AuthFormField>
+        ) : null}
 
         {profile === 'broker' ? (
           <Controller

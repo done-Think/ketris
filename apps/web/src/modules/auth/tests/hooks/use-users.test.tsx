@@ -34,6 +34,8 @@ const user = {
   pendingApproval: false,
   phone: null,
   creci: null,
+  cpf: null,
+  tenantCnpj: null,
   avatarUrl: null,
 }
 function setup() {

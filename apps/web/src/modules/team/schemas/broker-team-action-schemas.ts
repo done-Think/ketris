@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { createCpfSchema } from '@shared/schemas/cpf-schema'
 import { createNewPasswordSchema } from '@shared/schemas/new-password-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 
@@ -14,11 +15,12 @@ export function createBrokerGoalSchema(t: SchemaMessageTranslator<'goalError'>) 
 }
 
 export function createBrokerInviteSchema(
-  t: SchemaMessageTranslator<'inviteEmailError' | 'inviteNameError'>,
+  t: SchemaMessageTranslator<'cpfInvalid' | 'cpfRequired' | 'inviteEmailError' | 'inviteNameError'>,
 ) {
   return z.object({
     name: z.string().trim().min(1, t('inviteNameError')).max(120, t('inviteNameError')),
     email: z.string().trim().max(254, t('inviteEmailError')).email(t('inviteEmailError')),
+    cpf: createCpfSchema(t),
   })
 }
 

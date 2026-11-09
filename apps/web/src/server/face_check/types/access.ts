@@ -4,7 +4,7 @@ export interface FaceCheckActor {
   actorId: string
   tenantId: string
   role: 'OWNER' | 'AGENT'
-  accountType: 'AGENCY' | 'BROKER'
+  accountType: 'AGENCY' | 'BROKER' | 'INDIVIDUAL'
   agencyName: string
 }
 

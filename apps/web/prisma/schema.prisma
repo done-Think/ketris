@@ -19,6 +19,8 @@ model Tenant {
   id             String            @id @default(cuid())
   name           String
   slug           String            @unique
+  // CNPJ (digits only) of companies; one company, one account.
+  cnpj           String?           @unique
   // White-label: cores do tema sobrescrevem primary/secondary do MUI em runtime (docs/stack.md).
   primaryColor   String?
   secondaryColor String?
@@ -179,6 +181,10 @@ model User {
   email                String
   phone                String?
   creci                String?
+  // Normalized copies used only to enforce uniqueness inside a tenant (digits, upper-case).
+  phoneKey             String?
+  creciKey             String?
+  cpf                  String?
   emailVerifiedAt      DateTime? @default(now())
   sessionVersion       Int       @default(0)
   termsAcceptedAt      DateTime?
@@ -257,6 +263,9 @@ model User {
   candidateFaceChecks       FaceCheckSession[] @relation("FaceCheckCandidate")
 
   @@unique([tenantId, email])
+  @@unique([tenantId, phoneKey])
+  @@unique([tenantId, creciKey])
+  @@unique([tenantId, cpf])
   @@unique([id, tenantId])
   @@index([email])
   @@index([tenantId])

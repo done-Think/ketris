@@ -11,6 +11,8 @@ export interface User extends UserAccessState {
   email: string
   phone?: string | null
   creci?: string | null
+  /** CPF, digits only. */
+  cpf?: string | null
   passwordHash: string
   avatarUrl?: string | null
   role: UserRole

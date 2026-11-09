@@ -17,4 +17,4 @@ export type ApproveMembershipResponse = GetUserResponseDTO
 export type UpdateUserResponse = UpdateUserResponseDTO
 export type UploadAvatarResponse = UploadAvatarResponseDTO
 export type UpdateCurrentUserPayload = Required<Pick<UpdateUserRequestDTO, 'name'>> &
-  Pick<UpdateUserRequestDTO, 'phone' | 'creci' | 'avatarUrl'>
+  Pick<UpdateUserRequestDTO, 'phone' | 'creci' | 'cpf' | 'cnpj' | 'avatarUrl'>

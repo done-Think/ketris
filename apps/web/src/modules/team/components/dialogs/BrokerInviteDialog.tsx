@@ -7,7 +7,7 @@ import { useSnackbar } from 'notistack'
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { RhfTextField } from '@shared/components/form'
+import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
 import { extractErrorMessage } from '@shared/utils/error-message'
 
 import { useInviteBroker } from '../../hooks/use-team'
@@ -23,7 +23,7 @@ export function BrokerInviteDialog({ onClose }: BrokerInviteDialogProps) {
   const schema = useMemo(() => createBrokerInviteSchema((key) => t(`dialogs.${key}`)), [t])
   const { control, handleSubmit } = useForm<BrokerInviteFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', email: '' },
+    defaultValues: { name: '', email: '', cpf: '' },
   })
 
   const submit = handleSubmit(async (values) => {
@@ -40,6 +40,7 @@ export function BrokerInviteDialog({ onClose }: BrokerInviteDialogProps) {
       enqueueSnackbar(
         extractErrorMessage(error, t('dialogs.inviteError'), {
           EMAIL_ALREADY_IN_USE: t('dialogs.inviteEmailInUse'),
+          CPF_ALREADY_IN_USE: t('dialogs.inviteCpfInUse'),
         }),
         { variant: 'error' },
       )
@@ -65,6 +66,14 @@ export function BrokerInviteDialog({ onClose }: BrokerInviteDialogProps) {
               name="email"
               type="email"
               label={t('dialogs.inviteEmail')}
+              autoComplete="off"
+            />
+            <RhfMaskedTextField
+              control={control}
+              name="cpf"
+              label={t('dialogs.inviteCpf')}
+              mask={[{ mask: '000.000.000-00' }]}
+              inputMode="numeric"
               autoComplete="off"
             />
           </Stack>
