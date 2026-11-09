@@ -242,6 +242,8 @@
       "concierge24h": "Conserjería 24h"
     },
     "mediaDropzone": "Arrastra imágenes aquí o haz clic para seleccionar",
+    "mediaDropzoneHint": "JPG, PNG o WEBP de hasta {max} MB por foto.",
+    "mediaDropzoneReject": "Este formato no es compatible",
     "mediaUploading": "Enviando...",
     "mediaRemove": "Eliminar imagen",
     "mediaUploadError": "No se pudo enviar la imagen. Inténtalo de nuevo.",
@@ -282,6 +284,8 @@
     "ownersLoadError": "No se pudieron cargar los propietarios.",
     "mediaUploadFileError": "No se pudo subir \"{filename}\". Inténtelo de nuevo.",
     "mediaStorageUnavailableFileError": "El servicio de imágenes no está disponible. No se pudo subir \"{filename}\". Inténtelo más tarde.",
+    "mediaRejectedType": "\"{filename}\" no se envió: usa una foto JPG, PNG o WEBP.",
+    "mediaRejectedSize": "\"{filename}\" no se envió: la foto tiene {size} MB y el límite es {max} MB.",
     "noOwnerAccess": "Sin cuenta de acceso vinculada",
     "ownerContactHelp": "Seleccione un contacto del CRM. El contacto no necesita iniciar sesión ni recibirá acceso automáticamente.",
     "ownerAccessHelp": "Esta cuenta podrá acceder al inmueble. El vínculo es independiente del contacto propietario.",

@@ -1,4 +1,5 @@
 import type { useFormatter } from 'next-intl'
+import type { FileRejection } from 'react-dropzone'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { TextFieldProps } from '@mui/material'
 import type { Property, PropertyListing } from './property'
@@ -329,6 +330,7 @@ export interface PropertyMediaDropzoneProps {
   items: CreateDashboardPropertyFormValues['media']
   isUploading: boolean
   onDrop: (files: File[]) => void
+  onReject: (rejections: FileRejection[]) => void
   onRemove: (index: number) => void
 }
 

@@ -22,8 +22,108 @@ function Wrapper({ initialMedia = [] }: { initialMedia?: PropertyMediaInput[] })
   return <PropertyMediaUploadField control={control} />
 }
 
+function renderField() {
+  return render(
+    <QueryClientProvider client={new QueryClient()}>
+      <Wrapper />
+    </QueryClientProvider>,
+  )
+}
+
+function bigFile(name: string, megabytes: number) {
+  const file = new File(['image'], name, { type: 'image/jpeg' })
+  Object.defineProperty(file, 'size', { value: megabytes * 1024 * 1024 })
+  return file
+}
+
 describe('PropertyMediaUploadField', () => {
   beforeEach(() => vi.resetAllMocks())
+
+  it('tells which formats and size are accepted before any upload', () => {
+    renderField()
+    expect(screen.getByText('JPG, PNG ou WEBP até 8 MB por foto.')).toBeInTheDocument()
+  })
+
+  it('explains a rejected format instead of ignoring the file', async () => {
+    const { container } = renderField()
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [new File(['%PDF'], 'planta.pdf', { type: 'application/pdf' })] },
+    })
+    await waitFor(() =>
+      expect(notify).toHaveBeenCalledWith(
+        '"planta.pdf" não foi enviado: use uma foto JPG, PNG ou WEBP.',
+        { variant: 'error', autoHideDuration: 6000 },
+      ),
+    )
+    expect(upload).not.toHaveBeenCalled()
+  })
+
+  it('goes back to the normal drop area after a rejected file is chosen', async () => {
+    const { container } = renderField()
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [new File(['%PDF'], 'planta.pdf', { type: 'application/pdf' })] },
+    })
+    await waitFor(() => expect(notify).toHaveBeenCalled())
+    expect(screen.getByText('Arraste imagens aqui ou clique para selecionar')).toBeInTheDocument()
+    expect(screen.queryByText('Este formato não é aceito')).not.toBeInTheDocument()
+  })
+
+  it('warns while a file of another format is being dragged over the area', async () => {
+    renderField()
+    const area = screen.getByText('Arraste imagens aqui ou clique para selecionar')
+    const pdf = new File(['%PDF'], 'planta.pdf', { type: 'application/pdf' })
+    const dataTransfer = {
+      files: [pdf],
+      items: [{ kind: 'file', type: 'application/pdf', getAsFile: () => pdf }],
+      types: ['Files'],
+    }
+    await act(async () => {
+      fireEvent.dragEnter(area, { dataTransfer })
+    })
+    expect(await screen.findByText('Este formato não é aceito')).toBeInTheDocument()
+    await act(async () => {
+      fireEvent.dragLeave(area, { dataTransfer })
+    })
+    expect(
+      await screen.findByText('Arraste imagens aqui ou clique para selecionar'),
+    ).toBeInTheDocument()
+  })
+
+  it('rejects a photo above 8 MB before sending it, saying its size', async () => {
+    const { container } = renderField()
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [bigFile('drone.jpg', 9.4)] },
+    })
+    await waitFor(() =>
+      expect(notify).toHaveBeenCalledWith(
+        '"drone.jpg" não foi enviado: a foto tem 9,4 MB e o limite é 8 MB.',
+        { variant: 'error', autoHideDuration: 6000 },
+      ),
+    )
+    expect(upload).not.toHaveBeenCalled()
+  })
+
+  it('uploads the valid photos of a mixed selection and reports only the rejected ones', async () => {
+    upload.mockResolvedValue({ url: '/sala.jpg', type: 'photo' })
+    const { container } = renderField()
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: {
+        files: [
+          new File(['image'], 'sala.jpg', { type: 'image/jpeg' }),
+          new File(['heic'], 'fachada.heic', { type: 'image/heic' }),
+          bigFile('drone.jpg', 9.4),
+        ],
+      },
+    })
+    await waitFor(() => expect(container.querySelector('img[src="/sala.jpg"]')).toBeInTheDocument())
+    expect(upload).toHaveBeenCalledTimes(1)
+    expect(upload.mock.calls[0][0].name).toBe('sala.jpg')
+    expect(notify).toHaveBeenCalledTimes(2)
+    expect(notify).toHaveBeenCalledWith(
+      '"fachada.heic" não foi enviado: use uma foto JPG, PNG ou WEBP.',
+      { variant: 'error', autoHideDuration: 6000 },
+    )
+  })
 
   it('shows the image service failure with the affected JPG and keeps it out of the form', async () => {
     upload.mockRejectedValue(

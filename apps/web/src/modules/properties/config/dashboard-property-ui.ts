@@ -66,3 +66,12 @@ export const propertyFormStepFields: Record<
   values: ['mainValue', 'rentalValue', 'condominium', 'propertyTax', 'negotiationTerm'],
   publishing: ['publishingOptions'],
 }
+
+export const propertyMediaAcceptedTypes = {
+  'image/jpeg': [],
+  'image/png': [],
+  'image/webp': [],
+}
+export const propertyMediaMaxSizeMb = 8
+export const propertyMediaMaxSizeBytes = propertyMediaMaxSizeMb * 1024 * 1024
+export const propertyMediaRejectionAutoHideMs = 6000
