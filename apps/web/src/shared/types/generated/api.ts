@@ -15211,6 +15211,84 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/team/membership-requests/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /**
+     * Recusa um pedido de vínculo pendente
+     * @description Remove o cadastro de um corretor que pediu para entrar na imobiliária e ainda não foi aprovado. Ele nunca acessou a imobiliária, então o cadastro é apagado e o e-mail fica livre para um novo pedido. Corretores já aprovados não são afetados: para retirá-los da equipe, use a desativação.
+     */
+    delete: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Pedido recusado. */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Access token ausente, inválido ou expirado. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Só o dono da imobiliária (OWNER) gerencia a equipe. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Pedido de vínculo pendente não encontrado. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description O corretor já tem imóveis, leads ou eventos. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/tenants/search': {
     parameters: {
       query?: never

@@ -680,7 +680,16 @@
       "approveAriaLabel": "Aprovar vínculo de {name}",
       "approveSuccess": "{name} agora faz parte da equipe.",
       "approveError": "Não foi possível aprovar o vínculo.",
-      "loadError": "Não foi possível carregar os pedidos de vínculo."
+      "loadError": "Não foi possível carregar os pedidos de vínculo.",
+      "reject": "Recusar",
+      "rejectAriaLabel": "Recusar vínculo de {name}",
+      "rejectTitle": "Recusar o pedido de {name}?",
+      "rejectDescription": "O cadastro de {name} nesta imobiliária é apagado e ele não entra na equipe. O e-mail fica livre para um novo pedido.",
+      "rejectSubmit": "Recusar pedido",
+      "rejectCancel": "Voltar",
+      "rejectSuccess": "Pedido de {name} recusado.",
+      "rejectError": "Não foi possível recusar o pedido.",
+      "rejectHasPortfolio": "Este corretor já tem imóveis, leads ou eventos. Transfira antes de recusar."
     }
   },
   "proposals": {
