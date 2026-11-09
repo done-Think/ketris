@@ -16,6 +16,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useSnackbar } from 'notistack'
 import { useTranslations } from 'next-intl'
 import { Controller, useForm } from 'react-hook-form'
+import { RhfMaskedTextField, RhfMoneyField } from '@shared/components/form'
 import { getApiErrorCode } from '@shared/utils/error-message'
 
 import { useSubmitPropertyInquiry } from '../../hooks/use-submit-property-inquiry'
@@ -25,6 +26,8 @@ import type {
   PropertyInquiryFormValues,
 } from '../../types/property-detail'
 import { styles } from '../../styles/property-inquiry-dialog.styles'
+
+const PHONE_MASK = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
 
 const defaultValues: PropertyInquiryFormValues = {
   website: '',
@@ -132,26 +135,21 @@ function PropertyInquiryForm({ mode, propertyId, onClose }: PropertyInquiryDialo
               />
             )}
           />
-          <Controller
+          <RhfMaskedTextField
             control={control}
             name="leadPhone"
-            render={({ field }) => <TextField {...field} label={t('phone')} fullWidth />}
+            mask={PHONE_MASK}
+            label={t('phone')}
+            type="tel"
+            autoComplete="tel"
+            fullWidth
           />
           {mode === 'proposal' && (
-            <Controller
+            <RhfMoneyField
               control={control}
               name="proposedValue"
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  value={field.value ?? ''}
-                  label={t('proposedValue')}
-                  type="number"
-                  fullWidth
-                  error={Boolean(errors.proposedValue)}
-                  helperText={errors.proposedValue?.message}
-                />
-              )}
+              label={t('proposedValue')}
+              fullWidth
             />
           )}
           <Controller

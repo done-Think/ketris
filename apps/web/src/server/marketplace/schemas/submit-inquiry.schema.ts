@@ -1,12 +1,22 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
+import { validationRefinement } from '@server/shared/http/validation-messages'
+import { isValidPhone } from '@shared/schemas/phone-schema'
+
 export const submitInquiryRequestSchema = z
   .object({
     website: z.string().max(200).optional(),
     leadName: z.string().trim().min(1).max(120).openapi({ example: 'Maria Silva' }),
     leadEmail: z.string().trim().max(254).email().openapi({ example: 'maria@exemplo.com' }),
-    leadPhone: z.string().trim().min(1).max(30).optional().openapi({ example: '(41) 99999-9999' }),
+    leadPhone: z
+      .string()
+      .trim()
+      .min(1)
+      .max(30)
+      .refine(isValidPhone, validationRefinement('phoneInvalid'))
+      .optional()
+      .openapi({ example: '(41) 99999-9999' }),
     proposedValue: z.number().positive().max(9999999999.99).optional(),
     notes: z
       .string()

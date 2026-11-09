@@ -257,6 +257,7 @@
       "errors": {
         "nameRequired": "Indica tu nombre",
         "emailInvalid": "Indica un correo electrónico válido",
+        "phoneInvalid": "Ingresa un teléfono con código de área, como (11) 99999-9999",
         "proposedValueInvalid": "Indica un valor válido"
       }
     }
