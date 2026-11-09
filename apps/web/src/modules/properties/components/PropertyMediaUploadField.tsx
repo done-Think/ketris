@@ -1,7 +1,9 @@
 import { styles, getDropzoneStyles } from '../styles/property-media-upload-field.styles'
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Box, CircularProgress, IconButton, Stack, Typography } from '@mui/material'
+import { Box, Button, CircularProgress, IconButton, Stack, Typography } from '@mui/material'
+import StarRoundedIcon from '@mui/icons-material/StarRounded'
+import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined'
 import { Controller } from 'react-hook-form'
@@ -68,6 +70,10 @@ export function PropertyMediaUploadField({ control }: PropertyMediaUploadFieldPr
             onRemove={(index) => {
               field.onChange(items.filter((_, itemIndex) => itemIndex !== index))
             }}
+            onSelectFeatured={(index) => {
+              if (isPending || index === 0) return
+              field.onChange([items[index], ...items.filter((_, itemIndex) => itemIndex !== index)])
+            }}
           />
         )
       }}
@@ -75,7 +81,13 @@ export function PropertyMediaUploadField({ control }: PropertyMediaUploadFieldPr
   )
 }
 
-function MediaDropzone({ items, isUploading, onDrop, onRemove }: PropertyMediaDropzoneProps) {
+function MediaDropzone({
+  items,
+  isUploading,
+  onDrop,
+  onRemove,
+  onSelectFeatured,
+}: PropertyMediaDropzoneProps) {
   const t = useTranslations('properties.create')
   const handleDrop = useCallback((acceptedFiles: File[]) => onDrop(acceptedFiles), [onDrop])
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -105,7 +117,12 @@ function MediaDropzone({ items, isUploading, onDrop, onRemove }: PropertyMediaDr
         <Box sx={styles.box}>
           {items.map((item, index) => (
             <Box key={`${item.url}-${index}`} sx={styles.box2}>
-              <Box component="img" src={item.url} alt="" sx={styles.box3} />
+              <Box
+                component="img"
+                src={item.url}
+                alt=""
+                sx={[styles.box3, index === 0 && styles.featuredImage]}
+              />
               <IconButton
                 aria-label={t('mediaRemove')}
                 onClick={() => onRemove(index)}
@@ -115,6 +132,18 @@ function MediaDropzone({ items, isUploading, onDrop, onRemove }: PropertyMediaDr
               >
                 <CloseRoundedIcon sx={styles.closeRoundedIcon} />
               </IconButton>
+              <Button
+                type="button"
+                fullWidth
+                variant={index === 0 ? 'contained' : 'outlined'}
+                aria-pressed={index === 0}
+                onClick={() => onSelectFeatured(index)}
+                disabled={isUploading}
+                startIcon={index === 0 ? <StarRoundedIcon /> : <StarOutlineRoundedIcon />}
+                sx={styles.featuredButton}
+              >
+                {t(index === 0 ? 'mediaFeatured' : 'mediaSetFeatured')}
+              </Button>
             </Box>
           ))}
         </Box>

@@ -326,6 +326,7 @@ export interface PropertyMediaDropzoneProps {
   isUploading: boolean
   onDrop: (files: File[]) => void
   onRemove: (index: number) => void
+  onSelectFeatured: (index: number) => void
 }
 
 export interface PropertyStatusStyle {

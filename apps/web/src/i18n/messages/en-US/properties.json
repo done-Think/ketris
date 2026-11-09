@@ -244,6 +244,8 @@
     "mediaDropzone": "Drag images here or click to select",
     "mediaUploading": "Uploading...",
     "mediaRemove": "Remove image",
+    "mediaFeatured": "Cover photo",
+    "mediaSetFeatured": "Set as cover",
     "mediaUploadError": "Could not upload the image. Please try again.",
     "publishingOptions": {
       "publishAfterReview": "Publish on the marketplace after review",
