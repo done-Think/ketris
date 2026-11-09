@@ -1290,7 +1290,7 @@
           "zipCode": {
             "type": "string",
             "minLength": 8,
-            "description": "CEP brasileiro com 8 dígitos. Pontos, espaços e hífen são aceitos e removidos ao salvar.",
+            "description": "CEP brasileiro com 8 dígitos, a partir de 01000-000 e sem todos os dígitos repetidos (00000-000, 11111-111…). Pontos, espaços e hífen são aceitos e removidos ao salvar.",
             "example": "37502330"
           },
           "latitude": { "type": "number", "nullable": true, "minimum": -90, "maximum": 90 },

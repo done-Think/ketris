@@ -18076,7 +18076,7 @@ export interface components {
       state: string
       street: string
       /**
-       * @description CEP brasileiro com 8 dígitos. Pontos, espaços e hífen são aceitos e removidos ao salvar.
+       * @description CEP brasileiro com 8 dígitos, a partir de 01000-000 e sem todos os dígitos repetidos (00000-000, 11111-111…). Pontos, espaços e hífen são aceitos e removidos ao salvar.
        * @example 37502330
        */
       zipCode: string

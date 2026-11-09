@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 let lookupPostalCode: (typeof import('../../services/postal-code-service'))['lookupPostalCode']
+let isPostalCodeNotFound: (typeof import('../../services/postal-code-service'))['isPostalCodeNotFound']
 const signal = new AbortController().signal
 const address = {
   logradouro: 'Rua Padre Júlio Chevalier',
@@ -11,7 +12,7 @@ const address = {
 }
 beforeEach(async () => {
   vi.resetModules()
-  ;({ lookupPostalCode } = await import('../../services/postal-code-service'))
+  ;({ lookupPostalCode, isPostalCodeNotFound } = await import('../../services/postal-code-service'))
 })
 afterEach(() => vi.unstubAllGlobals())
 
@@ -41,7 +42,7 @@ describe('ViaCEP service', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 
-  it.each(['', '123', '37502A330', '375023300', '../37502330'])(
+  it.each(['', '123', '37502A330', '375023300', '../37502330', '00000-000', '11111111'])(
     'rejects invalid CEP %s before a request',
     async (value) => {
       const fetch = vi.fn()
@@ -53,7 +54,24 @@ describe('ViaCEP service', () => {
 
   it.each([true, 'true'])('handles the provider not-found marker %s', async (erro) => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ erro }))))
-    expect(await lookupPostalCode('99999999', signal)).toBeNull()
+    expect(await lookupPostalCode('37502331', signal)).toBeNull()
+  })
+
+  it('remembers a CEP the provider does not know so the form can block it', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ erro: 'true' }))),
+    )
+    expect(isPostalCodeNotFound('37502-331')).toBe(false)
+    await lookupPostalCode('37502331', signal)
+    expect(isPostalCodeNotFound('37502-331')).toBe(true)
+  })
+
+  it('does not flag a CEP found by the provider or never looked up', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(address))))
+    await lookupPostalCode('37502330', signal)
+    expect(isPostalCodeNotFound('37502330')).toBe(false)
+    expect(isPostalCodeNotFound('01001000')).toBe(false)
   })
 
   it('reports upstream failure for the form to handle without changing existing data', async () => {

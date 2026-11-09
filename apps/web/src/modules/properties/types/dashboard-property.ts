@@ -31,6 +31,10 @@ export type CreatePropertyPurpose = 'RENT' | 'SALE'
 
 export type DashboardActivityTone = 'success' | 'accent' | 'info' | 'warning' | 'neutral' | 'error'
 
+export type DashboardPropertySchemaOptions = {
+  isPostalCodeNotFound?: (zipCode: string) => boolean
+}
+
 type NumericFormField = 'bedrooms' | 'bathrooms' | 'parkingSpaces' | 'area'
 
 /** The numeric fields start empty in the form and are coerced to numbers by the schema. */

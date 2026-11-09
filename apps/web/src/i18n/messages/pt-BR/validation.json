@@ -75,7 +75,7 @@
     "decimalPlaces": "Use no máximo duas casas decimais.",
     "linkRequired": "Informe um vínculo.",
     "partyAndRenterRequired": "Informe a parte e o usuário locatário juntos.",
-    "postalCodeInvalid": "Informe um CEP com 8 dígitos.",
+    "postalCodeInvalid": "Informe um CEP válido com 8 dígitos.",
     "cpfInvalid": "Informe um CPF válido.",
     "cnpjInvalid": "Informe um CNPJ válido.",
     "documentInvalid": "Informe um CPF ou CNPJ válido.",
