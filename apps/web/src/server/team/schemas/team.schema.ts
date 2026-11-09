@@ -77,7 +77,7 @@ const teamMemberSchema = z
     phone: z.string().nullable(),
     avatarUrl: z.string().nullable(),
     headline: z.string().nullable(),
-    specialties: z.array(z.string()),
+    segments: z.array(z.string()),
     hasPublicProfile: z.boolean(),
     active: z.boolean(),
     invitation: z

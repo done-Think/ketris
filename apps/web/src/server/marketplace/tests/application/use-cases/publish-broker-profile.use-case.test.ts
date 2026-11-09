@@ -15,12 +15,12 @@ function makeProfile(overrides: Partial<BrokerProfile> = {}): BrokerProfile {
     email: 'marina@ketris.com.br',
     displayName: 'Marina Costa',
     headline: 'Especialista em imóveis de alto padrão',
-    bio: 'Corretora há 10 anos.',
+    summary: 'Corretora há 10 anos.',
     creci: 'SP-123456',
     phone: '(11) 90000-0000',
     region: 'Zona Sul de São Paulo',
-    neighborhoods: ['Moema', 'Vila Mariana'],
-    specialties: ['Apartamentos', 'Cobertura'],
+    coverage: ['Moema', 'Vila Mariana'],
+    segments: ['Apartamentos', 'Cobertura'],
     availability: 'Seg a sex, 9h às 18h',
     primaryColor: '#111111',
     secondaryColor: '#222222',
@@ -63,7 +63,7 @@ describe('PublishBrokerProfileUseCase', () => {
   })
 
   it('lança ProfilePublishValidationError quando faltam campos obrigatórios', async () => {
-    const deps = createDeps(makeProfile({ phone: null, bio: null }))
+    const deps = createDeps(makeProfile({ phone: null, summary: null }))
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
     await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
@@ -93,7 +93,7 @@ describe('PublishBrokerProfileUseCase', () => {
   })
 
   it('lança ProfilePublishValidationError quando faltam especialidades', async () => {
-    const deps = createDeps(makeProfile({ specialties: [] }))
+    const deps = createDeps(makeProfile({ segments: [] }))
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
 
     await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
@@ -102,18 +102,18 @@ describe('PublishBrokerProfileUseCase', () => {
     expect(deps.brokerProfileRepository.setStatus).not.toHaveBeenCalled()
   })
 
-  it('publishes a broad service region without neighborhoods', async () => {
-    const deps = createDeps(makeProfile({ region: 'Sul de Minas', neighborhoods: [] }))
+  it('publishes a broad service region without coverage', async () => {
+    const deps = createDeps(makeProfile({ region: 'Sul de Minas', coverage: [] }))
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
     expect(await useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).toMatchObject({
       status: 'PUBLISHED',
       region: 'Sul de Minas',
-      neighborhoods: [],
+      coverage: [],
     })
   })
 
   it('still requires a service region', async () => {
-    const deps = createDeps(makeProfile({ region: null, neighborhoods: [] }))
+    const deps = createDeps(makeProfile({ region: null, coverage: [] }))
     const useCase = new PublishBrokerProfileUseCase(deps.brokerProfileRepository)
     await expect(useCase.execute({ actorId: 'usuario-1', actorRole: 'AGENT' })).rejects.toThrow(
       ProfilePublishValidationError,

@@ -17547,26 +17547,26 @@ export interface components {
       avatarUrl: string | null
       backgroundColor: string | null
       bannerUrl: string | null
-      bio: string | null
+      coverage: string[]
       creci: string | null
       displayName: string
       email: string
       headline: string | null
       id: string
-      neighborhoods: string[]
       phone: string | null
       primaryColor: string | null
       publishedAt: string | null
       recentListings: components['schemas']['BrokerListingSummary'][]
       region: string | null
       secondaryColor: string | null
-      specialties: string[]
+      segments: string[]
       stats: {
         activeListings: number
         dealsClosed: number
       }
       /** @enum {string} */
       status: 'DRAFT' | 'PUBLISHED'
+      summary: string | null
     }
     PublicConfirmEmailChange: {
       code: string
@@ -17815,18 +17815,18 @@ export interface components {
       avatarUrl?: string | null
       backgroundColor?: string | null
       bannerUrl?: string | null
-      bio?: string | null
+      /** @default [] */
+      coverage?: string[]
       creci?: string | null
       displayName: string
       headline?: string | null
-      /** @default [] */
-      neighborhoods?: string[]
       phone?: string | null
       primaryColor?: string | null
       region?: string | null
       secondaryColor?: string | null
       /** @default [] */
-      specialties?: string[]
+      segments?: string[]
+      summary?: string | null
     }
     SavePublicProfileAddress: {
       handle: string
@@ -17991,7 +17991,7 @@ export interface components {
         status: 'AHEAD' | 'ON_TRACK' | 'ATTENTION' | 'NO_GOAL'
       }
       phone: string | null
-      specialties: string[]
+      segments: string[]
     }
     TeamOverviewResponse: {
       members: components['schemas']['TeamMember'][]

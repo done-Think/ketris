@@ -65,11 +65,11 @@ export function BrokerPublicProfilePage({
               ...(broker.availability
                 ? [{ label: t('publicProfile.facts.availability'), value: broker.availability }]
                 : []),
-              ...(broker.neighborhoods.length
+              ...(broker.coverage.length
                 ? [
                     {
-                      label: t('publicProfile.facts.neighborhoods'),
-                      value: broker.neighborhoods.join(', '),
+                      label: t('publicProfile.facts.coverage'),
+                      value: broker.coverage.join(', '),
                     },
                   ]
                 : []),

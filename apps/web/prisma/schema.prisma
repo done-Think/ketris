@@ -556,12 +556,14 @@ model BrokerPublicProfile {
   userId          String              @unique
   displayName     String
   headline        String?
-  bio             String?
+  // The profile summary reuses the column that used to hold the biography.
+  summary         String?             @map("bio")
   creci           String?
   phone           String?
   region          String?
-  neighborhoods   String[]            @default([])
-  specialties     String[]            @default([])
+  // Same meaning as on the agency profile; the columns keep their original names.
+  coverage        String[]            @default([]) @map("neighborhoods")
+  segments        String[]            @default([]) @map("specialties")
   availability    String?
   primaryColor    String?
   secondaryColor  String?

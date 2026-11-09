@@ -53,7 +53,7 @@ describe('PrismaTeamRepository (integração)', () => {
         userId: sourceId,
         displayName: 'Marina',
         headline: 'Especialista em Jardins',
-        specialties: ['Alto padrão'],
+        segments: ['Alto padrão'],
         phone: '11999990000',
         status: 'PUBLISHED',
         publishedAt: now,
@@ -202,7 +202,7 @@ describe('PrismaTeamRepository (integração)', () => {
     expect(members.map((member) => member.name)).toEqual(['Marina', 'Thiago'])
     expect(members[0]).toMatchObject({
       headline: 'Especialista em Jardins',
-      specialties: ['Alto padrão'],
+      segments: ['Alto padrão'],
       phone: '11999990000',
       hasPublicProfile: true,
       invitation: null,

@@ -12,7 +12,7 @@ function row(overrides: Partial<TeamMemberRow>): TeamMemberRow {
     phone: null,
     avatarUrl: null,
     headline: 'Especialista em Jardins',
-    specialties: ['Alto padrão'],
+    segments: ['Alto padrão'],
     hasPublicProfile: true,
     active: true,
     invitation: null,

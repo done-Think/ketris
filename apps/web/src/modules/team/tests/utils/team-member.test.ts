@@ -51,7 +51,7 @@ describe('team member utils', () => {
   })
 
   it('searches by name, e-mail, headline and specialty ignoring accents', () => {
-    const member = teamMember({ name: 'João Araújo', specialties: ['Locação'] })
+    const member = teamMember({ name: 'João Araújo', segments: ['Locação'] })
 
     expect(matchesTeamSearch(member, 'joao')).toBe(true)
     expect(matchesTeamSearch(member, 'LOCACAO')).toBe(true)

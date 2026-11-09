@@ -88,30 +88,30 @@ describe('/api/marketplace/profiles/broker (integração)', () => {
 
   it('PUT retorna 403 quando o ator não é AGENT', async () => {
     const response = await PUT(
-      buildRequest('PUT', { displayName: 'Admin', neighborhoods: [], specialties: [] }, adminToken),
+      buildRequest('PUT', { displayName: 'Admin', coverage: [], segments: [] }, adminToken),
     )
 
     expect(response.status).toBe(403)
   })
 
   it.each([
-    { region: 'Zona Sul de São Paulo', neighborhoods: ['Jardins'] },
-    { region: 'Sul de Minas', neighborhoods: [] },
+    { region: 'Zona Sul de São Paulo', coverage: ['Jardins'] },
+    { region: 'Sul de Minas', coverage: [] },
   ])(
-    'saves and publishes region $region with its optional neighborhoods',
-    async ({ region, neighborhoods }) => {
+    'saves and publishes region $region with its optional coverage',
+    async ({ region, coverage }) => {
       const saveResponse = await PUT(
         buildRequest(
           'PUT',
           {
             displayName: 'Marina Costa',
             headline: 'Especialista em Jardins',
-            bio: 'Corretora há 10 anos, focada em alto padrão.',
+            summary: 'Atendimento personalizado em toda a região.',
             creci: 'SP-123456',
             phone: '(11) 90000-0000',
             region,
-            neighborhoods,
-            specialties: ['Alto padrão'],
+            coverage,
+            segments: ['Alto padrão'],
             availability: 'Seg a sex, 9h às 18h',
             primaryColor: '#111111',
             secondaryColor: '#222222',
@@ -148,13 +148,17 @@ describe('/api/marketplace/profiles/broker (integração)', () => {
 
       expect(publicAfterPublish.status).toBe(200)
       expect(publicJson.broker.displayName).toBe('Marina Costa')
-      expect(publicJson.broker).toMatchObject({ region, neighborhoods })
+      expect(publicJson.broker).toMatchObject({
+        region,
+        coverage,
+        summary: 'Atendimento personalizado em toda a região.',
+      })
       expect(publicJson.broker).not.toHaveProperty('tenantId')
       const directory = await listBrokers(
         new NextRequest(`http://localhost/api/marketplace/brokers?q=${encodeURIComponent(region)}`),
       )
       expect((await directory.json()).brokers).toEqual(
-        expect.arrayContaining([expect.objectContaining({ id: agentId, region, neighborhoods })]),
+        expect.arrayContaining([expect.objectContaining({ id: agentId, region, coverage })]),
       )
 
       const unpublishResponse = await unpublish(buildRequest('POST', undefined, agentToken))
@@ -191,7 +195,7 @@ describe('/api/marketplace/profiles/broker (integração)', () => {
     await PUT(
       buildRequest(
         'PUT',
-        { displayName: 'Bruna Lima', neighborhoods: [], specialties: [] },
+        { displayName: 'Bruna Lima', coverage: [], segments: [] },
         otherAgentToken,
       ),
     )

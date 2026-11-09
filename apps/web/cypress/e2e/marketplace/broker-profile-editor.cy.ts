@@ -30,12 +30,12 @@ describe('Broker profile covering a broad region', () => {
         body: {
           displayName,
           headline: 'Especialista em imóveis no Sul de Minas',
-          bio: 'Atendimento em várias cidades da região.',
+          summary: 'Atendimento em várias cidades da região.',
           creci: 'MG-12345-F',
           phone: '(35) 99999-0000',
           region: 'Itajubá',
-          neighborhoods: ['Centro'],
-          specialties: ['Residencial'],
+          coverage: ['Centro'],
+          segments: ['Residencial'],
           availability: 'Segunda a sexta',
           primaryColor: '#123456',
           secondaryColor: '#654321',
@@ -50,7 +50,7 @@ describe('Broker profile covering a broad region', () => {
     if (tenantId) cy.task('cleanupAuthUser', tenantId)
   })
 
-  it('clears neighborhoods and publishes the broader region without an empty public field', () => {
+  it('clears coverage and publishes the broader region without an empty public field', () => {
     cy.intercept('GET', '**/api/marketplace/media/profiles/brokers/**', {
       fixture: 'property.png',
       headers: { 'Content-Type': 'image/png' },
@@ -62,17 +62,17 @@ describe('Broker profile covering a broad region', () => {
     cy.location('pathname').should('eq', '/pt/dashboard/public-profile')
     cy.contains('button', /^Editar$/).click()
     cy.get('input[name="region"]').clear().type('Sul de Minas')
-    cy.get('input[name="neighborhoods"]').should('have.value', 'Centro').clear()
+    cy.get('input[name="coverage"]').should('have.value', 'Centro').clear()
     cy.contains('Opcional. Para áreas amplas').should('be.visible')
     cy.intercept('POST', '**/api/marketplace/profiles/broker/publish').as('publishBroker')
     cy.contains('button', /^Publicar$/).click()
     cy.wait('@publishBroker').then(({ response }) => {
       expect(response?.statusCode).to.eq(200)
       expect(response?.body.profile).to.include({ region: 'Sul de Minas', status: 'PUBLISHED' })
-      expect(response?.body.profile.neighborhoods).to.deep.eq([])
+      expect(response?.body.profile.coverage).to.deep.eq([])
     })
     cy.reload()
-    cy.get('input[name="neighborhoods"]').should('have.value', '')
+    cy.get('input[name="coverage"]').should('have.value', '')
     cy.get('input[name="region"]').should('have.value', 'Sul de Minas')
     cy.visit(`/pt/corretores/${brokerId}`)
     cy.get('h1').should('contain', displayName)
