@@ -31,9 +31,14 @@ export type CreatePropertyPurpose = 'RENT' | 'SALE'
 
 export type DashboardActivityTone = 'success' | 'accent' | 'info' | 'warning' | 'neutral' | 'error'
 
-export type CreateDashboardPropertyFormValues = z.infer<
-  ReturnType<typeof createDashboardPropertySchema>
->
+type NumericFormField = 'bedrooms' | 'bathrooms' | 'parkingSpaces' | 'area'
+
+/** The numeric fields start empty in the form and are coerced to numbers by the schema. */
+export type CreateDashboardPropertyFormValues = Omit<
+  z.infer<ReturnType<typeof createDashboardPropertySchema>>,
+  NumericFormField
+> &
+  Record<NumericFormField, number | ''>
 
 export type PropertiesDashboardFiltersState = {
   sortModel: GridSortModel

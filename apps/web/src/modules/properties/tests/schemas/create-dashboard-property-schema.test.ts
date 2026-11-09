@@ -19,6 +19,25 @@ describe('createDashboardPropertySchema', () => {
     expect(createDashboardPropertyDefaultValues.publishingOptions).toEqual([])
   })
 
+  it('starts the numeric characteristics empty instead of 0, with the area still required', () => {
+    const { bedrooms, bathrooms, parkingSpaces, area } = createDashboardPropertyDefaultValues
+    expect([bedrooms, bathrooms, parkingSpaces, area]).toEqual(['', '', '', ''])
+
+    const filled = {
+      ...buildEditPropertyFormValues(editableProperty),
+      bedrooms: '',
+      bathrooms: '',
+      parkingSpaces: '',
+    }
+    expect(schema.safeParse({ ...filled, area: '' }).error?.issues.map((i) => i.message)).toEqual([
+      'areaRequired',
+    ])
+    expect(schema.safeParse({ ...filled, area: '85.5' })).toMatchObject({
+      success: true,
+      data: { bedrooms: 0, bathrooms: 0, parkingSpaces: 0, area: 85.5 },
+    })
+  })
+
   it('rejects missing required listing fields', () => {
     const result = schema.safeParse({
       ...createDashboardPropertyDefaultValues,
