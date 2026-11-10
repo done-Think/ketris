@@ -61,6 +61,17 @@ export function transferDestinations(
   return self && self.id !== sourceId ? [self, ...brokers] : brokers
 }
 
+export function transferSources(
+  members: readonly TeamMember[],
+  self: TransferDestination | null,
+): TransferDestination[] {
+  const brokers = members
+    .filter((member) => teamMemberState(member) !== 'invited')
+    .map((member) => ({ id: member.id, label: member.name }))
+
+  return self ? [self, ...brokers] : brokers
+}
+
 export function responseTimeParts(minutes: number) {
   if (minutes < 60) return { unit: 'minutes', minutes } as const
   if (minutes < 24 * 60)

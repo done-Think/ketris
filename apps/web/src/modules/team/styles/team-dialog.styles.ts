@@ -6,6 +6,7 @@ export const styles = {
   title: { px: 3, pt: 2.5, pb: 1 },
   titleText: { color: brand.graphite[500], fontSize: 20, fontWeight: 900 },
   content: { px: 3, py: 2 },
+  fieldsStack: { pt: 1 },
   actions: { px: 3, pb: 2.5 },
   description: { color: brand.neutral[500], fontSize: 13 },
   value: { fontWeight: 800 },

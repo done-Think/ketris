@@ -14067,7 +14067,7 @@
     },
     "/team/members/{id}/transfer": {
       "post": {
-        "summary": "Transfere imóveis (com as oportunidades), leads e eventos futuros para outro corretor",
+        "summary": "Transfere imóveis (com as oportunidades), leads e eventos futuros de um corretor ou da própria imobiliária para outro membro da equipe",
         "tags": ["Team"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [

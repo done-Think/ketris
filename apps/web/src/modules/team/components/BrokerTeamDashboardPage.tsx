@@ -207,7 +207,8 @@ export function BrokerTeamDashboardPage({ renderMeetingDialog }: BrokerTeamDashb
           {dialog?.type === 'transferPortfolio' ? (
             <BrokerTransferDialog
               member={dialog.member}
-              destinations={destinations}
+              members={members}
+              self={selfDestination}
               onClose={closeDialog}
             />
           ) : null}
