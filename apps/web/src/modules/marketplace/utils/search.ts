@@ -38,6 +38,11 @@ export function parsePriceRange(value: string | undefined): {
   return isValidPriceRange([min, max]) ? { min, max } : { min: null, max: null }
 }
 
+export function toPriceLimit(value: string) {
+  const amount = Number(value)
+  return Number.isFinite(amount) && amount > 0 ? amount : null
+}
+
 export function isValidPriceRange([min, max]: PriceRange) {
   return (
     [min, max].every((bound) => bound === null || (Number.isFinite(bound) && bound >= 0)) &&
