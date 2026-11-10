@@ -24,6 +24,7 @@ import type { CreateOpportunityFormValues } from '../../types/opportunity'
 import type { CreateOpportunityDialogProps } from '../../types/opportunity-detail'
 import { useCrmResponsibles } from '../../hooks/use-opportunities'
 import { PropertyAutocomplete } from './PropertyAutocomplete'
+import { RhfMoneyField } from '@shared/components/form'
 
 const emptyCreateOpportunityValues: CreateOpportunityFormValues = {
   property: null,
@@ -35,7 +36,7 @@ const emptyCreateOpportunityValues: CreateOpportunityFormValues = {
   leadName: '',
   leadEmail: '',
   leadPhone: '',
-  proposedValue: '',
+  proposedValue: 0,
   notes: '',
   status: 'DRAFT',
   responsibleId: '',
@@ -115,14 +116,11 @@ function CreateOpportunityDialogForm({
                 helperText={errors.leadPhone?.message}
                 {...register('leadPhone')}
               />
-              <TextField
+              <RhfMoneyField
+                control={control}
+                name="proposedValue"
                 label={t('fields.proposedValue')}
-                type="number"
                 required
-                slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
-                error={Boolean(errors.proposedValue)}
-                helperText={errors.proposedValue?.message}
-                {...register('proposedValue')}
               />
               <Controller
                 control={control}

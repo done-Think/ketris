@@ -120,7 +120,7 @@ describe('CRM real workflows', () => {
     setup()
     openOpportunity()
     cy.contains('button', 'Editar dados').click()
-    cy.get('input[name="proposedValue"]').clear().type('2100.45')
+    cy.get('input[name="proposedValue"]').clear().type('210045').should('have.value', '2.100,45')
     cy.contains('button', 'Adicionar condição').click()
     cy.get('textarea[name="specialConditions.0.text"]').type(
       'Pets, mediante vistoria{enter}Conferir na entrega',
