@@ -39,4 +39,16 @@ describe('submitInquiryRequestSchema', () => {
 
     expect(result.success).toBe(false)
   })
+
+  it('aceita telefone com DDD e rejeita telefone incompleto ou longo demais', () => {
+    const base = { leadName: 'Maria', leadEmail: 'maria@exemplo.com' }
+
+    expect(
+      submitInquiryRequestSchema.safeParse({ ...base, leadPhone: '(41) 99999-9999' }).success,
+    ).toBe(true)
+    expect(submitInquiryRequestSchema.safeParse({ ...base, leadPhone: '3598' }).success).toBe(false)
+    expect(
+      submitInquiryRequestSchema.safeParse({ ...base, leadPhone: '1'.repeat(23) }).success,
+    ).toBe(false)
+  })
 })

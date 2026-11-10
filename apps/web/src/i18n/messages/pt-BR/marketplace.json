@@ -257,6 +257,7 @@
       "errors": {
         "nameRequired": "Informe seu nome",
         "emailInvalid": "Informe um e-mail válido",
+        "phoneInvalid": "Informe um telefone com DDD, como (11) 99999-9999",
         "proposedValueInvalid": "Informe um valor válido"
       }
     }

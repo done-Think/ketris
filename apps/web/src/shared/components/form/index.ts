@@ -1,5 +1,6 @@
 export * from './RhfTextField'
 export * from './RhfPasswordField'
 export * from './RhfMaskedTextField'
+export * from './RhfMoneyField'
 export * from './AuthFormField'
 export * from './auth-form.styles'

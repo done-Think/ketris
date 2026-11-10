@@ -14546,6 +14546,56 @@
         }
       }
     },
+    "/team/membership-requests/{id}": {
+      "delete": {
+        "summary": "Recusa um pedido de vínculo pendente",
+        "description": "Remove o cadastro de um corretor que pediu para entrar na imobiliária e ainda não foi aprovado. Ele nunca acessou a imobiliária, então o cadastro é apagado e o e-mail fica livre para um novo pedido. Corretores já aprovados não são afetados: para retirá-los da equipe, use a desativação.",
+        "tags": ["Team"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "204": { "description": "Pedido recusado." },
+          "401": {
+            "description": "Access token ausente, inválido ou expirado.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "Só o dono da imobiliária (OWNER) gerencia a equipe.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Pedido de vínculo pendente não encontrado.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "O corretor já tem imóveis, leads ou eventos.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
     "/team/invitations/accept": {
       "get": {
         "tags": ["Team"],

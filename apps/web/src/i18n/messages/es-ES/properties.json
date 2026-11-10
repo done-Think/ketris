@@ -244,6 +244,8 @@
     "mediaDropzone": "Arrastra imágenes aquí o haz clic para seleccionar",
     "mediaUploading": "Enviando...",
     "mediaRemove": "Eliminar imagen",
+    "mediaFeatured": "Foto de portada",
+    "mediaSetFeatured": "Usar como portada",
     "mediaUploadError": "No se pudo enviar la imagen. Inténtalo de nuevo.",
     "publishingOptions": {
       "publishAfterReview": "Publicar en el marketplace tras revisión",

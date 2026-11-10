@@ -85,7 +85,7 @@ function MaintenanceProvidersList({ onClose }: MaintenanceProvidersDialogProps) 
       <Dialog open onClose={onClose} fullWidth maxWidth="md">
         <DialogTitle>{t('title')}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2}>
+          <Stack spacing={2} sx={maintenanceStyles.contentStackSx}>
             <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
               <TextField
                 label={t('search')}
