@@ -184,7 +184,7 @@
         "endDate": "Término",
         "adjustmentIndex": "Reajuste",
         "notes": "Observações",
-        "amount": "Valor do contrato (BRL)"
+        "amount": "Valor do contrato"
       },
       "contractTypeOptions": {
         "residential": "Residencial",
