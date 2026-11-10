@@ -17,11 +17,15 @@ export async function withAgendaPropertySummaries(
     { ...actor, actorUserId: actor.actorUserId ?? '' } satisfies AgendaReadActor,
     propertyIds,
   )
-  const labels = new Map(summaries.map((property) => [property.id, property.label]))
-  return events.map((event) => ({
-    ...event,
-    propertyLabel: event.propertyId ? (labels.get(event.propertyId) ?? null) : null,
-  }))
+  const summaryById = new Map(summaries.map((property) => [property.id, property]))
+  return events.map((event) => {
+    const summary = event.propertyId ? summaryById.get(event.propertyId) : undefined
+    return {
+      ...event,
+      propertyLabel: summary?.label ?? null,
+      propertyAccessible: summary?.accessible ?? false,
+    }
+  })
 }
 
 export async function withAgendaPropertySummary(
@@ -41,7 +45,10 @@ export async function prepareAgendaPropertySummary(
   const summaries = propertyId
     ? await catalog.summaries({ ...actor, actorUserId: actor.actorUserId ?? '' }, [propertyId])
     : []
-  return { propertyLabel: summaries[0]?.label ?? null }
+  return {
+    propertyLabel: summaries[0]?.label ?? null,
+    propertyAccessible: summaries[0]?.accessible ?? false,
+  }
 }
 
 export function withPreparedAgendaPropertySummary(

@@ -41,6 +41,7 @@ export type AgendaEvent = {
   property: string
   propertyHref: LocalizedHref
   propertyId: string | null
+  propertyAccessible: boolean
   apiKind: AgendaEventApiKind | null
   participant: string
   phone: string

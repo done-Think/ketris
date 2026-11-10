@@ -213,7 +213,7 @@ function AgendaEventDetailDialogContent({
                   <Stack spacing={1.3}>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <HomeWorkOutlinedIcon sx={styles.homeWorkOutlinedIcon} />
-                      {event.property && !readOnly ? (
+                      {event.property && event.propertyAccessible && !readOnly ? (
                         <MuiLink
                           component={Link}
                           href={event.propertyHref}

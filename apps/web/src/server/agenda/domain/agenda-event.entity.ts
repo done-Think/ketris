@@ -17,6 +17,7 @@ export interface AgendaEvent {
   dono: AgendaEventLinkedUser | null
   participants: AgendaEventLinkedUser[]
   propertyLabel?: string | null
+  propertyAccessible?: boolean
   propertyId: string | null
   freeFormPropertyReference: string | null
   title: string

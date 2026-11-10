@@ -11,6 +11,7 @@ const baseApiEvent: AgendaEventApi = {
   createdBy: null,
   participants: [],
   propertyLabel: null,
+  propertyAccessible: false,
   cancelledAt: null,
   cancelledById: null,
   cancellationReason: null,

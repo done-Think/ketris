@@ -15,6 +15,7 @@ export function toAgendaEventResponse(event: AgendaEvent): AgendaEventResponseDT
     createdBy: event.createdBy ? { name: event.createdBy.name, role: event.createdBy.role } : null,
     propertyId: event.propertyId,
     propertyLabel: event.propertyLabel ?? null,
+    propertyAccessible: event.propertyAccessible ?? false,
     propertyReference: event.freeFormPropertyReference,
     title: event.title,
     kind: event.type,

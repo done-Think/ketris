@@ -26,6 +26,11 @@ export const agendaEventSchema = z
     createdBy: z.object({ name: z.string(), role: userRoleSchema }).nullable(),
     propertyId: z.string().nullable(),
     propertyLabel: z.string().nullable(),
+    propertyAccessible: z.boolean().openapi({
+      description:
+        'Indica se o usuário pode abrir o imóvel. Um corretor vê o rótulo do imóvel de um evento ' +
+        'atribuído a ele mesmo sem ser o responsável pelo imóvel, mas não ganha acesso ao cadastro.',
+    }),
     propertyReference: z
       .string()
       .nullable()

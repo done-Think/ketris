@@ -74,7 +74,10 @@ export function AgendaDashboardPage() {
   const propertyOptions = useMemo<AgendaPropertyOption[]>(
     () =>
       (eventsQuery.data ?? []).flatMap((event) =>
-        event.propertyId && event.propertyLabel
+        event.propertyId &&
+        event.propertyLabel &&
+        'propertyAccessible' in event &&
+        event.propertyAccessible
           ? [
               {
                 id: event.propertyId,

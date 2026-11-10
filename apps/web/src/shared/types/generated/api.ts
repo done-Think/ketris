@@ -15455,6 +15455,8 @@ export interface components {
       participantPhone: string
       /** @description Usuários participantes vinculados (acesso de leitura). */
       participants: components['schemas']['AgendaEventLinkedUser'][]
+      /** @description Indica se o usuário pode abrir o imóvel. Um corretor vê o rótulo do imóvel de um evento atribuído a ele mesmo sem ser o responsável pelo imóvel, mas não ganha acesso ao cadastro. */
+      propertyAccessible: boolean
       propertyId: string | null
       propertyLabel: string | null
       /** @description Referência livre de imóvel, usada quando propertyId é nulo. */
