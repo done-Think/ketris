@@ -1,6 +1,7 @@
 'use client'
 
 import { Alert, Box, Chip, Stack, Typography } from '@mui/material'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 
@@ -11,6 +12,8 @@ import { extractErrorMessage } from '@shared/utils/error-message'
 
 import { styles } from '../styles/team-membership-requests.styles'
 import type { TeamMembershipRequestsProps } from '../types/broker-team'
+import type { TeamMembershipRequest } from '../types/team'
+import { RejectMembershipDialog } from './dialogs/RejectMembershipDialog'
 
 export function TeamMembershipRequests({ enabled }: TeamMembershipRequestsProps) {
   const t = useTranslations('dashboard.team.membershipRequests')
@@ -18,6 +21,7 @@ export function TeamMembershipRequests({ enabled }: TeamMembershipRequestsProps)
   const { enqueueSnackbar } = useSnackbar()
   const usersQuery = useTeamMembershipRequests(enabled)
   const approveMembership = useApproveTeamMembership()
+  const [rejecting, setRejecting] = useState<TeamMembershipRequest | null>(null)
   const pendingUsers = (usersQuery.data ?? []).filter((user) => user.pendingApproval)
 
   if (!enabled) return null
@@ -69,18 +73,32 @@ export function TeamMembershipRequests({ enabled }: TeamMembershipRequestsProps)
                     <Chip label={t('pending')} color="warning" size="small" />
                   </Stack>
                 </Box>
-                <DashboardHeaderActionButton
-                  disabled={approveMembership.isPending}
-                  onClick={() => approve(user.id, user.name)}
-                  aria-label={t('approveAriaLabel', { name: user.name })}
-                >
-                  {t('approve')}
-                </DashboardHeaderActionButton>
+                <Stack direction="row" spacing={1} sx={styles.actions}>
+                  <DashboardHeaderActionButton
+                    variant="outlined"
+                    color="error"
+                    disabled={approveMembership.isPending}
+                    onClick={() => setRejecting(user)}
+                    aria-label={t('rejectAriaLabel', { name: user.name })}
+                  >
+                    {t('reject')}
+                  </DashboardHeaderActionButton>
+                  <DashboardHeaderActionButton
+                    disabled={approveMembership.isPending}
+                    onClick={() => approve(user.id, user.name)}
+                    aria-label={t('approveAriaLabel', { name: user.name })}
+                  >
+                    {t('approve')}
+                  </DashboardHeaderActionButton>
+                </Stack>
               </Stack>
             ))}
           </Stack>
         </Box>
       </DashboardPanel>
+      {rejecting ? (
+        <RejectMembershipDialog request={rejecting} onClose={() => setRejecting(null)} />
+      ) : null}
     </Box>
   )
 }

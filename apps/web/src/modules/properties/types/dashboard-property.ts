@@ -332,6 +332,7 @@ export interface PropertyMediaDropzoneProps {
   onDrop: (files: File[]) => void
   onReject: (rejections: FileRejection[]) => void
   onRemove: (index: number) => void
+  onSelectFeatured: (index: number) => void
 }
 
 export interface PropertyStatusStyle {

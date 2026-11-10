@@ -246,6 +246,8 @@
     "mediaDropzoneReject": "This format is not accepted",
     "mediaUploading": "Uploading...",
     "mediaRemove": "Remove image",
+    "mediaFeatured": "Cover photo",
+    "mediaSetFeatured": "Set as cover",
     "mediaUploadError": "Could not upload the image. Please try again.",
     "publishingOptions": {
       "publishAfterReview": "Publish on the marketplace after review",

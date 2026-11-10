@@ -46,6 +46,10 @@ class TeamService extends BaseService {
       .then((response) => response.user)
   }
 
+  rejectMembership(userId: string): Promise<void> {
+    return this.http.delete<void>(`${this.path}/membership-requests/${userId}`)
+  }
+
   goals(memberId: string): Promise<TeamGoalChange[]> {
     return this.http
       .get<TeamGoalHistoryResponse>(`${this.path}/members/${memberId}/goal`)

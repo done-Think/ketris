@@ -13,6 +13,8 @@ export const styles = {
     gap: 1.6,
   },
   box2: { position: 'relative' },
+  featuredImage: { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: -2 },
+  featuredButton: { mt: 1, fontSize: 13 },
   box3: {
     display: 'block',
     width: '100%',
