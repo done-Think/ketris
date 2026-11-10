@@ -105,7 +105,7 @@ describe('CRM real workflows', () => {
     cy.get('input[type="email"]').type('lead-convertido@crm.example.test')
     cy.get('input[role="combobox"]').type('Apartamento CRM')
     cy.contains('[role="option"]', 'Apartamento CRM não publicado').click()
-    cy.get('input[type="number"]').clear().type('2300.45')
+    cy.get('input[name="proposedValue"]').clear().type('230045').should('have.value', '2.300,45')
     cy.intercept('POST', '**/api/crm/leads/*/convert').as('convert')
     cy.contains('button', /^Converter$/).click()
     cy.wait('@convert').then(({ response }) => {
