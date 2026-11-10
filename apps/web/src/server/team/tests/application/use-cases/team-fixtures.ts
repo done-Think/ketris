@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 
 import type { TeamInvitationRepository } from '../../../application/ports/team-invitation-repository.port'
+import type { TeamMembershipRequestRepository } from '../../../application/ports/team-membership-request-repository.port'
 import type { TeamRepository } from '../../../application/ports/team-repository.port'
 import type { TeamStaffUser } from '../../../types/team-repository'
 
@@ -46,6 +47,17 @@ export function invitationRepository(
     deleteInvitedUser: vi.fn().mockResolvedValue(true),
     findByTokenHash: vi.fn().mockResolvedValue(null),
     accept: vi.fn().mockResolvedValue(true),
+    ...overrides,
+  }
+}
+
+export function membershipRequestRepository(
+  overrides: Partial<TeamMembershipRequestRepository> = {},
+): TeamMembershipRequestRepository {
+  return {
+    isPending: vi.fn().mockResolvedValue(true),
+    hasPortfolio: vi.fn().mockResolvedValue(false),
+    deletePending: vi.fn().mockResolvedValue(true),
     ...overrides,
   }
 }

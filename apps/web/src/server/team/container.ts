@@ -18,11 +18,14 @@ import {
   InviteBrokerUseCase,
   ResendTeamInvitationUseCase,
 } from './application/use-cases/manage-team-invitations.use-case'
+import { RejectMembershipRequestUseCase } from './application/use-cases/reject-membership-request.use-case'
 import { PrismaTeamInvitationRepository } from './infrastructure/prisma-team-invitation.repository'
+import { PrismaTeamMembershipRequestRepository } from './infrastructure/prisma-team-membership-request.repository'
 import { PrismaTeamRepository } from './infrastructure/prisma-team.repository'
 
 const teamRepository = new PrismaTeamRepository()
 const invitationRepository = new PrismaTeamInvitationRepository()
+const membershipRequestRepository = new PrismaTeamMembershipRequestRepository()
 const passwordHasher = new BcryptPasswordHasher()
 const mailer = new SesMailer()
 
@@ -50,4 +53,5 @@ export const teamContainer = {
     invitationRepository,
     passwordHasher,
   ),
+  rejectMembershipRequestUseCase: new RejectMembershipRequestUseCase(membershipRequestRepository),
 }

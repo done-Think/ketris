@@ -14,6 +14,7 @@ import { GET as getTeam } from '../route'
 import { PUT as setGoal } from '../members/[id]/goal/route'
 import { POST as deactivate } from '../members/[id]/deactivate/route'
 import { GET as previewInvitation, POST as acceptInvitation } from '../invitations/accept/route'
+import { DELETE as rejectRequest } from '../membership-requests/[id]/route'
 
 describe('/api/team (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -134,6 +135,48 @@ describe('/api/team (integração)', () => {
       opportunities: 0,
       futureEvents: 0,
     })
+  })
+
+  it('recusa um pedido de vínculo pendente uma única vez e só na própria imobiliária', async () => {
+    const pendingRequest = (tenant: string) =>
+      prisma.user.create({
+        data: {
+          tenantId: tenant,
+          name: 'Pedido',
+          email: `pedido-${randomUUID()}@team.example.test`,
+          passwordHash: 'hash-fake',
+          role: 'AGENT',
+          membershipApprovedAt: null,
+        },
+      })
+    const pending = await pendingRequest(tenantId)
+    const otherTenantId = (
+      await prisma.tenant.create({
+        data: { name: 'Outra Imobiliária', slug: `team-routes-other-${randomUUID()}` },
+      })
+    ).id
+    const otherPending = await pendingRequest(otherTenantId)
+    const activeAgentToken = (await seedUser('Rafael', 'AGENT')).token
+    const reject = (id: string, token?: string) =>
+      rejectRequest(request(`/team/membership-requests/${id}`, 'DELETE', token), params(id))
+
+    try {
+      expect((await reject(pending.id)).status).toBe(401)
+      expect((await reject(pending.id, activeAgentToken)).status).toBe(403)
+      expect((await reject(otherAgentId, ownerToken)).status).toBe(404)
+      expect((await reject(otherPending.id, ownerToken)).status).toBe(404)
+
+      const response = await reject(pending.id, ownerToken)
+      expect(response.status).toBe(204)
+      expect(await prisma.user.findUnique({ where: { id: pending.id } })).toBeNull()
+      expect(await prisma.user.findUnique({ where: { id: otherPending.id } })).not.toBeNull()
+
+      const again = await reject(pending.id, ownerToken)
+      expect(again.status).toBe(404)
+      expect((await again.json()).error.code).toBe('TEAM_MEMBERSHIP_REQUEST_NOT_FOUND')
+    } finally {
+      await prisma.tenant.delete({ where: { id: otherTenantId } })
+    }
   })
 
   it('aceita o convite pelo link público uma única vez', async () => {
