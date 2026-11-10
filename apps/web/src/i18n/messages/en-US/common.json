@@ -175,5 +175,25 @@
     "retry": "Try again",
     "retrying": "Checking session…"
   },
-  "perMonth": "/month"
+  "perMonth": "/month",
+  "propertyNegotiation": {
+    "title": "Negotiation conditions",
+    "sale": "Sale",
+    "rent": "Rental",
+    "hint": "Select one or more options. Payment in full only cannot be combined with financing.",
+    "helpLabel": "About negotiation conditions",
+    "help": "Select the accepted sale or rental conditions. A down payment can be combined with financing. For rentals, specify whether a security deposit is required or conditions will be agreed with the property owner.",
+    "options": {
+      "ACCEPTS_FINANCING": "Financing accepted",
+      "REQUIRES_DOWN_PAYMENT": "Down payment required",
+      "CASH_ONLY": "Payment in full only",
+      "ACCEPTS_EXCHANGE": "Property exchange accepted",
+      "SALE_NEGOTIABLE": "Sale terms negotiable",
+      "AGREE_WITH_OWNER": "Rental terms to be agreed with the property owner",
+      "RENT_NEGOTIABLE": "Rental terms negotiable",
+      "REQUIRES_DEPOSIT": "Security deposit required"
+    },
+    "observation": "Note",
+    "observationHint": "Optional. This note will be shown on the public property page."
+  }
 }

@@ -1,5 +1,6 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
+import { propertyNegotiationConditions } from '@shared/config/property-negotiation'
 
 export const publicPropertyTypeSchema = z.enum([
   'APARTMENT',
@@ -64,6 +65,8 @@ export const propertyMediaSchema = z
 export const publicPropertyDetailSchema = publicPropertySummarySchema
   .extend({
     description: z.string().nullable(),
+    negotiationTerms: z.string().nullable().optional(),
+    negotiationConditions: z.array(z.enum(propertyNegotiationConditions)).optional(),
     address: propertyAddressSchema.nullable(),
     media: z.array(propertyMediaSchema),
   })

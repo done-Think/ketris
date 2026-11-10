@@ -162,21 +162,19 @@ export type CreatePropertyValuesStepFieldsProps = {
   control: Control<CreateDashboardPropertyFormValues>
   hasDualPurpose: boolean
   mainValueLabel: 'rentValue' | 'saleValue' | 'referenceValue'
-  negotiationTermLabel: 'securityDeposit' | 'commission' | 'commercialTerms'
+  propertyPurpose: CreatePropertyPurpose[]
+}
+
+export interface PropertyNegotiationConditionsFieldProps {
+  control: Control<CreateDashboardPropertyFormValues>
+  propertyPurpose: CreatePropertyPurpose[]
 }
 
 export type PropertyValueFieldName =
   'mainValue' | 'rentalValue' | 'condominium' | 'propertyTax' | 'negotiationTerm'
 
 export type PropertyValueFieldLabel =
-  | 'referenceValue'
-  | 'rentValue'
-  | 'saleValue'
-  | 'condominium'
-  | 'propertyTax'
-  | 'securityDeposit'
-  | 'commission'
-  | 'commercialTerms'
+  'referenceValue' | 'rentValue' | 'saleValue' | 'condominium' | 'propertyTax' | 'condition'
 
 export type PropertyValueFieldConfig = readonly [
   name: PropertyValueFieldName,

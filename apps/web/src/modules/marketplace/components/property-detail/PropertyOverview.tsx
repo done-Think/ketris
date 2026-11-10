@@ -14,6 +14,7 @@ import type { PropertyOverviewProps } from '../../types/property-detail'
 import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { PropertyDetailMap } from '../PropertyDetailMap'
 import { styles } from '../../styles/property-overview.styles'
+import { PropertyNegotiationSummary } from '@shared/components/ui/PropertyNegotiationSummary'
 
 const featureIcons = [
   BedOutlinedIcon,
@@ -63,6 +64,10 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
         })}
       </Box>
 
+      <PropertyNegotiationSummary
+        conditions={property.negotiationConditions}
+        observation={property.negotiationTerms}
+      />
       <Typography variant="h5" sx={styles.typography5}>
         {t('about')}
       </Typography>

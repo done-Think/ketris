@@ -1,4 +1,5 @@
 import { assertPropertyMediaScope } from '../../domain/property-media-policy'
+import { normalizeNegotiationListing } from '../../domain/property-negotiation-policy'
 import { assertOwnerContactChange } from '../property-owner-contact-policy'
 import type { PropertyOwnerContactDirectory } from '../ports/property-owner-contact-directory.port'
 import type { PropertyOwnerDirectory } from '../ports/property-owner-directory.port'
@@ -53,7 +54,7 @@ export class CreatePropertyUseCase {
         description: input.description,
         purpose: input.purpose,
         type: input.type,
-        listing: input.listing,
+        listing: normalizeNegotiationListing(input.listing, input.purpose),
         bedrooms: input.bedrooms,
         bathrooms: input.bathrooms,
         parkingSpots: input.parkingSpots,

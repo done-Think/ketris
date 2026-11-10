@@ -1,3 +1,4 @@
+import { isPropertyNegotiationCondition } from '@shared/config/property-negotiation'
 import { prisma } from '@server/db/prisma'
 import { publicPropertySearchPage } from './public-property-search-page'
 
@@ -62,6 +63,8 @@ function toDetail(row: PropertyDetailRow): PublishedPropertyDetail {
     ...toSummary(row),
     tenantId: row.tenantId,
     description: row.description,
+    negotiationTerms: row.negotiationTerms ?? null,
+    negotiationConditions: (row.negotiationConditions ?? []).filter(isPropertyNegotiationCondition),
     address: row.address
       ? {
           street: row.address.street,

@@ -9,6 +9,7 @@ import { prisma } from '@server/db/prisma'
 import { GET, POST } from '../route'
 import { GET as listOwners } from '../owners/route'
 import { GET as getProperty, PATCH } from '../[id]/route'
+import { GET as getPublicProperty } from '../../marketplace/properties/[id]/route'
 
 describe('/api/properties (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -612,6 +613,67 @@ describe('/api/properties (integração)', () => {
       )
     },
   )
+
+  it('persists selected conditions, preserves legacy text and exposes only the published property publicly', async () => {
+    const listing = {
+      amenities: [],
+      negotiationTerms: 'Informação anterior',
+      negotiationConditions: ['ACCEPTS_FINANCING', 'REQUIRES_DOWN_PAYMENT'],
+      publishAfterReview: false,
+      allowWhatsappContact: false,
+      featured: false,
+    }
+    const create = await POST(
+      new NextRequest('http://localhost/api/properties', {
+        method: 'POST',
+        headers: { authorization: `Bearer ${actorToken}`, 'content-type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Negotiation conditions',
+          purpose: 'BOTH',
+          type: 'HOUSE',
+          price: 500000,
+          rentalPrice: 2000,
+          listing,
+        }),
+      }),
+    )
+    expect(create.status).toBe(201)
+    const { property } = await create.json()
+    expect(property.listing.negotiationConditions).toEqual(listing.negotiationConditions)
+    const update = await PATCH(
+      new NextRequest(`http://localhost/api/properties/${property.id}`, {
+        method: 'PATCH',
+        headers: { authorization: `Bearer ${actorToken}`, 'content-type': 'application/json' },
+        body: JSON.stringify({
+          purpose: 'RENT',
+          listing: { ...listing, negotiationConditions: ['REQUIRES_DEPOSIT'] },
+        }),
+      }),
+      { params: Promise.resolve({ id: property.id }) },
+    )
+    expect(update.status).toBe(200)
+    const saved = await prisma.property.findUniqueOrThrow({ where: { id: property.id } })
+    expect(saved.negotiationConditions).toEqual(['REQUIRES_DEPOSIT'])
+    expect(saved.negotiationTerms).toBe(listing.negotiationTerms)
+    const readPublic = () =>
+      getPublicProperty(
+        new NextRequest(`http://localhost/api/marketplace/properties/${property.id}`),
+        { params: Promise.resolve({ id: property.id }) },
+      )
+    expect((await readPublic()).status).toBe(404)
+    await prisma.property.update({
+      where: { id: property.id },
+      data: { status: 'PUBLISHED', publishedAt: new Date() },
+    })
+    const response = await readPublic()
+    expect(response.status).toBe(200)
+    const publicBody = await response.json()
+    expect(publicBody.property).toMatchObject({
+      negotiationConditions: ['REQUIRES_DEPOSIT'],
+      negotiationTerms: listing.negotiationTerms,
+    })
+    expect(publicBody.property).not.toHaveProperty('tenantId')
+  })
 
   it('rejeita um idioma desconhecido na ordenação', async () => {
     const response = await GET(

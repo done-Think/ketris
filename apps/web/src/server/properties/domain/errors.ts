@@ -1,5 +1,14 @@
 import { AppError, NotFoundError } from '@server/shared/errors'
 
+export class PropertyNegotiationValidationError extends AppError {
+  constructor() {
+    super('Condições de negociação incompatíveis.', {
+      status: 400,
+      code: 'PROPERTY_NEGOTIATION_INVALID',
+    })
+  }
+}
+
 export class PropertyNotFoundError extends NotFoundError {
   constructor() {
     super('Imóvel não encontrado.')

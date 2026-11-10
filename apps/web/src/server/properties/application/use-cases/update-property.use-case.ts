@@ -1,4 +1,5 @@
 import { assertPropertyMediaScope } from '../../domain/property-media-policy'
+import { normalizeNegotiationListing } from '../../domain/property-negotiation-policy'
 import { assertOwnerContactChange } from '../property-owner-contact-policy'
 import type { PropertyOwnerContactDirectory } from '../ports/property-owner-contact-directory.port'
 import { isPropertyOwner } from '@server/auth/domain/roles'
@@ -33,6 +34,15 @@ export class UpdatePropertyUseCase {
     }
 
     assertPropertyAccess(existing, input.actorId, input.actorRole)
+    const listing = input.listing
+      ? {
+          ...input.listing,
+          negotiationConditions:
+            input.listing.negotiationConditions ?? existing.listing.negotiationConditions,
+        }
+      : input.purpose
+        ? existing.listing
+        : undefined
     await assertOwnerContactChange(
       input,
       input.ownerContactId,
@@ -64,7 +74,7 @@ export class UpdatePropertyUseCase {
         description: input.description,
         purpose: input.purpose,
         type: input.type,
-        listing: input.listing,
+        listing: normalizeNegotiationListing(listing, input.purpose ?? existing.purpose),
         bedrooms: input.bedrooms,
         bathrooms: input.bathrooms,
         parkingSpots: input.parkingSpots,

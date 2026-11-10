@@ -8,6 +8,7 @@ import type {
   PropertyStatus as PrismaPropertyStatus,
 } from '@prisma/client'
 
+import { isPropertyNegotiationCondition } from '@shared/config/property-negotiation'
 import { prisma } from '@server/db/prisma'
 
 import type { PropertyRepository } from '../application/ports/property-repository.port'
@@ -110,6 +111,7 @@ export class PrismaPropertyRepository implements PropertyRepository {
           type: property.type,
           amenities: property.listing?.amenities ?? [],
           negotiationTerms: property.listing?.negotiationTerms ?? null,
+          negotiationConditions: property.listing?.negotiationConditions ?? [],
           publishAfterReview: property.listing?.publishAfterReview ?? false,
           allowWhatsappContact: property.listing?.allowWhatsappContact ?? false,
           featured: property.listing?.featured ?? false,
@@ -354,6 +356,7 @@ function toPropertyUpdateData(changes: PropertyChanges): Prisma.PropertyUnchecke
     type: changes.type,
     amenities: changes.listing?.amenities,
     negotiationTerms: changes.listing?.negotiationTerms,
+    negotiationConditions: changes.listing?.negotiationConditions,
     publishAfterReview: changes.listing?.publishAfterReview,
     allowWhatsappContact: changes.listing?.allowWhatsappContact,
     featured: changes.listing?.featured,
@@ -466,6 +469,7 @@ function mapProperty(property: PropertyRow): Property {
     listing: {
       amenities: property.amenities,
       negotiationTerms: property.negotiationTerms,
+      negotiationConditions: property.negotiationConditions.filter(isPropertyNegotiationCondition),
       publishAfterReview: property.publishAfterReview,
       allowWhatsappContact: property.allowWhatsappContact,
       featured: property.featured,

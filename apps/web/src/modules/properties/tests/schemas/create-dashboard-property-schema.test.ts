@@ -10,6 +10,37 @@ import {
 const schema = createDashboardPropertySchema((key) => key)
 
 describe('createDashboardPropertySchema', () => {
+  it('requires a selection for new listings, accepts legacy text and rejects conflicting selections', () => {
+    const values = {
+      ...buildEditPropertyFormValues(editableProperty),
+      negotiationTerm: '',
+      negotiationConditions: [],
+    }
+    expect(schema.safeParse(values).error?.issues).toEqual(
+      expect.arrayContaining([expect.objectContaining({ path: ['negotiationConditions'] })]),
+    )
+    expect(
+      schema.safeParse({
+        ...values,
+        purpose: ['RENT'],
+        negotiationConditions: ['REQUIRES_DEPOSIT'],
+      }).success,
+    ).toBe(true)
+    expect(
+      schema.safeParse({
+        ...values,
+        purpose: ['SALE'],
+        negotiationConditions: ['REQUIRES_DEPOSIT'],
+      }).success,
+    ).toBe(false)
+    expect(
+      schema.safeParse({ ...values, negotiationConditions: ['CASH_ONLY', 'ACCEPTS_FINANCING'] })
+        .success,
+    ).toBe(false)
+    expect(
+      schema.safeParse({ ...values, negotiationTerm: 'Informação anterior preservada' }).success,
+    ).toBe(true)
+  })
   it('starts empty and requires the user to fill in the listing', () => {
     const result = schema.safeParse(createDashboardPropertyDefaultValues)
 

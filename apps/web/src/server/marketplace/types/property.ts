@@ -1,3 +1,4 @@
+import type { PropertyNegotiationCondition } from '@shared/types/property-negotiation'
 export type PropertyPurpose = 'RENT' | 'SALE' | 'BOTH'
 
 export type PublicPropertyType =
@@ -48,6 +49,8 @@ export interface PublishedPropertySummary {
 export interface PublishedPropertyDetail extends PublishedPropertySummary {
   tenantId: string
   description: string | null
+  negotiationTerms?: string | null
+  negotiationConditions?: PropertyNegotiationCondition[]
   address: PropertyAddress | null
   media: PropertyMedia[]
 }

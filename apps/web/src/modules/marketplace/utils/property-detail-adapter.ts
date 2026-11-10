@@ -6,6 +6,7 @@ import type { PropertyText } from '../types/property-presentation'
 import { formatCompactCurrency } from './search-results'
 import { formatPostalCode } from '@shared/utils/postal-code'
 import { formatPublicPropertyPrice } from './public-property-price'
+import { conditionsForPurpose } from '@shared/config/property-negotiation'
 
 const fallbackImage =
   'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=82'
@@ -65,6 +66,11 @@ export function mapDetailToMarketplacePropertyDetail(
   t: PropertyText,
   purpose?: SearchResultProperty['purpose'],
 ): MarketplacePropertyDetail {
+  const negotiationPurpose =
+    property.purpose === 'RENT' || (property.purpose === 'BOTH' && purpose === 'alugar')
+      ? 'RENT'
+      : 'SALE'
+
   return {
     id: property.id,
     href: `/properties/${property.id}`,
@@ -77,6 +83,11 @@ export function mapDetailToMarketplacePropertyDetail(
     price: formatPublicPropertyPrice(property, purpose, locale, t),
     details: buildDetails(property),
     description: property.description ?? '',
+    negotiationTerms: property.negotiationTerms ?? null,
+    negotiationConditions: conditionsForPurpose(
+      negotiationPurpose,
+      property.negotiationConditions ?? [],
+    ),
     address: buildAddressLine(property),
     mapCenter:
       property.latitude !== null && property.longitude !== null
