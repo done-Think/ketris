@@ -8,6 +8,8 @@ import { PropertyMediaUploadField } from '../../components/PropertyMediaUploadFi
 import { createDashboardPropertyDefaultValues } from '../../schemas/create-dashboard-property-schema'
 import type { CreateDashboardPropertyFormValues } from '../../types/dashboard-property'
 import type { PropertyMediaInput } from '../../types/property'
+import { toPropertyPayload } from '../../utils/to-property-payload'
+import { toCreatePayload, toUpdatePayload } from '../../utils/property-adapter'
 
 const { upload, notify } = vi.hoisted(() => ({ upload: vi.fn(), notify: vi.fn() }))
 vi.mock('../../services/properties-service', () => ({
@@ -15,15 +17,73 @@ vi.mock('../../services/properties-service', () => ({
 }))
 vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar: notify }) }))
 
-function Wrapper({ initialMedia = [] }: { initialMedia?: PropertyMediaInput[] }) {
-  const { control } = useForm<CreateDashboardPropertyFormValues>({
+function Wrapper({
+  initialMedia = [],
+  onSubmit = () => {},
+}: {
+  initialMedia?: PropertyMediaInput[]
+  onSubmit?: (values: CreateDashboardPropertyFormValues) => void
+}) {
+  const { control, handleSubmit } = useForm<CreateDashboardPropertyFormValues>({
     defaultValues: { ...createDashboardPropertyDefaultValues, media: initialMedia },
   })
-  return <PropertyMediaUploadField control={control} />
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <PropertyMediaUploadField control={control} />
+      <button type="submit">Salvar imóvel</button>
+    </form>
+  )
 }
 
 describe('PropertyMediaUploadField', () => {
   beforeEach(() => vi.resetAllMocks())
+
+  it('selects a cover, preserves the other photos and submits its position for creation and editing', async () => {
+    const save = vi.fn()
+    const { container } = render(
+      <QueryClientProvider client={new QueryClient()}>
+        <Wrapper
+          initialMedia={[
+            { url: '/kitchen.png', order: 0 },
+            { url: '/living-room.png', order: 1 },
+            { url: '/bedroom.png', order: 2 },
+          ]}
+          onSubmit={save}
+        />
+      </QueryClientProvider>,
+    )
+    expect(screen.getByRole('button', { name: 'Foto de destaque', pressed: true })).toBeVisible()
+    fireEvent.click(screen.getAllByRole('button', { name: 'Definir como destaque' })[1])
+    expect(
+      Array.from(container.querySelectorAll('img'), (image) => image.getAttribute('src')),
+    ).toEqual(['/bedroom.png', '/kitchen.png', '/living-room.png'])
+    expect(screen.getAllByRole('button', { pressed: true })).toHaveLength(1)
+    expect(save).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar imóvel' }))
+    await waitFor(() => expect(save).toHaveBeenCalledOnce())
+    const payload = toPropertyPayload(save.mock.calls[0][0])
+    for (const body of [toCreatePayload(payload), toUpdatePayload(payload)]) {
+      expect(body.media).toEqual([
+        { url: '/bedroom.png', position: 0, type: undefined },
+        { url: '/kitchen.png', position: 1, type: undefined },
+        { url: '/living-room.png', position: 2, type: undefined },
+      ])
+    }
+  })
+
+  it('uses the next photo as cover after removing the current cover and handles an empty gallery', () => {
+    const { container } = render(
+      <QueryClientProvider client={new QueryClient()}>
+        <Wrapper initialMedia={[{ url: '/kitchen.png' }, { url: '/living-room.png' }]} />
+      </QueryClientProvider>,
+    )
+    fireEvent.click(screen.getAllByRole('button', { name: 'Remover imagem' })[0])
+    expect(container.querySelector('img')).toHaveAttribute('src', '/living-room.png')
+    expect(screen.getByRole('button', { name: 'Foto de destaque', pressed: true })).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Remover imagem' }))
+    expect(container.querySelector('img')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Foto de destaque' })).not.toBeInTheDocument()
+  })
 
   it('shows the image service failure with the affected JPG and keeps it out of the form', async () => {
     upload.mockRejectedValue(
@@ -97,7 +157,7 @@ describe('PropertyMediaUploadField', () => {
     )
     const { container } = render(
       <QueryClientProvider client={new QueryClient()}>
-        <Wrapper initialMedia={[{ url: '/existing.png' }]} />
+        <Wrapper initialMedia={[{ url: '/existing.png' }, { url: '/second.png' }]} />
       </QueryClientProvider>,
     )
     const input = container.querySelector('input[type="file"]')!
@@ -111,14 +171,18 @@ describe('PropertyMediaUploadField', () => {
     })
     await waitFor(() => expect(upload).toHaveBeenCalledTimes(2))
     await waitFor(() => expect(input).toBeDisabled())
-    expect(screen.getByRole('button', { name: 'Remover imagem' })).toBeDisabled()
+    for (const button of screen.getAllByRole('button', { name: 'Remover imagem' }))
+      expect(button).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Definir como destaque' })).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Definir como destaque' }))
+    expect(container.querySelector('img')).toHaveAttribute('src', '/existing.png')
     fireEvent.change(input, {
       target: { files: [new File(['image'], 'extra.png', { type: 'image/png' })] },
     })
     expect(upload).toHaveBeenCalledTimes(2)
     await act(async () => finishUpload({ url: '/slow.png', type: 'photo' }))
     await waitFor(() => expect(input).not.toBeDisabled())
-    expect(screen.getAllByRole('button', { name: 'Remover imagem' })).toHaveLength(3)
+    expect(screen.getAllByRole('button', { name: 'Remover imagem' })).toHaveLength(4)
     expect(container.querySelector('img[src="/existing.png"]')).toBeInTheDocument()
     for (const button of screen.getAllByRole('button', { name: 'Remover imagem' }))
       expect(button).not.toBeDisabled()

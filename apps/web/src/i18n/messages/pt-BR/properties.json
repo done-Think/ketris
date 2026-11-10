@@ -244,6 +244,8 @@
     "mediaDropzone": "Arraste imagens aqui ou clique para selecionar",
     "mediaUploading": "Enviando...",
     "mediaRemove": "Remover imagem",
+    "mediaFeatured": "Foto de destaque",
+    "mediaSetFeatured": "Definir como destaque",
     "mediaUploadError": "Não foi possível enviar a imagem. Tente novamente.",
     "publishingOptions": {
       "publishAfterReview": "Publicar no marketplace após revisão",
