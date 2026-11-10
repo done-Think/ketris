@@ -76,6 +76,9 @@ export function buildTheme(override: TenantThemeOverride = {}): Theme {
     components: {
       MuiCssBaseline: {
         styleOverrides: {
+          'input::-ms-reveal': {
+            display: 'none',
+          },
           html: {
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
