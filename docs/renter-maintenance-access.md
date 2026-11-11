@@ -29,7 +29,7 @@ email. A legacy ticket also requires the separate administrative `linkContract` 
 - Access requires an active tenant user with an approved membership.
 - The ticket must belong to the same tenant and property as its linked contract.
 - The renter must be explicitly linked through a contract party with role `LOCATARIO` and their user ID. Matching names or email addresses does not grant access.
-- Renters can open tickets for their linked contracts, including viewing tickets opened by other authorized users on those contracts.
+- Renters can open tickets only for their linked ACTIVE contracts; closed or canceled contracts leave the new-ticket options and creation is refused (`404`), while their existing tickets stay readable. They can view tickets opened by other authorized users on those contracts. The agency team can still open tickets on closed contracts.
 - Renters cannot edit original ticket fields, even on their own `ABERTO` tickets. Corrections and additional details must be appended as notes.
 - Notes and JPEG, PNG or WebP attachments up to 8 MB are allowed while the ticket permits collaboration.
 - Non-archived `RESOLVIDO` tickets remain readable by linked renters and accept additional notes. Notes preserve the resolution status and date. Uploads and field editing remain blocked until reopening; field editing stays unavailable to renters after reopening.
