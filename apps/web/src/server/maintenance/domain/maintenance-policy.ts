@@ -64,19 +64,20 @@ export function permissionsFor(
     access && actor.actorRole === 'PROPERTY_OWNER' && ticket.access.ownerId === actor.actorId
   const renter = access && actor.actorRole === 'RENTER'
   const manager = admin || (access && ['AGENT', 'PROPERTY_OWNER'].includes(actor.actorRole))
+  const agencyTeam = admin || (access && actor.actorRole === 'AGENT')
   const responsible = manager && ticket.responsibleId === actor.actorId
   const active = access && !ticket.deletedAt && !isTerminal(ticket)
   const pending = active && ticket.status === 'AWAITING_CONFIRMATION'
   return {
     linkContract: admin,
-    schedule: active && Boolean(ticket.provider) && (renter || manager),
+    schedule: active && Boolean(ticket.provider) && agencyTeam,
     edit: active && manager,
     comment: active || (renter && !ticket.deletedAt && ticket.status === 'RESOLVED'),
     collaborate: active,
     assume:
       active && !ticket.responsibleId && ['AGENT', 'PROPERTY_OWNER'].includes(actor.actorRole),
     assign: active && admin,
-    provider: active && (admin || renter || (responsible && actor.actorRole === 'AGENT')),
+    provider: active && (admin || (responsible && actor.actorRole === 'AGENT')),
     requestReplacement:
       active &&
       owner &&

@@ -132,14 +132,13 @@ describe('Maintenance real workflows', () => {
       expect(request.body).not.to.have.property('propertyId')
     })
   })
-  it('permite ao locatário compartilhado cadastrar prestador, enviar 8 MB privados, agendar e finalizar', () => {
+  it('deixa prestador e data com a imobiliária e permite ao locatário compartilhado enviar 8 MB privados e finalizar', () => {
     setup(true)
     detail()
-    cy.contains('button', 'Definir prestador').click()
-    cy.get('[role="dialog"] input[name="name"]').type('Prestador, manutenção E2E')
-    cy.get('[role="dialog"] input[name="phone"]').type('11999999999')
-    confirm()
-    cy.contains('Prestador: Prestador, manutenção E2E').should('be.visible')
+    cy.contains('button', 'Finalizar chamado').should('be.visible')
+    cy.contains('button', 'Definir prestador').should('not.exist')
+    cy.get('input[name="scheduledDate"]').should('be.disabled')
+    cy.contains('button', 'Salvar data').should('be.disabled')
     cy.intercept('POST', '**/attachments/complete').as('completeUpload')
     cy.window().then((win) => {
       const bytes = new win.Uint8Array(8 * 1024 * 1024)
@@ -168,12 +167,7 @@ describe('Maintenance real workflows', () => {
     cy.get('textarea[name="message"]').type('Prestador confirmou a visita, sem dados fictícios.')
     cy.contains('button', 'Enviar Mensagem').click()
     cy.contains('Prestador confirmou a visita, sem dados fictícios.').should('be.visible')
-    cy.get('input[name="scheduledDate"]').type('2026-11-15')
-    cy.get('select[name="scheduledHour"]').select('14')
-    cy.get('select[name="scheduledMinute"]').select('30')
     cy.intercept('POST', '**/actions').as('action')
-    cy.contains('button', 'Salvar data').click()
-    cy.wait('@action').its('response.statusCode').should('eq', 200)
     cy.contains('button', 'Finalizar chamado').click()
     confirm()
     cy.wait('@action').its('response.body.ticket.status').should('eq', 'RESOLVED')
@@ -181,7 +175,6 @@ describe('Maintenance real workflows', () => {
       (result) => {
         expect(result.attachmentCount).to.eq(1)
         expect(result.uploadId).to.be.a('string')
-        expect(result.providerId).to.be.a('string')
         expect(result.status).to.eq('RESOLVED')
       },
     )
