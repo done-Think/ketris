@@ -42,7 +42,18 @@ describe('requireDashboardFeature', () => {
       role: 'OWNER',
       accountType: 'INDIVIDUAL',
     })
-    await expect(requireDashboardFeature('leads')).rejects.toThrow('NEXT_NOT_FOUND')
+    await expect(requireDashboardFeature('team')).rejects.toThrow('NEXT_NOT_FOUND')
+    await expect(requireDashboardFeature('finance')).rejects.toThrow('NEXT_NOT_FOUND')
+  })
+
+  it('opens the pipeline and leads to an individual owner so proposals can be accepted', async () => {
+    getServerSession.mockResolvedValue({
+      scope: 'tenant',
+      role: 'OWNER',
+      accountType: 'INDIVIDUAL',
+    })
+    await expect(requireDashboardFeature('pipeline')).resolves.toBeUndefined()
+    await expect(requireDashboardFeature('leads')).resolves.toBeUndefined()
   })
 
   it('hides everything when the account type is missing', async () => {

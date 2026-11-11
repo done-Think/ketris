@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   canAccessFeature,
   dashboardFeaturesByProfile,
+  homeHrefFor,
   navigationHrefsFor,
   resolveAccessProfile,
 } from '@shared/lib/auth/access-policy'
@@ -34,11 +35,24 @@ describe('dashboard access matrix', () => {
     }
   })
 
-  it('keeps sales tools away from individual owners, owners of a property and renters', () => {
-    for (const profile of ['INDIVIDUAL_OWNER', 'PROPERTY_OWNER', 'RENTER'] as const) {
+  it('keeps sales tools away from owners of a property and renters', () => {
+    for (const profile of ['PROPERTY_OWNER', 'RENTER'] as const) {
       for (const feature of ['pipeline', 'contacts', 'leads', 'dashboard'] as const)
         expect(canAccessFeature(profile, feature)).toBe(false)
     }
+  })
+
+  it('lets individual owners reach their proposals to close a deal, keeping My Properties as home', () => {
+    for (const feature of ['pipeline', 'contacts', 'leads', 'contracts'] as const)
+      expect(canAccessFeature('INDIVIDUAL_OWNER', feature)).toBe(true)
+    expect(canAccessFeature('INDIVIDUAL_OWNER', 'dashboard')).toBe(false)
+    expect(homeHrefFor('INDIVIDUAL_OWNER')).toBe('/dashboard/properties')
+    expect(navigationHrefsFor('INDIVIDUAL_OWNER').slice(0, 4)).toEqual([
+      '/dashboard/properties',
+      '/crm',
+      '/crm/contacts',
+      '/dashboard/leads',
+    ])
   })
 
   it('gives only the agency manager the team and the agency finance screens', () => {
