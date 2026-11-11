@@ -226,15 +226,16 @@ describe('/api/properties (integração)', () => {
     const context = { params: Promise.resolve({ id: createdPropertyId }) }
     const update = await PATCH(buildRequest('PATCH', { listing }, actorToken), context)
     expect(update.status).toBe(200)
-    expect((await update.json()).property.listing).toEqual(listing)
+    const expectedListing = { ...listing, negotiationConditions: [] }
+    expect((await update.json()).property.listing).toEqual(expectedListing)
 
     const read = await getProperty(buildRequest('GET', undefined, actorToken), context)
     const { property } = await read.json()
-    expect(property.listing).toEqual(listing)
+    expect(property.listing).toEqual(expectedListing)
     expect(property.status).toBe('DRAFT')
 
     const priceUpdate = await PATCH(buildRequest('PATCH', { price: 3500 }, actorToken), context)
-    expect((await priceUpdate.json()).property.listing).toEqual(listing)
+    expect((await priceUpdate.json()).property.listing).toEqual(expectedListing)
 
     const cleared = {
       ...listing,
@@ -245,7 +246,7 @@ describe('/api/properties (integração)', () => {
       featured: false,
     }
     const clear = await PATCH(buildRequest('PATCH', { listing: cleared }, actorToken), context)
-    expect((await clear.json()).property.listing).toEqual(cleared)
+    expect((await clear.json()).property.listing).toEqual({ ...cleared, negotiationConditions: [] })
   })
 
   it('lista apenas imóveis do tenant do ator', async () => {
