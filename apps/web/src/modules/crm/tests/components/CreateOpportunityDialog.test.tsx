@@ -85,7 +85,8 @@ describe('CreateOpportunityDialog', () => {
     await user.click(await screen.findByText(/Apartamento Jardins/))
     await user.type(screen.getByLabelText(/^Nome/), 'Maria Silva')
     await user.type(screen.getByLabelText(/^E-mail/), 'maria@example.com')
-    await user.type(screen.getByLabelText(/^Valor proposto/), '2500')
+    await user.type(screen.getByLabelText(/^Valor proposto/), '250050')
+    expect(screen.getByLabelText(/^Valor proposto/)).toHaveValue('2.500,50')
     await user.click(screen.getByRole('button', { name: 'Criar oportunidade' }))
 
     expect(onSave.mock.calls[0]?.[0]).toEqual(
@@ -93,7 +94,7 @@ describe('CreateOpportunityDialog', () => {
         property,
         leadName: 'Maria Silva',
         leadEmail: 'maria@example.com',
-        proposedValue: '2500',
+        proposedValue: 2500.5,
         status: 'DRAFT',
       }),
     )
@@ -136,7 +137,7 @@ describe('CreateOpportunityDialog', () => {
     await user.click(await screen.findByText(/Apartamento Jardins/))
     await user.type(screen.getByLabelText(/^Nome/), 'Maria Silva')
     await user.type(screen.getByLabelText(/^E-mail/), 'maria@example.com')
-    await user.type(screen.getByLabelText(/^Valor proposto/), '2500')
+    await user.type(screen.getByLabelText(/^Valor proposto/), '250000')
     await user.click(screen.getByRole('combobox', { name: 'Responsável pela oportunidade' }))
     await user.click(screen.getByRole('option', { name: 'Bruno Corretor' }))
     await user.click(screen.getByRole('button', { name: 'Criar oportunidade' }))

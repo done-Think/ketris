@@ -14,6 +14,7 @@ import { useMemo } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import * as crmStyles from '../../styles/edit-opportunity-dialog.styles'
 import { OpportunityTermsFields } from './OpportunityTermsFields'
+import { RhfMoneyField } from '@shared/components/form'
 
 import { createEditOpportunityFormSchema } from '../../schemas/opportunity-schema'
 import type { OpportunityEditFormValues } from '../../types/opportunity'
@@ -24,7 +25,7 @@ const emptyEditOpportunityValues: OpportunityEditFormValues = {
   leadName: '',
   leadEmail: '',
   leadPhone: '',
-  proposedValue: '',
+  proposedValue: 0,
   contractTermMonths: '',
   desiredStartDate: '',
   guaranteeType: 'NONE',
@@ -53,6 +54,7 @@ function EditOpportunityDialogForm({
     resolver: zodResolver(editOpportunityFormSchema),
   })
   const {
+    control,
     handleSubmit,
     register,
     formState: { errors },
@@ -87,14 +89,11 @@ function EditOpportunityDialogForm({
                   helperText={errors.leadPhone?.message}
                   {...register('leadPhone')}
                 />
-                <TextField
+                <RhfMoneyField
+                  control={control}
+                  name="proposedValue"
                   label={t('fields.proposedValue')}
-                  type="number"
                   required
-                  slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
-                  error={Boolean(errors.proposedValue)}
-                  helperText={errors.proposedValue?.message}
-                  {...register('proposedValue')}
                 />
                 <OpportunityTermsFields />
                 <TextField

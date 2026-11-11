@@ -66,7 +66,7 @@ function buildEditValues(opportunity: Opportunity): OpportunityEditFormValues {
     leadName: opportunity.leadName,
     leadEmail: opportunity.leadEmail,
     leadPhone: opportunity.leadPhone ?? '',
-    proposedValue: String(opportunity.proposedValue),
+    proposedValue: opportunity.proposedValue,
     contractTermMonths: opportunity.contractTermMonths
       ? String(opportunity.contractTermMonths)
       : '',
