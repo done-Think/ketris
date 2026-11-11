@@ -4,6 +4,7 @@ import type {
   AgendaEventChanges,
   AgendaEventLinks,
   AgendaEventListFilters,
+  AgendaEventOutcomeRecord,
   AgendaEventReschedule,
   AgendaReadScope,
   NewAgendaEvent,
@@ -31,6 +32,11 @@ export interface AgendaEventRepository {
     tenantId: string,
     id: string,
     cancellation: AgendaCancellation,
+  ): Promise<AgendaEvent | null>
+  recordOutcome(
+    tenantId: string,
+    id: string,
+    record: AgendaEventOutcomeRecord,
   ): Promise<AgendaEvent | null>
   hasOverlap(
     tenantId: string,

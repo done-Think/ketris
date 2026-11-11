@@ -108,36 +108,37 @@ import { patchContactRequestSchema as contractSchema104 } from '../crm/schemas/c
 import { patchLeadRequestSchema as contractSchema105 } from '../crm/schemas/lead.schema'
 import { patchOpportunityRequestSchema as contractSchema106 } from '../crm/schemas/opportunity.schema'
 import { publicConfirmEmailChangeSchema as contractSchema107 } from '../auth/schemas/email-verification.schema'
-import { refreshPlatformTokenRequestSchema as contractSchema108 } from '../platform/schemas/refresh-platform-token.schema'
-import { refreshTokenRequestSchema as contractSchema109 } from '../auth/schemas/refresh-token.schema'
-import { registerRequestSchema as contractSchema110 } from '../registration/schemas/register.schema'
-import { registerResponseSchema as contractSchema111 } from '../registration/schemas/register.schema'
-import { renterAgendaEventSchema as contractSchema112 } from '../agenda/schemas/agenda-event.schema'
-import { requestEmailChangeSchema as contractSchema113 } from '../auth/schemas/email-verification.schema'
-import { requestPasswordResetCodeSchema as contractSchema114 } from '../auth/schemas/password-reset-code.schema'
-import { requestSignupVerificationSchema as contractSchema115 } from '../auth/schemas/email-verification.schema'
-import { rescheduleAgendaEventRequestSchema as contractSchema116 } from '../agenda/schemas/agenda-event-input.schema'
-import { resetPasswordRequestSchema as contractSchema117 } from '../auth/schemas/reset-password.schema'
-import { respondOpportunityRequestSchema as contractSchema118 } from '../crm/schemas/respond-opportunity.schema'
-import { respondOpportunityResponseSchema as contractSchema119 } from '../crm/schemas/respond-opportunity.schema'
-import { saveAgencyProfileRequestSchema as contractSchema120 } from '../marketplace/schemas/agency-profile.schema'
-import { saveBrokerProfileRequestSchema as contractSchema121 } from '../marketplace/schemas/broker-profile.schema'
-import { searchPropertiesQuerySchema as contractSchema122 } from '../marketplace/schemas/search-properties.schema'
-import { searchTenantsQuerySchema as contractSchema123 } from '../registration/schemas/search-tenants.schema'
-import { signatureStatusSchema as contractSchema124 } from '../contracts/schemas/contract.schema'
-import { signContractPartyRequestSchema as contractSchema125 } from '../contracts/schemas/contract-workflow.schema'
-import { submitInquiryRequestSchema as contractSchema126 } from '../marketplace/schemas/submit-inquiry.schema'
-import { updateAgendaEventRequestSchema as contractSchema127 } from '../agenda/schemas/agenda-event-input.schema'
-import { updateMaintenanceProviderRequestSchema as contractSchema128 } from '../maintenance/schemas/maintenance-provider.schema'
-import { updateMaintenanceTicketRequestSchema as contractSchema129 } from '../maintenance/schemas/maintenance-ticket-input.schema'
-import { updatePlatformAdminRequestSchema as contractSchema130 } from '../platform/schemas/update-platform-admin.schema'
-import { updatePlatformPlanRequestSchema as contractSchema131 } from '../platform/schemas/platform-plan.schema'
-import { updateTenantAccountRequestSchema as contractSchema132 } from '../platform/schemas/update-tenant-account.schema'
-import { updatePropertyRequestSchema as contractSchema133 } from '../properties/schemas/property-input.schema'
-import { updateUserRequestSchema as contractSchema134 } from '../auth/schemas/update-user.schema'
-import { updateUserResponseSchema as contractSchema135 } from '../auth/schemas/update-user.schema'
-import { verifyPasswordResetCodeSchema as contractSchema136 } from '../auth/schemas/password-reset-code.schema'
-import { verifyPasswordResetCodeResponseSchema as contractSchema137 } from '../auth/schemas/password-reset-code.schema'
+import { recordAgendaEventOutcomeRequestSchema as contractSchema108 } from '../agenda/schemas/agenda-event-input.schema'
+import { refreshPlatformTokenRequestSchema as contractSchema109 } from '../platform/schemas/refresh-platform-token.schema'
+import { refreshTokenRequestSchema as contractSchema110 } from '../auth/schemas/refresh-token.schema'
+import { registerRequestSchema as contractSchema111 } from '../registration/schemas/register.schema'
+import { registerResponseSchema as contractSchema112 } from '../registration/schemas/register.schema'
+import { renterAgendaEventSchema as contractSchema113 } from '../agenda/schemas/agenda-event.schema'
+import { requestEmailChangeSchema as contractSchema114 } from '../auth/schemas/email-verification.schema'
+import { requestPasswordResetCodeSchema as contractSchema115 } from '../auth/schemas/password-reset-code.schema'
+import { requestSignupVerificationSchema as contractSchema116 } from '../auth/schemas/email-verification.schema'
+import { rescheduleAgendaEventRequestSchema as contractSchema117 } from '../agenda/schemas/agenda-event-input.schema'
+import { resetPasswordRequestSchema as contractSchema118 } from '../auth/schemas/reset-password.schema'
+import { respondOpportunityRequestSchema as contractSchema119 } from '../crm/schemas/respond-opportunity.schema'
+import { respondOpportunityResponseSchema as contractSchema120 } from '../crm/schemas/respond-opportunity.schema'
+import { saveAgencyProfileRequestSchema as contractSchema121 } from '../marketplace/schemas/agency-profile.schema'
+import { saveBrokerProfileRequestSchema as contractSchema122 } from '../marketplace/schemas/broker-profile.schema'
+import { searchPropertiesQuerySchema as contractSchema123 } from '../marketplace/schemas/search-properties.schema'
+import { searchTenantsQuerySchema as contractSchema124 } from '../registration/schemas/search-tenants.schema'
+import { signatureStatusSchema as contractSchema125 } from '../contracts/schemas/contract.schema'
+import { signContractPartyRequestSchema as contractSchema126 } from '../contracts/schemas/contract-workflow.schema'
+import { submitInquiryRequestSchema as contractSchema127 } from '../marketplace/schemas/submit-inquiry.schema'
+import { updateAgendaEventRequestSchema as contractSchema128 } from '../agenda/schemas/agenda-event-input.schema'
+import { updateMaintenanceProviderRequestSchema as contractSchema129 } from '../maintenance/schemas/maintenance-provider.schema'
+import { updateMaintenanceTicketRequestSchema as contractSchema130 } from '../maintenance/schemas/maintenance-ticket-input.schema'
+import { updatePlatformAdminRequestSchema as contractSchema131 } from '../platform/schemas/update-platform-admin.schema'
+import { updatePlatformPlanRequestSchema as contractSchema132 } from '../platform/schemas/platform-plan.schema'
+import { updateTenantAccountRequestSchema as contractSchema133 } from '../platform/schemas/update-tenant-account.schema'
+import { updatePropertyRequestSchema as contractSchema134 } from '../properties/schemas/property-input.schema'
+import { updateUserRequestSchema as contractSchema135 } from '../auth/schemas/update-user.schema'
+import { updateUserResponseSchema as contractSchema136 } from '../auth/schemas/update-user.schema'
+import { verifyPasswordResetCodeSchema as contractSchema137 } from '../auth/schemas/password-reset-code.schema'
+import { verifyPasswordResetCodeResponseSchema as contractSchema138 } from '../auth/schemas/password-reset-code.schema'
 
 export function registerContractComponents(registry: OpenAPIRegistry) {
   registry.register('AddMaintenanceTicketNoteRequest', contractSchema0)
@@ -248,34 +249,35 @@ export function registerContractComponents(registry: OpenAPIRegistry) {
   registry.register('PatchLeadRequest', contractSchema105)
   registry.register('PatchOpportunityRequest', contractSchema106)
   registry.register('PublicConfirmEmailChange', contractSchema107)
-  registry.register('RefreshPlatformTokenRequest', contractSchema108)
-  registry.register('RefreshTokenRequest', contractSchema109)
-  registry.register('RegisterRequest', contractSchema110)
-  registry.register('RegisterResponse', contractSchema111)
-  registry.register('RenterAgendaEvent', contractSchema112)
-  registry.register('RequestEmailChange', contractSchema113)
-  registry.register('RequestPasswordResetCodeRequest', contractSchema114)
-  registry.register('RequestSignupVerification', contractSchema115)
-  registry.register('RescheduleAgendaEventRequest', contractSchema116)
-  registry.register('ResetPasswordRequest', contractSchema117)
-  registry.register('RespondOpportunityRequest', contractSchema118)
-  registry.register('RespondOpportunityResponse', contractSchema119)
-  registry.register('SaveAgencyProfileRequest', contractSchema120)
-  registry.register('SaveBrokerProfileRequest', contractSchema121)
-  registry.register('SearchPropertiesQuery', contractSchema122)
-  registry.register('SearchTenantsQuery', contractSchema123)
-  registry.register('SignatureStatus', contractSchema124)
-  registry.register('SignContractPartyRequest', contractSchema125)
-  registry.register('SubmitInquiryRequest', contractSchema126)
-  registry.register('UpdateAgendaEventRequest', contractSchema127)
-  registry.register('UpdateMaintenanceProviderRequest', contractSchema128)
-  registry.register('UpdateMaintenanceTicketRequest', contractSchema129)
-  registry.register('UpdatePlatformAdminRequest', contractSchema130)
-  registry.register('UpdatePlatformPlanRequest', contractSchema131)
-  registry.register('UpdateTenantAccountRequest', contractSchema132)
-  registry.register('UpdateTenantPropertyRequest', contractSchema133)
-  registry.register('UpdateUserRequest', contractSchema134)
-  registry.register('UpdateUserResponse', contractSchema135)
-  registry.register('VerifyPasswordResetCodeRequest', contractSchema136)
-  registry.register('VerifyPasswordResetCodeResponse', contractSchema137)
+  registry.register('RecordAgendaEventOutcomeRequest', contractSchema108)
+  registry.register('RefreshPlatformTokenRequest', contractSchema109)
+  registry.register('RefreshTokenRequest', contractSchema110)
+  registry.register('RegisterRequest', contractSchema111)
+  registry.register('RegisterResponse', contractSchema112)
+  registry.register('RenterAgendaEvent', contractSchema113)
+  registry.register('RequestEmailChange', contractSchema114)
+  registry.register('RequestPasswordResetCodeRequest', contractSchema115)
+  registry.register('RequestSignupVerification', contractSchema116)
+  registry.register('RescheduleAgendaEventRequest', contractSchema117)
+  registry.register('ResetPasswordRequest', contractSchema118)
+  registry.register('RespondOpportunityRequest', contractSchema119)
+  registry.register('RespondOpportunityResponse', contractSchema120)
+  registry.register('SaveAgencyProfileRequest', contractSchema121)
+  registry.register('SaveBrokerProfileRequest', contractSchema122)
+  registry.register('SearchPropertiesQuery', contractSchema123)
+  registry.register('SearchTenantsQuery', contractSchema124)
+  registry.register('SignatureStatus', contractSchema125)
+  registry.register('SignContractPartyRequest', contractSchema126)
+  registry.register('SubmitInquiryRequest', contractSchema127)
+  registry.register('UpdateAgendaEventRequest', contractSchema128)
+  registry.register('UpdateMaintenanceProviderRequest', contractSchema129)
+  registry.register('UpdateMaintenanceTicketRequest', contractSchema130)
+  registry.register('UpdatePlatformAdminRequest', contractSchema131)
+  registry.register('UpdatePlatformPlanRequest', contractSchema132)
+  registry.register('UpdateTenantAccountRequest', contractSchema133)
+  registry.register('UpdateTenantPropertyRequest', contractSchema134)
+  registry.register('UpdateUserRequest', contractSchema135)
+  registry.register('UpdateUserResponse', contractSchema136)
+  registry.register('VerifyPasswordResetCodeRequest', contractSchema137)
+  registry.register('VerifyPasswordResetCodeResponse', contractSchema138)
 }

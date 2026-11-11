@@ -28,6 +28,16 @@ export const agendaEventToneStyles: Record<AgendaEventTone, AgendaEventToneStyle
     borderColor: brand.semantic.warning,
     color: brand.semantic.warning,
   },
+  success: {
+    bgcolor: supportColor.successSoft,
+    borderColor: brand.semantic.success,
+    color: brand.semantic.success,
+  },
+  neutral: {
+    bgcolor: brand.neutral[50],
+    borderColor: brand.neutral[400],
+    color: brand.neutral[600],
+  },
 }
 
 export function getAgendaCardPlacementSx(top: number, height: number, lane = 0, laneCount = 1) {

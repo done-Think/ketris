@@ -60,6 +60,7 @@
     "visitDuration": "Visits must last at least 30 minutes.",
     "cancellationReasonRequired": "Enter the cancellation reason.",
     "cancellationStatusRequired": "A cancellation reason requires status CANCELLED.",
+    "visitInterestRequiresCompleted": "Client interest can only be set when the event was completed.",
     "periodEndAfterStart": "The period end must be after its start.",
     "descriptionRequired": "Enter a description for a charge without a contract.",
     "fileRequired": "Upload a file in the file field.",

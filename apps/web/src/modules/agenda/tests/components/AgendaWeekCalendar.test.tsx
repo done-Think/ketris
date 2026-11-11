@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import dayjs from 'dayjs'
-import { expect, it, vi } from 'vitest'
+import { expect, it, onTestFinished, vi } from 'vitest'
 
 import { AgendaWeekCalendar } from '../../components/agenda-dashboard/AgendaWeekCalendar'
 import { buildAgendaCalendarDays } from '../../utils/agenda-calendar'
@@ -73,6 +73,11 @@ it('uses the original hourly grid and keeps due dates separate from service time
 })
 
 it('keeps overlapping cards separately focusable and opens the correct record', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(dayjs().hour(8).minute(0).second(0).millisecond(0).toDate())
+  onTestFinished(() => {
+    vi.useRealTimers()
+  })
   const days = buildAgendaCalendarDays(dayjs(), 'pt-BR')
   const base: AgendaEvent = {
     id: 'one',

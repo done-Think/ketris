@@ -1,5 +1,6 @@
 import dayjs, { type Dayjs } from 'dayjs'
 import { AGENDA_BUSINESS_HOURS_START } from '@shared/lib/utils/agenda-scheduling'
+import { isAgendaOutcomeStatus } from '@shared/lib/utils/agenda-outcome'
 
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
@@ -87,7 +88,11 @@ export function getAgendaNotifications({
     const notifications: DashboardNotificationItem[] = []
     const href = { pathname: '/dashboard/agenda' as const, query: { eventId: event.id } }
 
-    if (eventDate.isSame(today, 'day') && isVisitEvent(event)) {
+    if (
+      eventDate.isSame(today, 'day') &&
+      isVisitEvent(event) &&
+      !isAgendaOutcomeStatus(event.status)
+    ) {
       notifications.push({
         href,
         id: `${event.id}-today-visit`,

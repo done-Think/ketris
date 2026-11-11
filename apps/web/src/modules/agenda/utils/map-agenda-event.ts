@@ -27,6 +27,8 @@ const toneByApiStatus: Record<AgendaEventApi['status'], AgendaEventTone> = {
   PENDING: 'warning',
   RESCHEDULE: 'info',
   CANCELLED: 'info',
+  COMPLETED: 'success',
+  NO_SHOW: 'neutral',
 }
 
 export function toAgendaAudiencePayload(
@@ -81,5 +83,9 @@ export function toAgendaEvent(
     status: api.status,
     tone: toneByApiStatus[api.status],
     kind: api.kind ? kindByApiKind[api.kind] : undefined,
+    outcomeRecordedAt: 'outcomeRecordedAt' in api ? api.outcomeRecordedAt : undefined,
+    outcomeRecordedBy: 'outcomeRecordedBy' in api ? api.outcomeRecordedBy?.name : undefined,
+    visitInterest: 'visitInterest' in api ? api.visitInterest : undefined,
+    outcomeNotes: 'outcomeNotes' in api ? api.outcomeNotes : undefined,
   }
 }

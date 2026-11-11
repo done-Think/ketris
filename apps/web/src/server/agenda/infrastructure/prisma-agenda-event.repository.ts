@@ -14,11 +14,13 @@ import type {
   AgendaEventChanges,
   AgendaEventLinks,
   AgendaEventListFilters,
+  AgendaEventOutcomeRecord,
   AgendaEventReschedule,
   AgendaReadScope,
   NewAgendaEvent,
 } from '../types/agenda-event'
-import { AgendaEventUserLinkUnavailableError } from '../domain/errors'
+import { AgendaEventChangedError, AgendaEventUserLinkUnavailableError } from '../domain/errors'
+import { assertAgendaEventOpen } from '../domain/agenda-outcome-rules'
 import { assertVisitReservation, lockAgendaEvent } from './agenda-visit-reservation'
 
 export class PrismaAgendaEventRepository implements AgendaEventRepository {
@@ -124,6 +126,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
       if (!existing) {
         return null
       }
+      assertAgendaEventOpen(existing)
 
       if (
         changes.start !== undefined ||
@@ -240,6 +243,7 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
       if (!existing) {
         return null
       }
+      assertAgendaEventOpen(existing)
 
       await assertResponsibleReservation(transaction, {
         ...existing,
@@ -278,12 +282,13 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
       await lockAgendaEvent(transaction, tenantId, id)
       const existing = await transaction.agendaEvent.findFirst({
         where: { tenantId, id },
-        select: { id: true },
+        select: { id: true, status: true },
       })
 
       if (!existing) {
         return null
       }
+      assertAgendaEventOpen(existing)
 
       const updated = await transaction.agendaEvent.update({
         where: { id, tenantId },
@@ -303,6 +308,48 @@ export class PrismaAgendaEventRepository implements AgendaEventRepository {
         action: 'CANCELLED',
         changedFields: ['status', 'cancellationReason'],
         cancellationReason: cancellation.reason,
+      })
+      return mapAgendaEvent(updated)
+    })
+  }
+
+  recordOutcome(
+    tenantId: string,
+    id: string,
+    record: AgendaEventOutcomeRecord,
+  ): Promise<AgendaEvent | null> {
+    return prisma.$transaction(async (transaction) => {
+      await lockAgendaEvent(transaction, tenantId, id)
+      const existing = await transaction.agendaEvent.findFirst({
+        where: { tenantId, id },
+        select: { status: true },
+      })
+
+      if (!existing) {
+        return null
+      }
+      if (existing.status !== record.expectedStatus) {
+        throw new AgendaEventChangedError()
+      }
+
+      const updated = await transaction.agendaEvent.update({
+        where: { id, tenantId },
+        data: {
+          status: record.outcome,
+          outcomeRecordedAt: new Date(),
+          outcomeRecordedById: record.actorUserId,
+          visitInterest: record.visitInterest,
+          outcomeNotes: record.notes,
+        },
+        include: agendaEventInclude,
+      })
+
+      await recordAgendaAudit(transaction, {
+        tenantId,
+        eventId: id,
+        actorUserId: record.actorUserId,
+        action: record.outcome,
+        changedFields: ['status', 'visitInterest', 'outcomeNotes'],
       })
       return mapAgendaEvent(updated)
     })
@@ -447,6 +494,11 @@ function mapAgendaEvent(event: AgendaEventWithLinks): AgendaEvent {
     canceledAt: event.canceledAt,
     canceledById: event.canceledById,
     cancellationReason: event.cancellationReason,
+    outcomeRecordedAt: event.outcomeRecordedAt,
+    outcomeRecordedById: event.outcomeRecordedById,
+    outcomeRecordedByName: event.outcomeRecordedBy?.name ?? null,
+    visitInterest: event.visitInterest,
+    outcomeNotes: event.outcomeNotes,
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
   }

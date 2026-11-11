@@ -56,7 +56,10 @@
     "editSuccess": "{title} atualizado com sucesso.",
     "editError": "Não foi possível salvar as alterações. Tente novamente.",
     "deleteSuccess": "{title} excluído da agenda.",
-    "deleteError": "Não foi possível excluir o evento. Tente novamente."
+    "deleteError": "Não foi possível excluir o evento. Tente novamente.",
+    "outcomeSuccess": "Resultado de {title} registrado.",
+    "outcomeError": "Não foi possível registrar o resultado. Tente novamente.",
+    "openEventWithStatusAriaLabel": "Abrir {title} ({status})"
   },
   "eventForm": {
     "audiences": {
@@ -169,6 +172,46 @@
       "customPropertyRequired": "Informe o imóvel ou referência",
       "visitMinimumDuration": "Visitas devem ter duração mínima de 30 minutos",
       "minimumAdvanceNotice": "Agende com pelo menos 3 horas de antecedência"
+    },
+    "statuses": {
+      "CONFIRMED": "Agendado",
+      "PENDING": "Pendente",
+      "RESCHEDULE": "A remarcar",
+      "CANCELLED": "Cancelado",
+      "COMPLETED": "Realizado",
+      "NO_SHOW": "Cliente não compareceu",
+      "AWAITING_OUTCOME": "Aguardando resultado"
+    },
+    "recordOutcome": "Registrar resultado",
+    "correctOutcome": "Corrigir resultado",
+    "scheduleFollowUp": "Agendar retorno",
+    "followUpTitle": "Retorno: {title}",
+    "outcomeSummary": {
+      "COMPLETED": "Evento realizado",
+      "NO_SHOW": "Cliente não compareceu",
+      "recordedBy": "Registrado por {name} em {date}",
+      "interest": "Interesse do cliente",
+      "notes": "Anotações"
+    },
+    "outcomeDialog": {
+      "title": "Registrar resultado",
+      "description": "Como foi “{title}”?",
+      "outcome": "O que aconteceu",
+      "outcomes": {
+        "COMPLETED": "Realizado",
+        "NO_SHOW": "Cliente não compareceu"
+      },
+      "interest": "Interesse do cliente",
+      "notes": "Anotações (opcional)",
+      "cancel": "Cancelar",
+      "confirm": "Salvar resultado",
+      "visitInterestRequired": "Informe o interesse do cliente",
+      "notesTooLong": "Use no máximo 10.000 caracteres nas anotações"
+    },
+    "visitInterests": {
+      "LOW": "Baixo",
+      "MEDIUM": "Médio",
+      "HIGH": "Alto"
     }
   },
   "errors": {
@@ -181,6 +224,12 @@
     "notFound": "O evento ou um dos vínculos não está disponível. Atualize a agenda.",
     "conflict": "O agendamento conflita com os dados atuais. Verifique o horário e os vínculos.",
     "invalidFields": "Revise os campos informados antes de continuar.",
-    "rateLimit": "Muitas tentativas. Aguarde e tente novamente."
+    "rateLimit": "Muitas tentativas. Aguarde e tente novamente.",
+    "eventClosed": "O resultado deste evento já foi registrado. Atualize a agenda.",
+    "outcomeBeforeStart": "O resultado só pode ser registrado depois do início do evento.",
+    "outcomeCancelledEvent": "Eventos cancelados não recebem resultado.",
+    "noShowInternalEvent": "Eventos internos não têm cliente para registrar ausência.",
+    "visitInterestRequired": "Informe o interesse do cliente na visita.",
+    "visitInterestNotAllowed": "O interesse do cliente só se aplica a visitas realizadas."
   }
 }

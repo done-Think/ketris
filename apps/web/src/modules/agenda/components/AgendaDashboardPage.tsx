@@ -16,7 +16,11 @@ import type { DashboardNotificationItem } from '@shared/types/dashboard-notifica
 
 import { agendaTimeSlots } from '../config/agenda-scheduling'
 import { useAgendaEvents } from '../hooks/use-agenda-events'
-import type { AgendaEvent, AgendaPropertyOption } from '../types/agenda-event'
+import type {
+  AgendaEvent,
+  AgendaEventFormValues,
+  AgendaPropertyOption,
+} from '../types/agenda-event'
 import { toAgendaEvent } from '../utils/map-agenda-event'
 import { AgendaDashboardHeader } from './agenda-dashboard/AgendaDashboardHeader'
 import { AgendaWeekCalendar } from './agenda-dashboard/AgendaWeekCalendar'
@@ -26,6 +30,7 @@ import { AgendaEventFormDialog } from './AgendaEventFormDialog'
 import { useAgendaOrganization } from '../hooks/use-agenda-organization'
 import { useAgendaAgents } from '../hooks/use-agenda-agents'
 import { canEditAgendaEvent } from '../utils/can-edit-agenda-event'
+import { buildFollowUpFormValues, canRecordAgendaEventOutcome } from '../utils/agenda-event-outcome'
 import { mapAgendaOrganization } from '../utils/map-agenda-organization'
 
 export function AgendaDashboardPage() {
@@ -38,7 +43,9 @@ export function AgendaDashboardPage() {
   const restrictedAccess = getRestrictedRoleAccess(session?.role)
   const isReadOnlyViewer = Boolean(restrictedAccess) && !restrictedAccess?.canManageAgenda
   const hasOrganization = isRenter || session?.role === 'OWNER'
-  const [isEventFormOpen, setIsEventFormOpen] = useState(false)
+  const eventDetailT = useTranslations('agenda.eventDetail')
+  const [eventForm, setEventForm] = useState<Partial<AgendaEventFormValues> | null>(null)
+  const isEventFormOpen = eventForm !== null
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
   const agentsQuery = useAgendaAgents(
     !restrictedAccess && (isEventFormOpen || Boolean(selectedEvent)),
@@ -49,9 +56,12 @@ export function AgendaDashboardPage() {
     agentsLoading: agentsQuery.isLoading,
     agentsError: agentsQuery.isError,
   }
-  const selectedEventReadOnly = !canEditAgendaEvent(
-    { role: session?.role, userId: session?.user?.id },
+  const agendaActor = { role: session?.role, userId: session?.user?.id }
+  const selectedEventReadOnly = !canEditAgendaEvent(agendaActor, selectedEvent)
+  const canRecordSelectedEventOutcome = canRecordAgendaEventOutcome(
+    agendaActor,
     selectedEvent,
+    dayjs(),
   )
   const {
     today,
@@ -117,22 +127,40 @@ export function AgendaDashboardPage() {
     setSelectedEvent(event)
   }
 
-  const { createAgendaEvent, editAgendaEvent, deleteSelectedEvent, isDeleting, isSaving } =
-    useAgendaEventActions({
-      tenantId,
-      selectedEvent,
-      readOnly: isReadOnlyViewer,
-      selectedEventReadOnly,
-      propertiesById,
-      onCreated: (date) => {
-        showScheduledWeek(dayjs(date))
-        setIsEventFormOpen(false)
-      },
-      onUpdated: (event, date) => {
-        setSelectedEvent(event)
-        showScheduledWeek(dayjs(date))
-      },
-    })
+  const scheduleFollowUp = (event: AgendaEvent) => {
+    setSelectedEvent(null)
+    setEventForm(
+      buildFollowUpFormValues(
+        event,
+        eventDetailT('followUpTitle', { title: event.title }),
+        audienceFormProps.canManageAudience,
+      ),
+    )
+  }
+
+  const {
+    createAgendaEvent,
+    editAgendaEvent,
+    deleteSelectedEvent,
+    recordSelectedEventOutcome,
+    isDeleting,
+    isRecordingOutcome,
+    isSaving,
+  } = useAgendaEventActions({
+    tenantId,
+    selectedEvent,
+    readOnly: isReadOnlyViewer,
+    selectedEventReadOnly,
+    propertiesById,
+    onCreated: (date) => {
+      showScheduledWeek(dayjs(date))
+      setEventForm(null)
+    },
+    onUpdated: (event, date) => {
+      setSelectedEvent(event)
+      showScheduledWeek(dayjs(date))
+    },
+  })
 
   return (
     <Box sx={styles.box}>
@@ -142,7 +170,7 @@ export function AgendaDashboardPage() {
           disableNextWeek={disableNextWeek}
           disablePreviousWeek={disablePreviousWeek}
           notifications={notifications}
-          onNewEvent={() => setIsEventFormOpen(true)}
+          onNewEvent={() => setEventForm({})}
           onNextWeek={onNextWeek}
           onNotificationSelect={openNotificationEvent}
           onPreviousWeek={onPreviousWeek}
@@ -197,6 +225,10 @@ export function AgendaDashboardPage() {
         {...audienceFormProps}
         readOnly={selectedEventReadOnly}
         hidePrivateDetails={isRenter}
+        canRecordOutcome={canRecordSelectedEventOutcome}
+        isRecordingOutcome={isRecordingOutcome}
+        onRecordOutcome={recordSelectedEventOutcome}
+        onScheduleFollowUp={isReadOnlyViewer ? undefined : scheduleFollowUp}
         event={
           isRenter
             ? (events.find((event) => event.id === selectedEvent?.id) ?? null)
@@ -216,9 +248,10 @@ export function AgendaDashboardPage() {
       {!isReadOnlyViewer && (
         <AgendaEventFormDialog
           {...audienceFormProps}
+          initialValues={eventForm ?? undefined}
           maxDate={scheduleHorizonEnd.format('YYYY-MM-DD')}
           minDate={today.format('YYYY-MM-DD')}
-          onClose={() => setIsEventFormOpen(false)}
+          onClose={() => setEventForm(null)}
           onCreate={createAgendaEvent}
           open={isEventFormOpen}
           propertyOptions={propertyOptions}
