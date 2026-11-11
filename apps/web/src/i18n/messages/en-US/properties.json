@@ -151,7 +151,10 @@
       "title": "Deactivate property",
       "description": "Deactivate \"{title}\"? The property will no longer be advertised. Its data, media, inquiries and contracts will be preserved.",
       "confirm": "Deactivate",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "requestTitle": "Request deactivation",
+      "requestDescription": "Send agency management a request to deactivate “{title}”?",
+      "requestConfirm": "Send request"
     },
     "mediaKinds": {
       "photo": "Photo",
@@ -208,7 +211,8 @@
       "condition": "Condition",
       "owner": "Owner",
       "complement": "Address complement",
-      "ownerAccessAccount": "Account with property access (optional)"
+      "ownerAccessAccount": "Account with property access (optional)",
+      "brokersWithAccess": "Brokers with access"
     },
     "steps": {
       "ariaLabel": "Listing steps",
@@ -286,7 +290,12 @@
     "ownerContactHelp": "Select a CRM contact. The contact does not need a login and will not receive access automatically.",
     "ownerAccessHelp": "This account can access the property. This link is independent of the owner contact.",
     "addressLocationHint": "We use this address to locate the property automatically on the map.",
-    "addressLocationUnavailable": "The property was saved, but the map service has not found this address yet. Please check the address details."
+    "addressLocationUnavailable": "The property was saved, but the map service has not found this address yet. Please check the address details.",
+    "brokersAccessHelp": "Select brokers who can manage this property in their portfolio. The primary responsible user retains access. Only agency management can change these grants.",
+    "brokersLoadError": "Could not load brokers. Please try again.",
+    "noBrokerAccess": "No additional access granted",
+    "noAvailableBrokers": "No active approved brokers available",
+    "brokerUnavailable": "Broker unavailable — remove the grant"
   },
   "edit": {
     "title": "Edit property",

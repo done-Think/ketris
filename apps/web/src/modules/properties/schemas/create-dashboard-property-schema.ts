@@ -56,6 +56,7 @@ export function createDashboardPropertySchema(
         .array(z.enum(['RENT', 'SALE'] satisfies [CreatePropertyPurpose, CreatePropertyPurpose]))
         .min(1, t('purposeRequired')),
       ownerUserId: z.string().default(''),
+      brokerIds: z.array(z.string().min(1)).max(100).default([]),
       ownerContact: z
         .object({ id: z.string().min(1), name: z.string().min(1) })
         .nullable()
@@ -136,6 +137,7 @@ export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormVa
   type: 'apartment',
   purpose: ['RENT'],
   ownerUserId: '',
+  brokerIds: [],
   ownerContact: null,
   complement: '',
   title: '',

@@ -59,7 +59,7 @@ export function CreatePropertyDashboardPage() {
     if (isUploading) return
     try {
       const property = await createProperty.mutateAsync(
-        toPropertyPayload(values, { canChooseOwner }),
+        toPropertyPayload(values, { canChooseOwner, canManageBrokers: session?.role === 'OWNER' }),
       )
       enqueueSnackbar(t('createSuccess'), { variant: 'success' })
       if (

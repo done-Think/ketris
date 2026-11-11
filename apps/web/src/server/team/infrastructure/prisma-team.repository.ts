@@ -2,6 +2,11 @@ import { Prisma } from '@prisma/client'
 
 import { prisma } from '@server/db/prisma'
 import { recordUserAudit } from '@server/auth/infrastructure/user-audit'
+import {
+  lockPortfolioPeople,
+  propertyPortfolioCounts,
+  transferPropertyAccess,
+} from './property-portfolio'
 
 import type { TeamRepository } from '../application/ports/team-repository.port'
 import type { TeamGoalChange, TeamPeriod, TeamTransferResult } from '../types/team'
@@ -26,11 +31,22 @@ function countMap(rows: { key: string | null; count: number }[]): Map<string, nu
 
 async function moveItems(
   tx: Prisma.TransactionClient,
-  { tenantId, sourceId, destinationId, items, opportunityScope, now, actor }: TeamTransferCommand,
+  command: TeamTransferCommand,
 ): Promise<TeamTransferResult> {
+  const { tenantId, sourceId, destinationId, items, opportunityScope, now, actor } = command
+  await lockPortfolioPeople(tx, command)
   const [properties, leads, opportunities, events] = await Promise.all([
     items.properties
-      ? tx.property.findMany({ where: { tenantId, responsibleId: sourceId }, select: { id: true } })
+      ? tx.property.findMany({
+          where: {
+            tenantId,
+            OR: [
+              { responsibleId: sourceId },
+              { brokerAccess: { some: { tenantId, userId: sourceId } } },
+            ],
+          },
+          select: { id: true },
+        })
       : [],
     items.leads
       ? tx.lead.findMany({ where: { tenantId, responsibleId: sourceId }, select: { id: true } })
@@ -66,7 +82,7 @@ async function moveItems(
   await Promise.all([
     result.propertyIds.length
       ? tx.property.updateMany({
-          where: { tenantId, id: { in: result.propertyIds } },
+          where: { tenantId, id: { in: result.propertyIds }, responsibleId: sourceId },
           data: { responsibleId: destinationId, updatedById: actor.id },
         })
       : null,
@@ -96,6 +112,7 @@ async function moveItems(
       : null,
   ])
 
+  if (items.properties) await transferPropertyAccess(tx, command)
   return result
 }
 
@@ -202,11 +219,7 @@ export class PrismaTeamRepository implements TeamRepository {
       opportunityResponses,
       goals,
     ] = await Promise.all([
-      prisma.property.groupBy({
-        by: ['responsibleId'],
-        where: { tenantId, responsibleId: { in: memberIds }, status: { not: 'INACTIVE' } },
-        _count: { _all: true },
-      }),
+      propertyPortfolioCounts(tenantId, memberIds),
       prisma.lead.groupBy({
         by: ['responsibleId'],
         where: { tenantId, responsibleId: { in: memberIds }, opportunityId: null },
@@ -266,9 +279,7 @@ export class PrismaTeamRepository implements TeamRepository {
     }
 
     return {
-      properties: countMap(
-        properties.map((row) => ({ key: row.responsibleId, count: row._count._all })),
-      ),
+      properties: countMap(properties),
       openLeads: countMap(
         openLeads.map((row) => ({ key: row.responsibleId, count: row._count._all })),
       ),
@@ -329,6 +340,9 @@ export class PrismaTeamRepository implements TeamRepository {
       await tx.user.updateMany({
         where: { tenantId: command.tenantId, id: command.sourceId },
         data: { active: false, sessionVersion: { increment: 1 } },
+      })
+      await tx.propertyBrokerAccess.deleteMany({
+        where: { tenantId: command.tenantId, userId: command.sourceId },
       })
       await tx.refreshToken.updateMany({
         where: { userId: command.sourceId, tenantId: command.tenantId, revokedAt: null },

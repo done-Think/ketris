@@ -247,6 +247,7 @@ model User {
   archivedOpportunities     Opportunity[]                 @relation("OpportunityArchivedBy")
   updatedTickets            MaintenanceTicket[]           @relation("TicketUpdatedBy")
   updatedProperties         Property[]                    @relation("PropertyUpdatedBy")
+  propertyBrokerAccess      PropertyBrokerAccess[]
   updatedLeads              Lead[]                        @relation("LeadUpdatedBy")
   updatedBrokerProfiles     BrokerPublicProfile[]         @relation("BrokerProfileUpdatedBy")
   updatedAgencyProfiles     AgencyPublicProfile[]         @relation("AgencyProfileUpdatedBy")
@@ -487,6 +488,7 @@ model Property {
   contracts          Contract[]
   agendaEvents       AgendaEvent[]
   maintenanceTickets MaintenanceTicket[]
+  brokerAccess       PropertyBrokerAccess[]
   faceCheckSessions  FaceCheckSession[]
 
   @@unique([id, tenantId])
@@ -496,6 +498,21 @@ model Property {
   @@index([tenantId, ownerContactId])
   @@index([updatedById])
   @@map("properties")
+}
+
+
+model PropertyBrokerAccess {
+  tenantId   String
+  propertyId String
+  userId     String
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  user     User     @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@id([propertyId, userId])
+  @@index([tenantId, userId])
+  @@map("property_broker_access")
 }
 
 model PropertyAddress {

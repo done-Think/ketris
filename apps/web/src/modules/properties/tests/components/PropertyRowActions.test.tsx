@@ -142,6 +142,20 @@ describe('PropertyRowActions', () => {
     expect(screen.queryByRole('button', { name: /Mais ações/ })).not.toBeInTheDocument()
   })
 
+  it('allows an additional broker to manage the property and hides actions after revocation', () => {
+    mockSession('AGENT', 'additional-broker')
+    const { unmount } = render(
+      <PropertyRowActions
+        property={{ ...property, brokerIds: ['additional-broker'] }}
+        onView={vi.fn()}
+      />,
+    )
+    expect(screen.getByRole('button', { name: /Mais ações/ })).toBeVisible()
+    unmount()
+    renderActions({ brokerIds: [] })
+    expect(screen.queryByRole('button', { name: /Mais ações/ })).not.toBeInTheDocument()
+  })
+
   it('shows Editar, Publicar and Inativar for a draft property when the actor can manage it', async () => {
     renderActions()
 

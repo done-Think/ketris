@@ -53,6 +53,7 @@ const apiProperty = {
 }
 
 const mappedProperty: Property = {
+  brokerIds: [],
   id: 'property-1',
   tenantId: 'tenant-1',
   responsibleUserId: 'user-1',

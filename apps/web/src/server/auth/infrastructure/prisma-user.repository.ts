@@ -201,6 +201,11 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
             sessionVersion: credentialsChanged ? { increment: 1 } : undefined,
           },
         })
+        if (changes.role !== undefined && changes.role !== 'AGENT') {
+          await tx.propertyBrokerAccess.deleteMany({
+            where: { userId: id, tenantId: user.tenantId },
+          })
+        }
         if (changes.cnpj !== undefined) {
           const cnpj = documentKey(changes.cnpj)
           await tx.tenant.update({ where: { id: user.tenantId }, data: { cnpj } })
@@ -248,6 +253,7 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
         where: { id, tenantId },
         data: { active: false, sessionVersion: { increment: 1 } },
       })
+      await tx.propertyBrokerAccess.deleteMany({ where: { userId: id, tenantId: user.tenantId } })
       await tx.refreshToken.updateMany({
         where: { userId: id, tenantId: user.tenantId, revokedAt: null },
         data: { revokedAt: new Date() },

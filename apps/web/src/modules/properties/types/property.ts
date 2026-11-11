@@ -41,6 +41,7 @@ export type PropertyValues = components['schemas']['TenantPropertyValues']
 export type PropertyCharacteristics = components['schemas']['TenantPropertyCharacteristics']
 
 export interface Property {
+  brokerIds?: string[]
   id: string
   tenantId: string
   responsibleUserId: string
@@ -65,6 +66,7 @@ export interface Property {
 }
 
 export interface PropertyFormValues {
+  brokerIds?: string[]
   ownerUserId?: string | null
   ownerContactId?: string | null
   listing?: PropertyListing
@@ -98,9 +100,12 @@ export type ApiProperty = components['schemas']['TenantProperty']
 
 export type PropertyOwnerOption = components['schemas']['PropertyOwnersResponse']['owners'][number]
 export type PropertyOwnersResponse = components['schemas']['PropertyOwnersResponse']
+export type PropertyBrokersResponse = components['schemas']['PropertyBrokersResponse']
+export type PropertyBrokerOption = PropertyBrokersResponse['brokers'][number]
 export interface PropertyPayloadOptions {
   existingAddress?: PropertyAddress | null
   canChooseOwner?: boolean
+  canManageBrokers?: boolean
 }
 
 export type PropertyPage = Omit<components['schemas']['TenantPropertiesResponse'], 'properties'> & {

@@ -50,6 +50,10 @@ const optionalNullableNonNegativeNumberSchema = z.number().nonnegative().nullabl
 export const createPropertyRequestSchema = z
   .object({
     ownerId: z.string().min(1).nullable().optional(),
+    brokerIds: z.array(z.string().min(1)).max(100).optional().openapi({
+      description:
+        'Additional active approved brokers in this agency. Only agency management can change these grants. Omit to preserve existing grants; send an empty array to revoke all additional grants. The primary responsible user is unchanged.',
+    }),
     ownerContactId: z.string().min(1).nullable().optional(),
     title: z.string().trim().min(1).max(200),
     description: z.string().trim().min(1).max(10000).nullable().optional(),

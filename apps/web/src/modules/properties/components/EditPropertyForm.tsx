@@ -67,7 +67,11 @@ export function EditPropertyForm({ property }: EditPropertyFormProps) {
     if (isUploading) return
     try {
       const updatedProperty = await updateProperty.mutateAsync(
-        toPropertyPayload(values, { existingAddress: property.address, canChooseOwner }),
+        toPropertyPayload(values, {
+          existingAddress: property.address,
+          canChooseOwner,
+          canManageBrokers: session?.role === 'OWNER',
+        }),
       )
       enqueueSnackbar(t('updateSuccess'), { variant: 'success' })
       if (
