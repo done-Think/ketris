@@ -1,5 +1,6 @@
 import { PrismaAgendaEventRepository } from '@server/agenda/infrastructure/prisma-agenda-event.repository'
 import { GET as GET_EVENT } from '../../events/[id]/route'
+import { GET as GET_PROPERTY } from '../../../properties/[id]/route'
 import { randomUUID } from 'node:crypto'
 import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -202,4 +203,43 @@ it('não revela o resumo de um imóvel sem contrato na visão reduzida de um loc
   expect(body.event.propertyLabel).toBeNull()
   expect(body.event).not.toHaveProperty('createdBy')
   expect(body.event).not.toHaveProperty('notes')
+})
+
+it('mostra ao corretor qual é o imóvel do evento atribuído a ele, sem dar acesso ao cadastro', async () => {
+  const property = await prisma.property.findFirstOrThrow({
+    where: { tenantId, title: 'Opção 01' },
+  })
+  const manager = await prisma.user.findFirstOrThrow({ where: { tenantId, role: 'OWNER' } })
+  const agent = await prisma.user.findFirstOrThrow({ where: { tenantId, role: 'AGENT' } })
+  const event = await new PrismaAgendaEventRepository().create({
+    tenantId,
+    responsibleId: agent.id,
+    createdById: manager.id,
+    audience: 'ASSIGNED_AGENT',
+    propertyId: property.id,
+    title: 'Visita marcada pela imobiliária',
+    type: 'VISIT',
+    start: new Date('2031-03-02T15:00:00Z'),
+    end: new Date('2031-03-02T16:00:00Z'),
+    participantName: 'Cliente',
+    participantPhone: '11999999999',
+    notes: null,
+  })
+  const response = await GET_EVENT(
+    new NextRequest(`http://localhost/api/agenda/events/${event.id}`, {
+      headers: { authorization: `Bearer ${agentToken}` },
+    }),
+    { params: Promise.resolve({ id: event.id }) },
+  )
+  expect(response.status).toBe(200)
+  const body = await response.json()
+  expect(body.event.propertyLabel).toBe('Opção 01')
+  expect(body.event.propertyAccessible).toBe(false)
+  const propertyResponse = await GET_PROPERTY(
+    new NextRequest(`http://localhost/api/properties/${property.id}`, {
+      headers: { authorization: `Bearer ${agentToken}` },
+    }),
+    { params: Promise.resolve({ id: property.id }) },
+  )
+  expect(propertyResponse.status).toBe(404)
 })

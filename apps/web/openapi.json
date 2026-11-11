@@ -237,6 +237,10 @@
           },
           "propertyId": { "type": "string", "nullable": true },
           "propertyLabel": { "type": "string", "nullable": true },
+          "propertyAccessible": {
+            "type": "boolean",
+            "description": "Indica se o usuário pode abrir o imóvel. Um corretor vê o rótulo do imóvel de um evento atribuído a ele mesmo sem ser o responsável pelo imóvel, mas não ganha acesso ao cadastro."
+          },
           "propertyReference": {
             "type": "string",
             "nullable": true,
@@ -287,6 +291,7 @@
           "createdBy",
           "propertyId",
           "propertyLabel",
+          "propertyAccessible",
           "propertyReference",
           "title",
           "kind",

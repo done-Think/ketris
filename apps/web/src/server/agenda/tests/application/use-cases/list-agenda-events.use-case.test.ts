@@ -98,3 +98,37 @@ describe('ListAgendaEventsUseCase', () => {
     })
   })
 })
+
+describe('ListAgendaEventsUseCase · imóvel de outro corretor', () => {
+  it('mostra qual é o imóvel do evento atribuído ao corretor, sem liberar o cadastro', async () => {
+    const deps = createDeps()
+    const assignedEvent = { id: 'event-1', propertyId: 'property-1' } as AgendaEvent
+    vi.mocked(deps.agendaEventRepository.list).mockResolvedValue([assignedEvent])
+    const propertyCatalog = {
+      list: vi.fn(),
+      summaries: vi
+        .fn()
+        .mockResolvedValue([
+          { id: 'property-1', label: 'Cobertura - Sossego, Piranguinho', accessible: false },
+        ]),
+    }
+    const useCase = new ListAgendaEventsUseCase(deps.agendaEventRepository, propertyCatalog)
+
+    const [event] = await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorUserId: 'agent-1',
+      actorRole: 'AGENT',
+      from,
+      to,
+    })
+
+    expect(event).toMatchObject({
+      propertyLabel: 'Cobertura - Sossego, Piranguinho',
+      propertyAccessible: false,
+    })
+    expect(propertyCatalog.summaries).toHaveBeenCalledWith(
+      expect.objectContaining({ actorRole: 'AGENT', actorUserId: 'agent-1' }),
+      ['property-1'],
+    )
+  })
+})

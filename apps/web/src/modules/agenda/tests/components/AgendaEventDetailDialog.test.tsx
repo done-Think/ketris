@@ -33,6 +33,7 @@ const event: AgendaEvent = {
   property: 'Apartamento Jardim Paulista',
   propertyHref: { pathname: '/dashboard/properties/[id]', params: { id: 'apt-jardins-3q' } },
   propertyId: 'apt-jardins-3q',
+  propertyAccessible: true,
   apiKind: 'VISIT',
   participant: 'Ana Nóbrega',
   phone: '(11) 99842-2109',
@@ -48,6 +49,7 @@ function renderDialog(
   overrides: Partial<{
     onEdit: ReturnType<typeof vi.fn>
     onDelete: ReturnType<typeof vi.fn>
+    event: AgendaEvent
   }> = {},
 ) {
   const onEdit = overrides.onEdit ?? vi.fn().mockResolvedValue(true)
@@ -57,7 +59,7 @@ function renderDialog(
   render(
     <ThemeProvider theme={theme}>
       <AgendaEventDetailDialog
-        event={event}
+        event={overrides.event ?? event}
         isDeleting={false}
         isSaving={false}
         maxDate="2026-12-31"
@@ -87,6 +89,13 @@ describe('AgendaEventDetailDialog', () => {
 
     expect(screen.getByRole('button', { name: 'Excluir' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Editar' })).toBeVisible()
+  })
+
+  it('shows which property it is without a link when the broker has no access to it', () => {
+    renderDialog({ event: { ...event, propertyAccessible: false } })
+
+    expect(screen.getByText(event.property)).toBeVisible()
+    expect(screen.queryByRole('link', { name: event.property })).not.toBeInTheDocument()
   })
 
   it('shows a placeholder when the event has no property linked', () => {

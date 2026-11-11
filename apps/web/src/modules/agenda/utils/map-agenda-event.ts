@@ -75,6 +75,7 @@ export function toAgendaEvent(
         ? { pathname: '/dashboard/properties/[id]', params: { id: api.propertyId } }
         : '/dashboard/properties'),
     propertyId: api.propertyId,
+    propertyAccessible: 'propertyAccessible' in api ? api.propertyAccessible : false,
     apiKind: api.kind,
     participant: 'participantName' in api ? api.participantName : api.responsibleName,
     phone: 'participantPhone' in api ? api.participantPhone : '',
