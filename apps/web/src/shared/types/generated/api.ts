@@ -13696,7 +13696,7 @@ export interface paths {
     }
     /**
      * Lista imóveis do tenant autenticado
-     * @description RENTER consulta somente imóveis com contrato ACTIVE do mesmo tenant e vínculo explícito de RENTER ao seu usuário, independentemente do status do anúncio.
+     * @description RENTER consulta somente imóveis com contrato ACTIVE e vínculo explícito de RENTER ao seu usuário, inclusive de outras imobiliárias quando a conta está no tenant compartilhado de locatários (contrato e imóvel da mesma imobiliária), independentemente do status do anúncio.
      */
     get: {
       parameters: {
