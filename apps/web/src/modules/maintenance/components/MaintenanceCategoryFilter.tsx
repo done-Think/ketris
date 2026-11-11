@@ -21,7 +21,18 @@ export function MaintenanceCategoryFilter({
   return (
     <TextField
       select
-      label={t('filterDialog.category')}
+      label={compact ? undefined : t('filterDialog.category')}
+      slotProps={{
+        select: compact
+          ? {
+              inputProps: { 'aria-label': t('filterDialog.category') },
+              renderValue: () =>
+                isMaintenanceCategory(value)
+                  ? t(`categories.${maintenanceCategoryKeys[value]}`)
+                  : t('filterDialog.category'),
+            }
+          : undefined,
+      }}
       value={value}
       onChange={(event) =>
         onChange(isMaintenanceCategory(event.target.value) ? event.target.value : 'all')
