@@ -75,7 +75,7 @@
     "decimalPlaces": "Usa como máximo dos decimales.",
     "linkRequired": "Indica un vínculo.",
     "partyAndRenterRequired": "Indica la parte y el usuario inquilino juntos.",
-    "postalCodeInvalid": "Introduce un código postal de 8 dígitos.",
+    "postalCodeInvalid": "Introduce un código postal válido de 8 dígitos.",
     "cpfInvalid": "Introduce un CPF válido.",
     "cnpjInvalid": "Introduce un CNPJ válido.",
     "documentInvalid": "Introduce un CPF o CNPJ válido.",

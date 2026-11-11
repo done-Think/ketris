@@ -177,7 +177,7 @@
     "postalCode": {
       "idle": "Informe o CEP e saia do campo para preencher o endereço. Confira os dados antes de salvar.",
       "loading": "Consultando CEP…",
-      "notFound": "CEP não encontrado. Confira o CEP ou preencha o endereço manualmente.",
+      "notFound": "CEP não encontrado. Confira o CEP informado para continuar.",
       "unavailable": "Consulta de CEP indisponível. Você pode preencher o endereço manualmente."
     },
     "title": "Cadastrar imóvel",
@@ -242,6 +242,8 @@
       "concierge24h": "Portaria 24h"
     },
     "mediaDropzone": "Arraste imagens aqui ou clique para selecionar",
+    "mediaDropzoneHint": "JPG, PNG ou WEBP até {max} MB por foto.",
+    "mediaDropzoneReject": "Este formato não é aceito",
     "mediaUploading": "Enviando...",
     "mediaRemove": "Remover imagem",
     "mediaFeatured": "Foto de destaque",
@@ -265,7 +267,8 @@
       "cityRequired": "Informe a cidade",
       "stateRequired": "Informe a UF",
       "zipCodeRequired": "Informe o CEP",
-      "zipCodeInvalid": "Informe um CEP com 8 dígitos, como 37502-330.",
+      "zipCodeInvalid": "Informe um CEP válido",
+      "zipCodeNotFound": "CEP não encontrado. Confira o CEP informado.",
       "numberInvalid": "Informe um valor válido",
       "areaRequired": "Informe a área útil",
       "mainValueRequired": "Informe o valor principal",
@@ -283,6 +286,8 @@
     "ownersLoadError": "Não foi possível carregar os proprietários.",
     "mediaUploadFileError": "Não foi possível enviar \"{filename}\". Tente novamente.",
     "mediaStorageUnavailableFileError": "O serviço de imagens está indisponível. Não foi possível enviar \"{filename}\". Tente novamente mais tarde.",
+    "mediaRejectedType": "\"{filename}\" não foi enviado: use uma foto JPG, PNG ou WEBP.",
+    "mediaRejectedSize": "\"{filename}\" não foi enviado: a foto tem {size} MB e o limite é {max} MB.",
     "noOwnerAccess": "Sem conta de acesso vinculada",
     "ownerContactHelp": "Selecione um contato do CRM. O contato não precisa ter login e não receberá acesso automaticamente.",
     "ownerAccessHelp": "Esta conta poderá acessar o imóvel. O vínculo é independente do contato proprietário.",

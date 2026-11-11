@@ -177,7 +177,7 @@
     "postalCode": {
       "idle": "Enter the postal code and leave the field to fill in the address. Check the details before saving.",
       "loading": "Looking up postal code…",
-      "notFound": "Postal code not found. Check the code or enter the address manually.",
+      "notFound": "Postal code not found. Check the code you entered to continue.",
       "unavailable": "Postal code lookup is unavailable. You can enter the address manually."
     },
     "title": "List property",
@@ -242,6 +242,8 @@
       "concierge24h": "24h concierge"
     },
     "mediaDropzone": "Drag images here or click to select",
+    "mediaDropzoneHint": "JPG, PNG or WEBP up to {max} MB per photo.",
+    "mediaDropzoneReject": "This format is not accepted",
     "mediaUploading": "Uploading...",
     "mediaRemove": "Remove image",
     "mediaFeatured": "Cover photo",
@@ -265,7 +267,8 @@
       "cityRequired": "Enter the city",
       "stateRequired": "Enter the state",
       "zipCodeRequired": "Enter the ZIP code",
-      "zipCodeInvalid": "Enter a Brazilian postal code with 8 digits, such as 37502-330.",
+      "zipCodeInvalid": "Enter a valid ZIP code",
+      "zipCodeNotFound": "Postal code not found. Check the code you entered.",
       "numberInvalid": "Enter a valid value",
       "areaRequired": "Enter the usable area",
       "mainValueRequired": "Enter the main value",
@@ -283,6 +286,8 @@
     "ownersLoadError": "Could not load owners.",
     "mediaUploadFileError": "Could not upload \"{filename}\". Please try again.",
     "mediaStorageUnavailableFileError": "The image service is unavailable. Could not upload \"{filename}\". Please try again later.",
+    "mediaRejectedType": "\"{filename}\" was not uploaded: use a JPG, PNG or WEBP photo.",
+    "mediaRejectedSize": "\"{filename}\" was not uploaded: the photo is {size} MB and the limit is {max} MB.",
     "noOwnerAccess": "No linked access account",
     "ownerContactHelp": "Select a CRM contact. The contact does not need a login and will not receive access automatically.",
     "ownerAccessHelp": "This account can access the property. This link is independent of the owner contact.",

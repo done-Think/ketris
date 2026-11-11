@@ -4,6 +4,9 @@ import type { SxProps, Theme } from '@mui/material'
 export const styles = {
   cloudUploadOutlinedIcon: { color: brand.neutral[500], fontSize: iconSize.xl },
   typography: { color: brand.neutral[500], fontWeight: 900 },
+  rejectTypography: { color: 'error.main', fontWeight: 900 },
+  hint: { color: brand.neutral[500], fontSize: 13 },
+  rejectHint: { color: 'error.main', fontSize: 13 },
   box: {
     display: 'grid',
     gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, minmax(0, 1fr))' },
@@ -30,13 +33,13 @@ export const styles = {
   closeRoundedIcon: { fontSize: iconSize.sm },
 } satisfies Record<string, SxProps<Theme>>
 
-export function getDropzoneStyles(isDragActive: boolean): SxProps<Theme> {
+export function getDropzoneStyles(isDragActive: boolean, isDragReject = false): SxProps<Theme> {
   return {
     minHeight: 150,
     border: '1px dashed',
-    borderColor: isDragActive ? 'primary.main' : 'divider',
+    borderColor: isDragReject ? 'error.main' : isDragActive ? 'primary.main' : 'divider',
     borderRadius: `${radius.sm}px`,
-    bgcolor: isDragActive ? alpha.magenta[6] : surface.paper,
+    bgcolor: isDragReject ? alpha.error[6] : isDragActive ? alpha.magenta[6] : surface.paper,
     display: 'grid',
     placeItems: 'center',
     px: 2,

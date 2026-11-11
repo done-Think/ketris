@@ -78,3 +78,33 @@ it.each(['bedrooms', 'bathrooms', 'parkingSpaces'] as const)(
       )
   },
 )
+
+it.each(['00000-000', '00000000', '11111-111', '00999-999'])(
+  'blocks the CEP %s that cannot exist',
+  (zipCode) => {
+    const values = buildEditPropertyFormValues(editableProperty)
+    const result = schema.safeParse({ ...values, zipCode })
+    expect(result.success).toBe(false)
+    if (!result.success)
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: ['zipCode'], message: 'zipCodeInvalid' }),
+        ]),
+      )
+  },
+)
+
+it('blocks a CEP the postal code lookup did not find', () => {
+  const values = buildEditPropertyFormValues(editableProperty)
+  const blocking = createDashboardPropertySchema((key) => key, {
+    isPostalCodeNotFound: (zipCode) => zipCode === values.zipCode,
+  })
+  const result = blocking.safeParse(values)
+  expect(result.success).toBe(false)
+  if (!result.success)
+    expect(result.error.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: ['zipCode'], message: 'zipCodeNotFound' }),
+      ]),
+    )
+})
