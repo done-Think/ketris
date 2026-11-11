@@ -5,6 +5,7 @@ import {
   formatSearchCurrency,
   normalizeSearchText,
   parsePriceRange,
+  toPriceLimit,
 } from '../../utils/search'
 import { formatPropertyArea } from '../../utils/property-presentation'
 
@@ -74,5 +75,11 @@ describe('marketplace search utils', () => {
     expect(parsePriceRange('8000-2000')).toEqual({ min: null, max: null })
     expect(parsePriceRange('abc')).toEqual({ min: null, max: null })
     expect(parsePriceRange(undefined)).toEqual({ min: null, max: null })
+  })
+
+  it('turns an empty money field into an open price limit', () => {
+    expect(toPriceLimit('180000.5')).toBe(180000.5)
+    expect(toPriceLimit('0')).toBeNull()
+    expect(toPriceLimit('')).toBeNull()
   })
 })

@@ -177,7 +177,7 @@
     "postalCode": {
       "idle": "Introduce el código postal y sal del campo para completar la dirección. Revisa los datos antes de guardar.",
       "loading": "Consultando código postal…",
-      "notFound": "Código postal no encontrado. Revisa el código o introduce la dirección manualmente.",
+      "notFound": "Código postal no encontrado. Revisa el código introducido para continuar.",
       "unavailable": "La consulta del código postal no está disponible. Puedes introducir la dirección manualmente."
     },
     "title": "Publicar inmueble",
@@ -240,6 +240,8 @@
       "concierge24h": "Conserjería 24h"
     },
     "mediaDropzone": "Arrastra imágenes aquí o haz clic para seleccionar",
+    "mediaDropzoneHint": "JPG, PNG o WEBP de hasta {max} MB por foto.",
+    "mediaDropzoneReject": "Este formato no es compatible",
     "mediaUploading": "Enviando...",
     "mediaRemove": "Eliminar imagen",
     "mediaFeatured": "Foto de portada",
@@ -263,7 +265,8 @@
       "cityRequired": "Indica la ciudad",
       "stateRequired": "Indica el estado",
       "zipCodeRequired": "Indica el código postal",
-      "zipCodeInvalid": "Introduce un código postal brasileño de 8 dígitos, como 37502-330.",
+      "zipCodeInvalid": "Indica un código postal válido",
+      "zipCodeNotFound": "Código postal no encontrado. Revisa el código introducido.",
       "numberInvalid": "Indica un valor válido",
       "areaRequired": "Indica el área útil",
       "mainValueRequired": "Indica el valor principal",
@@ -282,6 +285,8 @@
     "ownersLoadError": "No se pudieron cargar los propietarios.",
     "mediaUploadFileError": "No se pudo subir \"{filename}\". Inténtelo de nuevo.",
     "mediaStorageUnavailableFileError": "El servicio de imágenes no está disponible. No se pudo subir \"{filename}\". Inténtelo más tarde.",
+    "mediaRejectedType": "\"{filename}\" no se envió: usa una foto JPG, PNG o WEBP.",
+    "mediaRejectedSize": "\"{filename}\" no se envió: la foto tiene {size} MB y el límite es {max} MB.",
     "noOwnerAccess": "Sin cuenta de acceso vinculada",
     "ownerContactHelp": "Seleccione un contacto del CRM. El contacto no necesita iniciar sesión ni recibirá acceso automáticamente.",
     "ownerAccessHelp": "Esta cuenta podrá acceder al inmueble. El vínculo es independiente del contacto propietario.",

@@ -14,9 +14,10 @@ import {
 import type {
   CreateDashboardPropertyFormValues,
   CreatePropertyPurpose,
+  DashboardPropertySchemaOptions,
 } from '../types/dashboard-property'
 import type { SchemaMessageTranslator } from '@shared/types'
-import { normalizePostalCode } from '@shared/utils/postal-code'
+import { isValidPostalCode, normalizePostalCode } from '@shared/utils/postal-code'
 
 export function createDashboardPropertySchema(
   t: SchemaMessageTranslator<
@@ -42,7 +43,9 @@ export function createDashboardPropertySchema(
     | 'titleTooLong'
     | 'zipCodeRequired'
     | 'zipCodeInvalid'
+    | 'zipCodeNotFound'
   >,
+  { isPostalCodeNotFound = () => false }: DashboardPropertySchemaOptions = {},
 ) {
   const numberField = z.coerce.number().nonnegative(t('numberInvalid'))
   const countField = numberField.int(t('integerRequired'))
@@ -72,7 +75,8 @@ export function createDashboardPropertySchema(
         .string()
         .trim()
         .min(1, t('zipCodeRequired'))
-        .refine((value) => normalizePostalCode(value) !== null, t('zipCodeInvalid'))
+        .refine(isValidPostalCode, t('zipCodeInvalid'))
+        .refine((value) => !isPostalCodeNotFound(value), t('zipCodeNotFound'))
         .transform((value) => normalizePostalCode(value)!),
       bedrooms: countField,
       bathrooms: countField,

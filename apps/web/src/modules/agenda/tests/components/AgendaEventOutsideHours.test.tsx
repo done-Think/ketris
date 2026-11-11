@@ -122,6 +122,7 @@ it('warns when an edited duration extends past business hours', async () => {
     property: '',
     propertyHref: '/dashboard/properties',
     propertyId: null,
+    propertyAccessible: false,
     apiKind: 'MEETING',
     participant: '',
     phone: '',

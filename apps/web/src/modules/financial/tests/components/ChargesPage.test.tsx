@@ -115,7 +115,8 @@ describe('ChargesPage', () => {
 
     await userEvent.type(within(dialog).getByLabelText('Descrição'), 'Taxa de condomínio')
     await userEvent.clear(within(dialog).getByLabelText('Valor'))
-    await userEvent.type(within(dialog).getByLabelText('Valor'), '450')
+    await userEvent.type(within(dialog).getByLabelText('Valor'), '045050')
+    expect(within(dialog).getByLabelText('Valor')).toHaveValue('450,50')
     await userEvent.type(within(dialog).getByLabelText('Vencimento'), '2026-11-05')
     await userEvent.click(within(dialog).getByRole('combobox', { name: 'Status inicial' }))
     const options = within(await screen.findByRole('listbox')).getAllByRole('option')
@@ -127,7 +128,7 @@ describe('ChargesPage', () => {
       expect(service.createCharge).toHaveBeenCalledWith({
         description: 'Taxa de condomínio',
         type: 'RECEIVABLE',
-        amount: 450,
+        amount: 450.5,
         dueDate: '2026-11-05',
         status: 'SCHEDULED',
       }),
@@ -148,8 +149,10 @@ describe('ChargesPage', () => {
         'Para mudar o status, use registrar pagamento ou cancelar cobrança.',
       ),
     ).toBeVisible()
+    expect(within(dialog).getByLabelText('Valor')).toHaveValue('2.800,00')
     await userEvent.clear(within(dialog).getByLabelText('Valor'))
-    await userEvent.type(within(dialog).getByLabelText('Valor'), '3000')
+    await userEvent.type(within(dialog).getByLabelText('Valor'), '300000')
+    expect(within(dialog).getByLabelText('Valor')).toHaveValue('3.000,00')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar alterações' }))
 
     await waitFor(() =>

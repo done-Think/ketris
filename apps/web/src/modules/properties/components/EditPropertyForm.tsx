@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react'
 
 import { styles } from '../styles/edit-property-form.styles'
 
-import { useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Divider } from '@mui/material'
@@ -16,7 +15,7 @@ import { useRouter } from '@/i18n/navigation'
 import { createPropertySteps } from '../config/dashboard-property-ui'
 import { usePropertyFormWizard } from '../hooks/use-property-form-wizard'
 import { useUpdateProperty, usePropertyMediaUploadsPending } from '../hooks/use-properties'
-import { createDashboardPropertySchema } from '../schemas/create-dashboard-property-schema'
+import { useDashboardPropertySchema } from '../hooks/use-dashboard-property-schema'
 import type {
   CreateDashboardPropertyFormValues,
   EditPropertyFormProps,
@@ -38,10 +37,7 @@ export function EditPropertyForm({ property }: EditPropertyFormProps) {
   const propertyId = property.id
   const updateProperty = useUpdateProperty(propertyId)
   const isUploading = usePropertyMediaUploadsPending()
-  const propertySchema = useMemo(
-    () => createDashboardPropertySchema((key) => stepsT(`errors.${key}`)),
-    [stepsT],
-  )
+  const propertySchema = useDashboardPropertySchema()
   const { control, handleSubmit, trigger, setValue, getValues } =
     useForm<CreateDashboardPropertyFormValues>({
       defaultValues: buildEditPropertyFormValues(property),

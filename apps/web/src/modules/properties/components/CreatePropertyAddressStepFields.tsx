@@ -55,7 +55,10 @@ export function CreatePropertyAddressStepFields({
                 if (name === 'zipCode') void postalCode.lookup()
               }}
               label={t(`fields.${label}`)}
-              error={Boolean(fieldState.error)}
+              error={
+                Boolean(fieldState.error) ||
+                (name === 'zipCode' && postalCode.status === 'notFound')
+              }
               helperText={
                 fieldState.error?.message ??
                 (name === 'zipCode' ? t(`postalCode.${postalCode.status}`) : undefined)

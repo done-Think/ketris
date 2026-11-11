@@ -198,7 +198,7 @@
       },
       "AgendaEventStatus": {
         "type": "string",
-        "enum": ["CONFIRMED", "PENDING", "RESCHEDULE", "CANCELLED"]
+        "enum": ["CONFIRMED", "PENDING", "RESCHEDULE", "CANCELLED", "COMPLETED", "NO_SHOW"]
       },
       "AgendaEventLinkedUser": {
         "type": "object",
@@ -206,6 +206,12 @@
         "properties": { "name": { "type": "string" }, "email": { "type": "string" } },
         "required": ["name", "email"],
         "description": "Dono explícito do evento (acesso de leitura)."
+      },
+      "AgendaVisitInterest": {
+        "type": "string",
+        "nullable": true,
+        "enum": ["LOW", "MEDIUM", "HIGH"],
+        "description": "Interesse do cliente, informado apenas em visitas realizadas."
       },
       "AgendaEvent": {
         "type": "object",
@@ -231,6 +237,10 @@
           },
           "propertyId": { "type": "string", "nullable": true },
           "propertyLabel": { "type": "string", "nullable": true },
+          "propertyAccessible": {
+            "type": "boolean",
+            "description": "Indica se o usuário pode abrir o imóvel. Um corretor vê o rótulo do imóvel de um evento atribuído a ele mesmo sem ser o responsável pelo imóvel, mas não ganha acesso ao cadastro."
+          },
           "propertyReference": {
             "type": "string",
             "nullable": true,
@@ -253,6 +263,20 @@
           "cancelledAt": { "type": "string", "nullable": true },
           "cancelledById": { "type": "string", "nullable": true },
           "cancellationReason": { "type": "string", "nullable": true },
+          "outcomeRecordedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Momento em que o resultado (realizado ou não compareceu) foi registrado."
+          },
+          "outcomeRecordedById": { "type": "string", "nullable": true },
+          "outcomeRecordedBy": {
+            "type": "object",
+            "nullable": true,
+            "properties": { "name": { "type": "string" } },
+            "required": ["name"]
+          },
+          "visitInterest": { "$ref": "#/components/schemas/AgendaVisitInterest" },
+          "outcomeNotes": { "type": "string", "nullable": true },
           "createdAt": { "type": "string" },
           "updatedAt": { "type": "string" }
         },
@@ -267,6 +291,7 @@
           "createdBy",
           "propertyId",
           "propertyLabel",
+          "propertyAccessible",
           "propertyReference",
           "title",
           "kind",
@@ -281,6 +306,11 @@
           "cancelledAt",
           "cancelledById",
           "cancellationReason",
+          "outcomeRecordedAt",
+          "outcomeRecordedById",
+          "outcomeRecordedBy",
+          "visitInterest",
+          "outcomeNotes",
           "createdAt",
           "updatedAt"
         ]
@@ -1307,7 +1337,7 @@
           "zipCode": {
             "type": "string",
             "minLength": 8,
-            "description": "CEP brasileiro com 8 dígitos. Pontos, espaços e hífen são aceitos e removidos ao salvar.",
+            "description": "CEP brasileiro com 8 dígitos, a partir de 01000-000 e sem todos os dígitos repetidos (00000-000, 11111-111…). Pontos, espaços e hífen são aceitos e removidos ao salvar.",
             "example": "37502330"
           },
           "latitude": { "type": "number", "nullable": true, "minimum": -90, "maximum": 90 },
@@ -3056,6 +3086,22 @@
         "required": ["requestId", "code"],
         "additionalProperties": false
       },
+      "AgendaEventOutcome": { "type": "string", "enum": ["COMPLETED", "NO_SHOW"] },
+      "RecordAgendaEventOutcomeRequest": {
+        "type": "object",
+        "properties": {
+          "outcome": { "$ref": "#/components/schemas/AgendaEventOutcome" },
+          "visitInterest": {
+            "allOf": [
+              { "$ref": "#/components/schemas/AgendaVisitInterest" },
+              { "description": "Obrigatório em visita realizada e proibido nos demais casos." }
+            ]
+          },
+          "notes": { "type": "string", "maxLength": 10000 }
+        },
+        "required": ["outcome"],
+        "additionalProperties": false
+      },
       "RefreshPlatformTokenRequest": {
         "type": "object",
         "properties": { "refreshToken": { "type": "string", "minLength": 1 } },
@@ -3422,6 +3468,11 @@
         "required": ["leadName", "leadEmail"],
         "additionalProperties": false
       },
+      "AgendaEventEditableStatus": {
+        "type": "string",
+        "enum": ["CONFIRMED", "PENDING", "RESCHEDULE", "CANCELLED"],
+        "description": "Status que podem ser definidos na edição. O resultado tem rota própria."
+      },
       "UpdateAgendaEventRequest": {
         "type": "object",
         "properties": {
@@ -3436,7 +3487,7 @@
           "internal": { "type": "boolean" },
           "title": { "type": "string", "minLength": 3 },
           "kind": { "$ref": "#/components/schemas/AgendaEventKind" },
-          "status": { "$ref": "#/components/schemas/AgendaEventStatus" },
+          "status": { "$ref": "#/components/schemas/AgendaEventEditableStatus" },
           "cancellationReason": { "type": "string", "minLength": 1, "maxLength": 10000 },
           "propertyId": { "type": "string", "nullable": true, "minLength": 1 },
           "propertyReference": {
@@ -10939,7 +10990,10 @@
             }
           },
           "409": {
-            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+            "description": "O resultado do evento já foi registrado (AGENDA_EVENT_CLOSED).",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
           }
         }
       }
@@ -11000,7 +11054,7 @@
             }
           },
           "409": {
-            "description": "O responsável já tem outro evento agendado nesse horário.",
+            "description": "O responsável já tem outro evento agendado nesse horário, ou o resultado do evento já foi registrado (AGENDA_EVENT_CLOSED).",
             "content": {
               "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
             }
@@ -11064,7 +11118,81 @@
             }
           },
           "409": {
-            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+            "description": "O resultado do evento já foi registrado (AGENDA_EVENT_CLOSED).",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/agenda/events/{id}/outcome": {
+      "post": {
+        "tags": ["Agenda"],
+        "summary": "Registra o resultado de um evento: realizado ou cliente não compareceu",
+        "description": "Só a equipe da imobiliária (OWNER e AGENT) registra, com as mesmas regras de acesso da edição. Aceito a partir do início do evento e nunca em evento cancelado. Em visita realizada, visitInterest é obrigatório; nos demais casos é recusado. NO_SHOW não se aplica a evento interno. Depois do registro o evento fica fechado para edição, reagendamento e cancelamento; só o OWNER pode registrar de novo para corrigir. Status, autor, data e auditoria são gravados na mesma transação.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1 },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RecordAgendaEventOutcomeRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado registrado.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AgendaEventResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Corpo inválido, interesse ausente em visita realizada (AGENDA_VISIT_INTEREST_REQUIRED), interesse fora de visita realizada (AGENDA_VISIT_INTEREST_NOT_ALLOWED) ou ausência em evento interno (AGENDA_NO_SHOW_INTERNAL_EVENT).",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Access token ausente, inválido ou expirado.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "Sem permissão para registrar o resultado deste evento.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Evento não encontrado neste tenant.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "Evento ainda não começou (AGENDA_OUTCOME_BEFORE_START), cancelado (AGENDA_OUTCOME_CANCELLED_EVENT), já com resultado para quem não é OWNER (AGENDA_EVENT_CLOSED) ou alterado por outra pessoa durante o registro (CONFLICT).",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
           }
         }
       }

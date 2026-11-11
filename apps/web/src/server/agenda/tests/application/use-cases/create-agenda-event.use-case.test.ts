@@ -67,6 +67,7 @@ function createDeps(overrides?: {
     update: vi.fn(),
     reschedule: vi.fn(),
     cancel: vi.fn(),
+    recordOutcome: vi.fn(),
     hasOverlap: overrides?.hasOverlap ?? vi.fn().mockResolvedValue(false),
   }
   const userRepository: UserRepository = {

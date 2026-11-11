@@ -49,6 +49,7 @@ function createDeps(overrides?: {
     update: overrides?.update ?? vi.fn().mockResolvedValue(updatedEvent),
     reschedule: vi.fn(),
     cancel: vi.fn(),
+    recordOutcome: vi.fn(),
     hasOverlap: vi.fn(),
   }
   const propertyRepository: AgendaPropertyLookup = {
@@ -234,4 +235,25 @@ describe('UpdateAgendaEventUseCase', () => {
       )
     },
   )
+
+  it('não edita evento com resultado registrado, nem para o OWNER', async () => {
+    const deps = createDeps({
+      agendaFindByTenantAndId: vi.fn().mockResolvedValue({ ...shortEvent, status: 'NO_SHOW' }),
+    })
+    const useCase = new UpdateAgendaEventUseCase(
+      deps.agendaEventRepository,
+      deps.propertyRepository,
+      deps.userRepository,
+    )
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorRole: 'OWNER',
+        id: 'event-1',
+        title: 'Atualizado',
+      }),
+    ).rejects.toMatchObject({ status: 409, code: 'AGENDA_EVENT_CLOSED' })
+    expect(deps.agendaEventRepository.update).not.toHaveBeenCalled()
+  })
 })

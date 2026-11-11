@@ -212,6 +212,7 @@ describe('OpportunityDetail', () => {
 
     await user.click(screen.getByRole('button', { name: 'Editar dados' }))
     const dialog = screen.getByRole('dialog', { name: 'Editar oportunidade' })
+    expect(within(dialog).getByLabelText(/^Valor proposto/)).toHaveValue('4.800,00')
     const observations = within(dialog).getByLabelText('Observações')
     fireEvent.change(observations, { target: { value: 'Agendar retorno na sexta-feira.' } })
     await user.click(within(dialog).getByRole('button', { name: 'Salvar alterações' }))

@@ -184,7 +184,7 @@
         "endDate": "End",
         "adjustmentIndex": "Adjustment index",
         "notes": "Notes",
-        "amount": "Contract amount (BRL)"
+        "amount": "Contract amount"
       },
       "contractTypeOptions": {
         "residential": "Residential",
