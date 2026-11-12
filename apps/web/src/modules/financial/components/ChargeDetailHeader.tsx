@@ -14,6 +14,7 @@ import { ChargeStatusChip } from './ChargeStatusChip'
 
 export function ChargeDetailHeader({
   charge,
+  direction,
   canManage,
   onRegisterPayment,
   onReversePayment,
@@ -22,11 +23,7 @@ export function ChargeDetailHeader({
   const t = useTranslations('charges.details')
   const format = useFinancialFormat()
   const router = useRouter()
-  const subtitle = [
-    t(`directions.${charge.direction}`),
-    charge.property,
-    format.month(charge.competence),
-  ]
+  const subtitle = [t(`directions.${direction}`), charge.property, format.month(charge.competence)]
     .filter(Boolean)
     .join(' — ')
 

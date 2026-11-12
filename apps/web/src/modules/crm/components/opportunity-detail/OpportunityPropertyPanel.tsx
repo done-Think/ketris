@@ -3,6 +3,7 @@ import { Alert, Box, Button, Paper, Skeleton, Stack, Typography } from '@mui/mat
 import { useTranslations } from 'next-intl'
 import { useCrmFormatter } from '../../hooks/use-crm-formatter'
 import * as crmStyles from '../../styles/opportunity-property-panel.styles'
+import { toCrmPropertyType } from '../../utils/property-type'
 
 import type { OpportunityPropertyPanelProps } from '../../types/opportunity-detail'
 
@@ -16,6 +17,7 @@ export function OpportunityPropertyPanel({
 }: OpportunityPropertyPanelProps) {
   const format = useCrmFormatter()
   const t = useTranslations('crm.opportunityDetail.propertyPanel')
+  const propertyTypeLabel = t(`propertyTypes.${toCrmPropertyType(property?.propertyType)}`)
 
   return (
     <Paper component="section" elevation={0} sx={crmStyles.paperSx}>
@@ -53,11 +55,7 @@ export function OpportunityPropertyPanel({
             <Box minWidth={0}>
               <Typography sx={crmStyles.typographySx2}>{property.title}</Typography>
               <Typography color="text.secondary" sx={crmStyles.typographySx3}>
-                {[
-                  property.propertyType,
-                  property.area ? `${property.area} m²` : null,
-                  propertyLocation,
-                ]
+                {[propertyTypeLabel, property.area ? `${property.area} m²` : null, propertyLocation]
                   .filter(Boolean)
                   .join(' · ')}
               </Typography>

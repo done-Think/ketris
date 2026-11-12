@@ -323,7 +323,16 @@
       "title": "Imóvel associado",
       "retry": "Tentar novamente",
       "loadError": "Não foi possível carregar o imóvel associado. Referência: {id}",
-      "monthlySuffix": "/mês"
+      "monthlySuffix": "/mês",
+      "propertyTypes": {
+        "APARTMENT": "Apartamento",
+        "HOUSE": "Casa",
+        "STUDIO": "Studio",
+        "PENTHOUSE": "Cobertura",
+        "COMMERCIAL": "Comercial",
+        "LOFT": "Loft",
+        "OTHER": "Outro"
+      }
     },
     "fields": {
       "name": "Nome",

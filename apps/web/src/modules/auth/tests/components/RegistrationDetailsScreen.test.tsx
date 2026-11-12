@@ -67,6 +67,35 @@ describe('RegistrationDetailsScreen', () => {
     })
   })
 
+  it('mostra passo 2 de 3 nos dados e passo 3 de 3 na confirmação do e-mail e no cadastro enviado', async () => {
+    const user = userEvent.setup()
+    vi.mocked(authService.confirmSignupCode).mockResolvedValue({
+      outcome: 'PENDING_APPROVAL',
+      email: 'corretor@ketris.dev',
+    })
+
+    renderScreen()
+    expect(screen.getByText('Passo 2 de 3')).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: 'Etapa 2 de 3' })).toHaveAttribute(
+      'aria-valuenow',
+      '2',
+    )
+
+    await fillAndSubmit(user)
+    expect(await screen.findByText('Confirme seu e-mail')).toBeInTheDocument()
+    expect(screen.getByText('Passo 3 de 3')).toBeInTheDocument()
+    expect(screen.queryByText('Passo 2 de 3')).not.toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: 'Etapa 3 de 3' })).toHaveAttribute(
+      'aria-valuenow',
+      '3',
+    )
+
+    await user.type(screen.getAllByLabelText(/Código de verificação/)[0], '123456')
+    await user.click(screen.getByRole('button', { name: /^Confirmar$/ }))
+    expect(await screen.findByText('Cadastro enviado!')).toBeInTheDocument()
+    expect(screen.getByText('Passo 3 de 3')).toBeInTheDocument()
+  }, 20000)
+
   it('troca pra tela de confirmação quando o cadastro fica pendente de aprovação', async () => {
     const user = userEvent.setup()
     vi.mocked(authService.confirmSignupCode).mockResolvedValue({
