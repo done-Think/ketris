@@ -15227,7 +15227,7 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** Transfere imóveis (com as oportunidades), leads e eventos futuros para outro corretor */
+    /** Transfere imóveis (com as oportunidades), leads e eventos futuros de um corretor ou da própria imobiliária para outro membro da equipe */
     post: {
       parameters: {
         query?: never

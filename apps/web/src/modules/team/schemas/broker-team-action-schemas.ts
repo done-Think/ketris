@@ -28,6 +28,7 @@ export function createBrokerTransferSchema(
 ) {
   return z
     .object({
+      sourceId: z.string().min(1),
       destinationId: z.string().min(1, t('destinationError')),
       properties: z.boolean(),
       leads: z.boolean(),

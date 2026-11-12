@@ -42,6 +42,11 @@ export interface BrokerDestinationDialogProps extends BrokerMemberDialogProps {
   destinations: TransferDestination[]
 }
 
+export interface BrokerTransferDialogProps extends BrokerMemberDialogProps {
+  members: readonly TeamMember[]
+  self: TransferDestination | null
+}
+
 export interface BrokerInviteDialogProps {
   onClose: () => void
 }
