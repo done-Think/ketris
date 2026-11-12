@@ -72,7 +72,8 @@
       "previous": "Previous page",
       "first": "First page",
       "last": "Last page"
-    }
+    },
+    "managedBy": "Managed by {agency}"
   },
   "status": {
     "draft": "Draft",
@@ -262,6 +263,7 @@
     "uploadBusy": "Wait for the PDF upload to finish before changing the contract.",
     "back": "Back",
     "landlord": "Landlord",
+    "landlordView": "You follow this contract as the landlord. It is managed by {agency}. To change anything, contact the agency.",
     "guarantor": "Guarantor",
     "manual": "Manual record",
     "provider": "Electronic signature"

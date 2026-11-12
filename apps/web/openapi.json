@@ -635,6 +635,7 @@
         "properties": {
           "id": { "type": "string" },
           "tenantId": { "type": "string" },
+          "agencyName": { "type": "string" },
           "propertyId": { "type": "string" },
           "property": {
             "type": "object",
@@ -687,6 +688,7 @@
         "required": [
           "id",
           "tenantId",
+          "agencyName",
           "propertyId",
           "property",
           "opportunityId",
@@ -822,6 +824,8 @@
         "properties": {
           "canEdit": { "type": "boolean" },
           "id": { "type": "string" },
+          "tenantId": { "type": "string" },
+          "agencyName": { "type": "string" },
           "code": { "type": "string" },
           "opportunityId": { "type": "string" },
           "propertyId": { "type": "string" },
@@ -850,6 +854,8 @@
         "required": [
           "canEdit",
           "id",
+          "tenantId",
+          "agencyName",
           "code",
           "opportunityId",
           "propertyId",

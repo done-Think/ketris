@@ -75,6 +75,7 @@ export const contractSchema = z
   .object({
     id: z.string(),
     tenantId: z.string(),
+    agencyName: z.string(),
     propertyId: z.string(),
     property: z.object({ title: z.string(), address: z.string() }),
     opportunityId: z.string(),
@@ -111,6 +112,8 @@ export const contractListItemSchema = z
   .object({
     canEdit: z.boolean(),
     id: z.string(),
+    tenantId: z.string(),
+    agencyName: z.string(),
     code: z.string(),
     opportunityId: z.string(),
     propertyId: z.string(),

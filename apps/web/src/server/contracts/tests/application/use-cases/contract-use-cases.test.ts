@@ -27,6 +27,7 @@ const contract: Contract = {
   closedBy: null,
   closingReason: null,
   tenantId: 'tenant-1',
+  agencyName: 'Imobiliária',
   propertyId: 'property-1',
   property: { title: 'Apartamento', address: 'Rua do contrato' },
   opportunityId: 'opportunity-1',
@@ -258,7 +259,7 @@ describe('CreateContractFromOpportunityUseCase', () => {
 
 describe('ListContractsUseCase', () => {
   it.each(['OWNER'] as const)(
-    'lista todos os contratos do tenant para %s, sem filtro de responsável',
+    'lista todos os contratos do tenant para %s, sem filtro de responsável, mais os que ele é locador vinculado',
     async (actorRole) => {
       const repository = createRepository()
       const useCase = new ListContractsUseCase(repository)
@@ -272,7 +273,7 @@ describe('ListContractsUseCase', () => {
 
       expect(repository.findMany).toHaveBeenCalledWith(
         { status: 'ACTIVE' },
-        { kind: 'tenant', tenantId: 'tenant-1' },
+        { kind: 'tenant', tenantId: 'tenant-1', landlordUserId: 'user-1' },
       )
     },
   )
@@ -335,6 +336,7 @@ describe('GetContractUseCase', () => {
     expect(repository.findById).toHaveBeenCalledWith('contract-1', {
       kind: 'tenant',
       tenantId: 'tenant-1',
+      landlordUserId: expect.any(String),
     })
   })
 

@@ -37,12 +37,16 @@ describe('resolveContractManageScope', () => {
 })
 
 describe('resolveContractReadScope', () => {
-  it.each(['OWNER'] as const)('libera a leitura do tenant inteiro para %s', (role) => {
-    expect(resolveContractReadScope('tenant-1', 'user-1', role)).toEqual({
-      kind: 'tenant',
-      tenantId: 'tenant-1',
-    })
-  })
+  it.each(['OWNER'] as const)(
+    'libera a leitura do tenant inteiro para %s e dos contratos em que é locador vinculado',
+    (role) => {
+      expect(resolveContractReadScope('tenant-1', 'user-1', role)).toEqual({
+        kind: 'tenant',
+        tenantId: 'tenant-1',
+        landlordUserId: 'user-1',
+      })
+    },
+  )
 
   it('limita a leitura do AGENT aos imóveis pelos quais ele é responsável', () => {
     expect(resolveContractReadScope('tenant-1', 'agent-1', 'AGENT')).toEqual({

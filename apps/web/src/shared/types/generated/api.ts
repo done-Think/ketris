@@ -15926,6 +15926,7 @@ export interface components {
       activatedBy: components['schemas']['ContractActor']
       /** @enum {string} */
       adjustmentIndex: 'IPCA' | 'IGPM' | 'INPC'
+      agencyName: string
       amount: number
       cancellationReason: string | null
       cancelledAt: string | null
@@ -16041,6 +16042,7 @@ export interface components {
       totalCount: number
     }
     ContractListItem: {
+      agencyName: string
       amount: number
       canEdit: boolean
       code: string
@@ -16055,6 +16057,7 @@ export interface components {
       /** @enum {string} */
       status:
         'DRAFT' | 'IN_REVIEW' | 'AWAITING_SIGNATURE' | 'SIGNED' | 'ACTIVE' | 'CLOSED' | 'CANCELED'
+      tenantId: string
       tenantName: string | null
       /** @enum {string} */
       type: 'RESIDENTIAL' | 'COMMERCIAL' | 'SEASONAL'

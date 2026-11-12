@@ -16,7 +16,11 @@ export function contractListQuery(filters: ContractListFilters, scope: ContractR
       Prisma.sql`EXISTS (SELECT 1 FROM contract_parties p JOIN users u ON u.id = p."userId" WHERE p."contractId" = c.id AND p.role = 'RENTER' AND p."userId" = ${scope.userId} AND u.active = true AND u.role = 'RENTER')`,
     )
   } else {
-    conditions.push(Prisma.sql`c."tenantId" = ${scope.tenantId}`)
+    conditions.push(
+      scope.kind === 'tenant' && scope.landlordUserId
+        ? Prisma.sql`(c."tenantId" = ${scope.tenantId} OR EXISTS (SELECT 1 FROM contract_parties p JOIN users u ON u.id = p."userId" WHERE p."contractId" = c.id AND p.role = 'LANDLORD' AND p."userId" = ${scope.landlordUserId} AND u.active = true))`
+        : Prisma.sql`c."tenantId" = ${scope.tenantId}`,
+    )
     if (scope.kind === 'propertyOwner') conditions.push(Prisma.sql`i."ownerId" = ${scope.ownerId}`)
     else if (scope.responsibleId)
       conditions.push(Prisma.sql`i."responsibleId" = ${scope.responsibleId}`)

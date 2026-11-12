@@ -42,6 +42,7 @@ export type ContractFilterTab = {
 
 export type ContractListItem = {
   canEdit: boolean
+  managedBy: string | null
   id: string
   code: string
   title: string
