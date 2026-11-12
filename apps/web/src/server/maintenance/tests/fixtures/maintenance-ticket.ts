@@ -26,6 +26,7 @@ export const contract: MaintenanceContract = {
   id: 'contract-1',
   tenantId: 'tenant-1',
   code: 'C-1',
+  status: 'ACTIVE',
   propertyId: 'property-1',
   propertyTitle: 'Property',
   agentId: 'agent',

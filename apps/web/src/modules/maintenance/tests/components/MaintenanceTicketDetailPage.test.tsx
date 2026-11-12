@@ -410,16 +410,19 @@ describe('MaintenanceTicketDetailPage', () => {
       vi.mocked(useMaintenanceOptions).mockReturnValue({
         data: {
           users: [],
-          contracts: ['contract-1', 'contract-2', 'another-property'].map((id) => ({
-            id,
-            code: id,
-            propertyId: id === 'another-property' ? 'p2' : 'p1',
-            propertyTitle: 'Apt Jardins 3q',
-            agentId: 'agent',
-            ownerId: null,
-            renterIds: [],
-            parties: [],
-          })),
+          contracts: ['contract-1', 'contract-2', 'another-property', 'closed-contract'].map(
+            (id) => ({
+              id,
+              code: id,
+              status: id === 'closed-contract' ? 'CLOSED' : 'ACTIVE',
+              propertyId: id === 'another-property' ? 'p2' : 'p1',
+              propertyTitle: 'Apt Jardins 3q',
+              agentId: 'agent',
+              ownerId: null,
+              renterIds: [],
+              parties: [],
+            }),
+          ),
         },
       } as unknown as ReturnType<typeof useMaintenanceOptions>)
       const user = userEvent.setup()
@@ -430,6 +433,7 @@ describe('MaintenanceTicketDetailPage', () => {
       expect(actionMutation.mutateAsync).not.toHaveBeenCalled()
       await user.click(screen.getByRole('combobox', { name: /Contrato do chamado/ }))
       expect(screen.queryByRole('option', { name: /another-property/ })).not.toBeInTheDocument()
+      expect(screen.queryByRole('option', { name: /closed-contract/ })).not.toBeInTheDocument()
       expect(screen.getByRole('option', { name: /contract-1/ })).toBeVisible()
       await user.click(screen.getByRole('option', { name: /contract-2/ }))
       await user.click(screen.getByRole('button', { name: 'Confirmar' }))

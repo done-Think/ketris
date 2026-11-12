@@ -1,4 +1,4 @@
-import { ForbiddenError } from '@server/shared/errors'
+import { ConflictError, ForbiddenError } from '@server/shared/errors'
 import { planMaintenanceAction } from '../domain/maintenance-action'
 import { assertAdmin } from '../domain/maintenance-policy'
 import type { MaintenanceAction, MaintenanceActor } from '../types/maintenance-ticket'
@@ -14,7 +14,8 @@ export async function actOnTicket(
   const ticket = await loadTicket(repository, actor, ticketId)
   if (action.action === 'linkContract') {
     assertAdmin(actor)
-    await validateContract(repository, actor, action.contractId, ticket.propertyId)
+    const contract = await validateContract(repository, actor, action.contractId, ticket.propertyId)
+    if (contract.status !== 'ACTIVE') throw new ConflictError('Selecione um contrato ativo.')
   }
   const plan = planMaintenanceAction(actor, ticket, action)
   if (plan.changes.responsibleId) {

@@ -254,6 +254,23 @@ describe('/api/maintenance regularization (database integration)', () => {
     ).toBe(200)
   })
 
+  it('links a ticket only to an active contract of its property', async () => {
+    const before = await legacyTicket()
+    const closed = await anotherContract()
+    await prisma.contract.update({ where: { id: closed.id }, data: { status: 'CLOSED' } })
+    expect(
+      (
+        await action(before.id, env.fixture.admin.token, {
+          action: 'linkContract',
+          contractId: closed.id,
+        })
+      ).status,
+    ).toBe(409)
+    expect(
+      (await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id: before.id } })).contractId,
+    ).toBeNull()
+  })
+
   it('allows only admin to regularize and rejects accounts with a different party email', async () => {
     const input = {
       contractId: env.fixture.contract.id,

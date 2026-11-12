@@ -2582,6 +2582,7 @@
               "properties": {
                 "id": { "type": "string" },
                 "code": { "type": "string" },
+                "status": { "type": "string" },
                 "propertyId": { "type": "string" },
                 "propertyTitle": { "type": "string" },
                 "agentId": { "type": "string" },
@@ -2604,6 +2605,7 @@
               "required": [
                 "id",
                 "code",
+                "status",
                 "propertyId",
                 "propertyTitle",
                 "agentId",
@@ -13334,6 +13336,7 @@
                         "properties": {
                           "id": { "type": "string" },
                           "code": { "type": "string" },
+                          "status": { "type": "string" },
                           "propertyId": { "type": "string" },
                           "propertyTitle": { "type": "string" },
                           "agentId": { "type": "string" },
@@ -13356,6 +13359,7 @@
                         "required": [
                           "id",
                           "code",
+                          "status",
                           "propertyId",
                           "propertyTitle",
                           "agentId",
