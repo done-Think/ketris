@@ -59,7 +59,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
   }
   async findUser(tenantId: string, userId: string) {
     const row = await prisma.user.findFirst({
-      where: { id: userId, tenantId, active: true },
+      where: { id: userId, tenantId, active: true, membershipApprovedAt: { not: null } },
       select: { id: true, role: true },
     })
     return row ? { id: row.id, role: row.role } : null
@@ -98,7 +98,11 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
           where: {
             active: true,
             OR: [
-              { tenantId: actor.actorTenantId, role: { not: 'RENTER' } },
+              {
+                tenantId: actor.actorTenantId,
+                role: { not: 'RENTER' },
+                membershipApprovedAt: { not: null },
+              },
               { role: 'RENTER', email: { in: renterEmails, mode: 'insensitive' } },
             ],
           },
