@@ -58,8 +58,9 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
   const searchParams = useSearchParams()
   const [editing, setEditing] = useState(() => searchParams.get('edit') === '1')
   const [uploading, setUploading] = useState(false)
-  const canManage = session?.role === 'OWNER' || session?.role === 'AGENT'
-  const canLink = session?.role === 'OWNER'
+  const landlordView = Boolean(query.data) && query.data?.tenantId !== session?.tenantId
+  const canManage = (session?.role === 'OWNER' || session?.role === 'AGENT') && !landlordView
+  const canLink = session?.role === 'OWNER' && !landlordView
 
   if (query.isPending)
     return (
@@ -115,6 +116,11 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
             setTransitionAction('close')
           }}
         />
+        {landlordView && (
+          <Alert severity="info" sx={styles.landlordAlert}>
+            {t('landlordView', { agency: data.agencyName })}
+          </Alert>
+        )}
         {uploading && <Alert severity="info">{t('uploadBusy')}</Alert>}
         {query.isError && (
           <Alert

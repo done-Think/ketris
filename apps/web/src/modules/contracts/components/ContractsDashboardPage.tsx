@@ -54,7 +54,7 @@ export function ContractsDashboardPage() {
     pageSize: model.pageSize,
   })
   const contracts = (query.data?.items ?? []).map((item) =>
-    mapContractListItemFromApi(item, presentation),
+    mapContractListItemFromApi(item, presentation, session?.tenantId),
   )
   const summary = query.data?.summary
   const metrics: ContractMetric[] = [

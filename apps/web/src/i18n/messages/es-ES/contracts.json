@@ -72,7 +72,8 @@
       "previous": "Página anterior",
       "first": "Primera página",
       "last": "Última página"
-    }
+    },
+    "managedBy": "Administrado por {agency}"
   },
   "status": {
     "draft": "Borrador",
@@ -262,6 +263,7 @@
     "uploadBusy": "Espere a que finalice la carga del PDF antes de modificar el contrato.",
     "back": "Volver",
     "landlord": "Arrendador",
+    "landlordView": "Sigues este contrato como arrendador. Lo administra {agency}. Para cambiar algo, habla con la inmobiliaria.",
     "guarantor": "Fiador",
     "manual": "Registro manual",
     "provider": "Firma electrónica"

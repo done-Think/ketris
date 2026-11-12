@@ -95,7 +95,10 @@ describe('casos de uso do ciclo de vida de Contracts', () => {
   })
 
   it.each([
-    { actorRole: 'OWNER' as const, scope: { kind: 'tenant', tenantId: 'agency' } },
+    {
+      actorRole: 'OWNER' as const,
+      scope: { kind: 'tenant', tenantId: 'agency', landlordUserId: 'manager' },
+    },
     {
       actorRole: 'AGENT' as const,
       scope: { kind: 'tenant', tenantId: 'agency', responsibleId: 'manager' },

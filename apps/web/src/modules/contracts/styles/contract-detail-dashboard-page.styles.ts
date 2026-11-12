@@ -24,4 +24,5 @@ export const styles = {
     fontWeight: 700,
   } satisfies SxProps<Theme>,
   stack5: { flex: 1, minWidth: 0 } satisfies SxProps<Theme>,
+  landlordAlert: { mb: 3 } satisfies SxProps<Theme>,
 }

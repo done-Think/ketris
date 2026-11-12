@@ -17,6 +17,7 @@ export function toDomainContract(
   return {
     id: contract.id,
     tenantId: contract.tenantId,
+    agencyName: contract.tenant.name,
     propertyId: contract.propertyId,
     property: {
       title: contract.property.title,
