@@ -37,5 +37,10 @@ export const contractPartyMessageKeys = {
   RENTER: 'tenant',
   GUARANTOR: 'guarantor',
 } as const
+export const contractPartyLinkMessageKeys = {
+  RENTER: { action: 'link', notice: 'linkNotice' },
+  LANDLORD: { action: 'linkLandlord', notice: 'linkLandlordNotice' },
+} as const
+
 export const contractSignatureMessageKeys = { MANUAL: 'manual', PROVIDER: 'provider' } as const
 import type { TranslationKey } from '@/i18n/types/messages.types'

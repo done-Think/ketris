@@ -110,8 +110,11 @@ describe('LinkContractPartyUserUseCase', () => {
     expect(users.findManyByEmail).not.toHaveBeenCalled()
   })
 
-  it.each(['LANDLORD', 'GUARANTOR'] as const)('does not link a %s party', async (role) => {
-    const { contracts, users, useCase } = setup({ ...contract, parties: [{ ...party, role }] })
+  it('does not link a GUARANTOR party', async () => {
+    const { contracts, users, useCase } = setup({
+      ...contract,
+      parties: [{ ...party, role: 'GUARANTOR' }],
+    })
     await expect(useCase.execute(input)).rejects.toMatchObject({ code: 'CONTRACT_PARTY_NOT_FOUND' })
     expect(contracts.linkPartyUser).not.toHaveBeenCalled()
     expect(users.findManyByEmail).not.toHaveBeenCalled()
@@ -153,9 +156,36 @@ describe('LinkContractPartyUserUseCase', () => {
       actorId: 'manager-1',
       contractId: 'contract-1',
       partyId: 'party-1',
+      role: 'RENTER',
       userId: 'renter-1',
       email: 'maria@example.com',
     })
+  })
+
+  it('links the LANDLORD party only to an active individual owner account with the same email', async () => {
+    const landlordContract = { ...contract, parties: [{ ...party, role: 'LANDLORD' as const }] }
+    const owner = { ...renter, id: 'owner-1', role: 'OWNER' as const, tenantId: 'individual-1' }
+    const rejected = setup(landlordContract, renter)
+    await expect(rejected.useCase.execute(input)).rejects.toMatchObject({
+      code: 'CONTRACT_LANDLORD_USER_NOT_FOUND',
+    })
+    const agencyOwner = setup(landlordContract, owner)
+    agencyOwner.users.findManyByEmail.mockResolvedValue([{ ...owner, tenantAccountType: 'AGENCY' }])
+    await expect(agencyOwner.useCase.execute(input)).rejects.toMatchObject({
+      code: 'CONTRACT_LANDLORD_USER_NOT_FOUND',
+    })
+    expect(agencyOwner.contracts.linkPartyUser).not.toHaveBeenCalled()
+    const accepted = setup(landlordContract, owner)
+    accepted.users.findManyByEmail.mockResolvedValue([
+      { ...owner, tenantAccountType: 'INDIVIDUAL' },
+    ])
+    await expect(accepted.useCase.execute(input)).resolves.toEqual({
+      partyId: party.id,
+      userId: 'owner-1',
+    })
+    expect(accepted.contracts.linkPartyUser).toHaveBeenCalledWith(
+      expect.objectContaining({ role: 'LANDLORD', userId: 'owner-1' }),
+    )
   })
 
   it('allows repeating confirmation of the same link', async () => {
