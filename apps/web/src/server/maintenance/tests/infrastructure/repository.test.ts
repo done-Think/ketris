@@ -42,7 +42,19 @@ describe('Maintenance repository boundary and atomic writes', () => {
       expect(scope.deletedAt).toBeNull()
     }
     expect(maintenanceTicketScope({ ...actor, actorRole: 'OWNER' })).toEqual({
-      tenantId: 'tenant',
+      OR: [
+        { tenantId: 'tenant' },
+        {
+          deletedAt: null,
+          contract: {
+            is: {
+              parties: {
+                some: { role: 'LANDLORD', userId: actor.actorId, user: { active: true } },
+              },
+            },
+          },
+        },
+      ],
     })
   })
   it('refuses stale mutations before writing audit or deciding requests', async () => {

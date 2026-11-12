@@ -86,7 +86,13 @@ const ticket: MaintenanceTicket = {
   updatedAt: new Date(),
   activities: [],
   attachments: [],
-  access: { agentId: 'agent', ownerId: 'owner', renterIds: ['renter'], validContract: true },
+  access: {
+    agentId: 'agent',
+    ownerId: 'owner',
+    renterIds: ['renter'],
+    landlordIds: [],
+    validContract: true,
+  },
 }
 function request(path: string, body?: unknown) {
   return new NextRequest(`http://localhost/api/maintenance/${path}`, {

@@ -61,6 +61,7 @@ export interface MaintenanceContract {
   agentId: string
   ownerId: string | null
   renterIds: string[]
+  landlordIds: string[]
   parties: { id: string; name: string; role: string; userId: string | null }[]
 }
 
@@ -116,7 +117,13 @@ export interface MaintenanceTicket {
   deletedAt: Date | null
   replacementRequests: MaintenanceReplacementRequest[]
   permissions?: MaintenancePermissions
-  access: { agentId: string; ownerId: string | null; renterIds: string[]; validContract: boolean }
+  access: {
+    agentId: string
+    ownerId: string | null
+    renterIds: string[]
+    landlordIds: string[]
+    validContract: boolean
+  }
   category: MaintenanceCategory
   priority: MaintenanceTicketPriority
   status: MaintenanceTicketStatus
