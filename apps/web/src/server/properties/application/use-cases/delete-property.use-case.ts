@@ -1,6 +1,10 @@
 import type { DeletePropertyInput } from '../../types/use-case-inputs'
 
-import { assertCanEditProperties, assertPropertyAccess } from '../authorization'
+import {
+  assertCanEditProperties,
+  assertPropertyAccess,
+  assertCanRemovePropertyPublication,
+} from '../authorization'
 import { PropertyNotFoundError } from '../../domain/errors'
 import type { PropertyRepository } from '../ports/property-repository.port'
 
@@ -17,6 +21,8 @@ export class DeletePropertyUseCase {
     }
 
     assertPropertyAccess(existing, input.actorId, input.actorRole)
+    if (existing.status === 'PUBLISHED')
+      assertCanRemovePropertyPublication(existing, input.actorRole)
 
     const deleted = await this.propertyRepository.setStatus(
       input.actorTenantId,
@@ -24,6 +30,7 @@ export class DeletePropertyUseCase {
       'INACTIVE',
       existing.publishedAt,
       input.actorId,
+      'INACTIVATED',
     )
 
     if (!deleted) {

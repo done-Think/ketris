@@ -115,6 +115,22 @@ function renderActions(overrides: Partial<DashboardProperty> = {}) {
 }
 
 describe('PropertyRowActions', () => {
+  it('restricts an additional agency broker while preserving editing access', async () => {
+    mockSession('AGENT', 'additional-broker')
+    renderActions({ apiStatus: 'PUBLISHED', agencyManaged: true, brokerIds: ['additional-broker'] })
+    await userEvent.click(screen.getByRole('button', { name: /Mais ações/ }))
+    expect(screen.getByRole('menuitem', { name: 'Editar' })).toBeVisible()
+    expect(screen.queryByRole('menuitem', { name: 'Despublicar' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Inativar' })).not.toBeInTheDocument()
+  })
+  it('does not offer unpublishing or inactivation of an agency listing to its responsible broker', async () => {
+    mockSession('AGENT', 'user-1')
+    renderActions({ apiStatus: 'PUBLISHED', agencyManaged: true })
+    await userEvent.click(screen.getByRole('button', { name: /Mais ações/ }))
+    expect(screen.queryByRole('menuitem', { name: 'Despublicar' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Inativar' })).not.toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Editar' })).toBeVisible()
+  })
   it('never offers renter management actions even if responsible user IDs match', () => {
     mockSession('RENTER', property.responsibleUserId)
     mockMutations()

@@ -48,6 +48,7 @@ export function PropertyRowActions({ property, onView }: PropertyRowActionsProps
             property.brokerIds?.includes(session.user.id)),
         )))
   const isPublished = property.apiStatus === 'PUBLISHED'
+  const publicationRestricted = session?.role === 'AGENT' && property.agencyManaged === true
   const isMutating =
     publishProperty.isPending || unpublishProperty.isPending || deleteProperty.isPending
 
@@ -124,28 +125,34 @@ export function PropertyRowActions({ property, onView }: PropertyRowActionsProps
               </ListItemIcon>
               <ListItemText>{detailT('edit')}</ListItemText>
             </MenuItem>
-            <MenuItem onClick={handleTogglePublish} disabled={isMutating}>
-              <ListItemIcon>
-                {isPublished ? (
-                  <VisibilityOffOutlinedIcon sx={styles.visibilityOffOutlinedIcon} />
-                ) : (
-                  <PublishOutlinedIcon sx={styles.publishOutlinedIcon} />
-                )}
-              </ListItemIcon>
-              <ListItemText>{isPublished ? detailT('unpublish') : detailT('publish')}</ListItemText>
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                closeMenu()
-                setIsDeleteDialogOpen(true)
-              }}
-              sx={styles.menuItem}
-            >
-              <ListItemIcon>
-                <DeleteOutlineRoundedIcon sx={styles.deleteOutlineRoundedIcon} />
-              </ListItemIcon>
-              <ListItemText>{detailT('delete')}</ListItemText>
-            </MenuItem>
+            {!isPublished || !publicationRestricted ? (
+              <MenuItem onClick={handleTogglePublish} disabled={isMutating}>
+                <ListItemIcon>
+                  {isPublished ? (
+                    <VisibilityOffOutlinedIcon sx={styles.visibilityOffOutlinedIcon} />
+                  ) : (
+                    <PublishOutlinedIcon sx={styles.publishOutlinedIcon} />
+                  )}
+                </ListItemIcon>
+                <ListItemText>
+                  {isPublished ? detailT('unpublish') : detailT('publish')}
+                </ListItemText>
+              </MenuItem>
+            ) : null}
+            {!isPublished || !publicationRestricted ? (
+              <MenuItem
+                onClick={() => {
+                  closeMenu()
+                  setIsDeleteDialogOpen(true)
+                }}
+                sx={styles.menuItem}
+              >
+                <ListItemIcon>
+                  <DeleteOutlineRoundedIcon sx={styles.deleteOutlineRoundedIcon} />
+                </ListItemIcon>
+                <ListItemText>{detailT('delete')}</ListItemText>
+              </MenuItem>
+            ) : null}
           </Menu>
         </>
       ) : null}

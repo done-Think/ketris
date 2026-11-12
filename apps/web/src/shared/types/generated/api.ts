@@ -14057,6 +14057,160 @@ export interface paths {
     }
     trace?: never
   }
+  '/properties/{id}/history': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Lists authorized property audit history */
+    get: {
+      parameters: {
+        query?: {
+          page?: number
+          pageSize?: number
+        }
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Property audit history. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PropertyHistoryPage']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Property audit history unavailable for this role. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Property or event not found in the authorized scope. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/properties/{id}/history/{eventId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Reads one authorized property audit event */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          eventId: string
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Property audit history. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PropertyHistoryResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Property audit history unavailable for this role. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Property or event not found in the authorized scope. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/properties/{id}/publish': {
     parameters: {
       query?: never
@@ -17772,6 +17926,200 @@ export interface components {
         totalPages: number
       }
     }
+    PropertyHistoryChange: {
+      after: components['schemas']['PropertyHistoryValue'] &
+        (
+          | string
+          | number
+          | boolean
+          | string[]
+          | {
+              position: number
+              type: string
+              url: string
+            }[]
+          | {
+              id: string
+              name: string | null
+            }[]
+          | components['schemas']['TenantPropertyAddress']
+          | {
+              id: string
+              name: string | null
+            }
+          | unknown
+        )
+      before: components['schemas']['PropertyHistoryValue']
+      /** @enum {string} */
+      field:
+        | 'title'
+        | 'description'
+        | 'purpose'
+        | 'type'
+        | 'responsible'
+        | 'brokers'
+        | 'owner'
+        | 'ownerContact'
+        | 'status'
+        | 'price'
+        | 'rentalPrice'
+        | 'condoFee'
+        | 'propertyTax'
+        | 'bedrooms'
+        | 'bathrooms'
+        | 'parkingSpots'
+        | 'areaSqm'
+        | 'listing.amenities'
+        | 'listing.negotiationTerms'
+        | 'listing.negotiationConditions'
+        | 'listing.publishAfterReview'
+        | 'listing.allowWhatsappContact'
+        | 'listing.featured'
+        | 'address'
+        | 'media'
+    }
+    PropertyHistoryEvent: components['schemas']['PropertyHistorySummary'] & {
+      changes: {
+        after: components['schemas']['PropertyHistoryValue'] &
+          (
+            | string
+            | number
+            | boolean
+            | string[]
+            | {
+                position: number
+                type: string
+                url: string
+              }[]
+            | {
+                id: string
+                name: string | null
+              }[]
+            | components['schemas']['TenantPropertyAddress']
+            | {
+                id: string
+                name: string | null
+              }
+            | unknown
+          )
+        before: components['schemas']['PropertyHistoryValue'] &
+          (
+            | string
+            | number
+            | boolean
+            | string[]
+            | {
+                position: number
+                type: string
+                url: string
+              }[]
+            | {
+                id: string
+                name: string | null
+              }[]
+            | components['schemas']['TenantPropertyAddress']
+            | {
+                id: string
+                name: string | null
+              }
+            | unknown
+          )
+        /** @enum {string} */
+        field:
+          | 'title'
+          | 'description'
+          | 'purpose'
+          | 'type'
+          | 'responsible'
+          | 'brokers'
+          | 'owner'
+          | 'ownerContact'
+          | 'status'
+          | 'price'
+          | 'rentalPrice'
+          | 'condoFee'
+          | 'propertyTax'
+          | 'bedrooms'
+          | 'bathrooms'
+          | 'parkingSpots'
+          | 'areaSqm'
+          | 'listing.amenities'
+          | 'listing.negotiationTerms'
+          | 'listing.negotiationConditions'
+          | 'listing.publishAfterReview'
+          | 'listing.allowWhatsappContact'
+          | 'listing.featured'
+          | 'address'
+          | 'media'
+      }[]
+    }
+    PropertyHistoryNonNullValue:
+      | string
+      | number
+      | boolean
+      | string[]
+      | {
+          position: number
+          type: string
+          url: string
+        }[]
+      | {
+          id: string
+          name: string | null
+        }[]
+      | components['schemas']['TenantPropertyAddress']
+      | {
+          id: string
+          name: string | null
+        }
+    PropertyHistoryPage: {
+      events: components['schemas']['PropertyHistorySummary'][]
+      pagination: {
+        page: number
+        pageSize: number
+        total: number
+        totalPages: number
+      }
+    }
+    PropertyHistoryResponse: {
+      event: components['schemas']['PropertyHistoryEvent']
+    }
+    PropertyHistorySummary: {
+      /** @enum {string} */
+      action: 'CREATED' | 'UPDATED' | 'PUBLISHED' | 'UNPUBLISHED' | 'INACTIVATED' | 'STATUS_CHANGED'
+      actorName: string | null
+      actorRole: string | null
+      createdAt: string
+      fields: (
+        | 'title'
+        | 'description'
+        | 'purpose'
+        | 'type'
+        | 'responsible'
+        | 'brokers'
+        | 'owner'
+        | 'ownerContact'
+        | 'status'
+        | 'price'
+        | 'rentalPrice'
+        | 'condoFee'
+        | 'propertyTax'
+        | 'bedrooms'
+        | 'bathrooms'
+        | 'parkingSpots'
+        | 'areaSqm'
+        | 'listing.amenities'
+        | 'listing.negotiationTerms'
+        | 'listing.negotiationConditions'
+        | 'listing.publishAfterReview'
+        | 'listing.allowWhatsappContact'
+        | 'listing.featured'
+        | 'address'
+        | 'media'
+      )[]
+      id: string
+    }
+    PropertyHistoryValue: components['schemas']['PropertyHistoryNonNullValue'] | null
     PropertyMedia: {
       id: string
       order: number
@@ -18323,7 +18671,8 @@ export interface components {
     }
     TenantProperty: {
       activeContractId: string | null
-      address: components['schemas']['TenantPropertyAddress']
+      address: components['schemas']['TenantPropertyAddress'] & unknown
+      agencyManaged?: boolean
       brokerIds?: string[]
       characteristics: components['schemas']['TenantPropertyCharacteristics']
       createdAt: string
@@ -18361,7 +18710,7 @@ export interface components {
       state: string
       street: string
       zipCode: string
-    } | null
+    }
     TenantPropertyAddressInput: {
       city: string
       complement?: string | null
