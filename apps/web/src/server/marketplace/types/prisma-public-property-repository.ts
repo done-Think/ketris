@@ -43,6 +43,8 @@ export type PropertySummaryRow = {
 export type PropertyDetailRow = PropertySummaryRow & {
   tenantId: string
   description: string | null
+  negotiationTerms?: string | null
+  negotiationConditions?: string[]
   address: PropertyAddressRow | null
   media: PropertyMediaRow[]
 }

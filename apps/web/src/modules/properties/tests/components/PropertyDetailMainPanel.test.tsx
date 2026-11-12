@@ -29,6 +29,7 @@ describe('PropertyDetailMainPanel', () => {
     render(<PropertyDetailMainPanel property={property} activeTab="values" />)
     expect(screen.getByText('Condições de negociação')).toBeVisible()
     expect(screen.getByText('Pagamento à vista com desconto.')).toBeVisible()
+    expect(screen.getByText('Observação')).toBeVisible()
     expect(screen.queryByText('TAXA DE ADMINISTRAÇÃO')).not.toBeInTheDocument()
     expect(screen.queryByText('GARANTIA')).not.toBeInTheDocument()
     expect(screen.queryByText('ÚLTIMO AJUSTE')).not.toBeInTheDocument()

@@ -1,4 +1,5 @@
 import type { useFormatter } from 'next-intl'
+import type { FileRejection } from 'react-dropzone'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { TextFieldProps } from '@mui/material'
 import type { Property, PropertyListing } from './property'
@@ -30,6 +31,10 @@ export type CreatePropertyStepKey =
 export type CreatePropertyPurpose = 'RENT' | 'SALE'
 
 export type DashboardActivityTone = 'success' | 'accent' | 'info' | 'warning' | 'neutral' | 'error'
+
+export type DashboardPropertySchemaOptions = {
+  isPostalCodeNotFound?: (zipCode: string) => boolean
+}
 
 type NumericFormField = 'bedrooms' | 'bathrooms' | 'parkingSpaces' | 'area'
 
@@ -162,21 +167,19 @@ export type CreatePropertyValuesStepFieldsProps = {
   control: Control<CreateDashboardPropertyFormValues>
   hasDualPurpose: boolean
   mainValueLabel: 'rentValue' | 'saleValue' | 'referenceValue'
-  negotiationTermLabel: 'securityDeposit' | 'commission' | 'commercialTerms'
+  propertyPurpose: CreatePropertyPurpose[]
+}
+
+export interface PropertyNegotiationConditionsFieldProps {
+  control: Control<CreateDashboardPropertyFormValues>
+  propertyPurpose: CreatePropertyPurpose[]
 }
 
 export type PropertyValueFieldName =
   'mainValue' | 'rentalValue' | 'condominium' | 'propertyTax' | 'negotiationTerm'
 
 export type PropertyValueFieldLabel =
-  | 'referenceValue'
-  | 'rentValue'
-  | 'saleValue'
-  | 'condominium'
-  | 'propertyTax'
-  | 'securityDeposit'
-  | 'commission'
-  | 'commercialTerms'
+  'referenceValue' | 'rentValue' | 'saleValue' | 'condominium' | 'propertyTax' | 'condition'
 
 export type PropertyValueFieldConfig = readonly [
   name: PropertyValueFieldName,
@@ -325,7 +328,9 @@ export interface PropertyMediaDropzoneProps {
   items: CreateDashboardPropertyFormValues['media']
   isUploading: boolean
   onDrop: (files: File[]) => void
+  onReject: (rejections: FileRejection[]) => void
   onRemove: (index: number) => void
+  onSelectFeatured: (index: number) => void
 }
 
 export interface PropertyStatusStyle {

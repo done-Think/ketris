@@ -18,6 +18,7 @@ describe('Renter property access (database integration)', () => {
   let renterToken: string
   let agentToken: string
   let ownPropertyIds: string[]
+  let draftPropertyIds: string[]
   let hiddenPropertyIds: string[]
   let ownContractIds: string[]
   let unrelatedPropertyId: string
@@ -32,6 +33,7 @@ describe('Renter property access (database integration)', () => {
     }
     const tenantId = await tenant()
     const foreignTenantId = await tenant()
+    const sharedRentersTenantId = await tenant()
     async function user(tenantId: string, role: 'RENTER' | 'AGENT') {
       return prisma.user.create({
         data: {
@@ -43,8 +45,8 @@ describe('Renter property access (database integration)', () => {
         },
       })
     }
-    const renter = await user(tenantId, 'RENTER')
-    const otherRenter = await user(tenantId, 'RENTER')
+    const renter = await user(sharedRentersTenantId, 'RENTER')
+    const otherRenter = await user(sharedRentersTenantId, 'RENTER')
     const agent = await user(tenantId, 'AGENT')
     const foreignAgent = await user(foreignTenantId, 'AGENT')
     renterToken = await tokens.sign(renter)
@@ -136,7 +138,9 @@ describe('Renter property access (database integration)', () => {
       where: { id: inactiveListing.property.id },
       data: { status: 'INACTIVE' },
     })
-    ownPropertyIds = [own.property.id, inactiveListing.property.id]
+    const otherAgency = await contract(foreignTenantId, foreignAgent.id, renter.id, 'ACTIVE')
+    ownPropertyIds = [own.property.id, inactiveListing.property.id, otherAgency.property.id]
+    draftPropertyIds = [own.property.id, otherAgency.property.id]
     ownContractIds = [own.contract.id, duplicate.contract.id]
     const unrelated = await contract(tenantId, agent.id, otherRenter.id, 'ACTIVE')
     unrelatedPropertyId = unrelated.property.id
@@ -144,8 +148,15 @@ describe('Renter property access (database integration)', () => {
       unrelatedPropertyId,
       (await contract(tenantId, agent.id, null, 'ACTIVE')).property.id,
       (await contract(tenantId, agent.id, renter.id, 'ACTIVE', 'LANDLORD')).property.id,
-      (await contract(foreignTenantId, foreignAgent.id, renter.id, 'ACTIVE')).property.id,
     ]
+    const foreignProperty = (await contract(foreignTenantId, foreignAgent.id, null, 'ACTIVE'))
+      .property
+    const mismatched = await contract(tenantId, agent.id, renter.id, 'ACTIVE')
+    await prisma.contract.update({
+      where: { id: mismatched.contract.id },
+      data: { propertyId: foreignProperty.id },
+    })
+    hiddenPropertyIds.push(foreignProperty.id, mismatched.property.id)
     for (const status of ['CLOSED', 'CANCELED', 'DRAFT', 'SIGNED'] as const) {
       hiddenPropertyIds.push((await contract(tenantId, agent.id, renter.id, status)).property.id)
     }
@@ -180,7 +191,7 @@ describe('Renter property access (database integration)', () => {
   }
   const context = (id: string) => ({ params: Promise.resolve({ id }) })
 
-  it('lists each linked property once, regardless of listing status, and respects filters', async () => {
+  it('lists each linked property once from a shared renters account, across agencies, regardless of listing status, and respects filters', async () => {
     const response = await GET(request())
     expect(response.status).toBe(200)
     const body = await response.json()
@@ -197,9 +208,9 @@ describe('Renter property access (database integration)', () => {
       (await sorted.json()).properties.map((property: { id: string }) => property.id).sort(),
     ).toEqual([...ownPropertyIds].sort())
     const drafts = await GET(request('?status=DRAFT&purpose=RENT'))
-    expect((await drafts.json()).properties.map((property: { id: string }) => property.id)).toEqual(
-      [ownPropertyIds[0]],
-    )
+    expect(
+      (await drafts.json()).properties.map((property: { id: string }) => property.id).sort(),
+    ).toEqual([...draftPropertyIds].sort())
   })
 
   it('returns property data and photos only for active, explicit renter links', async () => {

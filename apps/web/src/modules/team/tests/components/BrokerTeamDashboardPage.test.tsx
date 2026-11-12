@@ -317,6 +317,68 @@ describe('BrokerTeamDashboardPage', () => {
     )
   })
 
+  it('transfers from the agency itself to a broker', async () => {
+    service.transfer.mockResolvedValue({
+      properties: 1,
+      leads: 0,
+      opportunities: 0,
+      futureEvents: 0,
+    })
+    renderPage()
+    await openAction('Marina Costa', 'Transferir carteira')
+    const dialog = screen.getByRole('dialog')
+
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Transferir de' }))
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Ana Dona (você)',
+      'Marina Costa',
+      'Bruno Lima',
+      'Carla Inativa',
+    ])
+    fireEvent.click(screen.getByRole('option', { name: 'Ana Dona (você)' }))
+
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Transferir para' }))
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Marina Costa',
+      'Bruno Lima',
+    ])
+    fireEvent.click(screen.getByRole('option', { name: 'Marina Costa' }))
+    fireEvent.click(within(dialog).getByLabelText('Imóveis'))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Transferir' }))
+
+    await waitFor(() =>
+      expect(service.transfer).toHaveBeenCalledWith('owner-1', {
+        destinationId: 'agent-1',
+        properties: true,
+        leads: false,
+        opportunities: false,
+        futureEvents: false,
+      }),
+    )
+    expect(enqueueSnackbar).toHaveBeenCalledWith(
+      'Transferidos: 1 imóvel, 0 leads, 0 oportunidades e 0 eventos',
+      { variant: 'success' },
+    )
+  })
+
+  it('clears the destination when it becomes the source', async () => {
+    renderPage()
+    await openAction('Marina Costa', 'Transferir carteira')
+    const dialog = screen.getByRole('dialog')
+
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Transferir para' }))
+    fireEvent.click(screen.getByRole('option', { name: 'Bruno Lima' }))
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Transferir de' }))
+    fireEvent.click(screen.getByRole('option', { name: 'Bruno Lima' }))
+    fireEvent.click(within(dialog).getByLabelText('Imóveis (4)'))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Transferir' }))
+
+    expect(
+      await within(dialog).findByText('Selecione o corretor que vai receber a carteira'),
+    ).toBeVisible()
+    expect(service.transfer).not.toHaveBeenCalled()
+  })
+
   it('requires a destination before deactivating a broker', async () => {
     service.deactivate.mockResolvedValue({
       properties: 7,

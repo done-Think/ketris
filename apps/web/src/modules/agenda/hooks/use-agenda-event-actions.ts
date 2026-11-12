@@ -5,12 +5,14 @@ import { agendaErrorKeys } from '../config/agenda-error-keys'
 import {
   useCancelAgendaEvent,
   useCreateAgendaEvent,
+  useRecordAgendaEventOutcome,
   useUpdateAgendaEvent,
 } from './use-agenda-events'
-import type { AgendaEventFormValues } from '../types/agenda-event'
+import type { AgendaEventFormValues, RecordAgendaEventOutcomeValues } from '../types/agenda-event'
 import type { AgendaEventActionsOptions } from '../types/event-actions'
 import { toCreateAgendaPayload, toUpdateAgendaPayload } from '../utils/to-agenda-payload'
 import { toAgendaEvent } from '../utils/map-agenda-event'
+import { toRecordAgendaEventOutcomePayload } from '../utils/agenda-event-outcome'
 
 export function useAgendaEventActions({
   tenantId,
@@ -27,6 +29,7 @@ export function useAgendaEventActions({
   const createMutation = useCreateAgendaEvent(tenantId)
   const updateMutation = useUpdateAgendaEvent(tenantId)
   const cancelMutation = useCancelAgendaEvent(tenantId)
+  const outcomeMutation = useRecordAgendaEventOutcome(tenantId)
   const messages = Object.fromEntries(
     Object.entries(agendaErrorKeys).map(([code, key]) => [code, errorT(key)]),
   )
@@ -67,10 +70,29 @@ export function useAgendaEventActions({
       return false
     }
   }
+  async function recordSelectedEventOutcome(
+    values: RecordAgendaEventOutcomeValues,
+  ): Promise<boolean> {
+    if (!selectedEvent || selectedEventReadOnly) return false
+    try {
+      const updated = await outcomeMutation.mutateAsync({
+        id: selectedEvent.id,
+        payload: toRecordAgendaEventOutcomePayload(values, selectedEvent),
+      })
+      onUpdated(toAgendaEvent(updated, propertiesById), selectedEvent.scheduledDate)
+      enqueueSnackbar(t('outcomeSuccess', { title: selectedEvent.title }), { variant: 'success' })
+      return true
+    } catch (error) {
+      enqueueSnackbar(extractErrorMessage(error, t('outcomeError'), messages), { variant: 'error' })
+      return false
+    }
+  }
   return {
     createAgendaEvent,
     editAgendaEvent,
     deleteSelectedEvent,
+    recordSelectedEventOutcome,
+    isRecordingOutcome: outcomeMutation.isPending,
     isDeleting: cancelMutation.isPending,
     isSaving: updateMutation.isPending,
   }

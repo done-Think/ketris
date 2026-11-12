@@ -6,7 +6,7 @@ describe('/api/maintenance provider (database integration)', () => {
   const env = setupMaintenanceIntegration()
   const { create, action } = env
   it.each(['OPEN', 'IN_PROGRESS', 'AWAITING_CONFIRMATION', 'DISPUTED'] as const)(
-    'lets the linked renter define a provider in %s and preserves original data and history',
+    'lets the agency team define a provider in %s and preserves original data and history',
     async (status) => {
       const id = await create(env.fixture.admin.token)
       await prisma.maintenanceTicket.update({ where: { id }, data: { status } })
@@ -19,7 +19,7 @@ describe('/api/maintenance provider (database integration)', () => {
       }
       expect(
         (
-          await action(id, env.fixture.renter.token, {
+          await action(id, env.fixture.admin.token, {
             action: 'provider',
             provider: { name: ' ' },
           })
@@ -33,14 +33,14 @@ describe('/api/maintenance provider (database integration)', () => {
       }
       expect(
         (
-          await action(id, env.fixture.renter.token, {
+          await action(id, env.fixture.admin.token, {
             action: 'provider',
             provider,
             title: 'Overwrite',
           })
         ).status,
       ).toBe(400)
-      const response = await action(id, env.fixture.renter.token, { action: 'provider', provider })
+      const response = await action(id, env.fixture.admin.token, { action: 'provider', provider })
       expect(response.status).toBe(200)
       const body = await response.json()
       expect(body.ticket).toMatchObject({
@@ -50,9 +50,8 @@ describe('/api/maintenance provider (database integration)', () => {
         description: before.description,
         contractId: before.contractId,
         propertyId: before.propertyId,
-        permissions: { provider: true, edit: false, delete: false },
       })
-      const updated = await action(id, env.fixture.renter.token, {
+      const updated = await action(id, env.fixture.admin.token, {
         action: 'provider',
         provider: { ...provider, name: 'New provider' },
       })
@@ -60,15 +59,14 @@ describe('/api/maintenance provider (database integration)', () => {
       const ticket = (await updated.json()).ticket
       expect(ticket.activities).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ message: 'Chamado aberto.' }),
           expect.objectContaining({
             type: 'PROVIDER_CHANGED',
-            authorId: env.fixture.renter.id,
+            authorId: env.fixture.admin.id,
             details: { before: null, after: { ...provider, id: body.ticket.provider.id } },
           }),
           expect.objectContaining({
             type: 'PROVIDER_CHANGED',
-            authorId: env.fixture.renter.id,
+            authorId: env.fixture.admin.id,
             details: {
               before: { ...provider, id: body.ticket.provider.id },
               after: { ...provider, name: 'New provider', id: ticket.provider.id },
@@ -76,6 +74,34 @@ describe('/api/maintenance provider (database integration)', () => {
           }),
         ]),
       )
+    },
+  )
+
+  it.each(['OPEN', 'IN_PROGRESS', 'AWAITING_CONFIRMATION', 'DISPUTED'] as const)(
+    'refuses the linked renter changing the provider in %s and keeps the team choice',
+    async (status) => {
+      const id = await create(env.fixture.renter.token)
+      await action(id, env.fixture.admin.token, {
+        action: 'provider',
+        provider: { name: 'Team choice' },
+      })
+      await prisma.maintenanceTicket.update({ where: { id }, data: { status } })
+      const response = await action(id, env.fixture.renter.token, {
+        action: 'provider',
+        provider: { name: 'Renter choice' },
+      })
+      expect(response.status).toBe(403)
+      const row = await prisma.maintenanceTicket.findUniqueOrThrow({
+        where: { id },
+        include: { activities: true },
+      })
+      expect(row.providerName).toBe('Team choice')
+      expect(
+        row.activities.filter(
+          (activity) =>
+            activity.type === 'PROVIDER_CHANGED' && activity.authorId === env.fixture.renter.id,
+        ),
+      ).toHaveLength(0)
     },
   )
 
@@ -135,7 +161,7 @@ describe('/api/maintenance provider (database integration)', () => {
     const pending = (await response.json()).ticket.replacementRequests[0]
     expect(
       (
-        await action(id, env.fixture.renter.token, {
+        await action(id, env.fixture.admin.token, {
           action: 'provider',
           provider: { name: 'Blocked while pending' },
         })

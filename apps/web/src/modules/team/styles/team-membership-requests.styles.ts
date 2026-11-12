@@ -16,4 +16,5 @@ export const styles = {
   },
   identity: { minWidth: 0 },
   chips: { mt: 0.6 },
+  actions: { flexShrink: 0, '& > *': { flex: { xs: 1, sm: 'none' } } },
 } satisfies Record<string, SxProps<Theme>>

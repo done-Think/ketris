@@ -15,6 +15,7 @@ import type {
   AgendaEventsResponse,
   CreateAgendaEventPayload,
   CancelAgendaEventPayload,
+  RecordAgendaEventOutcomePayload,
   RescheduleAgendaEventPayload,
   UpdateAgendaEventPayload,
 } from '../types/agenda-event'
@@ -83,6 +84,12 @@ export class AgendaService extends BaseService {
   cancel(id: string, payload: CancelAgendaEventPayload): Promise<AgendaEventApi> {
     return this.http
       .post<AgendaEventResponse>(`${this.path}/${id}/cancel`, payload)
+      .then((data) => data.event)
+  }
+
+  recordOutcome(id: string, payload: RecordAgendaEventOutcomePayload): Promise<AgendaEventApi> {
+    return this.http
+      .post<AgendaEventResponse>(`${this.path}/${id}/outcome`, payload)
       .then((data) => data.event)
   }
 }

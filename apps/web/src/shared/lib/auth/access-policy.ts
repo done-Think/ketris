@@ -60,6 +60,9 @@ export const dashboardFeaturesByProfile: Record<AccessProfile, readonly Dashboar
   ],
   INDIVIDUAL_OWNER: [
     'properties',
+    'pipeline',
+    'contacts',
+    'leads',
     'contracts',
     'faceCheck',
     'faceCheckMyVerifications',

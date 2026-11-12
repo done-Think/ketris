@@ -221,6 +221,7 @@ model User {
   receivedHighlights        AgencyProfileHighlight[]
   agendaAuditEvents         AgendaEventAudit[]
   canceledAgendaEvents      AgendaEvent[]                 @relation("AgendaEventCanceledBy")
+  outcomeAgendaEvents       AgendaEvent[]                 @relation("AgendaEventOutcomeRecordedBy")
   createdContracts          Contract[]                    @relation("ContractCreatedBy")
   canceledContracts         Contract[]                    @relation("ContractCanceledBy")
   closedContracts           Contract[]                    @relation("ContractClosedBy")
@@ -465,6 +466,7 @@ model Property {
   propertyTax          Decimal?          @db.Decimal(10, 2)
   amenities            PropertyAmenity[] @default([])
   negotiationTerms     String?
+  negotiationConditions String[] @default([])
   publishAfterReview   Boolean           @default(false)
   allowWhatsappContact Boolean           @default(false)
   featured             Boolean           @default(false)
@@ -1055,6 +1057,14 @@ enum AgendaEventStatus {
   PENDING
   RESCHEDULE
   CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum AgendaVisitInterest {
+  LOW
+  MEDIUM
+  HIGH
 }
 
 enum AgendaEventType {
@@ -1085,6 +1095,8 @@ enum AgendaAuditAction {
   UPDATED
   RESCHEDULED
   CANCELLED
+  COMPLETED
+  NO_SHOW
 }
 
 model AgendaEventAudit {
@@ -1127,6 +1139,10 @@ model AgendaEvent {
   canceledAt                DateTime?
   canceledById              String?
   cancellationReason        String?
+  outcomeRecordedAt         DateTime?
+  outcomeRecordedById       String?
+  visitInterest             AgendaVisitInterest?
+  outcomeNotes              String?
   createdAt                 DateTime            @default(now())
   updatedAt                 DateTime            @updatedAt
 
@@ -1140,6 +1156,8 @@ model AgendaEvent {
   auditEvents  AgendaEventAudit[]
   participants AgendaEventParticipant[]
 
+  outcomeRecordedBy User? @relation("AgendaEventOutcomeRecordedBy", fields: [outcomeRecordedById], references: [id], onDelete: SetNull)
+
   @@unique([id, tenantId])
   @@index([updatedById])
   @@index([tenantId])
@@ -1147,6 +1165,7 @@ model AgendaEvent {
   @@index([responsibleId])
   @@index([ownerUserId])
   @@index([propertyId])
+  @@index([outcomeRecordedById])
   @@map("agenda_events")
 }
 

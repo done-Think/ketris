@@ -23,6 +23,8 @@ export function toPublicPropertyDetail(property: PublishedPropertyDetail): Publi
     coverUrl: property.coverUrl,
     publishedAt: property.publishedAt,
     description: property.description,
+    negotiationTerms: property.negotiationTerms,
+    negotiationConditions: property.negotiationConditions,
     address: property.address,
     media: property.media,
   }

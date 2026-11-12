@@ -64,8 +64,8 @@ it('updates the featured properties on purpose selection and preserves the price
   expect(await screen.findByText('Casa aluguel')).toBeVisible()
   expect(screen.queryByText('Casa venda')).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Faixa de preço Qualquer preço' }))
-  fireEvent.change(screen.getByRole('spinbutton', { name: 'Máximo' }), {
-    target: { value: '750000' },
+  fireEvent.change(screen.getByRole('textbox', { name: 'Máximo' }), {
+    target: { value: '75000000' },
   })
   await user.click(screen.getByRole('button', { name: 'Aplicar' }))
   await user.click(screen.getByRole('button', { name: 'Comprar' }))

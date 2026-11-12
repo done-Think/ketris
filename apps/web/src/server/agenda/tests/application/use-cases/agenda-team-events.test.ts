@@ -57,6 +57,7 @@ function deps(changes: Partial<AgendaEvent> = {}) {
     findByScopeAndId: vi.fn(),
     reschedule: vi.fn().mockResolvedValue(event),
     cancel: vi.fn().mockResolvedValue(event),
+    recordOutcome: vi.fn(),
     hasOverlap: vi.fn().mockResolvedValue(false),
   }
   const agent: User = {

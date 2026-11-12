@@ -37,6 +37,7 @@ export function buildEditPropertyFormValues(property: Property): CreateDashboard
     condominium: property.values.condoFee ?? 0,
     propertyTax: property.values.propertyTax ?? 0,
     negotiationTerm: property.listing.negotiationTerms ?? '',
+    negotiationConditions: property.listing.negotiationConditions ?? [],
     publishingOptions: createPropertyPublishingOptions.filter(
       (_, index) =>
         [

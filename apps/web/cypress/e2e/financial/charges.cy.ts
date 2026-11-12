@@ -133,7 +133,7 @@ describe('Charges real workflows', () => {
     cy.visit(listPath)
     cy.contains('button', 'Nova cobrança').click()
     dialog().find('input[name="description"]').type('Taxa avulsa E2E')
-    dialog().find('input[name="amount"]').clear().type('180')
+    dialog().find('input[name="amount"]').clear().type('18000').should('have.value', '180,00')
     dialog().find('input[name="dueDate"]').type('2026-12-10')
     cy.intercept('POST', '**/api/financial/charges').as('create')
     dialog().contains('button', 'Criar cobrança').click()

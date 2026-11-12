@@ -175,5 +175,25 @@
     "retry": "Intentar de nuevo",
     "retrying": "Verificando sesión…"
   },
-  "perMonth": "/mes"
+  "perMonth": "/mes",
+  "propertyNegotiation": {
+    "title": "Condiciones de negociación",
+    "sale": "Venta",
+    "rent": "Alquiler",
+    "hint": "Selecciona una o más opciones. El pago exclusivamente al contado no se puede combinar con financiación.",
+    "helpLabel": "Acerca de las condiciones de negociación",
+    "help": "Selecciona las condiciones aceptadas para la venta o el alquiler. La entrada puede combinarse con financiación. Para el alquiler, indica si se exige un depósito o si las condiciones se acordarán con el propietario.",
+    "options": {
+      "ACCEPTS_FINANCING": "Acepta financiación",
+      "REQUIRES_DOWN_PAYMENT": "Exige entrada",
+      "CASH_ONLY": "Solo pago al contado",
+      "ACCEPTS_EXCHANGE": "Acepta permuta",
+      "SALE_NEGOTIABLE": "Acepta negociación en la venta",
+      "AGREE_WITH_OWNER": "Alquiler a acordar con el propietario",
+      "RENT_NEGOTIABLE": "Acepta negociación en el alquiler",
+      "REQUIRES_DEPOSIT": "Exige depósito de garantía"
+    },
+    "observation": "Observación",
+    "observationHint": "Opcional. Esta observación se mostrará en la presentación del inmueble."
+  }
 }

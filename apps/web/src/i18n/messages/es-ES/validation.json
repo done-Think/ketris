@@ -60,6 +60,7 @@
     "visitDuration": "Las visitas deben durar al menos 30 minutos.",
     "cancellationReasonRequired": "Introduce el motivo de cancelación.",
     "cancellationStatusRequired": "El motivo de cancelación requiere el estado CANCELLED.",
+    "visitInterestRequiresCompleted": "El interés del cliente solo se puede informar en un evento realizado.",
     "periodEndAfterStart": "El fin del período debe ser posterior a su inicio.",
     "descriptionRequired": "Introduce una descripción para un cargo sin contrato.",
     "fileRequired": "Sube un archivo en el campo file.",
@@ -75,7 +76,7 @@
     "decimalPlaces": "Usa como máximo dos decimales.",
     "linkRequired": "Indica un vínculo.",
     "partyAndRenterRequired": "Indica la parte y el usuario inquilino juntos.",
-    "postalCodeInvalid": "Introduce un código postal de 8 dígitos.",
+    "postalCodeInvalid": "Introduce un código postal válido de 8 dígitos.",
     "cpfInvalid": "Introduce un CPF válido.",
     "cnpjInvalid": "Introduce un CNPJ válido.",
     "documentInvalid": "Introduce un CPF o CNPJ válido.",
@@ -85,6 +86,7 @@
     "coordinatesPairRequired": "Indica latitud y longitud juntas.",
     "publicAddressReserved": "Esta dirección está reservada para la plataforma.",
     "publicAddressTaken": "Esta dirección ya está en uso. Elige otro nombre.",
-    "publicAddressPublishRequired": "Publica el perfil para habilitar el enlace público y editar la dirección personalizada. El enlace solo funciona mientras el perfil esté publicado."
+    "publicAddressPublishRequired": "Publica el perfil para habilitar el enlace público y editar la dirección personalizada. El enlace solo funciona mientras el perfil esté publicado.",
+    "negotiationConditionsInvalid": "El pago exclusivamente al contado no se puede combinar con financiación."
   }
 }

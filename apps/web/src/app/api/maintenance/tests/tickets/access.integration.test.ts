@@ -134,6 +134,43 @@ describe('/api/maintenance access (database integration)', () => {
   it('requires authentication', async () =>
     expect((await GET(request('tickets', 'GET'))).status).toBe(401))
 
+  it.each(['CLOSED', 'CANCELED'] as const)(
+    'keeps a %s contract out of renter ticket creation while the agency and history keep it',
+    async (status) => {
+      const previous = await create()
+      const contractId = env.fixture.contract.id
+      await prisma.contract.update({ where: { id: contractId }, data: { status } })
+      try {
+        const renterOptions = await (
+          await options(request('options', 'GET', env.fixture.renter.token))
+        ).json()
+        expect(renterOptions.contracts.map((c: { id: string }) => c.id)).not.toContain(contractId)
+        expect(
+          (
+            await POST(
+              request('tickets', 'POST', env.fixture.renter.token, { ...payload, contractId }),
+            )
+          ).status,
+        ).toBe(404)
+        expect(
+          (
+            await getTicket(
+              request(`tickets/${previous}`, 'GET', env.fixture.renter.token),
+              context(previous),
+            )
+          ).status,
+        ).toBe(200)
+        const agencyOptions = await (
+          await options(request('options', 'GET', env.fixture.admin.token))
+        ).json()
+        expect(agencyOptions.contracts.map((c: { id: string }) => c.id)).toContain(contractId)
+        await create(env.fixture.admin.token)
+      } finally {
+        await prisma.contract.update({ where: { id: contractId }, data: { status: 'ACTIVE' } })
+      }
+    },
+  )
+
   it('creates for all linked roles and refuses another tenants contract', async () => {
     for (const user of [
       env.fixture.admin,
@@ -162,6 +199,39 @@ describe('/api/maintenance access (database integration)', () => {
         )
       ).status,
     ).toBe(404)
+  })
+
+  it('keeps brokers awaiting team approval out of internal responsible options and assignment', async () => {
+    const pending = await prisma.user.create({
+      data: {
+        tenantId: env.fixture.tenant.id,
+        name: 'Pending broker',
+        email: `pending-${Date.now()}@maintenance.test`,
+        passwordHash: 'test-hash',
+        role: 'AGENT',
+        membershipApprovedAt: null,
+      },
+    })
+    const id = await create(env.fixture.admin.token)
+    const users = (await (await options(request('options', 'GET', env.fixture.admin.token))).json())
+      .users as { id: string }[]
+    expect(users.map((user) => user.id)).toEqual(
+      expect.arrayContaining([env.fixture.admin.id, env.fixture.agent.id]),
+    )
+    expect(users.map((user) => user.id)).not.toContain(pending.id)
+    expect(
+      (await action(id, env.fixture.admin.token, { action: 'assign', responsibleId: pending.id }))
+        .status,
+    ).toBe(403)
+    expect(
+      (await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id } })).responsibleId,
+    ).toBeNull()
+    const approved = await action(id, env.fixture.admin.token, {
+      action: 'assign',
+      responsibleId: env.fixture.agent.id,
+    })
+    expect(approved.status).toBe(200)
+    expect((await approved.json()).ticket.responsibleId).toBe(env.fixture.agent.id)
   })
 
   it('filters list and options by explicit membership, including same-tenant isolation', async () => {

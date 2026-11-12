@@ -12,6 +12,7 @@ import { AgendaPropertyNotFoundError } from '../../domain/errors'
 import type { AgendaPropertyLookup } from '../ports/agenda-property-lookup.port'
 
 import { assertCanManageAgendaEvent } from '../../domain/agenda-access-rules'
+import { assertAgendaEventOpen } from '../../domain/agenda-outcome-rules'
 import {
   findManageableAgendaEvent,
   manageableAgendaEventTenantId,
@@ -42,6 +43,7 @@ export class UpdateAgendaEventUseCase {
     const existing = await findManageableAgendaEvent(this.agendaEventRepository, input, input.id)
     if (!existing) throw new AgendaEventNotFoundError()
     assertCanManageAgendaEvent(input.actorRole, input.actorUserId, existing)
+    assertAgendaEventOpen(existing)
     if (
       !isAgencyManager(input.actorRole) &&
       ((input.audience !== undefined && input.audience !== (existing.audience ?? 'SHARED_TEAM')) ||

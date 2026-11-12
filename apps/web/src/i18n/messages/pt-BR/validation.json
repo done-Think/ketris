@@ -60,6 +60,7 @@
     "visitDuration": "Visitas devem ter duração mínima de 30 minutos.",
     "cancellationReasonRequired": "Informe o motivo do cancelamento.",
     "cancellationStatusRequired": "O motivo exige status CANCELLED.",
+    "visitInterestRequiresCompleted": "O interesse do cliente só pode ser informado em evento realizado.",
     "periodEndAfterStart": "\"to\" deve ser depois de \"from\".",
     "descriptionRequired": "Informe uma descrição para uma cobrança avulsa (sem contrato).",
     "fileRequired": "Envie um arquivo em \"file\".",
@@ -75,7 +76,7 @@
     "decimalPlaces": "Use no máximo duas casas decimais.",
     "linkRequired": "Informe um vínculo.",
     "partyAndRenterRequired": "Informe a parte e o usuário locatário juntos.",
-    "postalCodeInvalid": "Informe um CEP com 8 dígitos.",
+    "postalCodeInvalid": "Informe um CEP válido com 8 dígitos.",
     "cpfInvalid": "Informe um CPF válido.",
     "cnpjInvalid": "Informe um CNPJ válido.",
     "documentInvalid": "Informe um CPF ou CNPJ válido.",
@@ -85,6 +86,7 @@
     "coordinatesPairRequired": "Informe latitude e longitude juntas.",
     "publicAddressReserved": "Este endereço está reservado para a plataforma.",
     "publicAddressTaken": "Este endereço já está em uso. Escolha outro nome.",
-    "publicAddressPublishRequired": "Publique o perfil para liberar seu link público e a edição do endereço personalizado. O link funciona apenas enquanto o perfil estiver publicado."
+    "publicAddressPublishRequired": "Publique o perfil para liberar seu link público e a edição do endereço personalizado. O link funciona apenas enquanto o perfil estiver publicado.",
+    "negotiationConditionsInvalid": "Pagamento exclusivamente à vista não pode ser combinado com financiamento."
   }
 }
