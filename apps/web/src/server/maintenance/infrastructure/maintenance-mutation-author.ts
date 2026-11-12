@@ -15,12 +15,12 @@ export async function maintenanceMutationAuthor(
   })
   if (!actor) throw new ForbiddenError()
   if (actor.tenantId !== ticket.tenantId) {
-    if (actor.role !== 'RENTER' || !ticket.contractId) throw new ForbiddenError()
+    if (!['RENTER', 'OWNER'].includes(actor.role) || !ticket.contractId) throw new ForbiddenError()
     const party = await db.contractParty.findFirst({
       where: {
         contractId: ticket.contractId,
         tenantId: ticket.tenantId,
-        role: 'RENTER',
+        role: actor.role === 'RENTER' ? 'RENTER' : 'LANDLORD',
         userId: actor.id,
       },
       select: { id: true },

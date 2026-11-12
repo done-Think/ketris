@@ -8,8 +8,13 @@ import type {
   MaintenanceTicket,
 } from '../types/maintenance-ticket'
 
+function isLinkedLandlord(actor: MaintenanceActor, landlordIds: string[]): boolean {
+  return isAgencyManager(actor.actorRole) && landlordIds.includes(actor.actorId)
+}
+
 export function canAccessContract(actor: MaintenanceActor, contract: MaintenanceContract): boolean {
-  if (actor.actorRole !== 'RENTER' && contract.tenantId !== actor.actorTenantId) return false
+  if (actor.actorRole !== 'RENTER' && contract.tenantId !== actor.actorTenantId)
+    return isLinkedLandlord(actor, contract.landlordIds)
   if (isAgencyManager(actor.actorRole)) return true
   switch (actor.actorRole) {
     case 'AGENT':
@@ -24,7 +29,12 @@ export function canAccessContract(actor: MaintenanceActor, contract: Maintenance
 }
 
 export function canAccessTicket(actor: MaintenanceActor, ticket: MaintenanceTicket): boolean {
-  if (actor.actorRole !== 'RENTER' && ticket.tenantId !== actor.actorTenantId) return false
+  if (actor.actorRole !== 'RENTER' && ticket.tenantId !== actor.actorTenantId)
+    return (
+      !ticket.deletedAt &&
+      ticket.access.validContract &&
+      isLinkedLandlord(actor, ticket.access.landlordIds)
+    )
   if (isAgencyManager(actor.actorRole)) return true
   if (ticket.deletedAt || !ticket.access.validContract) return false
   switch (actor.actorRole) {
@@ -50,6 +60,11 @@ export function assertAdmin(actor: MaintenanceActor) {
   if (!isAgencyManager(actor.actorRole)) throw new ForbiddenError()
 }
 
+export function assertTicketAdmin(actor: MaintenanceActor, ticket: MaintenanceTicket) {
+  assertAdmin(actor)
+  if (ticket.tenantId !== actor.actorTenantId) throw new ForbiddenError()
+}
+
 export function isTerminal(ticket: MaintenanceTicket): boolean {
   return ['RESOLVED', 'CANCELED', 'CLOSED'].includes(ticket.status)
 }
@@ -59,7 +74,8 @@ export function permissionsFor(
   ticket: MaintenanceTicket,
 ): MaintenancePermissions {
   const access = canAccessTicket(actor, ticket)
-  const admin = access && isAgencyManager(actor.actorRole)
+  const landlord = access && actor.actorRole !== 'RENTER' && ticket.tenantId !== actor.actorTenantId
+  const admin = access && !landlord && isAgencyManager(actor.actorRole)
   const owner =
     access && actor.actorRole === 'PROPERTY_OWNER' && ticket.access.ownerId === actor.actorId
   const renter = access && actor.actorRole === 'RENTER'

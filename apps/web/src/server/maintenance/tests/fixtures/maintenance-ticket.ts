@@ -31,6 +31,7 @@ export const contract: MaintenanceContract = {
   agentId: 'agent',
   ownerId: 'owner',
   renterIds: ['renter'],
+  landlordIds: [],
   parties: [],
 }
 
@@ -58,7 +59,13 @@ export const ticket: MaintenanceTicket = {
   updatedAt: new Date(),
   activities: [],
   attachments: [],
-  access: { agentId: 'agent', ownerId: 'owner', renterIds: ['renter'], validContract: true },
+  access: {
+    agentId: 'agent',
+    ownerId: 'owner',
+    renterIds: ['renter'],
+    landlordIds: [],
+    validContract: true,
+  },
 }
 
 export function repository(

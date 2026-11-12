@@ -10,7 +10,7 @@ import type {
   NewMaintenanceActivity,
 } from '../types/maintenance-ticket'
 import { activity, provider, reason } from './maintenance-activity'
-import { assertAdmin, assertCanDefineProvider, assertPermission } from './maintenance-policy'
+import { assertCanDefineProvider, assertPermission, assertTicketAdmin } from './maintenance-policy'
 
 function plan(
   changes: MaintenanceMutation,
@@ -38,7 +38,7 @@ export function planMaintenanceAction(
   let request: MaintenanceRequestMutation | undefined
   switch (action.action) {
     case 'linkContract': {
-      assertAdmin(actor)
+      assertTicketAdmin(actor, ticket)
       return plan(
         { contractId: action.contractId },
         actionActivity('EDIT', 'Contrato do chamado associado pelo administrador.', {
@@ -167,7 +167,7 @@ export function planMaintenanceAction(
       return plan({}, actionActivity('CHANGE_REQUESTED', request.reason), request)
     case 'approveReplacement':
     case 'rejectReplacement': {
-      assertAdmin(actor)
+      assertTicketAdmin(actor, ticket)
       assertPermission(actor, ticket, 'collaborate')
       const pending = ticket.replacementRequests.find(
         (r) => r.id === action.requestId && r.status === 'PENDING',
