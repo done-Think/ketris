@@ -25,27 +25,17 @@ describe('Maintenance provider', () => {
   })
 
   it.each(['OPEN', 'IN_PROGRESS', 'AWAITING_CONFIRMATION', 'DISPUTED'] as const)(
-    'lets a linked renter define a provider in %s and audits previous and new values',
+    'keeps provider choice with the agency team when a linked renter tries it in %s',
     async (status) => {
-      const previous = { name: 'Previous provider' }
-      const provider = {
-        name: 'Chosen provider',
-        phone: '51999990000',
-        email: 'provider@example.test',
-        notes: 'Plumbing',
-      }
-      const repo = repository({ status, openedById: 'admin', provider: previous })
-      expect(permissionsFor(renter, { ...ticket, status }).provider).toBe(true)
-      await actOnTicket(repo, renter, ticket.id, { action: 'provider', provider })
-      expect(repo.mutate).toHaveBeenCalledWith(
-        expect.anything(),
-        { provider },
-        expect.objectContaining({
-          type: 'PROVIDER_CHANGED',
-          authorId: renter.actorId,
-          details: { before: previous, after: provider },
+      const repo = repository({ status, openedById: 'admin', provider: { name: 'Team choice' } })
+      expect(permissionsFor(renter, { ...ticket, status }).provider).toBe(false)
+      await expect(
+        actOnTicket(repo, renter, ticket.id, {
+          action: 'provider',
+          provider: { name: 'Renter choice' },
         }),
-      )
+      ).rejects.toBeInstanceOf(ForbiddenError)
+      expect(repo.mutate).not.toHaveBeenCalled()
     },
   )
 
