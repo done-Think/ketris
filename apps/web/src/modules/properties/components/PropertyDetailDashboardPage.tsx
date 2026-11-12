@@ -65,7 +65,13 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   const canManage =
     Boolean(restrictedAccess?.canManageProperties) ||
     (!isRestrictedViewer &&
-      (session?.role === 'OWNER' || session?.user?.id === property.responsibleUserId))
+      (session?.role === 'OWNER' ||
+        (session?.role === 'AGENT' &&
+          Boolean(
+            session.user?.id &&
+            (session.user.id === property.responsibleUserId ||
+              property.brokerIds?.includes(session.user.id)),
+          ))))
 
   const handlePublish = async () => {
     try {

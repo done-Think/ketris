@@ -37,6 +37,9 @@ vi.mock('@modules/crm/hooks/use-contacts', () => ({
 vi.mock('../../services/properties-service', () => ({
   propertiesService: { uploadMedia: state.upload },
 }))
+vi.mock('../../hooks/use-property-brokers', () => ({
+  usePropertyBrokers: () => ({ data: [], isLoading: false, isError: false }),
+}))
 vi.mock('../../hooks/use-properties', async () => {
   const actual = await vi.importActual<typeof import('../../hooks/use-properties')>(
     '../../hooks/use-properties',

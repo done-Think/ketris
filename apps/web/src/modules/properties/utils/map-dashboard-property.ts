@@ -58,6 +58,7 @@ export function toDashboardProperty(
 
   return {
     id: property.id,
+    brokerIds: property.brokerIds ?? [],
     responsibleUserId: property.responsibleUserId,
     activeContractId: property.activeContractId,
     apiStatus: property.status,

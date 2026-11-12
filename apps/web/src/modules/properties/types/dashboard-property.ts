@@ -57,6 +57,7 @@ export type DashboardProperty = {
   activeContractId?: string | null
   id: string
   responsibleUserId: string
+  brokerIds?: string[]
   apiStatus: ApiPropertyStatus
   title: string
   description: string | null

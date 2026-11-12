@@ -14180,6 +14180,73 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/properties/brokers': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Lists active approved brokers in the agency for property access grants */
+    get: {
+      parameters: {
+        query?: {
+          page?: number
+          pageSize?: number
+        }
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Brokers selectable by the agency manager. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PropertyBrokersResponse']
+          }
+        }
+        /** @description Unauthenticated. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Agency management required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/properties/media': {
     parameters: {
       query?: never
@@ -16248,6 +16315,8 @@ export interface components {
       areaSqm?: number | null
       bathrooms?: number | null
       bedrooms?: number | null
+      /** @description Additional active approved brokers in this agency. Only agency management can change these grants. Omit to preserve existing grants; send an empty array to revoke all additional grants. The primary responsible user is unchanged. */
+      brokerIds?: string[]
       condoFee?: number | null
       description?: string | null
       listing?: components['schemas']['TenantPropertyListing']
@@ -17691,6 +17760,18 @@ export interface components {
       street: string
       zipCode: string
     } | null
+    PropertyBrokersResponse: {
+      brokers: {
+        id: string
+        name: string
+      }[]
+      pagination: {
+        page: number
+        pageSize: number
+        total: number
+        totalPages: number
+      }
+    }
     PropertyMedia: {
       id: string
       order: number
@@ -18243,6 +18324,7 @@ export interface components {
     TenantProperty: {
       activeContractId: string | null
       address: components['schemas']['TenantPropertyAddress']
+      brokerIds?: string[]
       characteristics: components['schemas']['TenantPropertyCharacteristics']
       createdAt: string
       description: string | null
@@ -18497,6 +18579,8 @@ export interface components {
       areaSqm?: number | null
       bathrooms?: number | null
       bedrooms?: number | null
+      /** @description Additional active approved brokers in this agency. Only agency management can change these grants. Omit to preserve existing grants; send an empty array to revoke all additional grants. The primary responsible user is unchanged. */
+      brokerIds?: string[]
       condoFee?: number | null
       description?: string | null
       listing?: components['schemas']['TenantPropertyListing']

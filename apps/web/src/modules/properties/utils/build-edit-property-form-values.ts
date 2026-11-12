@@ -13,6 +13,7 @@ function toDashboardPurpose(purpose: Property['purpose']): CreatePropertyPurpose
 
 export function buildEditPropertyFormValues(property: Property): CreateDashboardPropertyFormValues {
   return {
+    brokerIds: property.brokerIds ?? [],
     ownerUserId: property.ownerUserId ?? '',
     ownerContact: property.ownerContact ?? null,
     complement: property.address?.complement ?? '',

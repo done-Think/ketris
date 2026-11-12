@@ -1,3 +1,5 @@
+import { assertPropertyBrokerChange } from '../property-broker-access-policy'
+import type { PropertyBrokerDirectory } from '../ports/property-broker-directory.port'
 import { assertPropertyMediaScope } from '../../domain/property-media-policy'
 import { normalizeNegotiationListing } from '../../domain/property-negotiation-policy'
 import { assertOwnerContactChange } from '../property-owner-contact-policy'
@@ -22,6 +24,7 @@ export class UpdatePropertyUseCase {
     private readonly ownerDirectory: PropertyOwnerDirectory,
     private readonly geocoder: AddressGeocoder = unavailableAddressGeocoder,
     private readonly ownerContacts?: PropertyOwnerContactDirectory,
+    private readonly brokers?: PropertyBrokerDirectory,
   ) {}
 
   async execute(input: UpdatePropertyInput) {
@@ -34,6 +37,12 @@ export class UpdatePropertyUseCase {
     }
 
     assertPropertyAccess(existing, input.actorId, input.actorRole)
+    await assertPropertyBrokerChange(
+      input.actorTenantId,
+      input.actorRole,
+      input.brokerIds,
+      this.brokers,
+    )
     const listing = input.listing
       ? {
           ...input.listing,
@@ -68,6 +77,7 @@ export class UpdatePropertyUseCase {
       input.actorTenantId,
       input.id,
       {
+        brokerIds: input.brokerIds,
         ownerId: ownerId,
         ownerContactId: input.ownerContactId,
         title: input.title,

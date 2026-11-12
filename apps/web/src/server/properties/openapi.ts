@@ -11,6 +11,7 @@ import {
 import {
   propertiesResponseSchema,
   propertyOwnersResponseSchema,
+  propertyBrokersResponseSchema,
   propertyMediaUploadRequestSchema,
   propertyMediaUploadResponseSchema,
   propertyMediaKeyParamsSchema,
@@ -20,6 +21,28 @@ import {
 } from './schemas/property.schema'
 
 export function registerPropertiesOpenApi(registry: OpenAPIRegistry): void {
+  registry.registerPath({
+    method: 'get',
+    path: '/properties/brokers',
+    tags: ['Properties'],
+    summary: 'Lists active approved brokers in the agency for property access grants',
+    security: [{ bearerAuth: [] }],
+    request: { query: propertyOwnersQuerySchema },
+    responses: {
+      200: {
+        description: 'Brokers selectable by the agency manager.',
+        content: { 'application/json': { schema: propertyBrokersResponseSchema } },
+      },
+      401: {
+        description: 'Unauthenticated.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Agency management required.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
   registry.registerPath({
     method: 'get',
     path: '/properties/owners',
