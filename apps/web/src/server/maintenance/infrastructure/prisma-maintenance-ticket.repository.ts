@@ -50,7 +50,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
       where: {
         id: contractId,
         ...(actor.actorRole === 'RENTER'
-          ? renterContractScope(actor.actorId)
+          ? { ...renterContractScope(actor.actorId), status: 'ACTIVE' as const }
           : { tenantId: actor.actorTenantId, property: { tenantId: actor.actorTenantId } }),
       },
       include: contractInclude,
@@ -77,6 +77,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
       Object.assign(where, {
         tenantId: undefined,
         property: undefined,
+        status: 'ACTIVE',
         ...renterContractScope(actor.actorId),
       })
     else if (!isAgencyManager(actor.actorRole)) throw new ForbiddenError()

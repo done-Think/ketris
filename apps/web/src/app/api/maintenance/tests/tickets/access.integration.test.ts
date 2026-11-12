@@ -134,6 +134,43 @@ describe('/api/maintenance access (database integration)', () => {
   it('requires authentication', async () =>
     expect((await GET(request('tickets', 'GET'))).status).toBe(401))
 
+  it.each(['CLOSED', 'CANCELED'] as const)(
+    'keeps a %s contract out of renter ticket creation while the agency and history keep it',
+    async (status) => {
+      const previous = await create()
+      const contractId = env.fixture.contract.id
+      await prisma.contract.update({ where: { id: contractId }, data: { status } })
+      try {
+        const renterOptions = await (
+          await options(request('options', 'GET', env.fixture.renter.token))
+        ).json()
+        expect(renterOptions.contracts.map((c: { id: string }) => c.id)).not.toContain(contractId)
+        expect(
+          (
+            await POST(
+              request('tickets', 'POST', env.fixture.renter.token, { ...payload, contractId }),
+            )
+          ).status,
+        ).toBe(404)
+        expect(
+          (
+            await getTicket(
+              request(`tickets/${previous}`, 'GET', env.fixture.renter.token),
+              context(previous),
+            )
+          ).status,
+        ).toBe(200)
+        const agencyOptions = await (
+          await options(request('options', 'GET', env.fixture.admin.token))
+        ).json()
+        expect(agencyOptions.contracts.map((c: { id: string }) => c.id)).toContain(contractId)
+        await create(env.fixture.admin.token)
+      } finally {
+        await prisma.contract.update({ where: { id: contractId }, data: { status: 'ACTIVE' } })
+      }
+    },
+  )
+
   it('creates for all linked roles and refuses another tenants contract', async () => {
     for (const user of [
       env.fixture.admin,
