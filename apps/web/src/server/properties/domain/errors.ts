@@ -1,5 +1,14 @@
 import { AppError, NotFoundError } from '@server/shared/errors'
 
+export class PropertyBrokerValidationError extends AppError {
+  constructor() {
+    super('Selecione corretores ativos e aprovados da mesma imobiliária.', {
+      status: 400,
+      code: 'PROPERTY_BROKER_INVALID',
+    })
+  }
+}
+
 export class PropertyNegotiationValidationError extends AppError {
   constructor() {
     super('Condições de negociação incompatíveis.', {

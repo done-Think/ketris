@@ -59,6 +59,7 @@ export interface PropertyCharacteristics {
 }
 
 export interface Property {
+  brokerIds?: string[]
   responsibleName: string
   activeContractId: string | null
   id: string
@@ -83,6 +84,7 @@ export interface Property {
 }
 
 export interface NewProperty {
+  brokerIds?: string[]
   tenantId: string
   responsibleId: string
   ownerId?: string | null
@@ -105,6 +107,7 @@ export interface NewProperty {
 }
 
 export interface PropertyChanges {
+  brokerIds?: string[]
   ownerId?: string | null
   ownerContactId?: string | null
   title?: string
@@ -171,4 +174,9 @@ export interface PropertyOwnersPage {
   pagination: { page: number; pageSize: number; total: number; totalPages: number }
 }
 
-export type PropertyAccessTarget = Pick<Property, 'responsibleId' | 'ownerId'>
+export type PropertyAccessTarget = Pick<Property, 'responsibleId' | 'ownerId' | 'brokerIds'>
+
+export interface PropertyBrokersPage {
+  brokers: PropertyOwnerOption[]
+  pagination: PropertyOwnersPage['pagination']
+}

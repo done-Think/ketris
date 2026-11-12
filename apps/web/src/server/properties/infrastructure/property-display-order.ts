@@ -11,7 +11,14 @@ export async function findPropertyIdsInDisplayOrder(
 ): Promise<string[]> {
   const conditions = filters.renterId ? [] : [Prisma.sql`i."tenantId" = ${filters.tenantId}`]
   if (filters.responsibleId)
-    conditions.push(Prisma.sql`i."responsibleId" = ${filters.responsibleId}`)
+    conditions.push(Prisma.sql`(i."responsibleId" = ${filters.responsibleId} OR EXISTS (
+      SELECT 1 FROM property_broker_access a JOIN users b ON b.id = a."userId" AND b."tenantId" = a."tenantId"
+      WHERE a."propertyId" = i.id AND a."tenantId" = ${filters.tenantId}
+        AND a."userId" = ${filters.responsibleId} AND b.active = true AND b.role = 'AGENT'
+        AND b."membershipApprovedAt" IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM team_invitations invitation
+          WHERE invitation."userId" = b.id AND invitation."acceptedAt" IS NULL)
+    ))`)
   if (filters.ownerId) conditions.push(Prisma.sql`i."ownerId" = ${filters.ownerId}`)
   if (filters.status)
     conditions.push(Prisma.sql`i.status::text = ${propertyDatabaseStatus[filters.status]}`)

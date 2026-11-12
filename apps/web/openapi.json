@@ -1358,6 +1358,12 @@
         "type": "object",
         "properties": {
           "ownerId": { "type": "string", "nullable": true, "minLength": 1 },
+          "brokerIds": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "maxItems": 100,
+            "description": "Additional active approved brokers in this agency. Only agency management can change these grants. Omit to preserve existing grants; send an empty array to revoke all additional grants. The primary responsible user is unchanged."
+          },
           "ownerContactId": { "type": "string", "nullable": true, "minLength": 1 },
           "title": { "type": "string", "minLength": 1, "maxLength": 200 },
           "description": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 10000 },
@@ -3603,6 +3609,12 @@
         "type": "object",
         "properties": {
           "ownerId": { "type": "string", "nullable": true, "minLength": 1 },
+          "brokerIds": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "maxItems": 100,
+            "description": "Additional active approved brokers in this agency. Only agency management can change these grants. Omit to preserve existing grants; send an empty array to revoke all additional grants. The primary responsible user is unchanged."
+          },
           "ownerContactId": { "type": "string", "nullable": true, "minLength": 1 },
           "title": { "type": "string", "minLength": 1, "maxLength": 200 },
           "description": { "type": "string", "nullable": true, "minLength": 1, "maxLength": 10000 },
@@ -4472,6 +4484,30 @@
         "required": ["file", "target"],
         "additionalProperties": false
       },
+      "PropertyBrokersResponse": {
+        "type": "object",
+        "properties": {
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "integer" },
+              "pageSize": { "type": "integer" },
+              "total": { "type": "integer" },
+              "totalPages": { "type": "integer" }
+            },
+            "required": ["page", "pageSize", "total", "totalPages"]
+          },
+          "brokers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": { "id": { "type": "string" }, "name": { "type": "string" } },
+              "required": ["id", "name"]
+            }
+          }
+        },
+        "required": ["pagination", "brokers"]
+      },
       "PropertyOwnersResponse": {
         "type": "object",
         "properties": {
@@ -4560,6 +4596,7 @@
           "tenantId": { "type": "string" },
           "responsibleId": { "type": "string" },
           "responsibleName": { "type": "string" },
+          "brokerIds": { "type": "array", "items": { "type": "string" } },
           "activeContractId": { "type": "string", "nullable": true },
           "title": { "type": "string" },
           "description": { "type": "string", "nullable": true },
@@ -8618,6 +8655,71 @@
             }
           },
           "404": { "description": "Imagem inexistente ou chave fora do escopo permitido." }
+        }
+      }
+    },
+    "/properties/brokers": {
+      "get": {
+        "tags": ["Properties"],
+        "summary": "Lists active approved brokers in the agency for property access grants",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 1000000,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 100,
+              "default": 100
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Brokers selectable by the agency manager.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PropertyBrokersResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "Agency management required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
         }
       }
     },

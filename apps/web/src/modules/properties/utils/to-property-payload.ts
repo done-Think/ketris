@@ -25,6 +25,7 @@ export function toPropertyPayload(
   )
 
   return {
+    ...(options.canManageBrokers ? { brokerIds: values.brokerIds } : {}),
     ...(options.canChooseOwner
       ? { ownerUserId: values.ownerUserId || null, ownerContactId: values.ownerContact?.id ?? null }
       : {}),

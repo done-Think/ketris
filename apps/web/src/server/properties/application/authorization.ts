@@ -17,7 +17,11 @@ export function assertPropertyAccess(
   actorRole: UserRole,
 ): void {
   if (isAgencyManager(actorRole)) return
-  if (actorRole === 'AGENT' && property.responsibleId === actorId) return
+  if (
+    actorRole === 'AGENT' &&
+    (property.responsibleId === actorId || property.brokerIds?.includes(actorId))
+  )
+    return
   if (isPropertyOwner(actorRole) && property.ownerId === actorId) return
 
   throw new PropertyNotFoundError()

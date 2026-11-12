@@ -151,7 +151,10 @@
       "title": "Inativar imóvel",
       "description": "Deseja inativar \"{title}\"? O imóvel deixará de ser anunciado. Seus dados, mídias, propostas e contratos serão preservados.",
       "confirm": "Inativar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "requestTitle": "Solicitar inativação",
+      "requestDescription": "Enviar à imobiliária uma solicitação de inativação de “{title}”?",
+      "requestConfirm": "Enviar solicitação"
     },
     "mediaKinds": {
       "photo": "Foto",
@@ -208,7 +211,8 @@
       "condition": "Condição",
       "owner": "Proprietário",
       "complement": "Complemento",
-      "ownerAccessAccount": "Conta com acesso ao imóvel (opcional)"
+      "ownerAccessAccount": "Conta com acesso ao imóvel (opcional)",
+      "brokersWithAccess": "Corretores com acesso"
     },
     "steps": {
       "ariaLabel": "Etapas do cadastro",
@@ -291,7 +295,12 @@
     "ownerContactHelp": "Selecione um contato do CRM. O contato não precisa ter login e não receberá acesso automaticamente.",
     "ownerAccessHelp": "Esta conta poderá acessar o imóvel. O vínculo é independente do contato proprietário.",
     "addressLocationHint": "Usamos este endereço para localizar o imóvel automaticamente no mapa.",
-    "addressLocationUnavailable": "O imóvel foi salvo, mas o serviço de mapas ainda não encontrou este endereço. Confira os dados do endereço."
+    "addressLocationUnavailable": "O imóvel foi salvo, mas o serviço de mapas ainda não encontrou este endereço. Confira os dados do endereço.",
+    "brokersAccessHelp": "Selecione os corretores que poderão gerenciar este imóvel na própria carteira. O responsável principal mantém seu acesso. Apenas a gestão altera estes vínculos.",
+    "brokersLoadError": "Não foi possível carregar os corretores. Tente novamente.",
+    "noBrokerAccess": "Nenhum acesso adicional concedido",
+    "noAvailableBrokers": "Nenhum corretor ativo e aprovado disponível",
+    "brokerUnavailable": "Corretor indisponível — remova o vínculo"
   },
   "edit": {
     "title": "Editar imóvel",

@@ -4,6 +4,8 @@ import type {
   Property,
   PropertyPage,
   PropertyOwnersResponse,
+  PropertyBrokersResponse,
+  PropertyBrokerOption,
   PropertyOwnerOption,
   PropertyFormValues,
   PropertyListFilters,
@@ -70,6 +72,20 @@ export class PropertiesService extends BaseService {
     return this.http
       .get<PropertyResponse>(`${this.path}/${id}`)
       .then((data) => mapProperty(data.property))
+  }
+
+  async listBrokers(): Promise<PropertyBrokerOption[]> {
+    const first = await this.http.get<PropertyBrokersResponse>(`${this.path}/brokers`, {
+      params: { page: 1, pageSize: 100 },
+    })
+    const brokers = [...first.brokers]
+    for (let page = 2; page <= first.pagination.totalPages; page += 1) {
+      const result = await this.http.get<PropertyBrokersResponse>(`${this.path}/brokers`, {
+        params: { page, pageSize: 100 },
+      })
+      brokers.push(...result.brokers)
+    }
+    return brokers
   }
 
   create(payload: PropertyFormValues): Promise<Property> {

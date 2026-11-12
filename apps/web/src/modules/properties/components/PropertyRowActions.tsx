@@ -41,7 +41,12 @@ export function PropertyRowActions({ property, onView }: PropertyRowActionsProps
     session?.role !== 'RENTER' &&
     (session?.role === 'OWNER' ||
       session?.role === 'PROPERTY_OWNER' ||
-      session?.user?.id === property.responsibleUserId)
+      (session?.role === 'AGENT' &&
+        Boolean(
+          session.user?.id &&
+          (session.user.id === property.responsibleUserId ||
+            property.brokerIds?.includes(session.user.id)),
+        )))
   const isPublished = property.apiStatus === 'PUBLISHED'
   const isMutating =
     publishProperty.isPending || unpublishProperty.isPending || deleteProperty.isPending

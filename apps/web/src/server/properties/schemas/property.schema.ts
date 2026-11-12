@@ -89,6 +89,7 @@ export const propertySchema = z
     tenantId: z.string(),
     responsibleId: z.string(),
     responsibleName: z.string(),
+    brokerIds: z.array(z.string()).optional(),
     activeContractId: z.string().nullable(),
     title: z.string(),
     description: z.string().nullable(),
@@ -176,6 +177,11 @@ export const propertyOwnersResponseSchema = z
     }),
   })
   .openapi('PropertyOwnersResponse')
+
+export const propertyBrokersResponseSchema = propertyOwnersResponseSchema
+  .omit({ owners: true })
+  .extend({ brokers: z.array(z.object({ id: z.string(), name: z.string() })) })
+  .openapi('PropertyBrokersResponse')
 
 export const propertyMediaSegmentsSchema = z
   .array(

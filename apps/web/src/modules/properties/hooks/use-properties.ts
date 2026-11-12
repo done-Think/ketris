@@ -149,6 +149,7 @@ function invalidatePropertyConsumers(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: propertyQueryKeys.all }),
     queryClient.invalidateQueries({ queryKey: ['agenda'] }),
+    queryClient.invalidateQueries({ queryKey: ['team'] }),
     queryClient.invalidateQueries({ queryKey: ['contracts'] }),
     queryClient.invalidateQueries({ queryKey: ['marketplace', 'properties'] }),
   ])

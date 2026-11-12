@@ -1,4 +1,6 @@
 import { resolveMutationAuthor } from '@server/shared/persistence/mutation-author'
+import { lockPropertyBrokers, replacePropertyBrokers } from './property-broker-access'
+import { activePropertyBrokerWhere } from './property-broker-eligibility'
 import { matchingPropertyTypes } from '../domain/property-search'
 import { findPropertyIdsInDisplayOrder } from './property-display-order'
 import type {
@@ -27,6 +29,11 @@ import type {
 import type { PropertyRow, PropertyTransaction } from '../types/prisma-property-repository'
 
 const propertyInclude = {
+  brokerAccess: {
+    where: { user: activePropertyBrokerWhere() },
+    select: { userId: true },
+    orderBy: { userId: 'asc' as const },
+  },
   responsible: { select: { name: true } },
   ownerContact: { select: { id: true, name: true } },
   contracts: {
@@ -99,8 +106,9 @@ function propertySearchWhere(search?: string): Prisma.PropertyWhereInput {
 export class PrismaPropertyRepository implements PropertyRepository {
   async create(property: NewProperty, actorId?: string): Promise<Property> {
     const authorId = await resolveMutationAuthor(prisma, property.tenantId, actorId)
-    return prisma.property
-      .create({
+    return prisma.$transaction(async (tx) => {
+      await lockPropertyBrokers(tx, property.tenantId, property.brokerIds)
+      const created = await tx.property.create({
         data: {
           tenantId: property.tenantId,
           updatedById: authorId,
@@ -131,20 +139,38 @@ export class PrismaPropertyRepository implements PropertyRepository {
         },
         include: propertyInclude,
       })
-      .then(mapProperty)
+      await replacePropertyBrokers(tx, property.tenantId, created.id, property.brokerIds ?? [])
+      return mapProperty({
+        ...created,
+        brokerAccess: (property.brokerIds ?? []).map((userId) => ({ userId })),
+      })
+    })
   }
 
   async listPage(filters: PropertyListFilters): Promise<PropertyPage> {
     const scope: Prisma.PropertyWhereInput = {
       AND: [await propertyAccessScope(prisma, filters.tenantId, filters.renterId)],
       purpose: filters.purpose,
-      responsibleId: filters.responsibleId,
+      ...(filters.responsibleId
+        ? {
+            OR: [
+              { responsibleId: filters.responsibleId },
+              {
+                brokerAccess: {
+                  some: {
+                    tenantId: filters.tenantId,
+                    userId: filters.responsibleId,
+                    user: activePropertyBrokerWhere(filters.tenantId),
+                  },
+                },
+              },
+            ],
+          }
+        : {}),
       ownerId: filters.ownerId,
     }
     const where: Prisma.PropertyWhereInput = {
-      ...scope,
-      status: filters.status,
-      ...propertySearchWhere(filters.search),
+      AND: [scope, { status: filters.status }, propertySearchWhere(filters.search)],
     }
     const page = filters.page ?? 1
     const pageSize = filters.pageSize ?? 25
@@ -227,6 +253,7 @@ export class PrismaPropertyRepository implements PropertyRepository {
     actorId?: string,
   ): Promise<Property | null> {
     return prisma.$transaction(async (transaction) => {
+      await lockPropertyBrokers(transaction, tenantId, changes.brokerIds)
       const existingProperty = await transaction.property.findFirst({
         where: { tenantId, id },
         select: { id: true },
@@ -237,6 +264,9 @@ export class PrismaPropertyRepository implements PropertyRepository {
       }
 
       const authorId = await resolveMutationAuthor(transaction, tenantId, actorId)
+      if (changes.brokerIds !== undefined) {
+        await replacePropertyBrokers(transaction, tenantId, id, changes.brokerIds)
+      }
       await transaction.property.update({
         where: { id, tenantId },
         data: {
@@ -458,6 +488,7 @@ function mapProperty(property: PropertyRow): Property {
     tenantId: property.tenantId,
     responsibleId: property.responsibleId,
     responsibleName: property.responsible.name,
+    brokerIds: property.brokerAccess.map((access) => access.userId),
     activeContractId: property.contracts[0]?.id ?? null,
     ownerId: property.ownerId,
     ownerContactId: property.ownerContactId,

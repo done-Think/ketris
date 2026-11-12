@@ -71,3 +71,5 @@ export interface ListPropertyOwnersInput {
   page?: number
   pageSize?: number
 }
+
+export type ListPropertyBrokersInput = ListPropertyOwnersInput

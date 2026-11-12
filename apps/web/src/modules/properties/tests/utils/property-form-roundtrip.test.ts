@@ -12,6 +12,17 @@ import {
 } from '@server/properties/schemas/property-input.schema'
 
 describe('property form roundtrip', () => {
+  it('restores broker grants, sends explicit revocation for managers and omits grants for other roles', () => {
+    const values = buildEditPropertyFormValues({ ...property, brokerIds: ['broker-a', 'broker-b'] })
+    const managed = toPropertyPayload(values, { canManageBrokers: true })
+    expect(toCreatePayload(managed).brokerIds).toEqual(['broker-a', 'broker-b'])
+    expect(toUpdatePayload(managed).brokerIds).toEqual(['broker-a', 'broker-b'])
+    expect(
+      toUpdatePayload(toPropertyPayload({ ...values, brokerIds: [] }, { canManageBrokers: true }))
+        .brokerIds,
+    ).toEqual([])
+    expect(toUpdatePayload(toPropertyPayload(values))).not.toHaveProperty('brokerIds')
+  })
   it('keeps structured choices and legacy text through edit and HTTP payload mapping', () => {
     const original = {
       ...property,

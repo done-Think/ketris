@@ -151,7 +151,10 @@
       "title": "Desactivar inmueble",
       "description": "¿Desea desactivar \"{title}\"? El inmueble dejará de anunciarse. Sus datos, archivos, propuestas y contratos se conservarán.",
       "confirm": "Desactivar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "requestTitle": "Solicitar desactivación",
+      "requestDescription": "¿Enviar a la inmobiliaria una solicitud para desactivar “{title}”?",
+      "requestConfirm": "Enviar solicitud"
     },
     "mediaKinds": {
       "photo": "Foto",
@@ -208,7 +211,8 @@
       "condition": "Condición",
       "owner": "Propietario",
       "complement": "Complemento",
-      "ownerAccessAccount": "Cuenta con acceso al inmueble (opcional)"
+      "ownerAccessAccount": "Cuenta con acceso al inmueble (opcional)",
+      "brokersWithAccess": "Corredores con acceso"
     },
     "steps": {
       "ariaLabel": "Etapas del registro",
@@ -291,7 +295,12 @@
     "ownerContactHelp": "Seleccione un contacto del CRM. El contacto no necesita iniciar sesión ni recibirá acceso automáticamente.",
     "ownerAccessHelp": "Esta cuenta podrá acceder al inmueble. El vínculo es independiente del contacto propietario.",
     "addressLocationHint": "Usamos esta dirección para ubicar el inmueble automáticamente en el mapa.",
-    "addressLocationUnavailable": "El inmueble se guardó, pero el servicio de mapas aún no encontró esta dirección. Revisa los datos de la dirección."
+    "addressLocationUnavailable": "El inmueble se guardó, pero el servicio de mapas aún no encontró esta dirección. Revisa los datos de la dirección.",
+    "brokersAccessHelp": "Seleccione los corredores que podrán gestionar este inmueble en su cartera. El responsable principal conserva el acceso. Solo la administración puede cambiar estos vínculos.",
+    "brokersLoadError": "No se pudieron cargar los corredores. Inténtelo de nuevo.",
+    "noBrokerAccess": "Sin acceso adicional concedido",
+    "noAvailableBrokers": "No hay corredores activos y aprobados disponibles",
+    "brokerUnavailable": "Corredor no disponible — elimine el vínculo"
   },
   "edit": {
     "title": "Editar inmueble",
