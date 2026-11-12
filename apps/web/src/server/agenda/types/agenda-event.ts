@@ -1,5 +1,12 @@
 import type { UserRole } from '@server/auth/domain/user.entity'
-export type AgendaEventStatus = 'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED'
+export type AgendaEventStatus =
+  'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW'
+
+export type AgendaEventOutcome = Extract<AgendaEventStatus, 'COMPLETED' | 'NO_SHOW'>
+
+export type AgendaEventEditableStatus = Exclude<AgendaEventStatus, AgendaEventOutcome>
+
+export type AgendaVisitInterest = 'LOW' | 'MEDIUM' | 'HIGH'
 
 export type AgendaEventAudience = 'SHARED_TEAM' | 'ALL_AGENTS' | 'ASSIGNED_AGENT'
 
@@ -38,7 +45,7 @@ export interface AgendaEventChanges {
   responsibleId?: string
   title?: string
   type?: AgendaEventKind | null
-  status?: AgendaEventStatus
+  status?: AgendaEventEditableStatus
   propertyId?: string | null
   freeFormPropertyReference?: string | null
   participantName?: string
@@ -49,6 +56,14 @@ export interface AgendaEventChanges {
 export interface AgendaEventLinks {
   ownerEmail?: string | null
   participantEmails?: string[]
+}
+
+export interface AgendaEventOutcomeRecord {
+  outcome: AgendaEventOutcome
+  expectedStatus: AgendaEventStatus
+  visitInterest: AgendaVisitInterest | null
+  notes: string | null
+  actorUserId: string
 }
 
 export interface AgendaEventReschedule {

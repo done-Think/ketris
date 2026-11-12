@@ -10,6 +10,7 @@ export function agendaEventFixture(overrides: Partial<AgendaEvent> = {}): Agenda
     property: 'Apartamento',
     propertyHref: '/dashboard/properties',
     propertyId: null,
+    propertyAccessible: false,
     apiKind: 'MEETING',
     participant: 'Ana',
     phone: '11999999999',

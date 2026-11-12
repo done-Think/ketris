@@ -46,18 +46,20 @@ const propertyInclude = {
   media: { orderBy: { position: 'asc' as const } },
 }
 
-function renterPropertyScope(tenantId: string, renterId?: string): Prisma.PropertyWhereInput {
-  return renterId === undefined
-    ? {}
-    : {
-        contracts: {
-          some: {
-            tenantId,
-            status: 'ACTIVE',
-            parties: { some: { role: 'RENTER', userId: renterId } },
-          },
-        },
-      }
+async function propertyAccessScope(
+  client: PropertyTransaction,
+  tenantId: string,
+  renterId?: string,
+): Promise<Prisma.PropertyWhereInput> {
+  if (renterId === undefined) return { tenantId }
+  const contracts = await client.contract.findMany({
+    where: { status: 'ACTIVE', parties: { some: { role: 'RENTER', userId: renterId } } },
+    select: { tenantId: true, property: { select: { id: true, tenantId: true } } },
+  })
+  const propertyIds = contracts
+    .filter((contract) => contract.tenantId === contract.property.tenantId)
+    .map((contract) => contract.property.id)
+  return { id: { in: [...new Set(propertyIds)] } }
 }
 
 function propertySearchWhere(search?: string): Prisma.PropertyWhereInput {
@@ -145,9 +147,9 @@ export class PrismaPropertyRepository implements PropertyRepository {
     })
   }
 
-  listPage(filters: PropertyListFilters): Promise<PropertyPage> {
+  async listPage(filters: PropertyListFilters): Promise<PropertyPage> {
     const scope: Prisma.PropertyWhereInput = {
-      tenantId: filters.tenantId,
+      AND: [await propertyAccessScope(prisma, filters.tenantId, filters.renterId)],
       purpose: filters.purpose,
       ...(filters.responsibleId
         ? {
@@ -166,7 +168,6 @@ export class PrismaPropertyRepository implements PropertyRepository {
           }
         : {}),
       ownerId: filters.ownerId,
-      ...renterPropertyScope(filters.tenantId, filters.renterId),
     }
     const where: Prisma.PropertyWhereInput = {
       AND: [scope, { status: filters.status }, propertySearchWhere(filters.search)],
@@ -232,18 +233,17 @@ export class PrismaPropertyRepository implements PropertyRepository {
     )
   }
 
-  findByTenantAndId(
+  async findByTenantAndId(
     tenantId: string,
     id: string,
     renterId?: string,
     ownerId?: string,
   ): Promise<Property | null> {
-    return prisma.property
-      .findFirst({
-        where: { tenantId, id, ownerId, ...renterPropertyScope(tenantId, renterId) },
-        include: propertyInclude,
-      })
-      .then((property) => (property ? mapProperty(property) : null))
+    const property = await prisma.property.findFirst({
+      where: { AND: [await propertyAccessScope(prisma, tenantId, renterId), { id, ownerId }] },
+      include: propertyInclude,
+    })
+    return property ? mapProperty(property) : null
   }
 
   update(

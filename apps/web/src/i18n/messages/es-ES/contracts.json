@@ -184,7 +184,7 @@
         "endDate": "Término",
         "adjustmentIndex": "Reajuste",
         "notes": "Observaciones",
-        "amount": "Importe del contrato (BRL)"
+        "amount": "Importe del contrato"
       },
       "contractTypeOptions": {
         "residential": "Alquiler residencial",

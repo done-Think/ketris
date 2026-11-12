@@ -362,7 +362,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
     ).toBe(404)
   })
 
-  it('creates, schedules, comments and uploads in the linked agency tenant, including private media', async () => {
+  it('creates, comments and uploads in the linked agency tenant, including private media, leaving provider and date to the agency team', async () => {
     expect((await confirm('contracts')).status).toBe(200)
     const created = await createTicket(
       request('maintenance/tickets', renter.token, {
@@ -390,7 +390,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
           ctx,
         )
       ).status,
-    ).toBe(200)
+    ).toBe(403)
     expect(
       (
         await actOnTicket(
@@ -401,7 +401,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
           ctx,
         )
       ).status,
-    ).toBe(200)
+    ).toBe(403)
     expect(
       (
         await addNote(

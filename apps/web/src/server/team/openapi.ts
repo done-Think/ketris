@@ -86,7 +86,7 @@ export function registerTeamOpenApi(registry: OpenAPIRegistry): void {
       method: 'post',
       path: '/team/members/{id}/transfer',
       summary:
-        'Transfere imóveis (com as oportunidades), leads e eventos futuros para outro corretor',
+        'Transfere imóveis (com as oportunidades), leads e eventos futuros de um corretor ou da própria imobiliária para outro membro da equipe',
       request: {
         params: teamMemberIdParamsSchema,
         body: json(transferBrokerPortfolioRequestSchema),

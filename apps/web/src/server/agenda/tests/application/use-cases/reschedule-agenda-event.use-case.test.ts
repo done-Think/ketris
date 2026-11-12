@@ -57,6 +57,7 @@ function createDeps(overrides?: {
     update: vi.fn(),
     reschedule: overrides?.reschedule ?? vi.fn().mockResolvedValue(rescheduledEvent),
     cancel: vi.fn(),
+    recordOutcome: vi.fn(),
     hasOverlap: overrides?.hasOverlap ?? vi.fn().mockResolvedValue(false),
   }
 
@@ -288,5 +289,22 @@ describe('RescheduleAgendaEventUseCase', () => {
     })
 
     expect(deps.agendaEventRepository.reschedule).toHaveBeenCalled()
+  })
+
+  it('não reagenda evento com resultado registrado', async () => {
+    const deps = createDeps({
+      findByTenantAndId: vi.fn().mockResolvedValue({ ...existingEvent, status: 'COMPLETED' }),
+    })
+    const useCase = new RescheduleAgendaEventUseCase(deps.agendaEventRepository)
+
+    await expect(
+      useCase.execute({
+        actorTenantId: 'tenant-1',
+        actorRole: 'OWNER',
+        id: 'event-1',
+        start: NEW_VALID_INICIO,
+      }),
+    ).rejects.toMatchObject({ status: 409, code: 'AGENDA_EVENT_CLOSED' })
+    expect(deps.agendaEventRepository.reschedule).not.toHaveBeenCalled()
   })
 })

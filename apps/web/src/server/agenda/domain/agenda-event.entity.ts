@@ -4,6 +4,7 @@ import type {
   AgendaEventAudience,
   AgendaEventStatus,
   AgendaEventKind,
+  AgendaVisitInterest,
 } from '../types/agenda-event'
 
 export interface AgendaEvent {
@@ -17,6 +18,7 @@ export interface AgendaEvent {
   dono: AgendaEventLinkedUser | null
   participants: AgendaEventLinkedUser[]
   propertyLabel?: string | null
+  propertyAccessible?: boolean
   propertyId: string | null
   freeFormPropertyReference: string | null
   title: string
@@ -32,6 +34,11 @@ export interface AgendaEvent {
   canceledAt?: Date | null
   canceledById?: string | null
   cancellationReason?: string | null
+  outcomeRecordedAt?: Date | null
+  outcomeRecordedById?: string | null
+  outcomeRecordedByName?: string | null
+  visitInterest?: AgendaVisitInterest | null
+  outcomeNotes?: string | null
   createdAt: Date
   updatedAt: Date
 }

@@ -23,8 +23,9 @@ describe('broker team action schemas', () => {
     expect(goalSchema.safeParse({ monthlySales: 10001 }).success).toBe(false)
   })
 
-  it('requires a destination and at least one item to transfer', () => {
+  it('requires a source, a destination and at least one item to transfer', () => {
     const valid = {
+      sourceId: 'a',
       destinationId: 'b',
       properties: false,
       leads: true,
@@ -34,6 +35,7 @@ describe('broker team action schemas', () => {
 
     expect(transferSchema.safeParse(valid).success).toBe(true)
     expect(transferSchema.safeParse({ ...valid, destinationId: '' }).success).toBe(false)
+    expect(transferSchema.safeParse({ ...valid, sourceId: '' }).success).toBe(false)
     expect(transferSchema.safeParse({ ...valid, leads: false }).error?.issues[0]).toMatchObject({
       path: ['properties'],
       message: 'itemsError',

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createAgendaEventRequestSchema,
   listAgendaEventsQuerySchema,
+  recordAgendaEventOutcomeRequestSchema,
   rescheduleAgendaEventRequestSchema,
   updateAgendaEventRequestSchema,
 } from '../../schemas/agenda-event-input.schema'
@@ -200,5 +201,48 @@ describe('listAgendaEventsQuerySchema', () => {
     const result = listAgendaEventsQuerySchema.safeParse({ from: '2026-10-01T00:00:00.000Z' })
 
     expect(result.success).toBe(false)
+  })
+})
+
+describe('recordAgendaEventOutcomeRequestSchema', () => {
+  it('aceita visita realizada com interesse e apara as anotações', () => {
+    expect(
+      recordAgendaEventOutcomeRequestSchema.parse({
+        outcome: 'COMPLETED',
+        visitInterest: 'HIGH',
+        notes: '  Quer proposta.  ',
+      }),
+    ).toEqual({ outcome: 'COMPLETED', visitInterest: 'HIGH', notes: 'Quer proposta.' })
+  })
+
+  it('aceita ausência do cliente sem interesse', () => {
+    expect(recordAgendaEventOutcomeRequestSchema.parse({ outcome: 'NO_SHOW' })).toEqual({
+      outcome: 'NO_SHOW',
+    })
+  })
+
+  it('recusa interesse quando o cliente não compareceu', () => {
+    const result = recordAgendaEventOutcomeRequestSchema.safeParse({
+      outcome: 'NO_SHOW',
+      visitInterest: 'LOW',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error?.issues[0]?.path).toEqual(['visitInterest'])
+  })
+
+  it.each([
+    { outcome: 'CANCELLED' },
+    { outcome: 'COMPLETED', visitInterest: 'VERY_HIGH' },
+    { outcome: 'COMPLETED', notes: 'x'.repeat(10001) },
+    { outcome: 'COMPLETED', status: 'COMPLETED' },
+  ])('recusa corpo inválido %o', (body) => {
+    expect(recordAgendaEventOutcomeRequestSchema.safeParse(body).success).toBe(false)
+  })
+})
+
+describe('updateAgendaEventRequestSchema e os status de resultado', () => {
+  it.each(['COMPLETED', 'NO_SHOW'])('não deixa a edição definir o status %s', (status) => {
+    expect(updateAgendaEventRequestSchema.safeParse({ status }).success).toBe(false)
   })
 })

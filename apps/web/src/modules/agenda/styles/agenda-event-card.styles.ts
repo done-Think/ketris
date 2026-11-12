@@ -1,5 +1,5 @@
 import type { SxProps, Theme } from '@mui/material'
-import { brand, surface } from '@shared/theme/tokens'
+import { brand, iconSize, surface } from '@shared/theme/tokens'
 import { agendaCardBaseSx, getAgendaCardPlacementSx } from './agenda-calendar.styles'
 import type { AgendaEventToneStyle } from '../types/agenda-event'
 
@@ -18,10 +18,17 @@ export const styles = {
     backgroundImage: `linear-gradient(${tone.bgcolor}, ${tone.bgcolor})`,
     cursor: 'pointer',
   }),
-  typography: (tone: AgendaEventToneStyle): SxProps<Theme> => ({
+  titleRow: { minWidth: 0 } satisfies SxProps<Theme>,
+  statusIcon: (tone: AgendaEventToneStyle): SxProps<Theme> => ({
+    color: tone.color,
+    fontSize: iconSize.xs,
+    flexShrink: 0,
+  }),
+  typography: (tone: AgendaEventToneStyle, struckThrough = false): SxProps<Theme> => ({
     color: tone.color,
     fontSize: 12,
     fontWeight: 900,
+    textDecoration: struckThrough ? 'line-through' : 'none',
   }),
   typography2: {
     color: brand.graphite[500],

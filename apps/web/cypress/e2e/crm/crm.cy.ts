@@ -105,7 +105,7 @@ describe('CRM real workflows', () => {
     cy.get('input[type="email"]').type('lead-convertido@crm.example.test')
     cy.get('input[role="combobox"]').type('Apartamento CRM')
     cy.contains('[role="option"]', 'Apartamento CRM não publicado').click()
-    cy.get('input[type="number"]').clear().type('2300.45')
+    cy.get('input[name="proposedValue"]').clear().type('230045').should('have.value', '2.300,45')
     cy.intercept('POST', '**/api/crm/leads/*/convert').as('convert')
     cy.contains('button', /^Converter$/).click()
     cy.wait('@convert').then(({ response }) => {
@@ -120,7 +120,7 @@ describe('CRM real workflows', () => {
     setup()
     openOpportunity()
     cy.contains('button', 'Editar dados').click()
-    cy.get('input[name="proposedValue"]').clear().type('2100.45')
+    cy.get('input[name="proposedValue"]').clear().type('210045').should('have.value', '2.100,45')
     cy.contains('button', 'Adicionar condição').click()
     cy.get('textarea[name="specialConditions.0.text"]').type(
       'Pets, mediante vistoria{enter}Conferir na entrega',

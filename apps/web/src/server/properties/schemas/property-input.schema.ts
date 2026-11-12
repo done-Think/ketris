@@ -1,7 +1,7 @@
 import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
-import { normalizePostalCode } from '@shared/utils/postal-code'
+import { isValidPostalCode, normalizePostalCode } from '@shared/utils/postal-code'
 
 import {
   propertyListingSchema,
@@ -22,13 +22,14 @@ export const propertyAddressInputSchema = z
       .string()
       .trim()
       .min(8)
-      .refine((value) => normalizePostalCode(value) !== null, {
+      .refine(isValidPostalCode, {
         ...validationRefinement('postalCodeInvalid'),
       })
       .transform((value) => normalizePostalCode(value)!)
       .openapi({
         description:
-          'CEP brasileiro com 8 dígitos. Pontos, espaços e hífen são aceitos e removidos ao salvar.',
+          'CEP brasileiro com 8 dígitos, a partir de 01000-000 e sem todos os dígitos repetidos ' +
+          '(00000-000, 11111-111…). Pontos, espaços e hífen são aceitos e removidos ao salvar.',
         example: '37502330',
       }),
     latitude: z.number().min(-90).max(90).nullable().optional(),

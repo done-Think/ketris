@@ -1,5 +1,5 @@
 import type { SxProps, Theme } from '@mui/material'
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
+import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 import { getAgendaCardPlacementSx } from './agenda-calendar.styles'
 import { scheduleHourHeight } from '../utils/agenda-calendar'
 import type {
@@ -107,6 +107,12 @@ export const styles = {
     fontSize: 14,
     fontWeight: 900,
   } satisfies SxProps<Theme>,
+  statusIcon: (tone: AgendaEventToneStyle): SxProps<Theme> => ({
+    color: tone.color,
+    fontSize: iconSize.md,
+    mt: 0.2,
+    flexShrink: 0,
+  }),
   typography8: {
     color: brand.neutral[500],
     flex: '0 0 auto',

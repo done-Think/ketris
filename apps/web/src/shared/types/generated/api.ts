@@ -334,12 +334,14 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse']
           }
         }
-        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        /** @description O resultado do evento já foi registrado (AGENDA_EVENT_CLOSED). */
         409: {
           headers: {
             [name: string]: unknown
           }
-          content?: never
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
         }
       }
     }
@@ -409,12 +411,107 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse']
           }
         }
-        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        /** @description O resultado do evento já foi registrado (AGENDA_EVENT_CLOSED). */
         409: {
           headers: {
             [name: string]: unknown
           }
-          content?: never
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/agenda/events/{id}/outcome': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Registra o resultado de um evento: realizado ou cliente não compareceu
+     * @description Só a equipe da imobiliária (OWNER e AGENT) registra, com as mesmas regras de acesso da edição. Aceito a partir do início do evento e nunca em evento cancelado. Em visita realizada, visitInterest é obrigatório; nos demais casos é recusado. NO_SHOW não se aplica a evento interno. Depois do registro o evento fica fechado para edição, reagendamento e cancelamento; só o OWNER pode registrar de novo para corrigir. Status, autor, data e auditoria são gravados na mesma transação.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['RecordAgendaEventOutcomeRequest']
+        }
+      }
+      responses: {
+        /** @description Resultado registrado. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['AgendaEventResponse']
+          }
+        }
+        /** @description Corpo inválido, interesse ausente em visita realizada (AGENDA_VISIT_INTEREST_REQUIRED), interesse fora de visita realizada (AGENDA_VISIT_INTEREST_NOT_ALLOWED) ou ausência em evento interno (AGENDA_NO_SHOW_INTERNAL_EVENT). */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Access token ausente, inválido ou expirado. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Sem permissão para registrar o resultado deste evento. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Evento não encontrado neste tenant. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Evento ainda não começou (AGENDA_OUTCOME_BEFORE_START), cancelado (AGENDA_OUTCOME_CANCELLED_EVENT), já com resultado para quem não é OWNER (AGENDA_EVENT_CLOSED) ou alterado por outra pessoa durante o registro (CONFLICT). */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
         }
       }
     }
@@ -491,7 +588,7 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse']
           }
         }
-        /** @description O responsável já tem outro evento agendado nesse horário. */
+        /** @description O responsável já tem outro evento agendado nesse horário, ou o resultado do evento já foi registrado (AGENDA_EVENT_CLOSED). */
         409: {
           headers: {
             [name: string]: unknown
@@ -13696,7 +13793,7 @@ export interface paths {
     }
     /**
      * Lista imóveis do tenant autenticado
-     * @description RENTER consulta somente imóveis com contrato ACTIVE do mesmo tenant e vínculo explícito de RENTER ao seu usuário, independentemente do status do anúncio.
+     * @description RENTER consulta somente imóveis com contrato ACTIVE e vínculo explícito de RENTER ao seu usuário, inclusive de outras imobiliárias quando a conta está no tenant compartilhado de locatários (contrato e imóvel da mesma imobiliária), independentemente do status do anúncio.
      */
     get: {
       parameters: {
@@ -15197,7 +15294,7 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** Transfere imóveis (com as oportunidades), leads e eventos futuros para outro corretor */
+    /** Transfere imóveis (com as oportunidades), leads e eventos futuros de um corretor ou da própria imobiliária para outro membro da equipe */
     post: {
       parameters: {
         query?: never
@@ -15517,11 +15614,20 @@ export interface components {
       internal: boolean
       kind: components['schemas']['AgendaEventKind']
       notes: string | null
+      outcomeNotes: string | null
+      /** @description Momento em que o resultado (realizado ou não compareceu) foi registrado. */
+      outcomeRecordedAt: string | null
+      outcomeRecordedBy: {
+        name: string
+      } | null
+      outcomeRecordedById: string | null
       owner: components['schemas']['AgendaEventLinkedUser']
       participantName: string
       participantPhone: string
       /** @description Usuários participantes vinculados (acesso de leitura). */
       participants: components['schemas']['AgendaEventLinkedUser'][]
+      /** @description Indica se o usuário pode abrir o imóvel. Um corretor vê o rótulo do imóvel de um evento atribuído a ele mesmo sem ser o responsável pelo imóvel, mas não ganha acesso ao cadastro. */
+      propertyAccessible: boolean
       propertyId: string | null
       propertyLabel: string | null
       /** @description Referência livre de imóvel, usada quando propertyId é nulo. */
@@ -15535,7 +15641,13 @@ export interface components {
       tenantId: string
       title: string
       updatedAt: string
+      visitInterest: components['schemas']['AgendaVisitInterest']
     }
+    /**
+     * @description Status que podem ser definidos na edição. O resultado tem rota própria.
+     * @enum {string}
+     */
+    AgendaEventEditableStatus: 'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED'
     /** @enum {string|null} */
     AgendaEventKind: 'VISIT' | 'FOLLOW_UP' | 'MEETING' | 'INSPECTION' | 'SIGNATURE' | 'OTHER' | null
     /** @description Dono explícito do evento (acesso de leitura). */
@@ -15543,6 +15655,8 @@ export interface components {
       email: string
       name: string
     } | null
+    /** @enum {string} */
+    AgendaEventOutcome: 'COMPLETED' | 'NO_SHOW'
     AgendaEventReadResponse: {
       event: components['schemas']['AgendaEvent'] | components['schemas']['RenterAgendaEvent']
     }
@@ -15553,7 +15667,8 @@ export interface components {
       events: (components['schemas']['AgendaEvent'] | components['schemas']['RenterAgendaEvent'])[]
     }
     /** @enum {string} */
-    AgendaEventStatus: 'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED'
+    AgendaEventStatus:
+      'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW'
     AgendaPropertyOptionsResponse: {
       items: {
         id: string
@@ -15563,6 +15678,11 @@ export interface components {
       pageSize: number
       total: number
     }
+    /**
+     * @description Interesse do cliente, informado apenas em visitas realizadas.
+     * @enum {string|null}
+     */
+    AgendaVisitInterest: 'LOW' | 'MEDIUM' | 'HIGH' | null
     AssignOpportunityResponsibleRequest: {
       responsibleId: string
     }
@@ -17774,6 +17894,11 @@ export interface components {
       rentalPrice?: number | null
       title: string
     }
+    RecordAgendaEventOutcomeRequest: {
+      notes?: string
+      outcome: components['schemas']['AgendaEventOutcome']
+      visitInterest?: components['schemas']['AgendaVisitInterest'] & unknown
+    }
     RefreshPlatformTokenRequest: {
       refreshToken: string
     }
@@ -18247,7 +18372,7 @@ export interface components {
       state: string
       street: string
       /**
-       * @description CEP brasileiro com 8 dígitos. Pontos, espaços e hífen são aceitos e removidos ao salvar.
+       * @description CEP brasileiro com 8 dígitos, a partir de 01000-000 e sem todos os dígitos repetidos (00000-000, 11111-111…). Pontos, espaços e hífen são aceitos e removidos ao salvar.
        * @example 37502330
        */
       zipCode: string
@@ -18345,7 +18470,7 @@ export interface components {
       propertyReference?: string | null
       responsibleId?: string
       start?: string | null
-      status?: components['schemas']['AgendaEventStatus']
+      status?: components['schemas']['AgendaEventEditableStatus']
       title?: string
     }
     /** @description Não troca status. Cobrança paga ou cancelada só aceita mudança de descrição (409 CHARGE_LOCKED). */

@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react'
 
 import { styles } from '../styles/create-property-dashboard-page.styles'
 
-import { useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Divider } from '@mui/material'
@@ -15,10 +14,8 @@ import { useRouter } from '@/i18n/navigation'
 
 import { usePropertyFormWizard } from '../hooks/use-property-form-wizard'
 import { useCreateProperty, usePropertyMediaUploadsPending } from '../hooks/use-properties'
-import {
-  createDashboardPropertyDefaultValues,
-  createDashboardPropertySchema,
-} from '../schemas/create-dashboard-property-schema'
+import { useDashboardPropertySchema } from '../hooks/use-dashboard-property-schema'
+import { createDashboardPropertyDefaultValues } from '../schemas/create-dashboard-property-schema'
 import type { CreateDashboardPropertyFormValues } from '../types/dashboard-property'
 import { extractErrorMessage } from '@shared/utils/error-message'
 import { toPropertyPayload } from '../utils/to-property-payload'
@@ -34,10 +31,7 @@ export function CreatePropertyDashboardPage() {
   const canChooseOwner = session?.role === 'OWNER' || session?.role === 'AGENT'
   const createProperty = useCreateProperty()
   const isUploading = usePropertyMediaUploadsPending()
-  const propertySchema = useMemo(
-    () => createDashboardPropertySchema((key) => t(`errors.${key}`)),
-    [t],
-  )
+  const propertySchema = useDashboardPropertySchema()
   const { control, handleSubmit, trigger, setValue, getValues } =
     useForm<CreateDashboardPropertyFormValues>({
       defaultValues: createDashboardPropertyDefaultValues,

@@ -56,7 +56,10 @@
     "editSuccess": "{title} updated successfully.",
     "editError": "Could not save the changes. Please try again.",
     "deleteSuccess": "{title} removed from the schedule.",
-    "deleteError": "Could not delete the event. Please try again."
+    "deleteError": "Could not delete the event. Please try again.",
+    "outcomeSuccess": "Outcome of {title} recorded.",
+    "outcomeError": "Could not record the outcome. Please try again.",
+    "openEventWithStatusAriaLabel": "Open {title} ({status})"
   },
   "eventForm": {
     "audiences": {
@@ -169,6 +172,46 @@
       "customPropertyRequired": "Enter the property or reference",
       "visitMinimumDuration": "Visits must last at least 30 minutes",
       "minimumAdvanceNotice": "Schedule at least 3 hours in advance"
+    },
+    "statuses": {
+      "CONFIRMED": "Scheduled",
+      "PENDING": "Pending",
+      "RESCHEDULE": "To reschedule",
+      "CANCELLED": "Canceled",
+      "COMPLETED": "Completed",
+      "NO_SHOW": "Client no-show",
+      "AWAITING_OUTCOME": "Awaiting outcome"
+    },
+    "recordOutcome": "Record outcome",
+    "correctOutcome": "Correct outcome",
+    "scheduleFollowUp": "Schedule follow-up",
+    "followUpTitle": "Follow-up: {title}",
+    "outcomeSummary": {
+      "COMPLETED": "Event completed",
+      "NO_SHOW": "Client did not show up",
+      "recordedBy": "Recorded by {name} on {date}",
+      "interest": "Client interest",
+      "notes": "Notes"
+    },
+    "outcomeDialog": {
+      "title": "Record outcome",
+      "description": "How did “{title}” go?",
+      "outcome": "What happened",
+      "outcomes": {
+        "COMPLETED": "Completed",
+        "NO_SHOW": "Client no-show"
+      },
+      "interest": "Client interest",
+      "notes": "Notes (optional)",
+      "cancel": "Cancel",
+      "confirm": "Save outcome",
+      "visitInterestRequired": "Select the client interest",
+      "notesTooLong": "Use at most 10,000 characters in the notes"
+    },
+    "visitInterests": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High"
     }
   },
   "errors": {
@@ -181,6 +224,12 @@
     "notFound": "The event or one of its links is unavailable. Refresh the agenda.",
     "conflict": "The schedule conflicts with the current data. Check the time and linked records.",
     "invalidFields": "Review the fields before continuing.",
-    "rateLimit": "Too many attempts. Please wait and try again."
+    "rateLimit": "Too many attempts. Please wait and try again.",
+    "eventClosed": "The outcome of this event was already recorded. Refresh the calendar.",
+    "outcomeBeforeStart": "The outcome can only be recorded after the event starts.",
+    "outcomeCancelledEvent": "Canceled events do not get an outcome.",
+    "noShowInternalEvent": "Internal events have no client to mark as a no-show.",
+    "visitInterestRequired": "Select the client interest in the visit.",
+    "visitInterestNotAllowed": "Client interest only applies to completed visits."
   }
 }
