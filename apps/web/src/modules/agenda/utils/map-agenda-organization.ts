@@ -29,24 +29,21 @@ export function mapAgendaOrganization(
         status: ticket.status,
       }
       return [
-        {
-          ...common,
-          id: `opened-${ticket.id}`,
-          kind: 'ticketOpened',
-          date: dayjs(ticket.createdAt).format('YYYY-MM-DD'),
-          time: dayjs(ticket.createdAt).format('HH:mm'),
-        },
-        ...(ticket.scheduledAt
-          ? [
-              {
-                ...common,
-                id: `scheduled-${ticket.id}`,
-                kind: 'ticketScheduled' as const,
-                date: dayjs(ticket.scheduledAt).format('YYYY-MM-DD'),
-                time: dayjs(ticket.scheduledAt).format('HH:mm'),
-              },
-            ]
-          : []),
+        ticket.scheduledAt
+          ? {
+              ...common,
+              id: `scheduled-${ticket.id}`,
+              kind: 'ticketScheduled',
+              date: dayjs(ticket.scheduledAt).format('YYYY-MM-DD'),
+              time: dayjs(ticket.scheduledAt).format('HH:mm'),
+            }
+          : {
+              ...common,
+              id: `opened-${ticket.id}`,
+              kind: 'ticketOpened',
+              date: dayjs(ticket.createdAt).format('YYYY-MM-DD'),
+              time: dayjs(ticket.createdAt).format('HH:mm'),
+            },
       ]
     }),
   ].sort((a, b) => `${a.date}${a.time ?? ''}`.localeCompare(`${b.date}${b.time ?? ''}`))
