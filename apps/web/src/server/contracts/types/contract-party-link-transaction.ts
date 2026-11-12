@@ -1,3 +1,5 @@
+import type { UserRole } from '@server/auth/domain/user.entity'
+import type { TenantAccountType } from '@server/auth/types/user-access'
 import type {
   ContractPartyLinkRepository,
   ContractPartyLinkUsers,
@@ -20,3 +22,12 @@ export interface ContractPartyLinkDependencies {
 }
 
 export type ContractPartyLinkWork<T> = (dependencies: ContractPartyLinkDependencies) => Promise<T>
+
+export interface ContractPartyUserRow {
+  id: string
+  tenantId: string
+  email: string
+  role: UserRole
+  active: boolean
+  tenant: { accountType: TenantAccountType }
+}

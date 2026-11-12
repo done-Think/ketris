@@ -5,6 +5,7 @@ import type { ContractPartyLinkTransaction } from '../application/ports/contract
 import type {
   ContractPartyLinkDependencies,
   ContractPartyLinkWork,
+  ContractPartyUserRow,
 } from '../types/contract-party-link-transaction'
 import { linkContractPartyUser } from './contract-party-user-link'
 import { recordContractAudit } from './contract-audit'
@@ -18,12 +19,28 @@ export class PrismaContractPartyLinkTransaction implements ContractPartyLinkTran
   }
 
   private dependencies(tx: Prisma.TransactionClient): ContractPartyLinkDependencies {
-    const userSelect = { id: true, tenantId: true, email: true, role: true, active: true } as const
+    const userSelect = {
+      id: true,
+      tenantId: true,
+      email: true,
+      role: true,
+      active: true,
+      tenant: { select: { accountType: true } },
+    } as const
+    const toCandidate = ({ tenant, ...user }: ContractPartyUserRow) => ({
+      ...user,
+      tenantAccountType: tenant.accountType,
+    })
     return {
       users: {
-        findManyByEmail: (email) =>
-          tx.user.findMany({ where: { email: normalizeEmail(email) }, select: userSelect }),
-        findById: (id) => tx.user.findUnique({ where: { id }, select: userSelect }),
+        findManyByEmail: async (email) =>
+          (
+            await tx.user.findMany({ where: { email: normalizeEmail(email) }, select: userSelect })
+          ).map(toCandidate),
+        findById: async (id) => {
+          const row = await tx.user.findUnique({ where: { id }, select: userSelect })
+          return row ? toCandidate(row) : null
+        },
       },
       contracts: {
         findById: async (id, scope) => {

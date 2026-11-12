@@ -9,6 +9,15 @@ export class ContractRenterUserNotFoundError extends AppError {
   }
 }
 
+export class ContractLandlordUserNotFoundError extends AppError {
+  constructor() {
+    super('Conta ativa de dono de imóvel não encontrada para este e-mail.', {
+      status: 404,
+      code: 'CONTRACT_LANDLORD_USER_NOT_FOUND',
+    })
+  }
+}
+
 export class ContractNotFoundError extends AppError {
   constructor() {
     super('Contrato não encontrado.', {
