@@ -2,7 +2,7 @@ import { expect, it } from 'vitest'
 import dayjs from 'dayjs'
 import { mapAgendaOrganization } from '../../utils/map-agenda-organization'
 
-it('preserves charge due dates without a timezone shift and distinguishes both ticket dates', () => {
+it('preserves charge due dates and shows a scheduled ticket only on its service date', () => {
   const createdAt = '2026-10-20T15:00:00Z'
   const scheduledAt = '2026-10-22T17:30:00Z'
   const result = mapAgendaOrganization(
@@ -28,16 +28,13 @@ it('preserves charge due dates without a timezone shift and distinguishes both t
       },
     ],
   )
-  expect(result).toHaveLength(3)
+  expect(result).toHaveLength(2)
   expect(result.find((item) => item.kind === 'charge')).toMatchObject({
     date: '2026-10-21',
     title: 'C-1',
     amount: 100,
   })
-  expect(result.find((item) => item.kind === 'ticketOpened')).toMatchObject({
-    sourceId: 'ticket',
-    date: dayjs(createdAt).format('YYYY-MM-DD'),
-  })
+  expect(result.find((item) => item.kind === 'ticketOpened')).toBeUndefined()
   expect(result.find((item) => item.kind === 'ticketScheduled')).toMatchObject({
     sourceId: 'ticket',
     date: dayjs(scheduledAt).format('YYYY-MM-DD'),
@@ -61,4 +58,26 @@ it('does not invent an appointment for tickets without a scheduled date', () => 
       ],
     ).map((item) => item.kind),
   ).toEqual(['ticketOpened'])
+})
+
+it('shows an unscheduled ticket on its opening date so the agency can schedule it', () => {
+  const createdAt = '2026-10-20T15:00:00Z'
+  const [opened] = mapAgendaOrganization(
+    [],
+    [
+      {
+        id: 'ticket',
+        title: 'Leak',
+        propertyTitle: 'Apartment',
+        status: 'OPEN',
+        createdAt,
+        scheduledAt: null,
+      },
+    ],
+  )
+  expect(opened).toMatchObject({
+    kind: 'ticketOpened',
+    sourceId: 'ticket',
+    date: dayjs(createdAt).format('YYYY-MM-DD'),
+  })
 })
