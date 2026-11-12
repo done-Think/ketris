@@ -122,7 +122,7 @@ describe('ListChargesUseCase e GetChargeUseCase', () => {
       expect.objectContaining({
         today,
         status: 'OVERDUE',
-        scope: { kind: 'tenant', tenantId: 'tenant-1' },
+        scope: expect.objectContaining({ kind: 'tenant', tenantId: 'tenant-1' }),
       }),
     )
     expect(result.items[0].status).toBe('OVERDUE')

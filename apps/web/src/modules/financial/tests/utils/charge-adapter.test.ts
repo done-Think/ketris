@@ -24,6 +24,7 @@ describe('charge-adapter', () => {
   it('maps a list item, keeping the derived overdue status', () => {
     expect(mapChargeListItemFromApi(apiListItem({ status: 'OVERDUE', type: 'PAYABLE' }))).toEqual({
       id: 'charge-1',
+      tenantId: 'tenant',
       code: 'COB-2026-0001',
       contractId: 'contract-1',
       direction: 'payable',

@@ -55,6 +55,7 @@ export type PropertiesDashboardFiltersState = {
 
 export type DashboardProperty = {
   activeContractId?: string | null
+  managedBy?: string | null
   id: string
   responsibleUserId: string
   brokerIds?: string[]
@@ -243,6 +244,7 @@ export type PropertyFormatter = Pick<ReturnType<typeof useFormatter>, 'number' |
 export type DashboardPropertyMappingOptions = {
   formatter: PropertyFormatter
   locale: AppLocale
+  viewerTenantId?: string
   messages: DashboardPropertyMappingMessages
 }
 

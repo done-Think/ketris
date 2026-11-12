@@ -5,4 +5,5 @@ export const styles = {
   box: { width: '100%', p: 3.5 },
   typography: { mb: 2 },
   box2: { flex: 1, minWidth: 0, width: '100%' },
+  managedByAlert: { mb: 2 },
 } satisfies Record<string, SxProps<Theme>>

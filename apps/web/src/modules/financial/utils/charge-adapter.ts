@@ -26,6 +26,7 @@ const dateOnly = (value: string) => value.slice(0, 10)
 export function mapChargeListItemFromApi(item: ApiChargeListItem): ChargeListRow {
   return {
     id: item.id,
+    tenantId: item.tenantId,
     code: item.code,
     contractId: item.contractId,
     direction: apiTypeToDirection[item.type],
@@ -43,6 +44,7 @@ export function mapChargeFromApi(charge: ApiCharge): Charge {
 
   return {
     id: charge.id,
+    tenantId: charge.tenantId,
     code: charge.code,
     contractId: charge.contractId,
     direction: apiTypeToDirection[charge.type],

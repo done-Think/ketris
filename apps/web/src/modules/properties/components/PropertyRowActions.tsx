@@ -38,6 +38,7 @@ export function PropertyRowActions({ property, onView }: PropertyRowActionsProps
   const deleteProperty = useDeleteProperty()
 
   const canManage =
+    !property.managedBy &&
     session?.role !== 'RENTER' &&
     (session?.role === 'OWNER' ||
       session?.role === 'PROPERTY_OWNER' ||

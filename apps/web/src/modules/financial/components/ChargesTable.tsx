@@ -19,6 +19,7 @@ import { ChargeRow } from './ChargeRow'
 export function ChargesTable({
   rows,
   readOnly,
+  viewerTenantId,
   totalCount,
   page,
   rowsPerPage,
@@ -55,7 +56,9 @@ export function ChargesTable({
                   key={charge.id}
                   charge={charge}
                   zebra={index % 2 === 1}
-                  readOnly={readOnly}
+                  readOnly={
+                    readOnly || (Boolean(viewerTenantId) && charge.tenantId !== viewerTenantId)
+                  }
                   onView={() => onView(charge)}
                   onEdit={() => onEdit(charge)}
                   onCancel={() => onCancel(charge)}

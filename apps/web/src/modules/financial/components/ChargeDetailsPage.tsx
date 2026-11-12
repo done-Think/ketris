@@ -73,7 +73,7 @@ function ChargeDetailsContent({ charge }: ChargeDetailsContentProps) {
   const { enqueueSnackbar } = useSnackbar()
   const errorMessage = useFinancialError()
   const { data: session } = useSession()
-  const isOwner = session?.role === 'OWNER'
+  const isOwner = session?.role === 'OWNER' && charge.tenantId === session?.tenantId
   const [dialog, setDialog] = useState<ChargeDetailDialog | null>(null)
   const registerPayment = useRegisterChargePayment()
   const reversePayment = useReverseChargePayment()

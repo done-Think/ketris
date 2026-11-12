@@ -247,3 +247,20 @@ describe('ChargesPage', () => {
     expect(lastListCall()).toMatchObject({ type: 'RECEIVABLE' })
   })
 })
+
+it('mostra ao locador as cobranças da imobiliária sem o menu de ações', async () => {
+  service.listCharges.mockResolvedValue({
+    ...listResponse(
+      [
+        apiListItem(),
+        apiListItem({ id: 'agency-charge', code: 'COB-2026-0009', tenantId: 'agency' }),
+      ],
+      2,
+    ),
+    statusCounts: { ALL: 2, PENDING: 2, OVERDUE: 0, PAID: 0, SCHEDULED: 0, CANCELED: 0 },
+  })
+  renderWithProviders(<ChargesPage />)
+  expect(await screen.findByText('COB-2026-0009')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Ações COB-2026-0001' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Ações COB-2026-0009' })).not.toBeInTheDocument()
+})

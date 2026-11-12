@@ -1,3 +1,4 @@
+import { isAgencyManager } from '@server/auth/domain/roles'
 import type { ListPropertiesInput } from '../../types/use-case-inputs'
 
 import type { PropertyRepository } from '../ports/property-repository.port'
@@ -18,6 +19,7 @@ export class ListPropertiesUseCase {
       purpose: input.purpose,
       responsibleId: input.actorRole === 'AGENT' ? input.actorId : undefined,
       ...(input.actorRole === 'RENTER' ? { renterId: input.actorId } : {}),
+      ...(isAgencyManager(input.actorRole) ? { landlordId: input.actorId } : {}),
       ...(input.actorRole === 'PROPERTY_OWNER' ? { ownerId: input.actorId } : {}),
     })
     return input.actorRole === 'RENTER'
