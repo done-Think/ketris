@@ -466,6 +466,7 @@ model Property {
   propertyTax          Decimal?          @db.Decimal(10, 2)
   amenities            PropertyAmenity[] @default([])
   negotiationTerms     String?
+  negotiationConditions String[] @default([])
   publishAfterReview   Boolean           @default(false)
   allowWhatsappContact Boolean           @default(false)
   featured             Boolean           @default(false)

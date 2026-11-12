@@ -9,7 +9,8 @@ export function collectApiAliases(root, load) {
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
       const file = path.join(directory, entry.name)
       if (entry.isDirectory()) visit(file)
-      else if (file.includes('/types/') && file.endsWith('.ts')) files.push(file)
+      else if (file.replaceAll(path.sep, '/').includes('/types/') && file.endsWith('.ts'))
+        files.push(file)
     }
   }
   visit(server)
@@ -79,7 +80,9 @@ export function apiAliasFiles(root, aliases, components) {
   const groups = new Map()
   for (const alias of aliases) {
     if (!components[alias.component]) continue
-    const relative = path.relative(path.join(root, 'apps/web/src/server'), alias.file)
+    const relative = path
+      .relative(path.join(root, 'apps/web/src/server'), alias.file)
+      .replaceAll(path.sep, '/')
     const key = relative.replace('/types/', '/')
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key).push(alias)

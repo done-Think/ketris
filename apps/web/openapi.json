@@ -1295,6 +1295,23 @@
             "maxItems": 4
           },
           "negotiationTerms": { "type": "string", "nullable": true, "maxLength": 2000 },
+          "negotiationConditions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ACCEPTS_FINANCING",
+                "REQUIRES_DOWN_PAYMENT",
+                "CASH_ONLY",
+                "ACCEPTS_EXCHANGE",
+                "SALE_NEGOTIABLE",
+                "AGREE_WITH_OWNER",
+                "RENT_NEGOTIABLE",
+                "REQUIRES_DEPOSIT"
+              ]
+            },
+            "maxItems": 8
+          },
           "publishAfterReview": { "type": "boolean" },
           "allowWhatsappContact": { "type": "boolean" },
           "featured": { "type": "boolean" }
@@ -4173,6 +4190,23 @@
             "type": "object",
             "properties": {
               "description": { "type": "string", "nullable": true },
+              "negotiationTerms": { "type": "string", "nullable": true },
+              "negotiationConditions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "ACCEPTS_FINANCING",
+                    "REQUIRES_DOWN_PAYMENT",
+                    "CASH_ONLY",
+                    "ACCEPTS_EXCHANGE",
+                    "SALE_NEGOTIABLE",
+                    "AGREE_WITH_OWNER",
+                    "RENT_NEGOTIABLE",
+                    "REQUIRES_DEPOSIT"
+                  ]
+                }
+              },
               "address": { "$ref": "#/components/schemas/PropertyAddress" },
               "media": {
                 "type": "array",

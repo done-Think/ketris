@@ -63,7 +63,14 @@ export const propertyFormStepFields: Record<
   address: ['street', 'number', 'complement', 'neighborhood', 'city', 'state', 'zipCode'],
   features: ['bedrooms', 'bathrooms', 'parkingSpaces', 'area', 'features'],
   media: ['media'],
-  values: ['mainValue', 'rentalValue', 'condominium', 'propertyTax', 'negotiationTerm'],
+  values: [
+    'mainValue',
+    'rentalValue',
+    'condominium',
+    'propertyTax',
+    'negotiationTerm',
+    'negotiationConditions',
+  ],
   publishing: ['publishingOptions'],
 }
 

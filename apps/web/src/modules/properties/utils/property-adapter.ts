@@ -54,6 +54,7 @@ function toApiListing(listing: PropertyListing) {
   return {
     amenities: listing.amenities.map((amenity) => amenityToApi[amenity]),
     negotiationTerms: listing.negotiationTerms,
+    negotiationConditions: listing.negotiationConditions,
     publishAfterReview: listing.publishAfterReview,
     allowWhatsappContact: listing.allowWhatsappContact,
     featured: listing.featured,
@@ -135,6 +136,7 @@ export function mapProperty(api: ApiProperty): Property {
     listing: {
       amenities: api.listing.amenities.map((amenity) => amenityFromApi[amenity]),
       negotiationTerms: api.listing.negotiationTerms,
+      negotiationConditions: api.listing.negotiationConditions ?? [],
       publishAfterReview: api.listing.publishAfterReview,
       allowWhatsappContact: api.listing.allowWhatsappContact,
       featured: api.listing.featured,

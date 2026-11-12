@@ -1,4 +1,9 @@
 import { z } from 'zod'
+import {
+  propertyNegotiationConditions,
+  conditionsForPurpose,
+  hasConflictingConditions,
+} from '@shared/config/property-negotiation'
 
 import {
   createPropertyTypeOptions,
@@ -23,6 +28,7 @@ export function createDashboardPropertySchema(
     | 'integerRequired'
     | 'mainValueRequired'
     | 'negotiationTermRequired'
+    | 'negotiationConditionsInvalid'
     | 'negotiationTermTooLong'
     | 'neighborhoodRequired'
     | 'numberInvalid'
@@ -90,13 +96,32 @@ export function createDashboardPropertySchema(
       rentalValue: z.coerce.number().nonnegative(t('rentalValueInvalid')).optional(),
       condominium: numberField,
       propertyTax: numberField,
-      negotiationTerm: z
-        .string()
-        .min(1, t('negotiationTermRequired'))
-        .max(2000, t('negotiationTermTooLong')),
+      negotiationTerm: z.string().max(2000, t('negotiationTermTooLong')).default(''),
+      negotiationConditions: z.array(z.enum(propertyNegotiationConditions)).default([]),
       publishingOptions: z.array(z.enum(createPropertyPublishingOptions)).default([]),
     })
     .superRefine((values, context) => {
+      const purpose =
+        values.purpose.includes('RENT') && values.purpose.includes('SALE')
+          ? 'BOTH'
+          : values.purpose.includes('SALE')
+            ? 'SALE'
+            : 'RENT'
+      const conditions = conditionsForPurpose(purpose, values.negotiationConditions)
+      if (conditions.length === 0 && !values.negotiationTerm.trim()) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['negotiationConditions'],
+          message: t('negotiationTermRequired'),
+        })
+      }
+      if (hasConflictingConditions(conditions)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['negotiationConditions'],
+          message: t('negotiationConditionsInvalid'),
+        })
+      }
       if (
         values.purpose.includes('RENT') &&
         values.purpose.includes('SALE') &&
@@ -136,5 +161,6 @@ export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormVa
   condominium: 0,
   propertyTax: 0,
   negotiationTerm: '',
+  negotiationConditions: [],
   publishingOptions: [],
 }

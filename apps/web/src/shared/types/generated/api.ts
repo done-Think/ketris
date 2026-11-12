@@ -17777,6 +17777,17 @@ export interface components {
       address: components['schemas']['PropertyAddress']
       description: string | null
       media: components['schemas']['PropertyMedia'][]
+      negotiationConditions?: (
+        | 'ACCEPTS_FINANCING'
+        | 'REQUIRES_DOWN_PAYMENT'
+        | 'CASH_ONLY'
+        | 'ACCEPTS_EXCHANGE'
+        | 'SALE_NEGOTIABLE'
+        | 'AGREE_WITH_OWNER'
+        | 'RENT_NEGOTIABLE'
+        | 'REQUIRES_DEPOSIT'
+      )[]
+      negotiationTerms?: string | null
     }
     PublicPropertySummary: {
       area: number | null
@@ -18294,6 +18305,16 @@ export interface components {
       allowWhatsappContact: boolean
       amenities: ('FURNISHED' | 'GOURMET_BALCONY' | 'PET_FRIENDLY' | 'CONCIERGE_24H')[]
       featured: boolean
+      negotiationConditions?: (
+        | 'ACCEPTS_FINANCING'
+        | 'REQUIRES_DOWN_PAYMENT'
+        | 'CASH_ONLY'
+        | 'ACCEPTS_EXCHANGE'
+        | 'SALE_NEGOTIABLE'
+        | 'AGREE_WITH_OWNER'
+        | 'RENT_NEGOTIABLE'
+        | 'REQUIRES_DEPOSIT'
+      )[]
       negotiationTerms: string | null
       publishAfterReview: boolean
     }

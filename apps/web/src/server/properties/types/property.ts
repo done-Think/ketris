@@ -1,3 +1,4 @@
+import type { PropertyNegotiationCondition } from '@shared/types/property-negotiation'
 import type { AppLocale } from '@/i18n/types/locale.types'
 export type PropertyType =
   'APARTMENT' | 'HOUSE' | 'STUDIO' | 'PENTHOUSE' | 'COMMERCIAL' | 'LOFT' | 'OTHER'
@@ -5,6 +6,7 @@ export type PropertyType =
 export type PropertyAmenity = 'FURNISHED' | 'GOURMET_BALCONY' | 'PET_FRIENDLY' | 'CONCIERGE_24H'
 
 export interface PropertyListing {
+  negotiationConditions?: PropertyNegotiationCondition[]
   amenities: PropertyAmenity[]
   negotiationTerms: string | null
   publishAfterReview: boolean

@@ -1,3 +1,4 @@
+import type { PropertyNegotiationCondition } from '@shared/types/property-negotiation'
 import type { components } from '@shared/types/generated/api'
 
 export type PropertyType =
@@ -10,6 +11,7 @@ export type PropertyAmenity = 'furnished' | 'gourmetBalcony' | 'petFriendly' | '
 export type ApiPropertyAmenity = components['schemas']['TenantPropertyListing']['amenities'][number]
 
 export interface PropertyListing {
+  negotiationConditions?: PropertyNegotiationCondition[]
   amenities: PropertyAmenity[]
   negotiationTerms: string | null
   publishAfterReview: boolean

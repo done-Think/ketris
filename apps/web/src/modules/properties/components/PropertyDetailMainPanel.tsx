@@ -1,6 +1,7 @@
 import { styles, getActivityDotStyles } from '../styles/property-detail-main-panel.styles'
 import { Box, Chip, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import { PropertyNegotiationSummary } from '@shared/components/ui/PropertyNegotiationSummary'
 
 import type { PropertyDetailMainPanelProps } from '../types/dashboard-property'
 import { PropertyDetailPanel } from './PropertyDetailPanel'
@@ -23,9 +24,6 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
     { label: t('pricing.sale'), value: property.pricing.sale },
     { label: t('pricing.condominium'), value: property.pricing.condominium },
     { label: t('pricing.propertyTax'), value: property.pricing.propertyTax },
-    ...(property.listing.negotiationTerms
-      ? [{ label: t('negotiationTerms'), value: property.listing.negotiationTerms }]
-      : []),
   ]
 
   if (activeTab === 'data') {
@@ -95,6 +93,10 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
             </Box>
           ))}
         </Box>
+        <PropertyNegotiationSummary
+          conditions={property.listing.negotiationConditions}
+          observation={property.listing.negotiationTerms}
+        />
       </PropertyDetailPanel>
     )
   }

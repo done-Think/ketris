@@ -1,5 +1,10 @@
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
+import {
+  propertyNegotiationConditions,
+  hasConflictingConditions,
+} from '@shared/config/property-negotiation'
+import { validationRefinement } from '@server/shared/http/validation-messages'
 
 export const propertyTypeSchema = z.enum([
   'APARTMENT',
@@ -17,6 +22,14 @@ export const propertyListingSchema = z
       .array(z.enum(['FURNISHED', 'GOURMET_BALCONY', 'PET_FRIENDLY', 'CONCIERGE_24H']))
       .max(4),
     negotiationTerms: z.string().trim().max(2000).nullable(),
+    negotiationConditions: z
+      .array(z.enum(propertyNegotiationConditions))
+      .max(8)
+      .refine(
+        (values) => new Set(values).size === values.length && !hasConflictingConditions(values),
+        validationRefinement('negotiationConditionsInvalid'),
+      )
+      .optional(),
     publishAfterReview: z.boolean(),
     allowWhatsappContact: z.boolean(),
     featured: z.boolean(),

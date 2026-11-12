@@ -100,7 +100,7 @@ describe(
       cy.get('img').filter('[src*="/api/properties/media/"]').should('exist')
       cy.contains('button', 'Próximo').click()
       cy.get('input[name="mainValue"]').clear().type('2500,50')
-      cy.get('input[name="negotiationTerm"]').type('Caução de dois aluguéis')
+      cy.get('textarea[name="negotiationTerm"]').type('Caução de dois aluguéis')
       cy.contains('button', 'Próximo').click()
       cy.contains('button', 'Salvar rascunho').click()
       cy.wait('@createProperty').then(({ response }) => {
@@ -110,6 +110,7 @@ describe(
         expect(response?.body.property.ownerContact.name).to.eq(contactName)
         expect(response?.body.property.ownerId).to.eq(null)
         expect(response?.body.property.values.price).to.eq(2500.5)
+        expect(response?.body.property.listing.negotiationTerms).to.eq('Caução de dois aluguéis')
         cy.location('pathname').should(
           'include',
           `/dashboard/properties/${response?.body.property.id}`,

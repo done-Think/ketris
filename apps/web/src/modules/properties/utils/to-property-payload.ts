@@ -1,5 +1,6 @@
 import type { CreateDashboardPropertyFormValues } from '../types/dashboard-property'
 import type { PropertyFormValues, PropertyPurpose, PropertyPayloadOptions } from '../types/property'
+import { conditionsForPurpose } from '@shared/config/property-negotiation'
 import { normalizePostalCode } from '@shared/utils/postal-code'
 
 export function toPropertyPayload(
@@ -34,6 +35,7 @@ export function toPropertyPayload(
     listing: {
       amenities: values.features,
       negotiationTerms: values.negotiationTerm || null,
+      negotiationConditions: conditionsForPurpose(purpose, values.negotiationConditions ?? []),
       publishAfterReview: values.publishingOptions.includes('publishAfterReview'),
       allowWhatsappContact: values.publishingOptions.includes('allowWhatsappContact'),
       featured: values.publishingOptions.includes('featured'),
