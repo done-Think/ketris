@@ -1,4 +1,5 @@
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
+import { registerPropertyHistoryOpenApi } from './openapi-history'
 
 import { errorResponseSchema } from '@server/shared/schemas/error-response.schema'
 
@@ -21,6 +22,7 @@ import {
 } from './schemas/property.schema'
 
 export function registerPropertiesOpenApi(registry: OpenAPIRegistry): void {
+  registerPropertyHistoryOpenApi(registry)
   registry.registerPath({
     method: 'get',
     path: '/properties/brokers',

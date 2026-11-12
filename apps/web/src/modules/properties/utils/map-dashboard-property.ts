@@ -59,6 +59,7 @@ export function toDashboardProperty(
   return {
     id: property.id,
     brokerIds: property.brokerIds ?? [],
+    agencyManaged: property.agencyManaged ?? false,
     responsibleUserId: property.responsibleUserId,
     activeContractId: property.activeContractId,
     apiStatus: property.status,
@@ -126,6 +127,8 @@ function buildActivityHistory(
   const history: DashboardProperty['activityHistory'] = [
     {
       label: messages.activity.created,
+      action: 'CREATED',
+      occurredAt: property.createdAt,
       date: formatPropertyRelativeDate(property.createdAt, formatter),
       tone: 'neutral',
     },
@@ -134,6 +137,8 @@ function buildActivityHistory(
   if (property.publishedAt) {
     history.unshift({
       label: messages.activity.published,
+      action: 'PUBLISHED',
+      occurredAt: property.publishedAt,
       date: formatPropertyRelativeDate(property.publishedAt, formatter),
       tone: 'success',
     })
@@ -142,6 +147,8 @@ function buildActivityHistory(
   if (property.updatedAt !== property.createdAt) {
     history.unshift({
       label: messages.activity.updated,
+      action: 'UPDATED',
+      occurredAt: property.updatedAt,
       date: formatPropertyRelativeDate(property.updatedAt, formatter),
       tone: 'info',
     })

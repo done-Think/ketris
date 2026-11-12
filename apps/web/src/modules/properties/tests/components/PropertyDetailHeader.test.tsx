@@ -87,6 +87,16 @@ function renderHeader(overrides: Partial<Parameters<typeof PropertyDetailHeader>
 }
 
 describe('PropertyDetailHeader', () => {
+  it('keeps editing available while hiding publication removal actions for an agency broker', () => {
+    renderHeader({
+      property: { ...baseProperty, apiStatus: 'PUBLISHED' },
+      canUnpublish: false,
+      canInactivate: false,
+    })
+    expect(screen.queryByRole('button', { name: /Despublicar/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Inativar/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Editar/ })).toBeVisible()
+  })
   it('does not request administrative contracts in a read-only property detail', () => {
     renderHeader({
       property: {

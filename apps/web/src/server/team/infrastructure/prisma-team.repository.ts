@@ -1,4 +1,9 @@
 import { Prisma } from '@prisma/client'
+import {
+  readPropertyAccessHistory,
+  recordPropertyAccessHistory,
+} from '@server/properties/infrastructure/property-access-history'
+import { revokePropertyBrokerAccess } from '@server/properties/infrastructure/property-broker-access'
 
 import { prisma } from '@server/db/prisma'
 import { recordUserAudit } from '@server/auth/infrastructure/user-audit'
@@ -79,6 +84,7 @@ async function moveItems(
     opportunityIds: opportunities.map(({ id }) => id),
     eventIds: events.map(({ id }) => id),
   }
+  const accessBefore = await readPropertyAccessHistory(tx, tenantId, result.propertyIds)
   await Promise.all([
     result.propertyIds.length
       ? tx.property.updateMany({
@@ -113,6 +119,7 @@ async function moveItems(
   ])
 
   if (items.properties) await transferPropertyAccess(tx, command)
+  await recordPropertyAccessHistory(tx, tenantId, accessBefore, actor.id)
   return result
 }
 
@@ -341,9 +348,7 @@ export class PrismaTeamRepository implements TeamRepository {
         where: { tenantId: command.tenantId, id: command.sourceId },
         data: { active: false, sessionVersion: { increment: 1 } },
       })
-      await tx.propertyBrokerAccess.deleteMany({
-        where: { tenantId: command.tenantId, userId: command.sourceId },
-      })
+      await revokePropertyBrokerAccess(tx, command.tenantId, command.sourceId, command.actor.id)
       await tx.refreshToken.updateMany({
         where: { userId: command.sourceId, tenantId: command.tenantId, revokedAt: null },
         data: { revokedAt: command.now },

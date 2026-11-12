@@ -1,6 +1,10 @@
 import type { UnpublishPropertyInput } from '../../types/use-case-inputs'
 
-import { assertCanEditProperties, assertPropertyAccess } from '../authorization'
+import {
+  assertCanEditProperties,
+  assertPropertyAccess,
+  assertCanRemovePropertyPublication,
+} from '../authorization'
 import { PropertyNotFoundError } from '../../domain/errors'
 import type { PropertyRepository } from '../ports/property-repository.port'
 
@@ -17,6 +21,7 @@ export class UnpublishPropertyUseCase {
     }
 
     assertPropertyAccess(existing, input.actorId, input.actorRole)
+    assertCanRemovePropertyPublication(existing, input.actorRole)
 
     const property = await this.propertyRepository.setStatus(
       input.actorTenantId,
@@ -24,6 +29,7 @@ export class UnpublishPropertyUseCase {
       'INACTIVE',
       existing.publishedAt,
       input.actorId,
+      'UNPUBLISHED',
     )
 
     if (!property) {

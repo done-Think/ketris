@@ -8,6 +8,7 @@ import type {
   PropertyStatus,
   RentedProperty,
 } from '../../types/property'
+import type { PropertyStatusMutationAction } from '../../types/property-history'
 
 export interface PropertyRepository {
   create(property: NewProperty, actorId?: string): Promise<Property>
@@ -30,6 +31,7 @@ export interface PropertyRepository {
     status: PropertyStatus,
     publishedAt: Date | null,
     actorId?: string,
+    action?: PropertyStatusMutationAction,
   ): Promise<Property | null>
   findContractProperty(tenantId: string, contractId: string): Promise<ActiveContractProperty | null>
   findRenterContractProperty(renterId: string, propertyId: string): Promise<RentedProperty | null>

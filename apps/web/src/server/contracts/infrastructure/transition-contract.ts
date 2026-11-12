@@ -4,6 +4,7 @@ import { assertContractTransition } from '../domain/contract-workflow-rules'
 import { readContractAfterWrite, runManagedContractMutation } from './contract-write-transaction'
 import { toDomainContract } from './prisma-contract.mapper'
 import { recordContractAudit } from './contract-audit'
+import { recordPropertyFieldHistory } from '@server/properties/infrastructure/record-property-history'
 
 export function transitionContract(
   protector: ContractDataProtector,
@@ -43,15 +44,24 @@ export function transitionContract(
         },
       })
       if (!others) {
+        await tx.$queryRaw`SELECT id FROM properties WHERE id = ${contract.propertyId} AND "tenantId" = ${scope.tenantId} FOR UPDATE`
         const property = await tx.property.findFirst({
           where: { id: contract.propertyId, tenantId: scope.tenantId },
           select: { purpose: true, status: true },
         })
-        if (property?.purpose === 'RENT' && property.status !== 'SOLD')
+        if (property?.purpose === 'RENT' && property.status !== 'SOLD') {
           await tx.property.update({
             where: { id: contract.propertyId, tenantId: scope.tenantId },
             data: { status: 'INACTIVE', updatedById: scope.actorId },
           })
+          await recordPropertyFieldHistory(tx, {
+            tenantId: scope.tenantId,
+            propertyId: contract.propertyId,
+            actorId: scope.actorId,
+            action: 'STATUS_CHANGED',
+            changes: [{ field: 'status', before: property.status, after: 'INACTIVE' }],
+          })
+        }
       }
     }
     await recordContractAudit(tx, {

@@ -14,6 +14,10 @@ export interface PropertyRouteContext {
   params: Promise<{ id: string }>
 }
 
+export interface PropertyHistoryRouteContext {
+  params: Promise<{ id: string; eventId: string }>
+}
+
 export interface PropertyMediaRouteContext {
   params: Promise<{ key: string[] }>
 }

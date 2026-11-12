@@ -62,6 +62,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   if (!propertyQuery.data) return <PropertyQueryFeedback loading />
 
   const property = toDashboardProperty(propertyQuery.data, mappingOptions)
+  const publicationRestricted = session?.role === 'AGENT' && property.agencyManaged === true
   const canManage =
     Boolean(restrictedAccess?.canManageProperties) ||
     (!isRestrictedViewer &&
@@ -108,6 +109,8 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       <PropertyDetailHeader
         property={property}
         canManage={canManage}
+        canUnpublish={!publicationRestricted}
+        canInactivate={!publicationRestricted || property.apiStatus !== 'PUBLISHED'}
         isPublishing={publishProperty.isPending}
         isUnpublishing={unpublishProperty.isPending}
         isDeleting={deleteProperty.isPending}
@@ -143,7 +146,9 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
           />
         </Box>
 
-        {!isReadOnlyViewer && <PropertyDetailSidebar property={property} />}
+        {!isReadOnlyViewer && (
+          <PropertyDetailSidebar property={property} showFullHistory={activeTab === 'history'} />
+        )}
       </Stack>
 
       {canManage && (

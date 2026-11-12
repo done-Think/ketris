@@ -33,11 +33,12 @@ function leaseFixture() {
   return lease
 }
 
-function renderSidebar(overrides: Partial<DashboardProperty> = {}) {
+function renderSidebar(overrides: Partial<DashboardProperty> = {}, showFullHistory = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={client}>
       <PropertyDetailSidebar
+        showFullHistory={showFullHistory}
         property={{
           ...dashboardProperties[0],
           id: 'property-1',
@@ -52,13 +53,23 @@ function renderSidebar(overrides: Partial<DashboardProperty> = {}) {
 }
 
 describe('Property contract participants', () => {
+  it('shows the full history button separately when the history tab is active', () => {
+    renderSidebar({ activeContractId: null }, true)
+    const heading = screen.getByRole('heading', { name: 'Atualizações recentes' })
+    const button = screen.getByRole('button', { name: 'Exibir todo histórico' })
+    expect(button).toBeVisible()
+    expect(heading.parentElement).not.toContainElement(button)
+  })
   it.each(['DRAFT', 'PUBLISHED', 'SOLD', 'INACTIVE'] as const)(
     'does not fetch or display participants for %s properties',
     (apiStatus) => {
       const get = vi.spyOn(contractsService, 'get')
       renderSidebar({ apiStatus })
       expect(screen.queryByText('Participantes')).not.toBeInTheDocument()
-      expect(screen.getByText('Histórico de Atividade')).toBeVisible()
+      expect(screen.getByText('Atualizações recentes')).toBeVisible()
+      expect(
+        screen.queryByRole('button', { name: 'Exibir todo histórico' }),
+      ).not.toBeInTheDocument()
       expect(get).not.toHaveBeenCalled()
     },
   )

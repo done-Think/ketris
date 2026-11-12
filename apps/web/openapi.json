@@ -184,6 +184,71 @@
           "updatedBy"
         ]
       },
+      "TenantPropertyAddress": {
+        "type": "object",
+        "properties": {
+          "street": { "type": "string" },
+          "number": { "type": "string" },
+          "complement": { "type": "string", "nullable": true },
+          "neighborhood": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "zipCode": { "type": "string" },
+          "latitude": { "type": "number", "nullable": true },
+          "longitude": { "type": "number", "nullable": true }
+        },
+        "required": [
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state",
+          "zipCode",
+          "latitude",
+          "longitude"
+        ]
+      },
+      "PropertyHistoryNonNullValue": {
+        "anyOf": [
+          { "type": "string" },
+          { "type": "number" },
+          { "type": "boolean" },
+          { "type": "array", "items": { "type": "string" } },
+          {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": { "type": "string" },
+                "type": { "type": "string" },
+                "position": { "type": "integer" }
+              },
+              "required": ["url", "type", "position"]
+            }
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string", "nullable": true }
+              },
+              "required": ["id", "name"]
+            }
+          },
+          { "$ref": "#/components/schemas/TenantPropertyAddress" },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string", "nullable": true }
+            },
+            "required": ["id", "name"]
+          }
+        ]
+      },
       "AddMaintenanceTicketNoteRequest": {
         "type": "object",
         "properties": { "message": { "type": "string", "minLength": 1, "maxLength": 10000 } },
@@ -3083,6 +3148,311 @@
         },
         "additionalProperties": false
       },
+      "PropertyHistoryValue": {
+        "anyOf": [
+          { "$ref": "#/components/schemas/PropertyHistoryNonNullValue" },
+          { "type": "string", "nullable": true, "enum": [null] }
+        ]
+      },
+      "PropertyHistoryChange": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "title",
+              "description",
+              "purpose",
+              "type",
+              "responsible",
+              "brokers",
+              "owner",
+              "ownerContact",
+              "status",
+              "price",
+              "rentalPrice",
+              "condoFee",
+              "propertyTax",
+              "bedrooms",
+              "bathrooms",
+              "parkingSpots",
+              "areaSqm",
+              "listing.amenities",
+              "listing.negotiationTerms",
+              "listing.negotiationConditions",
+              "listing.publishAfterReview",
+              "listing.allowWhatsappContact",
+              "listing.featured",
+              "address",
+              "media"
+            ]
+          },
+          "before": { "$ref": "#/components/schemas/PropertyHistoryValue" },
+          "after": {
+            "allOf": [
+              { "$ref": "#/components/schemas/PropertyHistoryValue" },
+              {
+                "anyOf": [
+                  { "type": "string" },
+                  { "type": "number" },
+                  { "type": "boolean" },
+                  { "type": "array", "items": { "type": "string" } },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": { "type": "string" },
+                        "type": { "type": "string" },
+                        "position": { "type": "integer" }
+                      },
+                      "required": ["url", "type", "position"]
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "name": { "type": "string", "nullable": true }
+                      },
+                      "required": ["id", "name"]
+                    }
+                  },
+                  { "$ref": "#/components/schemas/TenantPropertyAddress" },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "name": { "type": "string", "nullable": true }
+                    },
+                    "required": ["id", "name"]
+                  },
+                  { "nullable": true }
+                ]
+              }
+            ]
+          }
+        },
+        "required": ["field", "before", "after"]
+      },
+      "PropertyHistorySummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "action": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "UPDATED",
+              "PUBLISHED",
+              "UNPUBLISHED",
+              "INACTIVATED",
+              "STATUS_CHANGED"
+            ]
+          },
+          "actorName": { "type": "string", "nullable": true },
+          "actorRole": { "type": "string", "nullable": true },
+          "createdAt": { "type": "string" },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "title",
+                "description",
+                "purpose",
+                "type",
+                "responsible",
+                "brokers",
+                "owner",
+                "ownerContact",
+                "status",
+                "price",
+                "rentalPrice",
+                "condoFee",
+                "propertyTax",
+                "bedrooms",
+                "bathrooms",
+                "parkingSpots",
+                "areaSqm",
+                "listing.amenities",
+                "listing.negotiationTerms",
+                "listing.negotiationConditions",
+                "listing.publishAfterReview",
+                "listing.allowWhatsappContact",
+                "listing.featured",
+                "address",
+                "media"
+              ]
+            }
+          }
+        },
+        "required": ["id", "action", "actorName", "actorRole", "createdAt", "fields"]
+      },
+      "PropertyHistoryEvent": {
+        "allOf": [
+          { "$ref": "#/components/schemas/PropertyHistorySummary" },
+          {
+            "type": "object",
+            "properties": {
+              "changes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "field": {
+                      "type": "string",
+                      "enum": [
+                        "title",
+                        "description",
+                        "purpose",
+                        "type",
+                        "responsible",
+                        "brokers",
+                        "owner",
+                        "ownerContact",
+                        "status",
+                        "price",
+                        "rentalPrice",
+                        "condoFee",
+                        "propertyTax",
+                        "bedrooms",
+                        "bathrooms",
+                        "parkingSpots",
+                        "areaSqm",
+                        "listing.amenities",
+                        "listing.negotiationTerms",
+                        "listing.negotiationConditions",
+                        "listing.publishAfterReview",
+                        "listing.allowWhatsappContact",
+                        "listing.featured",
+                        "address",
+                        "media"
+                      ]
+                    },
+                    "before": {
+                      "allOf": [
+                        { "$ref": "#/components/schemas/PropertyHistoryValue" },
+                        {
+                          "anyOf": [
+                            { "type": "string" },
+                            { "type": "number" },
+                            { "type": "boolean" },
+                            { "type": "array", "items": { "type": "string" } },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "url": { "type": "string" },
+                                  "type": { "type": "string" },
+                                  "position": { "type": "integer" }
+                                },
+                                "required": ["url", "type", "position"]
+                              }
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": { "type": "string" },
+                                  "name": { "type": "string", "nullable": true }
+                                },
+                                "required": ["id", "name"]
+                              }
+                            },
+                            { "$ref": "#/components/schemas/TenantPropertyAddress" },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "id": { "type": "string" },
+                                "name": { "type": "string", "nullable": true }
+                              },
+                              "required": ["id", "name"]
+                            },
+                            { "nullable": true }
+                          ]
+                        }
+                      ]
+                    },
+                    "after": {
+                      "allOf": [
+                        { "$ref": "#/components/schemas/PropertyHistoryValue" },
+                        {
+                          "anyOf": [
+                            { "type": "string" },
+                            { "type": "number" },
+                            { "type": "boolean" },
+                            { "type": "array", "items": { "type": "string" } },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "url": { "type": "string" },
+                                  "type": { "type": "string" },
+                                  "position": { "type": "integer" }
+                                },
+                                "required": ["url", "type", "position"]
+                              }
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": { "type": "string" },
+                                  "name": { "type": "string", "nullable": true }
+                                },
+                                "required": ["id", "name"]
+                              }
+                            },
+                            { "$ref": "#/components/schemas/TenantPropertyAddress" },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "id": { "type": "string" },
+                                "name": { "type": "string", "nullable": true }
+                              },
+                              "required": ["id", "name"]
+                            },
+                            { "nullable": true }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["field", "before", "after"]
+                }
+              }
+            },
+            "required": ["changes"]
+          }
+        ]
+      },
+      "PropertyHistoryPage": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PropertyHistorySummary" }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "number" },
+              "pageSize": { "type": "number" },
+              "total": { "type": "number" },
+              "totalPages": { "type": "number" }
+            },
+            "required": ["page", "pageSize", "total", "totalPages"]
+          }
+        },
+        "required": ["events", "pagination"]
+      },
       "PublicConfirmEmailChange": {
         "type": "object",
         "properties": {
@@ -4484,6 +4854,11 @@
         "required": ["file", "target"],
         "additionalProperties": false
       },
+      "PropertyHistoryResponse": {
+        "type": "object",
+        "properties": { "event": { "$ref": "#/components/schemas/PropertyHistoryEvent" } },
+        "required": ["event"]
+      },
       "PropertyBrokersResponse": {
         "type": "object",
         "properties": {
@@ -4532,32 +4907,6 @@
         },
         "required": ["owners", "pagination"]
       },
-      "TenantPropertyAddress": {
-        "type": "object",
-        "nullable": true,
-        "properties": {
-          "street": { "type": "string" },
-          "number": { "type": "string" },
-          "complement": { "type": "string", "nullable": true },
-          "neighborhood": { "type": "string" },
-          "city": { "type": "string" },
-          "state": { "type": "string" },
-          "zipCode": { "type": "string" },
-          "latitude": { "type": "number", "nullable": true },
-          "longitude": { "type": "number", "nullable": true }
-        },
-        "required": [
-          "street",
-          "number",
-          "complement",
-          "neighborhood",
-          "city",
-          "state",
-          "zipCode",
-          "latitude",
-          "longitude"
-        ]
-      },
       "TenantPropertyMedia": {
         "type": "object",
         "properties": {
@@ -4597,6 +4946,7 @@
           "responsibleId": { "type": "string" },
           "responsibleName": { "type": "string" },
           "brokerIds": { "type": "array", "items": { "type": "string" } },
+          "agencyManaged": { "type": "boolean" },
           "activeContractId": { "type": "string", "nullable": true },
           "title": { "type": "string" },
           "description": { "type": "string", "nullable": true },
@@ -4621,7 +4971,12 @@
           "publishedAt": { "type": "string", "nullable": true },
           "createdAt": { "type": "string" },
           "updatedAt": { "type": "string" },
-          "address": { "$ref": "#/components/schemas/TenantPropertyAddress" },
+          "address": {
+            "allOf": [
+              { "$ref": "#/components/schemas/TenantPropertyAddress" },
+              { "nullable": true }
+            ]
+          },
           "media": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/TenantPropertyMedia" }
@@ -8655,6 +9010,142 @@
             }
           },
           "404": { "description": "Imagem inexistente ou chave fora do escopo permitido." }
+        }
+      }
+    },
+    "/properties/{id}/history": {
+      "get": {
+        "tags": ["Properties"],
+        "summary": "Lists authorized property audit history",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1 },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 1000000,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Property audit history.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PropertyHistoryPage" }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "Property audit history unavailable for this role.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Property or event not found in the authorized scope.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      }
+    },
+    "/properties/{id}/history/{eventId}": {
+      "get": {
+        "tags": ["Properties"],
+        "summary": "Reads one authorized property audit event",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1 },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": { "type": "string", "minLength": 1 },
+            "required": true,
+            "name": "eventId",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Property audit history.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PropertyHistoryResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "Property audit history unavailable for this role.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Property or event not found in the authorized scope.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
         }
       }
     },

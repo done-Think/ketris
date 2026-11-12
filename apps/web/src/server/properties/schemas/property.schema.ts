@@ -90,6 +90,7 @@ export const propertySchema = z
     responsibleId: z.string(),
     responsibleName: z.string(),
     brokerIds: z.array(z.string()).optional(),
+    agencyManaged: z.boolean().optional(),
     activeContractId: z.string().nullable(),
     title: z.string(),
     description: z.string().nullable(),

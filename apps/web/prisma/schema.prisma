@@ -34,6 +34,7 @@ model Tenant {
 
   users                         User[]
   properties                    Property[]
+  propertyAuditEvents           PropertyAuditEvent[]
   opportunities                 Opportunity[]
   leads                         Lead[]
   contracts                     Contract[]
@@ -249,6 +250,7 @@ model User {
   updatedTickets            MaintenanceTicket[]           @relation("TicketUpdatedBy")
   updatedProperties         Property[]                    @relation("PropertyUpdatedBy")
   propertyBrokerAccess      PropertyBrokerAccess[]
+  propertyAuditEvents       PropertyAuditEvent[]
   updatedLeads              Lead[]                        @relation("LeadUpdatedBy")
   updatedBrokerProfiles     BrokerPublicProfile[]         @relation("BrokerProfileUpdatedBy")
   updatedAgencyProfiles     AgencyPublicProfile[]         @relation("AgencyProfileUpdatedBy")
@@ -486,6 +488,7 @@ model Property {
   media              PropertyMedia[]
   opportunities      Opportunity[]
   leads              Lead[]
+  auditEvents        PropertyAuditEvent[]
   contracts          Contract[]
   agendaEvents       AgendaEvent[]
   maintenanceTickets MaintenanceTicket[]
@@ -514,6 +517,27 @@ model PropertyBrokerAccess {
   @@id([propertyId, userId])
   @@index([tenantId, userId])
   @@map("property_broker_access")
+}
+
+model PropertyAuditEvent {
+  id          String @id @default(cuid())
+  tenantId    String
+  propertyId  String
+  actorUserId String?
+  actorName   String?
+  actorRole   String?
+  action      String
+  changes     Json
+  createdAt   DateTime @default(now())
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  actor    User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, propertyId, createdAt, id])
+  @@index([propertyId])
+  @@index([actorUserId])
+  @@map("property_audit_events")
 }
 
 model PropertyAddress {
