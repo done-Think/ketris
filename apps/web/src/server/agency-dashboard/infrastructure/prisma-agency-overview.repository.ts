@@ -38,7 +38,20 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
 
   async getActiveBrokersCount(tenantId: string): Promise<number> {
     return prisma.user.count({
-      where: { tenantId, role: { in: ['AGENT', 'OWNER'] }, active: true },
+      where: {
+        tenantId,
+        role: 'AGENT',
+        active: true,
+        AND: [
+          { OR: [{ membershipApprovedAt: { not: null } }, { teamInvitation: { isNot: null } }] },
+          {
+            OR: [
+              { teamInvitation: { is: null } },
+              { teamInvitation: { is: { acceptedAt: { not: null } } } },
+            ],
+          },
+        ],
+      },
     })
   }
 

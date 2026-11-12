@@ -281,7 +281,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(response.status).toBe(200)
 
     expect(json.kpis.portfolioCount).toBe(4)
-    expect(json.kpis.activeBrokersCount).toBe(3)
+    expect(json.kpis.activeBrokersCount).toBe(1)
     expect(json.kpis.receivedLeadsThisMonth).toBe(1)
     expect(json.kpis.monthlyReceivable).toBe(1500)
     expect(json.kpis.occupancyPercentage).toBe(67)
@@ -389,8 +389,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
       const other = await (await GET(buildRequest(otherOwnerToken))).json()
       expect(other.kpis).toMatchObject({
         portfolioCount: 1,
-        // The owner also counts as an active broker.
-        activeBrokersCount: 2,
+        activeBrokersCount: 1,
         receivedLeadsThisMonth: 1,
         monthlyReceivable: 0,
       })
