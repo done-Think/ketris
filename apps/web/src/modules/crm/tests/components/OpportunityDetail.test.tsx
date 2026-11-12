@@ -107,7 +107,7 @@ const property: CrmPropertyDetail = {
   id: 'property-1',
   title: 'Apartamento Jardins',
   purpose: 'RENT',
-  propertyType: 'apartamento',
+  propertyType: 'APARTMENT',
   price: 4500,
   condoFee: 800,
   propertyTax: null,
@@ -184,6 +184,26 @@ describe('OpportunityDetail', () => {
     expect(screen.queryByText('Oportunidade criada')).not.toBeInTheDocument()
     expect(screen.queryByText(/imóveis sugeridos/i)).not.toBeInTheDocument()
   })
+  it('shows the associated property type in the user language, never the raw API code', () => {
+    renderDetail()
+
+    expect(screen.getByText('Apartamento · 84 m² · Jardins · São Paulo')).toBeInTheDocument()
+    expect(screen.queryByText(/APARTMENT/)).not.toBeInTheDocument()
+  })
+
+  it('falls back to a generic property type label for an unknown API code', () => {
+    mocks.useCrmAuthorizedProperty.mockReturnValue({
+      data: { ...property, propertyType: 'WAREHOUSE' },
+      isLoading: false,
+      isError: false,
+      refetch: mocks.refetchProperty,
+    })
+    renderDetail()
+
+    expect(screen.getByText('Outro · 84 m² · Jardins · São Paulo')).toBeInTheDocument()
+    expect(screen.queryByText(/WAREHOUSE/)).not.toBeInTheDocument()
+  })
+
   it('confirms and persists a status change through PATCH', async () => {
     const user = userEvent.setup()
     renderDetail()
