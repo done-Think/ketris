@@ -98,6 +98,7 @@ export interface ChargeListFilters {
 
 export interface StoredChargeListItem {
   id: string
+  tenantId: string
   code: string
   type: ChargeType
   storedStatus: StoredChargeStatus

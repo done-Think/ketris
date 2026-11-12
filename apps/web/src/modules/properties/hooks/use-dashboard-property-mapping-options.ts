@@ -3,6 +3,7 @@
 import { isAppLocale, defaultLocale } from '@/i18n/routing'
 
 import { useMemo } from 'react'
+import { useSession } from 'next-auth/react'
 import { useFormatter, useLocale, useTranslations } from 'next-intl'
 
 import type { DashboardPropertyMappingOptions } from '../types/dashboard-property'
@@ -13,11 +14,14 @@ export function useDashboardPropertyMappingOptions(): DashboardPropertyMappingOp
   const formatter = useFormatter()
   const t = useTranslations('properties.dashboard.mapping')
   const mediaT = useTranslations('properties.detail.mediaKinds')
+  const { data: session } = useSession()
+  const viewerTenantId = session?.tenantId
 
   return useMemo(
     () => ({
       locale,
       formatter,
+      viewerTenantId,
       messages: {
         mediaKinds: {
           photo: mediaT('photo'),
@@ -72,6 +76,6 @@ export function useDashboardPropertyMappingOptions(): DashboardPropertyMappingOp
         },
       },
     }),
-    [locale, formatter, t, mediaT],
+    [locale, formatter, t, mediaT, viewerTenantId],
   )
 }

@@ -22,6 +22,7 @@ function receiptResponse(receipt: ChargeReceipt | null) {
 export function toChargeResponse(charge: Charge) {
   return {
     id: charge.id,
+    tenantId: charge.tenantId,
     code: charge.code,
     type: charge.type,
     status: charge.status,
@@ -49,6 +50,7 @@ export function toChargeListResponse(result: ChargeListResult<ChargeListItem>) {
   return {
     items: result.items.map((item) => ({
       id: item.id,
+      tenantId: item.tenantId,
       code: item.code,
       type: item.type,
       status: item.status,

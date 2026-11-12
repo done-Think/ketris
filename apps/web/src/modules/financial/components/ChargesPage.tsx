@@ -134,6 +134,7 @@ export function ChargesPage() {
         <ChargesTable
           rows={rows}
           readOnly={!isOwner}
+          viewerTenantId={session?.tenantId}
           totalCount={chargesQuery.data?.totalCount ?? 0}
           page={state.filters.page}
           rowsPerPage={state.filters.rowsPerPage}

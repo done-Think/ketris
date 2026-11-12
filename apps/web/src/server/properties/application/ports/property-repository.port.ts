@@ -17,6 +17,7 @@ export interface PropertyRepository {
     id: string,
     renterId?: string,
     ownerId?: string,
+    landlordId?: string,
   ): Promise<Property | null>
   update(
     tenantId: string,

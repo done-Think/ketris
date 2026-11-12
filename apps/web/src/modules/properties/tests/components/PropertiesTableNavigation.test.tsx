@@ -77,4 +77,24 @@ describe('property table navigation', () => {
       expect(usePropertyPage).toHaveBeenLastCalledWith(expect.objectContaining({ pageSize: 10 })),
     )
   })
+
+  it('marks the properties managed by another agency with its name', () => {
+    vi.mocked(usePropertyPage).mockReturnValue({
+      data: {
+        properties: [
+          { ...editableProperty, tenantId: 'partner-agency', agencyName: 'Imobiliária Parceira' },
+        ],
+        pagination: { page: 1, pageSize: 5, total: 1, totalPages: 1 },
+        counts: { DRAFT: 0, PUBLISHED: 0, SOLD: 0, RENTED: 1, INACTIVE: 0 },
+      },
+      isLoading: false,
+      isError: false,
+    } as ReturnType<typeof usePropertyPage>)
+    render(
+      <ThemeProvider theme={theme}>
+        <PropertiesDashboardPage />
+      </ThemeProvider>,
+    )
+    expect(screen.getByText('Administrado por Imobiliária Parceira')).toBeInTheDocument()
+  })
 })

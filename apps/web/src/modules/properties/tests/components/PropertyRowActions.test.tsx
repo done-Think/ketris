@@ -135,6 +135,14 @@ describe('PropertyRowActions', () => {
     expect(onView).toHaveBeenCalledOnce()
   })
 
+  it('hides the more-actions menu for a property managed by another agency, even for the owner', () => {
+    mockSession('OWNER', 'landlord')
+    renderActions({ managedBy: 'Imobiliária Parceira' })
+
+    expect(screen.getByRole('button', { name: /Visualizar/ })).toBeVisible()
+    expect(screen.queryByRole('button', { name: /Mais ações/ })).not.toBeInTheDocument()
+  })
+
   it('hides the more-actions menu button when the actor cannot manage the property', () => {
     mockSession('AGENT', 'outro-usuario')
     renderActions()

@@ -20,6 +20,7 @@ export interface ChargeReceipt {
 
 export interface ChargeListRow {
   id: string
+  tenantId: string
   code: string
   contractId: string | null
   direction: ChargeDirection
@@ -115,6 +116,7 @@ export interface ChargeRowProps {
 export interface ChargesTableProps {
   rows: ChargeListRow[]
   readOnly: boolean
+  viewerTenantId?: string
   totalCount: number
   page: number
   rowsPerPage: number

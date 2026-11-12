@@ -123,6 +123,7 @@ export function mapProperty(api: ApiProperty): Property {
   return {
     id: api.id,
     tenantId: api.tenantId,
+    agencyName: api.agencyName,
     responsibleUserId: api.responsibleId,
     responsibleName: api.responsibleName,
     brokerIds: api.brokerIds ?? [],

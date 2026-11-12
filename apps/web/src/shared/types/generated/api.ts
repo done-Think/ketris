@@ -15787,6 +15787,7 @@ export interface components {
        * @enum {string}
        */
       status: 'PENDING' | 'PAID' | 'OVERDUE' | 'SCHEDULED' | 'CANCELED'
+      tenantId: string
       /** @enum {string} */
       type: 'RECEIVABLE' | 'PAYABLE'
       updatedAt: string
@@ -15825,6 +15826,7 @@ export interface components {
        * @enum {string}
        */
       status: 'PENDING' | 'PAID' | 'OVERDUE' | 'SCHEDULED' | 'CANCELED'
+      tenantId: string
       /** @enum {string} */
       type: 'RECEIVABLE' | 'PAYABLE'
       updatedAt: string
@@ -18324,6 +18326,7 @@ export interface components {
     TenantProperty: {
       activeContractId: string | null
       address: components['schemas']['TenantPropertyAddress']
+      agencyName?: string
       brokerIds?: string[]
       characteristics: components['schemas']['TenantPropertyCharacteristics']
       createdAt: string

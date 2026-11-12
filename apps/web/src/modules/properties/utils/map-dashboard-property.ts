@@ -58,6 +58,10 @@ export function toDashboardProperty(
 
   return {
     id: property.id,
+    managedBy:
+      options.viewerTenantId && property.tenantId !== options.viewerTenantId
+        ? (property.agencyName ?? null)
+        : null,
     brokerIds: property.brokerIds ?? [],
     responsibleUserId: property.responsibleUserId,
     activeContractId: property.activeContractId,

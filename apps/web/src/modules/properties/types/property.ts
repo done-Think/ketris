@@ -44,6 +44,7 @@ export interface Property {
   brokerIds?: string[]
   id: string
   tenantId: string
+  agencyName?: string
   responsibleUserId: string
   responsibleName: string
   activeContractId: string | null

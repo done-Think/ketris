@@ -29,6 +29,7 @@ import type {
 import type { PropertyRow, PropertyTransaction } from '../types/prisma-property-repository'
 
 const propertyInclude = {
+  tenant: { select: { name: true } },
   brokerAccess: {
     where: { user: activePropertyBrokerWhere() },
     select: { userId: true },
@@ -50,7 +51,21 @@ async function propertyAccessScope(
   client: PropertyTransaction,
   tenantId: string,
   renterId?: string,
+  landlordId?: string,
 ): Promise<Prisma.PropertyWhereInput> {
+  if (landlordId !== undefined) {
+    const leased = await client.contract.findMany({
+      where: {
+        status: 'ACTIVE',
+        parties: { some: { role: 'LANDLORD', userId: landlordId, user: { active: true } } },
+      },
+      select: { tenantId: true, property: { select: { id: true, tenantId: true } } },
+    })
+    const leasedIds = leased
+      .filter((contract) => contract.tenantId === contract.property.tenantId)
+      .map((contract) => contract.property.id)
+    return leasedIds.length ? { OR: [{ tenantId }, { id: { in: leasedIds } }] } : { tenantId }
+  }
   if (renterId === undefined) return { tenantId }
   const contracts = await client.contract.findMany({
     where: { status: 'ACTIVE', parties: { some: { role: 'RENTER', userId: renterId } } },
@@ -149,7 +164,9 @@ export class PrismaPropertyRepository implements PropertyRepository {
 
   async listPage(filters: PropertyListFilters): Promise<PropertyPage> {
     const scope: Prisma.PropertyWhereInput = {
-      AND: [await propertyAccessScope(prisma, filters.tenantId, filters.renterId)],
+      AND: [
+        await propertyAccessScope(prisma, filters.tenantId, filters.renterId, filters.landlordId),
+      ],
       purpose: filters.purpose,
       ...(filters.responsibleId
         ? {
@@ -238,9 +255,12 @@ export class PrismaPropertyRepository implements PropertyRepository {
     id: string,
     renterId?: string,
     ownerId?: string,
+    landlordId?: string,
   ): Promise<Property | null> {
     const property = await prisma.property.findFirst({
-      where: { AND: [await propertyAccessScope(prisma, tenantId, renterId), { id, ownerId }] },
+      where: {
+        AND: [await propertyAccessScope(prisma, tenantId, renterId, landlordId), { id, ownerId }],
+      },
       include: propertyInclude,
     })
     return property ? mapProperty(property) : null
@@ -486,6 +506,7 @@ function mapProperty(property: PropertyRow): Property {
   return {
     id: property.id,
     tenantId: property.tenantId,
+    agencyName: property.tenant.name,
     responsibleId: property.responsibleId,
     responsibleName: property.responsible.name,
     brokerIds: property.brokerAccess.map((access) => access.userId),

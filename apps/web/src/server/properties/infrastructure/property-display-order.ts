@@ -9,7 +9,13 @@ export async function findPropertyIdsInDisplayOrder(
   transaction: PropertyTransaction,
   filters: PropertyListFilters,
 ): Promise<string[]> {
-  const conditions = filters.renterId ? [] : [Prisma.sql`i."tenantId" = ${filters.tenantId}`]
+  const conditions = filters.renterId
+    ? []
+    : [
+        filters.landlordId
+          ? Prisma.sql`(i."tenantId" = ${filters.tenantId} OR EXISTS (SELECT 1 FROM contracts c JOIN contract_parties p ON p."contractId" = c.id JOIN users u ON u.id = p."userId" WHERE c."propertyId" = i.id AND c."tenantId" = i."tenantId" AND c.status = 'ACTIVE' AND p.role = 'LANDLORD' AND p."userId" = ${filters.landlordId} AND u.active = true))`
+          : Prisma.sql`i."tenantId" = ${filters.tenantId}`,
+      ]
   if (filters.responsibleId)
     conditions.push(Prisma.sql`(i."responsibleId" = ${filters.responsibleId} OR EXISTS (
       SELECT 1 FROM property_broker_access a JOIN users b ON b.id = a."userId" AND b."tenantId" = a."tenantId"

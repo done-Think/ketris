@@ -63,6 +63,7 @@ describe('proprietário do imóvel (PROPERTY_OWNER)', () => {
       'property-1',
       undefined,
       'owner-1',
+      undefined,
     )
   })
 
