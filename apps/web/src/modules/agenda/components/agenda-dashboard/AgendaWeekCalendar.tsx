@@ -3,6 +3,7 @@
 import { styles } from '../../styles/agenda-week-calendar.styles'
 
 import { Box, Stack, Typography } from '@mui/material'
+import dayjs from 'dayjs'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 
@@ -16,6 +17,7 @@ import { buildAgendaEventSegments, layoutAgendaCards } from '../../utils/layout-
 import { AgendaEventCard } from './AgendaEventCard'
 import { AgendaOrganizationCard } from './AgendaOrganizationCard'
 import { agendaEventToneStyles } from '../../styles/agenda-calendar.styles'
+import { getAgendaEventPresentation } from '../../utils/agenda-event-outcome'
 import {
   getEventEndTime,
   getEventHeight,
@@ -32,6 +34,7 @@ export function AgendaWeekCalendar({
 }: AgendaWeekCalendarProps) {
   const t = useTranslations('agenda.dashboard')
   const organizationT = useTranslations('agenda.organization')
+  const statusT = useTranslations('agenda.eventDetail.statuses')
   const [selectedDayKey, setSelectedDayKey] = useState(days[0]?.key ?? '')
   const selectedDay =
     days.find((day) => day.key === selectedDayKey) ?? days.find((day) => day.today) ?? days[0]
@@ -114,7 +117,12 @@ export function AgendaWeekCalendar({
           ) : null}
 
           {selectedDayEvents.map((event) => {
-            const tone = agendaEventToneStyles[event.tone]
+            const {
+              displayStatus,
+              tone: toneKey,
+              StatusIcon,
+            } = getAgendaEventPresentation(event, dayjs())
+            const tone = agendaEventToneStyles[toneKey]
 
             return (
               <Box key={event.id} sx={styles.box8}>
@@ -122,7 +130,14 @@ export function AgendaWeekCalendar({
                 <Box
                   component="button"
                   type="button"
-                  aria-label={t('openEventAriaLabel', { title: event.title })}
+                  aria-label={
+                    StatusIcon
+                      ? t('openEventWithStatusAriaLabel', {
+                          title: event.title,
+                          status: statusT(displayStatus),
+                        })
+                      : t('openEventAriaLabel', { title: event.title })
+                  }
                   onClick={() => selectEvent(event)}
                   sx={styles.box9(tone)}
                 >
@@ -132,9 +147,12 @@ export function AgendaWeekCalendar({
                     justifyContent="space-between"
                     spacing={1}
                   >
-                    <Typography sx={styles.typography7}>
-                      {event.title} - {event.property}
-                    </Typography>
+                    <Stack direction="row" spacing={0.6} alignItems="flex-start">
+                      {StatusIcon ? <StatusIcon aria-hidden sx={styles.statusIcon(tone)} /> : null}
+                      <Typography sx={styles.typography7}>
+                        {event.title} - {event.property}
+                      </Typography>
+                    </Stack>
                     <Typography sx={styles.typography8}>
                       {event.time} - {getEventEndTime(event)}
                     </Typography>

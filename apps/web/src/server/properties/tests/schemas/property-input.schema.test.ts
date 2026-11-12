@@ -28,12 +28,19 @@ describe('property input contract', () => {
       expect(propertyAddressInputSchema.parse({ ...address, zipCode }).zipCode).toBe('37502330')
     },
   )
-  it.each(['1234567', '123456789', 'ABCDEFGH', '37502A330'])(
-    'rejects invalid CEP %s at the API boundary',
-    (zipCode) => {
-      expect(propertyAddressInputSchema.safeParse({ ...address, zipCode }).success).toBe(false)
-    },
-  )
+  it.each([
+    '1234567',
+    '123456789',
+    'ABCDEFGH',
+    '37502A330',
+    '00000-000',
+    '00000000',
+    '11111-111',
+    '99999999',
+    '00999-999',
+  ])('rejects invalid CEP %s at the API boundary', (zipCode) => {
+    expect(propertyAddressInputSchema.safeParse({ ...address, zipCode }).success).toBe(false)
+  })
 
   it('accepts typed property and listing fields', () => {
     expect(

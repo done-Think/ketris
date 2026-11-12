@@ -117,18 +117,27 @@ describe('property address by postal code', () => {
     expect(screen.getByLabelText('Cidade')).toHaveValue('Outra cidade')
   })
 
-  it.each([
-    ['missing', null],
-    ['failure', new Error('Network unavailable')],
-  ])('keeps manual entry available for lookup %s', async (_kind, value) => {
-    if (value instanceof Error) lookup.mockRejectedValue(value)
-    else lookup.mockResolvedValue(value)
+  it('keeps manual entry available when the lookup fails', async () => {
+    lookup.mockRejectedValue(new Error('Network unavailable'))
     render(<Wrapper />)
-    enterPostalCode('99999999')
+    enterPostalCode('37502331')
     await waitFor(() =>
       expect(screen.getByText(/preench[ae]r? o endereço manualmente\./i)).toBeInTheDocument(),
     )
+    expect(screen.getByLabelText('CEP')).not.toHaveAttribute('aria-invalid', 'true')
     fireEvent.change(screen.getByLabelText('Endereço'), { target: { value: 'Endereço manual' } })
     expect(screen.getByLabelText('Endereço')).toHaveValue('Endereço manual')
+  })
+
+  it('marks the CEP as an error when the lookup does not find it', async () => {
+    lookup.mockResolvedValue(null)
+    render(<Wrapper />)
+    enterPostalCode('37502331')
+    await waitFor(() =>
+      expect(
+        screen.getByText('CEP não encontrado. Confira o CEP informado para continuar.'),
+      ).toBeInTheDocument(),
+    )
+    expect(screen.getByLabelText('CEP')).toHaveAttribute('aria-invalid', 'true')
   })
 })

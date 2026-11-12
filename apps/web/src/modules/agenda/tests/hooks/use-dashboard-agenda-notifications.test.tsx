@@ -53,3 +53,26 @@ it('não consulta notificações sem usuário resolvido ou para locatários', ()
   rerender()
   expect(dashboardAgendaService.list).not.toHaveBeenCalled()
 })
+
+it('não avisa no sino sobre visita de hoje que já tem resultado registrado', async () => {
+  const visit = {
+    id: 'visit',
+    title: 'Visita',
+    kind: 'VISIT',
+    start: new Date().toISOString(),
+    propertyReference: 'Apto',
+    propertyLabel: null,
+    participantName: 'Cliente',
+  }
+  vi.mocked(dashboardAgendaService.list).mockResolvedValue([
+    { ...visit, status: 'CONFIRMED' },
+    { ...visit, id: 'done', status: 'COMPLETED' },
+    { ...visit, id: 'absent', status: 'NO_SHOW' },
+  ] as AgendaEventApi[])
+  const { result } = renderHook(() => useDashboardAgendaNotifications(), {
+    wrapper: AgendaQueryTestProvider,
+  })
+
+  await waitFor(() => expect(result.current).toHaveLength(1))
+  expect(result.current[0].id).toBe('visit-today-visit')
+})

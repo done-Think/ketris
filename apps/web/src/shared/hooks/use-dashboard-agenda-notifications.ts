@@ -6,6 +6,7 @@ import dayjs from 'dayjs'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
+import { isAgendaOutcomeStatus } from '@shared/lib/utils/agenda-outcome'
 import { dashboardAgendaService } from '@shared/services/dashboard-agenda-service'
 import { dashboardAgendaQueryKeys } from '@shared/config/dashboard-agenda-query-keys'
 import type { AgendaEventNotificationSource } from '@shared/types/dashboard-agenda-notifications'
@@ -34,7 +35,12 @@ export function useDashboardAgendaNotifications(): DashboardNotificationItem[] {
     const events = eventsQuery.data ?? []
 
     return events
-      .filter((event) => event.status !== 'CANCELLED' && event.kind === 'VISIT')
+      .filter(
+        (event) =>
+          event.status !== 'CANCELLED' &&
+          !isAgendaOutcomeStatus(event.status) &&
+          event.kind === 'VISIT',
+      )
       .map((event) => ({
         href: { pathname: '/dashboard/agenda' as const, query: { eventId: event.id } },
         id: `${event.id}-today-visit`,

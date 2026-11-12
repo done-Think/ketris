@@ -18,12 +18,14 @@ async function assertTransferPeople(
   actor: TeamActor,
   brokerId: string,
   destinationId: string,
+  allowActorAsSource = false,
 ) {
   const [source, destination] = await Promise.all([
     repository.findStaffUser(actor.actorTenantId, brokerId),
     repository.findStaffUser(actor.actorTenantId, destinationId),
   ])
-  if (!source || source.role !== 'AGENT') throw new TeamMemberNotFoundError()
+  const isActorSource = allowActorAsSource && source?.id === actor.actorId
+  if (!source || (source.role !== 'AGENT' && !isActorSource)) throw new TeamMemberNotFoundError()
   if (
     !destination ||
     destination.id === source.id ||
@@ -44,7 +46,7 @@ export class TransferBrokerPortfolioUseCase {
   async execute(input: TransferBrokerPortfolioInput): Promise<TeamTransferResult> {
     assertTeamManager(input)
     if (!Object.values(input.items).some(Boolean)) throw new EmptyTransferError()
-    await assertTransferPeople(this.repository, input, input.brokerId, input.destinationId)
+    await assertTransferPeople(this.repository, input, input.brokerId, input.destinationId, true)
     const actor = await teamActorIdentity(this.repository, input)
 
     return this.repository.transfer({

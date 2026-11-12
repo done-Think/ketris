@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { RhfTextField } from '@shared/components/form'
+import { RhfMoneyField, RhfTextField } from '@shared/components/form'
 
 import { chargeDirections, newChargeStatuses } from '../config/charge-status'
 import { createChargeFormSchema } from '../schemas/charge-form-schema'
@@ -66,13 +66,11 @@ function ChargeForm({ charge, pending, onClose, onSubmit }: ChargeFormDialogProp
             fullWidth
             sx={styles.fullRow}
           />
-          <RhfTextField
+          <RhfMoneyField
             control={control}
             name="amount"
             label={t('fields.amount')}
-            type="number"
             disabled={locked}
-            slotProps={{ htmlInput: { min: 0, step: '0.01' } }}
             fullWidth
           />
           <RhfTextField

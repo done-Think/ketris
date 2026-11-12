@@ -24,6 +24,7 @@ import {
   useAgendaEvents,
   useCancelAgendaEvent,
   useCreateAgendaEvent,
+  useRecordAgendaEventOutcome,
   useRescheduleAgendaEvent,
   useUpdateAgendaEvent,
 } from '../../hooks/use-agenda-events'
@@ -56,6 +57,7 @@ vi.mock('../../hooks/use-agenda-events', async (importOriginal) => {
     useAgendaEvents: vi.fn(),
     useCancelAgendaEvent: vi.fn(),
     useCreateAgendaEvent: vi.fn(),
+    useRecordAgendaEventOutcome: vi.fn(),
     useRescheduleAgendaEvent: vi.fn(),
     useUpdateAgendaEvent: vi.fn(),
   }
@@ -84,9 +86,15 @@ function makeEvent(overrides: Partial<AgendaEventApi> = {}): AgendaEventApi {
     createdBy: null,
     participants: [],
     propertyLabel: null,
+    propertyAccessible: false,
     cancelledAt: null,
     cancelledById: null,
     cancellationReason: null,
+    outcomeRecordedAt: null,
+    outcomeRecordedById: null,
+    outcomeRecordedBy: null,
+    visitInterest: null,
+    outcomeNotes: null,
     id: 'event-1',
     tenantId: 'tenant-1',
     responsibleId: 'user-1',
@@ -149,6 +157,14 @@ function mockCancelEvent(overrides: Record<string, unknown> = {}) {
   } as unknown as ReturnType<typeof useCancelAgendaEvent>)
 }
 
+function mockRecordOutcome(overrides: Record<string, unknown> = {}) {
+  vi.mocked(useRecordAgendaEventOutcome).mockReturnValue({
+    mutateAsync: vi.fn().mockResolvedValue(makeEvent({ status: 'COMPLETED' })),
+    isPending: false,
+    ...overrides,
+  } as unknown as ReturnType<typeof useRecordAgendaEventOutcome>)
+}
+
 function mockPropertiesQuery(overrides: Record<string, unknown> = {}) {
   vi.mocked(useProperties).mockReturnValue({
     data: [],
@@ -184,6 +200,7 @@ describe('AgendaDashboardPage', () => {
     mockRescheduleEvent()
     mockUpdateEvent()
     mockCancelEvent()
+    mockRecordOutcome()
     mockPropertiesQuery()
     vi.mocked(useAgendaAgents).mockReturnValue({
       data: [],
@@ -610,5 +627,163 @@ describe('AgendaDashboardPage', () => {
       payload: { reason: 'Cliente indisponível' },
     })
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
+  it('records the visit outcome, shows the summary and opens a prefilled follow-up', async () => {
+    const recordMutateAsync = vi.fn().mockResolvedValue(
+      makeEvent({
+        status: 'COMPLETED',
+        visitInterest: 'MEDIUM',
+        outcomeNotes: 'Quer proposta com desconto.',
+        outcomeRecordedAt: dayjs().toISOString(),
+        outcomeRecordedById: 'user-1',
+        outcomeRecordedBy: { name: 'Corretor' },
+      }),
+    )
+    mockEventsQuery({ data: [makeEvent()] })
+    mockRecordOutcome({ mutateAsync: recordMutateAsync })
+    renderPage()
+
+    const [openEventButton] = screen.getAllByRole('button', {
+      name: 'Abrir Visita Jardim Paulista',
+    })
+    await userEvent.click(openEventButton)
+    await userEvent.click(await screen.findByRole('button', { name: 'Registrar resultado' }))
+
+    const dialogs = await screen.findAllByRole('dialog')
+    const outcomeDialog = dialogs[dialogs.length - 1]
+    await userEvent.click(within(outcomeDialog).getByRole('button', { name: 'Salvar resultado' }))
+    expect(await within(outcomeDialog).findByText('Informe o interesse do cliente')).toBeVisible()
+    expect(recordMutateAsync).not.toHaveBeenCalled()
+
+    await userEvent.click(within(outcomeDialog).getByRole('button', { name: 'Médio' }))
+    await userEvent.type(
+      within(outcomeDialog).getByLabelText('Anotações (opcional)'),
+      'Quer proposta com desconto.',
+    )
+    await userEvent.click(within(outcomeDialog).getByRole('button', { name: 'Salvar resultado' }))
+
+    await waitFor(() =>
+      expect(recordMutateAsync).toHaveBeenCalledWith({
+        id: 'event-1',
+        payload: {
+          outcome: 'COMPLETED',
+          visitInterest: 'MEDIUM',
+          notes: 'Quer proposta com desconto.',
+        },
+      }),
+    )
+    expect(mocks.enqueueSnackbar).toHaveBeenCalledWith(
+      'Resultado de Visita Jardim Paulista registrado.',
+      { variant: 'success' },
+    )
+    expect(await screen.findByText('Evento realizado')).toBeVisible()
+    expect(screen.getByText('Médio')).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Editar' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Excluir' })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Agendar retorno' }))
+
+    expect(await screen.findByLabelText('Título')).toHaveValue('Retorno: Visita Jardim Paulista')
+    expect(screen.getByLabelText('Cliente')).toHaveValue('Ana Nóbrega')
+  })
+
+  it('keeps the outcome dialog open and explains the failure when recording fails', async () => {
+    const recordMutateAsync = vi.fn().mockRejectedValue(new Error('network'))
+    mockEventsQuery({ data: [makeEvent({ kind: 'MEETING' })] })
+    mockRecordOutcome({ mutateAsync: recordMutateAsync })
+    renderPage()
+
+    const [openEventButton] = screen.getAllByRole('button', {
+      name: 'Abrir Visita Jardim Paulista',
+    })
+    await userEvent.click(openEventButton)
+    await userEvent.click(await screen.findByRole('button', { name: 'Registrar resultado' }))
+    const dialogs = await screen.findAllByRole('dialog')
+    const outcomeDialog = dialogs[dialogs.length - 1]
+    expect(within(outcomeDialog).queryByText('Interesse do cliente')).not.toBeInTheDocument()
+    await userEvent.click(within(outcomeDialog).getByRole('button', { name: /não compareceu/ }))
+    await userEvent.click(within(outcomeDialog).getByRole('button', { name: 'Salvar resultado' }))
+
+    await waitFor(() =>
+      expect(mocks.enqueueSnackbar).toHaveBeenCalledWith(
+        'Não foi possível registrar o resultado. Tente novamente.',
+        { variant: 'error' },
+      ),
+    )
+    expect(recordMutateAsync).toHaveBeenCalledWith({
+      id: 'event-1',
+      payload: { outcome: 'NO_SHOW' },
+    })
+    expect(within(outcomeDialog).getByRole('button', { name: 'Salvar resultado' })).toBeVisible()
+  })
+
+  it('does not offer the outcome before the event starts', async () => {
+    mockEventsQuery({
+      data: [
+        makeEvent({
+          start: dayjs(`${today}T11:00:00`).toISOString(),
+          end: dayjs(`${today}T12:00:00`).toISOString(),
+        }),
+      ],
+    })
+    renderPage()
+
+    const [openEventButton] = screen.getAllByRole('button', {
+      name: 'Abrir Visita Jardim Paulista',
+    })
+    await userEvent.click(openEventButton)
+
+    expect(await screen.findByRole('button', { name: 'Editar' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Registrar resultado' })).not.toBeInTheDocument()
+  })
+
+  it('flags a past event without outcome on the calendar', () => {
+    mockEventsQuery({
+      data: [
+        makeEvent({
+          start: dayjs(`${today}T08:00:00`).toISOString(),
+          end: dayjs(`${today}T08:30:00`).toISOString(),
+        }),
+      ],
+    })
+    renderPage()
+
+    expect(
+      screen.getAllByRole('button', {
+        name: 'Abrir Visita Jardim Paulista (Aguardando resultado)',
+      })[0],
+    ).toBeVisible()
+  })
+
+  it('lets the agency owner correct a recorded outcome', async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { tenantId: 'tenant-1', role: 'OWNER', user: { id: 'owner-1' } },
+      status: 'authenticated',
+      update: vi.fn(),
+    } as unknown as ReturnType<typeof useSession>)
+    mockEventsQuery({ data: [makeEvent({ status: 'NO_SHOW' })] })
+    renderPage()
+
+    const [openEventButton] = screen.getAllByRole('button', {
+      name: 'Abrir Visita Jardim Paulista (Cliente não compareceu)',
+    })
+    await userEvent.click(openEventButton)
+
+    expect(await screen.findByRole('button', { name: 'Corrigir resultado' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Editar' })).not.toBeInTheDocument()
+  })
+
+  it('does not let the agent change an outcome that was already recorded', async () => {
+    mockEventsQuery({ data: [makeEvent({ status: 'COMPLETED' })] })
+    renderPage()
+
+    const [openEventButton] = screen.getAllByRole('button', {
+      name: 'Abrir Visita Jardim Paulista (Realizado)',
+    })
+    await userEvent.click(openEventButton)
+
+    expect(await screen.findByRole('button', { name: 'Agendar retorno' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Corrigir resultado' })).not.toBeInTheDocument()
   })
 })
