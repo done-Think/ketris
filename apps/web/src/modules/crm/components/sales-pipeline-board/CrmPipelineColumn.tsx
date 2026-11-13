@@ -11,7 +11,7 @@ import { useInfiniteOpportunities } from '../../hooks/use-opportunities'
 import type { CrmPipelineColumnProps } from '../../types/sales-pipeline'
 import { PipelineStageColumn } from './PipelineStageColumn'
 
-export function CrmPipelineColumn({ search, stage, visible }: CrmPipelineColumnProps) {
+export function CrmPipelineColumn({ search, stage, visible, isFocused }: CrmPipelineColumnProps) {
   const format = useCrmFormatter()
   const { status: sessionStatus } = useSession()
   const locale = useLocale() as AppLocale
@@ -74,6 +74,7 @@ export function CrmPipelineColumn({ search, stage, visible }: CrmPipelineColumnP
         </Alert>
       )}
       <PipelineStageColumn
+        isFocused={isFocused}
         stage={stage}
         opportunities={opportunities}
         propertiesById={propertiesById}

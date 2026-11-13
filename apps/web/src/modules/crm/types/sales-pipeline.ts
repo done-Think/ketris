@@ -35,6 +35,7 @@ export type SalesPipelineToolbarProps = {
 }
 
 export type PipelineStageColumnProps = {
+  isFocused?: boolean
   stage: SalesPipelineStage
   opportunities: readonly Opportunity[]
   totalCount?: number
@@ -53,6 +54,7 @@ export type SalesPipelineKanbanViewProps = {
 }
 
 export interface CrmPipelineColumnProps {
+  isFocused?: boolean
   search: string
   stage: SalesPipelineStage
   visible: boolean
