@@ -197,6 +197,7 @@
         "phoneInvalid": "Enter a valid phone number",
         "emailInvalid": "Enter a valid email",
         "interestRequired": "Select an available property.",
+        "budgetInvalid": "Enter a valid budget",
         "budgetRequired": "Enter the budget",
         "sourceRequired": "Enter the source",
         "textTooLong": "Text exceeds the allowed limit.",
