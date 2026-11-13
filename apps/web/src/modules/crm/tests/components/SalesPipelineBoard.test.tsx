@@ -398,7 +398,7 @@ describe('SalesPipelineBoard', () => {
     await waitFor(() => expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument())
   })
 
-  it('filters by stage and restores all stages', async () => {
+  it('focuses the selected stage with its cards and totals and restores all stages', async () => {
     const user = userEvent.setup()
     mockOpportunitiesQuery({
       data: [
@@ -413,12 +413,34 @@ describe('SalesPipelineBoard', () => {
 
     expect(screen.getByText('Daniela Flores')).toBeVisible()
     expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('region')).toHaveLength(1)
+    const focusedStage = screen.getByRole('region', { name: 'Negociação' })
+    expect(within(focusedStage).getByText('1')).toBeVisible()
+    const totals = within(focusedStage).getByRole('group', {
+      name: 'Total projetado de Negociação',
+    })
+    expect(within(totals).getByText(matchesText(formatCurrency(2000)))).toBeVisible()
 
     await user.click(screen.getByRole('button', { name: 'Negociação' }))
     await user.click(screen.getByRole('menuitem', { name: 'Todas as etapas' }))
 
     expect(screen.getByText('Daniela Flores')).toBeVisible()
     expect(screen.getByText('Carlos Eduardo')).toBeVisible()
+    expect(screen.getAllByRole('region')).toHaveLength(5)
+  })
+
+  it('shows only the selected stage when it has no opportunities', async () => {
+    const user = userEvent.setup()
+    mockOpportunitiesQuery({ data: [makeOpportunity(1, 'DRAFT')] })
+    renderPipeline()
+
+    await user.click(screen.getByRole('button', { name: /Filtrar por etapa/i }))
+    await user.click(screen.getByRole('menuitem', { name: 'Qualificação' }))
+
+    expect(screen.getAllByRole('region')).toHaveLength(1)
+    const focusedStage = screen.getByRole('region', { name: 'Qualificação' })
+    expect(within(focusedStage).getByText('Sem oportunidades nesta etapa.')).toBeVisible()
+    expect(screen.queryByRole('region', { name: 'Prospecção' })).not.toBeInTheDocument()
   })
 
   it('keeps all columns stable while loading and creation available', () => {

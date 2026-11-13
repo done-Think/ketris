@@ -7,6 +7,7 @@ import type { PipelineStageColumnProps } from '../../types/sales-pipeline'
 import { OpportunityCard } from '../OpportunityCard'
 
 export function PipelineStageColumn({
+  isFocused = false,
   stage,
   opportunities,
   projectedTotals,
@@ -43,22 +44,34 @@ export function PipelineStageColumn({
         </Box>
       </Stack>
 
-      <Stack spacing={{ xs: 1.5, lg: 1.375 }} sx={crmStyles.stackSx3}>
+      <Stack
+        spacing={isFocused ? 0 : { xs: 1.5, lg: 1.375 }}
+        sx={[crmStyles.stackSx3, isFocused && crmStyles.focusedCardsSx]}
+      >
         {isPipelineLoading
           ? [0, 1].map((index) => (
-              <Skeleton key={index} variant="rounded" height={124} sx={crmStyles.skeletonSx} />
+              <Skeleton
+                key={index}
+                variant="rounded"
+                height={isFocused ? 164 : 124}
+                sx={crmStyles.skeletonSx}
+              />
             ))
           : opportunities.map((opportunity) => (
               <OpportunityCard
                 key={opportunity.id}
                 opportunity={opportunity}
                 property={propertiesById.get(opportunity.propertyId)}
-                density="compact"
+                density={isFocused ? 'regular' : 'compact'}
               />
             ))}
 
         {!isPipelineLoading && !hasPipelineError && opportunities.length === 0 ? (
-          <Stack alignItems="center" justifyContent="center" sx={crmStyles.stackSx4}>
+          <Stack
+            alignItems="center"
+            justifyContent="center"
+            sx={[crmStyles.stackSx4, isFocused && crmStyles.focusedEmptySx]}
+          >
             <Typography color="text.secondary" sx={crmStyles.typographySx}>
               {t('emptyStage')}
             </Typography>
