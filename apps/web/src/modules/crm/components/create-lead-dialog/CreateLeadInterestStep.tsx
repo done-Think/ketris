@@ -2,7 +2,7 @@ import { Box, MenuItem } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import * as crmStyles from '../../styles/create-lead-interest-step.styles'
 
-import { RhfTextField } from '@shared/components/form'
+import { RhfMoneyField, RhfTextField } from '@shared/components/form'
 
 import { leadSourceOptions } from '../../config/lead-creation'
 import type { CreateLeadInterestStepProps } from '../../types/lead'
@@ -28,7 +28,7 @@ export function CreateLeadInterestStep({ control }: CreateLeadInterestStepProps)
           />
         )}
       />
-      <RhfTextField control={control} name="budget" label={t('create.fields.budget')} />
+      <RhfMoneyField control={control} name="budget" label={t('create.fields.budget')} />
       <RhfTextField
         control={control}
         name="source"

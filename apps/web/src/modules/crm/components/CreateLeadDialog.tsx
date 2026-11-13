@@ -88,7 +88,7 @@ function CreateLeadForm({ onClose, open }: CreateLeadDialogProps) {
         email: values.email || null,
         interest: values.property.title,
         propertyId: values.property.id,
-        budget: values.budget,
+        budget: String(values.budget),
         source: values.source,
         notes: values.notes || null,
       },
