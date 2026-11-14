@@ -19,6 +19,7 @@ export function DashboardPageHeader({ actions, subtitle, sx, title }: DashboardP
           gap: 1.6,
           [dashboardLayout.desktopMediaQuery]: {
             flexDirection: 'row',
+            flexWrap: 'wrap',
             alignItems: 'flex-start',
           },
         },
