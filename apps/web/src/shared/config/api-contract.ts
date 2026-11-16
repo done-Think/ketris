@@ -7,7 +7,8 @@ export function requiresApiContract(pathname: string): boolean {
     path === '/api/docs' ||
     path.startsWith('/api/docs/') ||
     path === '/api/platform/system/health' ||
-    path === '/api/internal/face_check/cleanup' ||
+    // Bearer-authenticated workers called by GitHub Actions scripts, which are not API clients.
+    path.startsWith('/api/internal/face_check/') ||
     /^\/api\/auth\/(csrf|providers|session|signin|signout|callback|error|verify-request)(\/|$)/.test(
       path,
     ) ||
