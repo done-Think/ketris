@@ -10,7 +10,10 @@ export function maintenanceTicketScope(
     return { deletedAt: null, contract: { is: renterContractScope(actor.actorId) } }
   }
   const base: Prisma.MaintenanceTicketWhereInput = { tenantId: actor.actorTenantId }
-  if (isAgencyManager(actor.actorRole)) return base
+  if (isAgencyManager(actor.actorRole))
+    return {
+      OR: [base, { deletedAt: null, contract: { is: landlordContractScope(actor.actorId) } }],
+    }
   base.deletedAt = null
   base.contract = { is: { tenantId: actor.actorTenantId } }
   if (actor.actorRole === 'AGENT')
@@ -33,6 +36,10 @@ export function renterContractScope(userId: string): Prisma.ContractWhereInput {
       some: { role: 'RENTER', userId: userId, user: { active: true, role: 'RENTER' } },
     },
   }
+}
+
+export function landlordContractScope(userId: string): Prisma.ContractWhereInput {
+  return { parties: { some: { role: 'LANDLORD', userId: userId, user: { active: true } } } }
 }
 
 export function validContract(row: MaintenanceContractRow): boolean {

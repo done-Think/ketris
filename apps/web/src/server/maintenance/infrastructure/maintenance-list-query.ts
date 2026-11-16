@@ -27,7 +27,9 @@ export function maintenanceListQuery(filters: MaintenanceTicketListFilters) {
     filters.archived ? Prisma.sql`c."deletedAt" IS NOT NULL` : Prisma.sql`c."deletedAt" IS NULL`,
   ]
   if (isAgencyManager(actor.actorRole))
-    conditions.push(Prisma.sql`c."tenantId" = ${actor.actorTenantId}`)
+    conditions.push(
+      Prisma.sql`(c."tenantId" = ${actor.actorTenantId} OR (c."deletedAt" IS NULL AND ct."tenantId" = c."tenantId" AND ct."propertyId" = c."propertyId" AND i."tenantId" = c."tenantId" AND EXISTS (SELECT 1 FROM contract_parties p JOIN users u ON u.id = p."userId" WHERE p."contractId" = ct.id AND p.role = 'LANDLORD' AND p."userId" = ${actor.actorId} AND u.active = true)))`,
+    )
   else {
     conditions.push(
       Prisma.sql`c."deletedAt" IS NULL`,
