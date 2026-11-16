@@ -323,7 +323,16 @@
       "title": "Associated property",
       "retry": "Try again",
       "loadError": "Could not load the associated property. Reference: {id}",
-      "monthlySuffix": "/month"
+      "monthlySuffix": "/month",
+      "propertyTypes": {
+        "APARTMENT": "Apartment",
+        "HOUSE": "House",
+        "STUDIO": "Studio",
+        "PENTHOUSE": "Penthouse",
+        "COMMERCIAL": "Commercial",
+        "LOFT": "Loft",
+        "OTHER": "Other"
+      }
     },
     "fields": {
       "name": "Name",
