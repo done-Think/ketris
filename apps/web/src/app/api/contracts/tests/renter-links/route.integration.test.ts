@@ -530,6 +530,7 @@ describe('Contracts, financial and maintenance share explicit renter links', () 
       tenantId: a.tenant.id,
       contractId: a.contract.id,
       partyId: a.party.id,
+      role: 'RENTER' as const,
       email: renter.email,
     }
     const results = await Promise.all([

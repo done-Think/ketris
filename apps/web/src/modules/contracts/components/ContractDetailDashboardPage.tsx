@@ -39,6 +39,7 @@ import {
 import { useContractPresentation } from '../hooks/use-contract-presentation'
 import { mapContractFromApi } from '../utils/contract-adapter'
 import { contractError, isContractNotFound } from '../utils/contract-error'
+import { contractPartyLinkMessageKeys } from '../config/contract-labels'
 import type { ContractDetailDashboardPageProps } from '../types/contract'
 import type { ApiContractParty } from '../types/service'
 
@@ -79,6 +80,10 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
     )
 
   const data = query.data
+  const linkMessages =
+    linkParty?.role === 'LANDLORD'
+      ? contractPartyLinkMessageKeys.LANDLORD
+      : contractPartyLinkMessageKeys.RENTER
   const contract = mapContractFromApi(data, presentation)
   const beforeActivation = ['DRAFT', 'IN_REVIEW', 'AWAITING_SIGNATURE', 'SIGNED'].includes(
     data.status,
@@ -204,9 +209,9 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
           open={Boolean(linkParty)}
           onClose={link.isPending ? undefined : () => setLinkParty(null)}
         >
-          <DialogTitle>{t('link')}</DialogTitle>
+          <DialogTitle>{t(linkMessages.action)}</DialogTitle>
           <DialogContent>
-            <Typography>{t('linkNotice', { email: linkParty?.email ?? '' })}</Typography>
+            <Typography>{t(linkMessages.notice, { email: linkParty?.email ?? '' })}</Typography>
             {link.isError && <Alert severity="error">{contractError(link.error, errors)}</Alert>}
           </DialogContent>
           <DialogActions>
@@ -228,7 +233,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
                   )
               }}
             >
-              {t('link')}
+              {t(linkMessages.action)}
             </Button>
           </DialogActions>
         </Dialog>
