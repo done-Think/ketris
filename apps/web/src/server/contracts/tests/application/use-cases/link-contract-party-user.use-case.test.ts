@@ -33,6 +33,7 @@ const contract: Contract = {
   closedBy: null,
   closingReason: null,
   tenantId: 'agency-1',
+  agencyName: 'Imobiliária',
   propertyId: 'property-1',
   property: { title: 'Apartamento', address: 'Rua do contrato' },
   opportunityId: 'opportunity-1',
