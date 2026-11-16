@@ -121,6 +121,7 @@ function fromApiMedia(media: ApiPropertyMedia[]): Property['media'] {
 
 export function mapProperty(api: ApiProperty): Property {
   return {
+    agencyManaged: api.agencyManaged ?? false,
     id: api.id,
     tenantId: api.tenantId,
     responsibleUserId: api.responsibleId,

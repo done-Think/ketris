@@ -60,6 +60,7 @@ export interface PropertyCharacteristics {
 
 export interface Property {
   brokerIds?: string[]
+  agencyManaged?: boolean
   responsibleName: string
   activeContractId: string | null
   id: string

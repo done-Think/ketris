@@ -18,6 +18,15 @@ export class PropertyNegotiationValidationError extends AppError {
   }
 }
 
+export class PropertyPublicationForbiddenError extends AppError {
+  constructor() {
+    super('Somente a imobiliária pode retirar este imóvel da publicação.', {
+      status: 403,
+      code: 'PROPERTY_PUBLICATION_FORBIDDEN',
+    })
+  }
+}
+
 export class PropertyNotFoundError extends NotFoundError {
   constructor() {
     super('Imóvel não encontrado.')

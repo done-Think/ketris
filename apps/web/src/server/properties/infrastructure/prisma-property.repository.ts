@@ -1,6 +1,15 @@
 import { resolveMutationAuthor } from '@server/shared/persistence/mutation-author'
 import { lockPropertyBrokers, replacePropertyBrokers } from './property-broker-access'
 import { activePropertyBrokerWhere } from './property-broker-eligibility'
+import { recordPropertyHistory } from './record-property-history'
+import {
+  assertCanRemovePropertyPublication,
+  assertCanEditProperties,
+  assertPropertyAccess,
+} from '../application/authorization'
+import { isAgencyManager } from '@server/auth/domain/roles'
+import { ForbiddenError } from '@server/shared/errors'
+import type { PropertyStatusMutationAction } from '../types/property-history'
 import { matchingPropertyTypes } from '../domain/property-search'
 import { findPropertyIdsInDisplayOrder } from './property-display-order'
 import type {
@@ -31,9 +40,11 @@ import type { PropertyRow, PropertyTransaction } from '../types/prisma-property-
 const propertyInclude = {
   brokerAccess: {
     where: { user: activePropertyBrokerWhere() },
-    select: { userId: true },
+    select: { userId: true, user: { select: { name: true } } },
     orderBy: { userId: 'asc' as const },
   },
+  tenant: { select: { accountType: true } },
+  owner: { select: { name: true } },
   responsible: { select: { name: true } },
   ownerContact: { select: { id: true, name: true } },
   contracts: {
@@ -105,10 +116,10 @@ function propertySearchWhere(search?: string): Prisma.PropertyWhereInput {
 
 export class PrismaPropertyRepository implements PropertyRepository {
   async create(property: NewProperty, actorId?: string): Promise<Property> {
-    const authorId = await resolveMutationAuthor(prisma, property.tenantId, actorId)
-    return prisma.$transaction(async (tx) => {
-      await lockPropertyBrokers(tx, property.tenantId, property.brokerIds)
-      const created = await tx.property.create({
+    return prisma.$transaction(async (transaction) => {
+      await lockPropertyBrokers(transaction, property.tenantId, property.brokerIds)
+      const authorId = await resolveMutationAuthor(transaction, property.tenantId, actorId)
+      const created = await transaction.property.create({
         data: {
           tenantId: property.tenantId,
           updatedById: authorId,
@@ -139,11 +150,26 @@ export class PrismaPropertyRepository implements PropertyRepository {
         },
         include: propertyInclude,
       })
-      await replacePropertyBrokers(tx, property.tenantId, created.id, property.brokerIds ?? [])
-      return mapProperty({
-        ...created,
-        brokerAccess: (property.brokerIds ?? []).map((userId) => ({ userId })),
+      await replacePropertyBrokers(
+        transaction,
+        property.tenantId,
+        created.id,
+        property.brokerIds ?? [],
+      )
+      const saved = await transaction.property.findUniqueOrThrow({
+        where: { id: created.id, tenantId: property.tenantId },
+        include: propertyInclude,
       })
+      const after = mapProperty(saved)
+      await recordPropertyHistory(transaction, {
+        before: null,
+        after,
+        previous: { ownerName: null },
+        next: historyReferences(saved),
+        actorId: authorId,
+        action: 'CREATED',
+      })
+      return after
     })
   }
 
@@ -254,9 +280,10 @@ export class PrismaPropertyRepository implements PropertyRepository {
   ): Promise<Property | null> {
     return prisma.$transaction(async (transaction) => {
       await lockPropertyBrokers(transaction, tenantId, changes.brokerIds)
+      await transaction.$queryRaw`SELECT id FROM properties WHERE "tenantId" = ${tenantId} AND id = ${id} FOR UPDATE`
       const existingProperty = await transaction.property.findFirst({
         where: { tenantId, id },
-        select: { id: true },
+        include: propertyInclude,
       })
 
       if (!existingProperty) {
@@ -264,6 +291,16 @@ export class PrismaPropertyRepository implements PropertyRepository {
       }
 
       const authorId = await resolveMutationAuthor(transaction, tenantId, actorId)
+      if (authorId) {
+        const actor = await transaction.user.findUniqueOrThrow({
+          where: { id: authorId },
+          select: { role: true },
+        })
+        assertCanEditProperties(actor.role)
+        assertPropertyAccess(mapProperty(existingProperty), authorId, actor.role)
+        if (changes.brokerIds !== undefined && !isAgencyManager(actor.role))
+          throw new ForbiddenError()
+      }
       if (changes.brokerIds !== undefined) {
         await replacePropertyBrokers(transaction, tenantId, id, changes.brokerIds)
       }
@@ -288,7 +325,17 @@ export class PrismaPropertyRepository implements PropertyRepository {
         include: propertyInclude,
       })
 
-      return updatedProperty ? mapProperty(updatedProperty) : null
+      if (!updatedProperty) return null
+      const after = mapProperty(updatedProperty)
+      await recordPropertyHistory(transaction, {
+        before: mapProperty(existingProperty),
+        after,
+        previous: historyReferences(existingProperty),
+        next: historyReferences(updatedProperty),
+        actorId: authorId,
+        action: 'UPDATED',
+      })
+      return after
     })
   }
 
@@ -298,28 +345,50 @@ export class PrismaPropertyRepository implements PropertyRepository {
     status: PropertyStatus,
     publishedAt: Date | null,
     actorId?: string,
+    action?: PropertyStatusMutationAction,
   ): Promise<Property | null> {
     return prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`SELECT id FROM properties WHERE "tenantId" = ${tenantId} AND id = ${id} FOR UPDATE`
       const existingProperty = await transaction.property.findFirst({
         where: { tenantId, id },
-        select: { id: true },
+        include: propertyInclude,
       })
 
       if (!existingProperty) {
         return null
       }
 
+      const authorId = await resolveMutationAuthor(transaction, tenantId, actorId)
+      if (authorId) {
+        const actor = await transaction.user.findUniqueOrThrow({
+          where: { id: authorId },
+          select: { role: true },
+        })
+        assertCanEditProperties(actor.role)
+        assertPropertyAccess(mapProperty(existingProperty), authorId, actor.role)
+        if (status === 'INACTIVE' && existingProperty.status === 'PUBLISHED')
+          assertCanRemovePropertyPublication(mapProperty(existingProperty), actor.role)
+      }
       const property = await transaction.property.update({
         where: { id, tenantId },
         data: {
           status,
           publishedAt: publishedAt,
-          updatedById: await resolveMutationAuthor(transaction, tenantId, actorId),
+          updatedById: authorId,
         },
         include: propertyInclude,
       })
 
-      return mapProperty(property)
+      const after = mapProperty(property)
+      await recordPropertyHistory(transaction, {
+        before: mapProperty(existingProperty),
+        after,
+        previous: historyReferences(existingProperty),
+        next: historyReferences(property),
+        actorId: authorId,
+        action: action ?? (status === 'PUBLISHED' ? 'PUBLISHED' : 'STATUS_CHANGED'),
+      })
+      return after
     })
   }
 
@@ -482,8 +551,19 @@ async function replaceMedia(
   if (additions.length > 0) await transaction.propertyMedia.createMany({ data: additions })
 }
 
+function historyReferences(property: PropertyRow) {
+  return {
+    ownerName: property.owner?.name ?? null,
+    brokers: property.brokerAccess.map((access) => ({
+      id: access.userId,
+      name: access.user?.name ?? null,
+    })),
+  }
+}
+
 function mapProperty(property: PropertyRow): Property {
   return {
+    agencyManaged: property.tenant.accountType === 'AGENCY',
     id: property.id,
     tenantId: property.tenantId,
     responsibleId: property.responsibleId,

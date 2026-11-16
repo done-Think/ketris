@@ -42,6 +42,7 @@ export type PropertyCharacteristics = components['schemas']['TenantPropertyChara
 
 export interface Property {
   brokerIds?: string[]
+  agencyManaged?: boolean
   id: string
   tenantId: string
   responsibleUserId: string
