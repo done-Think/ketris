@@ -197,6 +197,7 @@
         "phoneInvalid": "Indica un teléfono válido",
         "emailInvalid": "Indica un correo válido",
         "interestRequired": "Selecciona un inmueble disponible.",
+        "budgetInvalid": "Introduce un presupuesto válido",
         "budgetRequired": "Indica el presupuesto",
         "sourceRequired": "Indica el origen",
         "textTooLong": "El texto supera el límite permitido.",

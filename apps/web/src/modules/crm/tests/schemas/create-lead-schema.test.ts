@@ -11,11 +11,17 @@ const validLeadValues = {
   phone: '(11) 99999-9999',
   email: 'ana@ketris.com',
   property,
-  budget: 'R$ 4.5M',
+  budget: 4500000.45,
   source: 'MARKETPLACE',
 }
 
 describe('createLeadSchema', () => {
+  it.each([0, -1, 0.001, 10_000_000_000, Number.NaN, Number.POSITIVE_INFINITY])(
+    'rejects invalid monetary budget %s',
+    (budget) => {
+      expect(schema.safeParse({ ...validLeadValues, budget }).success).toBe(false)
+    },
+  )
   it('rejects typed search text that has not been selected as a property', () => {
     expect(schema.safeParse({ ...validLeadValues, property: 'Apartamento' }).success).toBe(false)
   })
