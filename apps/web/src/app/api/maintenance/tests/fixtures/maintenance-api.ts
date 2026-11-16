@@ -213,6 +213,7 @@ export function setupMaintenanceIntegration() {
         propertyId: propertyId,
         sourceOpportunityId: opportunity.id,
         code: `TEST-${randomUUID()}`,
+        status: 'ACTIVE',
         amount: 2500,
         dueDay: 5,
         startDate: new Date('2027-01-01'),

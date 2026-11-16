@@ -10228,6 +10228,7 @@ export interface paths {
                 propertyId: string
                 propertyTitle: string
                 renterIds: string[]
+                status: string
               }[]
               users: {
                 id: string
@@ -17273,6 +17274,7 @@ export interface components {
         propertyId: string
         propertyTitle: string
         renterIds: string[]
+        status: string
       }[]
       users: {
         id: string

@@ -30,6 +30,7 @@ export function toContract(row: MaintenanceContractRow): MaintenanceContract {
     id: row.id,
     tenantId: row.tenantId,
     code: row.code,
+    status: row.status,
     propertyId: row.propertyId,
     propertyTitle: row.property.title,
     agentId: row.property.responsibleId,

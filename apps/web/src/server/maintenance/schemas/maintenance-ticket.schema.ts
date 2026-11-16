@@ -186,6 +186,7 @@ export const maintenanceOptionsSchema = z.object({
     z.object({
       id: z.string(),
       code: z.string(),
+      status: z.string(),
       propertyId: z.string(),
       propertyTitle: z.string(),
       agentId: z.string(),

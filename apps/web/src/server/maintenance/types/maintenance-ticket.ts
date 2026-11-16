@@ -1,6 +1,9 @@
 import type { MaintenanceCategory } from '@shared/lib/utils/maintenance-categories'
 import type { UserRole } from '@server/auth/domain/user.entity'
 
+export type MaintenanceContractStatus =
+  'DRAFT' | 'IN_REVIEW' | 'AWAITING_SIGNATURE' | 'SIGNED' | 'ACTIVE' | 'CLOSED' | 'CANCELED'
+
 export type MaintenanceTicketStatus =
   'OPEN' | 'IN_PROGRESS' | 'AWAITING_CONFIRMATION' | 'RESOLVED' | 'DISPUTED' | 'CANCELED' | 'CLOSED'
 
@@ -56,6 +59,7 @@ export interface MaintenanceContract {
   id: string
   tenantId: string
   code: string
+  status: MaintenanceContractStatus
   propertyId: string
   propertyTitle: string
   agentId: string
