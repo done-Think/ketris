@@ -161,6 +161,10 @@ export const e2eSpecGlob = [
   'cypress/e2e/login.cy.ts',
 ].join(',')
 
+// O `tsc` do projeto passa de ~2 GB de heap (o padrão do Node em muitas máquinas) e aborta com
+// "heap out of memory"; o runner do CI tem mais memória e não sofre com isso.
+const heavyNodeEnv = { NODE_OPTIONS: '--max-old-space-size=4096' }
+
 const withDatabase = (...command) => ({
   cmd: process.execPath,
   args: ['scripts/run-with-temp-db.mjs', '--', ...command],
@@ -205,8 +209,15 @@ export function buildChecks({ e2e = false, engine = false } = {}) {
       label: 'Typecheck',
       cmd: 'npm',
       args: ['run', 'typecheck', '-w', '@ketris/web'],
+      env: heavyNodeEnv,
     },
-    { id: 'lint', label: 'Lint', cmd: 'npm', args: ['run', 'lint', '-w', '@ketris/web'] },
+    {
+      id: 'lint',
+      label: 'Lint',
+      cmd: 'npm',
+      args: ['run', 'lint', '-w', '@ketris/web'],
+      env: heavyNodeEnv,
+    },
     {
       id: 'unit',
       label: 'Testes unitários',

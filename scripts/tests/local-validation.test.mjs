@@ -181,6 +181,13 @@ test('buildChecks inclui E2E apenas quando pedido e mantém a ordem do CI', () =
   assert.ok(without.indexOf('typecheck') < without.indexOf('unit'))
 })
 
+test('buildChecks dá mais memória ao typecheck e ao lint (o tsc estoura o heap padrão)', () => {
+  for (const id of ['typecheck', 'lint']) {
+    const check = buildChecks().find((entry) => entry.id === id)
+    assert.match(check.env?.NODE_OPTIONS ?? '', /--max-old-space-size=\d{4,}/, id)
+  }
+})
+
 // ---- hook de mensagem de commit --------------------------------------------------------------
 
 const identity = { name: 'Alysson Sene', email: 'a@b.co' }
