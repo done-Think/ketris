@@ -3,8 +3,10 @@ import bcrypt from 'bcryptjs'
 
 import { getDatabaseUrl } from '../src/server/db/database-url'
 import { createPostgresAdapter } from '../src/server/db/postgres-adapter'
+import { RENTER_TENANT_SLUG } from '../src/server/shared/domain/system-tenants'
 
-// Seed mínimo: cria apenas o platform admin do Ketris (sem imobiliárias, corretores, imóveis ou CRM).
+// Seed mínimo: cria o platform admin do Ketris e o tenant de sistema dos locatários (sem imobiliárias,
+// corretores, imóveis ou CRM).
 // Rodar com `npm run db:seed` na raiz (ou `npm run db:seed -w @ketris/web`).
 //
 // O platform admin substitui o antigo endpoint público `POST /api/platform/admins/bootstrap` (ver
@@ -18,7 +20,22 @@ const prisma = new PrismaClient({
   adapter: createPostgresAdapter({ connectionString: getDatabaseUrl() }),
 })
 
+// Tenant de sistema que abriga as contas de locatário (RegisterRenterUseCase o procura pelo slug).
+// É dado obrigatório, não demo: sem ele o cadastro de locatário responde 503
+// RENTER_TENANT_NOT_CONFIGURED. Idempotente, e roda antes do retorno antecipado do admin para
+// também reparar bancos que já têm platform admin.
+async function ensureRenterSystemTenant() {
+  await prisma.tenant.upsert({
+    where: { slug: RENTER_TENANT_SLUG },
+    update: {},
+    create: { slug: RENTER_TENANT_SLUG, name: 'Locatários Ketris' },
+  })
+  console.log(`Tenant de sistema "${RENTER_TENANT_SLUG}" garantido.`)
+}
+
 async function main() {
+  await ensureRenterSystemTenant()
+
   const platformAdminCount = await prisma.platformAdmin.count()
 
   if (platformAdminCount > 0) {
