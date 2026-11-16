@@ -20,6 +20,7 @@ export interface LinkContractPartyUserData {
   tenantId: string
   contractId: string
   partyId: string
+  role: 'RENTER' | 'LANDLORD'
   userId: string
   email: string
 }

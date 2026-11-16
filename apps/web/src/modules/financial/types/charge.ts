@@ -206,6 +206,7 @@ export interface ChargeLinksCardProps {
 
 export interface ChargeDetailFieldsProps {
   charge: Charge
+  direction: ChargeDirection
 }
 
 export interface FinancialDialogTitleProps {
@@ -221,6 +222,7 @@ export interface ChargeFormFieldsProps {
 
 export interface ChargeDetailHeaderProps {
   charge: Charge
+  direction: ChargeDirection
   canManage: boolean
   onRegisterPayment: () => void
   onReversePayment: () => void

@@ -1,6 +1,7 @@
 import type { ContractDataProtector } from '../application/ports/contract-data-protector.port'
 import type { ContractManualSignatureEvidence, ContractWorkflowScope } from '../types/workflow'
 import { insertCharge } from '@server/financial/infrastructure/charge-writes'
+import { recordPropertyFieldHistory } from '@server/properties/infrastructure/record-property-history'
 import {
   ContractDocumentNotFoundError,
   ContractDocumentOutdatedError,
@@ -72,9 +73,10 @@ export function registerManualContractSignature(
     })
     const activate = parties.every((candidate) => candidate.signature?.status === 'SIGNED')
     if (activate) {
+      await tx.$queryRaw`SELECT id FROM properties WHERE id = ${contract.propertyId} AND "tenantId" = ${scope.tenantId} FOR UPDATE`
       const property = await tx.property.findFirstOrThrow({
         where: { id: contract.propertyId, tenantId: scope.tenantId },
-        select: { purpose: true },
+        select: { purpose: true, status: true },
       })
       await tx.contract.update({
         where: { id: contractId, tenantId: scope.tenantId },
@@ -97,6 +99,19 @@ export function registerManualContractSignature(
         status: 'PENDING',
         createdById: scope.actorId,
         actorType: 'SYSTEM',
+      })
+      await recordPropertyFieldHistory(tx, {
+        tenantId: scope.tenantId,
+        propertyId: contract.propertyId,
+        actorId: scope.actorId,
+        action: 'STATUS_CHANGED',
+        changes: [
+          {
+            field: 'status',
+            before: property.status,
+            after: property.purpose === 'RENT' ? 'RENTED' : 'SOLD',
+          },
+        ],
       })
     }
     await recordContractAudit(tx, {

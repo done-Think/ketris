@@ -54,6 +54,7 @@ export type PropertiesDashboardFiltersState = {
 }
 
 export type DashboardProperty = {
+  agencyManaged?: boolean
   activeContractId?: string | null
   managedBy?: string | null
   id: string
@@ -93,6 +94,8 @@ export type DashboardProperty = {
     propertyTax: string
   }
   activityHistory: Array<{
+    action?: 'CREATED' | 'PUBLISHED' | 'UPDATED'
+    occurredAt?: string
     label: string
     date: string
     tone: DashboardActivityTone
@@ -263,6 +266,8 @@ export type CreatePropertyActionsProps = {
 }
 
 export type PropertyDetailHeaderProps = {
+  canUnpublish?: boolean
+  canInactivate?: boolean
   property: DashboardProperty
   canManage: boolean
   isPublishing: boolean
@@ -287,6 +292,7 @@ export type PropertyDetailMainPanelProps = {
 
 export type PropertyDetailSidebarProps = {
   property: DashboardProperty
+  showFullHistory?: boolean
 }
 
 export type PropertyContractParticipantsProps = {

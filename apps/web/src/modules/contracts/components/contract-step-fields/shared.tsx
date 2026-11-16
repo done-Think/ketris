@@ -6,7 +6,7 @@ import type {
   ContractFieldProps,
   ContractSectionTitleProps,
 } from '../../types/contract'
-import { contractTextFieldSx } from '../../styles/contract-form.styles'
+import { contractMultilineFieldSx, contractTextFieldSx } from '../../styles/contract-form.styles'
 
 export function SectionTitle({ children }: ContractSectionTitleProps) {
   return (
@@ -61,7 +61,7 @@ export function ContractField({ control, field }: ContractFieldProps) {
       multiline={field.multiline}
       minRows={field.multiline ? 3 : undefined}
       InputLabelProps={{ shrink: true }}
-      sx={contractTextFieldSx}
+      sx={field.multiline ? [contractTextFieldSx, contractMultilineFieldSx] : contractTextFieldSx}
     />
   )
 }

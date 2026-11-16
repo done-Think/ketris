@@ -1,6 +1,8 @@
 import { PrismaPropertyBrokerDirectory } from './infrastructure/prisma-property-broker-directory'
 import { ListPropertyBrokersUseCase } from './application/use-cases/list-property-brokers.use-case'
 import { PrismaPropertyOwnerDirectory } from './infrastructure/prisma-property-owner-directory'
+import { PrismaPropertyHistoryRepository } from './infrastructure/prisma-property-history.repository'
+import { ReadPropertyHistoryUseCase } from './application/use-cases/read-property-history.use-case'
 import { CrmPropertyOwnerContactDirectory } from './infrastructure/crm-property-owner-contact-directory'
 import { ListPropertyOwnersUseCase } from './application/use-cases/list-property-owners.use-case'
 import { CreatePropertyUseCase } from './application/use-cases/create-property.use-case'
@@ -28,6 +30,10 @@ const propertyMediaStorage = shouldUseLocalUploadsStorage()
 
 export const propertiesContainer = {
   listPropertyBrokersUseCase: new ListPropertyBrokersUseCase(propertyBrokers),
+  readPropertyHistoryUseCase: new ReadPropertyHistoryUseCase(
+    new GetPropertyUseCase(propertyRepository),
+    new PrismaPropertyHistoryRepository(),
+  ),
   listPropertyOwnersUseCase: new ListPropertyOwnersUseCase(propertyOwnerDirectory),
   createPropertyUseCase: new CreatePropertyUseCase(
     propertyRepository,

@@ -5,6 +5,7 @@ import {
   ContractPropertyTransitionError,
   PropertyNotFoundError,
   PropertyPublishValidationError,
+  PropertyPublicationForbiddenError,
 } from '../../../domain/errors'
 import type { Property } from '../../../types/property'
 import type { PropertyRepository } from '../../../application/ports/property-repository.port'
@@ -96,6 +97,46 @@ function createRepository(overrides?: Partial<PropertyRepository>): PropertyRepo
 }
 
 describe('properties use cases', () => {
+  it('blocks both unpublishing and the equivalent inactivation for the responsible agency broker', async () => {
+    const repository = createRepository({
+      findByTenantAndId: vi
+        .fn()
+        .mockResolvedValue({ ...property, agencyManaged: true, status: 'PUBLISHED' }),
+    })
+    const input = {
+      actorTenantId: 'tenant-1',
+      actorId: 'user-1',
+      actorRole: 'AGENT' as const,
+      id: property.id,
+    }
+    await expect(new UnpublishPropertyUseCase(repository).execute(input)).rejects.toThrow(
+      PropertyPublicationForbiddenError,
+    )
+    await expect(new DeletePropertyUseCase(repository).execute(input)).rejects.toThrow(
+      PropertyPublicationForbiddenError,
+    )
+    expect(repository.setStatus).not.toHaveBeenCalled()
+  })
+
+  it('preserves manager authority and independent broker unpublishing', async () => {
+    for (const [agencyManaged, actorRole] of [
+      [true, 'OWNER'],
+      [false, 'AGENT'],
+    ] as const) {
+      const repository = createRepository({
+        findByTenantAndId: vi
+          .fn()
+          .mockResolvedValue({ ...property, agencyManaged, status: 'PUBLISHED' }),
+      })
+      await new UnpublishPropertyUseCase(repository).execute({
+        actorTenantId: 'tenant-1',
+        actorId: 'user-1',
+        actorRole,
+        id: property.id,
+      })
+      expect(repository.setStatus).toHaveBeenCalledOnce()
+    }
+  })
   it('resolves and persists the address coordinates when creating without manual coordinates', async () => {
     const repository = createRepository()
     const geocoder = { locate: vi.fn().mockResolvedValue({ latitude: -25.42, longitude: -49.27 }) }
@@ -482,6 +523,7 @@ describe('properties use cases', () => {
       'INACTIVE',
       null,
       'user-1',
+      'UNPUBLISHED',
     )
   })
 
@@ -563,6 +605,7 @@ describe('properties use cases', () => {
         'INACTIVE',
         null,
         'user-1',
+        'INACTIVATED',
       )
     })
 
@@ -583,6 +626,7 @@ describe('properties use cases', () => {
         'INACTIVE',
         null,
         'admin-1',
+        'INACTIVATED',
       )
     })
 
@@ -602,6 +646,7 @@ describe('properties use cases', () => {
         'INACTIVE',
         null,
         'user-1',
+        'INACTIVATED',
       )
     })
 

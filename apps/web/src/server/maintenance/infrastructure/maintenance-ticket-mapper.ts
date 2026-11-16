@@ -30,12 +30,16 @@ export function toContract(row: MaintenanceContractRow): MaintenanceContract {
     id: row.id,
     tenantId: row.tenantId,
     code: row.code,
+    status: row.status,
     propertyId: row.propertyId,
     propertyTitle: row.property.title,
     agentId: row.property.responsibleId,
     ownerId: row.property.ownerId,
     renterIds: row.parties
       .filter((p) => p.role === 'RENTER' && p.userId && p.user?.active && p.user.role === 'RENTER')
+      .map((p) => p.userId!),
+    landlordIds: row.parties
+      .filter((p) => p.role === 'LANDLORD' && p.userId && p.user?.active)
       .map((p) => p.userId!),
     parties: row.parties.map((p) => ({
       id: p.id,
@@ -121,6 +125,7 @@ export function toTicket(row: MaintenanceTicketRow): MaintenanceTicket {
       agentId: row.property.responsibleId,
       ownerId: row.property.ownerId,
       renterIds: contract?.renterIds ?? [],
+      landlordIds: contract?.landlordIds ?? [],
       validContract: Boolean(
         contract &&
         contract.propertyId === row.propertyId &&

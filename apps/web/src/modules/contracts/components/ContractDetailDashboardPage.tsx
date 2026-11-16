@@ -39,6 +39,7 @@ import {
 import { useContractPresentation } from '../hooks/use-contract-presentation'
 import { mapContractFromApi } from '../utils/contract-adapter'
 import { contractError, isContractNotFound } from '../utils/contract-error'
+import { contractPartyLinkMessageKeys } from '../config/contract-labels'
 import type { ContractDetailDashboardPageProps } from '../types/contract'
 import type { ApiContractParty } from '../types/service'
 
@@ -58,8 +59,9 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
   const searchParams = useSearchParams()
   const [editing, setEditing] = useState(() => searchParams.get('edit') === '1')
   const [uploading, setUploading] = useState(false)
-  const canManage = session?.role === 'OWNER' || session?.role === 'AGENT'
-  const canLink = session?.role === 'OWNER'
+  const landlordView = Boolean(query.data) && query.data?.tenantId !== session?.tenantId
+  const canManage = (session?.role === 'OWNER' || session?.role === 'AGENT') && !landlordView
+  const canLink = session?.role === 'OWNER' && !landlordView
 
   if (query.isPending)
     return (
@@ -79,6 +81,10 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
     )
 
   const data = query.data
+  const linkMessages =
+    linkParty?.role === 'LANDLORD'
+      ? contractPartyLinkMessageKeys.LANDLORD
+      : contractPartyLinkMessageKeys.RENTER
   const contract = mapContractFromApi(data, presentation)
   const beforeActivation = ['DRAFT', 'IN_REVIEW', 'AWAITING_SIGNATURE', 'SIGNED'].includes(
     data.status,
@@ -115,6 +121,11 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
             setTransitionAction('close')
           }}
         />
+        {landlordView && (
+          <Alert severity="info" sx={styles.landlordAlert}>
+            {t('landlordView', { agency: data.agencyName })}
+          </Alert>
+        )}
         {uploading && <Alert severity="info">{t('uploadBusy')}</Alert>}
         {query.isError && (
           <Alert
@@ -204,9 +215,9 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
           open={Boolean(linkParty)}
           onClose={link.isPending ? undefined : () => setLinkParty(null)}
         >
-          <DialogTitle>{t('link')}</DialogTitle>
+          <DialogTitle>{t(linkMessages.action)}</DialogTitle>
           <DialogContent>
-            <Typography>{t('linkNotice', { email: linkParty?.email ?? '' })}</Typography>
+            <Typography>{t(linkMessages.notice, { email: linkParty?.email ?? '' })}</Typography>
             {link.isError && <Alert severity="error">{contractError(link.error, errors)}</Alert>}
           </DialogContent>
           <DialogActions>
@@ -228,7 +239,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
                   )
               }}
             >
-              {t('link')}
+              {t(linkMessages.action)}
             </Button>
           </DialogActions>
         </Dialog>

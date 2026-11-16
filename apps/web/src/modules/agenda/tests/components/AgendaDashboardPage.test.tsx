@@ -332,7 +332,7 @@ describe('AgendaDashboardPage', () => {
     expect(calendar.getByText('18:00')).toBeVisible()
   })
 
-  it('shows charges and both ticket dates even when appointments fail, with links to the records', async () => {
+  it('shows charges and the scheduled ticket date even when appointments fail, with links to the records', async () => {
     vi.mocked(useSession).mockReturnValue({
       data: { tenantId: 'tenant-1', role: 'RENTER', user: { id: 'renter-1' } },
       status: 'authenticated',
@@ -378,11 +378,10 @@ describe('AgendaDashboardPage', () => {
       '/dashboard/finance/charges/charge-1',
     )
     const tickets = calendar.getAllByRole('link', { name: /Kitchen leak/ })
-    expect(tickets).toHaveLength(2)
-    expect(tickets[0]).toHaveTextContent('Abertura do chamado')
-    expect(tickets[1]).toHaveTextContent('Atendimento agendado')
+    expect(tickets).toHaveLength(1)
+    expect(tickets[0]).toHaveTextContent('Atendimento agendado')
+    expect(tickets[0]).not.toHaveTextContent('Abertura do chamado')
     expect(tickets[0]).toHaveAttribute('href', '/dashboard/maintenance/ticket-1')
-    expect(tickets[1]).toHaveAttribute('href', '/dashboard/maintenance/ticket-1')
     expect(screen.getByRole('button', { name: 'Semana anterior' })).not.toBeDisabled()
   })
 
@@ -415,9 +414,8 @@ describe('AgendaDashboardPage', () => {
       renderPage()
       const calendar = within(screen.getByRole('region', { name: 'Agenda' }))
       const tickets = calendar.getAllByRole('link', { name: /Tenant repair/ })
-      expect(tickets).toHaveLength(2)
-      expect(tickets[0]).toHaveTextContent('Abertura do chamado')
-      expect(tickets[1]).toHaveTextContent('Atendimento agendado')
+      expect(tickets).toHaveLength(1)
+      expect(tickets[0]).toHaveTextContent('Atendimento agendado')
       for (const ticket of tickets) {
         expect(ticket).toHaveAttribute('href', '/dashboard/maintenance/ticket-tenant')
       }

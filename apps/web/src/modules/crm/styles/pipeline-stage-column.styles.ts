@@ -15,7 +15,7 @@ export const stackSx2: SxProps<Theme> = {
   borderColor: 'divider',
 }
 
-export const stackSx3: SxProps<Theme> = {
+export const stackSx3 = {
   pt: { xs: 2, lg: 1.75 },
   pb: { md: 1.5 },
   mx: { md: -0.5 },
@@ -24,11 +24,22 @@ export const stackSx3: SxProps<Theme> = {
   minHeight: { md: 0 },
   overflowY: { md: 'auto' },
   scrollbarWidth: 'thin',
-}
+} satisfies SxProps<Theme>
 
 export const skeletonSx: SxProps<Theme> = { borderRadius: `${radius.md}px` }
 
-export const stackSx4: SxProps<Theme> = {
+export const focusedCardsSx = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
+  alignContent: 'start',
+  gap: { xs: 1.5, lg: 1.375 },
+  mx: { md: 0 },
+  px: { md: 0 },
+} satisfies SxProps<Theme>
+
+export const focusedEmptySx = { gridColumn: '1 / -1' } satisfies SxProps<Theme>
+
+export const stackSx4 = {
   minHeight: 124,
   px: 1.5,
   border: '1px dashed',
@@ -36,7 +47,7 @@ export const stackSx4: SxProps<Theme> = {
   borderRadius: `${radius.md}px`,
   bgcolor: surface.paper,
   textAlign: 'center',
-}
+} satisfies SxProps<Theme>
 
 export const typographySx: SxProps<Theme> = { fontSize: 15.5 }
 

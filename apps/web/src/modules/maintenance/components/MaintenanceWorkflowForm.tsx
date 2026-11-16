@@ -83,7 +83,10 @@ export function MaintenanceWorkflowForm({
                   required
                 >
                   {(options?.contracts ?? [])
-                    .filter((contract) => contract.propertyId === ticket.propertyId)
+                    .filter(
+                      (contract) =>
+                        contract.propertyId === ticket.propertyId && contract.status === 'ACTIVE',
+                    )
                     .map((contract) => (
                       <MenuItem key={contract.id} value={contract.id}>
                         {contract.code} - {contract.propertyTitle}

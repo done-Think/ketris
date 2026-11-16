@@ -31,6 +31,7 @@ export function listContracts(filters: ContractListFilters, scope: ContractReadS
             },
           },
           parties: { select: { role: true, name: true, signature: { select: { status: true } } } },
+          tenant: { select: { name: true } },
         },
       })
       const rowsById = new Map(contracts.map((contract) => [contract.id, contract]))
@@ -55,9 +56,12 @@ export function listContracts(filters: ContractListFilters, scope: ContractReadS
           {
             canEdit:
               scope.kind === 'tenant' &&
+              contract.tenantId === scope.tenantId &&
               ['DRAFT', 'IN_REVIEW', 'AWAITING_SIGNATURE'].includes(contract.status) &&
               !contract.parties.some((party) => party.signature?.status === 'SIGNED'),
             id: contract.id,
+            tenantId: contract.tenantId,
+            agencyName: contract.tenant.name,
             code: contract.code,
             opportunityId: contract.sourceOpportunityId,
             propertyId: contract.propertyId,

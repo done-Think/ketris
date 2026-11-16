@@ -1,8 +1,9 @@
 import type { PropertyAddress, Property, PropertyMedia, Prisma } from '@prisma/client'
 
 export type PropertyRow = Property & {
-  tenant: { name: string }
-  brokerAccess: { userId: string }[]
+  brokerAccess: { userId: string; user?: { name: string } }[]
+  tenant: { name: string; accountType: string }
+  owner: { name: string } | null
   responsible: { name: string }
   ownerContact: { id: string; name: string } | null
   contracts: { id: string }[]

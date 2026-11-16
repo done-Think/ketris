@@ -8,6 +8,7 @@ import { createPropertySelectionSchema } from './property-schema'
 export function createLeadSchema(
   t: SchemaMessageTranslator<
     | 'budgetRequired'
+    | 'budgetInvalid'
     | 'emailInvalid'
     | 'interestRequired'
     | 'nameRequired'
@@ -26,10 +27,13 @@ export function createLeadSchema(
       .refine((value) => !value || z.string().email().safeParse(value).success, t('emailInvalid')),
     property: createPropertySelectionSchema(() => t('interestRequired')),
     budget: z
-      .string()
-      .trim()
-      .min(2, t('budgetRequired'))
-      .max(CRM_LIMITS.shortText, t('textTooLong')),
+      .number()
+      .min(0.01, t('budgetRequired'))
+      .max(CRM_LIMITS.proposedValue, t('budgetInvalid'))
+      .refine(
+        (value) => Math.abs(value * 100 - Math.round(value * 100)) < 0.0001,
+        t('budgetInvalid'),
+      ),
     source: z.enum(LEAD_SOURCES, { message: t('sourceRequired') }),
     notes: z.string().trim().max(CRM_LIMITS.notes, t('textTooLong')),
   })
@@ -40,7 +44,7 @@ export const createLeadDefaultValues = {
   phone: '',
   email: '',
   property: null,
-  budget: '',
+  budget: 0,
   source: 'MARKETPLACE',
   notes: '',
 } satisfies z.infer<ReturnType<typeof createLeadSchema>>

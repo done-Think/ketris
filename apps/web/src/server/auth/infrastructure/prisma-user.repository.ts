@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client'
+import { revokePropertyBrokerAccess } from '@server/properties/infrastructure/property-broker-access'
 import type { UserListRepository } from '../application/ports/user-list-repository.port'
 import type { UserListQuery, UserListPage } from '../types/user-list'
 import { recordUserAudit } from './user-audit'
@@ -202,9 +203,12 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
           },
         })
         if (changes.role !== undefined && changes.role !== 'AGENT') {
-          await tx.propertyBrokerAccess.deleteMany({
-            where: { userId: id, tenantId: user.tenantId },
-          })
+          await revokePropertyBrokerAccess(
+            tx,
+            user.tenantId,
+            id,
+            changes.auditActor?.kind === 'USER' ? changes.auditActor.id : null,
+          )
         }
         if (changes.cnpj !== undefined) {
           const cnpj = documentKey(changes.cnpj)
@@ -253,7 +257,12 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
         where: { id, tenantId },
         data: { active: false, sessionVersion: { increment: 1 } },
       })
-      await tx.propertyBrokerAccess.deleteMany({ where: { userId: id, tenantId: user.tenantId } })
+      await revokePropertyBrokerAccess(
+        tx,
+        user.tenantId,
+        id,
+        actor?.kind === 'USER' ? actor.id : null,
+      )
       await tx.refreshToken.updateMany({
         where: { userId: id, tenantId: user.tenantId, revokedAt: null },
         data: { revokedAt: new Date() },
