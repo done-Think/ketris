@@ -255,6 +255,7 @@ function harness({
   ancestor = true,
   head = commit,
   dirty = '',
+  existingNote,
 } = {}) {
   const calls = { git: [], run: [], logs: [] }
   const git = (...args) => {
@@ -269,6 +270,10 @@ function harness({
     if (joined.startsWith('merge-base --is-ancestor')) {
       if (!ancestor) throw new Error('not ancestor')
       return ''
+    }
+    if (joined.startsWith('notes --ref') && joined.includes(' show ')) {
+      if (!existingNote) throw new Error('no note')
+      return existingNote
     }
     if (joined.startsWith('cat-file -e')) return ''
     if (joined.startsWith('merge-base')) return remote
@@ -367,6 +372,41 @@ test('pre-push: force push em dev com skip fica registrado como force', () => {
   })
   assert.equal(h.execute(), 0)
   assert.match(noteWrites(h.calls)[0], /"forced":true/)
+})
+
+function noteJson(overrides = {}) {
+  return JSON.stringify(
+    buildAttestation({
+      kind: 'passed',
+      commit,
+      tree,
+      user: 'Alysson',
+      email: 'a@b.co',
+      at: '2026-11-15T12:00:00.000Z',
+      checks: ['unit'],
+      ...overrides,
+    }),
+  )
+}
+
+test('pre-push: reaproveita a atestação local já aprovada e só reenvia a nota', () => {
+  const h = harness({ input: pushLine(), existingNote: noteJson() })
+  assert.equal(h.execute(), 0)
+  assert.equal(h.calls.run.length, 0)
+  assert.equal(noteWrites(h.calls).length, 0)
+  assert.ok(h.calls.git.some((line) => line.startsWith('push --no-verify origin')))
+})
+
+test('pre-push: atestação local pulada ou de outro conteúdo não é reaproveitada', () => {
+  const skipped = noteJson({ kind: 'skipped', checks: undefined, reason: 'hotfix de produção' })
+  assert.ok(harness({ input: pushLine(), existingNote: skipped }).execute() === 0)
+  const skippedRun = harness({ input: pushLine(), existingNote: skipped })
+  skippedRun.execute()
+  assert.ok(skippedRun.calls.run.includes('unit'))
+
+  const otherTree = harness({ input: pushLine(), existingNote: noteJson({ tree: 'e'.repeat(40) }) })
+  otherTree.execute()
+  assert.ok(otherTree.calls.run.includes('unit'))
 })
 
 test('pre-push: não recursa quando o próprio hook empurra a nota', () => {

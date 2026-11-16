@@ -146,6 +146,17 @@ SKIP_PREPUSH="hotfix de produção" git commit -m "fix(auth): ..." # opcional: g
   detecta a falta de atestação, roda a suíte completa e emite um aviso de auditoria com o autor do
   push no resumo da execução.
 
+**Push que cai depois dos testes:** a suíte leva alguns minutos e, nesse tempo, a conexão SSH com o
+GitHub fica parada; se ela cair (`Connection closed by remote host`, `Broken pipe`), basta rodar o
+`git push` de novo: a atestação local do commit é reaproveitada e os testes não repetem. Para
+evitar a queda, adicione ao `~/.ssh/config`:
+
+```text
+Host github.com
+  ServerAliveInterval 30
+  ServerAliveCountMax 20
+```
+
 **Limites:** o hook roda na máquina do desenvolvedor, então ele não é uma barreira inviolável. Para
 garantir, proteja `dev` e `main` no GitHub (PR obrigatório e sem force push). O pre-push ainda não
 cobre o ensaio de renome (`db:rehearse-english-rename`) nem `staging-release-db.test.mjs`; mudanças

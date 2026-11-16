@@ -4,12 +4,14 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   ZERO_SHA,
+  attestationReusable,
   buildAttestation,
   buildChecks,
   isDeletion,
   isProtectedRef,
   needsE2E,
   noteRef,
+  parseAttestation,
   parsePushRefs,
   readSkipReason,
 } from './local-validation-lib.mjs'
@@ -47,13 +49,27 @@ function changedFiles(git, entry) {
   }
 }
 
+// Um push que falhou depois dos testes (conexão SSH ociosa, rede) não deve repetir a suíte: se o
+// commit já tem uma atestação local `passed` para o mesmo conteúdo, ela é reaproveitada.
+function alreadyAttested(git, commit) {
+  try {
+    const attestation = parseAttestation(git('notes', '--ref', noteRef(commit), 'show', commit))
+    return attestationReusable(attestation, { commit, tree: git('rev-parse', `${commit}^{tree}`) })
+  } catch {
+    return false
+  }
+}
+
 function writeNotes({ git, remote, log, commits, build }) {
-  const refs = []
   for (const commit of commits) {
     const ref = noteRef(commit)
     git('notes', '--ref', ref, 'add', '-f', '-m', JSON.stringify(build(commit)), commit)
-    refs.push(`${ref}:${ref}`)
   }
+  pushNotes({ git, remote, log, commits })
+}
+
+function pushNotes({ git, remote, log, commits }) {
+  const refs = commits.map((commit) => `${noteRef(commit)}:${noteRef(commit)}`)
   try {
     git('push', '--no-verify', remote, ...refs)
   } catch {
@@ -134,6 +150,12 @@ export function runPrePush({ input, env, remote, git, run, log, now }) {
       'Há alterações não commitadas em arquivos rastreados; commite ou guarde (stash) antes do push.',
     )
     return 1
+  }
+
+  if (commits.every((commit) => alreadyAttested(git, commit))) {
+    log('Validação local já aprovada para este commit; reaproveitando sem rodar os testes de novo.')
+    pushNotes({ git, remote, log, commits })
+    return 0
   }
 
   const files = pushed.flatMap((entry) => changedFiles(git, entry) ?? [null])
