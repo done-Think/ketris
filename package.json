@@ -37,7 +37,8 @@
     "api:check": "node scripts/generate-api-types.mjs --check",
     "face-check:test:integration": "node scripts/test-face-check-integration.mjs",
     "face-check:cleanup": "node scripts/face-check-retention.mjs cleanup",
-    "check:conventions": "node scripts/check-code-conventions.mjs"
+    "check:conventions": "node scripts/check-code-conventions.mjs",
+    "validate:local": "node scripts/validate-local.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",

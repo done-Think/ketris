@@ -10,8 +10,31 @@ import {
   protectedCiPaths,
   validateGate,
 } from './ci-validation-lib.mjs'
+import { noteRef, parseAttestation } from './local-validation-lib.mjs'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
+
+// A atestação do pre-push vive num git note por commit (refs/notes/lv/<sha>). Qualquer falha de
+// leitura vira "sem atestação", e então a suíte completa roda.
+function readAttestation(git, commit) {
+  try {
+    const ref = noteRef(commit)
+    git('fetch', '--no-tags', '--quiet', 'origin', `+${ref}:${ref}`)
+    const line = git('notes', '--ref', ref, 'list')
+      .split('\n')
+      .find((entry) => entry.endsWith(` ${commit}`))
+    return line ? parseAttestation(git('cat-file', '-p', line.split(' ')[0])) : null
+  } catch {
+    return null
+  }
+}
+// Texto vindo do desenvolvedor (motivo do skip) nunca pode virar comando de workflow nem markdown.
+function escapeCommand(text) {
+  return String(text).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')
+}
+function inline(text) {
+  return String(text).replace(/[`\r\n]/g, ' ')
+}
 function output(values, env) {
   if (!env.GITHUB_OUTPUT) throw new Error('GITHUB_OUTPUT_REQUIRED')
   for (const [key, value] of Object.entries(values)) {
@@ -52,11 +75,23 @@ export async function runCli(mode, env = process.env, job, { cwd = root, fetchIm
         policyChanged =
           git('diff', '--name-only', payload.before, env.GITHUB_SHA, '--', ...protectedCiPaths) !==
           ''
+      } else if (env.GITHUB_EVENT_NAME === 'pull_request') {
+        // O checkout de PR é o merge commit; o primeiro pai é a base.
+        policyChanged =
+          git('diff', '--name-only', 'HEAD^1', 'HEAD', '--', ...protectedCiPaths) !== ''
       }
     } catch {
       /* Unavailable history runs full CI. */
     }
+    const attestations = new Map()
+    const attestationFor = async (commit) => {
+      if (!attestations.has(commit)) attestations.set(commit, readAttestation(git, commit))
+      return attestations.get(commit)
+    }
     const context = {
+      baseRef: payload.pull_request?.base?.ref,
+      headSha: payload.pull_request?.head?.sha,
+      attestationFor,
       eventName: env.GITHUB_EVENT_NAME,
       ref: env.GITHUB_REF,
       repository: env.GITHUB_REPOSITORY,
@@ -85,16 +120,43 @@ export async function runCli(mode, env = process.env, job, { cwd = root, fetchIm
     output(
       {
         reuse: String(result.reuse),
+        kind: result.kind ?? '',
         tree,
         reason: result.reason,
         source_run: result.sourceRun ?? '',
       },
       env,
     )
+    const mode = !result.reuse
+      ? 'suíte completa'
+      : result.kind === 'attestation'
+        ? 'reutilizar validação local'
+        : 'reutilizar PR aprovado'
     summary(
-      `### Plano de validação\n\n- Modo: ${result.reuse ? 'reutilizar PR aprovado' : 'suíte completa'}\n- Motivo: ${result.reason}\n- Conteúdo Git: \`${tree}\`\n${result.sourceRun ? `- PR: #${result.pullRequest}; execução: ${result.sourceRun}\n` : ''}`,
+      `### Plano de validação\n\n- Modo: ${mode}\n- Motivo: ${result.reason}\n- Conteúdo Git: \`${tree}\`\n${result.sourceRun ? `- PR: #${result.pullRequest}; execução: ${result.sourceRun}\n` : ''}${result.attestedBy ? `- Validado localmente por: \`${inline(result.attestedBy)}\`\n` : ''}`,
       env,
     )
+    // Auditoria: quem entrou sem validação local aprovada fica registrado na execução do CI.
+    const audited =
+      env.GITHUB_EVENT_NAME === 'pull_request'
+        ? payload.pull_request?.base?.ref === 'dev' && payload.pull_request?.head?.sha
+        : env.GITHUB_EVENT_NAME === 'push' && env.GITHUB_REF === 'refs/heads/dev' && env.GITHUB_SHA
+    if (!result.reuse && audited) {
+      const found = await attestationFor(audited)
+      const actor = env.GITHUB_ACTOR ?? 'desconhecido'
+      const text =
+        found?.kind === 'skipped'
+          ? `Validação local PULADA por ${found.user} <${found.email}>: ${found.reason}${found.forced ? ' (push forçado)' : ''}. Suíte completa executada.`
+          : found?.scope === 'full'
+            ? `A validação local completa de ${found.user} <${found.email}> não corresponde ao conteúdo enviado. Suíte completa executada.`
+            : found
+              ? `Validação local rápida de ${found.user} <${found.email}> (typecheck, lint e unit). A suíte completa, com E2E, roda no CI; \`npm run validate:local\` antes do push a dispensa.`
+              : `Sem validação local registrada para ${audited} (enviado por ${actor}; hooks ignorados ou --no-verify). Suíte completa executada.`
+      // Só skip e ausência são alerta; a validação rápida é o fluxo normal e vai apenas ao resumo.
+      if (!found || found.kind === 'skipped')
+        console.log(`::warning title=Validação local ausente::${escapeCommand(text)}`)
+      summary(`### Auditoria de validação local\n\n- ${inline(text)}\n`, env)
+    }
     return result
   }
   if (mode === 'record') {
@@ -136,6 +198,7 @@ export async function runCli(mode, env = process.env, job, { cwd = root, fetchIm
     const result = validateGate({
       planResult: env.CI_PLAN_RESULT,
       reuse: env.CI_REUSE,
+      kind: env.CI_REUSE_KIND,
       qualityResult: env.CI_QUALITY_RESULT,
       e2eResult: env.CI_E2E_RESULT,
       eventName: env.GITHUB_EVENT_NAME,
@@ -146,7 +209,7 @@ export async function runCli(mode, env = process.env, job, { cwd = root, fetchIm
     })
     output({ validated: 'true' }, env)
     summary(
-      `### Validação aprovada\n\n- Modo: ${result}\n- Conteúdo Git: \`${tree}\`\n${result === 'reused' ? `- Execução aprovada do PR: ${env.CI_SOURCE_RUN}\n` : '- Quality e E2E completos aprovados nesta execução.\n'}`,
+      `### Validação aprovada\n\n- Modo: ${result}\n- Conteúdo Git: \`${tree}\`\n${result === 'reused' ? `- Execução aprovada do PR: ${env.CI_SOURCE_RUN}\n` : result === 'attested' ? '- Validação local aprovada (pre-push) para este conteúdo.\n' : '- Quality e E2E completos aprovados nesta execução.\n'}`,
       env,
     )
     return result
