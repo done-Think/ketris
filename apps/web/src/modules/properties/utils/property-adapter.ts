@@ -124,6 +124,7 @@ export function mapProperty(api: ApiProperty): Property {
     agencyManaged: api.agencyManaged ?? false,
     id: api.id,
     tenantId: api.tenantId,
+    agencyName: api.agencyName,
     responsibleUserId: api.responsibleId,
     responsibleName: api.responsibleName,
     brokerIds: api.brokerIds ?? [],

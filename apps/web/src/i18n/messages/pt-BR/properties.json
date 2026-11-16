@@ -37,7 +37,8 @@
       "emptyAction": "Novo Imóvel",
       "totalRows": "Total de linhas:",
       "rowsPerPage": "Linhas por página",
-      "displayedRows": "{from}-{to} de {count}"
+      "displayedRows": "{from}-{to} de {count}",
+      "managedBy": "Administrado por {agency}"
     },
     "filters": {
       "filterAriaLabel": "Filtrar imóveis por status",
@@ -174,7 +175,8 @@
       "landlord": "Locador",
       "renter": "Locatário",
       "guarantor": "Fiador"
-    }
+    },
+    "managedBy": "Este imóvel é administrado pela {agency}. Você acompanha como locador, sem editar."
   },
   "create": {
     "postalCode": {

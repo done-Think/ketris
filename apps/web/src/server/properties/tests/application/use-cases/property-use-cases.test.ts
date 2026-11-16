@@ -241,6 +241,7 @@ describe('properties use cases', () => {
         'property-1',
         'renter-1',
         undefined,
+        undefined,
       )
     })
 
@@ -321,6 +322,7 @@ describe('properties use cases', () => {
         status: 'DRAFT',
         purpose: 'RENT',
         responsibleId: undefined,
+        landlordId: expect.any(String),
       })
     })
 

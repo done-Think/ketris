@@ -37,7 +37,8 @@
       "emptyAction": "Nuevo inmueble",
       "totalRows": "Total de filas:",
       "rowsPerPage": "Filas por página",
-      "displayedRows": "{from}-{to} de {count}"
+      "displayedRows": "{from}-{to} de {count}",
+      "managedBy": "Administrado por {agency}"
     },
     "filters": {
       "filterAriaLabel": "Filtrar propiedades por estado",
@@ -174,7 +175,8 @@
       "landlord": "Arrendador",
       "renter": "Arrendatario",
       "guarantor": "Fiador"
-    }
+    },
+    "managedBy": "Este inmueble lo administra {agency}. Lo sigues como arrendador, sin editar."
   },
   "create": {
     "postalCode": {

@@ -87,6 +87,7 @@ export const propertySchema = z
   .object({
     id: z.string(),
     tenantId: z.string(),
+    agencyName: z.string().optional(),
     responsibleId: z.string(),
     responsibleName: z.string(),
     brokerIds: z.array(z.string()).optional(),

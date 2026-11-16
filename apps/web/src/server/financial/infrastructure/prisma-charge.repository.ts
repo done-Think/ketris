@@ -138,6 +138,22 @@ function chargeReadWhere(scope: ChargeReadScope): Prisma.ChargeWhereInput {
     return { tenantId: scope.tenantId, contract: { property: { ownerId: scope.ownerId } } }
   }
 
+  if (scope.landlordUserId) {
+    return {
+      OR: [
+        { tenantId: scope.tenantId },
+        {
+          type: 'RECEIVABLE',
+          contract: {
+            parties: {
+              some: { role: 'LANDLORD', userId: scope.landlordUserId, user: { active: true } },
+            },
+          },
+        },
+      ],
+    }
+  }
+
   return { tenantId: scope.tenantId }
 }
 
@@ -261,6 +277,7 @@ export class PrismaChargeRepository implements ChargeRepository {
 
         return {
           id: charge.id,
+          tenantId: charge.tenantId,
           code: charge.code,
           type: charge.type,
           storedStatus: charge.storedStatus,

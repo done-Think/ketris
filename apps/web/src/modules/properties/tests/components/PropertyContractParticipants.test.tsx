@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -13,6 +13,24 @@ vi.mock('next-auth/react', () => ({
   useSession: () => ({
     data: { scope: 'tenant', tenantId: 'agency', user: { id: 'manager' }, role: 'OWNER' },
     status: 'authenticated',
+  }),
+}))
+
+// A sidebar também renderiza o histórico. Sem este mock, a chamada de rede real falha em segundo
+// plano e, num runner lento, o erro dele aparece junto com o dos participantes (dois botões
+// "Tentar novamente"), o que tornava o teste de nova tentativa instável.
+vi.mock('../../hooks/use-property-history', () => ({
+  usePropertyHistory: () => ({
+    data: { events: [], pagination: { totalPages: 1 } },
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
+  usePropertyHistoryEvent: () => ({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
   }),
 }))
 
@@ -138,7 +156,8 @@ describe('Property contract participants', () => {
       'Não foi possível carregar os participantes do contrato.',
     )
     expect(screen.queryByText('Private contract details')).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    const participants = screen.getByText('Participantes').parentElement as HTMLElement
+    await user.click(within(participants).getByRole('button', { name: 'Tentar novamente' }))
     expect(await screen.findByText('Locatária do contrato')).toBeVisible()
     expect(get).toHaveBeenCalledTimes(2)
   })

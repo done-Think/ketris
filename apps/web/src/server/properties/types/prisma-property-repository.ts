@@ -2,7 +2,7 @@ import type { PropertyAddress, Property, PropertyMedia, Prisma } from '@prisma/c
 
 export type PropertyRow = Property & {
   brokerAccess: { userId: string; user?: { name: string } }[]
-  tenant: { accountType: string }
+  tenant: { name: string; accountType: string }
   owner: { name: string } | null
   responsible: { name: string }
   ownerContact: { id: string; name: string } | null

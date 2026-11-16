@@ -4951,6 +4951,7 @@
         "properties": {
           "id": { "type": "string" },
           "tenantId": { "type": "string" },
+          "agencyName": { "type": "string" },
           "responsibleId": { "type": "string" },
           "responsibleName": { "type": "string" },
           "brokerIds": { "type": "array", "items": { "type": "string" } },
@@ -5126,6 +5127,7 @@
         "type": "object",
         "properties": {
           "id": { "type": "string" },
+          "tenantId": { "type": "string" },
           "code": { "type": "string" },
           "type": { "type": "string", "enum": ["RECEIVABLE", "PAYABLE"] },
           "status": {
@@ -5143,6 +5145,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "code",
           "type",
           "status",
@@ -5193,6 +5196,7 @@
         "type": "object",
         "properties": {
           "id": { "type": "string" },
+          "tenantId": { "type": "string" },
           "code": { "type": "string" },
           "type": { "type": "string", "enum": ["RECEIVABLE", "PAYABLE"] },
           "status": {
@@ -5220,6 +5224,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "code",
           "type",
           "status",

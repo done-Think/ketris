@@ -65,6 +65,7 @@ export interface Property {
   activeContractId: string | null
   id: string
   tenantId: string
+  agencyName?: string
   responsibleId: string
   ownerId: string | null
   ownerContactId?: string | null
@@ -140,6 +141,7 @@ export interface PropertyListFilters {
   search?: string
   tenantId: string
   renterId?: string
+  landlordId?: string
   ownerId?: string
   status?: PropertyStatus
   purpose?: PropertyPurpose
