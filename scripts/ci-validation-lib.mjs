@@ -10,6 +10,7 @@ export const protectedCiPaths = [
   'scripts/ci-validation-lib.mjs',
   'scripts/local-validation-lib.mjs',
   'scripts/pre-push-validate.mjs',
+  'scripts/validate-local.mjs',
   'scripts/run-with-temp-db.mjs',
   'scripts/run-local-e2e.mjs',
   'scripts/tests/ci-validation.test.mjs',

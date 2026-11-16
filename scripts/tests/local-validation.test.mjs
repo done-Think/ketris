@@ -84,9 +84,11 @@ test('atestação: ida e volta, validação e reuso por conteúdo', () => {
     email: 'a@b.co',
     at: '2026-11-15T12:00:00.000Z',
     checks: ['unit', 'integration'],
+    scope: 'full',
   })
   const parsed = parseAttestation(JSON.stringify(attestation))
   assert.deepEqual(parsed, attestation)
+  assert.equal(parsed.scope, 'full')
   assert.equal(attestationReusable(parsed, { commit, tree }), true)
   assert.equal(attestationReusable(parsed, { commit, tree: 'd'.repeat(40) }), false)
   assert.equal(attestationReusable(parsed, { commit: 'd'.repeat(40), tree }), false)
@@ -105,6 +107,36 @@ test('atestação: ida e volta, validação e reuso por conteúdo', () => {
     () => buildAttestation({ kind: 'skipped', commit, tree, user: 'a', email: 'a@b.co', at: 'x' }),
     /SKIP_REASON_REQUIRED/,
   )
+})
+
+test('atestação rápida (pre-push padrão) não dispensa a suíte do CI', () => {
+  const fast = buildAttestation({
+    kind: 'passed',
+    commit,
+    tree,
+    user: 'Alysson',
+    email: 'a@b.co',
+    at: '2026-11-15T12:00:00.000Z',
+    checks: ['unit'],
+  })
+  assert.equal(fast.scope, 'fast')
+  assert.equal(attestationReusable(fast, { commit, tree }), false)
+
+  // Notas antigas, gravadas antes do campo `scope`, também contam como rápidas.
+  const legacy = parseAttestation(
+    JSON.stringify({
+      version: 1,
+      kind: 'passed',
+      commit,
+      tree,
+      user: 'a',
+      email: 'a@b.co',
+      at: 'x',
+      checks: [],
+    }),
+  )
+  assert.equal(legacy.scope, 'fast')
+  assert.equal(attestationReusable(legacy, { commit, tree }), false)
 })
 
 test('parseAttestation rejeita dados malformados', () => {
@@ -162,23 +194,26 @@ test('skipTrailer formata autor e motivo', () => {
   )
 })
 
-test('buildChecks inclui E2E apenas quando pedido e mantém a ordem do CI', () => {
-  const without = buildChecks({ e2e: false }).map((check) => check.id)
-  const withE2E = buildChecks({ e2e: true }).map((check) => check.id)
-  for (const id of [
-    'conventions',
-    'api',
-    'typecheck',
-    'lint',
-    'unit',
-    'integration',
-    'face-check',
-  ]) {
+test('buildChecks rápido (padrão) só traz o que cabe em 1 a 2 minutos', () => {
+  const fast = buildChecks({ e2e: true, engine: true }).map((check) => check.id)
+  for (const id of ['conventions', 'api', 'typecheck', 'lint', 'unit']) {
+    assert.ok(fast.includes(id), `falta ${id}`)
+  }
+  for (const id of ['integration', 'face-check', 'engine', 'e2e']) {
+    assert.equal(fast.includes(id), false, `${id} não deve rodar no pre-push rápido`)
+  }
+  assert.ok(fast.indexOf('typecheck') < fast.indexOf('unit'))
+})
+
+test('buildChecks completo inclui integração e só pede E2E e motor quando o diff pede', () => {
+  const without = buildChecks({ scope: 'full' }).map((check) => check.id)
+  const withE2E = buildChecks({ scope: 'full', e2e: true }).map((check) => check.id)
+  for (const id of ['unit', 'integration', 'face-check']) {
     assert.ok(without.includes(id), `falta ${id}`)
   }
   assert.equal(without.includes('e2e'), false)
   assert.equal(withE2E.at(-1), 'e2e')
-  assert.ok(without.indexOf('typecheck') < without.indexOf('unit'))
+  assert.ok(buildChecks({ scope: 'full', engine: true }).some((check) => check.id === 'engine'))
 })
 
 test('buildChecks dá mais memória ao typecheck e ao lint (o tsc estoura o heap padrão)', () => {
@@ -303,20 +338,37 @@ function noteWrites(calls) {
   return calls.git.filter((line) => line.includes('notes') && line.includes(' add '))
 }
 
-test('pre-push: tudo verde grava a atestação e envia a nota', () => {
+test('pre-push: padrão é rápido, grava atestação "fast" e envia a nota', () => {
   const h = harness({ input: pushLine() })
   assert.equal(h.execute(), 0)
   assert.ok(h.calls.run.includes('unit'))
-  assert.ok(h.calls.run.includes('e2e'))
-  assert.equal(noteWrites(h.calls).length, 1)
+  for (const id of ['integration', 'face-check', 'e2e']) {
+    assert.equal(h.calls.run.includes(id), false, id)
+  }
+  const writes = noteWrites(h.calls)
+  assert.equal(writes.length, 1)
+  assert.match(writes[0], /"scope":"fast"/)
   assert.ok(h.calls.git.some((line) => line.startsWith('push --no-verify origin')))
 })
 
-test('pre-push: não roda E2E quando o diff não toca o app', () => {
-  const h = harness({ input: pushLine(), files: ['README.md', 'docs/a.md'] })
+test('pre-push: escopo completo (validate:local) roda integração e E2E e grava "full"', () => {
+  const h = harness({ input: pushLine(), env: { KETRIS_VALIDATE_SCOPE: 'full' } })
+  assert.equal(h.execute(), 0)
+  for (const id of ['unit', 'integration', 'face-check', 'e2e']) {
+    assert.ok(h.calls.run.includes(id), id)
+  }
+  assert.match(noteWrites(h.calls)[0], /"scope":"full"/)
+})
+
+test('pre-push: escopo completo não roda E2E quando o diff não toca o app', () => {
+  const h = harness({
+    input: pushLine(),
+    env: { KETRIS_VALIDATE_SCOPE: 'full' },
+    files: ['README.md', 'docs/a.md'],
+  })
   assert.equal(h.execute(), 0)
   assert.equal(h.calls.run.includes('e2e'), false)
-  assert.ok(h.calls.run.includes('unit'))
+  assert.ok(h.calls.run.includes('integration'))
 })
 
 test('pre-push: teste quebrado bloqueia o push e não grava atestação', () => {
@@ -395,6 +447,21 @@ test('pre-push: reaproveita a atestação local já aprovada e só reenvia a not
   assert.equal(h.calls.run.length, 0)
   assert.equal(noteWrites(h.calls).length, 0)
   assert.ok(h.calls.git.some((line) => line.startsWith('push --no-verify origin')))
+})
+
+test('pre-push: escopo completo não aceita atestação rápida, mas aceita a completa', () => {
+  const full = { KETRIS_VALIDATE_SCOPE: 'full' }
+  const onFast = harness({ input: pushLine(), env: full, existingNote: noteJson() })
+  onFast.execute()
+  assert.ok(onFast.calls.run.includes('integration'))
+
+  const onFull = harness({
+    input: pushLine(),
+    env: full,
+    existingNote: noteJson({ scope: 'full' }),
+  })
+  assert.equal(onFull.execute(), 0)
+  assert.equal(onFull.calls.run.length, 0)
 })
 
 test('pre-push: atestação local pulada ou de outro conteúdo não é reaproveitada', () => {

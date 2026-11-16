@@ -147,10 +147,14 @@ export async function runCli(mode, env = process.env, job, { cwd = root, fetchIm
       const text =
         found?.kind === 'skipped'
           ? `Validação local PULADA por ${found.user} <${found.email}>: ${found.reason}${found.forced ? ' (push forçado)' : ''}. Suíte completa executada.`
-          : found
-            ? `A validação local de ${found.user} <${found.email}> não corresponde ao conteúdo enviado. Suíte completa executada.`
-            : `Sem validação local registrada para ${audited} (enviado por ${actor}; hooks ignorados ou --no-verify). Suíte completa executada.`
-      console.log(`::warning title=Validação local ausente::${escapeCommand(text)}`)
+          : found?.scope === 'full'
+            ? `A validação local completa de ${found.user} <${found.email}> não corresponde ao conteúdo enviado. Suíte completa executada.`
+            : found
+              ? `Validação local rápida de ${found.user} <${found.email}> (typecheck, lint e unit). A suíte completa, com E2E, roda no CI; \`npm run validate:local\` antes do push a dispensa.`
+              : `Sem validação local registrada para ${audited} (enviado por ${actor}; hooks ignorados ou --no-verify). Suíte completa executada.`
+      // Só skip e ausência são alerta; a validação rápida é o fluxo normal e vai apenas ao resumo.
+      if (!found || found.kind === 'skipped')
+        console.log(`::warning title=Validação local ausente::${escapeCommand(text)}`)
       summary(`### Auditoria de validação local\n\n- ${inline(text)}\n`, env)
     }
     return result

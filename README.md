@@ -89,79 +89,6 @@ existir um platform admin, nada é alterado. O platform admin não tem etapa de 
 e-mail: a conta nasce ativa e já pode entrar. Imobiliárias, corretores e imóveis são criados pelo
 próprio produto ou pelas fixtures dos testes.
 
-## Validação local (Husky + commitlint)
-
-Os testes rodam **na sua máquina antes do push**; se algum quebrar, o código não sobe. O CI só repete
-a suíte quando não há prova de que ela passou localmente (ver "Como o CI usa isso"). Os hooks são
-instalados pelo `npm install` (script `prepare`).
-
-**No commit** (`.husky/pre-commit` e `.husky/commit-msg`):
-
-- `lint-staged` formata e corrige os arquivos alterados.
-- O `commit-msg` acrescenta `Refs: DTK-NNN` sozinho quando a branch é `dtk-NNN-...` ou
-  `tipo/dtk-NNN-...`, e o `commitlint` valida a mensagem.
-
-Padrão: `tipo(escopo): assunto` — assunto em inglês, no imperativo, em minúsculas, sem ponto final,
-até 100 caracteres. O **escopo é obrigatório** e vem de uma lista fechada em
-[commitlint.config.js](commitlint.config.js) (por exemplo `auth`, `marketplace`, `face-check`, `ci`).
-Tipos aceitos: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`,
-`revert`.
-
-```text
-fix(face-check): reject expired invitations
-
-O link vencido ainda abria a análise.
-
-Refs: DTK-182
-```
-
-**No push** (`.husky/pre-push` → `scripts/pre-push-validate.mjs`), na mesma ordem do CI: nomes em
-inglês e convenções, testes dos scripts, `api:check`, typecheck, lint, unitários, integração e Face
-Check (e o motor Python, quando o diff toca `services/face_check_engine`). O **E2E (build + Cypress)
-roda só quando o diff toca o app** (`apps/web`, exceto `.md`, ou `package*.json`).
-
-Requisitos: `docker compose up -d` (os testes usam um banco descartável no Postgres local, nunca o
-seu banco de desenvolvimento) e as portas 3000, 3101 e 3102 livres para o E2E. O push também exige
-que o commit enviado seja o `HEAD` e que não haja alterações rastreadas sem commit.
-
-**Como o CI usa isso:** quando tudo passa, o hook grava uma atestação (um _git note_
-`refs/notes/lv/<sha>` com autor, data e checks) e a envia junto com o push. Se o conteúdo (_tree_)
-do PR ou da `dev` for idêntico ao atestado, o CI pula `quality` e `auth-e2e`. Sem atestação, com
-atestação de outro conteúdo, pulada, ou quando `.github/`, `.husky/` ou os scripts de validação
-mudam, o CI roda a suíte completa, como antes.
-
-**Pular a validação (excepcional) e auditoria:**
-
-```bash
-SKIP_PREPUSH="hotfix de produção, incidente 123" git push        # motivo: 8 a 200 caracteres
-SKIP_PREPUSH="hotfix de produção" git commit -m "fix(auth): ..." # opcional: grava Tests-Skipped-By no commit
-```
-
-- Com `SKIP_PREPUSH`, o push sobe sem rodar os testes e fica registrado quem pulou, o motivo e a
-  data no _git note_ do commit (`git log --show-notes='lv/*'`). Feito no commit, o trailer
-  `Tests-Skipped-By: Nome <email> — motivo` também fica na mensagem.
-- Force push em `dev` e `main` é **bloqueado** sem `SKIP_PREPUSH`; com ele, o note registra
-  `forced`.
-- `git push --no-verify`, `HUSKY=0` ou outro cliente Git não deixam registro local, mas o CI
-  detecta a falta de atestação, roda a suíte completa e emite um aviso de auditoria com o autor do
-  push no resumo da execução.
-
-**Push que cai depois dos testes:** a suíte leva alguns minutos e, nesse tempo, a conexão SSH com o
-GitHub fica parada; se ela cair (`Connection closed by remote host`, `Broken pipe`), basta rodar o
-`git push` de novo: a atestação local do commit é reaproveitada e os testes não repetem. Para
-evitar a queda, adicione ao `~/.ssh/config`:
-
-```text
-Host github.com
-  ServerAliveInterval 30
-  ServerAliveCountMax 20
-```
-
-**Limites:** o hook roda na máquina do desenvolvedor, então ele não é uma barreira inviolável. Para
-garantir, proteja `dev` e `main` no GitHub (PR obrigatório e sem force push). O pre-push ainda não
-cobre o ensaio de renome (`db:rehearse-english-rename`) nem `staging-release-db.test.mjs`; mudanças
-que dependem deles devem ser conferidas no CI ou manualmente.
-
 Sem credenciais AWS em desenvolvimento, imagens de imóveis e perfis públicos usam o storage
 local em `apps/web/.local/uploads`, fora do Git. Avatares, documentos e comprovantes que usam S3
 exigem configuração desse serviço. S3/SES também aceitam
@@ -189,3 +116,82 @@ No cadastro e na edição, informe o CEP e saia do campo para consultar o [ViaCE
 A consulta preenche rua, bairro, cidade e UF, preservando número, complemento e alterações feitas
 durante a busca. CEP inexistente ou serviço indisponível mantém o preenchimento manual disponível.
 Essa consulta não fornece coordenadas nem confirma a posição exata do imóvel.
+
+## Validação local (Husky + commitlint)
+
+O fluxo tem três camadas: o **commit** valida a mensagem em segundos, o **pre-push** roda uma
+validação rápida (1 a 2 minutos) e o **CI do GitHub** continua sendo a fonte de verdade, com a suíte
+completa e o E2E (Cypress) como portão do PR. Os hooks são instalados pelo `npm install` (script
+`prepare`).
+
+**No commit** (`.husky/pre-commit` e `.husky/commit-msg`):
+
+- `lint-staged` formata e corrige os arquivos alterados.
+- O `commit-msg` acrescenta `Refs: DTK-NNN` sozinho quando a branch é `dtk-NNN-...` ou
+  `tipo/dtk-NNN-...`, e o `commitlint` valida a mensagem.
+
+Padrão: `tipo(escopo): assunto` — assunto em inglês, no imperativo, em minúsculas, sem ponto final,
+até 100 caracteres. O **escopo é obrigatório** e vem de uma lista fechada em
+[commitlint.config.js](commitlint.config.js) (por exemplo `auth`, `marketplace`, `face-check`, `ci`).
+Tipos aceitos: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`,
+`revert`.
+
+```text
+fix(face-check): reject expired invitations
+
+O link vencido ainda abria a análise.
+
+Refs: DTK-182
+```
+
+**No push** (`.husky/pre-push` → `scripts/pre-push-validate.mjs`), validação **rápida**: nomes em
+inglês e convenções, testes dos scripts, `api:check`, typecheck, lint e testes unitários. Se algo
+falhar, o push é cancelado. Requisitos: `docker compose up -d` (os testes usam um banco descartável
+no Postgres local, nunca o seu banco de desenvolvimento), o commit enviado ser o `HEAD` e não haver
+alterações rastreadas sem commit. Ao passar, o hook grava uma atestação `fast` (um _git note_
+`refs/notes/lv/<sha>`) e a envia junto com o push.
+
+**Antes de abrir o PR (opcional): `npm run validate:local`** roda a suíte **completa** no commit
+atual: o que o pre-push roda, mais integração, Face Check, o motor Python (quando o diff toca
+`services/face_check_engine`) e o **E2E (build + Cypress)**, que só roda quando o diff toca o app
+(`apps/web`, exceto `.md`, ou `package*.json`). Leva vários minutos (cerca de 8 com E2E); precisa das
+portas 3000, 3101 e 3102 livres e de memória sobrando (o build usa até 4 GB). Ao passar, grava uma
+atestação `full` e a envia.
+
+**Como o CI usa isso:** o CI continua rodando a suíte completa, inclusive o E2E, em todo PR; esse é
+o portão obrigatório. A única exceção é uma atestação `full` do mesmo conteúdo (_tree_) do PR ou da
+`dev`: nesse caso o CI pula `quality` e `auth-e2e`. A atestação `fast` do pre-push **não** dispensa o
+CI, e só aparece no resumo da execução. No merge para a `dev`, o CI reaproveita a evidência do PR,
+como antes. Mudanças em `.github/`, `.husky/` ou nos scripts de validação sempre rodam a suíte
+completa.
+
+**Pular a validação (excepcional) e auditoria:**
+
+```bash
+SKIP_PREPUSH="hotfix de produção, incidente 123" git push        # motivo: 8 a 200 caracteres
+SKIP_PREPUSH="hotfix de produção" git commit -m "fix(auth): ..." # opcional: grava Tests-Skipped-By no commit
+```
+
+- Com `SKIP_PREPUSH`, o push sobe sem rodar os testes e fica registrado quem pulou, o motivo e a
+  data no _git note_ do commit (`git log --show-notes='lv/*'`). Feito no commit, o trailer
+  `Tests-Skipped-By: Nome <email> — motivo` também fica na mensagem.
+- Force push em `dev` e `main` é **bloqueado** sem `SKIP_PREPUSH`; com ele, o note registra
+  `forced`.
+- `git push --no-verify`, `HUSKY=0` ou outro cliente Git não deixam registro local, mas o CI
+  detecta a falta de atestação, roda a suíte completa e emite um aviso de auditoria com o autor do
+  push no resumo da execução.
+
+**Push que cai depois dos testes:** se a conexão SSH cair durante o hook (`Connection closed by
+remote host`, `Broken pipe`), basta rodar o `git push` de novo: a atestação local do commit é
+reaproveitada e os testes não repetem. Para evitar a queda, adicione ao `~/.ssh/config`:
+
+```text
+Host github.com
+  ServerAliveInterval 30
+  ServerAliveCountMax 20
+```
+
+**Limites:** o hook roda na máquina do desenvolvedor, então ele não é uma barreira inviolável. Para
+garantir, proteja `dev` e `main` no GitHub (PR obrigatório, checks obrigatórios e sem force push). A
+validação local não cobre o ensaio de renome (`db:rehearse-english-rename`) nem
+`staging-release-db.test.mjs`; mudanças que dependem deles ficam a cargo do CI.

@@ -18,6 +18,7 @@ function attestation(overrides = {}) {
     email: 'a@b.co',
     at: '2026-11-15T12:00:00.000Z',
     checks: ['unit'],
+    scope: 'full',
     ...overrides,
   })
 }
@@ -65,6 +66,14 @@ test('PR sem atestação, com conteúdo diferente ou pulada roda a suíte comple
   )
   assert.equal((await planValidation(prContext({ baseRef: 'main' }), {})).reuse, false)
   assert.equal((await planValidation(prContext({ attestationFor: undefined }), {})).reuse, false)
+})
+
+test('atestação rápida do pre-push não dispensa o CI: o E2E continua sendo o portão do PR', async () => {
+  const result = await planValidation(
+    prContext({ attestationFor: async () => attestation({ scope: 'fast' }) }),
+    {},
+  )
+  assert.equal(result.reuse, false)
 })
 
 test('push direto em dev com atestação do próprio commit reaproveita', async () => {

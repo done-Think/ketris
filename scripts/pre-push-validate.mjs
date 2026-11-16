@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   ZERO_SHA,
-  attestationReusable,
+  attestationCovers,
   buildAttestation,
   buildChecks,
   isDeletion,
@@ -51,10 +51,14 @@ function changedFiles(git, entry) {
 
 // Um push que falhou depois dos testes (conexão SSH ociosa, rede) não deve repetir a suíte: se o
 // commit já tem uma atestação local `passed` para o mesmo conteúdo, ela é reaproveitada.
-function alreadyAttested(git, commit) {
+function alreadyAttested(git, commit, scope) {
   try {
     const attestation = parseAttestation(git('notes', '--ref', noteRef(commit), 'show', commit))
-    return attestationReusable(attestation, { commit, tree: git('rev-parse', `${commit}^{tree}`) })
+    return attestationCovers(attestation, {
+      commit,
+      tree: git('rev-parse', `${commit}^{tree}`),
+      scope,
+    })
   } catch {
     return false
   }
@@ -152,16 +156,22 @@ export function runPrePush({ input, env, remote, git, run, log, now }) {
     return 1
   }
 
-  if (commits.every((commit) => alreadyAttested(git, commit))) {
+  // `npm run validate:local` define KETRIS_VALIDATE_SCOPE=full; no push comum a validação é rápida.
+  const scope = env.KETRIS_VALIDATE_SCOPE === 'full' ? 'full' : 'fast'
+
+  if (commits.every((commit) => alreadyAttested(git, commit, scope))) {
     log('Validação local já aprovada para este commit; reaproveitando sem rodar os testes de novo.')
     pushNotes({ git, remote, log, commits })
     return 0
   }
 
-  const files = pushed.flatMap((entry) => changedFiles(git, entry) ?? [null])
+  // O diff só decide E2E e motor Python, que existem apenas no modo completo.
+  const files =
+    scope === 'full' ? pushed.flatMap((entry) => changedFiles(git, entry) ?? [null]) : []
   const unknown = files.includes(null)
   const known = files.filter(Boolean)
   const checks = buildChecks({
+    scope,
     e2e: unknown || needsE2E(known),
     engine: unknown || known.some((file) => file.startsWith(engineDir)),
   })
@@ -179,13 +189,19 @@ export function runPrePush({ input, env, remote, git, run, log, now }) {
     remote,
     log,
     commits,
-    build: build('passed', { checks: checks.map((check) => check.id) }),
+    build: build('passed', { checks: checks.map((check) => check.id), scope }),
   })
-  log('\n✔ Validação local aprovada; o CI pode reaproveitar este resultado.')
+  log(
+    scope === 'full'
+      ? '\n✔ Validação local completa aprovada; o CI pode reaproveitar este resultado.'
+      : '\n✔ Validação rápida aprovada. O CI ainda roda a suíte completa (inclui o E2E); ' +
+          'para dispensá-lo, rode `npm run validate:local` antes do push.',
+  )
   return 0
 }
 
-function main() {
+// Monta o git e o runner reais; usado pelo hook de pre-push e por `npm run validate:local`.
+export function runLocal({ input, env, remote }) {
   const git = (...args) =>
     execFileSync('git', args, {
       cwd: root,
@@ -198,10 +214,10 @@ function main() {
       env: { ...process.env, ...check.env },
       stdio: 'inherit',
     })
-  process.exitCode = runPrePush({
-    input: readFileSync(0, 'utf8'),
-    env: process.env,
-    remote: process.argv[2] ?? 'origin',
+  return runPrePush({
+    input,
+    env,
+    remote,
     git,
     run,
     log: (message) => console.error(message),
@@ -209,4 +225,10 @@ function main() {
   })
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main()
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  process.exitCode = runLocal({
+    input: readFileSync(0, 'utf8'),
+    env: process.env,
+    remote: process.argv[2] ?? 'origin',
+  })
+}

@@ -58,7 +58,20 @@ export function noteRef(commit) {
   return `refs/notes/lv/${commit}`
 }
 
-export function buildAttestation({ kind, commit, tree, user, email, at, checks, reason, forced }) {
+// `scope` diz o que foi rodado: "fast" (pre-push padrão) ou "full" (`npm run validate:local`, com
+// integração e E2E). Só "full" dispensa a suíte do CI; notas antigas, sem o campo, contam como "fast".
+export function buildAttestation({
+  kind,
+  commit,
+  tree,
+  user,
+  email,
+  at,
+  checks,
+  scope,
+  reason,
+  forced,
+}) {
   if (!['passed', 'skipped'].includes(kind)) throw new Error('INVALID_ATTESTATION_KIND')
   if (kind === 'skipped' && !reason) throw new Error('SKIP_REASON_REQUIRED')
   return {
@@ -69,7 +82,9 @@ export function buildAttestation({ kind, commit, tree, user, email, at, checks, 
     user,
     email,
     at,
-    ...(kind === 'passed' ? { checks: checks ?? [] } : { reason }),
+    ...(kind === 'passed'
+      ? { checks: checks ?? [], scope: scope === 'full' ? 'full' : 'fast' }
+      : { reason }),
     ...(forced ? { forced: true } : {}),
   }
 }
@@ -103,10 +118,24 @@ export function parseAttestation(text) {
   }
 }
 
-// Só uma atestação "passed" do mesmo commit e do mesmo conteúdo (tree) dispensa a suíte do CI.
+// Só uma atestação "passed" e "full", do mesmo commit e do mesmo conteúdo (tree), dispensa a suíte
+// do CI. A rápida do pre-push comprova typecheck, lint e unit, mas o E2E segue sendo o portão do PR.
 export function attestationReusable(attestation, { commit, tree }) {
   return (
-    attestation?.kind === 'passed' && attestation.commit === commit && attestation.tree === tree
+    attestation?.kind === 'passed' &&
+    attestation.scope === 'full' &&
+    attestation.commit === commit &&
+    attestation.tree === tree
+  )
+}
+
+// O pre-push aceita qualquer atestação "passed" do mesmo conteúdo; o modo completo exige "full".
+export function attestationCovers(attestation, { commit, tree, scope }) {
+  return (
+    attestation?.kind === 'passed' &&
+    attestation.commit === commit &&
+    attestation.tree === tree &&
+    (scope !== 'full' || attestation.scope === 'full')
   )
 }
 
@@ -171,7 +200,10 @@ const withDatabase = (...command) => ({
 })
 
 // Mesma ordem do job `quality` + `auth-e2e` do CI. Cada passo é um único comando.
-export function buildChecks({ e2e = false, engine = false } = {}) {
+// `scope: 'fast'` (padrão do pre-push) cabe em 1 a 2 minutos; `scope: 'full'` (npm run
+// validate:local) acrescenta integração, Face Check e, conforme o diff, o motor Python e o E2E.
+export function buildChecks({ scope = 'fast', e2e = false, engine = false } = {}) {
+  const full = scope === 'full'
   const checks = [
     {
       id: 'english-names',
@@ -234,8 +266,8 @@ export function buildChecks({ e2e = false, engine = false } = {}) {
       cmd: 'npm',
       args: ['run', 'face-check:test:integration'],
     },
-  ]
-  if (engine) {
+  ].filter((check) => full || !['integration', 'face-check'].includes(check.id))
+  if (full && engine) {
     checks.push({
       id: 'engine',
       label: 'Motor Face Check (Python)',
@@ -250,7 +282,7 @@ export function buildChecks({ e2e = false, engine = false } = {}) {
       cwd: 'services/face_check_engine',
     })
   }
-  if (e2e) {
+  if (full && e2e) {
     checks.push({
       id: 'e2e',
       label: 'E2E (build + Cypress)',
