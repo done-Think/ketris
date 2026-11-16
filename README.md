@@ -54,7 +54,7 @@ npm install
 docker compose up -d          # sobe o Postgres local (postgres:16-alpine, porta 55532 no host)
 npm run db:deploy             # aplica as migrations versionadas; preserva o banco existente
 npm run db:generate           # atualiza o Prisma Client
-npm run db:seed               # demonstração: contas e perfis públicos; redefine usuários/senhas das fixtures
+npm run db:seed               # cria só o platform admin (PLATFORM_ADMIN_* do .env)
 npm run dev
 ```
 
@@ -77,15 +77,79 @@ npm run format      # Prettier
 
 npm run db:deploy   # aplica migrations versionadas em banco existente
 npm run db:migrate  # cria/aplica migrations durante desenvolvimento de schema
-npm run db:seed     # dados de demonstração, incluindo corretores e imobiliárias públicos
+npm run db:seed     # cria o platform admin do Ketris (sem dados de demonstração)
 npm run db:studio   # abre o Prisma Studio (inspeção visual do banco)
 npm run api:generate # atualiza OpenAPI e os tipos HTTP do front
 npm run api:check    # falha quando o contrato gerado está desatualizado
 ```
 
-O seed cria 11 perfis de corretores elegíveis e 3 imobiliárias de demonstração. Perfis públicos
-existentes conservam conteúdo, status de rascunho e equipe selecionada. As contas do dataset
-continuam usando a senha de desenvolvimento indicada no seed; não rodar esse dataset em produção.
+O seed cria apenas o platform admin do Ketris, com `PLATFORM_ADMIN_NAME`, `PLATFORM_ADMIN_EMAIL`
+e `PLATFORM_ADMIN_PASSWORD` do `.env` (a senha é obrigatória; o seed para com erro se faltar). Se já
+existir um platform admin, nada é alterado. O platform admin não tem etapa de confirmação de
+e-mail: a conta nasce ativa e já pode entrar. Imobiliárias, corretores e imóveis são criados pelo
+próprio produto ou pelas fixtures dos testes.
+
+## Validação local (Husky + commitlint)
+
+Os testes rodam **na sua máquina antes do push**; se algum quebrar, o código não sobe. O CI só repete
+a suíte quando não há prova de que ela passou localmente (ver "Como o CI usa isso"). Os hooks são
+instalados pelo `npm install` (script `prepare`).
+
+**No commit** (`.husky/pre-commit` e `.husky/commit-msg`):
+
+- `lint-staged` formata e corrige os arquivos alterados.
+- O `commit-msg` acrescenta `Refs: DTK-NNN` sozinho quando a branch é `dtk-NNN-...` ou
+  `tipo/dtk-NNN-...`, e o `commitlint` valida a mensagem.
+
+Padrão: `tipo(escopo): assunto` — assunto em inglês, no imperativo, em minúsculas, sem ponto final,
+até 100 caracteres. O **escopo é obrigatório** e vem de uma lista fechada em
+[commitlint.config.js](commitlint.config.js) (por exemplo `auth`, `marketplace`, `face-check`, `ci`).
+Tipos aceitos: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`,
+`revert`.
+
+```text
+fix(face-check): reject expired invitations
+
+O link vencido ainda abria a análise.
+
+Refs: DTK-182
+```
+
+**No push** (`.husky/pre-push` → `scripts/pre-push-validate.mjs`), na mesma ordem do CI: nomes em
+inglês e convenções, testes dos scripts, `api:check`, typecheck, lint, unitários, integração e Face
+Check (e o motor Python, quando o diff toca `services/face_check_engine`). O **E2E (build + Cypress)
+roda só quando o diff toca o app** (`apps/web`, exceto `.md`, ou `package*.json`).
+
+Requisitos: `docker compose up -d` (os testes usam um banco descartável no Postgres local, nunca o
+seu banco de desenvolvimento) e as portas 3000, 3101 e 3102 livres para o E2E. O push também exige
+que o commit enviado seja o `HEAD` e que não haja alterações rastreadas sem commit.
+
+**Como o CI usa isso:** quando tudo passa, o hook grava uma atestação (um _git note_
+`refs/notes/lv/<sha>` com autor, data e checks) e a envia junto com o push. Se o conteúdo (_tree_)
+do PR ou da `dev` for idêntico ao atestado, o CI pula `quality` e `auth-e2e`. Sem atestação, com
+atestação de outro conteúdo, pulada, ou quando `.github/`, `.husky/` ou os scripts de validação
+mudam, o CI roda a suíte completa, como antes.
+
+**Pular a validação (excepcional) e auditoria:**
+
+```bash
+SKIP_PREPUSH="hotfix de produção, incidente 123" git push        # motivo: 8 a 200 caracteres
+SKIP_PREPUSH="hotfix de produção" git commit -m "fix(auth): ..." # opcional: grava Tests-Skipped-By no commit
+```
+
+- Com `SKIP_PREPUSH`, o push sobe sem rodar os testes e fica registrado quem pulou, o motivo e a
+  data no _git note_ do commit (`git log --show-notes='lv/*'`). Feito no commit, o trailer
+  `Tests-Skipped-By: Nome <email> — motivo` também fica na mensagem.
+- Force push em `dev` e `main` é **bloqueado** sem `SKIP_PREPUSH`; com ele, o note registra
+  `forced`.
+- `git push --no-verify`, `HUSKY=0` ou outro cliente Git não deixam registro local, mas o CI
+  detecta a falta de atestação, roda a suíte completa e emite um aviso de auditoria com o autor do
+  push no resumo da execução.
+
+**Limites:** o hook roda na máquina do desenvolvedor, então ele não é uma barreira inviolável. Para
+garantir, proteja `dev` e `main` no GitHub (PR obrigatório e sem force push). O pre-push ainda não
+cobre o ensaio de renome (`db:rehearse-english-rename`) nem `staging-release-db.test.mjs`; mudanças
+que dependem deles devem ser conferidas no CI ou manualmente.
 
 Sem credenciais AWS em desenvolvimento, imagens de imóveis e perfis públicos usam o storage
 local em `apps/web/.local/uploads`, fora do Git. Avatares, documentos e comprovantes que usam S3

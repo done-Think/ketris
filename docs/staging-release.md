@@ -115,6 +115,16 @@ nunca libera publicação. Quando há reaproveitamento, ver `quality` e `auth-e2
 **skipped** é esperado, enquanto `plan`, `validation` e `release-staging` devem executar.
 Os resumos de `plan` e `validation` mostram o motivo, o Git tree e a execução reutilizada.
 
+**Validação local (pre-push).** Há uma terceira condição de reaproveitamento: o hook `.husky/pre-push`
+roda a suíte na máquina do desenvolvedor e envia uma atestação (_git note_ `refs/notes/lv/<sha>`).
+Quando o commit de topo do PR (ou o commit enviado direto para a `dev`) tem atestação `passed` com o
+mesmo Git tree do conteúdo avaliado e a política do CI não mudou, `quality` e `auth-e2e` também são
+dispensados (`plan` informa `LOCAL_ATTESTATION`; `validation` aprova como `attested`). Atestação
+ausente, de outro conteúdo ou **pulada** (`SKIP_PREPUSH`) executa a suíte completa e registra um aviso
+de auditoria no resumo, com o autor e o motivo, ou com o autor do push quando o hook foi ignorado
+(`--no-verify`). Alterações em `.husky/` e nos scripts de validação local também exigem CI completo.
+Detalhes de uso em [README.md](../README.md#validação-local-husky--commitlint).
+
 Essa consulta usa somente o `GITHUB_TOKEN` automático, com leitura de conteúdo, Actions
 e PRs. Nenhum secret ou configuração adicional de AWS/Vercel é necessário. O deploy
 continua construindo seu próprio candidato com as configurações de staging e realizando

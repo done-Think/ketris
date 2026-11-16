@@ -1,11 +1,20 @@
+import { attestationReusable } from './local-validation-lib.mjs'
+
 const shaPattern = /^[a-f0-9]{40}$/
 const requiredJobs = ['quality', 'auth-e2e']
 export const evidenceMaxAgeMs = 24 * 60 * 60 * 1000
 export const protectedCiPaths = [
   '.github',
+  '.husky',
   'scripts/ci-validation.mjs',
   'scripts/ci-validation-lib.mjs',
+  'scripts/local-validation-lib.mjs',
+  'scripts/pre-push-validate.mjs',
+  'scripts/run-with-temp-db.mjs',
+  'scripts/run-local-e2e.mjs',
   'scripts/tests/ci-validation.test.mjs',
+  'scripts/tests/ci-local-attestation.test.mjs',
+  'scripts/tests/local-validation.test.mjs',
 ]
 
 export function isCommitSha(value) {
@@ -71,9 +80,37 @@ export async function planValidation(context, api) {
     parent,
     policyChanged,
     forced,
+    baseRef,
+    headSha,
+    attestationFor,
     now = Date.now(),
   } = context
+  // Validação local aprovada para exatamente este conteúdo dispensa a suíte. Atestação ausente,
+  // pulada, de outro conteúdo ou com a política do CI alterada cai na suíte completa.
+  async function reusableAttestation(commit) {
+    try {
+      const attestation = commit && attestationFor ? await attestationFor(commit) : null
+      return attestationReusable(attestation, { commit, tree }) ? attestation : null
+    } catch {
+      return null
+    }
+  }
+  const attested = (attestation) => ({
+    reuse: true,
+    kind: 'attestation',
+    reason: 'LOCAL_ATTESTATION',
+    attestedBy: attestation.email,
+  })
+  if (eventName === 'pull_request') {
+    if (baseRef !== 'dev' || policyChanged !== false) return full('FULL_CI_FOR_EVENT')
+    const attestation = await reusableAttestation(headSha)
+    return attestation ? attested(attestation) : full('FULL_CI_FOR_EVENT')
+  }
   if (eventName !== 'push' || ref !== 'refs/heads/dev') return full('FULL_CI_FOR_EVENT')
+  if (policyChanged === false) {
+    const direct = await reusableAttestation(sha)
+    if (direct) return attested(direct)
+  }
   if (
     !isCommitSha(sha) ||
     !isCommitSha(tree) ||
@@ -102,6 +139,8 @@ export async function planValidation(context, api) {
       !isCommitSha(pr.head?.sha)
     )
       return full('UNTRUSTED_PR_SOURCE')
+    const fromPullRequest = await reusableAttestation(pr.head.sha)
+    if (fromPullRequest) return attested(fromPullRequest)
     const workflow = await api.workflow()
     if (
       !isId(workflow.id) ||
@@ -158,6 +197,7 @@ export async function planValidation(context, api) {
 export function validateGate({
   planResult,
   reuse,
+  kind,
   qualityResult,
   e2eResult,
   eventName,
@@ -168,6 +208,15 @@ export function validateGate({
 }) {
   if (planResult !== 'success' || !isCommitSha(tree) || tree !== actualTree)
     throw new Error('VALIDATION_PLAN_NOT_PROVEN')
+  if (reuse === 'true' && kind === 'attestation') {
+    if (
+      !(eventName === 'pull_request' || (eventName === 'push' && ref === 'refs/heads/dev')) ||
+      qualityResult !== 'skipped' ||
+      e2eResult !== 'skipped'
+    )
+      throw new Error('INVALID_REUSED_VALIDATION')
+    return 'attested'
+  }
   if (reuse === 'true') {
     if (
       eventName !== 'push' ||
