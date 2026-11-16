@@ -14,7 +14,7 @@ export const boxSx: SxProps<Theme> = {
   scrollbarWidth: 'thin',
 }
 
-export const boxSx2: SxProps<Theme> = {
+export const boxSx2 = {
   display: 'grid',
   gridTemplateColumns: {
     xs: 'repeat(5, 264px)',
@@ -25,4 +25,14 @@ export const boxSx2: SxProps<Theme> = {
   gap: { xs: 2, lg: 1.75 },
   flex: { md: 1 },
   minWidth: { xs: 'max-content', lg: 0 },
-}
+} satisfies SxProps<Theme>
+
+export const focusedBoardSx = {
+  gridTemplateColumns: {
+    xs: 'minmax(0, 1fr)',
+    sm: 'minmax(0, 1fr)',
+    lg: 'minmax(0, 1fr)',
+  },
+  minWidth: { xs: 0, lg: 0 },
+  width: '100%',
+} satisfies SxProps<Theme>
