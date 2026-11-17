@@ -1,3 +1,4 @@
+import { isBrazilianState } from '@shared/config/brazilian-states'
 import { z } from 'zod'
 import {
   propertyNegotiationConditions,
@@ -71,7 +72,7 @@ export function createDashboardPropertySchema(
       number: z.string().min(1, t('numberRequired')),
       neighborhood: z.string().min(2, t('neighborhoodRequired')),
       city: z.string().min(2, t('cityRequired')),
-      state: z.string().length(2, t('stateRequired')),
+      state: z.string().refine(isBrazilianState, t('stateRequired')),
       zipCode: z
         .string()
         .trim()
