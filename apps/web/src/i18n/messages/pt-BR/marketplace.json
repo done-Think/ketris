@@ -434,7 +434,46 @@
       },
       "cancel": "Cancelar",
       "apply": "Aplicar",
-      "applied": "Marca aplicada. Clique em Salvar para guardar."
+      "applied": "Marca aplicada. Clique em Salvar para guardar.",
+      "suggestion": "Sugestão a partir do logotipo:",
+      "useSuggestion": "Usar cores do logotipo",
+      "wizard": {
+        "steps": {
+          "logo": "Logotipo",
+          "colors": "Cores",
+          "cover": "Capa",
+          "review": "Conferir"
+        },
+        "titles": {
+          "logo": "Envie o logotipo",
+          "colors": "Escolha as cores",
+          "cover": "Imagem de capa",
+          "review": "Confira antes de aplicar"
+        },
+        "descriptions": {
+          "logo": "De preferência em PNG com fundo transparente. Depois sugerimos cores a partir dele.",
+          "colors": "Use a sugestão do logotipo, uma paleta pronta ou escolha cada cor.",
+          "cover": "Aparece no topo do seu perfil. Fotos da fachada ou da cidade funcionam bem.",
+          "review": "Veja o que já está pronto e o que ainda falta para publicar."
+        },
+        "next": "Próximo",
+        "back": "Voltar",
+        "skip": "Ver tudo em uma tela",
+        "review": {
+          "logo": {
+            "ok": "Logotipo enviado",
+            "missing": "Falta o logotipo (obrigatório para publicar)"
+          },
+          "background": {
+            "ok": "Fundo da marca escolhido",
+            "missing": "Falta o fundo da marca (obrigatório para publicar)"
+          },
+          "cover": {
+            "ok": "Imagem de capa enviada",
+            "missing": "Falta a imagem de capa (obrigatória para publicar)"
+          }
+        }
+      }
     }
   },
   "searchResults": {

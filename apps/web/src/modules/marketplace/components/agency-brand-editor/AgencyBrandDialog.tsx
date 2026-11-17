@@ -10,6 +10,9 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Step,
+  StepLabel,
+  Stepper,
   Typography,
   useMediaQuery,
   useTheme,
@@ -23,13 +26,18 @@ import { brandPreviewHighlightColor, styles } from '../../styles/agency-brand-ed
 import type {
   AgencyBrandColorField,
   AgencyBrandDialogContentProps,
+  AgencyBrandDialogMode,
   AgencyBrandDialogProps,
   AgencyBrandFormValues,
-  AgencyBrandPalette,
+  AgencyBrandSuggestedPalette,
+  AgencyBrandWizardStep as AgencyBrandWizardStepName,
 } from '../../types/agency-brand-editor'
-import { SingleImageUploadField } from '../public-profile-editor/SingleImageUploadField'
+import { useLogoPalette } from '../../hooks/use-logo-palette'
+import { useIsUploadingProfileMedia } from '../../hooks/use-profile-media'
 import { AgencyBrandColorFields } from './AgencyBrandColorFields'
+import { AgencyBrandImageField } from './AgencyBrandImageField'
 import { AgencyBrandPreview } from './AgencyBrandPreview'
+import { AgencyBrandWizardStep } from './AgencyBrandWizardStep'
 
 export function AgencyBrandDialog({ open, onClose, ...contentProps }: AgencyBrandDialogProps) {
   const t = useTranslations('marketplace.agencyProfileEditor.brand')
@@ -59,7 +67,10 @@ export function AgencyBrandDialog({ open, onClose, ...contentProps }: AgencyBran
   )
 }
 
+const wizardSteps: readonly AgencyBrandWizardStepName[] = ['logo', 'colors', 'cover', 'review']
+
 function AgencyBrandDialogContent({
+  initialMode,
   initialValues,
   buildPreview,
   onClose,
@@ -72,12 +83,18 @@ function AgencyBrandDialogContent({
     resolver: zodResolver(schema),
   })
   const values = useWatch({ control }) as AgencyBrandFormValues
+  const [mode, setMode] = useState<AgencyBrandDialogMode>(initialMode)
+  const [stepIndex, setStepIndex] = useState(0)
   const [highlighted, setHighlighted] = useState<AgencyBrandColorField | null>(null)
+  const { data: suggestion = null } = useLogoPalette(values.logoUrl)
+  const isUploading = useIsUploadingProfileMedia()
   const previewValues = highlighted
     ? { ...values, [highlighted]: brandPreviewHighlightColor }
     : values
+  const isLastStep = stepIndex === wizardSteps.length - 1
+  const apply = handleSubmit(onApply)
 
-  function applyPalette(palette: AgencyBrandPalette) {
+  function applyPalette(palette: AgencyBrandSuggestedPalette) {
     setValue('backgroundColor', palette.backgroundColor, { shouldValidate: true })
     setValue('primaryColor', palette.primaryColor, { shouldValidate: true })
     setValue('secondaryColor', palette.secondaryColor, { shouldValidate: true })
@@ -87,45 +104,85 @@ function AgencyBrandDialogContent({
     <>
       <DialogContent dividers sx={styles.dialogContent}>
         <Box sx={styles.controls}>
-          <Box sx={styles.section}>
-            <Typography sx={styles.sectionTitle}>{t('fields.images')}</Typography>
-            <SingleImageUploadField
-              control={control}
-              name="logoUrl"
-              label={t('fields.logoUrl')}
-              hint={t('brand.logoHint')}
-              target="agency-logo"
-              variant="avatar"
-            />
-            <SingleImageUploadField
-              control={control}
-              name="bannerUrl"
-              label={t('fields.bannerUrl')}
-              hint={t('brand.bannerHint')}
-              target="agency-banner"
-              variant="banner"
-            />
-          </Box>
-          <AgencyBrandColorFields
-            control={control}
-            values={values}
-            onApplyPalette={applyPalette}
-            onHighlight={setHighlighted}
-          />
+          {mode === 'wizard' ? (
+            <>
+              <Stepper activeStep={stepIndex} alternativeLabel sx={styles.stepper}>
+                {wizardSteps.map((step) => (
+                  <Step key={step}>
+                    <StepLabel>{t(`brand.wizard.steps.${step}`)}</StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+              <AgencyBrandWizardStep
+                step={wizardSteps[stepIndex]}
+                control={control}
+                values={values}
+                suggestion={suggestion}
+                onApplyPalette={applyPalette}
+                onHighlight={setHighlighted}
+              />
+            </>
+          ) : (
+            <>
+              <Box sx={styles.section}>
+                <Typography sx={styles.sectionTitle}>{t('fields.images')}</Typography>
+                <AgencyBrandImageField control={control} name="logoUrl" />
+                <AgencyBrandImageField control={control} name="bannerUrl" />
+              </Box>
+              <AgencyBrandColorFields
+                control={control}
+                values={values}
+                suggestion={suggestion}
+                onApplyPalette={applyPalette}
+                onHighlight={setHighlighted}
+              />
+            </>
+          )}
         </Box>
         <Box sx={styles.previewSide}>
           <AgencyBrandPreview agency={buildPreview(previewValues)} />
         </Box>
       </DialogContent>
-      <DialogActions sx={styles.dialogActions}>
-        <Box sx={styles.dialogActionsSpacer} />
-        <Button color="secondary" variant="outlined" onClick={onClose} sx={styles.footerButton}>
-          {t('brand.cancel')}
-        </Button>
-        <Button variant="contained" onClick={handleSubmit(onApply)} sx={styles.footerButton}>
-          {t('brand.apply')}
-        </Button>
-      </DialogActions>
+      {mode === 'wizard' ? (
+        <DialogActions sx={styles.dialogActions}>
+          <Button color="secondary" onClick={() => setMode('panel')} sx={styles.skipButton}>
+            {t('brand.wizard.skip')}
+          </Button>
+          <Box sx={styles.dialogActionsSpacer} />
+          <Button
+            color="secondary"
+            variant="outlined"
+            disabled={stepIndex === 0 || isUploading}
+            onClick={() => setStepIndex(stepIndex - 1)}
+            sx={styles.footerButton}
+          >
+            {t('brand.wizard.back')}
+          </Button>
+          <Button
+            variant="contained"
+            disabled={isUploading}
+            onClick={isLastStep ? apply : () => setStepIndex(stepIndex + 1)}
+            sx={styles.footerButton}
+          >
+            {isLastStep ? t('brand.apply') : t('brand.wizard.next')}
+          </Button>
+        </DialogActions>
+      ) : (
+        <DialogActions sx={styles.dialogActions}>
+          <Box sx={styles.dialogActionsSpacer} />
+          <Button color="secondary" variant="outlined" onClick={onClose} sx={styles.footerButton}>
+            {t('brand.cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            disabled={isUploading}
+            onClick={apply}
+            sx={styles.footerButton}
+          >
+            {t('brand.apply')}
+          </Button>
+        </DialogActions>
+      )}
     </>
   )
 }

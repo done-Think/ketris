@@ -274,6 +274,7 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
       </PublicProfileEditorPanel>
       <AgencyBrandDialog
         open={brandDialogOpen}
+        initialMode={profile?.backgroundColor || profile?.bannerUrl ? 'panel' : 'wizard'}
         initialValues={brandValues}
         buildPreview={buildPreview}
         onClose={() => setBrandDialogOpen(false)}

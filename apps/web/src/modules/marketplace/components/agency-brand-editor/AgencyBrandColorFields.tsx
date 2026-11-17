@@ -1,10 +1,11 @@
 'use client'
 
-import { Alert, Box, ButtonBase, Stack, Tooltip, Typography } from '@mui/material'
+import { Alert, Box, Button, ButtonBase, Stack, Tooltip, Typography } from '@mui/material'
 import { useFormatter, useTranslations } from 'next-intl'
 
 import { agencyBrandPalettes } from '../../config/agency-brand-palettes'
 import {
+  getColorDotStyles,
   getPaletteButtonStyles,
   getPaletteColorStyles,
   styles,
@@ -25,6 +26,7 @@ const colorFields: readonly AgencyBrandColorFieldName[] = [
 export function AgencyBrandColorFields({
   control,
   values,
+  suggestion,
   onApplyPalette,
   onHighlight,
 }: AgencyBrandColorFieldsProps) {
@@ -35,6 +37,19 @@ export function AgencyBrandColorFields({
   return (
     <Box sx={styles.section}>
       <Typography sx={styles.sectionTitle}>{t('colors')}</Typography>
+      {suggestion ? (
+        <Box sx={styles.suggestion}>
+          <Typography sx={styles.colorHelp}>{t('suggestion')}</Typography>
+          <Box sx={styles.summaryDots}>
+            {colorFields.map((field) => (
+              <Box key={field} sx={getColorDotStyles(suggestion[field], 18)} />
+            ))}
+          </Box>
+          <Button size="small" variant="outlined" onClick={() => onApplyPalette(suggestion)}>
+            {t('useSuggestion')}
+          </Button>
+        </Box>
+      ) : null}
       <Typography sx={styles.colorHelp}>{t('palettes')}</Typography>
       <Box sx={styles.palettes}>
         {agencyBrandPalettes.map((palette) => {
