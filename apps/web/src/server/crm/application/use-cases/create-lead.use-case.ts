@@ -24,7 +24,8 @@ export class CreateLeadUseCase {
     if (input.propertyId && !property) throw new OpportunityPropertyNotFoundError()
     return this.leadRepository.create({
       tenantId: input.actorTenantId,
-      responsibleId: property?.responsibleId ?? input.actorId,
+      responsibleId:
+        input.actorRole === 'AGENT' ? input.actorId : (property?.responsibleId ?? input.actorId),
       propertyId: property?.id ?? null,
       name: input.name,
       phone: input.phone,
