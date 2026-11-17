@@ -459,7 +459,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(json.kpis.receivedLeadsThisMonth).toBe(1)
     expect(json.kpis.receivedLeadsPreviousPeriod).toBe(1)
     expect(json.kpis.monthlyReceivable).toBe(1500)
-    expect(json.kpis.monthlyReceivablePreviousMonth).toBe(2100)
+    expect(json.kpis.monthlyReceivablePreviousMonth).toBe(1100)
   })
 
   describe('limites dos períodos de comparação (relógio em 13/01/2027 14:00)', () => {
@@ -584,11 +584,11 @@ describe('/api/agency-dashboard/overview (integração)', () => {
       expect(json.kpis.newPropertiesThisMonth).toBe(2)
     })
 
-    it('soma no mês anterior as cobranças a receber não canceladas com vencimento em dezembro', async () => {
+    it('soma no mês anterior só as cobranças a receber pendentes ou agendadas com vencimento em dezembro', async () => {
       const json = await (await GET(buildRequest(frozenOwnerToken))).json()
 
       expect(json.kpis.monthlyReceivable).toBe(4000)
-      expect(json.kpis.monthlyReceivablePreviousMonth).toBe(96300)
+      expect(json.kpis.monthlyReceivablePreviousMonth).toBe(96200)
     })
   })
 })
