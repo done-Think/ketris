@@ -589,7 +589,12 @@ export class PrismaChargeRepository implements ChargeRepository {
     ] = await Promise.all([
       prisma.charge.aggregate({
         _sum: { amount: true },
-        where: { ...receivable, dueDate: { gte: currentMonth.start, lt: currentMonth.end } },
+        where: {
+          tenantId,
+          type: 'RECEIVABLE',
+          status: { in: [...openStatuses] },
+          dueDate: { gte: currentMonth.start, lt: currentMonth.end },
+        },
       }),
       prisma.charge.aggregate({
         _sum: { amount: true },

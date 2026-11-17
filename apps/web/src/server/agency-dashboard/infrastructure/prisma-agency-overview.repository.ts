@@ -79,7 +79,7 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
         tenantId,
         type: 'RECEIVABLE',
         dueDate: { gte: start, lt: end },
-        status: { not: 'CANCELED' },
+        status: { in: ['PENDING', 'SCHEDULED'] },
       },
     })
 
