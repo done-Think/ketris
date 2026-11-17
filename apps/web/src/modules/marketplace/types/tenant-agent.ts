@@ -1,11 +1,8 @@
-export interface TenantAgent {
-  id: string
-  name: string
-  email: string
-  role: string
-  active: boolean
-}
+import type { components } from '@shared/types/generated/api'
 
-export interface ListTenantUsersResponse {
-  users: TenantAgent[]
-}
+export type TenantAgent = Pick<
+  components['schemas']['TeamMember'],
+  'id' | 'name' | 'email' | 'active' | 'invitation'
+>
+
+export type ListTeamMembersResponse = Pick<components['schemas']['TeamOverviewResponse'], 'members'>
