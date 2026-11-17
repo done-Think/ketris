@@ -282,6 +282,8 @@
     }
   },
   "documents": {
+    "chooseFile": "Elegir archivo",
+    "noFileSelected": "Ning?n archivo seleccionado",
     "title": "Documentos",
     "file": "PDF justificativo",
     "limits": "Solo PDF, hasta 10 MB.",
