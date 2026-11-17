@@ -5,6 +5,8 @@ import { createPhoneSchema } from '@shared/schemas/phone-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 import type { TranslationKey } from '@/i18n/types/messages.types'
 
+const cpfDigits = (cpf: string) => cpf.replace(/\D/g, '')
+
 function addGuarantorTextIssue(
   context: z.RefinementCtx,
   path: string,
@@ -108,7 +110,23 @@ export function createContractSchema(
           message: t('endAfterStart'),
           path: ['endDate'],
         })
+      const ownerCpf = cpfDigits(values.ownerCpf)
+      const tenantCpf = cpfDigits(values.tenantCpf)
+      if (ownerCpf && ownerCpf === tenantCpf)
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('partiesSamePerson'),
+          path: ['tenantCpf'],
+        })
       if (!values.hasGuarantor && values.guaranteeType !== 'GUARANTOR') return
+
+      const guarantorCpf = cpfDigits(values.guarantorCpf)
+      if (guarantorCpf && (guarantorCpf === ownerCpf || guarantorCpf === tenantCpf))
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('partiesSamePerson'),
+          path: ['guarantorCpf'],
+        })
 
       addGuarantorTextIssue(
         context,

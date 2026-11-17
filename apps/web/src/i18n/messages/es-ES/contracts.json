@@ -134,7 +134,8 @@
       "dateInvalid": "Indique una fecha válida en formato DD/MM/AAAA.",
       "endAfterStart": "El fin debe ser posterior al inicio.",
       "amountTooLarge": "El importe máximo es 9.999.999.999,99.",
-      "amountPrecision": "Use como máximo dos decimales."
+      "amountPrecision": "Use como máximo dos decimales.",
+      "partiesSamePerson": "El propietario, el inquilino y el fiador deben ser personas distintas"
     },
     "actions": {
       "back": "Volver",

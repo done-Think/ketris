@@ -70,6 +70,22 @@ it('preserva centavos, protege os CPFs e registra a autoria da criação', async
   expect(records[0]).toMatchObject({ action: 'CREATED', actorUserId: fixture.actorId })
 })
 
+it('recusa com 400 a edição que deixa locador e locatário com o mesmo CPF', async () => {
+  const response = await PATCH(
+    contractRequest(fixture.ownerToken, '/' + fixture.contractId, 'PATCH', {
+      ...fixture.editBody,
+      tenant: { ...fixture.editBody.tenant, cpf: fixture.editBody.owner.cpf },
+    }),
+    context(),
+  )
+  const json = await response.json()
+
+  expect(response.status).toBe(400)
+  expect(json.error.issues).toEqual(
+    expect.arrayContaining([expect.objectContaining({ path: 'tenant.cpf' })]),
+  )
+})
+
 it('edita antes da primeira assinatura, preserva partes mantidas e exige PDF da nova revisão', async () => {
   const oldProof = await createVerifiedContractProof(fixture.contractId, fixture.actorId)
   const before = await prisma.contractParty.findMany({

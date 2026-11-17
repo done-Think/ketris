@@ -134,7 +134,8 @@
       "dateInvalid": "Informe uma data válida no formato DD/MM/AAAA.",
       "endAfterStart": "O término deve ser posterior ao início.",
       "amountTooLarge": "O valor máximo é 9.999.999.999,99.",
-      "amountPrecision": "Use no máximo duas casas decimais."
+      "amountPrecision": "Use no máximo duas casas decimais.",
+      "partiesSamePerson": "Locador, locatário e fiador precisam ser pessoas diferentes"
     },
     "actions": {
       "back": "Voltar",

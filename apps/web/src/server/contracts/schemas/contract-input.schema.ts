@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { contractDateSchema } from './contract-date.schema'
 import { isValidPhone } from '@shared/schemas/phone-schema'
 import { isValidCpf } from '@shared/schemas/cpf-schema'
+import type { ContractPartiesIdentity } from '../types/contract-parties-identity'
 import {
   adjustmentIndexSchema,
   contractGuaranteeTypeSchema,
@@ -24,6 +25,33 @@ const contractPartyInputSchema = z
       .refine((value) => value.length <= 32, validationRefinement('stringMax', { maximum: 32 })),
   })
   .strict()
+
+const cpfDigits = (cpf: string) => cpf.replace(/\D/g, '')
+
+export function refineDistinctContractParties(
+  value: ContractPartiesIdentity,
+  context: z.RefinementCtx,
+) {
+  const owner = cpfDigits(value.owner.cpf)
+  const tenant = cpfDigits(value.tenant.cpf)
+  const guarantor = value.guarantor ? cpfDigits(value.guarantor.cpf) : null
+
+  if (owner === tenant) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['tenant', 'cpf'],
+      ...validationRefinement('contractPartiesSamePerson'),
+    })
+  }
+
+  if (guarantor && (guarantor === owner || guarantor === tenant)) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['guarantor', 'cpf'],
+      ...validationRefinement('contractPartiesSamePerson'),
+    })
+  }
+}
 
 export const linkContractPartyUserRequestSchema = z
   .object({ email: z.string().trim().email().max(254) })
@@ -48,9 +76,15 @@ export const createContractRequestSchema = z
     guarantor: contractPartyInputSchema.nullable().optional(),
   })
   .strict()
-  .refine((value) => value.endDate > value.startDate, {
-    ...validationRefinement('endAfterStart'),
-    path: ['endDate'],
+  .superRefine((value, context) => {
+    if (value.endDate <= value.startDate) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['endDate'],
+        ...validationRefinement('endAfterStart'),
+      })
+    }
+    refineDistinctContractParties(value, context)
   })
   .openapi('CreateContractRequest')
 
