@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   ssr: { noExternal: ['next-intl'] },
   test: {
+    ...(process.platform === 'win32' ? { maxWorkers: 2, minWorkers: 1 } : {}),
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
