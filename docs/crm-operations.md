@@ -4,7 +4,7 @@ O CRM mantém oportunidades sob a responsabilidade do imóvel e conserva o orça
 
 ## Acesso e histórico
 
-A equipe continua limitada ao próprio tenant. Corretores acessam oportunidades dos imóveis sob sua responsabilidade e seus próprios leads. Contatos ficam disponíveis pelas oportunidades autorizadas ou pela autoria do cadastro; a autorização por autoria vale para novos registros. Contatos antigos ficam com autoria desconhecida e conservam o acesso pelos vínculos existentes.
+A equipe continua limitada ao próprio tenant. Corretores acessam suas próprias oportunidades e leads. O acesso compartilhado a um imóvel permite iniciar uma negociação própria sem expor a carteira dos demais corretores. Contatos ficam disponíveis pelas oportunidades autorizadas ou pela autoria do cadastro; a autorização por autoria vale para novos registros. Contatos antigos ficam com autoria desconhecida e conservam o acesso pelos vínculos existentes.
 
 Criação, edição, conversão, alteração de status, arquivamento e atividades geram metadados em `crm_audit_events` na mesma transação da mudança. O histórico registra identificador do autor, papel e nomes dos campos alterados; valores sensíveis, senhas e tokens ficam fora desses metadados. Eventos antigos não recebem autoria inventada. Excluir definitivamente uma oportunidade com contrato retorna 409; o arquivamento continua disponível.
 
@@ -14,7 +14,9 @@ Gravações do CRM são serializadas por tenant com um advisory lock transaciona
 
 Propostas públicas do marketplace criam uma oportunidade e seu Lead de origem na mesma transação da cota de contato. Ambos ficam vinculados ao imóvel e ao responsável por ele. O Lead permanece na etapa Proposta e permite abrir a oportunidade existente, sem uma segunda conversão.
 
-O cadastro manual de Lead seleciona um imóvel disponível da carteira. A busca aceita `status=PUBLISHED` com paginação e mantém o escopo do corretor ou da gestão do tenant. O servidor valida novamente a disponibilidade e o acesso, usa o título cadastrado e atribui o Lead ao responsável pelo imóvel. O orçamento continua sendo texto livre. O campo opcional `propertyId` conserva a compatibilidade com clientes anteriores e com leads antigos sem vínculo.
+O cadastro manual de Lead seleciona um imóvel disponível da carteira. A busca aceita `status=PUBLISHED` com paginação e mantém o escopo do corretor ou da gestão do tenant. O servidor valida novamente a disponibilidade e o acesso e usa o título cadastrado. Quando um corretor cadastra o Lead, ele fica responsável pelo registro; quando a gestão cadastra, a atribuição continua com o responsável principal pelo imóvel. O orçamento continua sendo texto livre. O campo opcional `propertyId` conserva a compatibilidade com clientes anteriores e com leads antigos sem vínculo.
+
+O catálogo do CRM, o cadastro de Lead, a criação de oportunidade e a conversão de Lead reconhecem também os vínculos de "Corretores com acesso". O corretor vinculado precisa estar ativo, aprovado e com convite aceito quando aplicável, sempre no mesmo tenant. Remover o vínculo impede novas seleções e negociações desse imóvel. O responsável principal pelo imóvel permanece preservado, e compartilhar o imóvel não concede acesso aos leads ou oportunidades de outros corretores. Registros já atribuídos continuam sujeitos às regras de acesso da própria negociação.
 
 `GET /api/crm/contacts`, `/leads` e `/opportunities` retornam o vetor correspondente, `pagination` e `groups`. A página inicial é 1, com 5 itens; tamanhos aceitos são 5, 10 e 25. Busca, filtros e ordenação ocorrem no servidor. Os grupos das listas abrangem os registros autorizados; `summaryScope=results` fornece agregados do recorte do Kanban. Cada coluna carrega páginas adicionais sem calcular seu total somente com os cartões já carregados.
 

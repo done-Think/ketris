@@ -48,12 +48,13 @@ export class ConvertLeadToOpportunityUseCase {
     if (!ownsProperty) throw new OpportunityPropertyNotFoundError()
 
     if (input.actorRole === 'AGENT') {
-      const responsibleId = await this.propertyLookup.findResponsibleId(
+      const canAccess = await this.propertyLookup.canAccess(
         input.actorTenantId,
         input.propertyId,
+        input.actorId,
       )
 
-      if (responsibleId !== input.actorId) {
+      if (!canAccess) {
         throw new ForbiddenError('Você só pode criar oportunidades para os próprios imóveis.')
       }
     }

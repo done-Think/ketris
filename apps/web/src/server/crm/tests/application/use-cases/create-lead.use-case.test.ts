@@ -22,6 +22,35 @@ const created: Lead = {
 }
 
 describe('CreateLeadUseCase', () => {
+  it('keeps a shared property lead in the creating broker portfolio', async () => {
+    const create = vi.fn().mockResolvedValue(created)
+    const findAvailable = vi.fn().mockResolvedValue({
+      id: 'property-1',
+      title: 'Shared property',
+      responsibleId: 'manager-1',
+    })
+    await new CreateLeadUseCase({ create } as unknown as LeadRepository, { findAvailable }).execute(
+      {
+        actorTenantId: 'tenant-1',
+        actorId: 'agent-1',
+        actorRole: 'AGENT',
+        name: 'Buyer',
+        phone: '(11) 99999-0000',
+        propertyId: 'property-1',
+        interest: 'Property',
+        budget: '500000',
+        source: 'OTHER',
+      },
+    )
+    expect(findAvailable).toHaveBeenCalledWith('tenant-1', 'property-1', 'agent-1')
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        responsibleId: 'agent-1',
+        propertyId: 'property-1',
+        interest: 'Shared property',
+      }),
+    )
+  })
   it('uses the selected available property and its responsible agent instead of trusting the submitted title', async () => {
     const create = vi.fn().mockResolvedValue(created)
     const findAvailable = vi
