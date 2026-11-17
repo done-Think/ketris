@@ -1,14 +1,14 @@
 import { BaseService } from '@shared/lib/api/base-service'
 
-import type { ListTenantUsersResponse, TenantAgent } from '../types/tenant-agent'
+import type { ListTeamMembersResponse, TenantAgent } from '../types/tenant-agent'
 
 export class TenantAgentsService extends BaseService {
-  private readonly path = '/auth/users'
+  private readonly path = '/team'
 
   list(): Promise<TenantAgent[]> {
     return this.http
-      .get<ListTenantUsersResponse>(this.path)
-      .then((data) => data.users.filter((user) => user.role === 'AGENT' && user.active))
+      .get<ListTeamMembersResponse>(this.path)
+      .then((data) => data.members.filter((member) => member.active && !member.invitation))
   }
 }
 
