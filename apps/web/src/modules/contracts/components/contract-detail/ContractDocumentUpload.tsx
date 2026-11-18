@@ -24,7 +24,7 @@ export function ContractDocumentUpload({ contractId, onBusyChange }: ContractDoc
   const t = useTranslations('contracts.documents')
   const errors = useTranslations('contracts.errors')
   const [progress, setProgress] = useState(0)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
   const inputId = useId()
   const schema = useMemo(() => createContractDocumentSchema((key) => t(`validation.${key}`)), [t])
   const { control, handleSubmit, reset } = useForm<ContractDocumentForm>({
