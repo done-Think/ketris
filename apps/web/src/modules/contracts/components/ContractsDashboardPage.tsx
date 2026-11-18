@@ -71,12 +71,12 @@ export function ContractsDashboardPage() {
     router.push({
       pathname: '/dashboard/contracts/[id]',
       params: { id: contract.id },
-      ...(action === 'edit-data' ? { query: { edit: '1' } } : {}),
-      ...(action === 'view-history'
-        ? { hash: 'history' }
+      ...(action === 'edit-data'
+        ? { query: { edit: '1' } }
         : action === 'view-documents'
-          ? { hash: 'documents' }
+          ? { query: { tab: 'documents' } }
           : {}),
+      ...(action === 'view-history' ? { hash: 'history' } : {}),
     })
   }
   return (

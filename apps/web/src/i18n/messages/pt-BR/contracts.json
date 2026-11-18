@@ -270,7 +270,16 @@
     "landlordView": "Você acompanha este contrato como locador. Quem administra é a {agency}. Para alterar algo, fale com a imobiliária.",
     "guarantor": "Fiador",
     "manual": "Registro manual",
-    "provider": "Assinatura eletrônica"
+    "provider": "Assinatura eletrônica",
+    "myRental": "Meu aluguel",
+    "rentDue": "Aluguel · vence todo dia {day}",
+    "tabs": {
+      "label": "Seções do contrato",
+      "summary": "Resumo",
+      "payments": "Pagamentos",
+      "documents": "Documentos",
+      "tickets": "Chamados"
+    }
   },
   "documents": {
     "title": "Documentos",

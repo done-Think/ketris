@@ -270,7 +270,16 @@
     "landlordView": "You follow this contract as the landlord. It is managed by {agency}. To change anything, contact the agency.",
     "guarantor": "Guarantor",
     "manual": "Manual record",
-    "provider": "Electronic signature"
+    "provider": "Electronic signature",
+    "myRental": "My rental",
+    "rentDue": "Rent · due every month on day {day}",
+    "tabs": {
+      "label": "Contract sections",
+      "summary": "Summary",
+      "payments": "Payments",
+      "documents": "Documents",
+      "tickets": "Tickets"
+    }
   },
   "documents": {
     "title": "Documents",
