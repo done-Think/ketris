@@ -72,6 +72,7 @@ export type ContractsFiltersFormValues = z.infer<typeof contractsFiltersSchema>
 
 export type ContractsDashboardPageHeaderProps = {
   control: Control<ContractsFiltersFormValues>
+  renter: boolean
   onCreateContract?: () => void
 }
 

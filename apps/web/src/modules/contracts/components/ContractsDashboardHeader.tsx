@@ -13,6 +13,7 @@ import type { ContractsDashboardPageHeaderProps } from '../types/contract'
 
 export function ContractsDashboardHeader({
   control,
+  renter,
   onCreateContract,
 }: ContractsDashboardPageHeaderProps) {
   const t = useTranslations('contracts.dashboardHeader')
@@ -54,8 +55,8 @@ export function ContractsDashboardHeader({
 
   return (
     <DashboardPageHeader
-      title={t('title')}
-      subtitle={t('subtitle')}
+      title={t(renter ? 'myRentalTitle' : 'title')}
+      subtitle={t(renter ? 'myRentalSubtitle' : 'subtitle')}
       actions={actions}
       sx={styles.dashboardPageHeader}
     />

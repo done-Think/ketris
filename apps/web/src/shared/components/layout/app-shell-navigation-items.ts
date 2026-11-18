@@ -41,6 +41,7 @@ export const appShellNavigationItems: readonly AppShellNavItem[] = [
   { labelKey: 'properties', href: '/dashboard/properties', icon: HomeWorkOutlinedIcon },
   {
     labelKey: 'contracts',
+    profileLabelKeys: { RENTER: 'myRental' },
     href: '/dashboard/contracts',
     icon: DescriptionOutlinedIcon,
   },

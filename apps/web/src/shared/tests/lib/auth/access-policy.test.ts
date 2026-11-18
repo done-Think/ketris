@@ -69,6 +69,7 @@ describe('dashboard access matrix', () => {
   it('derives the renter sidebar from the same table', () => {
     expect(navigationHrefsFor('RENTER')).toEqual([
       '/dashboard/finance/charges',
+      '/dashboard/contracts',
       '/dashboard/maintenance',
       '/dashboard/agenda',
       '/dashboard/properties',

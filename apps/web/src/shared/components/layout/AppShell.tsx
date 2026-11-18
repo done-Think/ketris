@@ -74,7 +74,12 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     if (!accessProfile) return []
     const allowedHrefs = navigationHrefsFor(accessProfile)
 
-    return available.filter((item) => allowedHrefs.includes(item.href))
+    return available
+      .filter((item) => allowedHrefs.includes(item.href))
+      .map((item) => ({
+        ...item,
+        labelKey: item.profileLabelKeys?.[accessProfile] ?? item.labelKey,
+      }))
   }, [
     isLocalDashboardPreview,
     accessProfile,

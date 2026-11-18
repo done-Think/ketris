@@ -14,7 +14,9 @@
     "title": "Contratos",
     "subtitle": "Gestiona contratos, vencimientos y firmas en curso.",
     "searchPlaceholder": "Buscar contratos...",
-    "newContract": "Nuevo Contrato"
+    "newContract": "Nuevo Contrato",
+    "myRentalTitle": "Mi alquiler",
+    "myRentalSubtitle": "Consulta el contrato, los pagos, los documentos y las solicitudes de tu alquiler."
   },
   "filters": {
     "tabs": {
