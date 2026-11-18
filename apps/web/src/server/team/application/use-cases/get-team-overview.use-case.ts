@@ -14,7 +14,7 @@ export class GetTeamOverviewUseCase {
   ) {}
 
   async execute(actor: TeamActor): Promise<TeamOverview> {
-    assertTeamManager(actor)
+    await assertTeamManager(this.repository, actor)
     const now = this.now()
     const { start, end } = monthBoundsInTimeZone(now)
     const period: TeamPeriod = {

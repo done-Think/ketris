@@ -29,13 +29,15 @@ const createdUser: User = {
 }
 
 function createDeps(overrides?: {
+  findById?: UserRepository['findById']
   findByEmail?: UserRepository['findByEmail']
   create?: UserRepository['create']
 }) {
   const userRepository: UserRepository = {
     findManyByEmail: vi.fn(),
 
-    findById: vi.fn(),
+    findById:
+      overrides?.findById ?? vi.fn().mockResolvedValue({ ...admin, tenantAccountType: 'AGENCY' }),
     findByEmail: overrides?.findByEmail ?? vi.fn().mockResolvedValue(null),
     findManyByTenant: vi.fn(),
     create: overrides?.create ?? vi.fn().mockResolvedValue(createdUser),
@@ -105,6 +107,30 @@ describe('CreateUserUseCase', () => {
     ).rejects.toMatchObject({ code: 'FORBIDDEN' })
     expect(deps.userRepository.create).not.toHaveBeenCalled()
   })
+
+  it.each(['BROKER', 'INDIVIDUAL'] as const)(
+    'lança ForbiddenError quando o OWNER é de conta %s, que não é imobiliária',
+    async (tenantAccountType) => {
+      const deps = createDeps({
+        findById: vi.fn().mockResolvedValue({ ...admin, tenantAccountType }),
+      })
+      const useCase = new CreateUserUseCase(deps.userRepository, deps.passwordHasher)
+
+      await expect(
+        useCase.execute({
+          actorId: 'admin-1',
+          actorTenantId: admin.tenantId,
+          actorRole: 'OWNER',
+          name: 'Ana Agente',
+          email: 'ana@ketris.dev',
+          password: 'senha-longa-123',
+          role: 'AGENT',
+        }),
+      ).rejects.toMatchObject({ code: 'FORBIDDEN' })
+      expect(deps.userRepository.findById).toHaveBeenCalledWith('admin-1')
+      expect(deps.userRepository.create).not.toHaveBeenCalled()
+    },
+  )
 
   it('lança EmailAlreadyInUseError quando já existe usuário com o e-mail no mesmo tenant', async () => {
     const deps = createDeps({ findByEmail: vi.fn().mockResolvedValue(admin) })
