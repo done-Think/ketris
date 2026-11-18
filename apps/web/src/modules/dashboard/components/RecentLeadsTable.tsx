@@ -12,7 +12,9 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import type { AppLocale } from '@/i18n/types/locale.types'
+import { formatLeadBudget } from '@shared/lib/utils/lead-budget'
 
 import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
 
@@ -20,6 +22,7 @@ import type { RecentLeadsTableProps } from '../types/dashboard-overview'
 import { getStatusChipStyles, styles } from '../styles/recent-leads-table.styles'
 
 export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('dashboard.overview.recentLeads')
   const sourceT = useTranslations('dashboard.leadSources')
 
@@ -59,7 +62,9 @@ export function RecentLeadsTable({ leads, onLeadSelect }: RecentLeadsTableProps)
                       <Typography sx={styles.typography4}>{lead.interest}</Typography>
                     </TableCell>
                     <TableCell sx={styles.tableCell2}>
-                      <Typography sx={styles.typography5}>{lead.budget}</Typography>
+                      <Typography sx={styles.typography5}>
+                        {formatLeadBudget(lead.budget, locale)}
+                      </Typography>
                     </TableCell>
                     <TableCell sx={styles.tableCell2}>
                       <Chip
