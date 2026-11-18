@@ -44,7 +44,7 @@ export class TransferBrokerPortfolioUseCase {
   ) {}
 
   async execute(input: TransferBrokerPortfolioInput): Promise<TeamTransferResult> {
-    assertTeamManager(input)
+    await assertTeamManager(this.repository, input)
     if (!Object.values(input.items).some(Boolean)) throw new EmptyTransferError()
     await assertTransferPeople(this.repository, input, input.brokerId, input.destinationId, true)
     const actor = await teamActorIdentity(this.repository, input)
@@ -69,7 +69,7 @@ export class DeactivateBrokerUseCase {
   ) {}
 
   async execute(input: DeactivateBrokerInput): Promise<TeamTransferResult> {
-    assertTeamManager(input)
+    await assertTeamManager(this.repository, input)
     if (input.brokerId === input.actorId) throw new CannotDeactivateSelfFromTeamError()
     const source = await assertTransferPeople(
       this.repository,
@@ -97,7 +97,7 @@ export class ActivateBrokerUseCase {
   constructor(private readonly repository: TeamRepository) {}
 
   async execute(input: BrokerInput): Promise<void> {
-    assertTeamManager(input)
+    await assertTeamManager(this.repository, input)
     const broker = await this.repository.findStaffUser(input.actorTenantId, input.brokerId)
     if (!broker || broker.role !== 'AGENT') throw new TeamMemberNotFoundError()
     await this.repository.activate(input.actorTenantId, input.brokerId, input.actorId)

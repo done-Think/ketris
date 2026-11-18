@@ -15,7 +15,11 @@ export class CreateUserUseCase {
   ) {}
 
   async execute(input: CreateUserInput): Promise<CreateUserOutput> {
-    if (!isAgencyManager(input.actorRole)) {
+    // Owners of personal and independent-broker accounts are OWNER too, so the account type decides.
+    const actor = isAgencyManager(input.actorRole)
+      ? await this.userRepository.findById(input.actorId)
+      : null
+    if (actor?.tenantId !== input.actorTenantId || actor.tenantAccountType !== 'AGENCY') {
       throw new ForbiddenError('Apenas a gestão da imobiliária pode criar usuários.')
     }
 

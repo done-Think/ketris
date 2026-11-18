@@ -11,6 +11,7 @@ import {
 } from '@server/team/domain/team-invitation-token'
 
 import { GET as getTeam } from '../route'
+import { POST as inviteBroker } from '../invitations/route'
 import { PUT as setGoal } from '../members/[id]/goal/route'
 import { POST as deactivate } from '../members/[id]/deactivate/route'
 import { POST as transfer } from '../members/[id]/transfer/route'
@@ -98,6 +99,52 @@ describe('/api/team (integração)', () => {
     expect((await getTeam(request('/team', 'GET', agentToken))).status).toBe(403)
     expect((await getTeam(request('/team'))).status).toBe(401)
   })
+
+  it.each(['BROKER', 'INDIVIDUAL'] as const)(
+    'não abre a equipe para o dono de conta %s, que não é imobiliária',
+    async (accountType) => {
+      const tenant = await prisma.tenant.create({
+        data: {
+          name: `Conta ${accountType}`,
+          slug: `team-${accountType}-${randomUUID()}`,
+          accountType,
+        },
+      })
+      try {
+        const user = await prisma.user.create({
+          data: {
+            tenantId: tenant.id,
+            name: 'Dono',
+            email: `dono-${randomUUID()}@team.example.test`,
+            passwordHash: 'hash-fake',
+            role: 'OWNER',
+          },
+        })
+        const token = await tokenService.sign({
+          id: user.id,
+          tenantId: user.tenantId,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          active: user.active,
+          membershipApprovedAt: user.membershipApprovedAt,
+        })
+
+        expect((await getTeam(request('/team', 'GET', token))).status).toBe(403)
+        const invite = await inviteBroker(
+          request('/team/invitations', 'POST', token, {
+            name: 'Bruna',
+            email: `bruna-${randomUUID()}@team.example.test`,
+            locale: 'pt-BR',
+          }),
+        )
+        expect(invite.status).toBe(403)
+        expect(await prisma.user.count({ where: { tenantId: tenant.id } })).toBe(1)
+      } finally {
+        await prisma.tenant.delete({ where: { id: tenant.id } })
+      }
+    },
+  )
 
   it('grava a meta com o autor e valida o corpo', async () => {
     const response = await setGoal(

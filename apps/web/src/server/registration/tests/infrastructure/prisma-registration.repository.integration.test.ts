@@ -261,6 +261,16 @@ describe('PrismaRegistrationRepository', () => {
         },
       ],
     })
+    const tenants = await prisma.tenant.findMany({ where: { slug: { startsWith: query } } })
+    await prisma.user.createMany({
+      data: tenants.map((tenant) => ({
+        tenantId: tenant.id,
+        name: 'Dona Confirmada',
+        email: `${randomUUID()}@example.test`,
+        passwordHash: 'owner-test-hash',
+        role: 'OWNER' as const,
+      })),
+    })
     const results = await repository.searchByName(query.toUpperCase(), [data[0].slug])
     expect(results).toHaveLength(20)
     expect(results.map((result) => result.name)).toEqual(
@@ -273,6 +283,21 @@ describe('PrismaRegistrationRepository', () => {
     ).toBe(true)
     expect(await repository.findTenantById(results[0].id)).toEqual(results[0])
     expect(await repository.findTenantBySlug(results[0].slug)).toEqual(results[0])
+  })
+
+  it('offers an agency to brokers only after its owner confirms the e-mail', async () => {
+    const pending = await agency('unconfirmed-owner')
+
+    expect(await repository.hasVerifiedOwner(pending.id)).toBe(false)
+    expect(await repository.searchByName(pending.name, [])).toEqual([])
+
+    await prisma.user.updateMany({
+      where: { tenantId: pending.id, role: 'OWNER' },
+      data: { emailVerifiedAt: acceptedAt },
+    })
+
+    expect(await repository.hasVerifiedOwner(pending.id)).toBe(true)
+    expect(await repository.searchByName(pending.name, [])).toEqual([pending])
   })
 
   describe('unique contact data', () => {

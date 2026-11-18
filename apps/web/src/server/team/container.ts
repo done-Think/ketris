@@ -47,11 +47,17 @@ export const teamContainer = {
     invitationRepository,
     mailer,
   ),
-  cancelTeamInvitationUseCase: new CancelTeamInvitationUseCase(invitationRepository),
+  cancelTeamInvitationUseCase: new CancelTeamInvitationUseCase(
+    teamRepository,
+    invitationRepository,
+  ),
   getTeamInvitationUseCase: new GetTeamInvitationUseCase(invitationRepository),
   acceptTeamInvitationUseCase: new AcceptTeamInvitationUseCase(
     invitationRepository,
     passwordHasher,
   ),
-  rejectMembershipRequestUseCase: new RejectMembershipRequestUseCase(membershipRequestRepository),
+  rejectMembershipRequestUseCase: new RejectMembershipRequestUseCase(
+    teamRepository,
+    membershipRequestRepository,
+  ),
 }

@@ -13,6 +13,8 @@ import {
   transferPropertyAccess,
 } from './property-portfolio'
 
+import type { TenantAccountType } from '@server/auth/types/user-access'
+
 import type { TeamRepository } from '../application/ports/team-repository.port'
 import type { TeamGoalChange, TeamPeriod, TeamTransferResult } from '../types/team'
 import type {
@@ -307,6 +309,15 @@ export class PrismaTeamRepository implements TeamRepository {
         ]),
       ),
     }
+  }
+
+  async findTenantAccountType(tenantId: string): Promise<TenantAccountType | null> {
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { accountType: true },
+    })
+
+    return tenant?.accountType ?? null
   }
 
   async findStaffUser(tenantId: string, userId: string): Promise<TeamStaffUser | null> {
