@@ -8998,6 +8998,7 @@ export interface paths {
     get: {
       parameters: {
         query?: {
+          contractId?: string
           dueMonth?: string
           page?: number
           pageSize?: number
@@ -9828,7 +9829,7 @@ export interface paths {
     }
     /**
      * URL temporária para baixar um comprovante
-     * @description Quem vê a cobrança baixa o comprovante vigente. Comprovantes antigos (estornados) só o OWNER, pelo histórico.
+     * @description Quem vê a cobrança baixa o comprovante vigente. Comprovantes antigos (estornados) só o OWNER do tenant da cobrança, pelo histórico.
      */
     get: {
       parameters: {
@@ -10472,6 +10473,7 @@ export interface paths {
         query?: {
           archived?: 'true' | 'false'
           category?: 'PLUMBING' | 'ELECTRICAL' | 'STRUCTURAL' | 'PAINTING' | 'OTHER'
+          contractId?: string
           locale?: 'pt-BR' | 'en-US' | 'es-ES'
           page?: number
           pageSize?: number
@@ -15976,6 +15978,7 @@ export interface components {
       id: string
       payerName: string | null
       propertyTitle: string | null
+      receipt: components['schemas']['ChargeReceipt']
       /**
        * @description OVERDUE não é gravada: é calculada para PENDING ou SCHEDULED com vencimento antes de hoje (America/Sao_Paulo).
        * @enum {string}
@@ -17081,6 +17084,7 @@ export interface components {
       archived?: 'true' | 'false'
       /** @enum {string} */
       category?: 'PLUMBING' | 'ELECTRICAL' | 'STRUCTURAL' | 'PAINTING' | 'OTHER'
+      contractId?: string
       /** @enum {string} */
       locale?: 'pt-BR' | 'en-US' | 'es-ES'
       page?: number
