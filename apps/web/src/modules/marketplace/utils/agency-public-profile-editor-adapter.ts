@@ -1,6 +1,7 @@
 import { buildAgencyPublicProfileHref } from '@shared/utils/public-profile-slug'
 
 import type { AgencyProfile } from '../types/agency'
+import type { AgencyBrandFormValues } from '../types/agency-brand-editor'
 import type { AgencyPublicProfileEditorFormValues } from '../types/profile-editor'
 import type { PublicAgencyProfile } from '../types/public-agency-profile'
 import type { AppLocale } from '@/i18n/types/locale.types'
@@ -25,6 +26,26 @@ export const emptyValues: AgencyPublicProfileEditorFormValues = {
   logoUrl: '',
   bannerUrl: '',
   team: [],
+}
+
+export const agencyBrandFields = [
+  'backgroundColor',
+  'primaryColor',
+  'secondaryColor',
+  'logoUrl',
+  'bannerUrl',
+] as const satisfies readonly (keyof AgencyBrandFormValues)[]
+
+export function pickBrandValues(
+  values: AgencyPublicProfileEditorFormValues,
+): AgencyBrandFormValues {
+  return {
+    backgroundColor: values.backgroundColor,
+    primaryColor: values.primaryColor,
+    secondaryColor: values.secondaryColor,
+    logoUrl: values.logoUrl,
+    bannerUrl: values.bannerUrl,
+  }
 }
 
 function splitList(value: string): string[] {

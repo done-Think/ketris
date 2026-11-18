@@ -32,6 +32,7 @@ export function SingleImageUploadField<
   name,
   target,
   label,
+  hint,
   variant = 'banner',
   disabled = false,
 }: SingleImageUploadFieldProps<TFieldValues, TName>) {
@@ -68,6 +69,7 @@ export function SingleImageUploadField<
             variant={variant}
             disabled={disabled}
             error={fieldState.error?.message}
+            hint={hint}
             onDrop={handleDrop}
             onRemove={() => field.onChange('')}
           />
@@ -84,6 +86,7 @@ function ImageDropzone({
   variant,
   disabled,
   error,
+  hint,
   onDrop,
   onRemove,
 }: ImageDropzoneProps) {
@@ -128,7 +131,7 @@ function ImageDropzone({
           </IconButton>
         ) : null}
       </Stack>
-      <Typography sx={getTypographyStyles({ error })}>{error ?? t('hint')}</Typography>
+      <Typography sx={getTypographyStyles({ error })}>{error ?? hint ?? t('hint')}</Typography>
     </Stack>
   )
 }

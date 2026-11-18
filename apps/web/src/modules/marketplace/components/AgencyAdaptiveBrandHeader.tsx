@@ -35,6 +35,7 @@ export function AgencyAdaptiveBrandHeader({
   return (
     <Box
       aria-label={agency.legalCreci ? `${agency.name}, ${agency.legalCreci}` : agency.name}
+      data-brand-color="backgroundColor"
       sx={getHeaderStyles(config, overflow)}
     >
       <Box ref={slotRef} sx={getLogoSlotStyles(agency.brand.backgroundColor)}>
@@ -48,7 +49,11 @@ export function AgencyAdaptiveBrandHeader({
             sx={styles.logo}
           />
         ) : (
-          <Avatar variant="rounded" sx={getFallbackLogoStyles(agency.brand, config)}>
+          <Avatar
+            variant="rounded"
+            data-brand-color="primaryColor"
+            sx={getFallbackLogoStyles(agency.brand, config)}
+          >
             {agency.logoInitials}
           </Avatar>
         )}
@@ -61,7 +66,13 @@ export function AgencyAdaptiveBrandHeader({
 
         <Box sx={styles.content}>
           <Box sx={styles.titleBlock}>
-            <Typography noWrap={config.noWrapTitle} sx={getTitleStyles(agency.brand, config)}>
+            <Typography
+              noWrap={config.noWrapTitle}
+              data-brand-color={
+                agency.brand.secondaryColor ? 'secondaryColor' : 'secondaryColor primaryColor'
+              }
+              sx={getTitleStyles(agency.brand, config)}
+            >
               {agency.name}
             </Typography>
             {showHeadquarters && agency.headquarters ? (
@@ -70,7 +81,11 @@ export function AgencyAdaptiveBrandHeader({
           </Box>
 
           {agency.legalCreci ? (
-            <Typography noWrap sx={getCreciStyles(agency.brand, config)}>
+            <Typography
+              noWrap
+              data-brand-color="secondaryColor"
+              sx={getCreciStyles(agency.brand, config)}
+            >
               {agency.legalCreci}
             </Typography>
           ) : null}
