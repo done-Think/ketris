@@ -114,3 +114,13 @@ export function createAgencyPublicProfileEditorSchema(
     }
   })
 }
+
+export function createAgencyBrandEditorSchema(t: SchemaMessageTranslator<ProfileValidationKey>) {
+  return createAgencyPublicProfileEditorObjectSchema(t).pick({
+    backgroundColor: true,
+    primaryColor: true,
+    secondaryColor: true,
+    logoUrl: true,
+    bannerUrl: true,
+  })
+}

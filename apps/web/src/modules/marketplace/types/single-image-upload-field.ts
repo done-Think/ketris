@@ -8,6 +8,7 @@ export type SingleImageUploadFieldProps<
 > = UseControllerProps<TFieldValues, TName> & {
   target: ProfileMediaTarget
   label: string
+  hint?: string
   variant?: 'avatar' | 'banner'
   disabled?: boolean
 }
@@ -19,6 +20,7 @@ export type ImageDropzoneProps = {
   variant: 'avatar' | 'banner'
   disabled: boolean
   error?: string
+  hint?: string
   onDrop: (files: File[]) => void
   onRemove: () => void
 }

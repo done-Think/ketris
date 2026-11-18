@@ -353,14 +353,14 @@
       "appearance": "Aparência",
       "images": "Imagens",
       "backgroundColor": "Fundo da marca",
-      "logoUrl": "URL do logo",
-      "bannerUrl": "URL do banner",
+      "logoUrl": "Logotipo",
+      "bannerUrl": "Imagem de capa",
       "team": "Equipe em destaque",
       "teamPicker": "Corretores em destaque",
       "teamPickerPlaceholder": "Selecione até 6 corretores",
       "teamPickerHint": "Opcional. Você pode publicar sem corretores em destaque e adicioná-los depois.",
-      "primaryColor": "Cor principal",
-      "secondaryColor": "Cor secundária"
+      "primaryColor": "Cor dos destaques",
+      "secondaryColor": "Cor do nome"
     },
     "actions": {
       "preview": "Visualizar",
@@ -390,7 +390,91 @@
     },
     "validatedDraft": "Rascunho validado",
     "loadError": "Não foi possível carregar o perfil.",
-    "retry": "Tentar de novo"
+    "retry": "Tentar de novo",
+    "brand": {
+      "summaryDescription": "Logotipo, imagem de capa e as cores que aparecem no seu perfil e nos cartões da busca.",
+      "open": "Personalizar marca",
+      "ready": "Pronto para publicar",
+      "missingHint": "Para publicar, falta: {items}",
+      "missingItems": {
+        "backgroundColor": "fundo da marca",
+        "logoUrl": "logotipo",
+        "bannerUrl": "imagem de capa"
+      },
+      "dialogTitle": "Personalizar marca",
+      "close": "Fechar",
+      "logoHint": "PNG com fundo transparente, a partir de 400 px.",
+      "bannerHint": "Imagem horizontal, 1600 × 500 px. JPG, PNG ou WEBP.",
+      "colors": "Cores",
+      "palettes": "Paletas prontas",
+      "applyPalette": "Usar a paleta {name}",
+      "paletteNames": {
+        "ketris": "Ketris",
+        "ocean": "Oceano",
+        "forest": "Verde",
+        "terracotta": "Terracota",
+        "graphite": "Grafite",
+        "wine": "Vinho"
+      },
+      "colorHelp": {
+        "backgroundColor": "Fundo da faixa do logotipo e dos cartões da equipe.",
+        "primaryColor": "Etiquetas, números do perfil, botões de contato e preço dos imóveis.",
+        "secondaryColor": "Nome e CRECI no cartão. Se ficar vazia, usa a cor dos destaques."
+      },
+      "requiredToPublish": "obrigatório para publicar",
+      "emptyColor": "Sem cor",
+      "pickColor": "Escolher {name}",
+      "contrast": {
+        "nameOnBackground": "O nome fica difícil de ler sobre o fundo (contraste {ratio} : 1). Escolha uma cor do nome mais {suggestion, select, darker {escura} other {clara}}.",
+        "textOnPrimary": "O texto branco dos botões fica fraco sobre a cor dos destaques (contraste {ratio} : 1). Uma cor mais escura ajuda."
+      },
+      "previewTabs": {
+        "profile": "Perfil",
+        "card": "Cartão na busca"
+      },
+      "cancel": "Cancelar",
+      "apply": "Aplicar",
+      "applied": "Marca aplicada. Clique em Salvar para guardar.",
+      "suggestion": "Sugestão a partir do logotipo:",
+      "useSuggestion": "Usar cores do logotipo",
+      "wizard": {
+        "steps": {
+          "logo": "Logotipo",
+          "colors": "Cores",
+          "cover": "Capa",
+          "review": "Conferir"
+        },
+        "titles": {
+          "logo": "Envie o logotipo",
+          "colors": "Escolha as cores",
+          "cover": "Imagem de capa",
+          "review": "Confira antes de aplicar"
+        },
+        "descriptions": {
+          "logo": "De preferência em PNG com fundo transparente. Depois sugerimos cores a partir dele.",
+          "colors": "Use a sugestão do logotipo, uma paleta pronta ou escolha cada cor.",
+          "cover": "Aparece no topo do seu perfil. Fotos da fachada ou da cidade funcionam bem.",
+          "review": "Veja o que já está pronto e o que ainda falta para publicar."
+        },
+        "next": "Próximo",
+        "back": "Voltar",
+        "skip": "Ver tudo em uma tela",
+        "review": {
+          "logo": {
+            "ok": "Logotipo enviado",
+            "missing": "Falta o logotipo (obrigatório para publicar)"
+          },
+          "background": {
+            "ok": "Fundo da marca escolhido",
+            "missing": "Falta o fundo da marca (obrigatório para publicar)"
+          },
+          "cover": {
+            "ok": "Imagem de capa enviada",
+            "missing": "Falta a imagem de capa (obrigatória para publicar)"
+          }
+        }
+      }
+    }
   },
   "searchResults": {
     "toolbar": {

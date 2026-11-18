@@ -28,7 +28,13 @@ export function AgencyProfileHero({ agency }: AgencyProfileHeroProps) {
       <Box sx={styles.box2}>
         <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={styles.stack}>
           {agency.segments.map((segment) => (
-            <Chip key={segment} label={segment} size="small" sx={getChipStyles({ agency })} />
+            <Chip
+              key={segment}
+              label={segment}
+              size="small"
+              data-brand-color="primaryColor"
+              sx={getChipStyles({ agency })}
+            />
           ))}
         </Stack>
         <Typography component="h1" sx={styles.typography2}>
