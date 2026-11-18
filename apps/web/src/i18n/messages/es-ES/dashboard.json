@@ -570,7 +570,9 @@
       "deactivate": "Desactivar agente",
       "activate": "Reactivar agente",
       "resendInvitation": "Reenviar invitación",
-      "cancelInvitation": "Cancelar invitación"
+      "cancelInvitation": "Cancelar invitación",
+      "sharePortfolio": "Compartir cartera",
+      "revokePortfolio": "Quitar acceso a la cartera"
     },
     "dialogs": {
       "performanceTitle": "Desempeño — {name}",
@@ -633,7 +635,18 @@
       "invitationCancelError": "No pudimos cancelar la invitación",
       "invitationHasPortfolio": "Este invitado ya tiene inmuebles, leads o eventos. Transfiérelos antes de cancelar.",
       "goalSaveError": "No pudimos guardar la meta",
-      "selfDestination": "{name} (tú)"
+      "selfDestination": "{name} (tú)",
+      "share": "Compartir cartera",
+      "revoke": "Quitar acceso",
+      "shareDestination": "Agentes con acceso",
+      "shared": "Accesos concedidos: {properties} inmuebles, {leads} leads, {opportunities} oportunidades y {events} eventos",
+      "revoked": "Accesos retirados: {properties} inmuebles, {leads} leads, {opportunities} oportunidades y {events} eventos",
+      "shareError": "No se pudo actualizar el acceso. Inténtalo de nuevo.",
+      "shareItemsError": "Selecciona al menos una categoría para compartir o quitar acceso",
+      "shareHint": "Comparte registros existentes sin copias. Los participantes pueden editar leads y oportunidades; las propuestas de leads compartidos conservan el acceso. Las nuevas consultas siguen siendo individuales. El acceso al inmueble requiere seleccionar Inmuebles. Los eventos se comparten solo para lectura. Archivar o eliminar una oportunidad afecta a todos los participantes.",
+      "revokeHint": "Quita el acceso de los agentes seleccionados a los elementos actuales sin eliminar registros ni cambiar al responsable principal.",
+      "shareSource": "Cartera de origen",
+      "shareItems": "Categorías de acceso"
     },
     "actions": {
       "message": "Enviar mensaje por WhatsApp",

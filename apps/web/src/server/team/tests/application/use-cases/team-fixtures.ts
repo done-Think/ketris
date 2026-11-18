@@ -26,6 +26,9 @@ export function teamRepository(people: TeamStaffUser[] = []): TeamRepository {
       async (_tenantId: string, id: string) => people.find((person) => person.id === id) ?? null,
     ),
     transfer: vi.fn().mockResolvedValue({ propertyIds: ['p1'], leadIds: [], eventIds: [] }),
+    sharePortfolio: vi
+      .fn()
+      .mockResolvedValue({ propertyIds: ['p1'], leadIds: [], opportunityIds: [], eventIds: [] }),
     deactivateWithTransfer: vi
       .fn()
       .mockResolvedValue({ propertyIds: ['p1'], leadIds: ['l1'], eventIds: ['e1'] }),

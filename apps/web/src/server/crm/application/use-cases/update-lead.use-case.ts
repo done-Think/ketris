@@ -16,7 +16,7 @@ export class UpdateLeadUseCase {
       throw new LeadNotFoundError()
     }
 
-    assertLeadAccess(lead.responsibleId, input.actorId, input.actorRole)
+    assertLeadAccess(lead.responsibleId, input.actorId, input.actorRole, lead.accessUserIds)
 
     if (lead.opportunityId && input.changes.stage && input.changes.stage !== 'PROPOSAL')
       throw new LeadStageLockedError()

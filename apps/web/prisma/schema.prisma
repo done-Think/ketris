@@ -176,27 +176,29 @@ model UserAuditEvent {
 }
 
 model User {
-  id                   String    @id @default(cuid())
-  tenantId             String
-  name                 String
-  email                String
-  phone                String?
-  creci                String?
+  leadBrokerAccess        LeadBrokerAccess[]
+  opportunityBrokerAccess OpportunityBrokerAccess[]
+  id                      String                    @id @default(cuid())
+  tenantId                String
+  name                    String
+  email                   String
+  phone                   String?
+  creci                   String?
   // Normalized copies used only to enforce uniqueness inside a tenant (digits, upper-case).
-  phoneKey             String?
-  creciKey             String?
-  cpf                  String?
-  cnpj                 String?
-  emailVerifiedAt      DateTime? @default(now())
-  sessionVersion       Int       @default(0)
-  termsAcceptedAt      DateTime?
-  passwordHash         String
-  avatarUrl            String?
-  role                 UserRole  @default(AGENT)
-  active               Boolean   @default(true)
-  membershipApprovedAt DateTime? @default(now())
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  phoneKey                String?
+  creciKey                String?
+  cpf                     String?
+  cnpj                    String?
+  emailVerifiedAt         DateTime?                 @default(now())
+  sessionVersion          Int                       @default(0)
+  termsAcceptedAt         DateTime?
+  passwordHash            String
+  avatarUrl               String?
+  role                    UserRole                  @default(AGENT)
+  active                  Boolean                   @default(true)
+  membershipApprovedAt    DateTime?                 @default(now())
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
 
   tenant                    Tenant                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsibleProperties     Property[]                    @relation("PropertyResponsible")
@@ -450,40 +452,40 @@ enum PropertyAmenity {
 }
 
 model Property {
-  id                   String            @id @default(cuid())
-  tenantId             String
-  responsibleId        String
-  ownerId              String?
-  ownerContactId       String?
-  title                String
-  description          String?
-  purpose              PropertyPurpose
-  type                 PropertyType
-  bedrooms             Int?
-  bathrooms            Int?
-  parkingSpots         Int?
-  areaSqm              Decimal?          @db.Decimal(10, 2)
-  price                Decimal           @db.Decimal(12, 2)
-  rentalPrice          Decimal?          @db.Decimal(12, 2)
-  condoFee             Decimal?          @db.Decimal(10, 2)
-  propertyTax          Decimal?          @db.Decimal(10, 2)
-  amenities            PropertyAmenity[] @default([])
-  negotiationTerms     String?
-  negotiationConditions String[] @default([])
-  publishAfterReview   Boolean           @default(false)
-  allowWhatsappContact Boolean           @default(false)
-  featured             Boolean           @default(false)
-  status               PropertyStatus    @default(DRAFT)
-  publishedAt          DateTime?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  updatedById          String?
+  id                    String            @id @default(cuid())
+  tenantId              String
+  responsibleId         String
+  ownerId               String?
+  ownerContactId        String?
+  title                 String
+  description           String?
+  purpose               PropertyPurpose
+  type                  PropertyType
+  bedrooms              Int?
+  bathrooms             Int?
+  parkingSpots          Int?
+  areaSqm               Decimal?          @db.Decimal(10, 2)
+  price                 Decimal           @db.Decimal(12, 2)
+  rentalPrice           Decimal?          @db.Decimal(12, 2)
+  condoFee              Decimal?          @db.Decimal(10, 2)
+  propertyTax           Decimal?          @db.Decimal(10, 2)
+  amenities             PropertyAmenity[] @default([])
+  negotiationTerms      String?
+  negotiationConditions String[]          @default([])
+  publishAfterReview    Boolean           @default(false)
+  allowWhatsappContact  Boolean           @default(false)
+  featured              Boolean           @default(false)
+  status                PropertyStatus    @default(DRAFT)
+  publishedAt           DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  updatedById           String?
 
-  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  updatedBy          User?               @relation("PropertyUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  responsible        User                @relation("PropertyResponsible", fields: [responsibleId], references: [id])
-  owner              User?               @relation("PropertyOwner", fields: [ownerId], references: [id], onDelete: SetNull)
-  ownerContact       Contact?            @relation(fields: [ownerContactId, tenantId], references: [id, tenantId], onDelete: NoAction)
+  tenant             Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  updatedBy          User?                  @relation("PropertyUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  responsible        User                   @relation("PropertyResponsible", fields: [responsibleId], references: [id])
+  owner              User?                  @relation("PropertyOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerContact       Contact?               @relation(fields: [ownerContactId, tenantId], references: [id, tenantId], onDelete: NoAction)
   address            PropertyAddress?
   media              PropertyMedia[]
   opportunities      Opportunity[]
@@ -504,7 +506,6 @@ model Property {
   @@map("properties")
 }
 
-
 model PropertyBrokerAccess {
   tenantId   String
   propertyId String
@@ -520,7 +521,7 @@ model PropertyBrokerAccess {
 }
 
 model PropertyAuditEvent {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   tenantId    String
   propertyId  String
   actorUserId String?
@@ -530,9 +531,9 @@ model PropertyAuditEvent {
   changes     Json
   createdAt   DateTime @default(now())
 
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   property Property @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade)
-  actor    User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  actor    User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, propertyId, createdAt, id])
   @@index([propertyId])
@@ -711,28 +712,29 @@ enum OpportunityStatus {
 }
 
 model Opportunity {
-  id                 String            @id @default(cuid())
+  brokerAccess       OpportunityBrokerAccess[]
+  id                 String                    @id @default(cuid())
   tenantId           String
   propertyId         String
   responsibleId      String
   interestedName     String
   interestedEmail    String
   interestedPhone    String?
-  proposedValue      Decimal           @db.Decimal(12, 2)
+  proposedValue      Decimal                   @db.Decimal(12, 2)
   contractTermMonths Int?
   desiredStart       DateTime?
-  contractGuarantee  ContractGuarantee @default(NONE)
-  specialConditions  String[]          @default([])
+  contractGuarantee  ContractGuarantee         @default(NONE)
+  specialConditions  String[]                  @default([])
   notes              String?
-  status             OpportunityStatus @default(DRAFT)
+  status             OpportunityStatus         @default(DRAFT)
   archivedAt         DateTime?
   archivedById       String?
   updatedById        String?
   // Vínculo opcional: a oportunidade nasce do marketplace sem conta de usuário (data-model.md),
   // e só é associada a um Contato quando o corretor identifica o interessado na base.
   contactId          String?
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
 
   tenant      Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   // Restrict (não Cascade): excluir um imóvel nunca pode apagar oportunidades de tabela junto —
@@ -746,6 +748,7 @@ model Opportunity {
   updatedBy   User?                 @relation("OpportunityUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   archivedBy  User?                 @relation("OpportunityArchivedBy", fields: [archivedById], references: [id], onDelete: SetNull)
 
+  @@unique([id, tenantId])
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, archivedAt])
@@ -776,9 +779,10 @@ enum LeadStage {
 // Contato interessado, com vínculo opcional ao imóvel de interesse. Registros legados podem não ter imóvel.
 // A conversão manual preserva o Lead de origem. Contatos do marketplace já nascem vinculados à Oportunidade.
 model Lead {
+  brokerAccess   LeadBrokerAccess[]
   updatedById    String?
-  updatedBy      User?      @relation("LeadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  id             String     @id @default(cuid())
+  updatedBy      User?              @relation("LeadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  id             String             @id @default(cuid())
   tenantId       String
   responsibleId  String
   propertyId     String?
@@ -788,18 +792,19 @@ model Lead {
   interest       String
   budget         String
   source         LeadSource
-  stage          LeadStage  @default(NEW)
+  stage          LeadStage          @default(NEW)
   firstContactAt DateTime?
   notes          String?
-  opportunityId  String?    @unique
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  opportunityId  String?            @unique
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
   tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsible User         @relation("LeadResponsible", fields: [responsibleId], references: [id])
   opportunity Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
   property    Property?    @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: NoAction)
 
+  @@unique([id, tenantId])
   @@index([updatedById])
   @@index([tenantId])
   @@index([tenantId, stage])
@@ -1159,8 +1164,8 @@ model AgendaEventAudit {
 
 model AgendaEvent {
   updatedById               String?
-  updatedBy                 User?               @relation("AgendaEventUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  id                        String              @id @default(cuid())
+  updatedBy                 User?                @relation("AgendaEventUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  id                        String               @id @default(cuid())
   tenantId                  String
   responsibleId             String
   createdById               String?
@@ -1169,9 +1174,9 @@ model AgendaEvent {
   freeFormPropertyReference String?
   title                     String
   type                      AgendaEventType?
-  audience                  AgendaEventAudience @default(SHARED_TEAM)
-  internal                  Boolean             @default(false)
-  status                    AgendaEventStatus   @default(CONFIRMED)
+  audience                  AgendaEventAudience  @default(SHARED_TEAM)
+  internal                  Boolean              @default(false)
+  status                    AgendaEventStatus    @default(CONFIRMED)
   start                     DateTime
   end                       DateTime
   participantName           String
@@ -1184,8 +1189,8 @@ model AgendaEvent {
   outcomeRecordedById       String?
   visitInterest             AgendaVisitInterest?
   outcomeNotes              String?
-  createdAt                 DateTime            @default(now())
-  updatedAt                 DateTime            @updatedAt
+  createdAt                 DateTime             @default(now())
+  updatedAt                 DateTime             @updatedAt
 
   tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsible User      @relation("AgendaEventResponsible", fields: [responsibleId], references: [id], onDelete: NoAction)
@@ -1729,4 +1734,30 @@ model FaceCheckRateLimit {
 
   @@index([expiresAt])
   @@map("face_check_rate_limits")
+}
+
+model LeadBrokerAccess {
+  tenantId  String
+  leadId    String
+  userId    String
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  user      User     @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@id([leadId, userId])
+  @@index([tenantId, userId])
+  @@map("lead_broker_access")
+}
+
+model OpportunityBrokerAccess {
+  tenantId      String
+  opportunityId String
+  userId        String
+  createdAt     DateTime    @default(now())
+  opportunity   Opportunity @relation(fields: [opportunityId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  user          User        @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@id([opportunityId, userId])
+  @@index([tenantId, userId])
+  @@map("opportunity_broker_access")
 }

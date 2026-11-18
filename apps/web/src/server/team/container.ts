@@ -8,6 +8,7 @@ import {
 } from './application/use-cases/manage-broker-goal.use-case'
 import {
   ActivateBrokerUseCase,
+  ShareBrokerPortfolioUseCase,
   DeactivateBrokerUseCase,
   TransferBrokerPortfolioUseCase,
 } from './application/use-cases/manage-broker-portfolio.use-case'
@@ -34,6 +35,7 @@ export const teamContainer = {
   setBrokerGoalUseCase: new SetBrokerGoalUseCase(teamRepository),
   listBrokerGoalsUseCase: new ListBrokerGoalsUseCase(teamRepository),
   transferBrokerPortfolioUseCase: new TransferBrokerPortfolioUseCase(teamRepository),
+  shareBrokerPortfolioUseCase: new ShareBrokerPortfolioUseCase(teamRepository),
   deactivateBrokerUseCase: new DeactivateBrokerUseCase(teamRepository),
   activateBrokerUseCase: new ActivateBrokerUseCase(teamRepository),
   inviteBrokerUseCase: new InviteBrokerUseCase(

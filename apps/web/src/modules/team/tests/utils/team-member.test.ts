@@ -26,6 +26,8 @@ describe('team member utils', () => {
       'performance',
       'editGoal',
       'transferPortfolio',
+      'sharePortfolio',
+      'revokePortfolio',
       'scheduleOneOnOne',
       'deactivate',
     ])

@@ -5,6 +5,7 @@ import { errorResponseSchema } from '@server/shared/schemas/error-response.schem
 
 import {
   acceptTeamInvitationRequestSchema,
+  shareBrokerPortfolioRequestSchema,
   deactivateBrokerRequestSchema,
   inviteBrokerRequestSchema,
   inviteBrokerResponseSchema,
@@ -43,6 +44,22 @@ function managerRoute(config: Omit<RouteConfig, 'tags' | 'security'>): RouteConf
 }
 
 export function registerTeamOpenApi(registry: OpenAPIRegistry): void {
+  registry.registerPath(
+    managerRoute({
+      method: 'post',
+      path: '/team/members/{id}/share',
+      summary: 'Shares or revokes access to selected existing portfolio items',
+      request: { params: teamMemberIdParamsSchema, body: json(shareBrokerPortfolioRequestSchema) },
+      responses: {
+        200: {
+          description: 'Counts of changed portfolio access grants.',
+          ...json(z.object({ shared: teamTransferResponseSchema })),
+        },
+        404: error('Source member not found.'),
+        422: error('Invalid destination or empty selection.'),
+      },
+    }),
+  )
   registry.registerPath(
     managerRoute({
       method: 'get',

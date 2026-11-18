@@ -10,8 +10,16 @@ export function teamMemberState(member: TeamMember): TeamMemberState {
 }
 
 const menuActionsByState: Record<TeamMemberState, readonly BrokerTeamMenuAction[]> = {
-  active: ['performance', 'editGoal', 'transferPortfolio', 'scheduleOneOnOne', 'deactivate'],
-  inactive: ['performance', 'transferPortfolio', 'activate'],
+  active: [
+    'performance',
+    'editGoal',
+    'transferPortfolio',
+    'sharePortfolio',
+    'revokePortfolio',
+    'scheduleOneOnOne',
+    'deactivate',
+  ],
+  inactive: ['performance', 'transferPortfolio', 'sharePortfolio', 'revokePortfolio', 'activate'],
   invited: ['resendInvitation', 'cancelInvitation'],
 }
 

@@ -26,6 +26,7 @@ const service = vi.hoisted(() => ({
   goals: vi.fn(),
   setGoal: vi.fn(),
   transfer: vi.fn(),
+  sharePortfolio: vi.fn(),
   deactivate: vi.fn(),
   activate: vi.fn(),
   invite: vi.fn(),
@@ -275,6 +276,106 @@ describe('BrokerTeamDashboardPage', () => {
 
     await waitFor(() => expect(service.setGoal).toHaveBeenCalledWith('agent-1', 6))
     expect(enqueueSnackbar).toHaveBeenCalledWith('Meta mensal atualizada', { variant: 'success' })
+  })
+
+  it('shares only selected items to another broker without invoking transfer', async () => {
+    service.sharePortfolio.mockResolvedValue({
+      properties: 7,
+      leads: 0,
+      opportunities: 5,
+      futureEvents: 2,
+    })
+    renderPage()
+    await openAction('Marina Costa', 'Compartilhar carteira')
+    const dialog = screen.getByRole('dialog')
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Corretores com acesso' }))
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Bruno Lima',
+    ])
+    fireEvent.click(screen.getByRole('option', { name: 'Bruno Lima' }))
+    fireEvent.keyDown(screen.getByRole('listbox'), { key: 'Escape' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Compartilhar carteira' }))
+    expect(
+      await within(dialog).findByText(
+        'Selecione ao menos um item para compartilhar ou remover o acesso',
+      ),
+    ).toBeVisible()
+    fireEvent.click(within(dialog).getByLabelText('Imóveis'))
+    fireEvent.click(within(dialog).getByLabelText('Oportunidades em aberto'))
+    fireEvent.click(within(dialog).getByLabelText('Eventos futuros da agenda'))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Compartilhar carteira' }))
+    await waitFor(() =>
+      expect(service.sharePortfolio).toHaveBeenCalledWith('agent-1', {
+        destinationIds: ['agent-2'],
+        revoke: false,
+        properties: true,
+        leads: false,
+        opportunities: true,
+        futureEvents: true,
+      }),
+    )
+    expect(service.transfer).not.toHaveBeenCalled()
+  })
+
+  it.each(['Compartilhar carteira', 'Remover acesso \u00e0 carteira'])(
+    'keeps recipient checkmarks when closing and reopening the list in %s',
+    async (action) => {
+      renderPage()
+      await openAction('Marina Costa', action)
+      const dialog = screen.getByRole('dialog')
+      const select = within(dialog).getByRole('combobox', { name: 'Corretores com acesso' })
+      fireEvent.mouseDown(select)
+      const option = screen.getByRole('option', { name: 'Bruno Lima' })
+      expect(within(option).getByRole('checkbox', { hidden: true })).not.toBeChecked()
+
+      fireEvent.click(option)
+      expect(option).toHaveAttribute('aria-selected', 'true')
+      expect(within(option).getByRole('checkbox', { hidden: true })).toBeChecked()
+      fireEvent.click(within(screen.getByRole('listbox')).getByRole('button', { name: 'Fechar' }))
+      await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument())
+      expect(dialog).toBeVisible()
+      expect(select).toHaveTextContent('Bruno Lima')
+      expect(within(select).queryByRole('checkbox', { hidden: true })).not.toBeInTheDocument()
+
+      fireEvent.mouseDown(select)
+      const selected = screen.getByRole('option', { name: 'Bruno Lima' })
+      expect(within(selected).getByRole('checkbox', { hidden: true })).toBeChecked()
+      fireEvent.click(selected)
+      expect(selected).toHaveAttribute('aria-selected', 'false')
+      expect(within(selected).getByRole('checkbox', { hidden: true })).not.toBeChecked()
+      fireEvent.click(within(screen.getByRole('listbox')).getByRole('button', { name: 'Fechar' }))
+      await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument())
+      expect(select).not.toHaveTextContent('Bruno Lima')
+      expect(service.sharePortfolio).not.toHaveBeenCalled()
+    },
+  )
+
+  it('removes selected portfolio access without transferring or deleting records', async () => {
+    service.sharePortfolio.mockResolvedValue({
+      properties: 0,
+      leads: 2,
+      opportunities: 0,
+      futureEvents: 0,
+    })
+    renderPage()
+    await openAction('Marina Costa', 'Remover acesso \u00e0 carteira')
+    const dialog = screen.getByRole('dialog')
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Corretores com acesso' }))
+    fireEvent.click(screen.getByRole('option', { name: 'Bruno Lima' }))
+    fireEvent.keyDown(screen.getByRole('listbox'), { key: 'Escape' })
+    fireEvent.click(within(dialog).getByLabelText('Leads'))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Remover acesso' }))
+    await waitFor(() =>
+      expect(service.sharePortfolio).toHaveBeenCalledWith('agent-1', {
+        destinationIds: ['agent-2'],
+        revoke: true,
+        properties: false,
+        leads: true,
+        opportunities: false,
+        futureEvents: false,
+      }),
+    )
+    expect(service.transfer).not.toHaveBeenCalled()
   })
 
   it('transfers the chosen items to another broker or to the owner', async () => {

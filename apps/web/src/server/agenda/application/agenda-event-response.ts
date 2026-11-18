@@ -2,6 +2,7 @@ import type { UserRole } from '@server/auth/domain/user.entity'
 import type { AgendaEvent } from '../domain/agenda-event.entity'
 import type { AgendaEventLinkedUser } from '../types/agenda-event'
 import type { AgendaEventResponseDTO, RenterAgendaEventResponseDTO } from '../types/http'
+import { isReadOnlyAgendaParticipant } from '../domain/agenda-access-rules'
 
 export function toAgendaEventResponse(event: AgendaEvent): AgendaEventResponseDTO {
   return {
@@ -62,7 +63,10 @@ export function toAgendaEventReadResponse(
 ): AgendaEventResponseDTO | RenterAgendaEventResponseDTO {
   return actorRole === 'RENTER' && event.createdById !== actorUserId
     ? toRenterAgendaEventResponse(event)
-    : toAgendaEventResponse(event)
+    : {
+        ...toAgendaEventResponse(event),
+        readOnly: isReadOnlyAgendaParticipant(actorRole, actorUserId, event),
+      }
 }
 
 function toLinkedUserResponse(user: AgendaEventLinkedUser) {

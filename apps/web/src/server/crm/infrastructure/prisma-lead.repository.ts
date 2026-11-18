@@ -1,3 +1,4 @@
+import { crmRecordAccess } from './crm-record-access'
 import { crmMutationAuthor } from './crm-mutation-author'
 import type { CrmPage } from '../types/pagination'
 import { crmChangedFields } from './crm-changed-fields'
@@ -11,6 +12,9 @@ import type { Lead, LeadUpdate, NewLead } from '../domain/lead.entity'
 
 function toDomain(row: LeadRow): Lead {
   return {
+    ...(row.brokerAccess?.length
+      ? { accessUserIds: row.brokerAccess.map((access) => access.userId) }
+      : {}),
     id: row.id,
     tenantId: row.tenantId,
     responsibleId: row.responsibleId,
@@ -81,8 +85,9 @@ export class PrismaLeadRepository implements LeadRepository {
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
+        ...crmRecordAccess(this.scope),
       },
+      include: { brokerAccess: { select: { userId: true } } },
     })
 
     return row ? toDomain(row) : null
@@ -96,7 +101,7 @@ export class PrismaLeadRepository implements LeadRepository {
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
+        ...crmRecordAccess(this.scope),
       },
       data: {
         updatedById: authorId,
@@ -123,11 +128,24 @@ export class PrismaLeadRepository implements LeadRepository {
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
+        ...crmRecordAccess(this.scope),
       },
       data: { stage: 'PROPOSAL', opportunityId: opportunityId, email, updatedById: authorId },
     })
 
+    const access = await this.db.leadBrokerAccess.findMany({
+      where: { tenantId: this.scope.actorTenantId, leadId: id },
+      select: { userId: true },
+    })
+    if (access.length)
+      await this.db.opportunityBrokerAccess.createMany({
+        data: access.map(({ userId }) => ({
+          tenantId: this.scope.actorTenantId,
+          opportunityId,
+          userId,
+        })),
+        skipDuplicates: true,
+      })
     await this.markFirstContact(row.id)
     await recordCrmAudit(this.db, this.scope, 'LEAD', row.id, 'CONVERTED', [
       'stage',

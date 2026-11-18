@@ -27,6 +27,9 @@ export type TeamGoalChange = components['schemas']['TeamGoalChange']
 export type TeamTransferCounts = components['schemas']['TeamTransferResponse']
 
 export type TransferPortfolioPayload = components['schemas']['TransferBrokerPortfolioRequest']
+export type SharePortfolioPayload = components['schemas']['ShareBrokerPortfolioRequest']
+export type TeamPortfolioShareResponse =
+  paths['/team/members/{id}/share']['post']['responses'][200]['content']['application/json']
 
 export type InviteBrokerPayload = components['schemas']['InviteBrokerRequest']
 
@@ -40,6 +43,8 @@ export type BrokerTeamMenuAction =
   | 'performance'
   | 'editGoal'
   | 'transferPortfolio'
+  | 'sharePortfolio'
+  | 'revokePortfolio'
   | 'scheduleOneOnOne'
   | 'deactivate'
   | 'activate'

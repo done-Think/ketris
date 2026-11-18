@@ -570,7 +570,9 @@
       "deactivate": "Desativar corretor",
       "activate": "Reativar corretor",
       "resendInvitation": "Reenviar convite",
-      "cancelInvitation": "Cancelar convite"
+      "cancelInvitation": "Cancelar convite",
+      "sharePortfolio": "Compartilhar carteira",
+      "revokePortfolio": "Remover acesso à carteira"
     },
     "dialogs": {
       "performanceTitle": "Desempenho — {name}",
@@ -633,7 +635,18 @@
       "invitationCancelError": "Não foi possível cancelar o convite",
       "invitationHasPortfolio": "Este convidado já tem imóveis, leads ou eventos. Transfira antes de cancelar.",
       "goalSaveError": "Não foi possível salvar a meta",
-      "selfDestination": "{name} (você)"
+      "selfDestination": "{name} (você)",
+      "share": "Compartilhar carteira",
+      "revoke": "Remover acesso",
+      "shareDestination": "Corretores com acesso",
+      "shared": "Acessos concedidos: {properties} imóveis, {leads} leads, {opportunities} oportunidades e {events} eventos",
+      "revoked": "Acessos removidos: {properties} imóveis, {leads} leads, {opportunities} oportunidades e {events} eventos",
+      "shareError": "Não foi possível atualizar os acessos. Tente novamente.",
+      "shareItemsError": "Selecione ao menos um item para compartilhar ou remover o acesso",
+      "shareHint": "Compartilha os registros existentes, sem criar cópias. Leads e oportunidades podem ser editados pelos participantes; propostas de leads compartilhados mantêm o acesso. Novos atendimentos continuam individuais. O acesso ao imóvel depende da seleção de Imóveis. Eventos são compartilhados somente para leitura. Arquivar ou excluir uma oportunidade afeta todos os participantes.",
+      "revokeHint": "Remove o acesso dos corretores selecionados aos itens atuais desta carteira, sem apagar registros ou alterar o responsável principal.",
+      "shareSource": "Carteira de origem",
+      "shareItems": "Categorias de acesso"
     },
     "actions": {
       "message": "Enviar mensagem no WhatsApp",

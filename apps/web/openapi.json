@@ -316,6 +316,7 @@
           "status": { "$ref": "#/components/schemas/AgendaEventStatus" },
           "start": { "type": "string", "description": "Início do evento (ISO 8601)." },
           "end": { "type": "string", "description": "Término do evento (ISO 8601)." },
+          "readOnly": { "type": "boolean" },
           "participantName": { "type": "string" },
           "participantPhone": { "type": "string" },
           "notes": { "type": "string", "nullable": true },
@@ -1054,6 +1055,7 @@
           "id": { "type": "string" },
           "tenantId": { "type": "string" },
           "responsibleId": { "type": "string" },
+          "accessUserIds": { "type": "array", "items": { "type": "string" } },
           "responsibleName": { "type": "string" },
           "name": { "type": "string" },
           "phone": { "type": "string" },
@@ -2143,6 +2145,7 @@
           "tenantId": { "type": "string" },
           "propertyId": { "type": "string" },
           "responsibleId": { "type": "string" },
+          "accessUserIds": { "type": "array", "items": { "type": "string" } },
           "responsibleName": { "type": "string" },
           "property": { "$ref": "#/components/schemas/CrmPropertySummary" },
           "contactId": { "type": "string", "nullable": true },
@@ -5630,6 +5633,34 @@
         },
         "required": ["kpis", "revenueSeries", "topBrokers", "recentActivities"]
       },
+      "TeamTransferResponse": {
+        "type": "object",
+        "properties": {
+          "properties": { "type": "integer" },
+          "leads": { "type": "integer" },
+          "opportunities": { "type": "integer" },
+          "futureEvents": { "type": "integer" }
+        },
+        "required": ["properties", "leads", "opportunities", "futureEvents"]
+      },
+      "ShareBrokerPortfolioRequest": {
+        "type": "object",
+        "properties": {
+          "properties": { "type": "boolean" },
+          "leads": { "type": "boolean" },
+          "opportunities": { "type": "boolean" },
+          "futureEvents": { "type": "boolean" },
+          "destinationIds": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "revoke": { "type": "boolean", "default": false }
+        },
+        "required": ["properties", "leads", "opportunities", "futureEvents", "destinationIds"],
+        "additionalProperties": false
+      },
       "TeamMember": {
         "type": "object",
         "properties": {
@@ -5746,16 +5777,6 @@
         },
         "required": ["monthlySales"],
         "additionalProperties": false
-      },
-      "TeamTransferResponse": {
-        "type": "object",
-        "properties": {
-          "properties": { "type": "integer" },
-          "leads": { "type": "integer" },
-          "opportunities": { "type": "integer" },
-          "futureEvents": { "type": "integer" }
-        },
-        "required": ["properties", "leads", "opportunities", "futureEvents"]
       },
       "TransferBrokerPortfolioRequest": {
         "type": "object",
@@ -14661,6 +14682,78 @@
             "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
           }
         ]
+      }
+    },
+    "/team/members/{id}/share": {
+      "post": {
+        "summary": "Shares or revokes access to selected existing portfolio items",
+        "tags": ["Team"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ShareBrokerPortfolioRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Counts of changed portfolio access grants.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "shared": { "$ref": "#/components/schemas/TeamTransferResponse" }
+                  },
+                  "required": ["shared"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Access token ausente, inválido ou expirado.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "Só o dono da imobiliária (OWNER) gerencia a equipe.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Source member not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          },
+          "422": {
+            "description": "Invalid destination or empty selection.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
       }
     },
     "/team": {

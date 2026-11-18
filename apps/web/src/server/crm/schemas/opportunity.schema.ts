@@ -27,6 +27,7 @@ export const opportunitySchema = z
     tenantId: z.string(),
     propertyId: z.string(),
     responsibleId: z.string(),
+    accessUserIds: z.array(z.string()).optional(),
     responsibleName: z.string(),
     property: crmPropertySummarySchema.optional(),
     contactId: z.string().nullable(),

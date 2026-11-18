@@ -45,6 +45,7 @@ export type AgendaEventCreatorRole = NonNullable<AgendaEventResponseDTO['created
 export type AgendaEventVisualKind = 'followUp' | 'inspection' | 'meeting' | 'signature' | 'visit'
 
 export type AgendaEvent = {
+  readOnly?: boolean
   audience?: AgendaEventAudience
   internal?: boolean
   responsibleId?: string

@@ -7,6 +7,7 @@ import {
 import type { TeamActor, TeamTransferResult } from '../../types/team'
 import type {
   BrokerInput,
+  ShareBrokerPortfolioInput,
   DeactivateBrokerInput,
   TransferBrokerPortfolioInput,
 } from '../../types/use-case-inputs'
@@ -56,6 +57,35 @@ export class TransferBrokerPortfolioUseCase {
       items: input.items,
       opportunityScope: 'open',
       reason: 'MANUAL',
+      actor,
+      now: this.now(),
+    })
+  }
+}
+
+export class ShareBrokerPortfolioUseCase {
+  constructor(
+    private readonly repository: TeamRepository,
+    private readonly now: () => Date = () => new Date(),
+  ) {}
+
+  async execute(input: ShareBrokerPortfolioInput): Promise<TeamTransferResult> {
+    assertTeamManager(input)
+    if (!Object.values(input.items).some(Boolean)) throw new EmptyTransferError()
+    for (const destinationId of input.destinationIds) {
+      await assertTransferPeople(this.repository, input, input.brokerId, destinationId, true)
+      const destination = await this.repository.findStaffUser(input.actorTenantId, destinationId)
+      if (destination?.role !== 'AGENT') throw new InvalidTransferDestinationError()
+    }
+    if (!input.destinationIds.length || input.destinationIds.length > 50)
+      throw new InvalidTransferDestinationError()
+    const actor = await teamActorIdentity(this.repository, input)
+    return this.repository.sharePortfolio({
+      tenantId: input.actorTenantId,
+      sourceId: input.brokerId,
+      destinationIds: [...new Set(input.destinationIds)],
+      revoke: input.revoke ?? false,
+      items: input.items,
       actor,
       now: this.now(),
     })

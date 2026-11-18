@@ -1,3 +1,4 @@
+import { crmRecordAccess } from './crm-record-access'
 import type { CrmPage } from '../types/pagination'
 import { crmChangedFields } from './crm-changed-fields'
 import { crmMutationAuthor } from './crm-mutation-author'
@@ -88,7 +89,7 @@ export class PrismaContactRepository implements ContactRepository {
                   opportunities: {
                     some: {
                       tenantId: this.scope.actorTenantId,
-                      responsibleId: this.scope.actorId ?? '',
+                      ...crmRecordAccess(this.scope),
                     },
                   },
                 },
@@ -125,7 +126,7 @@ export class PrismaContactRepository implements ContactRepository {
                   opportunities: {
                     some: {
                       tenantId: this.scope.actorTenantId,
-                      responsibleId: this.scope.actorId ?? '',
+                      ...crmRecordAccess(this.scope),
                     },
                   },
                 },
@@ -165,7 +166,7 @@ export class PrismaContactRepository implements ContactRepository {
                   opportunities: {
                     some: {
                       tenantId: this.scope.actorTenantId,
-                      responsibleId: this.scope.actorId ?? '',
+                      ...crmRecordAccess(this.scope),
                     },
                   },
                 },
