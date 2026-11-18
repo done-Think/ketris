@@ -376,6 +376,35 @@ describe('SalesPipelineBoard', () => {
     expect(within(totals).getByText(matchesText(formatCurrency(920000)))).toBeVisible()
   })
 
+  it('keeps every projected total footer the same size, with or without a breakdown', () => {
+    mockOpportunitiesQuery({
+      data: [
+        makeOpportunity(1, 'DRAFT', { leadName: 'Carlos Eduardo', proposedValue: 5200 }),
+        makeOpportunity(2, 'DRAFT', { leadName: 'Letícia Ramos', proposedValue: 920000 }),
+      ],
+    })
+    mockPropertiesQuery({
+      data: [
+        makeProperty(1, { title: 'Studio Vila Mariana', purpose: 'RENT' }),
+        makeProperty(2, { title: 'Casa Pinheiros', purpose: 'SALE' }),
+      ],
+    })
+
+    renderPipeline()
+
+    const reservedHeights = Object.values(stageLabels).map((label) => {
+      const footer = screen.getByRole('group', { name: `Total projetado de ${label}` })
+      return window.getComputedStyle(footer.lastElementChild as HTMLElement).minHeight
+    })
+    expect(
+      within(screen.getByRole('group', { name: 'Total projetado de Prospecção' })).getByText(
+        'Venda',
+      ),
+    ).toBeVisible()
+    expect(reservedHeights[0]).toMatch(/\d/)
+    expect(new Set(reservedHeights).size).toBe(1)
+  })
+
   it('searches by contact and property context', async () => {
     const user = userEvent.setup()
     mockOpportunitiesQuery({
