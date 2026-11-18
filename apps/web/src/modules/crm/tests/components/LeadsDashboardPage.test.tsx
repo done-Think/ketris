@@ -198,6 +198,13 @@ describe('LeadsDashboardPage', () => {
     )
   })
 
+  it('fits the leads table in the card of a 1280px notebook', () => {
+    renderPage()
+
+    // At 1280x720 the card is 950px wide; a wider minimum hid the "Ações" column behind a scroll.
+    expect(screen.getByRole('table', { name: 'Leads do CRM' })).toHaveStyle({ minWidth: '940px' })
+  })
+
   it('opens the contact dialog with the selected lead when clicking Contato', async () => {
     const user = userEvent.setup()
     renderPage()

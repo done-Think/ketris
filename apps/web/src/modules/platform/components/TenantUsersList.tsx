@@ -84,7 +84,7 @@ export function TenantUsersList({ tenantId }: TenantUsersListProps) {
         </Box>
       ) : users && users.length > 0 ? (
         <TableContainer>
-          <Table>
+          <Table sx={styles.table}>
             <TableHead>
               <TableRow>
                 <TableCell>{formsT('name')}</TableCell>
@@ -97,7 +97,9 @@ export function TenantUsersList({ tenantId }: TenantUsersListProps) {
               {users.map((user) => (
                 <TableRow key={user.id} hover>
                   <TableCell sx={styles.tableCell}>{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
+                  <TableCell title={user.email} sx={styles.emailCell}>
+                    {user.email}
+                  </TableCell>
                   <TableCell>{t(`roles.${user.role}`)}</TableCell>
                   <TableCell>{statusChip(user)}</TableCell>
                 </TableRow>
