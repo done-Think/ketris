@@ -76,6 +76,7 @@ export type AgencyBrandColorFieldProps = {
 
 export type AgencyBrandPreviewProps = {
   agency: AgencyProfile
+  highlightedColor: AgencyBrandColorField | null
 }
 
 export type AgencyBrandImageFieldProps = {

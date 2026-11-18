@@ -22,7 +22,7 @@ import { useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import { createAgencyBrandEditorSchema } from '../../schemas/agency-public-profile-editor-schema'
-import { brandPreviewHighlightColor, styles } from '../../styles/agency-brand-editor.styles'
+import { styles } from '../../styles/agency-brand-editor.styles'
 import type {
   AgencyBrandColorField,
   AgencyBrandDialogContentProps,
@@ -88,9 +88,6 @@ function AgencyBrandDialogContent({
   const [highlighted, setHighlighted] = useState<AgencyBrandColorField | null>(null)
   const { data: suggestion = null } = useLogoPalette(values.logoUrl)
   const isUploading = useIsUploadingProfileMedia()
-  const previewValues = highlighted
-    ? { ...values, [highlighted]: brandPreviewHighlightColor }
-    : values
   const isLastStep = stepIndex === wizardSteps.length - 1
   const apply = handleSubmit(onApply)
 
@@ -140,7 +137,7 @@ function AgencyBrandDialogContent({
           )}
         </Box>
         <Box sx={styles.previewSide}>
-          <AgencyBrandPreview agency={buildPreview(previewValues)} />
+          <AgencyBrandPreview agency={buildPreview(values)} highlightedColor={highlighted} />
         </Box>
       </DialogContent>
       {mode === 'wizard' ? (

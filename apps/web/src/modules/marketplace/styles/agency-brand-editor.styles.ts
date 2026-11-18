@@ -1,8 +1,9 @@
 import type { SxProps, Theme } from '@mui/material'
+import type { SystemStyleObject } from '@mui/system'
 
 import { alpha, brand, radius, surface } from '@shared/theme/tokens'
 
-export const brandPreviewHighlightColor = brand.semantic.info
+import type { AgencyBrandColorField } from '../types/agency-brand-editor'
 
 const emptySwatchBackground = `repeating-linear-gradient(45deg, ${surface.paper} 0 4px, ${brand.neutral[100]} 4px 8px)`
 
@@ -148,6 +149,23 @@ export function getPaletteButtonStyles(selected: boolean): SxProps<Theme> {
     border: '2px solid',
     borderColor: selected ? 'text.primary' : 'transparent',
     '&:hover': { borderColor: selected ? 'text.primary' : brand.neutral[300] },
+  }
+}
+
+export function getPreviewPanelStyles(
+  panel: SystemStyleObject<Theme>,
+  highlightedColor: AgencyBrandColorField | null,
+): SystemStyleObject<Theme> {
+  if (!highlightedColor) return panel
+
+  return {
+    ...panel,
+    [`& [data-brand-color~="${highlightedColor}"]`]: {
+      outlineWidth: 2,
+      outlineStyle: 'dashed',
+      outlineColor: 'text.primary',
+      outlineOffset: 2,
+    },
   }
 }
 
