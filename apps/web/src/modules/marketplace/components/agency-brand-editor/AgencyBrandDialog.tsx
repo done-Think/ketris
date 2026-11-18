@@ -19,7 +19,7 @@ import { useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import { createAgencyBrandEditorSchema } from '../../schemas/agency-public-profile-editor-schema'
-import { brandPreviewHighlightColor, styles } from '../../styles/agency-brand-editor.styles'
+import { styles } from '../../styles/agency-brand-editor.styles'
 import type {
   AgencyBrandColorField,
   AgencyBrandDialogContentProps,
@@ -73,9 +73,6 @@ function AgencyBrandDialogContent({
   })
   const values = useWatch({ control }) as AgencyBrandFormValues
   const [highlighted, setHighlighted] = useState<AgencyBrandColorField | null>(null)
-  const previewValues = highlighted
-    ? { ...values, [highlighted]: brandPreviewHighlightColor }
-    : values
 
   function applyPalette(palette: AgencyBrandPalette) {
     setValue('backgroundColor', palette.backgroundColor, { shouldValidate: true })
@@ -114,7 +111,7 @@ function AgencyBrandDialogContent({
           />
         </Box>
         <Box sx={styles.previewSide}>
-          <AgencyBrandPreview agency={buildPreview(previewValues)} />
+          <AgencyBrandPreview agency={buildPreview(values)} highlightedColor={highlighted} />
         </Box>
       </DialogContent>
       <DialogActions sx={styles.dialogActions}>

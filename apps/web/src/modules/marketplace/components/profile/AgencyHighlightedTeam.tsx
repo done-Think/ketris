@@ -29,11 +29,16 @@ export function AgencyHighlightedTeam({ brand, team }: AgencyHighlightedTeamProp
             component={Link}
             href={buildPublicProfileHref(`/brokers/${member.userId}`, 'broker')}
             aria-label={t('viewBrokerProfile', { name: member.name })}
+            data-brand-color="backgroundColor"
             sx={getBoxStyles({ brand })}
           >
             <Avatar src={member.avatarUrl ?? undefined} alt={member.name} sx={styles.avatar} />
             <Box sx={styles.box3}>
-              <Typography noWrap sx={getTypographyStyles({ brand })}>
+              <Typography
+                noWrap
+                data-brand-color="secondaryColor"
+                sx={getTypographyStyles({ brand })}
+              >
                 {member.name}
               </Typography>
             </Box>

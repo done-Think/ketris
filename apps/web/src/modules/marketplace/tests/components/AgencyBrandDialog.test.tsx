@@ -3,12 +3,11 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { brand } from '@shared/theme/tokens'
 import { theme } from '@shared/theme/theme'
 
 import { AgencyBrandDialog } from '../../components/agency-brand-editor/AgencyBrandDialog'
 import type { AgencyProfile } from '../../types/agency'
-import type { AgencyBrandFormValues } from '../../types/agency-brand-editor'
+import type { AgencyBrandColorField, AgencyBrandFormValues } from '../../types/agency-brand-editor'
 
 vi.mock('../../hooks/use-profile-media', () => ({
   useUploadProfileMedia: () => ({ mutateAsync: vi.fn(), isPending: false }),
@@ -59,6 +58,14 @@ const handlers = {
   buildPreview: vi.fn(buildAgency),
   onApply: vi.fn(),
   onClose: vi.fn(),
+}
+
+function previewParts(color: AgencyBrandColorField) {
+  return Array.from(document.body.querySelectorAll<HTMLElement>(`[data-brand-color~="${color}"]`))
+}
+
+function isOutlined(element: HTMLElement) {
+  return window.getComputedStyle(element).outlineStyle === 'dashed'
 }
 
 function renderDialog(values: AgencyBrandFormValues = initialValues) {
@@ -188,20 +195,34 @@ describe('AgencyBrandDialog', () => {
     expect(screen.getByLabelText('Fundo da marca')).toHaveValue('#EEF6EF')
   })
 
-  it('highlights in the preview where a color appears while hovering it', async () => {
+  it('outlines in the preview where a color appears while hovering it, keeping the real color', async () => {
     const user = userEvent.setup()
     renderDialog()
 
     await user.hover(screen.getByLabelText('Fundo da marca'))
 
     expect(handlers.buildPreview).toHaveBeenLastCalledWith(
-      expect.objectContaining({ backgroundColor: brand.semantic.info }),
+      expect.objectContaining({ backgroundColor: '#FFFFFF' }),
     )
+    expect(previewParts('backgroundColor').length).toBeGreaterThan(0)
+    previewParts('backgroundColor').forEach((part) => expect(isOutlined(part)).toBe(true))
+    previewParts('primaryColor').forEach((part) => expect(isOutlined(part)).toBe(false))
 
     await user.unhover(screen.getByLabelText('Fundo da marca'))
 
-    expect(handlers.buildPreview).toHaveBeenLastCalledWith(
-      expect.objectContaining({ backgroundColor: '#FFFFFF' }),
-    )
+    previewParts('backgroundColor').forEach((part) => expect(isOutlined(part)).toBe(false))
+  })
+
+  it('outlines the agency name with the highlights color while the name color is empty', async () => {
+    const user = userEvent.setup()
+    renderDialog()
+
+    await user.hover(screen.getByLabelText('Cor dos destaques'))
+
+    const outlinedTexts = previewParts('primaryColor')
+      .filter(isOutlined)
+      .map((part) => part.textContent)
+    expect(outlinedTexts).toEqual(expect.arrayContaining(['Residencial', 'Imobiliária Horizonte']))
+    previewParts('backgroundColor').forEach((part) => expect(isOutlined(part)).toBe(false))
   })
 })

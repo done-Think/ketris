@@ -4,7 +4,7 @@ import { Box, Tab, Tabs } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { type MouseEvent, useState } from 'react'
 
-import { styles } from '../../styles/agency-brand-editor.styles'
+import { getPreviewPanelStyles, styles } from '../../styles/agency-brand-editor.styles'
 import type {
   AgencyBrandPreviewProps,
   AgencyBrandPreviewTab,
@@ -18,7 +18,7 @@ function preventNavigation(event: MouseEvent) {
   event.stopPropagation()
 }
 
-export function AgencyBrandPreview({ agency }: AgencyBrandPreviewProps) {
+export function AgencyBrandPreview({ agency, highlightedColor }: AgencyBrandPreviewProps) {
   const t = useTranslations('marketplace.agencyProfileEditor.brand')
   const [tab, setTab] = useState<AgencyBrandPreviewTab>('profile')
 
@@ -29,12 +29,18 @@ export function AgencyBrandPreview({ agency }: AgencyBrandPreviewProps) {
         <Tab value="card" label={t('previewTabs.card')} />
       </Tabs>
       {tab === 'profile' ? (
-        <Box sx={styles.previewProfile} onClickCapture={preventNavigation}>
+        <Box
+          sx={getPreviewPanelStyles(styles.previewProfile, highlightedColor)}
+          onClickCapture={preventNavigation}
+        >
           <AgencyProfileHero agency={agency} />
           <AgencyHighlightedTeam brand={agency.brand} team={agency.teamHighlights} />
         </Box>
       ) : (
-        <Box sx={styles.previewCards} onClickCapture={preventNavigation}>
+        <Box
+          sx={getPreviewPanelStyles(styles.previewCards, highlightedColor)}
+          onClickCapture={preventNavigation}
+        >
           <AgencyCard {...agency} viewMode="grid" />
           <Box sx={styles.previewCardList}>
             <AgencyCard {...agency} viewMode="list" />
