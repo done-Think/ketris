@@ -5,6 +5,7 @@ import { sha256Hex } from '@shared/utils/sha256-hex'
 
 import type {
   ApiCharge,
+  ApiChargeListItem,
   ChargeHistoryResponse,
   ChargeListFilters,
   ChargeReasonPayload,
@@ -36,6 +37,15 @@ export class FinancialService extends BaseService {
     )
 
     return this.http.get<ListChargesResponse>(`${this.path}/charges`, { params })
+  }
+
+  async listContractCharges(contractId: string): Promise<ApiChargeListItem[]> {
+    const items: ApiChargeListItem[] = []
+    for (let page = 1; ; page += 1) {
+      const result = await this.listCharges({ type: 'RECEIVABLE', contractId, page, pageSize: 100 })
+      items.push(...result.items)
+      if (!result.items.length || items.length >= result.totalCount) return items
+    }
   }
 
   getCharge(id: string): Promise<ApiCharge> {
