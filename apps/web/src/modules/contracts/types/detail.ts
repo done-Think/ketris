@@ -36,3 +36,24 @@ export interface ContractPartiesPanelProps {
   canLink: boolean
   onLink: (party: ApiContractParty) => void
 }
+
+export type ContractDetailTab = 'summary' | 'payments' | 'documents' | 'tickets'
+
+export interface ContractDetailSlots {
+  alerts?: ReactNode
+  paymentSummary?: ReactNode
+  payments?: ReactNode
+  tickets?: ReactNode
+}
+
+export interface ContractDetailTabsProps {
+  value: ContractDetailTab
+  tabs: readonly ContractDetailTab[]
+  disabled: boolean
+  onChange: (tab: ContractDetailTab) => void
+}
+
+export interface ContractRentCardProps {
+  amount: string
+  dueDay: number
+}

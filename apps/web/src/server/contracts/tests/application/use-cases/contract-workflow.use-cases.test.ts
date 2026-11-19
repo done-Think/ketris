@@ -3,6 +3,7 @@ import { EditContractUseCase } from '../../../application/use-cases/edit-contrac
 import { TransitionContractUseCase } from '../../../application/use-cases/transition-contract.use-case'
 import { ListContractHistoryUseCase } from '../../../application/use-cases/list-contract-history.use-case'
 import type { ContractWorkflowRepository } from '../../../application/ports/contract-workflow-repository.port'
+import { ContractNotFoundError } from '../../../domain/errors'
 import { contractFixture } from '../../fixtures/contract'
 import { documentActor } from '../../fixtures/document'
 
@@ -103,7 +104,6 @@ describe('casos de uso do ciclo de vida de Contracts', () => {
       actorRole: 'AGENT' as const,
       scope: { kind: 'tenant', tenantId: 'agency', responsibleId: 'manager' },
     },
-    { actorRole: 'RENTER' as const, scope: { kind: 'party', userId: 'manager' } },
     {
       actorRole: 'PROPERTY_OWNER' as const,
       scope: { kind: 'propertyOwner', tenantId: 'agency', ownerId: 'manager' },
@@ -112,5 +112,14 @@ describe('casos de uso do ciclo de vida de Contracts', () => {
     const { repository, history } = setup()
     await history.execute({ ...documentActor, actorRole, page: 3, pageSize: 10 })
     expect(repository.history).toHaveBeenCalledWith('contract', scope, 3, 10)
+  })
+
+  it('não entrega o histórico do contrato à locatária, nem do contrato em que ela é parte', async () => {
+    const { repository, history } = setup()
+
+    expect(() =>
+      history.execute({ ...documentActor, actorRole: 'RENTER', page: 1, pageSize: 10 }),
+    ).toThrow(ContractNotFoundError)
+    expect(repository.history).not.toHaveBeenCalled()
   })
 })
