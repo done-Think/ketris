@@ -14,7 +14,9 @@
     "title": "Contratos",
     "subtitle": "Gerencie contratos, vencimentos e assinaturas em andamento.",
     "searchPlaceholder": "Buscar contratos...",
-    "newContract": "Novo Contrato"
+    "newContract": "Novo Contrato",
+    "myRentalTitle": "Meu aluguel",
+    "myRentalSubtitle": "Acompanhe o contrato, os pagamentos, os documentos e os chamados do seu aluguel."
   },
   "filters": {
     "tabs": {
@@ -268,7 +270,16 @@
     "landlordView": "Você acompanha este contrato como locador. Quem administra é a {agency}. Para alterar algo, fale com a imobiliária.",
     "guarantor": "Fiador",
     "manual": "Registro manual",
-    "provider": "Assinatura eletrônica"
+    "provider": "Assinatura eletrônica",
+    "myRental": "Meu aluguel",
+    "rentDue": "Aluguel · vence todo dia {day}",
+    "tabs": {
+      "label": "Seções do contrato",
+      "summary": "Resumo",
+      "payments": "Pagamentos",
+      "documents": "Documentos",
+      "tickets": "Chamados"
+    }
   },
   "documents": {
     "title": "Documentos",

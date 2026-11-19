@@ -56,6 +56,7 @@ export const listMaintenanceTicketsQuerySchema = z
     priority: maintenanceTicketPrioritySchema.optional(),
     category: maintenanceCategorySchema.optional(),
     propertyId: z.string().trim().min(1).optional(),
+    contractId: z.string().trim().min(1).max(64).optional(),
     search: z.string().trim().min(1).max(500).optional(),
     page: z.coerce.number().int().positive().optional(),
     pageSize: z.coerce.number().int().positive().max(100).optional(),
