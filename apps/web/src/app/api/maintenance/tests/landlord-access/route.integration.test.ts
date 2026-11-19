@@ -14,6 +14,7 @@ import { GET as readTicket } from '../../tickets/[id]/route'
 import { POST as addNote } from '../../tickets/[id]/notes/route'
 import { POST as actOnTicket } from '../../tickets/[id]/actions/route'
 import { GET as options } from '../../options/route'
+import { GET as listProviders, POST as createProvider } from '../../providers/route'
 
 const tenantIds: string[] = []
 const ids = (items: { id: string }[]) => items.map((item) => item.id)
@@ -112,6 +113,47 @@ describe('O dono do imóvel vinculado como Locador acompanha e abre chamados do 
     expect(
       (await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id: s.ticket.id } })).status,
     ).toBe('OPEN')
+  })
+
+  it('o dono não lista nem cadastra prestadores da imobiliária pelo chamado', async () => {
+    await linkLandlordAccount(s.party.id, s.landlord.id)
+    const agencyProviders = () =>
+      prisma.maintenanceProvider.count({ where: { tenantId: s.agency.id } })
+    const before = await agencyProviders()
+    const provider = { name: 'Prestador escolhido pelo dono', phone: '11955550000' }
+    expect(
+      (
+        await listProviders(
+          landlordRequest(`maintenance/providers?ticketId=${s.ticket.id}`, s.landlord.token),
+        )
+      ).status,
+    ).toBe(403)
+    expect(
+      (
+        await createProvider(
+          landlordRequest('maintenance/providers', s.landlord.token, {
+            ticketId: s.ticket.id,
+            provider,
+          }),
+        )
+      ).status,
+    ).toBe(403)
+    expect(await agencyProviders()).toBe(before)
+    expect(
+      (
+        await listProviders(
+          landlordRequest(`maintenance/providers?ticketId=${s.ticket.id}`, s.admin.token),
+        )
+      ).status,
+    ).toBe(200)
+    expect(
+      (
+        await createProvider(
+          landlordRequest('maintenance/providers', s.landlord.token, { provider }),
+        )
+      ).status,
+    ).toBe(201)
+    expect(await agencyProviders()).toBe(before)
   })
 
   it('com o contrato encerrado o dono não abre chamado novo', async () => {
