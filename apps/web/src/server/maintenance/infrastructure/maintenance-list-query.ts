@@ -58,6 +58,7 @@ export function maintenanceListQuery(filters: MaintenanceTicketListFilters) {
   if (filters.priority) filtered.push(Prisma.sql`c.priority::text = ${filters.priority}`)
   if (filters.category) filtered.push(Prisma.sql`c.category::text = ${filters.category}`)
   if (filters.propertyId) filtered.push(Prisma.sql`c."propertyId" = ${filters.propertyId}`)
+  if (filters.contractId) filtered.push(Prisma.sql`c."contractId" = ${filters.contractId}`)
   if (filters.search?.trim()) {
     const term = '%' + normalized(filters.search.trim()).replace(/[\\%_]/g, '\\$&') + '%'
     const labels = dictionaries[filters.locale ?? 'pt-BR']

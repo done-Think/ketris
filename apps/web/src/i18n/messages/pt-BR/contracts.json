@@ -14,7 +14,9 @@
     "title": "Contratos",
     "subtitle": "Gerencie contratos, vencimentos e assinaturas em andamento.",
     "searchPlaceholder": "Buscar contratos...",
-    "newContract": "Novo Contrato"
+    "newContract": "Novo Contrato",
+    "myRentalTitle": "Meu aluguel",
+    "myRentalSubtitle": "Acompanhe o contrato, os pagamentos, os documentos e os chamados do seu aluguel."
   },
   "filters": {
     "tabs": {

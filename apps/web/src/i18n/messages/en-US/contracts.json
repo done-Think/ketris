@@ -14,7 +14,9 @@
     "title": "Contracts",
     "subtitle": "Manage contracts, due dates, and signatures in progress.",
     "searchPlaceholder": "Search contracts...",
-    "newContract": "New Contract"
+    "newContract": "New Contract",
+    "myRentalTitle": "My rental",
+    "myRentalSubtitle": "Follow your rental contract, payments, documents and tickets."
   },
   "filters": {
     "tabs": {

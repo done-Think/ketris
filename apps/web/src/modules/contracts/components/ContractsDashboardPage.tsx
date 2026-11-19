@@ -84,6 +84,7 @@ export function ContractsDashboardPage() {
       <Stack spacing={2} sx={styles.stack}>
         <ContractsDashboardHeader
           control={control}
+          renter={session?.role === 'RENTER'}
           onCreateContract={readOnly ? undefined : () => router.push('/dashboard/contracts/new')}
         />
         <ContractsFilters

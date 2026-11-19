@@ -91,6 +91,7 @@ export interface ChargeListFilters {
   type?: ChargeType
   status?: ChargeStatus
   dueMonth?: CalendarMonth
+  contractId?: string
   search?: string
   page?: number
   pageSize?: number
@@ -108,6 +109,7 @@ export interface StoredChargeListItem {
   contractId: string | null
   payerName: string | null
   propertyTitle: string | null
+  receipt: ChargeReceipt | null
   updatedAt: Date
 }
 
