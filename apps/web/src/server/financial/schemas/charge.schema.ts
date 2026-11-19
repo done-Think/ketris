@@ -64,6 +64,7 @@ export const chargeListItemSchema = z
     contractId: z.string().nullable(),
     payerName: z.string().nullable(),
     propertyTitle: z.string().nullable(),
+    receipt: chargeReceiptSchema.nullable(),
     updatedAt: z.string(),
   })
   .openapi('ChargeListItem')

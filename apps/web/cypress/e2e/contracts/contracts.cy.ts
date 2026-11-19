@@ -43,6 +43,10 @@ function createContract(data: ContractFixtureSeedResult) {
     return response?.body.contract.id as string
   })
 }
+function openTab(name: 'Resumo' | 'Documentos') {
+  cy.contains('[role="tab"]', name).click()
+  cy.contains('[role="tab"]', name).should('have.attr', 'aria-selected', 'true')
+}
 function upload(name: string) {
   cy.intercept('POST', '**/api/contracts/*/documents').as('confirmDocument')
   cy.get('input[type="file"]').selectFile({
@@ -105,6 +109,7 @@ describe('Contracts — fluxos reais com documentos privados', () => {
       cy.intercept('POST', '**/api/contracts/' + contractId + '/close').as('closeContract')
       cy.visit('/pt/dashboard/contracts/' + contractId)
       cy.contains('Dados do contrato').should('be.visible')
+      openTab('Documentos')
       upload('Original.pdf')
       cy.contains('button', 'Editar').click()
       cy.get('[role="dialog"]')
@@ -115,13 +120,16 @@ describe('Contracts — fluxos reais com documentos privados', () => {
       cy.get('[role="dialog"]').contains('button', 'Salvar alterações').click()
       cy.wait('@editContract').its('response.body.contract.dataRevision').should('eq', 1)
       cy.contains('Versão anterior: envie um novo PDF').should('be.visible')
+      openTab('Resumo')
       cy.contains('button', 'Registrar assinatura manual').first().click()
       cy.get('[role="dialog"]').contains('Envie um PDF para a revisão atual').should('be.visible')
       cy.get('[role="dialog"]')
         .contains('button', 'Confirmar registro manual')
         .should('be.disabled')
       cy.get('[role="dialog"]').contains('button', 'Voltar').click()
+      openTab('Documentos')
       upload('Atualizado.pdf')
+      openTab('Resumo')
       registerSignature().its('response.statusCode').should('eq', 200)
       cy.contains('button', 'Editar').should('not.exist')
       registerSignature().its('response.body.contract.status').should('eq', 'ACTIVE')

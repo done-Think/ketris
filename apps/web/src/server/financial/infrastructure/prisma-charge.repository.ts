@@ -241,6 +241,7 @@ export class PrismaChargeRepository implements ChargeRepository {
       chargeReadWhere(filters.scope),
       searchWhere(filters.search?.trim()),
       filters.type ? { type: filters.type } : {},
+      filters.contractId ? { contractId: filters.contractId } : {},
       filters.dueMonth
         ? {
             dueDate: {
@@ -287,6 +288,7 @@ export class PrismaChargeRepository implements ChargeRepository {
           contractId: charge.contractId,
           payerName: charge.payerName,
           propertyTitle: charge.propertyTitle,
+          receipt: charge.receipt,
           updatedAt: charge.updatedAt,
         }
       }),

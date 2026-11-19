@@ -36,6 +36,7 @@ export function mapChargeListItemFromApi(item: ApiChargeListItem): ChargeListRow
     amount: item.amount,
     dueDate: dateOnly(item.dueDate),
     status: apiStatusToUi[item.status],
+    receipt: item.receipt ?? null,
   }
 }
 

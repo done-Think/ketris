@@ -25,4 +25,15 @@ export const styles = {
   } satisfies SxProps<Theme>,
   stack5: { flex: 1, minWidth: 0 } satisfies SxProps<Theme>,
   landlordAlert: { mb: 3 } satisfies SxProps<Theme>,
+  alerts: { mb: 3 } satisfies SxProps<Theme>,
+  paymentSummary: {
+    display: 'grid',
+    gridTemplateColumns: {
+      xs: 'minmax(0, 1fr)',
+      sm: 'repeat(2, minmax(0, 1fr))',
+      lg: 'repeat(4, minmax(0, 1fr))',
+    },
+    gap: { xs: 1.4, md: 1.8 },
+  } satisfies SxProps<Theme>,
+  documents: { maxWidth: 760 } satisfies SxProps<Theme>,
 }
