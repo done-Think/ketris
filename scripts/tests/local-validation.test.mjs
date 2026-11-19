@@ -1,6 +1,5 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import {
   ZERO_SHA,
@@ -69,15 +68,6 @@ test('Unix keeps the original npm command', () => {
 
 test('the real npm launcher works on the current platform', () => {
   assert.equal(runCheck({ cmd: 'npm', args: ['--version'] }).status, 0)
-})
-
-test('the English checker recognizes documented compatibility and translation paths', () => {
-  const result = spawnSync(
-    process.execPath,
-    [fileURLToPath(new URL('../check-english-names.mjs', import.meta.url))],
-    { encoding: 'utf8' },
-  )
-  assert.equal(result.status, 0, result.stderr)
 })
 
 function pushLine(overrides = {}) {

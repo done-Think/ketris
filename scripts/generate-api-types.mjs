@@ -19,10 +19,7 @@ const registration = await prettier.format(apiComponentRegistration(fileURLToPat
   parser: 'typescript',
 })
 if (process.argv.includes('--check')) {
-  if (
-    (await readFile(registrationFile, 'utf8').catch(() => '')).replaceAll('\r\n', '\n') !==
-    registration
-  )
+  if ((await readFile(registrationFile, 'utf8').catch(() => '')) !== registration)
     throw new Error('API component registration is stale. Run npm run api:generate.')
 } else {
   await writeFile(registrationFile, registration)
@@ -54,7 +51,7 @@ const bridges = await Promise.all(
 for (const [file, expected] of [[output, types], [snapshot, json], ...bridges]) {
   if (process.argv.includes('--check')) {
     const actual = await readFile(file, 'utf8').catch(() => '')
-    if (actual.replaceAll('\r\n', '\n') !== expected)
+    if (actual !== expected)
       throw new Error(
         `Generated API contract is stale: ${fileURLToPath(file)}. Run npm run api:generate.`,
       )
