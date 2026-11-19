@@ -179,6 +179,7 @@ export interface MaintenanceTicketListFilters {
   priority?: MaintenanceTicketPriority
   category?: MaintenanceCategory
   propertyId?: string
+  contractId?: string
   search?: string
   page?: number
   pageSize?: number

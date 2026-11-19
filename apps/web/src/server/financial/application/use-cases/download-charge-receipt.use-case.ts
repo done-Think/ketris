@@ -16,12 +16,17 @@ export class DownloadChargeReceiptUseCase {
 
   async execute(input: DownloadChargeReceiptInput) {
     const scope = resolveChargeReadScope(input)
-    const receipt = await this.chargeRepository.findReceipt(
-      scope,
-      input.chargeId,
-      input.receiptId,
-      isAgencyManager(input.actorRole),
-    )
+    const historyReceipt = isAgencyManager(input.actorRole)
+      ? await this.chargeRepository.findReceipt(
+          { kind: 'tenant', tenantId: input.actorTenantId },
+          input.chargeId,
+          input.receiptId,
+          true,
+        )
+      : null
+    const receipt =
+      historyReceipt ??
+      (await this.chargeRepository.findReceipt(scope, input.chargeId, input.receiptId, false))
     if (!receipt) throw new ChargeReceiptNotFoundError()
     if (receipt.objectKey !== chargeReceiptObjectKey(receipt))
       throw new ChargeReceiptNotFoundError()
