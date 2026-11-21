@@ -15,7 +15,7 @@ export class SetBrokerGoalUseCase {
   constructor(private readonly repository: TeamRepository) {}
 
   async execute(input: SetBrokerGoalInput): Promise<TeamGoalChange> {
-    assertTeamManager(input)
+    await assertTeamManager(this.repository, input)
     await assertBroker(this.repository, input, input.brokerId)
     const actor = await teamActorIdentity(this.repository, input)
 
@@ -27,7 +27,7 @@ export class ListBrokerGoalsUseCase {
   constructor(private readonly repository: TeamRepository) {}
 
   async execute(input: BrokerInput): Promise<TeamGoalChange[]> {
-    assertTeamManager(input)
+    await assertTeamManager(this.repository, input)
     await assertBroker(this.repository, input, input.brokerId)
 
     return this.repository.listGoals(input.actorTenantId, input.brokerId, GOAL_HISTORY_LIMIT)

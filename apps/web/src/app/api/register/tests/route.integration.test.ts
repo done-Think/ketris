@@ -200,6 +200,14 @@ describe('cadastro e primeiro login com confirmação real', () => {
         slug: `agency-${randomUUID()}`,
         accountType: 'AGENCY',
         status: 'ACTIVE',
+        users: {
+          create: {
+            name: 'Dona confirmada',
+            email: `owner-${randomUUID()}@example.test`,
+            passwordHash: 'owner-test-hash',
+            role: 'OWNER',
+          },
+        },
       },
     })
     tenants.push(agency.id)
