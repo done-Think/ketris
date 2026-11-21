@@ -50,6 +50,21 @@ export const styles = {
     color: 'text.secondary',
   },
   palettes: { display: 'flex', flexWrap: 'wrap', gap: 1 },
+  suggestion: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 1,
+    p: 1.2,
+    borderRadius: `${radius.sm}px`,
+    bgcolor: surface.app,
+  },
+  stepper: { mb: 1 },
+  stepTitle: { fontSize: 17, fontWeight: 700 },
+  reviewList: { listStyle: 'none', m: 0, p: 0 },
+  reviewItem: { display: 'flex', gap: 1, alignItems: 'flex-start', fontSize: 14 },
+  reviewOk: { color: 'success.main' },
+  reviewWarn: { color: 'warning.main' },
   paletteSwatch: { width: 14, height: 26 },
   colorRow: {
     display: 'grid',
@@ -92,6 +107,10 @@ export const styles = {
   previewCardList: { gridColumn: { lg: '1 / -1' } },
   dialogActions: { px: { xs: 2, md: 2.5 }, py: 1.5, gap: 1, flexWrap: 'wrap' },
   dialogActionsSpacer: { flex: 1, display: { xs: 'none', sm: 'block' } },
+  skipButton: {
+    width: { xs: '100%', sm: 'auto' },
+    justifyContent: { xs: 'flex-start', sm: 'center' },
+  },
   footerButton: { flex: { xs: 1, sm: 'none' } },
 } satisfies Record<string, SxProps<Theme>>
 
