@@ -16,7 +16,7 @@ import {
 } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
-import { useForm } from 'react-hook-form'
+import { type FieldErrors, useForm } from 'react-hook-form'
 import { Link, useRouter } from '@/i18n/navigation'
 import { createContractSteps } from '../config/contract-ui'
 import {
@@ -27,6 +27,7 @@ import { useContractWizard } from '../hooks/use-contract-wizard'
 import { useCreateContract } from '../hooks/use-contracts'
 import type { CreateContractFormValues } from '../types/contract'
 import { contractError } from '../utils/contract-error'
+import { firstStepWithErrors } from '../utils/contract-wizard-errors'
 import { ContractActions } from './ContractActions'
 import { ContractStepFields } from './ContractStepFields'
 import { stepValidationFields } from '../config/contract-fields'
@@ -68,6 +69,11 @@ export function ContractsCreatePage() {
     }
   }
 
+  const showFirstStepWithErrors = (fieldErrors: FieldErrors<CreateContractFormValues>) => {
+    const step = firstStepWithErrors(fieldErrors)
+    if (step !== null) wizard.select(step)
+  }
+
   const goToPreviousStep = () => {
     if (firstStep) {
       if (isDirty) {
@@ -84,7 +90,7 @@ export function ContractsCreatePage() {
 
   const goToNextStep = async () => {
     if (lastStep) {
-      await handleSubmit(createContract)()
+      await handleSubmit(createContract, showFirstStepWithErrors)()
       return
     }
 
@@ -123,7 +129,11 @@ export function ContractsCreatePage() {
           onStepSelect={goToStep}
         />
 
-        <Box component="form" onSubmit={handleSubmit(createContract)} sx={styles.box3}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit(createContract, showFirstStepWithErrors)}
+          sx={styles.box3}
+        >
           <Typography sx={styles.typography4}>
             {activeStep.key === 'review'
               ? t('stepFormTitleReview')
