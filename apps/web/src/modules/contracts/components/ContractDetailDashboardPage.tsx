@@ -18,7 +18,8 @@ import { notFound, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
-import { Link } from '@/i18n/navigation'
+import { Link, useRouter } from '@/i18n/navigation'
+import { canAccessFeature, resolveAccessProfile } from '@shared/lib/auth/access-policy'
 import { styles } from '../styles/contract-detail-dashboard-page.styles'
 import { ContractDetailPanel } from './contract-detail/ContractDetailPanel'
 import { ContractDetailHeader } from './contract-detail/ContractDetailHeader'
@@ -30,6 +31,8 @@ import { ContractManualSignatureDialog } from './contract-detail/ContractManualS
 import { ContractTransitionDialog } from './contract-detail/ContractTransitionDialog'
 import { ContractEditDialog } from './contract-detail/ContractEditDialog'
 import { ContractHistoryPanel } from './contract-detail/ContractHistoryPanel'
+import { ContractDetailTabs } from './contract-detail/ContractDetailTabs'
+import { ContractRentCard } from './contract-detail/ContractRentCard'
 import {
   useContract,
   useSignContractParty,
@@ -40,11 +43,16 @@ import { useContractPresentation } from '../hooks/use-contract-presentation'
 import { mapContractFromApi } from '../utils/contract-adapter'
 import { contractError, isContractNotFound } from '../utils/contract-error'
 import { contractPartyLinkMessageKeys } from '../config/contract-labels'
+import { contractDetailTabs, resolveContractDetailTab } from '../config/contract-detail-tabs'
 import type { ContractDetailDashboardPageProps } from '../types/contract'
 import type { ApiContractParty } from '../types/service'
 
-export function ContractDetailDashboardPage({ contractId }: ContractDetailDashboardPageProps) {
+export function ContractDetailDashboardPage({
+  contractId,
+  slots = {},
+}: ContractDetailDashboardPageProps) {
   const { data: session } = useSession()
+  const router = useRouter()
   const t = useTranslations('contracts.detail')
   const errors = useTranslations('contracts.errors')
   const { enqueueSnackbar } = useSnackbar()
@@ -59,7 +67,17 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
   const searchParams = useSearchParams()
   const [editing, setEditing] = useState(() => searchParams.get('edit') === '1')
   const [uploading, setUploading] = useState(false)
-  const landlordView = Boolean(query.data) && query.data?.tenantId !== session?.tenantId
+  const isRenter = session?.role === 'RENTER'
+  const landlordView =
+    !isRenter && Boolean(query.data) && query.data?.tenantId !== session?.tenantId
+  const profile = resolveAccessProfile(session?.role, session?.accountType)
+  const canSeeCharges = canAccessFeature(profile, 'charges')
+  const tabs = contractDetailTabs.filter(
+    (tab) =>
+      (tab !== 'payments' || (canSeeCharges && Boolean(slots.payments))) &&
+      (tab !== 'tickets' || (canAccessFeature(profile, 'maintenance') && Boolean(slots.tickets))),
+  )
+  const tab = resolveContractDetailTab(searchParams.get('tab'), tabs)
   const canManage = (session?.role === 'OWNER' || session?.role === 'AGENT') && !landlordView
   const canLink = session?.role === 'OWNER' && !landlordView
 
@@ -99,7 +117,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
       <Box sx={styles.box2}>
         <Stack direction="row" spacing={0.8} sx={styles.stack2}>
           <MuiLink component={Link} href="/dashboard/contracts" underline="hover" color="inherit">
-            {t('contracts')}
+            {t(isRenter ? 'myRental' : 'contracts')}
           </MuiLink>
           <Typography sx={styles.typography}>›</Typography>
           <Typography sx={styles.typography3}>{data.code}</Typography>
@@ -126,6 +144,7 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
             {t('landlordView', { agency: data.agencyName })}
           </Alert>
         )}
+        {canSeeCharges && slots.alerts && <Box sx={styles.alerts}>{slots.alerts}</Box>}
         {uploading && <Alert severity="info">{t('uploadBusy')}</Alert>}
         {query.isError && (
           <Alert
@@ -135,37 +154,67 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
             {t('loadError')}
           </Alert>
         )}
-        <Stack
-          direction={{ xs: 'column', lg: 'row' }}
-          spacing={3}
-          alignItems="stretch"
-          sx={styles.stack3}
-        >
-          <Stack spacing={3} sx={styles.stack4}>
-            <ContractInfoPanel contract={contract} />
-            <ContractDetailPanel title={t('notes')} sx={styles.contractDetailPanel}>
-              <Typography sx={styles.typography4}>{contract.notes || t('emptyNotes')}</Typography>
-            </ContractDetailPanel>
-            <Box id="history">
-              <ContractHistoryPanel contractId={contractId} />
-            </Box>
+        <ContractDetailTabs
+          value={tab}
+          tabs={tabs}
+          disabled={uploading}
+          onChange={(next) =>
+            router.replace(
+              {
+                pathname: '/dashboard/contracts/[id]',
+                params: { id: contractId },
+                query: { tab: next },
+              },
+              { scroll: false },
+            )
+          }
+        />
+        {tab === 'summary' && (
+          <Stack
+            direction={{ xs: 'column', lg: 'row' }}
+            spacing={3}
+            alignItems="stretch"
+            sx={styles.stack3}
+          >
+            <Stack spacing={3} sx={styles.stack4}>
+              <ContractInfoPanel contract={contract} />
+              <ContractDetailPanel title={t('notes')} sx={styles.contractDetailPanel}>
+                <Typography sx={styles.typography4}>{contract.notes || t('emptyNotes')}</Typography>
+              </ContractDetailPanel>
+              <Box id="history">
+                {isRenter ? null : <ContractHistoryPanel contractId={contractId} />}
+              </Box>
+            </Stack>
+            <Stack spacing={3} sx={styles.stack5}>
+              <ContractPartiesPanel
+                parties={data.parties}
+                isSigning={busy}
+                readOnly={!canManage}
+                canSign={beforeActivation}
+                canLink={canLink}
+                onSign={(id) => {
+                  signature.reset()
+                  setSignParty(data.parties.find((party) => party.id === id) ?? null)
+                }}
+                onLink={(party) => {
+                  link.reset()
+                  setLinkParty(party)
+                }}
+              />
+            </Stack>
           </Stack>
-          <Stack spacing={3} sx={styles.stack5}>
-            <ContractPartiesPanel
-              parties={data.parties}
-              isSigning={busy}
-              readOnly={!canManage}
-              canSign={beforeActivation}
-              canLink={canLink}
-              onSign={(id) => {
-                signature.reset()
-                setSignParty(data.parties.find((party) => party.id === id) ?? null)
-              }}
-              onLink={(party) => {
-                link.reset()
-                setLinkParty(party)
-              }}
-            />
+        )}
+        {tab === 'payments' && (
+          <Stack spacing={3}>
+            <Box sx={styles.paymentSummary}>
+              <ContractRentCard amount={contract.amount} dueDay={data.dueDay} />
+              {slots.paymentSummary}
+            </Box>
+            {slots.payments}
+          </Stack>
+        )}
+        {tab === 'documents' && (
+          <Stack spacing={3} sx={styles.documents}>
             <Box id="documents">
               <ContractDocumentsPanel
                 documents={data.documents}
@@ -177,7 +226,8 @@ export function ContractDetailDashboardPage({ contractId }: ContractDetailDashbo
               <ContractDocumentUpload contractId={contractId} onBusyChange={setUploading} />
             )}
           </Stack>
-        </Stack>
+        )}
+        {tab === 'tickets' && slots.tickets}
         {signParty && (
           <ContractManualSignatureDialog
             party={signParty}
