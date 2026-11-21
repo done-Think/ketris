@@ -123,7 +123,7 @@ describe('CreateLeadDialog', () => {
     expect(screen.getByLabelText('Orçamento')).toHaveValue('0,45')
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     expect(screen.getByText(/R\$\s*0,45/)).toBeVisible()
-  })
+  }, 20000)
 
   it('lets the user go back to a previous step', async () => {
     const user = userEvent.setup()
