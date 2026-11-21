@@ -84,7 +84,8 @@
       "editContact": "Edit {name}",
       "viewInteractions": "View interactions for {name}",
       "moreOptions": "More options for {name}",
-      "archiveContact": "Archive {name}"
+      "archiveContact": "Archive {name}",
+      "addLead": "Add {name} to Leads"
     },
     "types": {
       "tenant": "Tenant",
@@ -142,6 +143,11 @@
       "confirm": "Archive",
       "success": "Contact archived.",
       "error": "Could not archive the contact."
+    },
+    "shortcuts": {
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "email": "Email"
     }
   },
   "leads": {
@@ -233,7 +239,8 @@
       "email": "Email",
       "convert": "Convert to opportunity",
       "alreadyConverted": "Already converted",
-      "viewOpportunity": "View opportunity"
+      "viewOpportunity": "View opportunity",
+      "linkContact": "Link to Contacts"
     },
     "convert": {
       "eyebrow": "Convert lead",
@@ -513,5 +520,56 @@
     "retry": "Retry",
     "loadError": "Unable to load options.",
     "loadMore": "Load more"
+  },
+  "interactions": {
+    "title": "Interactions",
+    "loading": "Loading interactions",
+    "retry": "Try again",
+    "loadError": "Unable to load interaction history.",
+    "empty": "No interactions recorded.",
+    "recordResult": "Record outcome",
+    "result": "Contact outcome",
+    "description": "Note (optional)",
+    "cancel": "Cancel",
+    "save": "Save outcome",
+    "required": "Select an outcome.",
+    "maximum": "Use at most 2000 characters.",
+    "completeError": "Unable to save. Refresh the history and try again.",
+    "completedAt": "Outcome recorded on {date}",
+    "pagination": "Interaction pages",
+    "close": "Close",
+    "contactScope": "This history includes direct contact interactions and events from explicitly linked leads. Changing a stage does not confirm a conversation.",
+    "recording": "Recording contact attempt...",
+    "attemptRecorded": "Shortcut activated. Record the outcome below when the conversation is finished.",
+    "startError": "The shortcut was activated, but the attempt was not recorded. Retry saving the record without contacting the customer again.",
+    "channels": {
+      "PHONE": "Phone call",
+      "EMAIL": "Email",
+      "WHATSAPP": "WhatsApp"
+    },
+    "statuses": {
+      "STARTED": "Attempt started",
+      "CONTACT_MADE": "Contact made",
+      "NO_RESPONSE": "No response",
+      "CANCELLED": "Cancelled"
+    },
+    "retryRecord": "Retry saving the attempt",
+    "refreshHistory": "Refresh history",
+    "kinds": {
+      "CONTACT_ATTEMPT": "Contact attempt",
+      "STAGE_CHANGED": "Lead stage changed",
+      "CONTACT_LINKED": "Lead linked to Contacts",
+      "LEAD_CREATED": "Lead created from Contacts"
+    }
+  },
+  "contactLinks": {
+    "title": "Link {name} to Contacts",
+    "explanation": "Select an existing contact or create one. The lead history will be available in both places.",
+    "existing": "Existing contact",
+    "required": "Select a contact.",
+    "create": "Create contact",
+    "link": "Link contact",
+    "cancel": "Cancel",
+    "error": "Unable to link. Check the information and select the existing contact if its email is already registered."
   }
 }

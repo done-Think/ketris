@@ -450,40 +450,40 @@ enum PropertyAmenity {
 }
 
 model Property {
-  id                   String            @id @default(cuid())
-  tenantId             String
-  responsibleId        String
-  ownerId              String?
-  ownerContactId       String?
-  title                String
-  description          String?
-  purpose              PropertyPurpose
-  type                 PropertyType
-  bedrooms             Int?
-  bathrooms            Int?
-  parkingSpots         Int?
-  areaSqm              Decimal?          @db.Decimal(10, 2)
-  price                Decimal           @db.Decimal(12, 2)
-  rentalPrice          Decimal?          @db.Decimal(12, 2)
-  condoFee             Decimal?          @db.Decimal(10, 2)
-  propertyTax          Decimal?          @db.Decimal(10, 2)
-  amenities            PropertyAmenity[] @default([])
-  negotiationTerms     String?
-  negotiationConditions String[] @default([])
-  publishAfterReview   Boolean           @default(false)
-  allowWhatsappContact Boolean           @default(false)
-  featured             Boolean           @default(false)
-  status               PropertyStatus    @default(DRAFT)
-  publishedAt          DateTime?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  updatedById          String?
+  id                    String            @id @default(cuid())
+  tenantId              String
+  responsibleId         String
+  ownerId               String?
+  ownerContactId        String?
+  title                 String
+  description           String?
+  purpose               PropertyPurpose
+  type                  PropertyType
+  bedrooms              Int?
+  bathrooms             Int?
+  parkingSpots          Int?
+  areaSqm               Decimal?          @db.Decimal(10, 2)
+  price                 Decimal           @db.Decimal(12, 2)
+  rentalPrice           Decimal?          @db.Decimal(12, 2)
+  condoFee              Decimal?          @db.Decimal(10, 2)
+  propertyTax           Decimal?          @db.Decimal(10, 2)
+  amenities             PropertyAmenity[] @default([])
+  negotiationTerms      String?
+  negotiationConditions String[]          @default([])
+  publishAfterReview    Boolean           @default(false)
+  allowWhatsappContact  Boolean           @default(false)
+  featured              Boolean           @default(false)
+  status                PropertyStatus    @default(DRAFT)
+  publishedAt           DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  updatedById           String?
 
-  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  updatedBy          User?               @relation("PropertyUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  responsible        User                @relation("PropertyResponsible", fields: [responsibleId], references: [id])
-  owner              User?               @relation("PropertyOwner", fields: [ownerId], references: [id], onDelete: SetNull)
-  ownerContact       Contact?            @relation(fields: [ownerContactId, tenantId], references: [id, tenantId], onDelete: NoAction)
+  tenant             Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  updatedBy          User?                  @relation("PropertyUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  responsible        User                   @relation("PropertyResponsible", fields: [responsibleId], references: [id])
+  owner              User?                  @relation("PropertyOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerContact       Contact?               @relation(fields: [ownerContactId, tenantId], references: [id, tenantId], onDelete: NoAction)
   address            PropertyAddress?
   media              PropertyMedia[]
   opportunities      Opportunity[]
@@ -504,7 +504,6 @@ model Property {
   @@map("properties")
 }
 
-
 model PropertyBrokerAccess {
   tenantId   String
   propertyId String
@@ -520,7 +519,7 @@ model PropertyBrokerAccess {
 }
 
 model PropertyAuditEvent {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   tenantId    String
   propertyId  String
   actorUserId String?
@@ -530,9 +529,9 @@ model PropertyAuditEvent {
   changes     Json
   createdAt   DateTime @default(now())
 
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   property Property @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: Cascade)
-  actor    User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  actor    User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, propertyId, createdAt, id])
   @@index([propertyId])
@@ -776,9 +775,13 @@ enum LeadStage {
 // Contato interessado, com vínculo opcional ao imóvel de interesse. Registros legados podem não ter imóvel.
 // A conversão manual preserva o Lead de origem. Contatos do marketplace já nascem vinculados à Oportunidade.
 model Lead {
+  contactId      String?
+  contact        Contact?         @relation(fields: [contactId, tenantId], references: [id, tenantId], onDelete: NoAction)
+  interactions   CrmInteraction[]
+  lastContactAt  DateTime?
   updatedById    String?
-  updatedBy      User?      @relation("LeadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  id             String     @id @default(cuid())
+  updatedBy      User?            @relation("LeadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  id             String           @id @default(cuid())
   tenantId       String
   responsibleId  String
   propertyId     String?
@@ -788,22 +791,24 @@ model Lead {
   interest       String
   budget         String
   source         LeadSource
-  stage          LeadStage  @default(NEW)
+  stage          LeadStage        @default(NEW)
   firstContactAt DateTime?
   notes          String?
-  opportunityId  String?    @unique
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  opportunityId  String?          @unique
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsible User         @relation("LeadResponsible", fields: [responsibleId], references: [id])
   opportunity Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
   property    Property?    @relation(fields: [propertyId, tenantId], references: [id, tenantId], onDelete: NoAction)
 
+  @@unique([id, tenantId])
   @@index([updatedById])
   @@index([tenantId])
   @@index([tenantId, stage])
   @@index([tenantId, propertyId])
+  @@index([tenantId, contactId])
   @@map("leads")
 }
 
@@ -820,21 +825,23 @@ enum ContactType {
 // Agenda de relacionamento do tenant. Independente de `Usuario`: um contato é alguém com quem o
 // tenant se relaciona (proprietário, locatário, corretor parceiro), não alguém que loga no sistema.
 model Contact {
+  leads           Lead[]
+  interactions    CrmInteraction[]
   createdById     String?
   updatedById     String?
   archivedById    String?
-  id              String      @id @default(cuid())
+  id              String           @id @default(cuid())
   tenantId        String
   name            String
   email           String
   phone           String?
-  type            ContactType @default(RENTER)
+  type            ContactType      @default(RENTER)
   avatarUrl       String?
   notes           String?
   lastInteraction DateTime?
   archivedAt      DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   opportunities   Opportunity[]
@@ -1159,8 +1166,8 @@ model AgendaEventAudit {
 
 model AgendaEvent {
   updatedById               String?
-  updatedBy                 User?               @relation("AgendaEventUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  id                        String              @id @default(cuid())
+  updatedBy                 User?                @relation("AgendaEventUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  id                        String               @id @default(cuid())
   tenantId                  String
   responsibleId             String
   createdById               String?
@@ -1169,9 +1176,9 @@ model AgendaEvent {
   freeFormPropertyReference String?
   title                     String
   type                      AgendaEventType?
-  audience                  AgendaEventAudience @default(SHARED_TEAM)
-  internal                  Boolean             @default(false)
-  status                    AgendaEventStatus   @default(CONFIRMED)
+  audience                  AgendaEventAudience  @default(SHARED_TEAM)
+  internal                  Boolean              @default(false)
+  status                    AgendaEventStatus    @default(CONFIRMED)
   start                     DateTime
   end                       DateTime
   participantName           String
@@ -1184,8 +1191,8 @@ model AgendaEvent {
   outcomeRecordedById       String?
   visitInterest             AgendaVisitInterest?
   outcomeNotes              String?
-  createdAt                 DateTime            @default(now())
-  updatedAt                 DateTime            @updatedAt
+  createdAt                 DateTime             @default(now())
+  updatedAt                 DateTime             @updatedAt
 
   tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsible User      @relation("AgendaEventResponsible", fields: [responsibleId], references: [id], onDelete: NoAction)
@@ -1729,4 +1736,50 @@ model FaceCheckRateLimit {
 
   @@index([expiresAt])
   @@map("face_check_rate_limits")
+}
+
+enum CrmInteractionChannel {
+  PHONE
+  EMAIL
+  WHATSAPP
+}
+
+enum CrmInteractionStatus {
+  STARTED
+  CONTACT_MADE
+  NO_RESPONSE
+  CANCELLED
+}
+
+model CrmInteraction {
+  kind          CrmInteractionKind     @default(CONTACT_ATTEMPT)
+  contactId     String?
+  contact       Contact?               @relation(fields: [contactId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  previousStage LeadStage?
+  nextStage     LeadStage?
+  id            String                 @id @default(cuid())
+  tenantId      String
+  leadId        String?
+  requestId     String
+  channel       CrmInteractionChannel?
+  status        CrmInteractionStatus?  @default(STARTED)
+  description   String?
+  actorUserId   String
+  actorName     String
+  completedById String?
+  createdAt     DateTime               @default(now())
+  completedAt   DateTime?
+  lead          Lead?                  @relation(fields: [leadId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@unique([tenantId, requestId])
+  @@index([tenantId, leadId, createdAt, id])
+  @@index([tenantId, contactId, createdAt, id])
+  @@map("crm_interactions")
+}
+
+enum CrmInteractionKind {
+  CONTACT_ATTEMPT
+  STAGE_CHANGED
+  CONTACT_LINKED
+  LEAD_CREATED
 }

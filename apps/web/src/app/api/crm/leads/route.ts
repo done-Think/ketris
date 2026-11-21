@@ -33,6 +33,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     actorTenantId: actor.tenantId,
     actorId: actor.sub,
     actorRole: actor.role,
+    contactId: body.contactId,
     name: body.name,
     phone: body.phone,
     email: body.email ?? null,

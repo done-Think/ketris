@@ -43,3 +43,7 @@ As migrations `20261025230000_crm_audit_and_system_activities` e `20261026010000
 O job de E2E existente preserva seu identificador e inclui o spec real de CRM junto de Auth, Agenda e Contracts. As fixtures verificam banco local e `KETRIS_E2E_ISOLATED_DB=1`, e somente removem tenants com o prefixo exclusivo da suíte. As validações usam banco isolado; o seed principal e os ambientes AWS permanecem sob os procedimentos existentes de deploy.
 
 O limite geral de requisições usa [contadores compartilhados em PostgreSQL](technical-debt/api-distributed-rate-limit.md), incluídos na autorização posterior desta refatoração.
+
+## Interações a partir dos atalhos de contato
+
+O acionamento de Ligar, E-mail ou WhatsApp gera uma tentativa pendente, sem afirmar que houve contato. O corretor registra o resultado para atualizar as datas de atendimento. Fluxo, vínculos, permissões e migration em [crm-interactions.md](crm-interactions.md).

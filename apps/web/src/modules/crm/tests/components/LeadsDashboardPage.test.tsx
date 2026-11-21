@@ -292,6 +292,19 @@ describe('LeadsDashboardPage', () => {
     await user.click(screen.getByLabelText('Estágio'))
     await user.click(await screen.findByRole('option', { name: 'Em contato' }))
 
-    expect(mutate).toHaveBeenCalledWith({ leadId: 'lead-001', stage: 'IN_CONTACT' })
+    expect(mutate).toHaveBeenCalledWith(
+      { leadId: 'lead-001', stage: 'IN_CONTACT' },
+      { onSuccess: expect.any(Function) },
+    )
   })
 })
+
+vi.mock('../../hooks/use-interactions', () => ({
+  useInteractions: () => ({
+    data: { interactions: [], pagination: { page: 1, pageSize: 5, pageCount: 1, totalCount: 0 } },
+    isLoading: false,
+    isError: false,
+  }),
+  useStartInteraction: () => ({ mutateAsync: vi.fn(), isPending: false, isSuccess: false }),
+  useCompleteInteraction: () => ({ mutateAsync: vi.fn(), isPending: false, isError: false }),
+}))

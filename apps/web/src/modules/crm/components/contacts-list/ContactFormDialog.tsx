@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
+  Alert,
   Button,
   CircularProgress,
   Dialog,
@@ -41,6 +42,8 @@ export function ContactFormDialog(props: ContactFormDialogProps) {
 function ContactFormDialogForm({
   open,
   initialValues,
+  title,
+  errorMessage,
   isPending,
   onClose,
   onSave,
@@ -61,9 +64,10 @@ function ContactFormDialogForm({
     <Dialog open={open} onClose={() => !isPending && onClose()} fullWidth maxWidth="sm">
       <Box component="form" noValidate onSubmit={handleSubmit(onSave)}>
         <DialogTitle sx={crmStyles.dialogTitleSx}>
-          {initialValues ? t('editTitle') : t('createTitle')}
+          {title ?? (initialValues ? t('editTitle') : t('createTitle'))}
         </DialogTitle>
         <DialogContent>
+          {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
           <Box sx={crmStyles.boxSx}>
             <TextField
               label={t('fields.name')}
