@@ -21,7 +21,6 @@ const baseKpis: ApiAgencyOverviewKpis = {
   receivedLeadsThisMonth: 7,
   receivedLeadsPreviousPeriod: 7,
   monthlyReceivable: 8500,
-  monthlyReceivablePreviousMonth: 8500,
   overdueTotal: 0,
   occupancyPercentage: 67,
 }
@@ -33,9 +32,6 @@ const scenarios: Partial<ApiAgencyOverviewKpis>[] = [
   { newPropertiesThisMonth: 3 },
   { receivedLeadsThisMonth: 9, receivedLeadsPreviousPeriod: 4 },
   { receivedLeadsThisMonth: 2, receivedLeadsPreviousPeriod: 5 },
-  { monthlyReceivable: 11200, monthlyReceivablePreviousMonth: 10000 },
-  { monthlyReceivable: 9200, monthlyReceivablePreviousMonth: 10000 },
-  { monthlyReceivable: 5000, monthlyReceivablePreviousMonth: 0 },
 ]
 
 type HelperKey = keyof typeof ptDashboard.agencyOverview.kpis.helpers
@@ -77,7 +73,7 @@ describe('KPI helpers i18n', () => {
   it('formata números grandes com o separador de milhar de cada idioma', () => {
     const translate = (
       locale: keyof typeof catalogs,
-      key: 'leadsIncrease' | 'revenueIncrease' | 'newProperties',
+      key: 'leadsIncrease' | 'newProperties',
       values: Record<string, number>,
     ) =>
       createTranslator({
@@ -87,7 +83,6 @@ describe('KPI helpers i18n', () => {
       })(key, values)
 
     expect(translate('pt-BR', 'leadsIncrease', { count: 1500 })).toBe('+1.500 vs mês passado')
-    expect(translate('pt-BR', 'revenueIncrease', { percent: 1400 })).toBe('+1.400% vs mês passado')
     expect(translate('pt-BR', 'newProperties', { count: 1200 })).toBe('+1.200 novos este mês')
     expect(translate('en-US', 'leadsIncrease', { count: 1500 })).toBe('+1,500 vs last month')
     expect(translate('es-ES', 'leadsIncrease', { count: 15000 })).toBe('+15.000 vs mes anterior')

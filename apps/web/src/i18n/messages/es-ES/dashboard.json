@@ -107,17 +107,13 @@
         "leadsIncrease": "+{count, number} vs mes anterior",
         "leadsDecrease": "−{count, number} vs mes anterior",
         "leadsSame": "Igual al mes anterior",
-        "revenueIncrease": "+{percent, number}% vs mes anterior",
-        "revenueDecrease": "−{percent, number}% vs mes anterior",
-        "revenueSame": "Igual al mes anterior",
-        "revenueNoPrevious": "Mes anterior en cero",
         "overdue": "Vencidos sin pagar",
         "noOverdue": "Nada en mora"
       }
     },
     "performance": {
       "title": "Performance de Facturación",
-      "subtitle": "Ingresos mensuales a cobrar por la inmobiliaria",
+      "subtitle": "Total facturado por mes, sin los cobros cancelados",
       "revenue": "Ingresos"
     },
     "topBrokers": {
@@ -507,8 +503,8 @@
       "date": "Fecha"
     },
     "export": "Exportar",
-    "revenueChartTitle": "Por cobrar (6 meses)",
-    "revenue": "Por cobrar",
+    "revenueChartTitle": "Facturado (6 meses)",
+    "revenue": "Facturado",
     "upcomingDuesTitle": "Próximos vencimientos",
     "kpis": {
       "receivable": "Por cobrar",

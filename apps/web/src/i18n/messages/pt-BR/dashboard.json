@@ -107,17 +107,13 @@
         "leadsIncrease": "+{count, number} vs mês passado",
         "leadsDecrease": "−{count, number} vs mês passado",
         "leadsSame": "Igual ao mês passado",
-        "revenueIncrease": "+{percent, number}% vs mês passado",
-        "revenueDecrease": "−{percent, number}% vs mês passado",
-        "revenueSame": "Igual ao mês passado",
-        "revenueNoPrevious": "Mês passado zerado",
         "overdue": "Vencidas e não pagas",
         "noOverdue": "Nada em atraso"
       }
     },
     "performance": {
       "title": "Performance de Faturamento",
-      "subtitle": "Receita mensal a receber pela imobiliária",
+      "subtitle": "Total faturado por mês, sem as cobranças canceladas",
       "revenue": "Receita"
     },
     "topBrokers": {
@@ -507,8 +503,8 @@
       "date": "Data"
     },
     "export": "Exportar",
-    "revenueChartTitle": "A receber (6 meses)",
-    "revenue": "A receber",
+    "revenueChartTitle": "Faturado (6 meses)",
+    "revenue": "Faturado",
     "upcomingDuesTitle": "Próximos vencimentos",
     "kpis": {
       "receivable": "A receber",

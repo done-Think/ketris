@@ -20,7 +20,6 @@ export class GetAgencyOverviewUseCase {
       activeBrokersCount,
       receivedLeadsThisMonth,
       receivedLeadsPreviousPeriod,
-      monthlyReceivablePreviousMonth,
       occupancyPercentage,
       financialSummary,
       topBrokers,
@@ -31,7 +30,6 @@ export class GetAgencyOverviewUseCase {
       this.repository.getActiveBrokersCount(input.actorTenantId),
       this.repository.getReceivedLeadsThisMonth(input.actorTenantId, referenceDate),
       this.repository.getReceivedLeadsPreviousPeriod(input.actorTenantId, referenceDate),
-      this.repository.getMonthlyReceivablePreviousMonth(input.actorTenantId, referenceDate),
       this.repository.getOccupancyPercentage(input.actorTenantId),
       this.financialSummaryProvider.execute({
         actorTenantId: input.actorTenantId,
@@ -49,7 +47,6 @@ export class GetAgencyOverviewUseCase {
         receivedLeadsThisMonth,
         receivedLeadsPreviousPeriod,
         monthlyReceivable: financialSummary.monthlyReceivable,
-        monthlyReceivablePreviousMonth,
         overdueTotal: financialSummary.overdueTotal,
         occupancyPercentage,
       },
