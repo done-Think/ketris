@@ -353,14 +353,14 @@
       "appearance": "Apariencia",
       "images": "Imágenes",
       "backgroundColor": "Fondo de la marca",
-      "logoUrl": "URL del logo",
-      "bannerUrl": "URL del banner",
+      "logoUrl": "Logotipo",
+      "bannerUrl": "Imagen de portada",
       "team": "Equipo destacado",
       "teamPicker": "Corredores destacados",
       "teamPickerPlaceholder": "Selecciona hasta 6 corredores",
       "teamPickerHint": "Opcional. Puedes publicar sin corredores destacados y añadirlos después.",
-      "primaryColor": "Color principal",
-      "secondaryColor": "Color secundario"
+      "primaryColor": "Color de destacados",
+      "secondaryColor": "Color del nombre"
     },
     "actions": {
       "preview": "Vista previa",
@@ -390,7 +390,52 @@
     },
     "validatedDraft": "Borrador validado",
     "loadError": "No se pudo cargar el perfil.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "brand": {
+      "summaryDescription": "Logotipo, imagen de portada y los colores que aparecen en tu perfil y en las tarjetas de búsqueda.",
+      "open": "Personalizar marca",
+      "ready": "Listo para publicar",
+      "missingHint": "Para publicar, falta: {items}",
+      "missingItems": {
+        "backgroundColor": "fondo de la marca",
+        "logoUrl": "logotipo",
+        "bannerUrl": "imagen de portada"
+      },
+      "dialogTitle": "Personalizar marca",
+      "close": "Cerrar",
+      "logoHint": "PNG con fondo transparente, desde 400 px.",
+      "bannerHint": "Imagen horizontal, 1600 × 500 px. JPG, PNG o WEBP.",
+      "colors": "Colores",
+      "palettes": "Paletas listas",
+      "applyPalette": "Usar la paleta {name}",
+      "paletteNames": {
+        "ketris": "Ketris",
+        "ocean": "Océano",
+        "forest": "Verde",
+        "terracotta": "Terracota",
+        "graphite": "Grafito",
+        "wine": "Vino"
+      },
+      "colorHelp": {
+        "backgroundColor": "Fondo de la franja del logotipo y de las tarjetas del equipo.",
+        "primaryColor": "Etiquetas, números del perfil, botones de contacto y precio de los inmuebles.",
+        "secondaryColor": "Nombre y CRECI en la tarjeta. Si queda vacío, usa el color de destacados."
+      },
+      "requiredToPublish": "obligatorio para publicar",
+      "emptyColor": "Sin color",
+      "pickColor": "Elegir {name}",
+      "contrast": {
+        "nameOnBackground": "El nombre es difícil de leer sobre el fondo (contraste {ratio} : 1). Elige un color del nombre más {suggestion, select, darker {oscuro} other {claro}}.",
+        "textOnPrimary": "El texto blanco de los botones queda débil sobre el color de destacados (contraste {ratio} : 1). Un color más oscuro ayuda."
+      },
+      "previewTabs": {
+        "profile": "Perfil",
+        "card": "Tarjeta en la búsqueda"
+      },
+      "cancel": "Cancelar",
+      "apply": "Aplicar",
+      "applied": "Marca aplicada. Haz clic en Guardar para conservarla."
+    }
   },
   "searchResults": {
     "toolbar": {
