@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { fileURLToPath } from 'node:url'
 import {
   ZERO_SHA,
   appendTrailers,
@@ -16,12 +17,58 @@ import {
   skipTrailer,
   ticketFromBranch,
 } from '../local-validation-lib.mjs'
-import { runPrePush } from '../pre-push-validate.mjs'
+import { runCheck, runPrePush } from '../pre-push-validate.mjs'
 import { enrichMessage } from '../commit-msg-hook.mjs'
 
 const commit = 'a'.repeat(40)
 const tree = 'b'.repeat(40)
 const remote = 'c'.repeat(40)
+
+test('Windows runs npm through Node without a shell and preserves arguments', () => {
+  const npmCli = fileURLToPath(new URL('../pre-push-validate.mjs', import.meta.url))
+  let invocation
+  const result = runCheck(
+    {
+      cmd: 'npm',
+      args: ['run', 'typecheck', '-w', '@ketris/web'],
+      env: { TEST_CHECK: '1' },
+    },
+    {
+      platform: 'win32',
+      env: { npm_execpath: npmCli },
+      execPath: process.execPath,
+      spawn: (...args) => {
+        invocation = args
+        return { status: 0 }
+      },
+    },
+  )
+  assert.equal(result.status, 0)
+  assert.equal(invocation[0], process.execPath)
+  assert.deepEqual(invocation[1], [npmCli, 'run', 'typecheck', '-w', '@ketris/web'])
+  assert.equal(invocation[2].env.TEST_CHECK, '1')
+  assert.equal(invocation[2].shell, undefined)
+})
+
+test('Unix keeps the original npm command', () => {
+  let invocation
+  runCheck(
+    { cmd: 'npm', args: ['--version'] },
+    {
+      platform: 'linux',
+      spawn: (...args) => {
+        invocation = args
+        return { status: 0 }
+      },
+    },
+  )
+  assert.equal(invocation[0], 'npm')
+  assert.deepEqual(invocation[1], ['--version'])
+})
+
+test('the real npm launcher works on the current platform', () => {
+  assert.equal(runCheck({ cmd: 'npm', args: ['--version'] }).status, 0)
+})
 
 function pushLine(overrides = {}) {
   const { localRef, localSha, remoteRef, remoteSha } = {

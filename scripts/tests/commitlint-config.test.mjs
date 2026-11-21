@@ -6,11 +6,15 @@ import { fileURLToPath } from 'node:url'
 const root = fileURLToPath(new URL('../../', import.meta.url))
 
 function lint(message) {
-  const result = spawnSync('npx', ['--no-install', 'commitlint'], {
-    cwd: root,
-    input: message,
-    encoding: 'utf8',
-  })
+  const result = spawnSync(
+    process.execPath,
+    [fileURLToPath(new URL('../../node_modules/@commitlint/cli/cli.js', import.meta.url))],
+    {
+      cwd: root,
+      input: message,
+      encoding: 'utf8',
+    },
+  )
   return { ok: result.status === 0, output: `${result.stdout}${result.stderr}` }
 }
 

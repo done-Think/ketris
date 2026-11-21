@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   ZERO_SHA,
@@ -200,6 +200,36 @@ export function runPrePush({ input, env, remote, git, run, log, now }) {
   return 0
 }
 
+export function runCheck(
+  check,
+  {
+    platform = process.platform,
+    env = process.env,
+    execPath = process.execPath,
+    spawn = spawnSync,
+  } = {},
+) {
+  let cmd = check.cmd
+  let args = check.args
+  if (platform === 'win32' && cmd === 'npm') {
+    // Execute the JS entry point directly: npm.cmd cannot be spawned without a shell.
+    const npmCli = env.npm_execpath || resolve(dirname(execPath), 'node_modules/npm/bin/npm-cli.js')
+    if (!existsSync(npmCli)) {
+      console.error(`Não foi possível localizar o npm CLI: ${npmCli}`)
+      return { status: 1 }
+    }
+    cmd = execPath
+    args = [npmCli, ...args]
+  }
+  const result = spawn(cmd, args, {
+    cwd: check.cwd ? resolve(root, check.cwd) : root,
+    env: { ...env, ...check.env },
+    stdio: 'inherit',
+  })
+  if (result.error) console.error(`Não foi possível executar ${check.cmd}: ${result.error.message}`)
+  return result
+}
+
 // Monta o git e o runner reais; usado pelo hook de pre-push e por `npm run validate:local`.
 export function runLocal({ input, env, remote }) {
   const git = (...args) =>
@@ -208,12 +238,7 @@ export function runLocal({ input, env, remote }) {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
     }).trim()
-  const run = (check) =>
-    spawnSync(check.cmd, check.args, {
-      cwd: check.cwd ? resolve(root, check.cwd) : root,
-      env: { ...process.env, ...check.env },
-      stdio: 'inherit',
-    })
+  const run = (check) => runCheck(check)
   return runPrePush({
     input,
     env,
