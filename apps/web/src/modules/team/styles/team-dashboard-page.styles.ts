@@ -29,7 +29,7 @@ export const styles = {
   grid: {
     display: 'grid',
     gridTemplateColumns: {
-      xs: '1fr',
+      xs: 'minmax(0, 1fr)',
       md: 'repeat(2, minmax(0, 1fr))',
       xl: 'repeat(3, minmax(0, 1fr))',
     },
