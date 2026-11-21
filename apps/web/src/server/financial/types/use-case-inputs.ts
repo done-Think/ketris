@@ -9,6 +9,7 @@ export interface ListChargesInput extends ChargeActor {
   type?: ChargeType
   status?: ChargeStatus
   dueMonth?: CalendarMonth
+  contractId?: string
   search?: string
   page?: number
   pageSize?: number

@@ -265,4 +265,37 @@ describe('/api/maintenance full summaries and consistent access', () => {
     )
     expect(rejected.status).toBe(400)
   })
+
+  it('filters the tickets of one contract without opening other contracts', async () => {
+    const ticket = await prisma.maintenanceTicket.create({
+      data: {
+        tenantId: env.fixture.tenant.id,
+        propertyId: env.fixture.property.id,
+        contractId: env.fixture.contract.id,
+        category: 'OTHER',
+        title: 'Ticket do filtro por contrato',
+        description: 'Filtro por contrato',
+        openedById: env.fixture.admin.id,
+        openedByName: env.fixture.admin.name,
+        priority: 'NORMAL',
+        status: 'OPEN',
+      },
+    })
+    const items = async (token: string, contractId: string) => {
+      const response = await listTickets(
+        request(`tickets?contractId=${contractId}&pageSize=100`, 'GET', token),
+      )
+      return response.status === 200
+        ? ((await response.json()).items as Array<{ id: string; contractId: string }>)
+        : []
+    }
+
+    const own = await items(env.fixture.admin.token, env.fixture.contract.id)
+    expect(own.map((item) => item.id)).toContain(ticket.id)
+    expect(own.every((item) => item.contractId === env.fixture.contract.id)).toBe(true)
+    expect(await items(env.fixture.admin.token, 'contrato-que-nao-existe')).toEqual([])
+    expect(
+      (await items(env.other.renter.token, env.fixture.contract.id)).map((item) => item.id),
+    ).not.toContain(ticket.id)
+  })
 })
