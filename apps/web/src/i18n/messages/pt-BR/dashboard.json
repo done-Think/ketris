@@ -488,7 +488,17 @@
       "linksRegularized": "Vínculos de acesso regularizados pela gestão.",
       "attachmentAdded": "Anexo adicionado."
     },
-    "allCategories": "Todas as categorias"
+    "allCategories": "Todas as categorias",
+    "contractFilter": {
+      "message": "Mostrando só os chamados deste contrato.",
+      "clear": "Ver todos os chamados"
+    },
+    "contractTickets": {
+      "title": "Chamados deste contrato",
+      "openAll": "Ver todos os chamados",
+      "empty": "Nenhum chamado aberto para este contrato.",
+      "meta": "{category} · aberto em {date} por {name}"
+    }
   },
   "finance": {
     "title": "Financeiro",

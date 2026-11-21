@@ -488,7 +488,17 @@
       "linksRegularized": "Access links regularized by management.",
       "attachmentAdded": "Attachment added."
     },
-    "allCategories": "All categories"
+    "allCategories": "All categories",
+    "contractFilter": {
+      "message": "Showing only the tickets of this contract.",
+      "clear": "See all tickets"
+    },
+    "contractTickets": {
+      "title": "Tickets for this contract",
+      "openAll": "See all tickets",
+      "empty": "No open tickets for this contract.",
+      "meta": "{category} · opened on {date} by {name}"
+    }
   },
   "finance": {
     "title": "Finance",

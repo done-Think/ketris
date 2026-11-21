@@ -488,7 +488,17 @@
       "linksRegularized": "Vínculos de acceso regularizados por la gestión.",
       "attachmentAdded": "Archivo adjunto agregado."
     },
-    "allCategories": "Todas las categorías"
+    "allCategories": "Todas las categorías",
+    "contractFilter": {
+      "message": "Mostrando solo las solicitudes de este contrato.",
+      "clear": "Ver todas las solicitudes"
+    },
+    "contractTickets": {
+      "title": "Solicitudes de este contrato",
+      "openAll": "Ver todas las solicitudes",
+      "empty": "No hay solicitudes abiertas para este contrato.",
+      "meta": "{category} · abierta el {date} por {name}"
+    }
   },
   "finance": {
     "title": "Finanzas",
