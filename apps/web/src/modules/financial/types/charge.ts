@@ -30,6 +30,7 @@ export interface ChargeListRow {
   amount: number
   dueDate: string
   status: ChargeStatus
+  receipt: ChargeReceipt | null
 }
 
 export interface Charge extends ChargeListRow {
@@ -241,3 +242,26 @@ export interface ReceiptFileFieldProps {
 }
 
 export type ChargeDetailDialog = 'payment' | 'reverse' | 'cancel'
+
+export type ContractChargeMonthStatus = 'paid' | 'overdue' | 'upcoming' | 'cancelled'
+
+export interface ContractChargeMonth {
+  month: string
+  charges: ChargeListRow[]
+  total: number
+  status: ContractChargeMonthStatus
+}
+
+export interface ContractChargeOverview {
+  openCount: number
+  openTotal: number
+  overdue: ChargeListRow[]
+  overdueTotal: number
+  nextDue: ChargeListRow | null
+  dueSoon: ChargeListRow[]
+  dueSoonTotal: number
+}
+
+export interface ContractChargesProps {
+  contractId: string
+}

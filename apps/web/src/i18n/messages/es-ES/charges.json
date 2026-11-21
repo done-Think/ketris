@@ -209,5 +209,26 @@
         "dueDate": "vencimiento"
       }
     }
+  },
+  "contract": {
+    "nextDue": "Próximo vencimiento",
+    "openTotal": "Pendiente ({count})",
+    "overdueCount": "Atrasados",
+    "noDate": "—",
+    "monthStatuses": {
+      "paid": "Todo pagado",
+      "overdue": "Atrasado",
+      "upcoming": "Por vencer",
+      "cancelled": "Cancelado"
+    },
+    "dueOn": "Vence el {date}",
+    "viewCharge": "Ver cobro {code}",
+    "empty": "No hay cobros emitidos para este contrato.",
+    "loadError": "No se pudieron cargar los cobros del contrato.",
+    "retry": "Intentar de nuevo",
+    "alerts": {
+      "overdue": "{count, plural, one {# cobro atrasado} other {# cobros atrasados}}, por un total de {total}. El más antiguo venció el {date}.",
+      "dueSoon": "{count, plural, one {Un cobro vence} other {# cobros vencen}} en hasta {days} días, por un total de {total}. El próximo vence el {date}."
+    }
   }
 }

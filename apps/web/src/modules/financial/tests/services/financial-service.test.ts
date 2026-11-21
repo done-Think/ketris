@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { HttpClient } from '@shared/lib/api/http-client'
 
 import { FinancialService } from '../../services/financial-service'
-import { apiCharge } from '../fixtures/charge'
+import { apiCharge, apiListItem } from '../fixtures/charge'
 
 function mockClient() {
   return { get: vi.fn(), post: vi.fn(), patch: vi.fn(), put: vi.fn(), delete: vi.fn() }
@@ -26,6 +26,22 @@ describe('FinancialService', () => {
     await service.listCharges({ type: 'RECEIVABLE', search: '', page: 2, dueMonth: '2026-10' })
     expect(api.get).toHaveBeenCalledWith('/financial/charges', {
       params: { type: 'RECEIVABLE', page: '2', dueMonth: '2026-10' },
+    })
+  })
+
+  it('asks the API for the receivable charges of the contract, page by page', async () => {
+    api.get
+      .mockResolvedValueOnce({
+        items: [apiListItem({ id: 'a' }), apiListItem({ id: 'b' })],
+        totalCount: 3,
+      })
+      .mockResolvedValueOnce({ items: [apiListItem({ id: 'c' })], totalCount: 3 })
+
+    const charges = await service.listContractCharges('contract-1')
+
+    expect(charges.map((charge) => charge.id)).toEqual(['a', 'b', 'c'])
+    expect(api.get).toHaveBeenLastCalledWith('/financial/charges', {
+      params: { type: 'RECEIVABLE', contractId: 'contract-1', page: '2', pageSize: '100' },
     })
   })
 

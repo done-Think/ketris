@@ -209,5 +209,26 @@
         "dueDate": "due date"
       }
     }
+  },
+  "contract": {
+    "nextDue": "Next due date",
+    "openTotal": "Open ({count})",
+    "overdueCount": "Overdue",
+    "noDate": "—",
+    "monthStatuses": {
+      "paid": "All paid",
+      "overdue": "Overdue",
+      "upcoming": "Upcoming",
+      "cancelled": "Cancelled"
+    },
+    "dueOn": "Due {date}",
+    "viewCharge": "View charge {code}",
+    "empty": "No charges have been issued for this contract.",
+    "loadError": "Couldn't load the contract charges.",
+    "retry": "Try again",
+    "alerts": {
+      "overdue": "{count, plural, one {# overdue charge} other {# overdue charges}}, totaling {total}. The oldest was due on {date}.",
+      "dueSoon": "{count, plural, one {One charge is} other {# charges are}} due within {days} days, totaling {total}. The next one is due on {date}."
+    }
   }
 }

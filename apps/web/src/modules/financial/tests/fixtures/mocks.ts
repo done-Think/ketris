@@ -2,6 +2,7 @@ import { vi } from 'vitest'
 
 export const financialServiceMock = {
   listCharges: vi.fn(),
+  listContractCharges: vi.fn(),
   getCharge: vi.fn(),
   createCharge: vi.fn(),
   updateCharge: vi.fn(),
