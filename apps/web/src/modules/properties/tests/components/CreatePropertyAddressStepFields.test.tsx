@@ -71,7 +71,7 @@ describe('property address by postal code', () => {
     await waitFor(() => expect(screen.getByLabelText('Endereço')).toHaveValue(address.street))
     expect(screen.getByLabelText('Bairro')).toHaveValue('Anhumas')
     expect(screen.getByLabelText('Cidade')).toHaveValue('Itajubá')
-    expect(screen.getByLabelText('Estado')).toHaveValue('MG')
+    expect(screen.getByRole('combobox', { name: 'Estado' })).toHaveTextContent('MG')
     expect(screen.getByLabelText('Número')).toHaveValue('35')
     expect(screen.getByLabelText('Complemento')).toHaveValue('apto 101')
     expect(screen.queryByLabelText(/Latitude/)).not.toBeInTheDocument()
