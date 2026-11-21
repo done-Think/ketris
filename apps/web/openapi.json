@@ -6273,6 +6273,16 @@
             "in": "query"
           },
           {
+            "schema": {
+              "type": "string",
+              "enum": ["true", "false"],
+              "description": "Filtra quem ainda não aceitou o convite para a equipe."
+            },
+            "required": false,
+            "name": "pendingInvitation",
+            "in": "query"
+          },
+          {
             "in": "header",
             "name": "X-Ketris-Api-Version",
             "required": true,

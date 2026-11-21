@@ -11,6 +11,11 @@ export const listUsersQuerySchema = z
       .enum(['true', 'false'])
       .transform((value) => value === 'true')
       .optional(),
+    pendingInvitation: z
+      .enum(['true', 'false'])
+      .transform((value) => value === 'true')
+      .optional()
+      .openapi({ description: 'Filtra quem ainda não aceitou o convite para a equipe.' }),
   })
   .strict()
   .openapi('ListUsersQuery')
