@@ -1,4 +1,4 @@
-import { RegistrationEmailAlreadyInUseError } from '../../domain/errors'
+import { AgencyNotFoundError, RegistrationEmailAlreadyInUseError } from '../../domain/errors'
 import {
   assertAgencyCanReceiveMembers,
   assertTermsAccepted,
@@ -18,6 +18,7 @@ export class RegisterTenantAgentUseCase {
     assertTermsAccepted(input.acceptTerms)
     const agency = await this.accounts.findTenantById(input.agencyId)
     assertAgencyCanReceiveMembers(agency)
+    if (!(await this.accounts.hasVerifiedOwner(agency.id))) throw new AgencyNotFoundError()
     if (await this.accounts.findAccountByEmail(agency.id, input.email))
       throw new RegistrationEmailAlreadyInUseError()
     const user = await this.accounts.createMember({

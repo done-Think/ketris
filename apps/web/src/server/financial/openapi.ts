@@ -230,7 +230,7 @@ export function registerFinancialOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Financial'],
     summary: 'URL temporária para baixar um comprovante',
     description:
-      'Quem vê a cobrança baixa o comprovante vigente. Comprovantes antigos (estornados) só o OWNER, pelo histórico.',
+      'Quem vê a cobrança baixa o comprovante vigente. Comprovantes antigos (estornados) só o OWNER do tenant da cobrança, pelo histórico.',
     security: [{ bearerAuth: [] }],
     request: { params: chargeReceiptParamsSchema },
     responses: {

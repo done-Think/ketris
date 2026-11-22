@@ -4,8 +4,15 @@ import { ForbiddenError } from '@server/shared/errors'
 import type { TeamActor } from '../types/team'
 import type { TeamRepository } from './ports/team-repository.port'
 
-export function assertTeamManager(actor: TeamActor): void {
-  if (!isAgencyManager(actor.actorRole))
+// Owners of personal and independent-broker accounts are OWNER too, so the account type decides.
+export async function assertTeamManager(
+  repository: TeamRepository,
+  actor: TeamActor,
+): Promise<void> {
+  if (
+    !isAgencyManager(actor.actorRole) ||
+    (await repository.findTenantAccountType(actor.actorTenantId)) !== 'AGENCY'
+  )
     throw new ForbiddenError('Apenas a gestão da imobiliária gerencia a equipe.')
 }
 

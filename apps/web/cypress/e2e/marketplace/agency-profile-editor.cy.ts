@@ -70,10 +70,10 @@ describe('Agency public profile defaults', () => {
     cy.get('input[name="displayName"]').should('have.value', 'Tenant E2E')
     cy.get('input[name="email"]').should('have.value', email)
     cy.get('input[name="phone"]').should('have.value', '(35) 99798-9991')
-    cy.contains('p', /^URL do logo$/)
+    cy.contains('h5', /^Aparência$/)
       .parent()
-      .find('img')
-      .should('have.attr', 'src', avatarUrl)
+      .find(`img[src="${avatarUrl}"]`)
+      .should('exist')
 
     cy.contains('button', /^Editar$/).click()
     cy.get('input[name="phone"]').clear().type('3536221234').should('have.value', '(35) 3622-1234')
@@ -91,10 +91,10 @@ describe('Agency public profile defaults', () => {
     cy.reload()
     cy.get('input[name="email"]').should('have.value', publicEmail)
     cy.get('input[name="phone"]').should('have.value', '(35) 3622-1234')
-    cy.contains('p', /^URL do logo$/)
+    cy.contains('h5', /^Aparência$/)
       .parent()
-      .find('img')
-      .should('have.attr', 'src', avatarUrl)
+      .find(`img[src="${avatarUrl}"]`)
+      .should('exist')
   })
 
   const itWithMailbox = Cypress.expose('AUTH_MAILBOX_ENABLED') ? it : it.skip
@@ -188,24 +188,18 @@ describe('Agency public profile defaults', () => {
     cy.contains('button', 'Entrar').click()
     cy.location('pathname').should('eq', '/pt/dashboard/public-profile/agency')
     cy.contains('button', /^Editar$/).click()
-    for (const [name, color] of Object.entries({
-      primaryColor: '#123456',
-      secondaryColor: '#654321',
-      backgroundColor: '#fedcba',
-    })) {
-      cy.get(`input[name="${name}"]`)
-        .should('have.attr', 'type', 'color')
-        .then(($input) => {
-          const input = $input[0] as HTMLInputElement
-          const view = input.ownerDocument.defaultView!
-          Object.getOwnPropertyDescriptor(view.HTMLInputElement.prototype, 'value')!.set!.call(
-            input,
-            color,
-          )
-          input.dispatchEvent(new view.Event('input', { bubbles: true }))
-          input.dispatchEvent(new view.Event('change', { bubbles: true }))
-        })
-    }
+    cy.contains('button', /^Personalizar marca$/).click()
+    cy.get('[role="dialog"]').within(() => {
+      for (const [name, color] of Object.entries({
+        primaryColor: '#123456',
+        secondaryColor: '#654321',
+        backgroundColor: '#FEDCBA',
+      })) {
+        cy.get(`input[name="${name}"]`).clear().type(color).should('have.value', color)
+      }
+      cy.contains('button', /^Aplicar$/).click()
+    })
+    cy.get('[role="dialog"]').should('not.exist')
     cy.contains(
       'Opcional. Você pode publicar sem corretores em destaque e adicioná-los depois.',
     ).should('exist')
@@ -235,7 +229,7 @@ describe('Agency public profile defaults', () => {
       expect(request.body).to.include({
         primaryColor: '#123456',
         secondaryColor: '#654321',
-        backgroundColor: '#fedcba',
+        backgroundColor: '#FEDCBA',
       })
     })
     cy.wait('@publishProfile').then(({ response }) => {
@@ -245,13 +239,13 @@ describe('Agency public profile defaults', () => {
       expect(response?.body.profile).to.include({
         primaryColor: '#123456',
         secondaryColor: '#654321',
-        backgroundColor: '#fedcba',
+        backgroundColor: '#FEDCBA',
       })
     })
     cy.reload()
-    cy.get('input[name="primaryColor"]').should('have.value', '#123456')
-    cy.get('input[name="secondaryColor"]').should('have.value', '#654321')
-    cy.get('input[name="backgroundColor"]').should('have.value', '#fedcba')
+    cy.get('[aria-label="Cor dos destaques: #123456"]').should('exist')
+    cy.get('[aria-label="Cor do nome: #654321"]').should('exist')
+    cy.get('[aria-label="Fundo da marca: #FEDCBA"]').should('exist')
     cy.visit(`/pt/imobiliarias/${tenantId}`)
     cy.get('h1').should('contain', displayName)
     cy.contains('h5', 'Equipe em destaque').should('not.exist')

@@ -62,6 +62,7 @@ export const listChargesQuerySchema = z
     status: chargeStatusSchema.optional(),
     search: z.string().trim().min(1).max(200).optional(),
     dueMonth: monthSchema.optional(),
+    contractId: z.string().trim().min(1).max(64).optional(),
     page: z.coerce.number().int().positive().max(1000000).optional(),
     pageSize: z.coerce.number().int().positive().max(100).optional(),
   })

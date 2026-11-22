@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { theme } from '@shared/theme/theme'
 
 import { TeamDashboardComposition } from '@/app/[locale]/(dashboard)/dashboard/team/TeamDashboardComposition'
+import { styles as teamPageStyles } from '../../styles/team-dashboard-page.styles'
 import type { TeamMember } from '../../types/team'
 import { teamMember, teamOverview } from '../fixtures/team-member'
 
@@ -189,6 +190,11 @@ describe('BrokerTeamDashboardPage', () => {
     ).toBeDisabled()
     expect(within(await card('Carla Inativa')).getByText('Inativo')).toBeVisible()
     expect(within(await card('Diego Convidado')).getByText('Convite pendente')).toBeVisible()
+  })
+
+  it('lets the broker cards shrink to the phone width', () => {
+    // "1fr" alone grows to the card content and pushed the cards past the screen on phones.
+    expect(teamPageStyles.grid.gridTemplateColumns.xs).toBe('minmax(0, 1fr)')
   })
 
   it('opens the public profile by the user id and filters the list by search', async () => {

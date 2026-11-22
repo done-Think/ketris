@@ -50,6 +50,17 @@ describe('RegisterTenantAgentUseCase', () => {
     expect(passwords.hash).not.toHaveBeenCalled()
   })
 
+  it('rejects an agency whose owner has not confirmed the e-mail yet', async () => {
+    const { accounts, passwords } = createDeps()
+    vi.mocked(accounts.hasVerifiedOwner).mockResolvedValueOnce(false)
+    await expect(
+      new RegisterTenantAgentUseCase(accounts, passwords).execute(input),
+    ).rejects.toThrow(AgencyNotFoundError)
+    expect(accounts.hasVerifiedOwner).toHaveBeenCalledWith(tenant.id)
+    expect(accounts.createMember).not.toHaveBeenCalled()
+    expect(passwords.hash).not.toHaveBeenCalled()
+  })
+
   it('rejects an existing account within the chosen tenant', async () => {
     const { accounts, passwords } = createDeps()
     vi.mocked(accounts.findAccountByEmail).mockResolvedValueOnce(account)

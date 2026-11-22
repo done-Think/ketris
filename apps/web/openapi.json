@@ -2106,6 +2106,7 @@
             "enum": ["PLUMBING", "ELECTRICAL", "STRUCTURAL", "PAINTING", "OTHER"]
           },
           "propertyId": { "type": "string", "minLength": 1 },
+          "contractId": { "type": "string", "minLength": 1, "maxLength": 64 },
           "search": { "type": "string", "minLength": 1, "maxLength": 500 },
           "page": { "type": "integer", "minimum": 0, "exclusiveMinimum": true },
           "pageSize": { "type": "integer", "minimum": 0, "exclusiveMinimum": true, "maximum": 100 },
@@ -5126,6 +5127,18 @@
         "required": ["email"],
         "additionalProperties": false
       },
+      "ChargeReceipt": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "contentType": { "type": "string" },
+          "size": { "type": "integer" },
+          "uploadedAt": { "type": "string" }
+        },
+        "required": ["id", "name", "contentType", "size", "uploadedAt"]
+      },
       "ChargeListItem": {
         "type": "object",
         "properties": {
@@ -5144,6 +5157,7 @@
           "contractId": { "type": "string", "nullable": true },
           "payerName": { "type": "string", "nullable": true },
           "propertyTitle": { "type": "string", "nullable": true },
+          "receipt": { "$ref": "#/components/schemas/ChargeReceipt" },
           "updatedAt": { "type": "string" }
         },
         "required": [
@@ -5158,6 +5172,7 @@
           "contractId",
           "payerName",
           "propertyTitle",
+          "receipt",
           "updatedAt"
         ]
       },
@@ -5182,18 +5197,6 @@
           "statusCounts": { "$ref": "#/components/schemas/ChargeStatusCounts" }
         },
         "required": ["items", "totalCount", "statusCounts"]
-      },
-      "ChargeReceipt": {
-        "type": "object",
-        "nullable": true,
-        "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "contentType": { "type": "string" },
-          "size": { "type": "integer" },
-          "uploadedAt": { "type": "string" }
-        },
-        "required": ["id", "name", "contentType", "size", "uploadedAt"]
       },
       "Charge": {
         "type": "object",
@@ -12748,6 +12751,12 @@
             "in": "query"
           },
           {
+            "schema": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "required": false,
+            "name": "contractId",
+            "in": "query"
+          },
+          {
             "schema": {
               "type": "integer",
               "minimum": 0,
@@ -13360,7 +13369,7 @@
       "get": {
         "tags": ["Financial"],
         "summary": "URL temporária para baixar um comprovante",
-        "description": "Quem vê a cobrança baixa o comprovante vigente. Comprovantes antigos (estornados) só o OWNER, pelo histórico.",
+        "description": "Quem vê a cobrança baixa o comprovante vigente. Comprovantes antigos (estornados) só o OWNER do tenant da cobrança, pelo histórico.",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
@@ -14214,6 +14223,12 @@
             "schema": { "type": "string", "minLength": 1 },
             "required": false,
             "name": "propertyId",
+            "in": "query"
+          },
+          {
+            "schema": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "required": false,
+            "name": "contractId",
             "in": "query"
           },
           {

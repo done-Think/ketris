@@ -27,6 +27,9 @@ import type {
 } from '../types/account'
 
 const MAX_SLUG_ATTEMPTS = 5
+// An agency only receives brokers once its owner has confirmed the e-mail used to sign up.
+const verifiedOwner = { role: 'OWNER', emailVerifiedAt: { not: null } } as const
+
 const tenantSelect = {
   id: true,
   name: true,
@@ -207,6 +210,15 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
     return prisma.tenant.findUnique({ where: { slug }, select: tenantSelect })
   }
 
+  async hasVerifiedOwner(tenantId: string): Promise<boolean> {
+    const owner = await prisma.user.findFirst({
+      where: { tenantId, ...verifiedOwner },
+      select: { id: true },
+    })
+
+    return owner !== null
+  }
+
   searchByName(query: string, excludeSlugs: string[]): Promise<RegistrationTenant[]> {
     return prisma.tenant.findMany({
       where: {
@@ -214,6 +226,7 @@ export class PrismaRegistrationRepository implements RegistrationRepository {
         slug: { notIn: excludeSlugs },
         accountType: 'AGENCY',
         status: { in: ['ACTIVE', 'TRIAL'] },
+        users: { some: verifiedOwner },
       },
       orderBy: { name: 'asc' },
       take: 20,

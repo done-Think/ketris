@@ -6,7 +6,7 @@ export const tableContainerSx: SxProps<Theme> = { overflowX: 'auto' }
 
 export const tableSx: SxProps<Theme> = {
   ...columnWidthsSx,
-  minWidth: 1100,
+  minWidth: 940,
   tableLayout: 'fixed',
   '& .MuiTableCell-root': { borderBottom: 0, overflow: 'hidden' },
   '& .MuiTableHead-root .MuiTableCell-root': {
