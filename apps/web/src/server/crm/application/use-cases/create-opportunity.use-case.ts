@@ -43,7 +43,9 @@ export class CreateOpportunityUseCase {
       )
 
       if (!canAccess) {
-        throw new ForbiddenError('Você só pode criar oportunidades para os próprios imóveis.')
+        throw new ForbiddenError(
+          'Você só pode criar oportunidades para imóveis da sua carteira ou compartilhados com você.',
+        )
       }
     }
 

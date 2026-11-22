@@ -162,7 +162,9 @@ describe('ConvertLeadToOpportunityUseCase', () => {
         propertyId: 'property-1',
         proposedValue: 3000,
       }),
-    ).rejects.toThrow('Você só pode criar oportunidades para os próprios imóveis.')
+    ).rejects.toThrow(
+      'Você só pode criar oportunidades para imóveis da sua carteira ou compartilhados com você.',
+    )
     expect(opportunityRepository.create).not.toHaveBeenCalled()
   })
 
