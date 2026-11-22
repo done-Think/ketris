@@ -60,6 +60,7 @@ export function toChargeListResponse(result: ChargeListResult<ChargeListItem>) {
       contractId: item.contractId,
       payerName: item.payerName,
       propertyTitle: item.propertyTitle,
+      receipt: receiptResponse(item.receipt),
       updatedAt: item.updatedAt.toISOString(),
     })),
     totalCount: result.totalCount,

@@ -20,6 +20,7 @@ export function staff(overrides: Partial<TeamStaffUser>): TeamStaffUser {
 
 export function teamRepository(people: TeamStaffUser[] = []): TeamRepository {
   return {
+    findTenantAccountType: vi.fn().mockResolvedValue('AGENCY'),
     listMembers: vi.fn().mockResolvedValue([]),
     loadMetrics: vi.fn(),
     findStaffUser: vi.fn(

@@ -66,7 +66,7 @@ export class InviteBrokerUseCase {
   ) {}
 
   async execute(input: InviteBrokerInput): Promise<InviteBrokerOutput> {
-    assertTeamManager(input)
+    await assertTeamManager(this.team, input)
     const email = normalizeEmail(input.email)
     if (await this.invitations.isEmailInUse(input.actorTenantId, email))
       throw new EmailAlreadyInUseError()
@@ -104,7 +104,7 @@ export class ResendTeamInvitationUseCase {
   ) {}
 
   async execute(input: ResendTeamInvitationInput): Promise<{ emailDelivered: boolean }> {
-    assertTeamManager(input)
+    await assertTeamManager(this.team, input)
     const invitation = await this.invitations.findPendingByUser(input.actorTenantId, input.brokerId)
     if (!invitation) throw new TeamInvitationNotFoundError()
     const actor = await teamActorIdentity(this.team, input)
@@ -132,10 +132,13 @@ export class ResendTeamInvitationUseCase {
 }
 
 export class CancelTeamInvitationUseCase {
-  constructor(private readonly invitations: TeamInvitationRepository) {}
+  constructor(
+    private readonly team: TeamRepository,
+    private readonly invitations: TeamInvitationRepository,
+  ) {}
 
   async execute(input: BrokerInput): Promise<void> {
-    assertTeamManager(input)
+    await assertTeamManager(this.team, input)
     const invitation = await this.invitations.findPendingByUser(input.actorTenantId, input.brokerId)
     if (!invitation) throw new TeamInvitationNotFoundError()
     if (await this.invitations.hasPortfolio(input.actorTenantId, input.brokerId))

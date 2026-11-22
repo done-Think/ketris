@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 
 export function findConventionViolations(file, source) {
+  file = file.replaceAll('\\', '/')
   const ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true)
   const violations = []
   const test = /(?:\/tests?\/|\/__tests__\/|\.(?:test|spec)\.)/.test(file)

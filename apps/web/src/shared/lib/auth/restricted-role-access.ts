@@ -17,6 +17,7 @@ export const restrictedRoleAccess: Record<RestrictedRole, RestrictedRoleAccess> 
     isAllowedPathname: (pathname) =>
       pathname === '/dashboard/agenda' ||
       myVerificationsPathname.test(pathname) ||
+      contractsPathname.test(pathname) ||
       chargesPathname.test(pathname) ||
       maintenancePathname.test(pathname) ||
       propertyDetailPathname.test(pathname),

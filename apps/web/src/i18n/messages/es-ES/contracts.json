@@ -14,7 +14,9 @@
     "title": "Contratos",
     "subtitle": "Gestiona contratos, vencimientos y firmas en curso.",
     "searchPlaceholder": "Buscar contratos...",
-    "newContract": "Nuevo Contrato"
+    "newContract": "Nuevo Contrato",
+    "myRentalTitle": "Mi alquiler",
+    "myRentalSubtitle": "Consulta el contrato, los pagos, los documentos y las solicitudes de tu alquiler."
   },
   "filters": {
     "tabs": {
@@ -268,7 +270,16 @@
     "landlordView": "Sigues este contrato como arrendador. Lo administra {agency}. Para cambiar algo, habla con la inmobiliaria.",
     "guarantor": "Fiador",
     "manual": "Registro manual",
-    "provider": "Firma electrónica"
+    "provider": "Firma electrónica",
+    "myRental": "Mi alquiler",
+    "rentDue": "Alquiler · vence cada día {day}",
+    "tabs": {
+      "label": "Secciones del contrato",
+      "summary": "Resumen",
+      "payments": "Pagos",
+      "documents": "Documentos",
+      "tickets": "Solicitudes"
+    }
   },
   "documents": {
     "title": "Documentos",

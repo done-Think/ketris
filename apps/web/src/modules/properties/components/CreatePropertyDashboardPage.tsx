@@ -1,6 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
+import { useRef } from 'react'
 
 import { styles } from '../styles/create-property-dashboard-page.styles'
 
@@ -48,9 +49,11 @@ export function CreatePropertyDashboardPage() {
     goToNextStep,
   } = wizard
   const propertyPurpose = useWatch({ control, name: 'purpose' })
+  const submitPending = useRef(false)
 
   const handleCreateSubmit = async (values: CreateDashboardPropertyFormValues) => {
-    if (isUploading) return
+    if (isUploading || submitPending.current) return
+    submitPending.current = true
     try {
       const property = await createProperty.mutateAsync(
         toPropertyPayload(values, { canChooseOwner, canManageBrokers: session?.role === 'OWNER' }),
@@ -63,6 +66,7 @@ export function CreatePropertyDashboardPage() {
         enqueueSnackbar(t('addressLocationUnavailable'), { variant: 'warning' })
       router.push({ pathname: '/dashboard/properties/[id]', params: { id: property.id } })
     } catch (error) {
+      submitPending.current = false
       enqueueSnackbar(extractErrorMessage(error, t('createError')), { variant: 'error' })
     }
   }
@@ -75,7 +79,7 @@ export function CreatePropertyDashboardPage() {
       maxVisitedStepIndex={maxVisitedStepIndex}
       isUploading={isUploading}
       onStepSelect={wizard.selectStep}
-      onSubmit={handleSubmit(handleCreateSubmit, wizard.showErrors)}
+      onSubmit={(event) => handleSubmit(handleCreateSubmit, wizard.showErrors)(event)}
     >
       <CreatePropertyStepFields
         getValues={getValues}

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { SvgIconComponent } from '@mui/icons-material'
 import type { TranslationKey } from '@/i18n/types/messages.types'
+import type { AccessProfile } from '@shared/lib/auth/access-policy'
 
 export type AppShellNavHref =
   | '/dashboard'
@@ -23,6 +24,7 @@ export type AppShellNavHref =
 
 export type AppShellNavItem = {
   labelKey: TranslationKey<'common.appShell'>
+  profileLabelKeys?: Partial<Record<AccessProfile, TranslationKey<'common.appShell'>>>
   href: AppShellNavHref
   icon: SvgIconComponent
   children?: readonly AppShellNavChild[]

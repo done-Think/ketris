@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import pg from 'pg'
+import { runCheck } from './pre-push-validate.mjs'
 
 // Cria um banco PostgreSQL descartável no servidor local (docker compose), aplica as migrations,
 // roda um comando contra ele e apaga tudo no final. Os testes do pre-push nunca tocam o banco de
@@ -68,10 +69,10 @@ async function main() {
   const [command, ...args] = process.argv.slice(separator + 1)
   if (separator === -1 || !command) throw new Error('Uso: run-with-temp-db.mjs -- <comando> [args]')
   process.exitCode = await withTemporaryDatabase((databaseUrl) => {
-    const result = spawnSync(command, args, {
-      cwd: root,
-      env: { ...process.env, ...ciLikeEnv, DATABASE_URL: databaseUrl },
-      stdio: 'inherit',
+    const result = runCheck({
+      cmd: command,
+      args,
+      env: { ...ciLikeEnv, DATABASE_URL: databaseUrl },
     })
     return result.status ?? 1
   })

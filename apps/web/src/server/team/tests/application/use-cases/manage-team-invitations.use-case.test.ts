@@ -107,6 +107,26 @@ describe('InviteBrokerUseCase', () => {
     ).rejects.toBeInstanceOf(EmailAlreadyInUseError)
     expect(invitations.create).not.toHaveBeenCalled()
   })
+
+  it.each(['BROKER', 'INDIVIDUAL'] as const)(
+    'não convida corretor para conta %s, que não é imobiliária',
+    async (accountType) => {
+      const team = teamRepository([staff({ id: 'owner-1', name: 'Dona', role: 'OWNER' })])
+      vi.mocked(team.findTenantAccountType).mockResolvedValue(accountType)
+      const invitations = invitationRepository()
+
+      await expect(
+        new InviteBrokerUseCase(team, invitations, hasher, mailer).execute({
+          ...owner,
+          name: 'Bruna',
+          email: 'bruna@example.test',
+          locale: 'pt-BR',
+        }),
+      ).rejects.toMatchObject({ status: 403 })
+      expect(invitations.create).not.toHaveBeenCalled()
+      expect(mailer.send).not.toHaveBeenCalled()
+    },
+  )
 })
 
 describe('reenvio e cancelamento', () => {
@@ -135,7 +155,7 @@ describe('reenvio e cancelamento', () => {
 
   it('só cancela convite pendente sem carteira', async () => {
     await expect(
-      new CancelTeamInvitationUseCase(invitationRepository()).execute({
+      new CancelTeamInvitationUseCase(teamRepository(), invitationRepository()).execute({
         ...owner,
         brokerId: 'agent-9',
       }),
@@ -145,7 +165,10 @@ describe('reenvio e cancelamento', () => {
       hasPortfolio: vi.fn().mockResolvedValue(true),
     })
     await expect(
-      new CancelTeamInvitationUseCase(withPortfolio).execute({ ...owner, brokerId: 'agent-9' }),
+      new CancelTeamInvitationUseCase(teamRepository(), withPortfolio).execute({
+        ...owner,
+        brokerId: 'agent-9',
+      }),
     ).rejects.toBeInstanceOf(TeamInvitationHasPortfolioError)
     expect(withPortfolio.deleteInvitedUser).not.toHaveBeenCalled()
   })

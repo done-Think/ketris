@@ -47,6 +47,7 @@ export function apiListItem(overrides: Partial<ApiChargeListItem> = {}): ApiChar
     contractId: 'contract-1',
     payerName: 'Mariana Souza',
     propertyTitle: 'Studio Pinheiros',
+    receipt: null,
     updatedAt: '2026-10-01T12:00:00.000Z',
     ...overrides,
   }

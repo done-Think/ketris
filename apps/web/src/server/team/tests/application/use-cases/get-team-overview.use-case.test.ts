@@ -89,4 +89,18 @@ describe('GetTeamOverviewUseCase', () => {
       new GetTeamOverviewUseCase(teamRepository()).execute({ ...owner, actorRole: 'AGENT' }),
     ).rejects.toMatchObject({ status: 403 })
   })
+
+  it.each(['BROKER', 'INDIVIDUAL'] as const)(
+    'bloqueia o dono de conta %s, que não é imobiliária',
+    async (accountType) => {
+      const repository = teamRepository()
+      vi.mocked(repository.findTenantAccountType).mockResolvedValue(accountType)
+
+      await expect(new GetTeamOverviewUseCase(repository).execute(owner)).rejects.toMatchObject({
+        status: 403,
+      })
+      expect(repository.findTenantAccountType).toHaveBeenCalledWith(owner.actorTenantId)
+      expect(repository.listMembers).not.toHaveBeenCalled()
+    },
+  )
 })

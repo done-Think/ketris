@@ -7,13 +7,16 @@ import {
   TeamMembershipRequestHasPortfolioError,
   TeamMembershipRequestNotFoundError,
 } from '../../../domain/errors'
-import { membershipRequestRepository, owner } from './team-fixtures'
+import { membershipRequestRepository, owner, teamRepository } from './team-fixtures'
 
 describe('RejectMembershipRequestUseCase', () => {
   it('apaga o cadastro pendente do corretor na imobiliária de quem recusa', async () => {
     const requests = membershipRequestRepository()
 
-    await new RejectMembershipRequestUseCase(requests).execute({ ...owner, brokerId: 'agent-9' })
+    await new RejectMembershipRequestUseCase(teamRepository(), requests).execute({
+      ...owner,
+      brokerId: 'agent-9',
+    })
 
     expect(requests.isPending).toHaveBeenCalledWith('tenant-1', 'agent-9')
     expect(requests.deletePending).toHaveBeenCalledWith('tenant-1', 'agent-9')
@@ -25,7 +28,7 @@ describe('RejectMembershipRequestUseCase', () => {
       const requests = membershipRequestRepository()
 
       await expect(
-        new RejectMembershipRequestUseCase(requests).execute({
+        new RejectMembershipRequestUseCase(teamRepository(), requests).execute({
           ...owner,
           actorRole,
           brokerId: 'agent-9',
@@ -40,7 +43,10 @@ describe('RejectMembershipRequestUseCase', () => {
     const requests = membershipRequestRepository({ isPending: async () => false })
 
     await expect(
-      new RejectMembershipRequestUseCase(requests).execute({ ...owner, brokerId: 'agent-9' }),
+      new RejectMembershipRequestUseCase(teamRepository(), requests).execute({
+        ...owner,
+        brokerId: 'agent-9',
+      }),
     ).rejects.toBeInstanceOf(TeamMembershipRequestNotFoundError)
     expect(requests.deletePending).not.toHaveBeenCalled()
   })
@@ -49,7 +55,10 @@ describe('RejectMembershipRequestUseCase', () => {
     const requests = membershipRequestRepository({ hasPortfolio: async () => true })
 
     await expect(
-      new RejectMembershipRequestUseCase(requests).execute({ ...owner, brokerId: 'agent-9' }),
+      new RejectMembershipRequestUseCase(teamRepository(), requests).execute({
+        ...owner,
+        brokerId: 'agent-9',
+      }),
     ).rejects.toBeInstanceOf(TeamMembershipRequestHasPortfolioError)
     expect(requests.deletePending).not.toHaveBeenCalled()
   })
@@ -58,7 +67,10 @@ describe('RejectMembershipRequestUseCase', () => {
     const requests = membershipRequestRepository({ deletePending: async () => false })
 
     await expect(
-      new RejectMembershipRequestUseCase(requests).execute({ ...owner, brokerId: 'agent-9' }),
+      new RejectMembershipRequestUseCase(teamRepository(), requests).execute({
+        ...owner,
+        brokerId: 'agent-9',
+      }),
     ).rejects.toBeInstanceOf(TeamMembershipRequestNotFoundError)
   })
 })

@@ -1,3 +1,5 @@
+import type { TenantAccountType } from '@server/auth/types/user-access'
+
 import type { TeamGoalChange, TeamPeriod, TeamTransferResult } from '../../types/team'
 import type {
   TeamMemberRow,
@@ -7,6 +9,7 @@ import type {
 } from '../../types/team-repository'
 
 export interface TeamRepository {
+  findTenantAccountType(tenantId: string): Promise<TenantAccountType | null>
   listMembers(tenantId: string): Promise<TeamMemberRow[]>
   loadMetrics(tenantId: string, memberIds: string[], period: TeamPeriod): Promise<TeamMetricRows>
   findStaffUser(tenantId: string, userId: string): Promise<TeamStaffUser | null>

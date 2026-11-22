@@ -15,6 +15,8 @@ export async function maintenanceProviderTenant(
     return actor.actorTenantId
   }
   const ticket = await loadTicket(repository, actor, ticketId)
-  if (!isAgencyManager(actor.actorRole)) assertCanDefineProvider(actor, ticket)
+  const managesTicketTenant =
+    isAgencyManager(actor.actorRole) && ticket.tenantId === actor.actorTenantId
+  if (!managesTicketTenant) assertCanDefineProvider(actor, ticket)
   return ticket.tenantId
 }

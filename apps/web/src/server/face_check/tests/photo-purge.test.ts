@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { randomBytes, randomUUID } from 'node:crypto'
-import { access, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
+import { access, mkdir, mkdtemp, readFile, rm, symlink, unlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DeleteObjectsCommand, ListObjectVersionsCommand, type S3Client } from '@aws-sdk/client-s3'
@@ -734,14 +734,15 @@ describe('local development session photo purge', () => {
     const outside = await rootDirectory()
     await writeFile(join(outside, 'photo.enc'), 'must survive')
     const tenantDirectory = join(root, captureTokenHash(tenantId))
-    await symlink(outside, tenantDirectory, 'dir')
+    const linkType = process.platform === 'win32' ? 'junction' : 'dir'
+    await symlink(outside, tenantDirectory, linkType)
     await expect(purgeLocalSessionPhotos({ tenantId, sessionId, root })).rejects.toMatchObject(
       failure,
     )
     expect(await readFile(join(outside, 'photo.enc'), 'utf8')).toBe('must survive')
-    await rm(tenantDirectory)
+    await unlink(tenantDirectory)
     await mkdir(tenantDirectory)
-    await symlink(outside, join(tenantDirectory, sessionId), 'dir')
+    await symlink(outside, join(tenantDirectory, sessionId), linkType)
     await expect(purgeLocalSessionPhotos({ tenantId, sessionId, root })).rejects.toMatchObject(
       failure,
     )
