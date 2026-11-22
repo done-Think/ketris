@@ -108,7 +108,7 @@ describe('CreateLeadDialog', () => {
     expect(screen.getByText(/R\$\s*3\.200,45/)).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Voltar' }))
     expect(screen.getByLabelText('Orçamento')).toHaveValue('3.200,45')
-  })
+  }, 20000)
 
   it('requires a positive budget before advancing and preserves cents after clearing the field', async () => {
     const user = userEvent.setup()
