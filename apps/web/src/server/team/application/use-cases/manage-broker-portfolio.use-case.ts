@@ -70,7 +70,7 @@ export class ShareBrokerPortfolioUseCase {
   ) {}
 
   async execute(input: ShareBrokerPortfolioInput): Promise<TeamTransferResult> {
-    assertTeamManager(input)
+    await assertTeamManager(this.repository, input)
     if (!Object.values(input.items).some(Boolean)) throw new EmptyTransferError()
     for (const destinationId of input.destinationIds) {
       await assertTransferPeople(this.repository, input, input.brokerId, destinationId, true)

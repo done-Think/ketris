@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { ShareBrokerPortfolioUseCase } from '../../../application/use-cases/manage-broker-portfolio.use-case'
 import { owner, staff, teamRepository } from './team-fixtures'
 
@@ -69,6 +69,25 @@ describe('ShareBrokerPortfolioUseCase', () => {
       }),
     ).rejects.toMatchObject({ code: 'EMPTY_TRANSFER' })
   })
+  it.each(['BROKER', 'INDIVIDUAL'] as const)(
+    'rejects the owner of a non-agency %s account',
+    async (accountType) => {
+      const repository = teamRepository(people)
+      vi.mocked(repository.findTenantAccountType).mockResolvedValue(accountType)
+
+      await expect(
+        new ShareBrokerPortfolioUseCase(repository).execute({
+          ...owner,
+          brokerId: 'source',
+          destinationIds: ['destination'],
+          items,
+        }),
+      ).rejects.toMatchObject({ status: 403 })
+      expect(repository.findTenantAccountType).toHaveBeenCalledWith(owner.actorTenantId)
+      expect(repository.findStaffUser).not.toHaveBeenCalled()
+      expect(repository.sharePortfolio).not.toHaveBeenCalled()
+    },
+  )
   it.each(['AGENT', 'RENTER', 'PROPERTY_OWNER'] as const)('rejects %s', async (actorRole) => {
     const repository = teamRepository(people)
     await expect(

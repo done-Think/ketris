@@ -209,14 +209,16 @@ describe('Agency public profile defaults', () => {
       [375, 812],
     ]) {
       cy.viewport(width, height)
-      cy.get('input[role="combobox"]').scrollIntoView().click()
+      cy.get('input[role="combobox"]').click({ scrollBehavior: 'center' })
       cy.get('.MuiAutocomplete-popper').should('have.attr', 'data-popper-placement', 'bottom-start')
-      cy.get('input[role="combobox"]').then(($input) => {
-        cy.get('.MuiAutocomplete-popper').should(($popup) => {
-          expect($popup[0].getBoundingClientRect().top).to.be.at.least(
-            $input[0].getBoundingClientRect().bottom,
-          )
-        })
+      cy.get('body').should(($body) => {
+        const $input = $body.find('input[role="combobox"]')
+        const $popup = $body.find('.MuiAutocomplete-popper')
+        expect($input).to.have.length(1)
+        expect($popup).to.have.length(1)
+        expect($popup[0].getBoundingClientRect().top).to.be.at.least(
+          $input[0].getBoundingClientRect().bottom,
+        )
       })
       cy.get('input[role="combobox"]').type('{esc}')
     }
