@@ -57,6 +57,7 @@ model Tenant {
   teamInvitations    TeamInvitation[]
   brokerGoals        BrokerGoal[]
   portfolioTransfers PortfolioTransfer[]
+  favoriteProperties FavoriteProperty[]
 
   @@map("tenants")
 }
@@ -251,6 +252,7 @@ model User {
   updatedProperties         Property[]                    @relation("PropertyUpdatedBy")
   propertyBrokerAccess      PropertyBrokerAccess[]
   propertyAuditEvents       PropertyAuditEvent[]
+  favoriteProperties        FavoriteProperty[]
   updatedLeads              Lead[]                        @relation("LeadUpdatedBy")
   updatedBrokerProfiles     BrokerPublicProfile[]         @relation("BrokerProfileUpdatedBy")
   updatedAgencyProfiles     AgencyPublicProfile[]         @relation("AgencyProfileUpdatedBy")
@@ -494,6 +496,7 @@ model Property {
   maintenanceTickets MaintenanceTicket[]
   brokerAccess       PropertyBrokerAccess[]
   faceCheckSessions  FaceCheckSession[]
+  favorites          FavoriteProperty[]
 
   @@unique([id, tenantId])
   @@index([tenantId])
@@ -688,6 +691,24 @@ model AgencyProfileHighlight {
   @@unique([profileId, userId])
   @@index([userId])
   @@map("agency_profile_highlights")
+}
+
+model FavoriteProperty {
+  id         String   @id @default(cuid())
+  tenantId   String
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([tenantId, userId, createdAt])
+  @@index([propertyId])
+  @@map("favorite_properties")
 }
 
 // ---------------------------------------------------------------------------
