@@ -196,6 +196,8 @@
     "mapApproximate": "Ubicación aproximada",
     "favorite": "Favorito",
     "share": "Compartir",
+    "linkCopied": "Enlace copiado.",
+    "shareError": "No se pudo compartir. Copia la dirección desde el navegador.",
     "aboutProperty": "Sobre el inmueble",
     "location": "Ubicación",
     "notInformed": "No informado",

@@ -196,6 +196,8 @@
     "mapApproximate": "Approximate location",
     "favorite": "Favorite",
     "share": "Share",
+    "linkCopied": "Link copied.",
+    "shareError": "Could not share. Copy the address from your browser.",
     "aboutProperty": "About this property",
     "location": "Location",
     "notInformed": "Not informed",
