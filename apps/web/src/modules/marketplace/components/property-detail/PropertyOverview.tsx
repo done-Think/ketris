@@ -3,7 +3,6 @@
 import { Box, Button, Stack, Typography } from '@mui/material'
 import BathtubOutlinedIcon from '@mui/icons-material/BathtubOutlined'
 import BedOutlinedIcon from '@mui/icons-material/BedOutlined'
-import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined'
 import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
@@ -14,6 +13,7 @@ import { useShareLink } from '../../hooks/use-share-link'
 import type { PropertyOverviewProps } from '../../types/property-detail'
 import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { PropertyDetailMap } from '../PropertyDetailMap'
+import { FavoriteButton } from '../favorites/FavoriteButton'
 import { styles } from '../../styles/property-overview.styles'
 import { PropertyNegotiationSummary } from '@shared/components/ui/PropertyNegotiationSummary'
 
@@ -45,9 +45,7 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
       </Typography>
 
       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={styles.stack2}>
-        <Button startIcon={<FavoriteBorderOutlinedIcon />} variant="outlined" color="secondary">
-          {t('favorite')}
-        </Button>
+        <FavoriteButton propertyId={property.id} />
         <Button
           startIcon={<ShareOutlinedIcon />}
           variant="outlined"

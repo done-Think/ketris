@@ -194,7 +194,6 @@
     "mapUnavailable": "Map location is not yet available for this address.",
     "searchAddressOnMaps": "Search address on Google Maps",
     "mapApproximate": "Approximate location",
-    "favorite": "Favorite",
     "share": "Share",
     "linkCopied": "Link copied.",
     "shareError": "Could not share. Copy the address from your browser.",
@@ -625,5 +624,14 @@
     "loadError": "Could not load your public address.",
     "loading": "Loading public address…",
     "unpublishedHint": "Publish your profile to enable its public link and edit your custom address. The link works only while the profile is published."
+  },
+  "favorites": {
+    "save": "Save",
+    "saved": "Saved",
+    "errors": {
+      "generic": "We couldn't update your favorites. Please try again.",
+      "unavailable": "This property is no longer available.",
+      "limitReached": "You have already saved {limit} properties. Remove a favorite to save another one."
+    }
   }
 }

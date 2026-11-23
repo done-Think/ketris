@@ -194,7 +194,6 @@
     "mapUnavailable": "Localização no mapa ainda não disponível para este endereço.",
     "searchAddressOnMaps": "Buscar endereço no Google Maps",
     "mapApproximate": "Localização aproximada",
-    "favorite": "Favoritar",
     "share": "Compartilhar",
     "linkCopied": "Link copiado.",
     "shareError": "Não foi possível compartilhar. Copie o endereço pelo navegador.",
@@ -625,5 +624,14 @@
     "loadError": "Não foi possível carregar seu endereço público.",
     "loading": "Carregando endereço público…",
     "unpublishedHint": "Publique o perfil para liberar seu link público e a edição do endereço personalizado. O link funciona apenas enquanto o perfil estiver publicado."
+  },
+  "favorites": {
+    "save": "Favoritar",
+    "saved": "Favoritado",
+    "errors": {
+      "generic": "Não foi possível atualizar seus favoritos. Tente novamente.",
+      "unavailable": "Este imóvel não está mais disponível.",
+      "limitReached": "Você já salvou {limit} imóveis. Remova algum favorito para salvar outro."
+    }
   }
 }
