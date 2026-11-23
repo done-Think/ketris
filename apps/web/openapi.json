@@ -4585,6 +4585,14 @@
         "properties": { "available": { "type": "boolean" } },
         "required": ["available"]
       },
+      "SavedFavoriteProperty": {
+        "type": "object",
+        "properties": {
+          "propertyId": { "type": "string" },
+          "savedAt": { "type": "string", "description": "Quando o imóvel foi salvo (ISO 8601)." }
+        },
+        "required": ["propertyId", "savedAt"]
+      },
       "MarketplaceStatsResponse": {
         "type": "object",
         "properties": {
@@ -8268,6 +8276,117 @@
             "content": {
               "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
             }
+          }
+        }
+      }
+    },
+    "/marketplace/favorites/{propertyId}": {
+      "put": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Salva um imóvel publicado nos favoritos",
+        "description": "Idempotente: se o imóvel já estava salvo, devolve a data original. Só imóveis publicados podem ser salvos.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "ID do imóvel.",
+              "example": "clx1y2z3a0000abcd1234efgh"
+            },
+            "required": true,
+            "name": "propertyId",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Imóvel salvo.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SavedFavoriteProperty" }
+              }
+            }
+          },
+          "400": {
+            "description": "ID do imóvel inválido.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Autenticação obrigatória.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Imóvel não encontrado ou não publicado.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          },
+          "422": {
+            "description": "Limite de favoritos atingido.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Remove um imóvel dos favoritos",
+        "description": "Idempotente: responde 204 mesmo que o imóvel não estivesse salvo.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "ID do imóvel.",
+              "example": "clx1y2z3a0000abcd1234efgh"
+            },
+            "required": true,
+            "name": "propertyId",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "204": { "description": "Imóvel removido dos favoritos." },
+          "400": {
+            "description": "ID do imóvel inválido.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Autenticação obrigatória.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
           }
         }
       }
