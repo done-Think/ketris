@@ -118,8 +118,8 @@ export type SearchResultsMapPanelProps = {
 export type SearchResultsListProps = {
   properties: SearchResultProperty[]
   isLoading?: boolean
-  selectedPropertyId: string
-  setSelectedPropertyId: (propertyId: string) => void
+  selectedPropertyId?: string
+  setSelectedPropertyId?: (propertyId: string) => void
   viewMode: ViewMode
 }
 

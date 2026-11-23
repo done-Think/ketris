@@ -1,6 +1,7 @@
 export { HomePage } from './components/HomePage'
 export { SearchResultsPage } from './components/SearchResultsPage'
 export { BrokersPage } from './components/BrokersPage'
+export { FavoritesPage } from './components/favorites/FavoritesPage'
 export { BrokerPublicProfilePage } from './components/BrokerPublicProfilePage'
 export { AgenciesPage } from './components/AgenciesPage'
 export { AgencyPublicProfilePage } from './components/AgencyPublicProfilePage'
