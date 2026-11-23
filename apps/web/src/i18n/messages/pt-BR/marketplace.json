@@ -30,7 +30,8 @@
       "settings": "Configurações",
       "signOut": "Sair",
       "support": "Suporte",
-      "switchMode": "Trocar modalidade"
+      "switchMode": "Trocar modalidade",
+      "favorites": "Meus favoritos"
     }
   },
   "navigation": {
@@ -645,6 +646,8 @@
       "unavailable": "Este imóvel não está mais disponível.",
       "limitReached": "Você já salvou {limit} imóveis. Remova algum favorito para salvar outro."
     },
+    "removed": "Imóvel removido dos favoritos.",
+    "undo": "Desfazer",
     "page": {
       "title": "Meus favoritos",
       "count": "{count, plural, =0 {Nenhum imóvel salvo} one {# imóvel salvo} other {# imóveis salvos}}",
@@ -654,6 +657,11 @@
         "all": "Todos ({count})",
         "rent": "Alugar ({count})",
         "buy": "Comprar ({count})"
+      },
+      "unavailable": {
+        "title": "Não estão mais disponíveis",
+        "note": "O anúncio saiu do ar.",
+        "remove": "Remover"
       },
       "guest": {
         "title": "Entre para ver seus favoritos",

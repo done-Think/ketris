@@ -11,6 +11,7 @@ import { useFavoriteProperties } from '../../hooks/use-favorite-properties'
 import { useFavoritesFilters } from '../../hooks/use-favorites-filters'
 import { useMarketplaceNavigation } from '../../hooks/use-marketplace-navigation'
 import { useViewModePreference } from '../../hooks/use-view-mode-preference'
+import type { UnavailableFavoriteEntry } from '../../types/favorite-property'
 import { countFavorites, selectFavorites, toFavoriteCard } from '../../utils/favorite-properties'
 import { DirectoryPageHeader } from '../directory/DirectoryPageHeader'
 import { MarketplaceBreadcrumbs } from '../MarketplaceBreadcrumbs'
@@ -20,6 +21,7 @@ import { SearchResultsToolbar } from '../search-results/SearchResultsToolbar'
 import { styles } from '../../styles/brokers-page.styles'
 import { FavoritesEmptyState } from './FavoritesEmptyState'
 import { FavoritesPurposeChips } from './FavoritesPurposeChips'
+import { UnavailableFavorites } from './UnavailableFavorites'
 
 export function FavoritesPage() {
   const locale = useLocale() as AppLocale
@@ -36,6 +38,7 @@ export function FavoritesPage() {
   const cards = visible.flatMap((entry) =>
     entry.available ? [toFavoriteCard(entry, filters.purpose, locale, tFeatures)] : [],
   )
+  const unavailable = visible.filter((entry): entry is UnavailableFavoriteEntry => !entry.available)
 
   function renderContent() {
     if (status === 'unauthenticated') return <FavoritesEmptyState variant="guest" />
@@ -73,6 +76,9 @@ export function FavoritesPage() {
           setViewMode={setViewMode}
         />
         <SearchResultsList properties={cards} viewMode={viewMode} />
+        {unavailable.length > 0 ? (
+          <UnavailableFavorites entries={unavailable} viewMode={viewMode} />
+        ) : null}
       </>
     )
   }

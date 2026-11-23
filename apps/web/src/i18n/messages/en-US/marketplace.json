@@ -30,7 +30,8 @@
       "settings": "Settings",
       "signOut": "Sign out",
       "support": "Support",
-      "switchMode": "Switch mode"
+      "switchMode": "Switch mode",
+      "favorites": "My favorites"
     }
   },
   "navigation": {
@@ -645,6 +646,8 @@
       "unavailable": "This property is no longer available.",
       "limitReached": "You have already saved {limit} properties. Remove a favorite to save another one."
     },
+    "removed": "Property removed from favorites.",
+    "undo": "Undo",
     "page": {
       "title": "My favorites",
       "count": "{count, plural, =0 {No saved properties} one {# saved property} other {# saved properties}}",
@@ -654,6 +657,11 @@
         "all": "All ({count})",
         "rent": "Rent ({count})",
         "buy": "Buy ({count})"
+      },
+      "unavailable": {
+        "title": "No longer available",
+        "note": "The listing was taken down.",
+        "remove": "Remove"
       },
       "guest": {
         "title": "Sign in to see your favorites",

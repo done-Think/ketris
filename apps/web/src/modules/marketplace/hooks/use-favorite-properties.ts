@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
+import { createElement, useEffect, useMemo, useRef } from 'react'
+import { Button } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
@@ -44,9 +45,9 @@ export function useToggleFavoriteProperty() {
   const actorKey = useMarketplaceActorKey()
   const queryClient = useQueryClient()
   const t = useTranslations('marketplace.favorites')
-  const { enqueueSnackbar } = useSnackbar()
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar()
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async ({ propertyId, favorite }: FavoriteToggleInput) => {
       if (favorite) await favoritePropertiesService.save(propertyId)
       else await favoritePropertiesService.remove(propertyId)
@@ -63,9 +64,28 @@ export function useToggleFavoriteProperty() {
         { variant: 'error' },
       )
     },
+    onSuccess: (_result, { propertyId, favorite }) => {
+      if (favorite) return
+      enqueueSnackbar(t('removed'), {
+        action: (snackbarKey) =>
+          createElement(
+            Button,
+            {
+              color: 'inherit',
+              onClick: () => {
+                closeSnackbar(snackbarKey)
+                mutation.mutate({ propertyId, favorite: true })
+              },
+            },
+            t('undo'),
+          ),
+      })
+    },
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: marketplaceQueryKeys.favorites(actorKey) }),
   })
+
+  return mutation
 }
 
 export function useSaveFavoriteAfterLogin({ propertyId, onSave }: SaveFavoriteAfterLoginOptions) {
