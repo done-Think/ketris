@@ -650,6 +650,11 @@
       "count": "{count, plural, =0 {Ningún inmueble guardado} one {# inmueble guardado} other {# inmuebles guardados}}",
       "loadError": "No pudimos cargar tus favoritos.",
       "retry": "Intentar de nuevo",
+      "purpose": {
+        "all": "Todos ({count})",
+        "rent": "Alquilar ({count})",
+        "buy": "Comprar ({count})"
+      },
       "guest": {
         "title": "Inicia sesión para ver tus favoritos",
         "description": "Los inmuebles que guardes quedan en tu cuenta y aparecen en el móvil y en el ordenador.",

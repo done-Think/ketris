@@ -650,6 +650,11 @@
       "count": "{count, plural, =0 {Nenhum imóvel salvo} one {# imóvel salvo} other {# imóveis salvos}}",
       "loadError": "Não foi possível carregar seus favoritos.",
       "retry": "Tentar novamente",
+      "purpose": {
+        "all": "Todos ({count})",
+        "rent": "Alugar ({count})",
+        "buy": "Comprar ({count})"
+      },
       "guest": {
         "title": "Entre para ver seus favoritos",
         "description": "Os imóveis que você salvar ficam na sua conta e aparecem no celular e no computador.",

@@ -53,7 +53,7 @@ export type SortOption = 'relevancia' | 'menor-preco' | 'maior-preco'
 
 export type ViewMode = 'grid' | 'list'
 
-export type SearchResultsViewModeScope = 'rent' | 'buy' | 'brokers' | 'agencies'
+export type SearchResultsViewModeScope = 'rent' | 'buy' | 'brokers' | 'agencies' | 'favorites'
 
 export type SearchResultsPageProps = {
   purpose: SearchResultPurpose
