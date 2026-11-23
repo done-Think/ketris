@@ -100,9 +100,10 @@ it('revalidates changed values instead of saving the stale period shown before c
   fireEvent.change(screen.getByLabelText('Data'), {
     target: { value: daytimeSchedule.scheduledDate },
   })
-  fireEvent.change(screen.getByLabelText('Horário'), {
-    target: { value: daytimeSchedule.scheduledTime },
-  })
+  const timeField = screen.getByLabelText('Horário')
+  fireEvent.keyDown(timeField, { key: '1' })
+  fireEvent.keyDown(timeField, { key: '2' })
+  fireEvent.keyDown(screen.getByRole('menu', { name: 'Horas' }), { key: 'Escape' })
   await userEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
   expect(onCreate.mock.calls[0][0]).toMatchObject({

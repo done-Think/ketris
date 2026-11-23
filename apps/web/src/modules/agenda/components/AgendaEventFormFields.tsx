@@ -1,6 +1,7 @@
 'use client'
 
 import { AgendaPropertyField } from './AgendaPropertyField'
+import { AgendaTimeField } from './AgendaTimeField'
 
 import { styles } from '../styles/agenda-event-form-fields.styles'
 
@@ -145,15 +146,7 @@ export function AgendaEventFormFields({
           InputLabelProps={{ shrink: true }}
           inputProps={{ max: maxDate, min: minDate }}
         />
-        <RhfTextField
-          control={control}
-          name="scheduledTime"
-          label={t('fields.time')}
-          type="time"
-          fullWidth
-          InputLabelProps={{ shrink: true }}
-          inputProps={{ step: 900 }}
-        />
+        <AgendaTimeField control={control} />
         <RhfTextField
           control={control}
           name="durationMinutes"
