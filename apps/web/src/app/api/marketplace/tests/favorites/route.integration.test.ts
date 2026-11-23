@@ -8,6 +8,7 @@ import { JoseTokenService } from '@server/auth/infrastructure/jose-token.service
 import { prisma } from '@server/db/prisma'
 
 import { DELETE, PUT } from '../../favorites/[propertyId]/route'
+import { GET } from '../../favorites/route'
 
 describe('/api/marketplace/favorites (integração)', () => {
   const tokenService = new JoseTokenService()
@@ -183,5 +184,44 @@ describe('/api/marketplace/favorites (integração)', () => {
     expect((await remove(publishedId, tokens.renter)).status).toBe(204)
 
     expect(await savedIds(users.renter)).not.toContain(publishedId)
+  })
+
+  async function list(token: string) {
+    const response = await GET(request('GET', '', token))
+    expect(response.status).toBe(200)
+    return response.json()
+  }
+
+  it('lists only the favorites of the person who is signed in', async () => {
+    expect((await GET(request('GET', ''))).status).toBe(401)
+    expect((await list(tokens.otherRenter)).favorites).toEqual([])
+
+    const body = await list(tokens.renter)
+
+    expect(body.limit).toBe(200)
+    expect(body.favorites).toEqual([
+      expect.objectContaining({
+        propertyId: secondPublishedId,
+        available: true,
+        property: expect.objectContaining({ id: secondPublishedId, city: 'Campinas', price: 1199 }),
+      }),
+    ])
+  })
+
+  it('keeps an unpublished favorite as unavailable, without price or photos', async () => {
+    await prisma.property.update({ where: { id: secondPublishedId }, data: { status: 'DRAFT' } })
+
+    expect((await list(tokens.renter)).favorites).toEqual([
+      {
+        propertyId: secondPublishedId,
+        savedAt: expect.any(String),
+        available: false,
+        property: {
+          title: 'Apartamento PUBLISHED',
+          city: 'Campinas',
+          neighborhood: 'Vila Costa e Silva',
+        },
+      },
+    ])
   })
 })

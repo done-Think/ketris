@@ -12149,6 +12149,64 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/marketplace/favorites': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Lista os imóveis favoritos de quem está logado
+     * @description Qualquer usuário de tenant logado. Retorna só os favoritos do próprio usuário, do mais recente para o mais antigo, até o limite. O favorito guarda o tenant de quem salvou e pode apontar para imóvel de qualquer tenant (mesma exceção do marketplace público). Imóvel que deixou de estar publicado volta com available=false e só título, cidade e bairro.
+     */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Favoritos do usuário. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FavoritePropertiesResponse']
+          }
+        }
+        /** @description Autenticação obrigatória. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/marketplace/favorites/{propertyId}': {
     parameters: {
       query?: never
@@ -17632,6 +17690,21 @@ export interface components {
       faceMatchThreshold: number
       maxAttempts: number
     }
+    FavoritePropertiesResponse: {
+      favorites: components['schemas']['FavoritePropertyEntry'][]
+      limit: number
+    }
+    FavoritePropertyEntry:
+      | (components['schemas']['SavedFavoriteProperty'] & {
+          /** @enum {boolean} */
+          available: true
+          property: components['schemas']['PublicPropertySummary']
+        })
+      | (components['schemas']['SavedFavoriteProperty'] & {
+          /** @enum {boolean} */
+          available: false
+          property: components['schemas']['UnavailableFavoriteProperty']
+        })
     FinancialMonthlyTotal: {
       month: number
       total: number
@@ -19616,6 +19689,11 @@ export interface components {
     }
     TransitionContractRequest: {
       reason: string
+    }
+    UnavailableFavoriteProperty: {
+      city: string | null
+      neighborhood: string | null
+      title: string
     }
     UpdateAgendaEventRequest: {
       /** @enum {string} */
