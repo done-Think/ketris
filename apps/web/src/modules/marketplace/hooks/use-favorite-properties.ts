@@ -1,16 +1,23 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 
 import { extractErrorMessage } from '@shared/utils/error-message'
 
+import { saveFavoriteSearchParam } from '../config/favorites'
 import { marketplaceQueryKeys } from '../config/marketplace-query-keys'
 import { favoritePropertiesService } from '../services/favorite-properties-service'
-import type { FavoritePropertiesResponse, FavoriteToggleInput } from '../types/favorite-property'
+import type {
+  FavoritePropertiesResponse,
+  FavoriteToggleInput,
+  SaveFavoriteAfterLoginOptions,
+} from '../types/favorite-property'
+import { removeSaveFavoriteParam } from '../utils/favorite-login'
 import { useMarketplaceActorKey } from './use-marketplace-actor-key'
 
 export function useFavoriteProperties() {
@@ -59,4 +66,23 @@ export function useToggleFavoriteProperty() {
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: marketplaceQueryKeys.favorites(actorKey) }),
   })
+}
+
+export function useSaveFavoriteAfterLogin({ propertyId, onSave }: SaveFavoriteAfterLoginOptions) {
+  const searchParams = useSearchParams()
+  const { status } = useSession()
+  const handled = useRef(false)
+  const requested =
+    status === 'authenticated' && searchParams.get(saveFavoriteSearchParam) === propertyId
+
+  useEffect(() => {
+    if (!requested || handled.current) return
+    handled.current = true
+    onSave()
+    window.history.replaceState(
+      window.history.state,
+      '',
+      removeSaveFavoriteParam(window.location.href),
+    )
+  }, [requested, onSave])
 }

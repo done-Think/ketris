@@ -11,6 +11,19 @@ export type FavoriteToggleInput = {
   favorite: boolean
 }
 
+export type FavoriteButtonVariant = 'detail' | 'card'
+
 export type FavoriteButtonProps = {
   propertyId: string
+  variant: FavoriteButtonVariant
+}
+
+export type FavoriteLoginDialogProps = {
+  propertyId: string
+  onClose: () => void
+}
+
+export type SaveFavoriteAfterLoginOptions = {
+  propertyId: string
+  onSave: () => void
 }

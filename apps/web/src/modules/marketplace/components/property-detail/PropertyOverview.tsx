@@ -45,7 +45,7 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
       </Typography>
 
       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={styles.stack2}>
-        <FavoriteButton propertyId={property.id} />
+        <FavoriteButton propertyId={property.id} variant="detail" />
         <Button
           startIcon={<ShareOutlinedIcon />}
           variant="outlined"
