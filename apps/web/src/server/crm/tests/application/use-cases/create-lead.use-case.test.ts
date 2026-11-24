@@ -37,19 +37,18 @@ describe('CreateLeadUseCase', () => {
       title: 'Shared property',
       responsibleId: 'manager-1',
     })
-    await new CreateLeadUseCase({ create } as unknown as LeadRepository, { findAvailable }).execute(
-      {
-        actorTenantId: 'tenant-1',
-        actorId: 'agent-1',
-        actorRole: 'AGENT',
-        name: 'Buyer',
-        phone: '(11) 99999-0000',
-        propertyId: 'property-1',
-        interest: 'Property',
-        budget: '500000',
-        source: 'OTHER',
-      },
-    )
+    const useCase = createUseCase({ create } as unknown as LeadRepository, { findAvailable })
+    await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'agent-1',
+      actorRole: 'AGENT',
+      name: 'Buyer',
+      phone: '(11) 99999-0000',
+      propertyId: 'property-1',
+      interest: 'Property',
+      budget: '500000',
+      source: 'OTHER',
+    })
     expect(findAvailable).toHaveBeenCalledWith('tenant-1', 'property-1', 'agent-1')
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
