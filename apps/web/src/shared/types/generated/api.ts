@@ -1695,6 +1695,7 @@ export interface paths {
           page?: number
           pageSize?: number
           pendingApproval?: 'true' | 'false'
+          pendingInvitation?: 'true' | 'false'
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */

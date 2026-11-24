@@ -18,6 +18,7 @@ export class ListUsersUseCase {
       page: input.page ?? 1,
       pageSize: input.pageSize ?? 25,
       pendingApproval: input.pendingApproval,
+      pendingInvitation: input.pendingInvitation,
     })
 
     return { ...result, users: result.users.map(toAuthenticatedUser) }

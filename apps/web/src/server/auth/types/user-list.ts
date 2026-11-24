@@ -5,6 +5,7 @@ export interface UserListQuery {
   page: number
   pageSize: number
   pendingApproval?: boolean
+  pendingInvitation?: boolean
 }
 export interface UserListPage {
   users: User[]
