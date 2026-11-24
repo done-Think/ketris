@@ -31,7 +31,11 @@ describe('ArchiveContactUseCase', () => {
   it('arquiva o contato do tenant do ator', async () => {
     const findById = vi.fn().mockResolvedValue(contact)
     const archive = vi.fn().mockResolvedValue({ ...contact, archivedAt: new Date() })
-    const repository = { findById, archive } as unknown as ContactRepository
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+      archive,
+    } as unknown as ContactRepository
     const useCase = new ArchiveContactUseCase(repository, createOpportunityRepository())
 
     const result = await useCase.execute({
@@ -48,7 +52,11 @@ describe('ArchiveContactUseCase', () => {
   it('lança ContactNotFoundError e não arquiva quando é de outro tenant', async () => {
     const findById = vi.fn().mockResolvedValue({ ...contact, tenantId: 'tenant-2' })
     const archive = vi.fn()
-    const repository = { findById, archive } as unknown as ContactRepository
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+      archive,
+    } as unknown as ContactRepository
     const useCase = new ArchiveContactUseCase(repository, createOpportunityRepository())
 
     await expect(
@@ -65,7 +73,11 @@ describe('ArchiveContactUseCase', () => {
   it('AGENT sem nenhuma oportunidade acessível no contato recebe 404 opaco e não arquiva', async () => {
     const findById = vi.fn().mockResolvedValue(contact)
     const archive = vi.fn()
-    const repository = { findById, archive } as unknown as ContactRepository
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+      archive,
+    } as unknown as ContactRepository
     const useCase = new ArchiveContactUseCase(
       repository,
       createOpportunityRepository(vi.fn().mockResolvedValue(false)),

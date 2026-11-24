@@ -1,5 +1,7 @@
 'use client'
 
+import { InteractionHistory } from './interactions/InteractionHistory'
+
 import {
   crmActivityKey,
   crmStatusKey,
@@ -354,6 +356,10 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           {!opportunity.archivedAt && (
             <OpportunityActivityComposer opportunityId={opportunity.id} />
           )}
+          <InteractionHistory
+            key={opportunity.id}
+            target={{ kind: 'opportunity', id: opportunity.id }}
+          />
           {activitiesQuery.isError ? (
             <Alert
               severity="error"

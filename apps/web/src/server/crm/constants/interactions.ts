@@ -1,0 +1,1 @@
+export const INTERACTION_NOTE_LIMIT = 2000

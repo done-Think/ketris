@@ -519,6 +519,15 @@
         "required": ["currentPassword", "password"],
         "additionalProperties": false
       },
+      "CompleteCrmInteractionRequest": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["CONTACT_MADE", "NO_RESPONSE", "CANCELLED"] },
+          "description": { "type": "string", "maxLength": 2000 }
+        },
+        "required": ["status"],
+        "additionalProperties": false
+      },
       "ConfirmContractDocumentRequest": {
         "type": "object",
         "properties": { "uploadToken": { "type": "string", "minLength": 1, "maxLength": 8000 } },
@@ -1055,6 +1064,7 @@
           "tenantId": { "type": "string" },
           "responsibleId": { "type": "string" },
           "responsibleName": { "type": "string" },
+          "contactId": { "type": "string", "nullable": true },
           "name": { "type": "string" },
           "phone": { "type": "string" },
           "email": { "type": "string", "nullable": true },
@@ -1066,7 +1076,8 @@
           "notes": { "type": "string", "nullable": true },
           "opportunityId": { "type": "string", "nullable": true },
           "createdAt": { "anyOf": [{ "type": "string" }, { "type": "string" }] },
-          "updatedAt": { "anyOf": [{ "type": "string" }, { "type": "string" }] }
+          "updatedAt": { "anyOf": [{ "type": "string" }, { "type": "string" }] },
+          "lastContactAt": { "type": "string", "nullable": true, "format": "date-time" }
         },
         "required": [
           "id",
@@ -1211,6 +1222,7 @@
       "CreateLeadRequest": {
         "type": "object",
         "properties": {
+          "contactId": { "type": "string", "minLength": 1 },
           "name": { "type": "string", "minLength": 1, "maxLength": 200 },
           "phone": { "type": "string", "minLength": 1, "maxLength": 32 },
           "email": { "type": "string", "nullable": true, "maxLength": 254, "format": "email" },
@@ -1514,6 +1526,89 @@
         "type": "object",
         "properties": { "user": { "$ref": "#/components/schemas/AuthenticatedUserResponse" } },
         "required": ["user"]
+      },
+      "CrmInteractionChannel": {
+        "type": "string",
+        "nullable": true,
+        "enum": ["PHONE", "EMAIL", "WHATSAPP"]
+      },
+      "CrmInteractionStatus": {
+        "type": "string",
+        "nullable": true,
+        "enum": ["STARTED", "CONTACT_MADE", "NO_RESPONSE", "CANCELLED"]
+      },
+      "CrmInteraction": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": ["CONTACT_ATTEMPT", "STAGE_CHANGED", "CONTACT_LINKED", "LEAD_CREATED"]
+          },
+          "contactId": { "type": "string", "nullable": true },
+          "previousStage": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["NEW", "IN_CONTACT", "VISIT_SCHEDULED", "PROPOSAL"]
+          },
+          "nextStage": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["NEW", "IN_CONTACT", "VISIT_SCHEDULED", "PROPOSAL"]
+          },
+          "leadId": { "type": "string", "nullable": true },
+          "leadName": { "type": "string", "nullable": true },
+          "opportunityId": { "type": "string", "nullable": true },
+          "channel": { "$ref": "#/components/schemas/CrmInteractionChannel" },
+          "status": { "$ref": "#/components/schemas/CrmInteractionStatus" },
+          "description": { "type": "string", "nullable": true },
+          "actorUserId": { "type": "string" },
+          "actorName": { "type": "string" },
+          "completedById": { "type": "string", "nullable": true },
+          "createdAt": { "anyOf": [{ "type": "string" }, { "type": "string" }] },
+          "completedAt": { "type": "string", "nullable": true, "format": "date-time" },
+          "canComplete": { "type": "boolean" }
+        },
+        "required": [
+          "id",
+          "leadId",
+          "leadName",
+          "opportunityId",
+          "channel",
+          "status",
+          "description",
+          "actorUserId",
+          "actorName",
+          "completedById",
+          "createdAt",
+          "completedAt",
+          "canComplete"
+        ]
+      },
+      "CrmInteractionResponse": {
+        "type": "object",
+        "properties": { "interaction": { "$ref": "#/components/schemas/CrmInteraction" } },
+        "required": ["interaction"]
+      },
+      "CrmInteractionsPage": {
+        "type": "object",
+        "properties": {
+          "interactions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmInteraction" }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "integer" },
+              "pageSize": { "type": "integer" },
+              "pageCount": { "type": "integer" },
+              "totalCount": { "type": "integer" }
+            },
+            "required": ["page", "pageSize", "pageCount", "totalCount"]
+          }
+        },
+        "required": ["interactions", "pagination"]
       },
       "CrmPropertySummary": {
         "type": "object",
@@ -1935,6 +2030,22 @@
         "type": "object",
         "properties": { "lead": { "$ref": "#/components/schemas/Lead" } },
         "required": ["lead"]
+      },
+      "LinkLeadContactRequest": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": { "contactId": { "type": "string", "minLength": 1 } },
+            "required": ["contactId"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": { "contact": { "$ref": "#/components/schemas/CreateContactRequest" } },
+            "required": ["contact"],
+            "additionalProperties": false
+          }
+        ]
       },
       "ListAgendaEventsQuery": {
         "type": "object",
@@ -3813,6 +3924,15 @@
         "type": "object",
         "properties": { "documentId": { "type": "string", "minLength": 1 } },
         "required": ["documentId"],
+        "additionalProperties": false
+      },
+      "StartCrmInteractionRequest": {
+        "type": "object",
+        "properties": {
+          "channel": { "$ref": "#/components/schemas/CrmInteractionChannel" },
+          "requestId": { "type": "string", "format": "uuid" }
+        },
+        "required": ["channel", "requestId"],
         "additionalProperties": false
       },
       "SubmitInquiryRequest": {
@@ -9764,6 +9884,466 @@
           "404": { "description": "Imagem inexistente ou chave fora do escopo permitido." },
           "503": {
             "description": "Serviço de imagens indisponível (PROPERTY_MEDIA_STORAGE_UNAVAILABLE).",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/crm/leads/{id}/interactions": {
+      "get": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Lists authorized lead contact attempts and outcomes",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "schema": { "type": "integer", "minimum": 1, "maximum": 1000000, "default": 1 },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": { "type": "integer", "default": 5 },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated interaction history.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionsPage" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Record not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      },
+      "post": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Records a contact shortcut attempt without confirming contact",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/StartCrmInteractionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created or replayed idempotent attempt.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Lead not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "Request identifier conflict.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "422": {
+            "description": "Contact channel unavailable.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/crm/contacts/{id}/interactions": {
+      "get": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Lists authorized lead contact attempts and outcomes",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "schema": { "type": "integer", "minimum": 1, "maximum": 1000000, "default": 1 },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": { "type": "integer", "default": 5 },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated interaction history.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionsPage" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Record not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      },
+      "post": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Records a contact shortcut attempt without confirming contact",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/StartCrmInteractionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created or replayed idempotent attempt.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Lead not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "Request identifier conflict.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "422": {
+            "description": "Contact channel unavailable.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/crm/opportunities/{id}/interactions": {
+      "get": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Lists authorized lead contact attempts and outcomes",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "schema": { "type": "integer", "minimum": 1, "maximum": 1000000, "default": 1 },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": { "type": "integer", "default": 5 },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated interaction history.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionsPage" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Record not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      }
+    },
+    "/crm/interactions/{id}": {
+      "patch": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Confirms the outcome of a pending contact attempt",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CompleteCrmInteractionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recorded outcome.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "Actor cannot complete this attempt.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Attempt not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "Outcome already recorded.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/crm/leads/{id}/contact": {
+      "post": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Links a lead to an authorized contact or creates a contact explicitly",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LinkLeadContactRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Linked lead.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/LeadResponse" } }
+            }
+          },
+          "400": {
+            "description": "Invalid contact.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Lead or contact not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "Conflicting link or duplicate contact email.",
             "content": {
               "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
             }

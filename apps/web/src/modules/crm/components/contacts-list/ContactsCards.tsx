@@ -12,6 +12,8 @@ export function ContactsCards({
   onEditContact,
   onOpenInteractions,
   onOpenMoreOptions,
+  onAddLead,
+  onContactAction,
 }: ContactsCardsProps) {
   const t = useTranslations('crm.contacts')
 
@@ -31,9 +33,11 @@ export function ContactsCards({
             </Box>
             <ContactActions
               contact={contact}
+              onAddLead={onAddLead}
               onEditContact={onEditContact}
               onOpenInteractions={onOpenInteractions}
               onOpenMoreOptions={onOpenMoreOptions}
+              onContactAction={onContactAction}
             />
           </Stack>
 
@@ -43,7 +47,9 @@ export function ContactsCards({
           </Stack>
 
           <Stack direction="row" justifyContent="space-between" spacing={2}>
-            <Typography sx={crmStyles.typographySx3}>{contact.phone}</Typography>
+            <Typography component="span" sx={crmStyles.typographySx3}>
+              {contact.phone}
+            </Typography>
             <Typography sx={crmStyles.typographySx4}>
               {t('propertyCount', { count: contact.propertyCount })}
             </Typography>

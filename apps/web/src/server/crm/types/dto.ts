@@ -87,3 +87,24 @@ export type RespondOpportunityResponseDTO = CrmJson<
 export type LeadListQueryDTO = Partial<
   z.infer<typeof import('../schemas/lead.schema').listLeadsQuerySchema>
 >
+export type CrmInteractionDTO = CrmJson<
+  z.infer<typeof import('../schemas/interaction.schema').crmInteractionSchema>
+>
+export type CrmInteractionChannelDTO = CrmJson<
+  z.infer<typeof import('../schemas/interaction.schema').interactionChannelSchema>
+>
+export type StartCrmInteractionRequestDTO = CrmJson<
+  z.infer<typeof import('../schemas/interaction.schema').startInteractionSchema>
+>
+export type CompleteCrmInteractionRequestDTO = CrmJson<
+  z.infer<typeof import('../schemas/interaction.schema').completeInteractionSchema>
+>
+export type CrmInteractionsPageDTO = CrmJson<
+  z.infer<typeof import('../schemas/interaction.schema').interactionPageSchema>
+>
+export type CrmInteractionResponseDTO = CrmJson<
+  z.infer<typeof import('../schemas/interaction.schema').interactionResponseSchema>
+>
+export type LinkLeadContactRequestDTO = CrmJson<
+  z.infer<typeof import('../schemas/lead-contact.schema').linkLeadContactSchema>
+>

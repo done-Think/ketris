@@ -33,6 +33,7 @@ export class ArchiveContactUseCase {
       input.actorId,
       input.actorRole,
       contact.createdById,
+      await this.contactRepository.hasLeadForAgent(input.actorTenantId, contact.id, input.actorId),
     )
 
     return this.contactRepository.archive(contact.id)

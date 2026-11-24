@@ -1,3 +1,4 @@
+import { registerInteractionOpenApi } from './interaction.openapi'
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
 import { z } from 'zod'
 import { listLeadsQuerySchema } from './schemas/lead.schema'
@@ -60,6 +61,7 @@ const leadIdParamsSchema = z.object({
 })
 
 export function registerCrmOpenApi(registry: OpenAPIRegistry): void {
+  registerInteractionOpenApi(registry)
   registry.registerPath({
     method: 'get',
     path: '/crm/responsibles',

@@ -79,3 +79,21 @@ describe('marketplace lead budget', () => {
     expect(money).not.toHaveBeenCalled()
   })
 })
+
+describe('confirmed lead contact dates', () => {
+  it('does not label a record edit as customer contact', () => {
+    expect(
+      toDashboardLead({ ...lead, updatedAt: '2026-11-19T12:00:00Z', lastContactAt: null }),
+    ).toMatchObject({ lastContact: '\u2014', lastContactAt: '' })
+  })
+  it('uses the confirmed contact timestamp instead of updatedAt', () => {
+    const relative = vi.fn(() => 'Confirmed contact')
+    const result = toDashboardLead(
+      { ...lead, lastContactAt: '2026-11-18T12:00:00Z', updatedAt: '2026-11-19T12:00:00Z' },
+      'pt-BR',
+      { relative, money: () => '', date: () => '', number: () => '' },
+    )
+    expect(relative).toHaveBeenCalledWith('2026-11-18T12:00:00Z')
+    expect(result.lastContact).toBe('Confirmed contact')
+  })
+})

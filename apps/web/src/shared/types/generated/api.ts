@@ -3696,6 +3696,266 @@ export interface paths {
     }
     trace?: never
   }
+  '/crm/contacts/{id}/interactions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Lists authorized lead contact attempts and outcomes */
+    get: {
+      parameters: {
+        query?: {
+          page?: number
+          pageSize?: number
+        }
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Paginated interaction history. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionsPage']
+          }
+        }
+        /** @description Invalid pagination. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Record not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    /** Records a contact shortcut attempt without confirming contact */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['StartCrmInteractionRequest']
+        }
+      }
+      responses: {
+        /** @description Created or replayed idempotent attempt. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionResponse']
+          }
+        }
+        /** @description Invalid input. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Lead not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Request identifier conflict. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Contact channel unavailable. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/crm/interactions/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /** Confirms the outcome of a pending contact attempt */
+    patch: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['CompleteCrmInteractionRequest']
+        }
+      }
+      responses: {
+        /** @description Recorded outcome. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionResponse']
+          }
+        }
+        /** @description Invalid input. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Actor cannot complete this attempt. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Attempt not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Outcome already recorded. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    trace?: never
+  }
   '/crm/leads': {
     parameters: {
       query?: never
@@ -3961,6 +4221,96 @@ export interface paths {
     }
     trace?: never
   }
+  '/crm/leads/{id}/contact': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Links a lead to an authorized contact or creates a contact explicitly */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['LinkLeadContactRequest']
+        }
+      }
+      responses: {
+        /** @description Linked lead. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['LeadResponse']
+          }
+        }
+        /** @description Invalid contact. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Lead or contact not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Conflicting link or duplicate contact email. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/crm/leads/{id}/convert': {
     parameters: {
       query?: never
@@ -4039,6 +4389,176 @@ export interface paths {
         }
         /** @description O lead já foi convertido em oportunidade. */
         409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/crm/leads/{id}/interactions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Lists authorized lead contact attempts and outcomes */
+    get: {
+      parameters: {
+        query?: {
+          page?: number
+          pageSize?: number
+        }
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Paginated interaction history. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionsPage']
+          }
+        }
+        /** @description Invalid pagination. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Record not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    /** Records a contact shortcut attempt without confirming contact */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['StartCrmInteractionRequest']
+        }
+      }
+      responses: {
+        /** @description Created or replayed idempotent attempt. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionResponse']
+          }
+        }
+        /** @description Invalid input. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Lead not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Request identifier conflict. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Contact channel unavailable. */
+        422: {
           headers: {
             [name: string]: unknown
           }
@@ -4534,6 +5054,93 @@ export interface paths {
         }
       }
     }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/crm/opportunities/{id}/interactions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Lists authorized lead contact attempts and outcomes */
+    get: {
+      parameters: {
+        query?: {
+          page?: number
+          pageSize?: number
+        }
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Paginated interaction history. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionsPage']
+          }
+        }
+        /** @description Invalid pagination. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Record not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
     delete?: never
     options?: never
     head?: never
@@ -16027,6 +16634,11 @@ export interface components {
       PENDING: number
       SCHEDULED: number
     }
+    CompleteCrmInteractionRequest: {
+      description?: string
+      /** @enum {string} */
+      status: 'CONTACT_MADE' | 'NO_RESPONSE' | 'CANCELLED'
+    }
     ConfirmContractDocumentRequest: {
       uploadToken: string
     }
@@ -16386,6 +16998,7 @@ export interface components {
     }
     CreateLeadRequest: {
       budget: string
+      contactId?: string
       /** Format: email */
       email?: string | null
       interest: string
@@ -16534,6 +17147,45 @@ export interface components {
     CreateUserResponse: {
       user: components['schemas']['AuthenticatedUserResponse']
     }
+    CrmInteraction: {
+      actorName: string
+      actorUserId: string
+      canComplete: boolean
+      channel: components['schemas']['CrmInteractionChannel']
+      /** Format: date-time */
+      completedAt: string | null
+      completedById: string | null
+      contactId?: string | null
+      createdAt: string
+      description: string | null
+      id: string
+      /** @enum {string} */
+      kind?: 'CONTACT_ATTEMPT' | 'STAGE_CHANGED' | 'CONTACT_LINKED' | 'LEAD_CREATED'
+      leadId: string | null
+      leadName: string | null
+      /** @enum {string|null} */
+      nextStage?: 'NEW' | 'IN_CONTACT' | 'VISIT_SCHEDULED' | 'PROPOSAL' | null
+      opportunityId: string | null
+      /** @enum {string|null} */
+      previousStage?: 'NEW' | 'IN_CONTACT' | 'VISIT_SCHEDULED' | 'PROPOSAL' | null
+      status: components['schemas']['CrmInteractionStatus']
+    }
+    /** @enum {string|null} */
+    CrmInteractionChannel: 'PHONE' | 'EMAIL' | 'WHATSAPP' | null
+    CrmInteractionResponse: {
+      interaction: components['schemas']['CrmInteraction']
+    }
+    CrmInteractionsPage: {
+      interactions: components['schemas']['CrmInteraction'][]
+      pagination: {
+        page: number
+        pageCount: number
+        pageSize: number
+        totalCount: number
+      }
+    }
+    /** @enum {string|null} */
+    CrmInteractionStatus: 'STARTED' | 'CONTACT_MADE' | 'NO_RESPONSE' | 'CANCELLED' | null
     CrmPropertyDetail: components['schemas']['CrmPropertySummary'] & {
       address: {
         city: string
@@ -16922,10 +17574,13 @@ export interface components {
     }
     Lead: {
       budget: string
+      contactId?: string | null
       createdAt: string
       email: string | null
       id: string
       interest: string
+      /** Format: date-time */
+      lastContactAt?: string | null
       name: string
       notes: string | null
       opportunityId: string | null
@@ -16969,6 +17624,13 @@ export interface components {
       /** Format: email */
       email: string
     }
+    LinkLeadContactRequest:
+      | {
+          contactId: string
+        }
+      | {
+          contact: components['schemas']['CreateContactRequest']
+        }
     ListAgenciesResponse: {
       agencies: components['schemas']['PublicAgencyProfile'][]
       page: number
@@ -18530,6 +19192,11 @@ export interface components {
     SignatureStatus: 'PENDING' | 'SIGNED'
     SignContractPartyRequest: {
       documentId: string
+    }
+    StartCrmInteractionRequest: {
+      channel: components['schemas']['CrmInteractionChannel']
+      /** Format: uuid */
+      requestId: string
     }
     SubmitInquiryRequest: {
       /**

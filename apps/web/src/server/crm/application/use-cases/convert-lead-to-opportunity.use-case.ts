@@ -68,6 +68,7 @@ export class ConvertLeadToOpportunityUseCase {
       tenantId: input.actorTenantId,
       propertyId: input.propertyId,
       responsibleId: lead.responsibleId,
+      contactId: lead.contactId ?? undefined,
       leadName: lead.name,
       leadEmail: email,
       leadPhone: lead.phone,

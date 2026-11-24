@@ -1,4 +1,4 @@
-import type { Lead, LeadUpdate, NewLead } from '../../domain/lead.entity'
+import type { Lead, LeadContactDetails, LeadUpdate, NewLead } from '../../domain/lead.entity'
 import type { CrmListFilters, CrmPage } from '../../types/pagination'
 
 export interface LeadListFilters extends CrmListFilters {
@@ -12,4 +12,9 @@ export interface LeadRepository {
   findById(id: string): Promise<Lead | null>
   update(id: string, changes: LeadUpdate): Promise<Lead>
   markConverted(id: string, opportunityId: string, email?: string): Promise<Lead>
+  syncContactDetails(
+    tenantId: string,
+    contactId: string,
+    details: LeadContactDetails,
+  ): Promise<void>
 }
