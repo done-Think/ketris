@@ -101,8 +101,9 @@ it('revalidates changed values instead of saving the stale period shown before c
     target: { value: daytimeSchedule.scheduledDate },
   })
   const timeField = screen.getByLabelText('Horário')
-  fireEvent.keyDown(timeField, { key: '1' })
-  fireEvent.keyDown(timeField, { key: '2' })
+  for (const key of daytimeSchedule.scheduledTime.split(':')[0]) {
+    fireEvent.keyDown(timeField, { key })
+  }
   fireEvent.keyDown(screen.getByRole('menu', { name: 'Horas' }), { key: 'Escape' })
   await userEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
