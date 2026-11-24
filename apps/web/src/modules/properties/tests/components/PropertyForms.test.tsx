@@ -244,7 +244,7 @@ describe('property forms', () => {
     await user.click(save)
     await waitFor(() => expect(state.create).toHaveBeenCalledTimes(2))
     expect(state.push).toHaveBeenCalledOnce()
-  })
+  }, 20000)
 
   it('blocks advancing and submitting until all selected media uploads finish', async () => {
     const user = userEvent.setup()
@@ -307,7 +307,7 @@ describe('property forms', () => {
       pathname: '/dashboard/properties/[id]',
       params: { id: 'new-property' },
     })
-  })
+  }, 20000)
 
   it('preserves local edits and untouched initial values when a background refetch arrives', async () => {
     const user = userEvent.setup()

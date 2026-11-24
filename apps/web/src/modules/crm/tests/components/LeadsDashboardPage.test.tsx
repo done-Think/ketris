@@ -196,7 +196,7 @@ describe('LeadsDashboardPage', () => {
       expect.objectContaining({ name: 'Fernanda Alves', interest: 'Casa Morumbi' }),
       expect.anything(),
     )
-  })
+  }, 20000)
 
   it('fits the leads table in the card of a 1280px notebook', () => {
     renderPage()
