@@ -283,6 +283,8 @@
     }
   },
   "documents": {
+    "chooseFile": "Escolher arquivo",
+    "noFileSelected": "Nenhum arquivo selecionado",
     "title": "Documentos",
     "file": "PDF comprobatório",
     "limits": "Somente PDF, até 10 MB.",

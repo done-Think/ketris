@@ -1,19 +1,31 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, LinearProgress, Stack, TextField } from '@mui/material'
+import {
+  Alert,
+  Button,
+  FormControl,
+  FormHelperText,
+  LinearProgress,
+  Stack,
+  Typography,
+} from '@mui/material'
+import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined'
 import { useTranslations } from 'next-intl'
 import { Controller, useForm } from 'react-hook-form'
 import { useUploadContractDocument } from '../../hooks/use-contract-documents'
 import { createContractDocumentSchema } from '../../schemas/contract-document-schema'
 import { contractError } from '../../utils/contract-error'
 import type { ContractDocumentForm, ContractDocumentUploadProps } from '../../types/workflow'
+import { styles } from '../../styles/contract-document-upload.styles'
 
 export function ContractDocumentUpload({ contractId, onBusyChange }: ContractDocumentUploadProps) {
   const t = useTranslations('contracts.documents')
   const errors = useTranslations('contracts.errors')
   const [progress, setProgress] = useState(0)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const inputId = useId()
   const schema = useMemo(() => createContractDocumentSchema((key) => t(`validation.${key}`)), [t])
   const { control, handleSubmit, reset } = useForm<ContractDocumentForm>({
     resolver: zodResolver(schema),
@@ -47,21 +59,50 @@ export function ContractDocumentUpload({ contractId, onBusyChange }: ContractDoc
         control={control}
         name="file"
         render={({ field, fieldState }) => (
-          <TextField
-            type="file"
-            label={t('file')}
-            inputRef={field.ref}
-            onBlur={field.onBlur}
-            disabled={mutation.isPending}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ accept: 'application/pdf,.pdf' }}
-            onChange={(event) => {
-              field.onChange((event.target as HTMLInputElement).files?.[0])
-              mutation.reset()
-            }}
-            error={Boolean(fieldState.error)}
-            helperText={fieldState.error?.message ?? t('limits')}
-          />
+          <FormControl error={Boolean(fieldState.error)} disabled={mutation.isPending}>
+            <Typography component="label" htmlFor={inputId} sx={styles.label}>
+              {t('file')}
+            </Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={styles.selector}>
+              <input
+                id={inputId}
+                type="file"
+                accept="application/pdf,.pdf"
+                name={field.name}
+                ref={(element) => {
+                  field.ref(element)
+                  inputRef.current = element
+                }}
+                hidden
+                disabled={mutation.isPending}
+                aria-describedby={`${inputId}-helper`}
+                aria-invalid={Boolean(fieldState.error)}
+                onBlur={field.onBlur}
+                onChange={(event) => {
+                  field.onChange(event.target.files?.[0])
+                  mutation.reset()
+                }}
+              />
+              <Button
+                type="button"
+                variant="outlined"
+                startIcon={<CloudUploadOutlinedIcon />}
+                disabled={mutation.isPending}
+                onClick={() => inputRef.current?.click()}
+                onBlur={field.onBlur}
+                aria-describedby={`${inputId}-helper`}
+                sx={styles.chooseButton}
+              >
+                {t('chooseFile')}
+              </Button>
+              <Typography sx={styles.fileName} title={field.value?.name} aria-live="polite">
+                {field.value?.name ?? t('noFileSelected')}
+              </Typography>
+            </Stack>
+            <FormHelperText id={`${inputId}-helper`}>
+              {fieldState.error?.message ?? t('limits')}
+            </FormHelperText>
+          </FormControl>
         )}
       />
       {mutation.isPending && (

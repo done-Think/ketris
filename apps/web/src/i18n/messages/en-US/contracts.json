@@ -283,6 +283,8 @@
     }
   },
   "documents": {
+    "chooseFile": "Choose file",
+    "noFileSelected": "No file selected",
     "title": "Documents",
     "file": "Supporting PDF",
     "limits": "PDF only, up to 10 MB.",
