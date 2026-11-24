@@ -91,30 +91,32 @@ export function PipelineStageColumn({
         sx={crmStyles.boxSx}
       >
         <Typography sx={crmStyles.typographySx2}>{t('projectedTotal')}</Typography>
-        {isPipelineLoading ? (
-          <Skeleton width={92} />
-        ) : projectedTotals.length === 0 ? (
-          <Typography sx={crmStyles.typographySx3}>{format.money(0)}</Typography>
-        ) : (
-          <Stack spacing={0.25} sx={crmStyles.getStackSx(projectedTotals)}>
-            {projectedTotals.map((total) => (
-              <Stack
-                key={total.labelKey}
-                direction="row"
-                alignItems="baseline"
-                justifyContent="space-between"
-                gap={1}
-              >
-                {projectedTotals.length > 1 ? (
-                  <Typography sx={crmStyles.typographySx4}>
-                    {t(`totalLabels.${total.labelKey}`)}
-                  </Typography>
-                ) : null}
-                <Typography sx={crmStyles.typographySx5}>{total.value}</Typography>
-              </Stack>
-            ))}
-          </Stack>
-        )}
+        <Box sx={crmStyles.projectedTotalsSx}>
+          {isPipelineLoading ? (
+            <Skeleton width={92} />
+          ) : projectedTotals.length === 0 ? (
+            <Typography sx={crmStyles.typographySx3}>{format.money(0)}</Typography>
+          ) : (
+            <Stack spacing={0.25}>
+              {projectedTotals.map((total) => (
+                <Stack
+                  key={total.labelKey}
+                  direction="row"
+                  alignItems="baseline"
+                  justifyContent="space-between"
+                  gap={1}
+                >
+                  {projectedTotals.length > 1 ? (
+                    <Typography sx={crmStyles.typographySx4}>
+                      {t(`totalLabels.${total.labelKey}`)}
+                    </Typography>
+                  ) : null}
+                  <Typography sx={crmStyles.typographySx5}>{total.value}</Typography>
+                </Stack>
+              ))}
+            </Stack>
+          )}
+        </Box>
       </Box>
     </Stack>
   )
