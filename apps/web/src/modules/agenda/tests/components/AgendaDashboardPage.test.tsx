@@ -219,7 +219,11 @@ describe('AgendaDashboardPage', () => {
     renderPage()
 
     expect(screen.getByRole('heading', { name: 'Agenda' })).toBeVisible()
-    expect(screen.getByText('09:00 - Visita Jardim Paulista')).toBeVisible()
+    expect(
+      within(screen.getByRole('region', { name: 'Agenda' })).getByRole('button', {
+        name: 'Abrir Visita Jardim Paulista',
+      }),
+    ).toBeVisible()
   })
 
   it('sends the chosen agent when the agency creates an internal event', async () => {
@@ -425,7 +429,7 @@ describe('AgendaDashboardPage', () => {
       if (isError) {
         expect(screen.getByRole('alert')).toBeVisible()
       } else {
-        expect(calendar.getByText('09:00 - Visita Jardim Paulista')).toBeVisible()
+        expect(calendar.getByRole('button', { name: 'Abrir Visita Jardim Paulista' })).toBeVisible()
       }
     },
   )
@@ -443,7 +447,11 @@ describe('AgendaDashboardPage', () => {
     } as unknown as ReturnType<typeof useAgendaOrganization>)
     renderPage()
     expect(screen.getByRole('alert')).toHaveTextContent(/chamados/i)
-    expect(screen.getByText('09:00 - Visita Jardim Paulista')).toBeVisible()
+    expect(
+      within(screen.getByRole('region', { name: 'Agenda' })).getByRole('button', {
+        name: 'Abrir Visita Jardim Paulista',
+      }),
+    ).toBeVisible()
   })
 
   it('shows loading and errors instead of presenting a failed request as an empty calendar', () => {
@@ -474,7 +482,9 @@ describe('AgendaDashboardPage', () => {
 
     renderPage()
 
-    expect(screen.queryByText('09:00 - Visita Jardim Paulista')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Abrir Visita Jardim Paulista' }),
+    ).not.toBeInTheDocument()
   })
 
   it('creates a new event through the form dialog', async () => {

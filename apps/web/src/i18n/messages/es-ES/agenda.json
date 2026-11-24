@@ -124,7 +124,8 @@
       "participantTooLong": "Usa como máximo 200 caracteres para el nombre",
       "phoneTooLong": "Usa como máximo 32 caracteres para el teléfono",
       "propertyReferenceTooLong": "Usa como máximo 500 caracteres para la referencia",
-      "notesTooLong": "Usa como máximo 10.000 caracteres para las notas"
+      "notesTooLong": "Usa como máximo 10.000 caracteres para las notas",
+      "timeSlotInvalid": "Selecciona un horario con minutos 00 o 30"
     },
     "outsideHoursWarning": {
       "message": "El período de este evento está fuera del horario comercial (08:00–18:00). ¿Quieres continuar?",
@@ -139,7 +140,12 @@
     "propertiesEmpty": "No se encontraron inmuebles",
     "propertiesError": "No se pudieron cargar los inmuebles.",
     "propertiesRetry": "Reintentar",
-    "propertiesMore": "Cargar más inmuebles"
+    "propertiesMore": "Cargar más inmuebles",
+    "timePicker": {
+      "title": "Seleccionar horario",
+      "hour": "Horas",
+      "minute": "Minutos"
+    }
   },
   "eventDetail": {
     "responsible": "Responsable: {name}",
@@ -230,6 +236,7 @@
     "outcomeCancelledEvent": "Los eventos cancelados no reciben resultado.",
     "noShowInternalEvent": "Los eventos internos no tienen cliente para registrar ausencia.",
     "visitInterestRequired": "Indica el interés del cliente en la visita.",
-    "visitInterestNotAllowed": "El interés del cliente solo aplica a visitas realizadas."
+    "visitInterestNotAllowed": "El interés del cliente solo aplica a visitas realizadas.",
+    "timeSlotInvalid": "Selecciona un horario con minutos 00 o 30."
   }
 }

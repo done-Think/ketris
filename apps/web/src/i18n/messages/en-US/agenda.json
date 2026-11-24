@@ -124,7 +124,8 @@
       "participantTooLong": "Use no more than 200 characters for the name",
       "phoneTooLong": "Use no more than 32 characters for the phone number",
       "propertyReferenceTooLong": "Use no more than 500 characters for the property reference",
-      "notesTooLong": "Use no more than 10,000 characters for notes"
+      "notesTooLong": "Use no more than 10,000 characters for notes",
+      "timeSlotInvalid": "Select a time with minutes 00 or 30"
     },
     "outsideHoursWarning": {
       "message": "This event falls outside business hours (08:00–18:00). Would you like to continue?",
@@ -139,7 +140,12 @@
     "propertiesEmpty": "No properties found",
     "propertiesError": "Properties could not be loaded.",
     "propertiesRetry": "Try again",
-    "propertiesMore": "Load more properties"
+    "propertiesMore": "Load more properties",
+    "timePicker": {
+      "title": "Select time",
+      "hour": "Hours",
+      "minute": "Minutes"
+    }
   },
   "eventDetail": {
     "responsible": "Responsible: {name}",
@@ -230,6 +236,7 @@
     "outcomeCancelledEvent": "Canceled events do not get an outcome.",
     "noShowInternalEvent": "Internal events have no client to mark as a no-show.",
     "visitInterestRequired": "Select the client interest in the visit.",
-    "visitInterestNotAllowed": "Client interest only applies to completed visits."
+    "visitInterestNotAllowed": "Client interest only applies to completed visits.",
+    "timeSlotInvalid": "Select a time with minutes 00 or 30."
   }
 }

@@ -23,7 +23,15 @@ function newEvent() {
 function schedule(title: string, date = nextDate(), time = '12:00') {
   cy.get('input[name="title"]').clear().type(title)
   cy.get('input[name="scheduledDate"]').clear().type(date)
-  cy.get('input[name="scheduledTime"]').clear().type(time)
+  const [hour, minute] = time.split(':')
+  cy.get('input[name="scheduledTime"]').click()
+  cy.get('[role="menu"][aria-labelledby$="-hour"]').within(() => {
+    cy.contains('[role="menuitem"]', new RegExp(`^${hour}$`)).click()
+  })
+  cy.get('[role="menu"][aria-labelledby$="-minute"]').within(() => {
+    cy.contains('[role="menuitem"]', new RegExp(`^${minute}$`)).click()
+  })
+  cy.get('input[name="scheduledTime"]').should('have.value', time)
   cy.get('input[name="participant"]').type('Cliente E2E')
   cy.get('input[name="phone"]').type('11999999999')
 }
