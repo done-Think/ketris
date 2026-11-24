@@ -27,6 +27,7 @@ import type {
 } from '../types/profile-editor'
 import {
   agencyBrandFields,
+  getInitialAgencyBrandDialogMode,
   pickBrandValues,
   toDraft,
   toFormValues,
@@ -274,6 +275,7 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
       </PublicProfileEditorPanel>
       <AgencyBrandDialog
         open={brandDialogOpen}
+        initialMode={getInitialAgencyBrandDialogMode(profile)}
         initialValues={brandValues}
         buildPreview={buildPreview}
         onClose={() => setBrandDialogOpen(false)}
