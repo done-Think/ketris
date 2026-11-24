@@ -10,6 +10,7 @@ import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
 import { useTranslations } from 'next-intl'
 
 import { isPropertyTypeCode, propertyTypeLabelKeys } from '../../config/property-types'
+import { useShareLink } from '../../hooks/use-share-link'
 import type { PropertyOverviewProps } from '../../types/property-detail'
 import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { PropertyDetailMap } from '../PropertyDetailMap'
@@ -25,6 +26,7 @@ const featureIcons = [
 
 export function PropertyOverview({ property }: PropertyOverviewProps) {
   const t = useTranslations('marketplace.propertyDetail')
+  const share = useShareLink()
   const categoryKey = isPropertyTypeCode(property.category)
     ? propertyTypeLabelKeys[property.category]
     : undefined
@@ -46,7 +48,12 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
         <Button startIcon={<FavoriteBorderOutlinedIcon />} variant="outlined" color="secondary">
           {t('favorite')}
         </Button>
-        <Button startIcon={<ShareOutlinedIcon />} variant="outlined" color="secondary">
+        <Button
+          startIcon={<ShareOutlinedIcon />}
+          variant="outlined"
+          color="secondary"
+          onClick={() => void share({ title: property.title, url: window.location.href })}
+        >
           {t('share')}
         </Button>
       </Stack>
