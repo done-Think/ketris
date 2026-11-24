@@ -22,6 +22,16 @@ describe('property input contract', () => {
     city: 'Itajubá',
     state: 'MG',
   }
+  it('accepts only the 27 Brazilian states as UF', () => {
+    for (const state of ['MG', 'SP', 'DF', 'TO'])
+      expect(
+        propertyAddressInputSchema.safeParse({ ...address, state, zipCode: '37502330' }).success,
+      ).toBe(true)
+    for (const state of ['XX', 'ZZ', 'mg', 'M', 'MGG', ''])
+      expect(
+        propertyAddressInputSchema.safeParse({ ...address, state, zipCode: '37502330' }).success,
+      ).toBe(false)
+  })
   it.each(['37502330', '37502-330', '37.502-330', '37 502 330'])(
     'normalizes accepted CEP %s to eight digits at the API boundary',
     (zipCode) => {

@@ -1,6 +1,7 @@
 import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
+import { isBrazilianState } from '@shared/config/brazilian-states'
 import { isValidPostalCode, normalizePostalCode } from '@shared/utils/postal-code'
 
 import {
@@ -17,7 +18,11 @@ export const propertyAddressInputSchema = z
     complement: z.string().trim().min(1).nullable().optional(),
     neighborhood: z.string().trim().min(1),
     city: z.string().trim().min(1),
-    state: z.string().trim().length(2),
+    state: z
+      .string()
+      .trim()
+      .length(2)
+      .refine(isBrazilianState, validationRefinement('stateInvalid')),
     zipCode: z
       .string()
       .trim()
