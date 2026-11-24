@@ -1,7 +1,11 @@
 import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
-import { createContractRequestSchema, contractAmountSchema } from './contract-input.schema'
+import {
+  createContractRequestSchema,
+  contractAmountSchema,
+  refineDistinctContractParties,
+} from './contract-input.schema'
 import { contractActorSchema, contractStatusSchema } from './contract.schema'
 
 export const editContractRequestSchema = createContractRequestSchema
@@ -13,6 +17,7 @@ export const editContractRequestSchema = createContractRequestSchema
     ...validationRefinement('endAfterStart'),
     path: ['endDate'],
   })
+  .superRefine(refineDistinctContractParties)
   .openapi('EditContractRequest')
 
 export const transitionContractRequestSchema = z

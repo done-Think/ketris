@@ -289,6 +289,55 @@ describe('/api/contracts (integração)', () => {
   let ownerPartyId: string
   let tenantPartyId: string
 
+  it('recusa com 400 locador e locatário com o mesmo CPF, mesmo escrito com pontuação', async () => {
+    const response = await POST(
+      buildRequest(
+        'http://localhost/api/contracts',
+        'POST',
+        {
+          ...createPayload,
+          opportunityId: acceptedOpportunityId,
+          tenant: { ...createPayload.tenant, cpf: '529.982.247-25' },
+        },
+        actorToken,
+      ),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(json.error.code).toBe('VALIDATION_ERROR')
+    expect(json.error.issues).toEqual(
+      expect.arrayContaining([expect.objectContaining({ path: 'tenant.cpf' })]),
+    )
+  })
+
+  it('recusa com 400 fiador com o mesmo CPF do locatário', async () => {
+    const response = await POST(
+      buildRequest(
+        'http://localhost/api/contracts',
+        'POST',
+        {
+          ...createPayload,
+          opportunityId: acceptedOpportunityId,
+          guaranteeType: 'GUARANTOR',
+          guarantor: {
+            name: 'Fiadora Repetida',
+            cpf: createPayload.tenant.cpf,
+            email: 'fiadora@example.com',
+            phone: '11977777777',
+          },
+        },
+        actorToken,
+      ),
+    )
+    const json = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(json.error.issues).toEqual(
+      expect.arrayContaining([expect.objectContaining({ path: 'guarantor.cpf' })]),
+    )
+  })
+
   it('cria contrato a partir da oportunidade aceita, com locador e locatário aguardando assinatura', async () => {
     const response = await POST(
       buildRequest(
