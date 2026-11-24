@@ -1,8 +1,4 @@
-import {
-  calendarMonthDateRange,
-  calendarMonthInTimeZone,
-  monthBoundsInTimeZone,
-} from '@server/shared/time-zone-calendar'
+import { monthBoundsInTimeZone } from '@server/shared/time-zone-calendar'
 import type { TimeRange } from '@server/shared/types/time-zone-calendar'
 
 export function currentMonthRange(referenceDate: Date): TimeRange {
@@ -23,8 +19,4 @@ export function previousMonthSamePeriodRange(referenceDate: Date): TimeRange {
   )
 
   return { start: previousMonth.start, end }
-}
-
-export function previousMonthDueDateRange(referenceDate: Date): TimeRange {
-  return calendarMonthDateRange(calendarMonthInTimeZone(referenceDate), -1)
 }

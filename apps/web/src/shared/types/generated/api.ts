@@ -15714,8 +15714,6 @@ export interface components {
     AgencyOverviewKpis: {
       activeBrokersCount: number
       monthlyReceivable: number
-      /** @description Mesmo cálculo de monthlyReceivable, aplicado ao mês anterior inteiro. */
-      monthlyReceivablePreviousMonth: number
       /** @description Imóveis cadastrados no mês corrente. */
       newPropertiesThisMonth: number
       occupancyPercentage: number

@@ -107,17 +107,13 @@
         "leadsIncrease": "+{count, number} vs last month",
         "leadsDecrease": "−{count, number} vs last month",
         "leadsSame": "Same as last month",
-        "revenueIncrease": "+{percent, number}% vs last month",
-        "revenueDecrease": "−{percent, number}% vs last month",
-        "revenueSame": "Same as last month",
-        "revenueNoPrevious": "Last month was zero",
         "overdue": "Past due, unpaid",
         "noOverdue": "Nothing overdue"
       }
     },
     "performance": {
       "title": "Revenue Performance",
-      "subtitle": "Monthly revenue receivable by the agency",
+      "subtitle": "Monthly billed total, excluding canceled charges",
       "revenue": "Revenue"
     },
     "topBrokers": {
@@ -507,8 +503,8 @@
       "date": "Date"
     },
     "export": "Export",
-    "revenueChartTitle": "Receivable (6 months)",
-    "revenue": "Receivable",
+    "revenueChartTitle": "Billed (6 months)",
+    "revenue": "Billed",
     "upcomingDuesTitle": "Upcoming dues",
     "kpis": {
       "receivable": "Receivable",

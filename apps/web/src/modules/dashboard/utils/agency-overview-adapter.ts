@@ -50,27 +50,6 @@ function getLeadsComparison(current: number, previous: number): KpiComparison {
   return { helper: { key: 'leadsSame' }, tone: 'neutral' }
 }
 
-function getRevenueComparison(current: number, previous: number): KpiComparison {
-  if (previous <= 0) {
-    return current > 0
-      ? { helper: { key: 'revenueNoPrevious' }, tone: 'neutral' }
-      : { tone: 'neutral' }
-  }
-
-  const change = ((current - previous) / previous) * 100
-  const percent = Math.sign(change) * Math.round(Math.abs(change))
-
-  if (percent > 0) {
-    return { helper: { key: 'revenueIncrease', values: { percent } }, tone: 'success' }
-  }
-
-  if (percent < 0) {
-    return { helper: { key: 'revenueDecrease', values: { percent: -percent } }, tone: 'neutral' }
-  }
-
-  return { helper: { key: 'revenueSame' }, tone: 'neutral' }
-}
-
 export function mapKpisToAgencyOverviewKpis(
   kpis: ApiAgencyOverviewKpis,
   locale: AppLocale = defaultLocale,
@@ -100,7 +79,7 @@ export function mapKpisToAgencyOverviewKpis(
       id: 'revenue',
       labelKey: 'revenue',
       value: formatCurrency(kpis.monthlyReceivable, locale),
-      ...getRevenueComparison(kpis.monthlyReceivable, kpis.monthlyReceivablePreviousMonth),
+      tone: 'neutral',
     },
     {
       id: 'overdue',
