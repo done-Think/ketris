@@ -2,7 +2,9 @@
 
 import {
   Box,
+  Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -10,7 +12,12 @@ import {
   Typography,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { useTranslations } from 'next-intl'
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded'
+import { useLocale, useTranslations } from 'next-intl'
+
+import type { AppLocale } from '@/i18n/types/locale.types'
+import { Link } from '@/i18n/navigation'
+import { formatLeadBudget } from '@shared/lib/utils/lead-budget'
 
 import { leadSourceKey } from '@shared/config/lead-sources'
 import type { LeadDetailsModalProps } from '../types/dashboard-overview'
@@ -19,6 +26,7 @@ import { LeadBriefingItem } from './LeadBriefingItem'
 import { styles } from '../styles/lead-details-modal.styles'
 
 export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
+  const locale = useLocale() as AppLocale
   const t = useTranslations('dashboard.overview.leadDetails')
   const sourceT = useTranslations('dashboard.leadSources')
 
@@ -59,7 +67,7 @@ export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
             <Box sx={styles.box3}>
               <ContactInfoCard label={t('client')} name={lead.name} phone={lead.phone} />
               <LeadBriefingItem label={t('interest')} value={lead.interest} />
-              <LeadBriefingItem label={t('budget')} value={lead.budget} />
+              <LeadBriefingItem label={t('budget')} value={formatLeadBudget(lead.budget, locale)} />
             </Box>
 
             <Box sx={styles.box4}>
@@ -71,6 +79,17 @@ export function LeadDetailsModal({ lead, onClose }: LeadDetailsModalProps) {
               <Typography sx={styles.typography4}>{lead.notes || t('noNotes')}</Typography>
             </Box>
           </DialogContent>
+          <DialogActions sx={styles.dialogActions}>
+            <Button
+              component={Link}
+              href={`/dashboard/leads?leadId=${encodeURIComponent(lead.id)}`}
+              variant="contained"
+              endIcon={<ArrowForwardRoundedIcon fontSize="small" />}
+              onClick={onClose}
+            >
+              {t('openLead')}
+            </Button>
+          </DialogActions>
         </>
       ) : null}
     </Dialog>

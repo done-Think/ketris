@@ -60,6 +60,7 @@
       "visitProperty": "Visit property"
     },
     "leadDetails": {
+      "openLead": "Open lead",
       "title": "Lead details",
       "close": "Close",
       "client": "Client",

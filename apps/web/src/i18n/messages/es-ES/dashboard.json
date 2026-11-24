@@ -60,6 +60,7 @@
       "visitProperty": "Inmueble de la visita"
     },
     "leadDetails": {
+      "openLead": "Abrir lead",
       "title": "Detalles del lead",
       "close": "Cerrar",
       "client": "Cliente",
