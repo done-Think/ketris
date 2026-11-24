@@ -115,3 +115,7 @@ export interface MaintenanceWorkflowControl {
 }
 
 export type MaintenanceWorkflowAction = Exclude<MaintenanceAction['action'], 'schedule'>
+
+export interface ContractTicketsPanelProps {
+  contractId: string
+}

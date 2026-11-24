@@ -3,9 +3,12 @@
 import { useDebouncedValue } from '@shared/hooks/use-debounced-value'
 import { useListState } from '@shared/hooks/use-list-state'
 import { useSession } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
 import { useFormatter, useLocale, useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useState } from 'react'
+
+import { useRouter } from '@/i18n/navigation'
 import type {
   MaintenanceCreateTicketFormValues,
   MaintenanceFilter,
@@ -50,6 +53,8 @@ export function useMaintenanceDashboard() {
   const locale = useLocale()
   const { enqueueSnackbar } = useSnackbar()
   const { data: session } = useSession()
+  const router = useRouter()
+  const contractFilter = useSearchParams()?.get('contractId') || null
   const { filters, setFilter } = useListState(initialFilters)
   const { activeFilter, propertyFilter, categoryFilter, currentPage, rowsPerPage, archived } =
     filters
@@ -67,6 +72,7 @@ export function useMaintenanceDashboard() {
         : undefined,
     priority: activeFilter === 'urgent' ? mapMaintenancePriorityToApi('urgent') : undefined,
     propertyId: propertyFilter === 'all' ? undefined : propertyFilter,
+    contractId: contractFilter ?? undefined,
     category: categoryFilter === 'all' ? undefined : categoryFilter,
     search: search.trim() || undefined,
     page: currentPage,
@@ -164,6 +170,11 @@ export function useMaintenanceDashboard() {
     pagedTickets,
     metrics,
     getFilterCount,
+    contractFilter,
+    clearContractFilter: () => {
+      setFilter('currentPage', 1)
+      router.replace('/dashboard/maintenance')
+    },
     currentPage: ticketsQuery.data?.pagination?.page ?? currentPage,
     totalCount: ticketsQuery.data?.totalCount ?? 0,
     isLoading: ticketsQuery.isLoading,

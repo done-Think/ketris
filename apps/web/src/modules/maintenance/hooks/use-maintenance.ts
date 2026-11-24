@@ -1,5 +1,7 @@
 import { useTenantSessionScope } from '@shared/hooks/use-tenant-session-scope'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useLocale } from 'next-intl'
+import { resolveLocale } from '@/i18n/routing'
 import type { MaintenanceAction } from '../types/service'
 
 import { maintenanceService } from '../services/maintenance-service'
@@ -17,6 +19,7 @@ function normalizeFilters(filters: MaintenanceTicketListFilters) {
     priority: filters.priority ?? null,
     category: filters.category ?? null,
     propertyId: filters.propertyId ?? null,
+    contractId: filters.contractId ?? null,
     search: filters.search ?? null,
     page: filters.page ?? null,
     pageSize: filters.pageSize ?? null,
@@ -38,6 +41,8 @@ export const maintenanceQueryKeys = {
     [...maintenanceQueryKeys.details(tenantId), ticketId] as const,
   activities: (tenantId: string | undefined, ticketId: string) =>
     [...maintenanceQueryKeys.detail(tenantId, ticketId), 'activities'] as const,
+  contract: (tenantId: string | undefined, contractId: string, locale: string) =>
+    [...maintenanceQueryKeys.lists(tenantId), 'contract', contractId, locale] as const,
 }
 
 export function useMaintenanceTickets(filters: MaintenanceTicketListFilters = {}) {
@@ -48,6 +53,20 @@ export function useMaintenanceTickets(filters: MaintenanceTicketListFilters = {}
     queryKey: [...maintenanceQueryKeys.list(tenantId, filters), session?.user?.id, session?.role],
     queryFn: () => maintenanceService.list(filters),
     enabled: scope.enabled,
+  })
+}
+
+export function useContractMaintenanceTickets(contractId: string) {
+  const scope = useTenantSessionScope()
+  const ticketLocale = resolveLocale(useLocale())
+  return useQuery({
+    queryKey: [
+      ...maintenanceQueryKeys.contract(scope.tenantId, contractId, ticketLocale),
+      scope.session?.user?.id,
+      scope.session?.role,
+    ],
+    queryFn: () => maintenanceService.listContractTickets(contractId, ticketLocale),
+    enabled: scope.enabled && Boolean(contractId),
   })
 }
 
