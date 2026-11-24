@@ -88,6 +88,7 @@
     "publicAddressTaken": "Este endereço já está em uso. Escolha outro nome.",
     "publicAddressPublishRequired": "Publique o perfil para liberar seu link público e a edição do endereço personalizado. O link funciona apenas enquanto o perfil estiver publicado.",
     "negotiationConditionsInvalid": "Pagamento exclusivamente à vista não pode ser combinado com financiamento.",
-    "stateInvalid": "Informe uma UF válida."
+    "stateInvalid": "Informe uma UF válida.",
+    "contractPartiesSamePerson": "Locador, locatário e fiador precisam ser pessoas diferentes."
   }
 }

@@ -87,6 +87,8 @@ export function MaintenanceDashboardPage() {
     retryEdit,
     handleSaveTicket,
     handleDeleteTicket,
+    contractFilter,
+    clearContractFilter,
   } = useMaintenanceDashboard()
   const headerActions = (
     <Stack
@@ -206,6 +208,14 @@ export function MaintenanceDashboardPage() {
             />
           ))}
         </Box>
+        {contractFilter && (
+          <Alert
+            severity="info"
+            action={<Button onClick={clearContractFilter}>{t('contractFilter.clear')}</Button>}
+          >
+            {t('contractFilter.message')}
+          </Alert>
+        )}
         {isLoading && <LinearProgress aria-label={t('listLoading')} />}
         {isError && (
           <Alert severity="error" action={<Button onClick={() => retry()}>{t('retry')}</Button>}>

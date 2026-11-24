@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { theme } from '@shared/theme/theme'
 
 import { SalesPipelineBoard } from '../../components/SalesPipelineBoard'
+import { typographySx5 as projectedTotalTypography } from '../../styles/pipeline-stage-column.styles'
 import {
   useCreateOpportunity,
   useCrmProperties,
@@ -374,6 +375,44 @@ describe('SalesPipelineBoard', () => {
       within(totals).getByText(matchesText(formatMonthlyCurrency(5200, common.perMonth))),
     ).toBeVisible()
     expect(within(totals).getByText(matchesText(formatCurrency(920000)))).toBeVisible()
+  })
+
+  it('keeps every projected total footer the same size, with or without a breakdown', () => {
+    mockOpportunitiesQuery({
+      data: [
+        makeOpportunity(1, 'DRAFT', { leadName: 'Carlos Eduardo', proposedValue: 5200 }),
+        makeOpportunity(2, 'DRAFT', { leadName: 'Letícia Ramos', proposedValue: 920000 }),
+      ],
+    })
+    mockPropertiesQuery({
+      data: [
+        makeProperty(1, { title: 'Studio Vila Mariana', purpose: 'RENT' }),
+        makeProperty(2, { title: 'Casa Pinheiros', purpose: 'SALE' }),
+      ],
+    })
+
+    renderPipeline()
+
+    const reservedHeights = Object.values(stageLabels).map((label) => {
+      const footer = screen.getByRole('group', { name: `Total projetado de ${label}` })
+      return window.getComputedStyle(footer.lastElementChild as HTMLElement).minHeight
+    })
+    expect(
+      within(screen.getByRole('group', { name: 'Total projetado de Prospecção' })).getByText(
+        'Venda',
+      ),
+    ).toBeVisible()
+    expect(reservedHeights[0]).toMatch(/\d/)
+    expect(new Set(reservedHeights).size).toBe(1)
+
+    const { fontSize, lineHeight } = projectedTotalTypography as {
+      fontSize: number
+      lineHeight: number
+    }
+    // 3 rows of the total text plus the 2 gaps between them.
+    expect(Number.parseFloat(reservedHeights[0])).toBeCloseTo(
+      3 * fontSize * lineHeight + 2 * Number.parseFloat(theme.spacing(0.25)),
+    )
   })
 
   it('searches by contact and property context', async () => {

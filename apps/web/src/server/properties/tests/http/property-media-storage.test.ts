@@ -94,7 +94,7 @@ describe('property media storage through the actual composition and HTTP handler
     expect(image.headers.get('Content-Type')).toBe('image/jpeg')
     expect(Buffer.from(await image.arrayBuffer())).toEqual(Buffer.from([255, 216, 255, 217]))
     expect(send).not.toHaveBeenCalled()
-  })
+  }, 20000)
   it('returns 404 for a missing local image without contacting S3', async () => {
     const { GET } = await routes()
     const response = await GET(

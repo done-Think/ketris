@@ -8,6 +8,7 @@ import type {
   UpdateOpportunityInput,
 } from '../types/opportunity'
 import type { CrmPropertySearchFilters } from '../types/property'
+import type { InteractionTarget } from '../types/interaction'
 
 function normalizeFilters(filters: OpportunityFilters) {
   return {
@@ -51,6 +52,23 @@ export const crmQueryKeys = {
   leadsTenant: (tenantId: string | undefined) => [...crmQueryKeys.leads(), tenantId] as const,
   leadsList: (tenantId: string | undefined, filters = {}, actorKey: readonly string[] = []) =>
     [...crmQueryKeys.leadsTenant(tenantId), 'list', actorKey, filters] as const,
+  interactions: () => [...crmQueryKeys.all, 'interactions'] as const,
+  interactionsTenant: (tenantId: string | undefined) =>
+    [...crmQueryKeys.interactions(), tenantId] as const,
+  interactionsList: (
+    tenantId: string | undefined,
+    target: InteractionTarget,
+    page: number,
+    actorKey: readonly string[] = [],
+  ) =>
+    [
+      ...crmQueryKeys.interactionsTenant(tenantId),
+      'list',
+      actorKey,
+      target.kind,
+      target.id,
+      page,
+    ] as const,
 }
 
 export function useOpportunities(filters: OpportunityFilters = {}) {

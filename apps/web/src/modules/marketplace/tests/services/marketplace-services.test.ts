@@ -135,17 +135,20 @@ describe('profile media and tenant agents', () => {
     expect((body as FormData).get('target')).toBe('agency-logo')
   })
 
-  it('offers only active agents for the featured team', async () => {
+  it('offers only active brokers who accepted the invitation for the featured team', async () => {
     http.get.mockResolvedValue({
       users: [
-        { id: 'a1', role: 'AGENT', active: true },
-        { id: 'a2', role: 'AGENT', active: false },
-        { id: 'o1', role: 'OWNER', active: true },
+        { id: 'a1', name: 'Ana', email: 'ana@example.test', role: 'AGENT', active: true },
+        { id: 'a2', name: 'Bia', email: 'bia@example.test', role: 'AGENT', active: false },
+        { id: 'o1', name: 'Dona', email: 'dona@example.test', role: 'OWNER', active: true },
       ],
     })
 
     await expect(new TenantAgentsService(client()).list()).resolves.toEqual([
-      { id: 'a1', role: 'AGENT', active: true },
+      { id: 'a1', name: 'Ana', email: 'ana@example.test', role: 'AGENT', active: true },
     ])
+    expect(http.get).toHaveBeenCalledWith('/auth/users', {
+      params: { pendingInvitation: 'false', pageSize: 100 },
+    })
   })
 })

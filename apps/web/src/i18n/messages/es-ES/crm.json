@@ -84,7 +84,8 @@
       "editContact": "Editar {name}",
       "viewInteractions": "Ver interacciones de {name}",
       "moreOptions": "Más opciones para {name}",
-      "archiveContact": "Archivar {name}"
+      "archiveContact": "Archivar {name}",
+      "addLead": "Agregar {name} a Leads"
     },
     "types": {
       "tenant": "Inquilino",
@@ -142,6 +143,11 @@
       "confirm": "Archivar",
       "success": "Contacto archivado.",
       "error": "No se pudo archivar el contacto."
+    },
+    "shortcuts": {
+      "call": "Llamar",
+      "whatsapp": "WhatsApp",
+      "email": "Correo electrónico"
     }
   },
   "leads": {
@@ -233,7 +239,8 @@
       "email": "Email",
       "convert": "Convertir en oportunidad",
       "alreadyConverted": "Ya convertido",
-      "viewOpportunity": "Ver oportunidad"
+      "viewOpportunity": "Ver oportunidad",
+      "linkContact": "Vincular a Contactos"
     },
     "convert": {
       "eyebrow": "Convertir lead",
@@ -513,5 +520,56 @@
     "retry": "Reintentar",
     "loadError": "No se pudieron cargar las opciones.",
     "loadMore": "Cargar más"
+  },
+  "interactions": {
+    "title": "Interacciones",
+    "loading": "Cargando interacciones",
+    "retry": "Reintentar",
+    "loadError": "No se pudo cargar el historial.",
+    "empty": "No hay interacciones registradas.",
+    "recordResult": "Registrar resultado",
+    "result": "Resultado del contacto",
+    "description": "Nota (opcional)",
+    "cancel": "Cancelar",
+    "save": "Guardar resultado",
+    "required": "Selecciona un resultado.",
+    "maximum": "Usa como máximo 2000 caracteres.",
+    "completeError": "No se pudo guardar. Actualiza el historial e inténtalo de nuevo.",
+    "completedAt": "Resultado registrado el {date}",
+    "pagination": "Páginas de interacciones",
+    "close": "Cerrar",
+    "contactScope": "Este historial incluye interacciones directas y eventos de leads vinculados explícitamente. Cambiar una etapa no confirma una conversación.",
+    "recording": "Registrando el intento de contacto...",
+    "attemptRecorded": "Acceso activado. Registra el resultado al terminar la conversación.",
+    "startError": "El acceso se activó, pero el intento no se registró. Reintenta guardar el registro sin volver a contactar al cliente.",
+    "channels": {
+      "PHONE": "Llamada",
+      "EMAIL": "Correo electrónico",
+      "WHATSAPP": "WhatsApp"
+    },
+    "statuses": {
+      "STARTED": "Intento iniciado",
+      "CONTACT_MADE": "Contacto realizado",
+      "NO_RESPONSE": "Sin respuesta",
+      "CANCELLED": "Cancelado"
+    },
+    "retryRecord": "Volver a guardar el intento",
+    "refreshHistory": "Actualizar historial",
+    "kinds": {
+      "CONTACT_ATTEMPT": "Intento de contacto",
+      "STAGE_CHANGED": "Etapa del lead modificada",
+      "CONTACT_LINKED": "Lead vinculado a Contactos",
+      "LEAD_CREATED": "Lead creado desde Contactos"
+    }
+  },
+  "contactLinks": {
+    "title": "Vincular {name} a Contactos",
+    "explanation": "Selecciona un contacto existente o crea uno. El historial del lead estará disponible en ambos lugares.",
+    "existing": "Contacto existente",
+    "required": "Selecciona un contacto.",
+    "create": "Crear contacto",
+    "link": "Vincular contacto",
+    "cancel": "Cancelar",
+    "error": "No se pudo vincular. Revisa los datos y selecciona el contacto existente si su correo ya está registrado."
   }
 }

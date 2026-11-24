@@ -124,7 +124,8 @@
       "participantTooLong": "Use no máximo 200 caracteres no nome",
       "phoneTooLong": "Use no máximo 32 caracteres no telefone",
       "propertyReferenceTooLong": "Use no máximo 500 caracteres na referência",
-      "notesTooLong": "Use no máximo 10.000 caracteres nas notas"
+      "notesTooLong": "Use no máximo 10.000 caracteres nas notas",
+      "timeSlotInvalid": "Selecione um horário com minutos 00 ou 30"
     },
     "outsideHoursWarning": {
       "message": "O período deste evento está fora do horário comercial (08h–18h). Deseja continuar?",
@@ -139,7 +140,12 @@
     "propertiesEmpty": "Nenhum imóvel encontrado",
     "propertiesError": "Não foi possível carregar os imóveis.",
     "propertiesRetry": "Tentar novamente",
-    "propertiesMore": "Carregar mais imóveis"
+    "propertiesMore": "Carregar mais imóveis",
+    "timePicker": {
+      "title": "Selecionar horário",
+      "hour": "Horas",
+      "minute": "Minutos"
+    }
   },
   "eventDetail": {
     "responsible": "Responsável: {name}",
@@ -230,6 +236,7 @@
     "outcomeCancelledEvent": "Eventos cancelados não recebem resultado.",
     "noShowInternalEvent": "Eventos internos não têm cliente para registrar ausência.",
     "visitInterestRequired": "Informe o interesse do cliente na visita.",
-    "visitInterestNotAllowed": "O interesse do cliente só se aplica a visitas realizadas."
+    "visitInterestNotAllowed": "O interesse do cliente só se aplica a visitas realizadas.",
+    "timeSlotInvalid": "Selecione um horário com minutos 00 ou 30."
   }
 }

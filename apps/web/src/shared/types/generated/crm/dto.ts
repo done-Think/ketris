@@ -32,3 +32,11 @@ export type ActivityResponseDTO = components['schemas']['OpportunityActivityResp
 export type RespondOpportunityRequestDTO = components['schemas']['RespondOpportunityRequest']
 export type RespondOpportunityResponseDTO = components['schemas']['RespondOpportunityResponse']
 export type LeadListQueryDTO = Partial<components['schemas']['LeadListQuery']>
+export type CrmInteractionDTO = components['schemas']['CrmInteraction']
+export type CrmInteractionChannelDTO = components['schemas']['CrmInteractionChannel']
+export type StartCrmInteractionRequestDTO = components['schemas']['StartCrmInteractionRequest']
+export type CompleteCrmInteractionRequestDTO =
+  components['schemas']['CompleteCrmInteractionRequest']
+export type CrmInteractionsPageDTO = components['schemas']['CrmInteractionsPage']
+export type CrmInteractionResponseDTO = components['schemas']['CrmInteractionResponse']
+export type LinkLeadContactRequestDTO = components['schemas']['LinkLeadContactRequest']

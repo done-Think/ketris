@@ -196,6 +196,8 @@
     "mapApproximate": "Approximate location",
     "favorite": "Favorite",
     "share": "Share",
+    "linkCopied": "Link copied.",
+    "shareError": "Could not share. Copy the address from your browser.",
     "aboutProperty": "About this property",
     "location": "Location",
     "notInformed": "Not informed",
@@ -434,7 +436,46 @@
       },
       "cancel": "Cancel",
       "apply": "Apply",
-      "applied": "Brand applied. Click Save to keep it."
+      "applied": "Brand applied. Click Save to keep it.",
+      "suggestion": "Suggested from your logo:",
+      "useSuggestion": "Use logo colors",
+      "wizard": {
+        "steps": {
+          "logo": "Logo",
+          "colors": "Colors",
+          "cover": "Cover",
+          "review": "Review"
+        },
+        "titles": {
+          "logo": "Upload your logo",
+          "colors": "Choose the colors",
+          "cover": "Cover image",
+          "review": "Review before applying"
+        },
+        "descriptions": {
+          "logo": "Preferably a PNG with a transparent background. We then suggest colors from it.",
+          "colors": "Use the logo suggestion, a ready-made palette or pick each color.",
+          "cover": "Shown at the top of your profile. Photos of the storefront or the city work well.",
+          "review": "See what is ready and what is still missing to publish."
+        },
+        "next": "Next",
+        "back": "Back",
+        "skip": "See everything on one screen",
+        "review": {
+          "logo": {
+            "ok": "Logo uploaded",
+            "missing": "Logo missing (required to publish)"
+          },
+          "background": {
+            "ok": "Brand background chosen",
+            "missing": "Brand background missing (required to publish)"
+          },
+          "cover": {
+            "ok": "Cover image uploaded",
+            "missing": "Cover image missing (required to publish)"
+          }
+        }
+      }
     }
   },
   "searchResults": {

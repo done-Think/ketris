@@ -1,5 +1,5 @@
 import { validationRefinement } from '@server/shared/http/validation-messages'
-import { crmDateSchema } from './crm-date.schema'
+import { crmDateSchema, crmNullableTimestampSchema } from './crm-date.schema'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
 import {
@@ -25,6 +25,7 @@ export const leadSchema = z
     tenantId: z.string(),
     responsibleId: z.string(),
     responsibleName: z.string().optional(),
+    contactId: z.string().nullable().optional(),
     name: z.string(),
     phone: z.string(),
     email: z.string().nullable(),
@@ -37,6 +38,7 @@ export const leadSchema = z
     opportunityId: z.string().nullable(),
     createdAt: crmDateSchema,
     updatedAt: crmDateSchema,
+    lastContactAt: crmNullableTimestampSchema.optional(),
   })
   .openapi('Lead')
 
@@ -57,6 +59,7 @@ export const leadResponseSchema = z.object({ lead: leadSchema }).openapi('LeadRe
 
 export const createLeadRequestSchema = z
   .object({
+    contactId: z.string().trim().min(1).optional(),
     name: crmNameSchema,
     phone: crmPhoneSchema,
     email: crmEmailSchema.nullable().optional(),

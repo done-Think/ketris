@@ -1,6 +1,12 @@
-import type { AgendaLayoutPlacement, AgendaLaidOutCard } from '../types/agenda-event'
 import dayjs from 'dayjs'
-import type { AgendaCalendarDay, AgendaEvent } from '../types/agenda-event'
+import type {
+  AgendaCalendarDay,
+  AgendaCalendarCard,
+  AgendaEvent,
+  AgendaHourRow,
+  AgendaTimeSlot,
+} from '../types/agenda-event'
+import type { AgendaOrganizationItem } from '../types/agenda-organization'
 
 export function buildAgendaEventSegments(days: AgendaCalendarDay[], events: AgendaEvent[]) {
   const result: Record<string, AgendaEvent[]> = Object.fromEntries(days.map((day) => [day.key, []]))
@@ -25,29 +31,42 @@ export function buildAgendaEventSegments(days: AgendaCalendarDay[], events: Agen
   return result
 }
 
-export function layoutAgendaCards<T extends AgendaLayoutPlacement>(
-  cards: T[],
-): AgendaLaidOutCard<T>[] {
-  const result: AgendaLaidOutCard<T>[] = []
-  let group: (T & { lane: number })[] = []
-  let laneEnds: number[] = []
-  let groupEnd = -Infinity
-  function flush() {
-    result.push(...group.map((card) => ({ ...card, laneCount: laneEnds.length })))
-    group = []
-    laneEnds = []
-    groupEnd = -Infinity
+export function buildAgendaHourRows(
+  days: AgendaCalendarDay[],
+  timeSlots: AgendaTimeSlot[],
+  eventsByDay: Record<string, AgendaEvent[]>,
+  organizationItems: AgendaOrganizationItem[],
+): AgendaHourRow[] {
+  const rows = timeSlots.map((slot) => ({
+    ...slot,
+    cardsByDay: Object.fromEntries(days.map((day) => [day.key, [] as AgendaCalendarCard[]])),
+  }))
+  const rowsByHour = new Map(rows.map((row) => [row.hour, row]))
+  for (const day of days) {
+    for (const event of eventsByDay[day.key] ?? []) {
+      const hour = Number(event.time.split(':')[0])
+      rowsByHour.get(hour)?.cardsByDay[day.key].push({
+        kind: 'event',
+        id: `event-${event.id}`,
+        time: event.time,
+        event,
+      })
+    }
   }
-  for (const card of [...cards].sort(
-    (a, b) => a.top - b.top || b.height - a.height || a.id.localeCompare(b.id),
-  )) {
-    if (card.top >= groupEnd) flush()
-    let lane = laneEnds.findIndex((end) => end <= card.top)
-    if (lane < 0) lane = laneEnds.length
-    laneEnds[lane] = card.top + card.height
-    groupEnd = Math.max(groupEnd, laneEnds[lane])
-    group.push({ ...card, lane })
+  for (const item of organizationItems) {
+    if (!item.time) continue
+    const hour = Number(item.time.split(':')[0])
+    rowsByHour.get(hour)?.cardsByDay[item.date]?.push({
+      kind: 'organization',
+      id: item.id,
+      time: item.time,
+      item,
+    })
   }
-  flush()
-  return result
+  for (const row of rows) {
+    for (const cards of Object.values(row.cardsByDay)) {
+      cards.sort((a, b) => a.time.localeCompare(b.time) || a.id.localeCompare(b.id))
+    }
+  }
+  return rows
 }

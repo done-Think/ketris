@@ -13,13 +13,16 @@ export function toDashboardLead(
   const amount = parseLeadBudget(lead.budget)
   return {
     id: lead.id,
+    contactId: lead.contactId,
     name: lead.name,
     budget:
       amount !== null ? (format?.money(amount) ?? formatCurrency(amount, locale)) : lead.budget,
     phone: lead.phone,
     email: lead.email ?? '',
-    lastContact: format?.relative(lead.updatedAt) ?? formatLeadRelativeDate(lead.updatedAt, locale),
-    lastContactAt: lead.updatedAt,
+    lastContact: lead.lastContactAt
+      ? (format?.relative(lead.lastContactAt) ?? formatLeadRelativeDate(lead.lastContactAt, locale))
+      : '—',
+    lastContactAt: lead.lastContactAt ?? '',
     interest: lead.interest,
     source: lead.source,
     broker: lead.responsibleName ?? '',

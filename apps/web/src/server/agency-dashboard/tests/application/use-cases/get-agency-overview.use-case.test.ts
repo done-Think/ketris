@@ -42,7 +42,6 @@ function createRepository(overrides?: Partial<AgencyOverviewRepository>): Agency
     getActiveBrokersCount: vi.fn().mockResolvedValue(3),
     getReceivedLeadsThisMonth: vi.fn().mockResolvedValue(4),
     getReceivedLeadsPreviousPeriod: vi.fn().mockResolvedValue(6),
-    getMonthlyReceivablePreviousMonth: vi.fn().mockResolvedValue(7000),
     getOccupancyPercentage: vi.fn().mockResolvedValue(75),
     getTopBrokers: vi.fn().mockResolvedValue([topBroker]),
     getRecentActivities: vi.fn().mockResolvedValue([activity]),
@@ -144,7 +143,6 @@ describe('GetAgencyOverviewUseCase', () => {
         receivedLeadsThisMonth: 4,
         receivedLeadsPreviousPeriod: 6,
         monthlyReceivable: 8500,
-        monthlyReceivablePreviousMonth: 7000,
         overdueTotal: 320,
         occupancyPercentage: 75,
       },
@@ -173,10 +171,6 @@ describe('GetAgencyOverviewUseCase', () => {
       'tenant-2',
       expect.any(Date),
     )
-    expect(repository.getMonthlyReceivablePreviousMonth).toHaveBeenCalledWith(
-      'tenant-2',
-      expect.any(Date),
-    )
     expect(repository.getOccupancyPercentage).toHaveBeenCalledWith('tenant-2')
     expect(repository.getTopBrokers).toHaveBeenCalledWith('tenant-2')
     expect(repository.getRecentActivities).toHaveBeenCalledWith('tenant-2')
@@ -186,7 +180,7 @@ describe('GetAgencyOverviewUseCase', () => {
     })
   })
 
-  it('usa a mesma data de referência para o mês atual e para a comparação com o mês anterior', async () => {
+  it('usa a mesma data de referência para o mês atual e para a comparação de leads', async () => {
     const repository = createRepository()
     const useCase = new GetAgencyOverviewUseCase(repository, createFinancialSummaryProvider())
 
@@ -194,9 +188,6 @@ describe('GetAgencyOverviewUseCase', () => {
 
     const referenceDate = vi.mocked(repository.getReceivedLeadsThisMonth).mock.calls[0][1]
     expect(vi.mocked(repository.getReceivedLeadsPreviousPeriod).mock.calls[0][1]).toBe(
-      referenceDate,
-    )
-    expect(vi.mocked(repository.getMonthlyReceivablePreviousMonth).mock.calls[0][1]).toBe(
       referenceDate,
     )
     expect(vi.mocked(repository.getNewPropertiesThisMonth).mock.calls[0][1]).toBe(referenceDate)

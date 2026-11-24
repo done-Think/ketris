@@ -27,6 +27,7 @@ export class GetContactUseCase {
       input.actorId,
       input.actorRole,
       contact.createdById,
+      await this.contactRepository.hasLeadForAgent(input.actorTenantId, contact.id, input.actorId),
     )
 
     return contact

@@ -88,6 +88,7 @@
     "publicAddressTaken": "This address is already in use. Choose another name.",
     "publicAddressPublishRequired": "Publish your profile to enable its public link and edit your custom address. The link works only while the profile is published.",
     "negotiationConditionsInvalid": "Payment in full only cannot be combined with financing.",
-    "stateInvalid": "Enter a valid Brazilian state (UF)."
+    "stateInvalid": "Enter a valid Brazilian state (UF).",
+    "contractPartiesSamePerson": "Landlord, tenant and guarantor must be different people."
   }
 }

@@ -6,6 +6,7 @@ import {
   ContractChargeMonths,
   ContractChargeSummary,
 } from '@modules/financial'
+import { ContractTicketsPanel } from '@modules/maintenance'
 
 export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
   const { locale } = await params
@@ -25,6 +26,7 @@ export default async function DashboardContractDetailRoute({
         alerts: <ContractChargeAlerts contractId={id} />,
         paymentSummary: <ContractChargeSummary contractId={id} />,
         payments: <ContractChargeMonths contractId={id} />,
+        tickets: <ContractTicketsPanel contractId={id} />,
       }}
     />
   )

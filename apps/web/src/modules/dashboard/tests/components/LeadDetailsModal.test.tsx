@@ -7,6 +7,18 @@ import { recentLead } from '../fixtures/dashboard'
 import { renderWithProviders } from '../fixtures/render'
 
 describe('LeadDetailsModal', () => {
+  it('formats the budget and links to the same lead in the CRM', () => {
+    renderWithProviders(
+      <LeadDetailsModal lead={{ ...recentLead, budget: '700000' }} onClose={vi.fn()} />,
+    )
+
+    expect(screen.getByText('R$ 700.000,00')).toBeVisible()
+    const link = screen.getByRole('link', { name: 'Abrir lead' })
+    const destination = new URL(link.getAttribute('href')!, 'http://localhost')
+    expect(destination.pathname).toBe('/dashboard/leads')
+    expect(destination.searchParams.get('leadId')).toBe(recentLead.id)
+  })
+
   it('mostra o briefing do lead', () => {
     renderWithProviders(<LeadDetailsModal lead={recentLead} onClose={vi.fn()} />)
 

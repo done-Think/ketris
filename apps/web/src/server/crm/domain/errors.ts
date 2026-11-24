@@ -118,3 +118,39 @@ export class InvalidOpportunityResponsibleError extends AppError {
     })
   }
 }
+
+export class InteractionNotFoundError extends AppError {
+  constructor() {
+    super('Interação não encontrada.', {
+      status: 404,
+      code: 'INTERACTION_NOT_FOUND',
+    })
+  }
+}
+
+export class InteractionConflictError extends AppError {
+  constructor() {
+    super('Esta interação já foi registrada com outras informações.', {
+      status: 409,
+      code: 'INTERACTION_CONFLICT',
+    })
+  }
+}
+
+export class InteractionChannelUnavailableError extends AppError {
+  constructor() {
+    super('O cadastro não tem destino para este canal de contato.', {
+      status: 422,
+      code: 'INTERACTION_CHANNEL_UNAVAILABLE',
+    })
+  }
+}
+
+export class LeadContactConflictError extends AppError {
+  constructor() {
+    super('Este lead ou oportunidade já está vinculado a outro contato.', {
+      status: 409,
+      code: 'LEAD_CONTACT_CONFLICT',
+    })
+  }
+}

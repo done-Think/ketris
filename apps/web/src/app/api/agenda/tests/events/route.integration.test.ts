@@ -126,6 +126,28 @@ describe('/api/agenda/events (integração)', () => {
     })
   }
 
+  it.each(['2030-01-15T16:15:00.000Z', '2030-01-15T16:45:00.000Z', '2030-01-15T16:30:01.000Z'])(
+    'rejects unsupported start %s without persisting the event',
+    async (start) => {
+      const response = await POST(
+        buildRequest('POST', 'http://localhost/api/agenda/events', {
+          title: 'Invalid time slot',
+          kind: 'VISIT',
+          propertyId,
+          start,
+          durationMinutes: 60,
+          participantName: 'Test client',
+          participantPhone: '(11) 99842-2109',
+        }),
+      )
+      expect(response.status).toBe(400)
+      expect((await response.json()).error.code).toBe('AGENDA_TIME_SLOT_INVALID')
+      expect(
+        await prisma.agendaEvent.count({ where: { tenantId, title: 'Invalid time slot' } }),
+      ).toBe(0)
+    },
+  )
+
   it('cria evento atribuído ao próprio ator, vinculado a um imóvel do tenant', async () => {
     const response = await POST(
       buildRequest('POST', 'http://localhost/api/agenda/events', {

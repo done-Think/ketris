@@ -55,7 +55,7 @@ const contact: Contact = {
 
 function createDeps(overrides?: {
   existsForTenant?: PropertyLookupPort['existsForTenant']
-  findResponsibleId?: PropertyLookupPort['findResponsibleId']
+  canAccess?: PropertyLookupPort['canAccess']
   findById?: ContactRepository['findById']
   create?: OpportunityRepository['create']
   findActiveStaffName?: ResponsibleLookupPort['findActiveStaffName']
@@ -70,7 +70,7 @@ function createDeps(overrides?: {
 
   const propertyLookup = {
     existsForTenant: overrides?.existsForTenant ?? vi.fn().mockResolvedValue(true),
-    findResponsibleId: overrides?.findResponsibleId ?? vi.fn().mockResolvedValue('agent-1'),
+    canAccess: overrides?.canAccess ?? vi.fn().mockResolvedValue(true),
   } as unknown as PropertyLookupPort
 
   const activityRepository = {
@@ -259,7 +259,7 @@ describe('CreateOpportunityUseCase', () => {
 
   it('AGENT cria oportunidade no próprio imóvel normalmente', async () => {
     const create = vi.fn().mockResolvedValue(created)
-    const deps = createDeps({ create, findResponsibleId: vi.fn().mockResolvedValue('agent-1') })
+    const deps = createDeps({ create, canAccess: vi.fn().mockResolvedValue(true) })
     const useCase = new CreateOpportunityUseCase(
       deps.opportunityRepository,
       deps.contactRepository,
@@ -285,7 +285,7 @@ describe('CreateOpportunityUseCase', () => {
     const create = vi.fn()
     const deps = createDeps({
       create,
-      findResponsibleId: vi.fn().mockResolvedValue('outro-agente'),
+      canAccess: vi.fn().mockResolvedValue(false),
     })
     const useCase = new CreateOpportunityUseCase(
       deps.opportunityRepository,
