@@ -613,7 +613,7 @@ export class PrismaChargeRepository implements ChargeRepository {
         select: { amount: true, dueDate: true },
       }),
       prisma.charge.findMany({
-        where: { tenantId, type: 'RECEIVABLE', status: 'PENDING' },
+        where: { tenantId, type: 'RECEIVABLE', status: 'PENDING', dueDate: { gte: today } },
         orderBy: [{ dueDate: 'asc' }, { id: 'asc' }],
         take: 5,
         include: chargeInclude,

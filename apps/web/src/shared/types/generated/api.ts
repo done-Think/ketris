@@ -10613,7 +10613,7 @@ export interface paths {
     }
     /**
      * Resumo financeiro do tenant (só OWNER)
-     * @description monthlyReceivable soma RECEIVABLE não canceladas com vencimento no mês (month, padrão o atual) e monthlySeries os 6 meses que terminam nele. overdueTotal, defaultRatePercentage, occupancyRatePercentage e upcomingDues são a posição de hoje. Valores em BRL.
+     * @description monthlyReceivable soma RECEIVABLE não canceladas com vencimento no mês (month, padrão o atual) e monthlySeries os 6 meses que terminam nele. overdueTotal, defaultRatePercentage e occupancyRatePercentage são a posição de hoje; upcomingDues traz até 5 cobranças pendentes que vencem de hoje em diante. Valores em BRL.
      */
     get: {
       parameters: {

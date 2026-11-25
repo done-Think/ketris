@@ -11,6 +11,7 @@ export const styles = {
     p: { xs: 2, md: 2.4 },
   },
   title: { color: brand.graphite[500], fontSize: 18, fontWeight: 900, mb: 1.8 },
+  empty: { color: brand.neutral[500], fontSize: 13 },
   item: {
     bgcolor: surface.app,
     borderRadius: `${radius.sm}px`,

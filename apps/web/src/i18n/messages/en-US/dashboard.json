@@ -517,6 +517,7 @@
     "revenueChartTitle": "Billed (6 months)",
     "revenue": "Billed",
     "upcomingDuesTitle": "Upcoming dues",
+    "upcomingDuesEmpty": "No charges due from today on.",
     "kpis": {
       "receivable": "Receivable",
       "delinquency": "Delinquency",
