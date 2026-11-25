@@ -25,6 +25,7 @@ const state = vi.hoisted(() => ({
   },
   upload: vi.fn(),
   create: vi.fn(),
+  publish: vi.fn(),
   update: vi.fn(),
   push: vi.fn(),
   notify: vi.fn(),
@@ -47,6 +48,7 @@ vi.mock('../../hooks/use-properties', async () => {
   return {
     useProperty: () => state.query,
     useCreateProperty: () => ({ mutateAsync: state.create, isPending: false }),
+    usePublishProperty: () => ({ mutateAsync: state.publish, isPending: false }),
     useUpdateProperty: () => ({ mutateAsync: state.update, isPending: false }),
     usePropertyOwners: () => ({ data: state.owners, isError: false, isLoading: false }),
     useUploadPropertyMediaBatch: actual.useUploadPropertyMediaBatch,
@@ -217,6 +219,7 @@ describe('property forms', () => {
     expect(state.create).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Casa com jardim', price: 2500.5, purpose: 'RENT' }),
     )
+    expect(state.publish).not.toHaveBeenCalled()
     expect(state.push).toHaveBeenCalledWith({
       pathname: '/dashboard/properties/[id]',
       params: { id: 'new-property' },

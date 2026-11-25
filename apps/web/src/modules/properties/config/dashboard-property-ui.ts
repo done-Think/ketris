@@ -71,7 +71,7 @@ export const propertyFormStepFields: Record<
     'negotiationTerm',
     'negotiationConditions',
   ],
-  publishing: ['publishingOptions'],
+  publishing: ['publishingOptions', 'instagramEnabled', 'instagramCaption', 'instagramImageUrls'],
 }
 
 export const propertyMediaAcceptedTypes = {

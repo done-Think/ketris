@@ -25,6 +25,7 @@ export function createDashboardPropertySchema(
     | 'cityRequired'
     | 'descriptionRequired'
     | 'descriptionTooLong'
+    | 'instagramPhotosRequired'
     | 'integerRequired'
     | 'mainValueRequired'
     | 'negotiationTermRequired'
@@ -100,6 +101,9 @@ export function createDashboardPropertySchema(
       negotiationTerm: z.string().max(2000, t('negotiationTermTooLong')).default(''),
       negotiationConditions: z.array(z.enum(propertyNegotiationConditions)).default([]),
       publishingOptions: z.array(z.enum(createPropertyPublishingOptions)).default([]),
+      instagramEnabled: z.boolean().default(false),
+      instagramCaption: z.string().max(2200).default(''),
+      instagramImageUrls: z.array(z.string()).max(20).default([]),
     })
     .superRefine((values, context) => {
       const purpose =
@@ -121,6 +125,13 @@ export function createDashboardPropertySchema(
           code: z.ZodIssueCode.custom,
           path: ['negotiationConditions'],
           message: t('negotiationConditionsInvalid'),
+        })
+      }
+      if (values.instagramEnabled && !values.instagramImageUrls.length) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['instagramImageUrls'],
+          message: t('instagramPhotosRequired'),
         })
       }
       if (
@@ -165,4 +176,7 @@ export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormVa
   negotiationTerm: '',
   negotiationConditions: [],
   publishingOptions: [],
+  instagramEnabled: false,
+  instagramCaption: '',
+  instagramImageUrls: [],
 }

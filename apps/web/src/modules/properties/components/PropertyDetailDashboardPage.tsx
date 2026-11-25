@@ -32,6 +32,7 @@ import { PropertyDetailHeader } from './PropertyDetailHeader'
 import { PropertyDetailMainPanel } from './PropertyDetailMainPanel'
 import { PropertyDetailSidebar } from './PropertyDetailSidebar'
 import { PropertyDetailTabs } from './PropertyDetailTabs'
+import { PropertyInstagramPanel } from './PropertyInstagramPanel'
 
 export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashboardPageProps) {
   const t = useTranslations('properties.detail')
@@ -131,6 +132,7 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
+      <PropertyInstagramPanel property={property} />
       {isReadOnlyViewer && (
         <Typography color="text.secondary" sx={styles.typography}>
           {renterT('readOnly')}

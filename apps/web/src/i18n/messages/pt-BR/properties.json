@@ -283,7 +283,8 @@
       "descriptionTooLong": "A descrição deve ter no máximo 10.000 caracteres.",
       "negotiationTermTooLong": "A observação deve ter no máximo 2.000 caracteres.",
       "integerRequired": "Informe um número inteiro",
-      "negotiationConditionsInvalid": "Pagamento exclusivamente à vista não pode ser combinado com financiamento."
+      "negotiationConditionsInvalid": "Pagamento exclusivamente à vista não pode ser combinado com financiamento.",
+      "instagramPhotosRequired": "Selecione de 1 a 20 fotos do imóvel."
     },
     "saveDraft": "Salvar rascunho",
     "noOwner": "Sem proprietário vinculado",
@@ -391,5 +392,49 @@
       "STATUS_CHANGED": "Status do imóvel alterado"
     },
     "eventTitle": "{action} por {name}"
+  },
+  "instagram": {
+    "connectionTitle": "Meu Instagram",
+    "connectionDescription": "Conecte sua conta profissional para anunciar os imóveis que você pode representar nesta imobiliária.",
+    "connected": "Conta conectada: @{username}",
+    "expired": "A autorização expirou. Reconecte a conta para continuar.",
+    "connectionError": "Não foi possível conectar ou desconectar a conta. Tente novamente.",
+    "unavailable": "A integração com Instagram ainda não está disponível. Solicite a configuração ao administrador.",
+    "connect": "Conectar Instagram",
+    "reconnect": "Reconectar",
+    "disconnect": "Desconectar",
+    "reviewInstructions": "Selecione e ordene até 20 fotos. Selecionadas: {count}.",
+    "photo": "Foto do imóvel",
+    "photoOrder": "Foto {order}",
+    "selectPhoto": "Selecionar",
+    "moveEarlier": "Mover foto para antes",
+    "moveLater": "Mover foto para depois",
+    "caption": "Legenda",
+    "imagePreparation": "As fotos serão publicadas em formato quadrado, com margens quando necessário, preservando a imagem original.",
+    "alsoPublish": "Publicar também no Instagram",
+    "connectFirst": "Conecte sua conta profissional no Meu Perfil e habilite a publicação no marketplace.",
+    "target": "Revisar publicação em @{username}",
+    "choosePhotos": "Selecione de 1 a 20 fotos do imóvel.",
+    "sitePublishFailed": "O imóvel foi salvo, mas não foi publicado no site. Revise os dados e tente publicar pelo detalhe.",
+    "queued": "Publicação no Instagram registrada. Acompanhe o resultado no detalhe do imóvel.",
+    "sitePublishedInstagramFailed": "O imóvel foi publicado no site. Não foi possível registrar a publicação no Instagram; tente pelo detalhe do imóvel.",
+    "postError": "Não foi possível registrar a operação no Instagram. O imóvel no site permanece disponível.",
+    "loadError": "Não foi possível consultar as publicações do Instagram.",
+    "viewPost": "Ver publicação",
+    "retry": "Tentar novamente",
+    "reviewPost": "Revisar publicação no Instagram",
+    "cancel": "Cancelar",
+    "confirmPost": "Confirmar publicação",
+    "statuses": {
+      "QUEUED": "Aguardando envio ao Instagram.",
+      "PREPARING": "Preparando fotos para o Instagram.",
+      "READY": "Aguardando processamento das fotos pelo Instagram.",
+      "PUBLISHING": "Confirmando publicação no Instagram.",
+      "VERIFYING": "Conferindo o resultado com o Instagram. O envio não será repetido para evitar duplicidade.",
+      "PUBLISHED": "Publicado no Instagram.",
+      "FAILED": "A publicação não foi concluída. Corrija a conexão ou as fotos antes de tentar novamente.",
+      "BLOCKED": "Resultado incerto. Confira a conta do Instagram antes de solicitar suporte; o reenvio automático está bloqueado.",
+      "CANCELLED": "Publicação cancelada por alteração da conexão, do imóvel ou da sua permissão para anunciá-lo."
+    }
   }
 }

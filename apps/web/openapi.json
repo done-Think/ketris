@@ -11900,6 +11900,297 @@
         }
       }
     },
+    "/instagram/connection": {
+      "get": {
+        "tags": ["Instagram"],
+        "summary": "Consulta conexão pessoal no tenant; gestor, corretor ou proprietário; nunca retorna token",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Estado da conexão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "configured": { "type": "boolean" },
+                    "connected": { "type": "boolean" },
+                    "accountId": { "type": "string" },
+                    "username": { "type": "string" },
+                    "expired": { "type": "boolean" },
+                    "expiresAt": { "type": "string", "format": "date-time" }
+                  },
+                  "required": ["configured", "connected"]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Instagram"],
+        "summary": "Desconecta a conta local e cancela trabalhos pendentes; gestor, corretor ou proprietário",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Desconectado" },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ]
+      }
+    },
+    "/instagram/oauth/start": {
+      "post": {
+        "tags": ["Instagram"],
+        "summary": "Inicia Instagram Login e emite cookie seguro; gestor, corretor ou proprietário",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "URL oficial de autorização",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "authorizationUrl": { "type": "string", "format": "uri" } },
+                  "required": ["authorizationUrl"]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ]
+      }
+    },
+    "/instagram/properties/{propertyId}/publications": {
+      "get": {
+        "tags": ["Instagram"],
+        "summary": "Consulta histórico pessoal do imóvel autorizado no tenant; gestor, corretor ou proprietário",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1 },
+            "required": true,
+            "name": "propertyId",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Publicações",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "publications": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "propertyId": { "type": "string" },
+                          "accountId": { "type": "string" },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "QUEUED",
+                              "PREPARING",
+                              "READY",
+                              "PUBLISHING",
+                              "VERIFYING",
+                              "PUBLISHED",
+                              "FAILED",
+                              "BLOCKED",
+                              "CANCELLED"
+                            ]
+                          },
+                          "permalink": { "type": "string", "nullable": true },
+                          "errorCode": { "type": "string", "nullable": true },
+                          "createdAt": { "type": "string", "format": "date-time" }
+                        },
+                        "required": [
+                          "id",
+                          "propertyId",
+                          "accountId",
+                          "status",
+                          "permalink",
+                          "errorCode",
+                          "createdAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": ["publications"]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      },
+      "post": {
+        "tags": ["Instagram"],
+        "summary": "Registra envio após revisão; imóvel precisa estar publicado; gestor, corretor ou proprietário",
+        "description": "Um envio por tenant, imóvel e conta Instagram. A conta pertence ao usuário autenticado, que precisa ter acesso atual ao imóvel. Uma solicitação repetida não produz outro post. Falha externa não altera o imóvel no site.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1 },
+            "required": true,
+            "name": "propertyId",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "caption": { "type": "string", "maxLength": 2200 },
+                  "imageUrls": {
+                    "type": "array",
+                    "items": { "type": "string", "minLength": 1, "maxLength": 2048 },
+                    "minItems": 1,
+                    "maxItems": 20
+                  }
+                },
+                "required": ["caption", "imageUrls"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Publicação registrada ou existente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "publication": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "propertyId": { "type": "string" },
+                        "accountId": { "type": "string" },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "QUEUED",
+                            "PREPARING",
+                            "READY",
+                            "PUBLISHING",
+                            "VERIFYING",
+                            "PUBLISHED",
+                            "FAILED",
+                            "BLOCKED",
+                            "CANCELLED"
+                          ]
+                        },
+                        "permalink": { "type": "string", "nullable": true },
+                        "errorCode": { "type": "string", "nullable": true },
+                        "createdAt": { "type": "string", "format": "date-time" }
+                      },
+                      "required": [
+                        "id",
+                        "propertyId",
+                        "accountId",
+                        "status",
+                        "permalink",
+                        "errorCode",
+                        "createdAt"
+                      ]
+                    }
+                  },
+                  "required": ["publication"]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      }
+    },
+    "/instagram/publications/{id}/retry": {
+      "post": {
+        "tags": ["Instagram"],
+        "summary": "Retenta somente falhas anteriores à confirmação; gestor, corretor ou proprietário",
+        "description": "Somente o solicitante com acesso atual ao imóvel pode tentar novamente. VERIFYING, BLOCKED, PUBLISHING e PUBLISHED não podem ser reenviados por esta rota.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1 },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "202": { "description": "Nova tentativa registrada" },
+          "409": { "description": "Estado não permite tentativa segura" }
+        }
+      }
+    },
     "/agenda/properties": {
       "get": {
         "tags": ["Agenda"],

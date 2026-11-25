@@ -53,10 +53,12 @@ model Tenant {
   faceCheckRateLimits           FaceCheckRateLimit[]
   statusChanges                 TenantStatusChange[]
 
-  crmAuditEvents     CrmAuditEvent[]
-  teamInvitations    TeamInvitation[]
-  brokerGoals        BrokerGoal[]
-  portfolioTransfers PortfolioTransfer[]
+  crmAuditEvents        CrmAuditEvent[]
+  teamInvitations       TeamInvitation[]
+  brokerGoals           BrokerGoal[]
+  portfolioTransfers    PortfolioTransfer[]
+  instagramConnections  InstagramConnection[]
+  instagramPublications InstagramPublication[]
 
   @@map("tenants")
 }
@@ -1782,4 +1784,76 @@ enum CrmInteractionKind {
   STAGE_CHANGED
   CONTACT_LINKED
   LEAD_CREATED
+}
+
+model InstagramConnection {
+  tenantId       String
+  accountId      String   @unique
+  oauthUserId    String   @unique
+  username       String
+  encryptedToken String
+  expiresAt      DateTime
+  refreshedAt    DateTime @default(now())
+  revision       String   @default(uuid())
+  connectedBy    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, connectedBy])
+  @@map("instagram_connections")
+}
+
+model InstagramOAuthState {
+  hash         String   @id
+  tenantId     String
+  actorId      String
+  verifierHash String
+  expiresAt    DateTime
+
+  @@index([expiresAt])
+  @@map("instagram_oauth_states")
+}
+
+enum InstagramPublicationStatus {
+  QUEUED
+  PREPARING
+  READY
+  PUBLISHING
+  VERIFYING
+  PUBLISHED
+  FAILED
+  BLOCKED
+  CANCELLED
+}
+
+model InstagramPublication {
+  id                 String                     @id @default(cuid())
+  tenantId           String
+  propertyId         String
+  accountId          String
+  oauthUserId        String
+  connectionRevision String
+  requestedBy        String
+  dedupeKey          String                     @unique
+  caption            String
+  imageUrls          String[]
+  preparedKeys       String[]                   @default([])
+  status             InstagramPublicationStatus @default(QUEUED)
+  containerId        String?
+  mediaId            String?
+  permalink          String?
+  lastErrorCode      String?
+  attempts           Int                        @default(0)
+  nextAttemptAt      DateTime                   @default(now())
+  lockedUntil        DateTime?
+  leaseToken         String?
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  tenant             Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, requestedBy, propertyId])
+  @@index([oauthUserId])
+  @@index([status, nextAttemptAt])
+  @@map("instagram_publications")
 }

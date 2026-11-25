@@ -43,7 +43,7 @@ export function useMarketplaceNavigation(): MarketplaceNavigation {
     ],
     legalLinks: [
       { label: t('footer.links.termsOfUse'), href: hrefs.home },
-      { label: t('footer.links.privacyPolicy'), href: hrefs.home },
+      { label: t('footer.links.privacyPolicy'), href: hrefs.privacy },
     ],
   }
 }
@@ -57,5 +57,6 @@ function getMarketplaceHrefs(): Record<MarketplaceNavigationHrefKey, LocalizedHr
     agencies: '/agencies',
     properties: '/properties',
     login: '/login',
+    privacy: '/privacy',
   }
 }
