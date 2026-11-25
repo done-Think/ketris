@@ -60,11 +60,11 @@ export const toolbarSx: SxProps<Theme> = {
   },
 }
 
-export const statusFiltersSx: SxProps<Theme> = { minWidth: 0, gridColumn: '1 / -1' }
+export const statusFiltersSx = { minWidth: 0, gridColumn: '1 / -1' } satisfies SxProps<Theme>
 
-export const ownerStatusFiltersSx: SxProps<Theme> = {
+export const ownerStatusFiltersSx = {
   [dashboardLayout.desktopMediaQuery]: { gridColumn: '1 / span 2' },
-}
+} satisfies SxProps<Theme>
 
 export const secondaryActionsSx: SxProps<Theme> = {
   flexShrink: 0,
