@@ -19,8 +19,10 @@ export const boxSx: SxProps<Theme> = { width: '100%', minWidth: 0, overflow: 'hi
 export const typographySx: SxProps<Theme> = {
   width: '100%',
   minWidth: 0,
+  display: '-webkit-box',
   overflow: 'hidden',
-  textOverflow: 'ellipsis',
+  WebkitBoxOrient: 'vertical',
+  WebkitLineClamp: 2,
   color: brand.neutral[500],
   fontSize: { xs: 10, sm: 12 },
   fontWeight: 900,
