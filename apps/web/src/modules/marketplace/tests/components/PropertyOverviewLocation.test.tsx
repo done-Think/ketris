@@ -4,9 +4,10 @@ import { SnackbarProvider } from 'notistack'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { PropertyOverview } from '../../components/property-detail/PropertyOverview'
-import { mapDetailToMarketplacePropertyDetail } from '../../utils/property-detail-adapter'
-import type { PublicPropertyDetail } from '../../types/public-property'
-import type { SearchResultProperty } from '../../types/search'
+import {
+  publicPropertyDetail as property,
+  toMarketplacePropertyDetail as mapped,
+} from '../fixtures/public-property-detail'
 
 vi.mock('../../components/PropertyDetailMap', () => ({
   PropertyDetailMap: ({ latitude, longitude }: { latitude: number; longitude: number }) => (
@@ -15,45 +16,6 @@ vi.mock('../../components/PropertyDetailMap', () => ({
     </div>
   ),
 }))
-
-const property: PublicPropertyDetail = {
-  id: 'property-itajuba',
-  title: 'Casa em Itajubá',
-  purpose: 'SALE',
-  propertyType: 'HOUSE',
-  price: 450000,
-  condoFee: null,
-  propertyTax: null,
-  bedrooms: 3,
-  bathrooms: 2,
-  parkingSpots: 1,
-  area: 90,
-  city: 'Itajubá',
-  neighborhood: 'Anhumas',
-  latitude: null,
-  longitude: null,
-  brokerName: null,
-  brokerAvatarUrl: null,
-  coverUrl: null,
-  publishedAt: null,
-  description: 'Casa em Itajubá',
-  media: [],
-  address: {
-    street: 'Rua Padre Júlio Chevalier',
-    number: '35',
-    complement: null,
-    neighborhood: 'Anhumas',
-    city: 'Itajubá',
-    state: 'MG',
-    zipCode: '37500-000',
-    latitude: null,
-    longitude: null,
-  },
-}
-
-function mapped(input = property, purpose?: SearchResultProperty['purpose']) {
-  return mapDetailToMarketplacePropertyDetail(input, 'pt-BR', (key) => key, purpose)
-}
 
 describe('property location', () => {
   it.each([

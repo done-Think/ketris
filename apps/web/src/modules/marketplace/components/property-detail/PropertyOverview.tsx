@@ -1,14 +1,11 @@
 'use client'
 
 import { Box, Button, Stack, Typography } from '@mui/material'
-import BathtubOutlinedIcon from '@mui/icons-material/BathtubOutlined'
-import BedOutlinedIcon from '@mui/icons-material/BedOutlined'
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined'
-import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
-import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
 import { useTranslations } from 'next-intl'
 
+import { propertyFeatureIcons } from '@shared/config/property-feature-icons'
 import { isPropertyTypeCode, propertyTypeLabelKeys } from '../../config/property-types'
 import { useShareLink } from '../../hooks/use-share-link'
 import type { PropertyOverviewProps } from '../../types/property-detail'
@@ -16,13 +13,6 @@ import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { PropertyDetailMap } from '../PropertyDetailMap'
 import { styles } from '../../styles/property-overview.styles'
 import { PropertyNegotiationSummary } from '@shared/components/ui/PropertyNegotiationSummary'
-
-const featureIcons = [
-  BedOutlinedIcon,
-  BathtubOutlinedIcon,
-  LocalParkingOutlinedIcon,
-  SquareFootOutlinedIcon,
-]
 
 export function PropertyOverview({ property }: PropertyOverviewProps) {
   const t = useTranslations('marketplace.propertyDetail')
@@ -59,8 +49,8 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
       </Stack>
 
       <Box sx={styles.box}>
-        {property.details.map((detail, index) => {
-          const Icon = featureIcons[index] ?? SquareFootOutlinedIcon
+        {property.details.map((detail) => {
+          const Icon = propertyFeatureIcons[detail.key]
 
           return (
             <Box key={detail.key} sx={styles.box2}>
