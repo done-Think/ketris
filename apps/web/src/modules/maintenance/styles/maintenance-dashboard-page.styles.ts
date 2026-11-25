@@ -1,5 +1,5 @@
 import type { SxProps, Theme } from '@mui/material'
-import { alpha, brand, radius, surface } from '@shared/theme/tokens'
+import { alpha, brand, dashboardLayout, radius, surface } from '@shared/theme/tokens'
 
 export const compactFieldSx = {
   width: { xs: '100%', sm: 200 },
@@ -14,7 +14,8 @@ export const compactFieldSx = {
 } as const
 
 export const stackSx: SxProps<Theme> = {
-  width: { xs: '100%', lg: 'auto' },
+  width: '100%',
+  [dashboardLayout.desktopMediaQuery]: { width: 'auto' },
   alignItems: { sm: 'center' },
   flexWrap: { sm: 'wrap' },
   justifyContent: { sm: 'flex-end' },
@@ -46,11 +47,42 @@ export const boxSx: SxProps<Theme> = { display: { xs: 'none', md: 'block' } }
 
 export const boxSx2: SxProps<Theme> = { width: '100%', p: 3.5 }
 
-export const dashboardPageHeaderSx: SxProps<Theme> = {
-  flexWrap: { md: 'wrap' },
-  rowGap: { md: 1.6 },
-  '& > :first-of-type': { minWidth: { md: 240 } },
-  '& > :last-of-type': { ml: { md: 'auto' }, maxWidth: '100%' },
+export const toolbarSx: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: { xs: 2, md: 2.7 },
+  mt: '14px !important',
+  [dashboardLayout.desktopMediaQuery]: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+    columnGap: 1.8,
+    alignItems: 'start',
+  },
+}
+
+export const statusFiltersSx: SxProps<Theme> = { minWidth: 0, gridColumn: '1 / -1' }
+
+export const ownerStatusFiltersSx: SxProps<Theme> = {
+  [dashboardLayout.desktopMediaQuery]: { gridColumn: '1 / span 2' },
+}
+
+export const secondaryActionsSx: SxProps<Theme> = {
+  flexShrink: 0,
+  alignItems: { xs: 'stretch', sm: 'flex-end' },
+  [dashboardLayout.desktopMediaQuery]: {
+    gridColumn: 3,
+    gridRow: '1 / span 2',
+    alignSelf: 'start',
+    minWidth: 0,
+  },
+  '& > .MuiToggleButtonGroup-root': { flexShrink: 0 },
+  '& .MuiToggleButton-root': { flex: { xs: 1, sm: 'initial' } },
+}
+
+export const secondaryButtonsSx: SxProps<Theme> = {
+  justifyContent: 'flex-end',
+  flexWrap: 'wrap',
+  '& > .MuiButton-root': { whiteSpace: 'nowrap' },
 }
 
 export const boxSx3: SxProps<Theme> = {
@@ -60,6 +92,7 @@ export const boxSx3: SxProps<Theme> = {
     sm: 'repeat(3, minmax(0, 1fr))',
   },
   gap: { xs: 0.8, sm: 1.8 },
+  [dashboardLayout.desktopMediaQuery]: { display: 'contents' },
 }
 
 export const dialogTitleSx: SxProps<Theme> = {
