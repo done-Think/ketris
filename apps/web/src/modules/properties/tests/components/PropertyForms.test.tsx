@@ -193,11 +193,12 @@ describe('property forms', () => {
       ['Número', '10'],
       ['Bairro', 'Centro'],
       ['Cidade', 'Curitiba'],
-      ['Estado', 'PR'],
       ['CEP', '80000000'],
     ]) {
       await user.type(screen.getByLabelText(label, { selector: 'input' }), value)
     }
+    await user.click(screen.getByRole('combobox', { name: 'Estado' }))
+    await user.click(screen.getByRole('option', { name: 'PR' }))
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     fireEvent.input(await screen.findByLabelText('Área útil'), { target: { value: '80' } })
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
@@ -268,11 +269,12 @@ describe('property forms', () => {
       ['Número', '10'],
       ['Bairro', 'Centro'],
       ['Cidade', 'Curitiba'],
-      ['Estado', 'PR'],
       ['CEP', '80000000'],
     ]) {
       await user.type(screen.getByLabelText(label, { selector: 'input' }), value)
     }
+    await user.click(screen.getByRole('combobox', { name: 'Estado' }))
+    await user.click(screen.getByRole('option', { name: 'PR' }))
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     fireEvent.input(await screen.findByLabelText('Área útil'), { target: { value: '80' } })
     await user.click(screen.getByRole('button', { name: 'Próximo' }))

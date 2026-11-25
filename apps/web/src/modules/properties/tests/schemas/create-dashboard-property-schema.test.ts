@@ -69,6 +69,16 @@ describe('createDashboardPropertySchema', () => {
     })
   })
 
+  it('accepts only a Brazilian state as UF', () => {
+    const values = buildEditPropertyFormValues(editableProperty)
+    const issue = (state: string) =>
+      schema.safeParse({ ...values, state }).error?.issues.find((item) => item.path[0] === 'state')
+
+    expect(issue('SP')).toBeUndefined()
+    expect(issue('XX')).toMatchObject({ message: 'stateInvalid' })
+    expect(issue('')).toMatchObject({ message: 'stateRequired' })
+  })
+
   it('rejects missing required listing fields', () => {
     const result = schema.safeParse({
       ...createDashboardPropertyDefaultValues,

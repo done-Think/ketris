@@ -270,6 +270,7 @@
       "neighborhoodRequired": "Enter the neighborhood",
       "cityRequired": "Enter the city",
       "stateRequired": "Enter the state",
+      "stateInvalid": "Enter a valid Brazilian state (UF).",
       "zipCodeRequired": "Enter the ZIP code",
       "zipCodeInvalid": "Enter a valid ZIP code",
       "zipCodeNotFound": "Postal code not found. Check the code you entered.",

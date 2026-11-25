@@ -1,11 +1,12 @@
 import { styles, getAddressFieldStyles } from '../styles/create-property-address-step-fields.styles'
 import { Controller } from 'react-hook-form'
-import { Box, FormHelperText, TextField } from '@mui/material'
+import { Box, FormHelperText, MenuItem, TextField } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import type { CreatePropertyAddressStepFieldsProps } from '../types/dashboard-property'
 import { usePropertyPostalCode } from '../hooks/use-property-postal-code'
 import { MaskedInput } from '@shared/components/form/MaskedInput'
+import { brazilianStates } from '@shared/config/brazilian-states'
 
 export function CreatePropertyAddressStepFields({
   control,
@@ -55,6 +56,7 @@ export function CreatePropertyAddressStepFields({
                 if (name === 'zipCode') void postalCode.lookup()
               }}
               label={t(`fields.${label}`)}
+              select={name === 'state'}
               error={
                 Boolean(fieldState.error) ||
                 (name === 'zipCode' && postalCode.status === 'notFound')
@@ -78,7 +80,15 @@ export function CreatePropertyAddressStepFields({
                     }
                   : undefined
               }
-            />
+            >
+              {name === 'state'
+                ? brazilianStates.map((state) => (
+                    <MenuItem key={state} value={state}>
+                      {state}
+                    </MenuItem>
+                  ))
+                : null}
+            </TextField>
           )}
         />
       ))}

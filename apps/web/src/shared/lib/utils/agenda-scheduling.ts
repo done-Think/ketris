@@ -3,6 +3,13 @@ export const AGENDA_MINIMUM_VISIT_MINUTES = 30
 export const AGENDA_BUSINESS_HOURS_START = 8
 export const AGENDA_BUSINESS_HOURS_END = 18
 export const AGENDA_TIMEZONE = 'America/Sao_Paulo'
+export const AGENDA_TIME_SLOT_MINUTES = 30
+
+export function isAgendaHalfHourStart(date: Date): boolean {
+  return (
+    Number.isFinite(date.getTime()) && date.getTime() % (AGENDA_TIME_SLOT_MINUTES * 60000) === 0
+  )
+}
 
 const formatter = new Intl.DateTimeFormat('en-CA', {
   timeZone: AGENDA_TIMEZONE,

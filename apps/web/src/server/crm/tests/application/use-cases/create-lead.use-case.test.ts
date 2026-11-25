@@ -37,7 +37,8 @@ describe('CreateLeadUseCase', () => {
       title: 'Shared property',
       responsibleId: 'manager-1',
     })
-    await createUseCase({ create } as unknown as LeadRepository, { findAvailable }).execute({
+    const useCase = createUseCase({ create } as unknown as LeadRepository, { findAvailable })
+    await useCase.execute({
       actorTenantId: 'tenant-1',
       actorId: 'agent-1',
       actorRole: 'AGENT',
