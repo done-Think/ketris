@@ -20,7 +20,7 @@ const baseKpis: ApiAgencyOverviewKpis = {
   activeBrokersCount: 4,
   receivedLeadsThisMonth: 7,
   receivedLeadsPreviousPeriod: 7,
-  monthlyReceivable: 8500,
+  monthlyRevenue: 8500,
   overdueTotal: 0,
   occupancyPercentage: 67,
 }

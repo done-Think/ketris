@@ -54,7 +54,7 @@ export const apiAgencyOverview: ApiAgencyOverview = {
     activeBrokersCount: 7,
     receivedLeadsThisMonth: 9,
     receivedLeadsPreviousPeriod: 5,
-    monthlyReceivable: 12000,
+    monthlyRevenue: 12000,
     overdueTotal: 450,
     occupancyPercentage: 80,
   },

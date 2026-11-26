@@ -14,7 +14,10 @@ export const agencyOverviewKpisSchema = z
       description:
         'Leads recebidos no mesmo trecho do mês anterior (do dia 1 até o mesmo dia/hora de hoje).',
     }),
-    monthlyReceivable: z.number(),
+    monthlyRevenue: z.number().openapi({
+      description:
+        'Faturado no mês corrente: cobranças a receber do mês, pagas ou em aberto, sem as canceladas (o último mês de revenueSeries).',
+    }),
     overdueTotal: z.number().openapi({
       description: 'Soma das cobranças a receber vencidas e não pagas (do resumo financeiro).',
     }),

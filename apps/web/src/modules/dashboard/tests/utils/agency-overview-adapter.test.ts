@@ -13,7 +13,7 @@ const baseKpis: ApiAgencyOverviewKpis = {
   activeBrokersCount: 4,
   receivedLeadsThisMonth: 7,
   receivedLeadsPreviousPeriod: 7,
-  monthlyReceivable: 8500,
+  monthlyRevenue: 8500,
   overdueTotal: 0,
   occupancyPercentage: 67,
 }
@@ -73,8 +73,8 @@ describe('mapKpisToAgencyOverviewKpis', () => {
   })
 
   it('mostra só o valor a receber do mês, sem comparar com o mês anterior', () => {
-    expect(getKpi({ monthlyReceivable: 1500 }, 'revenue')).toMatchObject({ tone: 'neutral' })
-    expect(getKpi({ monthlyReceivable: 1500 }, 'revenue')?.helper).toBeUndefined()
+    expect(getKpi({ monthlyRevenue: 1500 }, 'revenue')).toMatchObject({ tone: 'neutral' })
+    expect(getKpi({ monthlyRevenue: 1500 }, 'revenue')?.helper).toBeUndefined()
   })
 
   it('destaca o valor em atraso só quando há cobranças vencidas', () => {
@@ -99,7 +99,7 @@ describe('formatação por idioma', () => {
     portfolioCount: 25000,
     activeBrokersCount: 1200,
     receivedLeadsThisMonth: 2500,
-    monthlyReceivable: 9000,
+    monthlyRevenue: 9000,
   }
   const valuesOf = (...args: Parameters<typeof mapKpisToAgencyOverviewKpis>) =>
     Object.fromEntries(
