@@ -6,9 +6,18 @@ import { AgendaQueryTestProvider } from '../fixtures/agenda-query-provider'
 import type { AgendaEventApi } from '../../types/agenda-event'
 
 const { session } = vi.hoisted(() => ({
-  session: { tenantId: 'tenant', user: { id: 'u1' }, role: 'OWNER' },
+  session: {
+    tenantId: 'tenant',
+    user: { id: 'u1' },
+    role: 'OWNER',
+    scope: 'tenant',
+    accessToken: 'actor-token',
+    authUnavailable: false,
+  },
 }))
-vi.mock('next-auth/react', () => ({ useSession: () => ({ data: session }) }))
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: session, status: 'authenticated' }),
+}))
 vi.mock('@shared/services/dashboard-agenda-service', () => ({
   dashboardAgendaService: { list: vi.fn() },
 }))
@@ -16,6 +25,8 @@ beforeEach(() => {
   vi.resetAllMocks()
   session.user.id = 'u1'
   session.role = 'OWNER'
+  session.accessToken = 'actor-token'
+  session.authUnavailable = false
 })
 it('isola o sino entre usuários e papéis e usa o rótulo autorizado do imóvel', async () => {
   const event = {
@@ -33,6 +44,12 @@ it('isola o sino entre usuários e papéis e usa o rótulo autorizado do imóvel
     wrapper: AgendaQueryTestProvider,
   })
   await waitFor(() => expect(result.current).toHaveLength(1))
+  expect(dashboardAgendaService.list).toHaveBeenCalledWith(
+    expect.any(String),
+    expect.any(String),
+    'actor-token',
+    expect.any(AbortSignal),
+  )
   expect(result.current[0].message).toContain('Apartamento autorizado')
   session.user.id = 'u2'
   rerender()
@@ -42,6 +59,22 @@ it('isola o sino entre usuários e papéis e usa o rótulo autorizado do imóvel
   rerender()
   expect(result.current).toEqual([])
   await waitFor(() => expect(dashboardAgendaService.list).toHaveBeenCalledTimes(3))
+})
+
+it('aguarda um token válido antes de consultar as notificações', async () => {
+  session.accessToken = ''
+  vi.mocked(dashboardAgendaService.list).mockResolvedValue([])
+  const view = renderHook(() => useDashboardAgendaNotifications(), {
+    wrapper: AgendaQueryTestProvider,
+  })
+  expect(dashboardAgendaService.list).not.toHaveBeenCalled()
+  session.accessToken = 'actor-token'
+  session.authUnavailable = true
+  view.rerender()
+  expect(dashboardAgendaService.list).not.toHaveBeenCalled()
+  session.authUnavailable = false
+  view.rerender()
+  await waitFor(() => expect(dashboardAgendaService.list).toHaveBeenCalledTimes(1))
 })
 it('não consulta notificações sem usuário resolvido ou para locatários', () => {
   session.user.id = ''
