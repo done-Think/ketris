@@ -87,7 +87,7 @@ export function extraStyleSx2(
 
 export const extraStyleSx3: SxProps<Theme> = {
   ...bodyCellSx,
-  ...truncatedCellSx(110),
+  ...truncatedCellSx(180),
   color: 'primary.main',
   fontWeight: 900,
 }

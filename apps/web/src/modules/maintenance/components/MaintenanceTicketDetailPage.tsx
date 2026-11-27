@@ -86,9 +86,9 @@ export function MaintenanceTicketDetailPage({ ticketId }: MaintenanceTicketDetai
           alignItems={{ lg: 'center' }}
         >
           <Stack direction="row" flexWrap="wrap" alignItems="center" spacing={1.4} useFlexGap>
-            <Typography sx={maintenanceStyles.typographySx3}>{ticket.id}</Typography>
-            <Box sx={maintenanceStyles.boxSx3} />
-            <Typography sx={maintenanceStyles.typographySx4}>{ticket.title}</Typography>
+            <Typography component="h1" sx={maintenanceStyles.typographySx3}>
+              {ticket.title}
+            </Typography>
             <Chip
               label={t(`statuses.${status}`)}
               size="small"

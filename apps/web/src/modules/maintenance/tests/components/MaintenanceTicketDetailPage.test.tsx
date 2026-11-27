@@ -379,8 +379,8 @@ describe('MaintenanceTicketDetailPage', () => {
   it('renders the ticket header, description and property details from the API', () => {
     render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
 
-    expect(screen.getByText('MNT-0089')).toBeVisible()
-    expect(screen.getByText('Vazamento na cozinha')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Vazamento na cozinha' })).toBeVisible()
+    expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
     expect(screen.getByText('Em andamento')).toBeVisible()
     expect(screen.getByText('Urgente')).toBeVisible()
     expect(screen.getByText('Apt Jardins 3q')).toBeVisible()

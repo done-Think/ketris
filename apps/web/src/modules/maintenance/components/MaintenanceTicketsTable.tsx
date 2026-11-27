@@ -63,8 +63,8 @@ export function MaintenanceTicketsTable({
         <TableBody>
           {pagedTickets.map((ticket, index) => (
             <TableRow key={ticket.id} sx={maintenanceStyles.getTableRowSx(index)}>
-              <TableCell title={ticket.id} sx={maintenanceStyles.extraStyleSx3}>
-                {ticket.id}
+              <TableCell title={ticket.title} sx={maintenanceStyles.extraStyleSx3}>
+                {ticket.title}
               </TableCell>
               <TableCell title={ticket.property} sx={maintenanceStyles.extraStyleSx4}>
                 {ticket.property}
@@ -97,7 +97,7 @@ export function MaintenanceTicketsTable({
                       pathname: '/dashboard/maintenance/[id]',
                       params: { id: ticket.id },
                     }}
-                    aria-label={t('viewTicket', { ticket: ticket.id })}
+                    aria-label={t('viewTicket', { ticket: ticket.title ?? ticket.id })}
                     size="small"
                     sx={maintenanceStyles.iconButtonSx}
                   >
@@ -105,7 +105,7 @@ export function MaintenanceTicketsTable({
                   </IconButton>
                   {(ticket.permissions?.edit || ticket.permissions?.delete) && (
                     <IconButton
-                      aria-label={t('actions.menu', { ticket: ticket.id })}
+                      aria-label={t('actions.menu', { ticket: ticket.title ?? ticket.id })}
                       size="small"
                       onClick={(event) => {
                         onOpenMenu(event.currentTarget, ticket.id)
