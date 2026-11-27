@@ -356,25 +356,35 @@ export function OpportunityDetail({ opportunityId }: OpportunityDetailProps) {
           {!opportunity.archivedAt && (
             <OpportunityActivityComposer opportunityId={opportunity.id} />
           )}
-          <InteractionHistory
-            key={opportunity.id}
-            target={{ kind: 'opportunity', id: opportunity.id }}
-          />
-          {activitiesQuery.isError ? (
-            <Alert
-              severity="error"
-              action={
-                <Button onClick={() => void activitiesQuery.refetch()}>{pipelineT('retry')}</Button>
-              }
-            >
-              {t('activitiesLoadError')}
-            </Alert>
-          ) : (
-            <OpportunityActivitiesPanel
-              activities={activities}
-              isLoading={activitiesQuery.isLoading}
-            />
-          )}
+          <Box sx={crmStyles.historyContainerSx}>
+            <Box sx={crmStyles.historyGridSx}>
+              <Box sx={crmStyles.historyPanelSx}>
+                {activitiesQuery.isError ? (
+                  <Alert
+                    severity="error"
+                    action={
+                      <Button onClick={() => void activitiesQuery.refetch()}>
+                        {pipelineT('retry')}
+                      </Button>
+                    }
+                  >
+                    {t('activitiesLoadError')}
+                  </Alert>
+                ) : (
+                  <OpportunityActivitiesPanel
+                    activities={activities}
+                    isLoading={activitiesQuery.isLoading}
+                  />
+                )}
+              </Box>
+              <Box component="section" sx={crmStyles.interactionsPanelSx}>
+                <InteractionHistory
+                  key={opportunity.id}
+                  target={{ kind: 'opportunity', id: opportunity.id }}
+                />
+              </Box>
+            </Box>
+          </Box>
         </Stack>
       </Box>
 
