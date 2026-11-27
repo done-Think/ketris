@@ -66,7 +66,13 @@ describe('mapeadores do dashboard', () => {
         propertyReference: null,
         property: null,
       }),
-    ).toMatchObject({ accent: 'info', contact: 'Ana', notes: '', property: null })
+    ).toMatchObject({
+      accent: 'info',
+      contact: 'Ana',
+      notes: '',
+      property: null,
+      startsAt: '2026-10-21T13:00:00.000Z',
+    })
   })
 
   it('monta o endereço do imóvel publicado em uma linha', () => {

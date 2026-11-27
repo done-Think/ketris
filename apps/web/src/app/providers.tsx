@@ -13,6 +13,7 @@ import { NextIntlClientProvider, useLocale } from 'next-intl'
 import { SnackbarProvider } from 'notistack'
 import { useMemo, useState } from 'react'
 
+import { formats } from '@/i18n/formats'
 import type { LocaleProvidersProps, ProvidersProps } from '@/i18n/types/provider.types'
 import { HttpClientSessionBridge } from '@shared/components/providers'
 import { AuthAvailabilityBoundary } from '@shared/components/layout/AuthAvailabilityBoundary'
@@ -50,7 +51,12 @@ export function LocaleProviders({ children, i18n }: LocaleProvidersProps) {
   const dayjsAdapterLocale = getDayjsAdapterLocale(i18n.locale)
 
   return (
-    <NextIntlClientProvider locale={i18n.locale} messages={i18n.messages} timeZone={i18n.timeZone}>
+    <NextIntlClientProvider
+      locale={i18n.locale}
+      messages={i18n.messages}
+      timeZone={i18n.timeZone}
+      formats={formats}
+    >
       <LocalizationProvider
         dateAdapter={AdapterDayjs}
         adapterLocale={dayjsAdapterLocale}

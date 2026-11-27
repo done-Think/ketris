@@ -31,12 +31,11 @@ export type DashboardActivityAccent = 'magenta' | 'info' | 'warning'
 
 export type DashboardUpcomingActivity = {
   id: string
-  time: string
+  startsAt: string
   title: string
   contact: string
   phone: string
   accent: DashboardActivityAccent
-  meetingTime: string
   notes: string
   propertyId: string | null
   propertyReference: string | null
