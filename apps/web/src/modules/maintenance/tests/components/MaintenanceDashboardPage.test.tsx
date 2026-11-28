@@ -275,10 +275,9 @@ describe('MaintenanceDashboardPage', () => {
       screen.getByText('Abra e acompanhe chamados dos imóveis vinculados aos seus contratos.'),
     ).toBeVisible()
     expect(screen.getByRole('button', { name: 'Novo Chamado' })).toBeEnabled()
-    expect(screen.getByRole('link', { name: 'Visualizar chamado MNT-0088' })).toHaveAttribute(
-      'href',
-      '/dashboard/maintenance/MNT-0088',
-    )
+    expect(
+      screen.getByRole('link', { name: 'Visualizar chamado Tomada com defeito' }),
+    ).toHaveAttribute('href', '/dashboard/maintenance/MNT-0088')
     expect(screen.queryByRole('button', { name: 'Arquivados' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Ações do chamado/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Regularizar vínculos' })).not.toBeInTheDocument()
@@ -316,7 +315,9 @@ describe('MaintenanceDashboardPage', () => {
       } as unknown as ReturnType<typeof useMaintenanceTickets>)
       const user = userEvent.setup()
       render(<MaintenanceDashboardPage />)
-      await user.click(screen.getByRole('button', { name: 'Ações do chamado MNT-0089' }))
+      await user.click(
+        screen.getByRole('button', { name: 'Ações do chamado Vazamento na cozinha' }),
+      )
       expect(screen.getByRole('menuitem', { name: allowedAction })).toBeVisible()
       expect(screen.queryByRole('menuitem', { name: hiddenAction })).not.toBeInTheDocument()
     },
@@ -325,7 +326,7 @@ describe('MaintenanceDashboardPage', () => {
   it('renders tickets mapped from the API list', () => {
     render(<MaintenanceDashboardPage />)
 
-    expect(screen.getByText('MNT-0089')).toBeVisible()
+    expect(screen.getByText('Vazamento na cozinha')).toBeVisible()
     expect(screen.getByText('Apt Jardins 3q')).toBeVisible()
     expect(screen.getByText('Hidráulica')).toBeVisible()
     expect(screen.getByText('Bruno Oliveira')).toBeVisible()
@@ -375,8 +376,8 @@ describe('MaintenanceDashboardPage', () => {
     await user.click(propertySelect)
     await user.click(await screen.findByRole('option', { name: 'Casa Vila Madalena' }))
 
-    expect(screen.getByText('MNT-0087')).toBeVisible()
-    expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
+    expect(screen.getByText('Rachadura na parede')).toBeVisible()
+    expect(screen.queryByText('Vazamento na cozinha')).not.toBeInTheDocument()
   })
 
   it('opens filtered by the contract from the URL and clears that filter', async () => {
@@ -408,8 +409,8 @@ describe('MaintenanceDashboardPage', () => {
 
     await user.click(screen.getByRole('button', { name: /^Aberto/ }))
 
-    expect(screen.getByText('MNT-0088')).toBeVisible()
-    expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
+    expect(screen.getByText('Tomada com defeito')).toBeVisible()
+    expect(screen.queryByText('Vazamento na cozinha')).not.toBeInTheDocument()
   })
 
   it('filters by category through the shared controls and preserves global metrics', async () => {
@@ -420,8 +421,8 @@ describe('MaintenanceDashboardPage', () => {
     await user.click(within(dialog).getByLabelText('Filtrar por categoria'))
     await user.click(await screen.findByRole('option', { name: 'Elétrica' }))
     await user.click(within(dialog).getByRole('button', { name: 'Fechar filtros' }))
-    expect(screen.getByText('MNT-0088')).toBeVisible()
-    expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
+    expect(screen.getByText('Tomada com defeito')).toBeVisible()
+    expect(screen.queryByText('Vazamento na cozinha')).not.toBeInTheDocument()
     expect(useMaintenanceTickets).toHaveBeenLastCalledWith(
       expect.objectContaining({ category: 'ELECTRICAL', page: 1 }),
     )
@@ -457,7 +458,7 @@ describe('MaintenanceDashboardPage', () => {
     const user = userEvent.setup()
     render(<MaintenanceDashboardPage />)
 
-    await user.click(screen.getByRole('button', { name: 'Ações do chamado MNT-0089' }))
+    await user.click(screen.getByRole('button', { name: 'Ações do chamado Vazamento na cozinha' }))
     await user.click(screen.getByRole('menuitem', { name: 'Editar chamado' }))
 
     expect(await screen.findByLabelText('Título do Chamado')).toHaveValue('Vazamento na cozinha')
@@ -478,7 +479,7 @@ describe('MaintenanceDashboardPage', () => {
 
     const deleteMutation = vi.mocked(useDeleteMaintenanceTicket).mock.results[0].value
 
-    await user.click(screen.getByRole('button', { name: 'Ações do chamado MNT-0089' }))
+    await user.click(screen.getByRole('button', { name: 'Ações do chamado Vazamento na cozinha' }))
     await user.click(screen.getByRole('menuitem', { name: 'Excluir chamado' }))
     await user.click(screen.getByRole('button', { name: 'Excluir chamado' }))
 

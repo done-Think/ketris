@@ -14,6 +14,7 @@ const ticket: MaintenanceTicket = {
   tenant: 'Locatário Silva',
   openedAt: '2026-10-01',
   status: 'open',
+  title: 'Vazamento na cozinha',
   permissions: {
     edit: true,
     delete: false,
@@ -41,24 +42,31 @@ describe('MaintenanceTicketsTable', () => {
 
     expect(screen.getByText('Apto Centro')).toBeInTheDocument()
     expect(screen.getByText('Locatário Silva')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /MNT-1/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Vazamento na cozinha/ })).toHaveAttribute(
       'href',
       expect.stringContaining('MNT-1'),
     )
+  })
+
+  it('shows the ticket title instead of the internal id', () => {
+    renderTable([ticket])
+
+    expect(screen.getByRole('cell', { name: 'Vazamento na cozinha' })).toBeInTheDocument()
+    expect(screen.queryByText('MNT-1')).not.toBeInTheDocument()
   })
 
   it('opens the action menu only when the user can edit or delete', async () => {
     const user = userEvent.setup()
     const { onOpenMenu } = renderTable([ticket])
 
-    await user.click(screen.getByRole('button', { name: /MNT-1/ }))
+    await user.click(screen.getByRole('button', { name: /Vazamento na cozinha/ }))
     expect(onOpenMenu).toHaveBeenCalledWith(expect.any(HTMLElement), 'MNT-1')
   })
 
   it('hides the action menu without permissions', () => {
     renderTable([{ ...ticket, permissions: undefined }])
 
-    expect(screen.queryByRole('button', { name: /MNT-1/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Vazamento na cozinha/ })).not.toBeInTheDocument()
   })
 
   it('shows the empty message when there are no tickets', () => {
