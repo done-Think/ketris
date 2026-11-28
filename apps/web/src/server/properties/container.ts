@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { PrismaPropertyBrokerDirectory } from './infrastructure/prisma-property-broker-directory'
 import { ListPropertyBrokersUseCase } from './application/use-cases/list-property-brokers.use-case'
 import { PrismaPropertyOwnerDirectory } from './infrastructure/prisma-property-owner-directory'

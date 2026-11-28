@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 
 export const REFRESH_TOKEN_TTL_DAYS = 30
+export const REFRESH_TOKEN_ROTATION_GRACE_SECONDS = 20
 
 export function generateRefreshToken(): string {
   return randomBytes(64).toString('hex')

@@ -176,6 +176,9 @@
     "retry": "Try again",
     "retrying": "Checking session…"
   },
+  "sessionNotice": {
+    "endedOnlyOnThisDevice": "Session ended on this device only. We could not revoke access on the server; if this computer is shared, change your password."
+  },
   "perMonth": "/month",
   "propertyNegotiation": {
     "title": "Negotiation conditions",

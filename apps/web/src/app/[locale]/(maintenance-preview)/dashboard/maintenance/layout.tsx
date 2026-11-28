@@ -1,4 +1,4 @@
-import { requireDashboardFeature } from '@shared/lib/auth/require-dashboard-feature'
+import { requireDashboardFeature } from '@server/auth/session/require-dashboard-feature'
 import type { ReactNode } from 'react'
 import { Box } from '@mui/material'
 import { getServerSession } from 'next-auth'
@@ -12,7 +12,7 @@ import { privateMetadata } from '@/i18n/seo'
 
 import { resolveLocale } from '@/i18n/routing'
 import type { LocaleRouteParams } from '@/i18n/types/route.types'
-import { authOptions } from '@shared/lib/auth/auth-options'
+import { authOptions } from '@server/auth/session/auth-options'
 import { AppShell } from '@shared/components/layout/AppShell'
 import { AuthenticationUnavailable } from '@shared/components/layout/AuthenticationUnavailable'
 

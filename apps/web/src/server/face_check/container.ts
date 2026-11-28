@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { randomBytes, randomInt, randomUUID } from 'node:crypto'
 import { prisma } from '@server/db/prisma'
 import type { AppLocale } from '@/i18n/types/locale.types'

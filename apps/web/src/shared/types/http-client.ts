@@ -5,7 +5,7 @@ export type AppRequestConfig = AxiosRequestConfig & {
   sessionAccessToken?: string
 }
 
-export type UnauthorizedHandler = () => Promise<string | null>
+export type UnauthorizedHandler = (failedAccessToken?: string) => Promise<string | null>
 
 export type RefreshTokenResponse = {
   accessToken: string

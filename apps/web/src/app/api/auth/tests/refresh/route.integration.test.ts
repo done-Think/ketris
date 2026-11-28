@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
+import { hashRefreshToken } from '@server/auth/domain/refresh-token'
 import { prisma } from '@server/db/prisma'
 
 import { POST as login } from '../../login/route'
@@ -67,11 +68,34 @@ describe('POST /api/auth/refresh (integração)', () => {
     expect(json.refreshToken).not.toBe(refreshToken)
   })
 
-  it('rotação: o refresh token usado uma vez não pode ser reutilizado (retorna 401)', async () => {
+  it('tolerância: reuso do token recém-rotacionado dentro da janela devolve um novo par sem derrubar a sessão', async () => {
+    const refreshToken = await loginAndGetRefreshToken()
+
+    const first = await refresh(buildRequest('http://localhost/api/auth/refresh', { refreshToken }))
+    const firstBody = await first.json()
+    const second = await refresh(
+      buildRequest('http://localhost/api/auth/refresh', { refreshToken }),
+    )
+    const secondBody = await second.json()
+
+    expect(first.status).toBe(200)
+    expect(second.status).toBe(200)
+    expect(secondBody.refreshToken).not.toBe(firstBody.refreshToken)
+    const stale = await refresh(
+      buildRequest('http://localhost/api/auth/refresh', { refreshToken: firstBody.refreshToken }),
+    )
+    expect(stale.status).toBe(200)
+  })
+
+  it('rotação: o refresh token já rotacionado é rejeitado após a janela de tolerância (401)', async () => {
     const refreshToken = await loginAndGetRefreshToken()
 
     const first = await refresh(buildRequest('http://localhost/api/auth/refresh', { refreshToken }))
     expect(first.status).toBe(200)
+    await prisma.refreshToken.update({
+      where: { tokenHash: hashRefreshToken(refreshToken) },
+      data: { rotatedAt: new Date(Date.now() - 60_000) },
+    })
 
     const second = await refresh(
       buildRequest('http://localhost/api/auth/refresh', { refreshToken }),

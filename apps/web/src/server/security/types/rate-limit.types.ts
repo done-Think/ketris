@@ -24,6 +24,10 @@ export interface RateLimitStore {
   consume(input: RateLimitInput): RateLimitResult | Promise<RateLimitResult>
 }
 
+export interface RateLimitCounterStore extends RateLimitStore {
+  peek(input: Omit<RateLimitInput, 'now'>): number | Promise<number>
+}
+
 export interface StoredRateLimitBucket {
   count: number
   resetAt: Date

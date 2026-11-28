@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { BcryptPasswordHasher } from '@server/auth/infrastructure/bcrypt-password-hasher'
 import { PrismaUserRepository } from '@server/auth/infrastructure/prisma-user.repository'
 

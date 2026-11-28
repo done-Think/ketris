@@ -1,4 +1,4 @@
-import { requireDashboardFeature } from '@shared/lib/auth/require-dashboard-feature'
+import { requireDashboardFeature } from '@server/auth/session/require-dashboard-feature'
 import { createLocalizedMetadata } from '@/i18n/metadata'
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { ContactsPage } from '@modules/crm/components/ContactsPage'

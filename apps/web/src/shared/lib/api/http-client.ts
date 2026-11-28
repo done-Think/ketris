@@ -15,6 +15,13 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & {
   sessionAccessToken?: string
 }
 
+function readBearerToken(request: InternalAxiosRequestConfig): string | undefined {
+  const authorization = request.headers?.Authorization
+  return typeof authorization === 'string' && authorization.startsWith('Bearer ')
+    ? authorization.slice('Bearer '.length)
+    : undefined
+}
+
 export class HttpClient {
   protected instance: AxiosInstance
   private unauthorizedHandler: UnauthorizedHandler | null = null
@@ -68,7 +75,7 @@ export class HttpClient {
         )
           return Promise.reject(error)
 
-        const newAccessToken = await this.refreshAccessToken()
+        const newAccessToken = await this.refreshAccessToken(readBearerToken(originalRequest))
 
         if (
           !newAccessToken ||
@@ -89,10 +96,10 @@ export class HttpClient {
     )
   }
 
-  private async refreshAccessToken(): Promise<string | null> {
+  private async refreshAccessToken(failedAccessToken?: string): Promise<string | null> {
     if (!this.unauthorizedHandler) return null
 
-    this.refreshPromise ??= this.unauthorizedHandler().finally(() => {
+    this.refreshPromise ??= this.unauthorizedHandler(failedAccessToken).finally(() => {
       this.refreshPromise = null
     })
 

@@ -2,12 +2,14 @@ import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import PlatformLayout from '@/app/[locale]/(platform)/platform/layout'
-import { requirePlatformSession } from '@shared/lib/auth/require-platform-session'
+import { requirePlatformSession } from '@server/auth/session/require-platform-session'
 
 vi.mock('@modules/platform', () => ({
   PlatformShell: ({ children }: { children: ReactNode }) => children,
 }))
-vi.mock('@shared/lib/auth/require-platform-session', () => ({ requirePlatformSession: vi.fn() }))
+vi.mock('@server/auth/session/require-platform-session', () => ({
+  requirePlatformSession: vi.fn(),
+}))
 
 afterEach(() => {
   vi.unstubAllEnvs()

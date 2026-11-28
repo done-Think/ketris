@@ -275,4 +275,74 @@ describe('PrismaRefreshTokenRepository (integração)', () => {
       await blocker
     }
   })
+
+  describe('rotation grace window', () => {
+    const expiresAt = () => new Date(Date.now() + 60_000)
+    const fresh = () => `grace-${randomUUID()}`
+    const sessionVersion = async () =>
+      (await prisma.user.findUniqueOrThrow({ where: { id: userId } })).sessionVersion
+
+    async function rotateOnce() {
+      const oldHash = fresh()
+      const middleHash = fresh()
+      await repository.create({ userId, tenantId, tokenHash: oldHash, expiresAt: expiresAt() })
+      const previous = (await repository.findValidByTokenHash(oldHash))!
+      await repository.rotate({
+        expectedSessionVersion: await sessionVersion(),
+        previous,
+        replacement: { userId, tenantId, tokenHash: middleHash, expiresAt: expiresAt() },
+      })
+      return { oldHash, middleHash }
+    }
+
+    it('lets a just-rotated token be rotated again, revoking the replacement and chaining a new one', async () => {
+      const { oldHash, middleHash } = await rotateOnce()
+      expect(await repository.findValidByTokenHash(oldHash)).toBeNull()
+
+      const rotated = await repository.findRecentlyRotatedByTokenHash(oldHash, 20)
+      expect(rotated?.rotatedTo).toBeDefined()
+      const newHash = fresh()
+      expect(
+        await repository.rotate({
+          expectedSessionVersion: await sessionVersion(),
+          previous: rotated!,
+          replacement: { userId, tenantId, tokenHash: newHash, expiresAt: expiresAt() },
+        }),
+      ).toBe(true)
+
+      expect(await repository.findValidByTokenHash(middleHash)).toBeNull()
+      expect(await repository.findValidByTokenHash(newHash)).not.toBeNull()
+    })
+
+    it('does not offer a rotated token after the grace window', async () => {
+      const { oldHash } = await rotateOnce()
+      await prisma.refreshToken.update({
+        where: { tokenHash: oldHash },
+        data: { rotatedAt: new Date(Date.now() - 60_000) },
+      })
+      expect(await repository.findRecentlyRotatedByTokenHash(oldHash, 20)).toBeNull()
+    })
+
+    it('does not offer a token revoked by logout as a rotated one', async () => {
+      const tokenHash = fresh()
+      await repository.create({ userId, tenantId, tokenHash, expiresAt: expiresAt() })
+      const stored = (await repository.findValidByTokenHash(tokenHash))!
+      await repository.revokeById(stored.id)
+      expect(await repository.findRecentlyRotatedByTokenHash(tokenHash, 20)).toBeNull()
+    })
+
+    it('refuses grace rotation once the replacement was revoked (logout after rotation)', async () => {
+      const { oldHash, middleHash } = await rotateOnce()
+      const middle = (await repository.findValidByTokenHash(middleHash))!
+      await repository.revokeById(middle.id)
+      const rotated = (await repository.findRecentlyRotatedByTokenHash(oldHash, 20))!
+      expect(
+        await repository.rotate({
+          expectedSessionVersion: await sessionVersion(),
+          previous: rotated,
+          replacement: { userId, tenantId, tokenHash: fresh(), expiresAt: expiresAt() },
+        }),
+      ).toBe(false)
+    })
+  })
 })

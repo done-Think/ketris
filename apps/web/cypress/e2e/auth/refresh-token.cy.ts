@@ -31,20 +31,19 @@ describe('Refresh token (API)', () => {
     })
   })
 
-  it('rotação: o mesmo refresh token não pode ser usado duas vezes', () => {
+  it('rotação: reusar o token recém-rotacionado dentro da janela de tolerância emite um novo par', () => {
     login().then((refreshToken) => {
       cy.request('POST', '/api/auth/refresh', { refreshToken }).then((first) => {
         expect(first.status).to.eq(200)
-      })
-
-      cy.request({
-        method: 'POST',
-        url: '/api/auth/refresh',
-        body: { refreshToken },
-        failOnStatusCode: false,
-      }).then((second) => {
-        expect(second.status).to.eq(401)
-        expect(second.body.error.code).to.eq('INVALID_REFRESH_TOKEN')
+        cy.request({
+          method: 'POST',
+          url: '/api/auth/refresh',
+          body: { refreshToken },
+          failOnStatusCode: false,
+        }).then((second) => {
+          expect(second.status).to.eq(200)
+          expect(second.body.refreshToken).to.not.eq(first.body.refreshToken)
+        })
       })
     })
   })

@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { PrismaAgendaPropertyCatalog } from './infrastructure/prisma-agenda-property-catalog'
 import { ListAgendaPropertiesUseCase } from './application/use-cases/list-agenda-properties.use-case'
 import { PrismaUserRepository } from '@server/auth/infrastructure/prisma-user.repository'

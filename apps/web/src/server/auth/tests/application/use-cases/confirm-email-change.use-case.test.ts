@@ -9,7 +9,7 @@ const input = {
 }
 function setup() {
   const d = verificationDeps()
-  return { ...d, useCase: new ConfirmEmailChangeUseCase(d.users, d.codes) }
+  return { ...d, useCase: new ConfirmEmailChangeUseCase(d.users, d.codes, d.attempts) }
 }
 describe('ConfirmEmailChangeUseCase', () => {
   it('solicita confirmação atômica da conta, tenant, e-mail atual e novo endereço', async () => {
@@ -56,5 +56,25 @@ describe('ConfirmEmailChangeUseCase', () => {
       code: 'INVALID_EMAIL_VERIFICATION_CODE',
     })
     expect(d.users.update).not.toHaveBeenCalled()
+  })
+  it('bloqueia pelo e-mail de destino do código, não pelo e-mail informado, antes de comparar o código', async () => {
+    const d = setup()
+    vi.mocked(d.attempts.isBlocked).mockResolvedValue(true)
+    await expect(
+      d.useCase.execute({ ...input, email: 'varied@example.test' }),
+    ).rejects.toMatchObject({ status: 429 })
+    expect(d.attempts.isBlocked).toHaveBeenCalledWith('EMAIL_CHANGE', 'next@example.test')
+    expect(d.codes.incrementAttempts).not.toHaveBeenCalled()
+    expect(d.codes.confirm).not.toHaveBeenCalled()
+  })
+
+  it('registra falha por código errado e não registra quando a confirmação funciona', async () => {
+    const d = setup()
+    await d.useCase.execute(input)
+    expect(d.attempts.recordFailure).not.toHaveBeenCalled()
+    await expect(d.useCase.execute({ ...input, code: '999999' })).rejects.toMatchObject({
+      code: 'INVALID_EMAIL_VERIFICATION_CODE',
+    })
+    expect(d.attempts.recordFailure).toHaveBeenCalledWith('EMAIL_CHANGE', 'next@example.test')
   })
 })

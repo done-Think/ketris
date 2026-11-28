@@ -1,4 +1,4 @@
-import { requireDashboardFeature } from '@shared/lib/auth/require-dashboard-feature'
+import { requireDashboardFeature } from '@server/auth/session/require-dashboard-feature'
 import { AgencyPublicProfileEditorPage } from '@modules/marketplace/components/AgencyPublicProfileEditorPage'
 
 export default async function DashboardAgencyPublicProfilePage() {

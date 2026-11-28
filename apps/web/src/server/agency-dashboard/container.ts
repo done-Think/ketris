@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { financialContainer } from '@server/financial/container'
 
 import { GetAgencyOverviewUseCase } from './application/use-cases/get-agency-overview.use-case'

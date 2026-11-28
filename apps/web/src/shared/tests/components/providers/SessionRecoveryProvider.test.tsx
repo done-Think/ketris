@@ -12,7 +12,6 @@ const owner: Session = {
   tenantId: 'agency',
   role: 'OWNER',
   accessToken: 'owner-access',
-  refreshToken: 'owner-refresh',
 }
 const fetchMock = vi.fn()
 function Probe() {
@@ -25,9 +24,7 @@ function Probe() {
           : `${status}:${data?.user?.id ?? 'none'}`}
       </div>
       <output data-testid="tokens">
-        {[data?.accessToken, data?.refreshToken, data?.scope, data?.tenantId]
-          .map((value) => value ?? 'none')
-          .join(':')}
+        {[data?.accessToken, data?.scope, data?.tenantId].map((value) => value ?? 'none').join(':')}
       </output>
       <button onClick={() => void update()}>Retry session</button>
       <input aria-label="Unsaved draft" defaultValue="initial" />
@@ -61,7 +58,7 @@ it('does not interpret a failed session revalidation on return to the window as 
   fireEvent(document, new Event('visibilitychange'))
   await waitFor(() => expect(fetchMock).toHaveBeenCalled())
   expect(await screen.findByText('temporarily-unavailable')).toBeVisible()
-  expect(screen.getByTestId('tokens')).toHaveTextContent('none:none:none:none')
+  expect(screen.getByTestId('tokens')).toHaveTextContent('none:none:none')
 })
 
 it('recovers the same session after a temporary connection failure', async () => {
@@ -81,7 +78,7 @@ it('recovers the same session after a temporary connection failure', async () =>
   fetchMock.mockResolvedValue({ ok: true, status: 200, json: async () => owner })
   fireEvent.click(screen.getByRole('button', { name: 'Retry session' }))
   expect(await screen.findByText('authenticated:owner')).toBeVisible()
-  expect(screen.getByTestId('tokens')).toHaveTextContent('owner-access:owner-refresh:tenant:agency')
+  expect(screen.getByTestId('tokens')).toHaveTextContent('owner-access:tenant:agency')
   expect(screen.getByLabelText('Unsaved draft')).toHaveValue('keep this work')
 })
 
@@ -140,7 +137,7 @@ it('does not restore credentials explicitly invalidated by the backend', async (
     </AppSessionProvider>,
   )
   fireEvent(document, new Event('visibilitychange'))
-  await waitFor(() => expect(screen.getByTestId('tokens')).toHaveTextContent('none:none:none:none'))
+  await waitFor(() => expect(screen.getByTestId('tokens')).toHaveTextContent('none:none:none'))
   expect(screen.queryByText('temporarily-unavailable')).not.toBeInTheDocument()
 })
 
@@ -149,7 +146,6 @@ it('never restores the previous account after a validated account switch', async
     ...owner,
     user: { id: 'candidate' },
     accessToken: 'candidate-access',
-    refreshToken: 'candidate-refresh',
     tenantId: 'other',
   }
   fetchMock.mockResolvedValue({ ok: true, status: 200, json: async () => candidate })

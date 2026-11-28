@@ -5,7 +5,7 @@ import { privateMetadata } from '@/i18n/seo'
 
 import type { LocaleRouteParams } from '@/i18n/types/route.types'
 import { PlatformShell } from '@modules/platform'
-import { requirePlatformSession } from '@shared/lib/auth/require-platform-session'
+import { requirePlatformSession } from '@server/auth/session/require-platform-session'
 import { AuthenticationUnavailableError } from '@shared/lib/auth/authentication-unavailable-error'
 import { AuthenticationUnavailable } from '@shared/components/layout/AuthenticationUnavailable'
 

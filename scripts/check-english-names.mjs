@@ -33,7 +33,7 @@ const auditReaders = new Set([
   'maintenance-history.test.ts',
 ])
 const jwtRejectionTests = new Set([
-  'apps/web/src/shared/lib/auth/tests/auth-options.test.ts',
+  'apps/web/src/server/auth/session/tests/auth-options.test.ts',
   'apps/web/src/server/auth/tests/infrastructure/jose-token.service.test.ts',
   'apps/web/src/app/api/auth/tests/users/route.integration.test.ts',
   'apps/web/cypress/support/session-cookies.ts',

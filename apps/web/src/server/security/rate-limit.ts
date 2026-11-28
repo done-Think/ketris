@@ -2,7 +2,7 @@ import type {
   RateLimitInput,
   RateLimitPolicy,
   RateLimitResult,
-  RateLimitStore,
+  RateLimitCounterStore,
 } from './types/rate-limit.types'
 
 interface RateLimitEntry {
@@ -10,7 +10,7 @@ interface RateLimitEntry {
   resetAt: number
 }
 
-export class InMemoryRateLimitStore implements RateLimitStore {
+export class InMemoryRateLimitStore implements RateLimitCounterStore {
   private readonly entries = new Map<string, RateLimitEntry>()
 
   consume(input: RateLimitInput): RateLimitResult {
@@ -33,6 +33,11 @@ export class InMemoryRateLimitStore implements RateLimitStore {
     this.prune(now)
 
     return toResult(input.policy, entry, true, now)
+  }
+
+  peek(input: Omit<RateLimitInput, 'now'>): number {
+    const current = this.entries.get(`${input.policy.name}:${input.key}`)
+    return current && current.resetAt > Date.now() ? current.count : 0
   }
 
   reset() {

@@ -16,6 +16,7 @@ function createDeps(overrides?: {
     rotate: vi.fn().mockResolvedValue(true),
     create: vi.fn().mockResolvedValue(undefined),
     findValidByTokenHash: overrides?.findValidByTokenHash ?? vi.fn().mockResolvedValue(stored),
+    findRecentlyRotatedByTokenHash: vi.fn().mockResolvedValue(null),
     revokeById: vi.fn().mockResolvedValue(undefined),
     revokeAllForUser: vi.fn().mockResolvedValue(undefined),
   }
@@ -50,5 +51,17 @@ describe('LogoutUseCase', () => {
 
     await expect(useCase.execute({ refreshToken: 'token-invalido' })).resolves.toBeUndefined()
     expect(deps.refreshTokenRepository.revokeById).not.toHaveBeenCalled()
+  })
+
+  it('revoga o token que substituiu um refresh token recém-rotacionado (cookie desatualizado)', async () => {
+    const deps = createDeps({ findValidByTokenHash: vi.fn().mockResolvedValue(null) })
+    vi.mocked(deps.refreshTokenRepository.findRecentlyRotatedByTokenHash).mockResolvedValue({
+      ...stored,
+      rotatedTo: 'rt-2',
+    })
+
+    await new LogoutUseCase(deps.refreshTokenRepository).execute({ refreshToken: 'antigo' })
+
+    expect(deps.refreshTokenRepository.revokeById).toHaveBeenCalledWith('rt-2')
   })
 })

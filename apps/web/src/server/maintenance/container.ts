@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { contractsContainer } from '@server/contracts/container'
 import { randomUUID } from 'node:crypto'
 import { ActOnMaintenanceTicketUseCase } from './application/use-cases/act-on-maintenance-ticket.use-case'

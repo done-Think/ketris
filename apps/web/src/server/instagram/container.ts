@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { ListInstagramPublicationsUseCase } from './application/use-cases/list-instagram-publications.use-case'
 import { RetryInstagramPublicationUseCase } from './application/use-cases/retry-instagram-publication.use-case'
 import { ConnectInstagramUseCase } from './application/use-cases/connect-instagram.use-case'

@@ -87,12 +87,30 @@ describe('GET /api/tenants/search (integração)', () => {
     ).toBe(false)
   })
 
-  it('lista as primeiras imobiliárias quando o parâmetro q está ausente', async () => {
+  it.each(['', ' ', 'i', ' i '])(
+    'devolve lista vazia, sem enumerar imobiliárias, para a busca curta %j',
+    async (query) => {
+      const response = await GET(buildRequest(query))
+      const json = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(json.tenants).toEqual([])
+    },
+  )
+
+  it('devolve lista vazia quando o parâmetro q está ausente', async () => {
     const response = await GET(new NextRequest('http://localhost/api/tenants/search'))
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(Array.isArray(json.tenants)).toBe(true)
+    expect(json.tenants).toEqual([])
+  })
+
+  it('continua limitando a busca com dois caracteres a 20 resultados', async () => {
+    const response = await GET(buildRequest('im'))
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
     expect(json.tenants.length).toBeLessThanOrEqual(20)
   })
 

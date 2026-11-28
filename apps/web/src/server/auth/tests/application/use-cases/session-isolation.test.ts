@@ -48,6 +48,7 @@ it('keeps the owner session valid when another user logs in and out through a se
       rows.set(row.tokenHash, { id: row.tokenHash, userId: row.userId, tenantId: row.tenantId })
     },
     findValidByTokenHash: async (hash) => rows.get(hash) ?? null,
+    findRecentlyRotatedByTokenHash: async () => null,
     rotate: vi.fn(),
     revokeAllForUser: vi.fn(),
     revokeById: async (id) => {

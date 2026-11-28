@@ -97,6 +97,12 @@ token válido por um par novo (access + refresh), revogando o antigo (rotação 
 revogado é tratado como inválido). Detalhe completo e racional das decisões em ADR-0002, seção "Nota:
 refresh token".
 
+No navegador, o refresh token fica apenas no cookie criptografado do NextAuth: `/api/auth/session` expõe
+só o access token. A renovação acontece no servidor (`update({ refresh: true })` aciona o callback `jwt`
+em `server/auth/session/auth-options.ts`, que chama o caso de uso de refresh) e o logout revoga o token
+por `POST /api/session/logout`. Os endpoints públicos `/auth/refresh` e `/auth/logout` continuam para
+clientes de API.
+
 ## Recuperação de senha e contas por tenant
 
 - `POST /auth/password-reset-codes` recebe e-mail e locale, envia uma prova para a caixa de e-mail e
@@ -155,8 +161,8 @@ completo em `docs/adr/0003-platform-admin-identidade-separada.md` e `specs/003-p
 - As rotas de criação de admin deste módulo (criar platform admin, criar admin de tenant) nunca são
   registradas em `src/server/openapi/registry.ts` — ver o contrato próprio de Platform.
 - Sessão NextAuth: segundo `CredentialsProvider` (`id: 'platform-credentials'`), mesma estratégia JWT, com
-  `session.scope` (`'tenant' | 'platform'`) como discriminador — `shared/lib/auth/require-platform-session.ts`
-  e `shared/lib/auth/require-admin-session.ts` rejeitam a sessão uma da outra, mesmo com o mesmo mecanismo de
+  `session.scope` (`'tenant' | 'platform'`) como discriminador — `server/auth/session/require-platform-session.ts`
+  e `server/auth/session/require-admin-session.ts` rejeitam a sessão uma da outra, mesmo com o mesmo mecanismo de
   sessão por baixo.
 
 ## Marketplace: vitrine pública (sem autenticação)

@@ -3,12 +3,12 @@ import { prisma } from '@server/db/prisma'
 import type {
   RateLimitDatabase,
   RateLimitInput,
+  RateLimitCounterStore,
   RateLimitResult,
-  RateLimitStore,
   StoredRateLimitBucket,
 } from './types/rate-limit.types'
 
-export class PostgresRateLimitStore implements RateLimitStore {
+export class PostgresRateLimitStore implements RateLimitCounterStore {
   private nextCleanupAt = 0
 
   constructor(private readonly database: RateLimitDatabase = prisma) {}
@@ -49,6 +49,16 @@ export class PostgresRateLimitStore implements RateLimitStore {
         1,
       ),
     }
+  }
+
+  async peek(input: Omit<RateLimitInput, 'now'>): Promise<number> {
+    const key = `${input.policy.name}:${input.key}`
+    const rows = await this.database.$queryRaw<Array<{ count: number }>>`
+      SELECT "count" FROM "auth_rate_limit_buckets"
+      WHERE "key" = ${key}
+        AND "resetAt" > date_trunc('milliseconds', CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+    `
+    return rows[0]?.count ?? 0
   }
 
   async cleanupExpired(): Promise<number> {

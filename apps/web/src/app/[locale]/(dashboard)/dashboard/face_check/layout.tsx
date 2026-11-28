@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { ScopedMessages } from '@/i18n/scoped-messages'
 import { privateMetadata } from '@/i18n/seo'
-import { authOptions } from '@shared/lib/auth/auth-options'
+import { authOptions } from '@server/auth/session/auth-options'
 import { AuthenticationUnavailable } from '@shared/components/layout/AuthenticationUnavailable'
 
 export const metadata = privateMetadata
