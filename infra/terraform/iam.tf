@@ -39,6 +39,14 @@ data "aws_iam_policy_document" "app_storage" {
     actions   = ["s3:DeleteObject", "s3:DeleteObjectVersion"]
     resources = ["${aws_s3_bucket.uploads.arn}/face_check/*"]
   }
+
+  # Instagram publishing stores prepared copies under each tenant's instagram folder and deletes
+  # them on disconnect and on Meta data deletion requests. Property photos stay non-deletable.
+  statement {
+    sid       = "DeleteInstagramMedia"
+    actions   = ["s3:DeleteObject"]
+    resources = ["${aws_s3_bucket.uploads.arn}/properties/*/instagram/*"]
+  }
 }
 
 resource "aws_iam_user_policy" "app_storage" {
