@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event'
 import { SnackbarProvider } from 'notistack'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import * as navigation from '@/i18n/navigation'
+
 import { FavoritesPage } from '../../components/favorites/FavoritesPage'
 import { favoritePropertiesService } from '../../services/favorite-properties-service'
 import { availableFavorite } from '../fixtures/favorite-properties'
@@ -68,9 +70,28 @@ describe('FavoritesPage', () => {
     renderPage()
 
     expect(await screen.findByText('2 imóveis salvos')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Todos (2)' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Alugar (1)' })).toBeVisible()
     expect(screen.getByText('Apartamento Localizado')).toBeVisible()
     expect(screen.getByText('Casa com quintal')).toBeVisible()
     expect(screen.getAllByRole('button', { name: 'Remover dos favoritos' })).toHaveLength(2)
+  })
+
+  it('keeps the purpose filter in the address', async () => {
+    const replace = vi.fn()
+    vi.spyOn(navigation, 'useRouter').mockReturnValue({ replace } as never)
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.click(await screen.findByRole('button', { name: 'Comprar (1)' }))
+
+    expect(replace).toHaveBeenCalledWith(
+      { pathname: '/favorites', query: { purpose: 'buy' } },
+      { scroll: false },
+    )
   })
 
   it('offers to try again when the list cannot be loaded', async () => {

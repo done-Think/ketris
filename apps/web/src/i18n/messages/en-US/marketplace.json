@@ -650,6 +650,11 @@
       "count": "{count, plural, =0 {No saved properties} one {# saved property} other {# saved properties}}",
       "loadError": "We couldn't load your favorites.",
       "retry": "Try again",
+      "purpose": {
+        "all": "All ({count})",
+        "rent": "Rent ({count})",
+        "buy": "Buy ({count})"
+      },
       "guest": {
         "title": "Sign in to see your favorites",
         "description": "The properties you save stay in your account and show up on your phone and computer.",

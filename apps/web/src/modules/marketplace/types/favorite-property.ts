@@ -1,6 +1,7 @@
 import type { components } from '@shared/types/generated/api'
 
 import type { favoritesPurposeFilters } from '../config/favorites'
+import type { SortOption } from './search'
 
 export type FavoritePropertiesResponse = components['schemas']['FavoritePropertiesResponse']
 
@@ -32,7 +33,20 @@ export type SaveFavoriteAfterLoginOptions = {
 
 export type FavoritesPurposeFilter = (typeof favoritesPurposeFilters)[number]
 
+export type FavoritesFilters = {
+  purpose: FavoritesPurposeFilter
+  sort: SortOption
+}
+
+export type FavoritesCounts = Record<FavoritesPurposeFilter, number>
+
 export type AvailableFavoriteEntry = Extract<FavoritePropertyEntry, { available: true }>
+
+export type FavoritesPurposeChipsProps = {
+  counts: FavoritesCounts
+  value: FavoritesPurposeFilter
+  onChange: (purpose: FavoritesPurposeFilter) => void
+}
 
 export type FavoritesEmptyStateProps = {
   variant: 'guest' | 'empty'

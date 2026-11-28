@@ -8,14 +8,18 @@ import type { AppLocale } from '@/i18n/types/locale.types'
 import { SiteFooter } from '@shared/components/layout'
 
 import { useFavoriteProperties } from '../../hooks/use-favorite-properties'
+import { useFavoritesFilters } from '../../hooks/use-favorites-filters'
 import { useMarketplaceNavigation } from '../../hooks/use-marketplace-navigation'
-import { toFavoriteCard } from '../../utils/favorite-properties'
+import { useViewModePreference } from '../../hooks/use-view-mode-preference'
+import { countFavorites, selectFavorites, toFavoriteCard } from '../../utils/favorite-properties'
 import { DirectoryPageHeader } from '../directory/DirectoryPageHeader'
 import { MarketplaceBreadcrumbs } from '../MarketplaceBreadcrumbs'
 import { MarketplaceHeader } from '../MarketplaceHeader'
 import { SearchResultsList } from '../search-results/SearchResultsList'
+import { SearchResultsToolbar } from '../search-results/SearchResultsToolbar'
 import { styles } from '../../styles/brokers-page.styles'
 import { FavoritesEmptyState } from './FavoritesEmptyState'
+import { FavoritesPurposeChips } from './FavoritesPurposeChips'
 
 export function FavoritesPage() {
   const locale = useLocale() as AppLocale
@@ -24,9 +28,13 @@ export function FavoritesPage() {
   const tFeatures = useTranslations('marketplace.propertyFeatures')
   const { status } = useSession()
   const { footerColumns, legalLinks } = useMarketplaceNavigation()
+  const { setViewMode, viewMode } = useViewModePreference('favorites')
+  const { filters, setFilters } = useFavoritesFilters()
   const favorites = useFavoriteProperties()
-  const cards = (favorites.data?.favorites ?? []).flatMap((entry) =>
-    entry.available ? [toFavoriteCard(entry, 'all', locale, tFeatures)] : [],
+  const entries = favorites.data?.favorites ?? []
+  const visible = selectFavorites(entries, filters)
+  const cards = visible.flatMap((entry) =>
+    entry.available ? [toFavoriteCard(entry, filters.purpose, locale, tFeatures)] : [],
   )
 
   function renderContent() {
@@ -44,10 +52,29 @@ export function FavoritesPage() {
           {tPage('loadError')}
         </Alert>
       )
-    if (!favorites.isSuccess) return <SearchResultsList properties={[]} isLoading viewMode="grid" />
-    if (cards.length === 0) return <FavoritesEmptyState variant="empty" />
+    if (!favorites.isSuccess)
+      return <SearchResultsList properties={[]} isLoading viewMode={viewMode} />
+    if (entries.length === 0) return <FavoritesEmptyState variant="empty" />
 
-    return <SearchResultsList properties={cards} viewMode="grid" />
+    return (
+      <>
+        <SearchResultsToolbar
+          filtersControl={
+            <FavoritesPurposeChips
+              counts={countFavorites(entries)}
+              value={filters.purpose}
+              onChange={(purpose) => setFilters({ purpose })}
+            />
+          }
+          resultCount={cards.length}
+          sortOption={filters.sort}
+          setSortOption={(sort) => setFilters({ sort })}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+        />
+        <SearchResultsList properties={cards} viewMode={viewMode} />
+      </>
+    )
   }
 
   return (
@@ -61,7 +88,7 @@ export function FavoritesPage() {
           />
           <DirectoryPageHeader
             title={tPage('title')}
-            resultCountLabel={favorites.isSuccess ? tPage('count', { count: cards.length }) : ''}
+            resultCountLabel={favorites.isSuccess ? tPage('count', { count: entries.length }) : ''}
           />
           {renderContent()}
         </Container>

@@ -1,13 +1,53 @@
 import { describe, expect, it } from 'vitest'
 
-import { getFavoriteCardPurpose, toFavoriteCard } from '../../utils/favorite-properties'
+import {
+  countFavorites,
+  getFavoriteCardPurpose,
+  selectFavorites,
+  toFavoriteCard,
+} from '../../utils/favorite-properties'
 import { availableFavorite } from '../fixtures/favorite-properties'
 
-const sale = availableFavorite('sale', { purpose: 'SALE', price: 890000 })
-const both = availableFavorite('both', { purpose: 'BOTH', price: 500000, rentalPrice: 1800 })
+const rent = availableFavorite('rent', { price: 2300, savedAt: '2026-11-21T00:00:00.000Z' })
+const sale = availableFavorite('sale', {
+  purpose: 'SALE',
+  price: 890000,
+  savedAt: '2026-11-22T00:00:00.000Z',
+})
+const both = availableFavorite('both', {
+  purpose: 'BOTH',
+  price: 500000,
+  rentalPrice: 1800,
+  savedAt: '2026-11-19T00:00:00.000Z',
+})
+const entries = [rent, sale, both]
+const ids = (list: { propertyId: string }[]) => list.map((entry) => entry.propertyId)
 const t = (key: string) => key
 
 describe('favorite properties', () => {
+  it('counts each property in every purpose it can be negotiated', () => {
+    expect(countFavorites(entries)).toEqual({ all: 3, rent: 2, buy: 2 })
+  })
+
+  it('lists the most recently saved first', () => {
+    expect(ids(selectFavorites(entries, { purpose: 'all', sort: 'relevancia' }))).toEqual([
+      'sale',
+      'rent',
+      'both',
+    ])
+  })
+
+  it('uses the rental price of a rent-or-sale property when filtering by rent', () => {
+    expect(ids(selectFavorites(entries, { purpose: 'rent', sort: 'menor-preco' }))).toEqual([
+      'both',
+      'rent',
+    ])
+    expect(ids(selectFavorites(entries, { purpose: 'buy', sort: 'maior-preco' }))).toEqual([
+      'sale',
+      'both',
+    ])
+  })
+
   it('shows a rent-or-sale property as a sale only inside the buy filter', () => {
     expect(getFavoriteCardPurpose(both, 'all')).toBe('alugar')
     expect(getFavoriteCardPurpose(both, 'buy')).toBe('comprar')
