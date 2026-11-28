@@ -67,6 +67,9 @@
       "notFoundTitle": "Ketris",
       "agencyDescription": "{name}, {creci}, operates in {headquarters}.",
       "brokerDescription": "{name}, {creci}, represents properties in {region}."
+    },
+    "favorites": {
+      "metadataTitle": "My favorites"
     }
   },
   "home": {
@@ -641,6 +644,23 @@
       "generic": "We couldn't update your favorites. Please try again.",
       "unavailable": "This property is no longer available.",
       "limitReached": "You have already saved {limit} properties. Remove a favorite to save another one."
+    },
+    "page": {
+      "title": "My favorites",
+      "count": "{count, plural, =0 {No saved properties} one {# saved property} other {# saved properties}}",
+      "loadError": "We couldn't load your favorites.",
+      "retry": "Try again",
+      "guest": {
+        "title": "Sign in to see your favorites",
+        "description": "The properties you save stay in your account and show up on your phone and computer.",
+        "action": "Sign in"
+      },
+      "empty": {
+        "title": "You haven't saved any property yet",
+        "description": "Tap the heart on any property to keep it here and compare later.",
+        "rentAction": "See properties for rent",
+        "buyAction": "See properties for sale"
+      }
     }
   }
 }

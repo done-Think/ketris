@@ -28,7 +28,9 @@ export function SearchResultsList({
             key={property.id}
             property={property}
             selected={property.id === selectedPropertyId}
-            onActivate={() => setSelectedPropertyId(property.id)}
+            onActivate={
+              setSelectedPropertyId ? () => setSelectedPropertyId(property.id) : undefined
+            }
             viewMode={viewMode}
           />
         ))
