@@ -1,4 +1,4 @@
-CREATE UNIQUE INDEX "leads_id_tenantId_key" ON "leads"("id", "tenantId");
+CREATE UNIQUE INDEX IF NOT EXISTS "leads_id_tenantId_key" ON "leads"("id", "tenantId");
 
 CREATE TABLE "lead_broker_access" (
   "tenantId" TEXT NOT NULL,
