@@ -517,6 +517,7 @@
     "revenueChartTitle": "Faturado (6 meses)",
     "revenue": "Faturado",
     "upcomingDuesTitle": "Próximos vencimentos",
+    "upcomingDuesEmpty": "Nenhum vencimento a partir de hoje.",
     "kpis": {
       "receivable": "A receber",
       "delinquency": "Inadimplência",
