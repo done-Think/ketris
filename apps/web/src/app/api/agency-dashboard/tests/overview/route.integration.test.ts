@@ -666,7 +666,10 @@ describe('/api/agency-dashboard/overview (integração)', () => {
       await prisma.charge.update({ where: { id: chargeIds.pending }, data: { status: 'PAID' } })
       expect(await getRevenue()).toEqual({ card: 2100, chart: 2100 })
 
-      await prisma.charge.update({ where: { id: chargeIds.scheduled }, data: { status: 'CANCELED' } })
+      await prisma.charge.update({
+        where: { id: chargeIds.scheduled },
+        data: { status: 'CANCELED' },
+      })
       expect(await getRevenue()).toEqual({ card: 1400, chart: 1400 })
     })
   })
