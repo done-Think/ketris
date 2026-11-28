@@ -16919,7 +16919,8 @@ export interface components {
     }
     AgencyOverviewKpis: {
       activeBrokersCount: number
-      monthlyReceivable: number
+      /** @description Faturado no mês corrente: cobranças a receber do mês, pagas ou em aberto, sem as canceladas (o último mês de revenueSeries). */
+      monthlyRevenue: number
       /** @description Imóveis cadastrados no mês corrente. */
       newPropertiesThisMonth: number
       occupancyPercentage: number

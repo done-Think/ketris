@@ -100,11 +100,45 @@ describe('GetAgencyOverviewUseCase', () => {
 
       const overview = await useCase.execute({ actorTenantId: 'tenant-1', actorRole })
 
-      expect(overview.kpis.monthlyReceivable).toBe(8500)
+      expect(overview.kpis.monthlyRevenue).toBe(8500)
       expect(overview.revenueSeries).toEqual([{ year: 2026, month: 9, total: 8500 }])
       expect(getSummary).toHaveBeenCalledWith('tenant-1', expect.any(Object), expect.any(Date))
     },
   )
+
+  it('shows the billed total of the current month as revenue, not only what is still open', async () => {
+    const useCase = new GetAgencyOverviewUseCase(
+      createRepository(),
+      createFinancialSummaryProvider({
+        execute: vi.fn().mockResolvedValue({
+          monthlyReceivable: 400,
+          overdueTotal: 0,
+          monthlySeries: [
+            { year: 2026, month: 10, total: 900 },
+            { year: 2026, month: 11, total: 1400 },
+          ],
+        }),
+      }),
+    )
+
+    const overview = await useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER' })
+
+    expect(overview.kpis.monthlyRevenue).toBe(1400)
+    expect(overview.kpis).not.toHaveProperty('monthlyReceivable')
+  })
+
+  it('shows zero revenue when the financial summary has no months', async () => {
+    const useCase = new GetAgencyOverviewUseCase(
+      createRepository(),
+      createFinancialSummaryProvider({
+        execute: vi.fn().mockResolvedValue({ overdueTotal: 0, monthlySeries: [] }),
+      }),
+    )
+
+    const overview = await useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER' })
+
+    expect(overview.kpis.monthlyRevenue).toBe(0)
+  })
 
   it('lança ForbiddenError quando o ator é AGENT', async () => {
     const useCase = new GetAgencyOverviewUseCase(
@@ -142,7 +176,7 @@ describe('GetAgencyOverviewUseCase', () => {
         activeBrokersCount: 3,
         receivedLeadsThisMonth: 4,
         receivedLeadsPreviousPeriod: 6,
-        monthlyReceivable: 8500,
+        monthlyRevenue: 8500,
         overdueTotal: 320,
         occupancyPercentage: 75,
       },

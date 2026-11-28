@@ -283,7 +283,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(json.kpis.portfolioCount).toBe(4)
     expect(json.kpis.activeBrokersCount).toBe(1)
     expect(json.kpis.receivedLeadsThisMonth).toBe(1)
-    expect(json.kpis.monthlyReceivable).toBe(1500)
+    expect(json.kpis.monthlyRevenue).toBe(1500)
     expect(json.kpis.occupancyPercentage).toBe(67)
 
     const { year: currentYear, month: currentMonth } = calendarMonthInTimeZone(new Date())
@@ -391,7 +391,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
         portfolioCount: 1,
         activeBrokersCount: 1,
         receivedLeadsThisMonth: 1,
-        monthlyReceivable: 0,
+        monthlyRevenue: 0,
       })
       // No closed sales in this tenant: the first tenant's ranking must not leak into it.
       expect(other.topBrokers).toEqual([])
@@ -458,7 +458,7 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     expect(json.kpis.portfolioCount).toBe(5)
     expect(json.kpis.receivedLeadsThisMonth).toBe(1)
     expect(json.kpis.receivedLeadsPreviousPeriod).toBe(1)
-    expect(json.kpis.monthlyReceivable).toBe(1500)
+    expect(json.kpis.monthlyRevenue).toBe(1500)
     expect(json.kpis).not.toHaveProperty('monthlyReceivablePreviousMonth')
   })
 
@@ -587,8 +587,87 @@ describe('/api/agency-dashboard/overview (integração)', () => {
     it('soma no mês só as cobranças de janeiro, sem trazer as de dezembro nem comparar com elas', async () => {
       const json = await (await GET(buildRequest(frozenOwnerToken))).json()
 
-      expect(json.kpis.monthlyReceivable).toBe(4000)
+      expect(json.kpis.monthlyRevenue).toBe(4000)
       expect(json.kpis).not.toHaveProperty('monthlyReceivablePreviousMonth')
+    })
+  })
+
+  describe('faturamento do mês (card "Faturamento")', () => {
+    const chargeIds: Record<string, string> = {}
+    let revenueTenantId: string
+    let revenueOwnerToken: string
+
+    beforeAll(async () => {
+      const tenant = await prisma.tenant.create({
+        data: { name: 'Tenant revenue', slug: `agency-dashboard-revenue-${randomUUID()}` },
+      })
+      revenueTenantId = tenant.id
+      const owner = await prisma.user.create({
+        data: {
+          tenantId: tenant.id,
+          name: 'Owner revenue',
+          email: `owner-${randomUUID()}@ketris.dev`,
+          passwordHash: 'hash-fake',
+          role: 'OWNER',
+        },
+      })
+      revenueOwnerToken = await tokenService.sign({
+        id: owner.id,
+        tenantId: owner.tenantId,
+        name: owner.name,
+        email: owner.email,
+        role: owner.role,
+        active: owner.active,
+        membershipApprovedAt: owner.membershipApprovedAt,
+      })
+
+      const { year, month } = calendarMonthInTimeZone(new Date())
+      for (const [key, amount, type, status] of [
+        ['paid', 1000, 'RECEIVABLE', 'PAID'],
+        ['pending', 400, 'RECEIVABLE', 'PENDING'],
+        ['scheduled', 700, 'RECEIVABLE', 'SCHEDULED'],
+        ['canceled', 999, 'RECEIVABLE', 'CANCELED'],
+        ['payable', 5000, 'PAYABLE', 'PENDING'],
+      ] as const) {
+        const charge = await prisma.charge.create({
+          data: {
+            tenantId: tenant.id,
+            code: `COB-${randomUUID()}`,
+            type,
+            amount,
+            dueDate: calendarDate(year, month, 15),
+            status,
+          },
+        })
+        chargeIds[key] = charge.id
+      }
+    })
+
+    afterAll(async () => {
+      await prisma.tenant.delete({ where: { id: revenueTenantId } })
+    })
+
+    async function getRevenue() {
+      const json = await (await GET(buildRequest(revenueOwnerToken))).json()
+      const { year, month } = calendarMonthInTimeZone(new Date())
+      const currentMonthEntry = json.revenueSeries.find(
+        (entry: { year: number; month: number }) =>
+          entry.year === year && entry.month === month + 1,
+      )
+
+      return { card: json.kpis.monthlyRevenue, chart: currentMonthEntry?.total }
+    }
+
+    it('soma as pagas e as em aberto do mês, sem canceladas nem a pagar, igual ao gráfico', async () => {
+      expect(await getRevenue()).toEqual({ card: 2100, chart: 2100 })
+    })
+
+    it('não diminui quando uma cobrança é paga e diminui quando uma é cancelada', async () => {
+      await prisma.charge.update({ where: { id: chargeIds.pending }, data: { status: 'PAID' } })
+      expect(await getRevenue()).toEqual({ card: 2100, chart: 2100 })
+
+      await prisma.charge.update({ where: { id: chargeIds.scheduled }, data: { status: 'CANCELED' } })
+      expect(await getRevenue()).toEqual({ card: 1400, chart: 1400 })
     })
   })
 })

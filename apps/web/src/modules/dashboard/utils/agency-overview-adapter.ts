@@ -78,7 +78,7 @@ export function mapKpisToAgencyOverviewKpis(
     {
       id: 'revenue',
       labelKey: 'revenue',
-      value: formatCurrency(kpis.monthlyReceivable, locale),
+      value: formatCurrency(kpis.monthlyRevenue, locale),
       tone: 'neutral',
     },
     {
