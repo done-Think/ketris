@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { GetAgencyProfileUseCase } from './application/use-cases/get-agency-profile.use-case'
 import { GetBrokerProfileUseCase } from './application/use-cases/get-broker-profile.use-case'
 import { GetOwnAgencyProfileUseCase } from './application/use-cases/get-own-agency-profile.use-case'

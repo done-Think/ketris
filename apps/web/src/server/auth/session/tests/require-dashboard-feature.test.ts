@@ -14,10 +14,10 @@ const redirect = vi.fn(() => {
 vi.mock('next/navigation', () => ({ notFound }))
 vi.mock('next-intl/server', () => ({ getLocale: async () => 'pt-BR' }))
 vi.mock('@/i18n/navigation', () => ({ redirect }))
-vi.mock('@shared/lib/auth/auth-options', () => ({ authOptions: {} }))
+vi.mock('@server/auth/session/auth-options', () => ({ authOptions: {} }))
 
 const { requireDashboardFeature, requireDashboardHome } =
-  await import('@shared/lib/auth/require-dashboard-feature')
+  await import('@server/auth/session/require-dashboard-feature')
 
 describe('requireDashboardFeature', () => {
   beforeEach(() => {

@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { requireMaintenanceActor } from '../require-maintenance-actor'
 
 vi.mock('next-auth', () => ({ getServerSession: vi.fn() }))
-vi.mock('@shared/lib/auth/auth-options', () => ({ authOptions: {} }))
+vi.mock('@server/auth/session/auth-options', () => ({ authOptions: {} }))
 vi.mock('@server/auth/container', () => ({
   authContainer: { tokenService: {}, userRepository: { findById: vi.fn() } },
 }))

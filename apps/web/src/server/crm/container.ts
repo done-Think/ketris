@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { StartContactInteractionUseCase } from './application/use-cases/start-contact-interaction.use-case'
 import { LinkLeadContactUseCase } from './application/use-cases/link-lead-contact.use-case'
 import { PrismaLeadContactLinkRepository } from './infrastructure/prisma-lead-contact-link.repository'

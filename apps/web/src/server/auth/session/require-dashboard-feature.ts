@@ -4,7 +4,7 @@ import { getLocale } from 'next-intl/server'
 
 import { redirect } from '@/i18n/navigation'
 
-import { authOptions } from '@shared/lib/auth/auth-options'
+import { authOptions } from '@server/auth/session/auth-options'
 import {
   canAccessFeature,
   homeHrefFor,

@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { CancelChargeUseCase } from './application/use-cases/cancel-charge.use-case'
 import { CreateChargeUseCase } from './application/use-cases/create-charge.use-case'
 import { DeleteChargeUseCase } from './application/use-cases/delete-charge.use-case'

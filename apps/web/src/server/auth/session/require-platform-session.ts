@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { getPathname } from '@/i18n/navigation'
 import { resolveLocale } from '@/i18n/routing'
 import { authOptions } from './auth-options'
-import { AuthenticationUnavailableError } from './authentication-unavailable-error'
+import { AuthenticationUnavailableError } from '@shared/lib/auth/authentication-unavailable-error'
 
 export async function requirePlatformSession(locale: string | undefined): Promise<Session> {
   const session = await getServerSession(authOptions)

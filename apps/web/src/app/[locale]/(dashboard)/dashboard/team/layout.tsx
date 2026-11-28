@@ -1,4 +1,4 @@
-import { requireDashboardFeature } from '@shared/lib/auth/require-dashboard-feature'
+import { requireDashboardFeature } from '@server/auth/session/require-dashboard-feature'
 import type { ReactNode } from 'react'
 
 import { ScopedMessages } from '@/i18n/scoped-messages'

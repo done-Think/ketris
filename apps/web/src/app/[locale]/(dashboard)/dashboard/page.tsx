@@ -1,4 +1,4 @@
-import { requireDashboardHome } from '@shared/lib/auth/require-dashboard-feature'
+import { requireDashboardHome } from '@server/auth/session/require-dashboard-feature'
 import { ScopedMessages } from '@/i18n/scoped-messages'
 import { dashboardMessageNamespaces } from '@/i18n/message-selection'
 import { createLocalizedMetadata } from '@/i18n/metadata'

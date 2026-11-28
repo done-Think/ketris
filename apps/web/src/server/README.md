@@ -155,8 +155,8 @@ completo em `docs/adr/0003-platform-admin-identidade-separada.md` e `specs/003-p
 - As rotas de criação de admin deste módulo (criar platform admin, criar admin de tenant) nunca são
   registradas em `src/server/openapi/registry.ts` — ver o contrato próprio de Platform.
 - Sessão NextAuth: segundo `CredentialsProvider` (`id: 'platform-credentials'`), mesma estratégia JWT, com
-  `session.scope` (`'tenant' | 'platform'`) como discriminador — `shared/lib/auth/require-platform-session.ts`
-  e `shared/lib/auth/require-admin-session.ts` rejeitam a sessão uma da outra, mesmo com o mesmo mecanismo de
+  `session.scope` (`'tenant' | 'platform'`) como discriminador — `server/auth/session/require-platform-session.ts`
+  e `server/auth/session/require-admin-session.ts` rejeitam a sessão uma da outra, mesmo com o mesmo mecanismo de
   sessão por baixo.
 
 ## Marketplace: vitrine pública (sem autenticação)

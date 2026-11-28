@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { BcryptPasswordHasher } from '@server/auth/infrastructure/bcrypt-password-hasher'
 import { SesMailer } from '@server/shared/email/ses-mailer'
 

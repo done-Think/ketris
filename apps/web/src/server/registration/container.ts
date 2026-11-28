@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { BcryptPasswordHasher } from '@server/auth/infrastructure/bcrypt-password-hasher'
 
 import { RegisterRenterUseCase } from './application/use-cases/register-renter.use-case'

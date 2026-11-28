@@ -24,6 +24,7 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, './src/shared'),
       '@config': path.resolve(__dirname, './src/config'),
       '@server': path.resolve(__dirname, './src/server'),
+      'server-only': path.resolve(__dirname, './src/test/server-only.ts'),
     },
   },
 })

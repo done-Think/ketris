@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { UploadAvatarUseCase } from './application/use-cases/upload-avatar.use-case'
 import { S3AvatarStorage } from './infrastructure/s3-avatar-storage'
 import { ApproveUserMembershipUseCase } from './application/use-cases/approve-user-membership.use-case'
