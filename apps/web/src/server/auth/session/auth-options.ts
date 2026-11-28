@@ -9,6 +9,8 @@ import { assertUserCanAuthenticate } from '@server/auth/domain/user-access-polic
 import { platformContainer } from '@server/platform/container'
 import { InvalidPlatformCredentialsError } from '@server/platform/domain/errors'
 import { isAuthenticationError } from '@server/security/authentication-errors'
+import { describeFailure } from '@server/shared/observability/describe-failure'
+import { failureReporter } from '@server/shared/observability/sentry-failure-reporter'
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -176,6 +178,8 @@ export const authOptions: NextAuthOptions = {
         delete token.authUnavailable
       } catch (error) {
         if (isAuthenticationError(error)) return clearSessionToken(token)
+        console.error('[auth] Session validation unavailable.', describeFailure(error))
+        failureReporter.report({ module: 'auth', operation: 'session_validation', error })
         token.authUnavailable = true
       }
 
@@ -215,6 +219,8 @@ async function rotateSessionTokens(token: JWT): Promise<boolean> {
     token.refreshToken = rotated.refreshToken
   } catch (error) {
     if (isAuthenticationError(error)) return false
+    console.error('[auth] Session refresh unavailable.', describeFailure(error))
+    failureReporter.report({ module: 'auth', operation: 'session_refresh', error })
   }
   return true
 }

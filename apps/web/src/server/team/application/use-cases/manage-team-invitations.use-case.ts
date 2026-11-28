@@ -1,6 +1,8 @@
 import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
 import { EmailAlreadyInUseError } from '@server/auth/domain/errors'
 import type { Mailer } from '@server/shared/email/mailer.port'
+import { describeFailure } from '@server/shared/observability/describe-failure'
+import type { FailureReporter } from '@server/shared/observability/failure-reporter.port'
 import { normalizeEmail } from '@server/shared/normalize-email'
 
 import {
@@ -33,6 +35,7 @@ import type { AppLocale } from '@/i18n/types/locale.types'
 
 async function deliverInvitation(
   mailer: Mailer,
+  failures: FailureReporter,
   invitation: StoredTeamInvitation,
   token: string,
   inviterName: string,
@@ -50,8 +53,9 @@ async function deliverInvitation(
       })),
     })
     return true
-  } catch {
-    console.error('[team] Invitation email delivery failed.')
+  } catch (error) {
+    console.error('[team] Invitation email delivery failed.', describeFailure(error))
+    failures.report({ module: 'team', operation: 'invitation_email', error })
     return false
   }
 }
@@ -62,6 +66,7 @@ export class InviteBrokerUseCase {
     private readonly invitations: TeamInvitationRepository,
     private readonly passwordHasher: PasswordHasher,
     private readonly mailer: Mailer,
+    private readonly failures: FailureReporter,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -86,6 +91,7 @@ export class InviteBrokerUseCase {
       brokerId: invitation.userId,
       emailDelivered: await deliverInvitation(
         this.mailer,
+        this.failures,
         invitation,
         token,
         actor.name,
@@ -100,6 +106,7 @@ export class ResendTeamInvitationUseCase {
     private readonly team: TeamRepository,
     private readonly invitations: TeamInvitationRepository,
     private readonly mailer: Mailer,
+    private readonly failures: FailureReporter,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -122,6 +129,7 @@ export class ResendTeamInvitationUseCase {
     return {
       emailDelivered: await deliverInvitation(
         this.mailer,
+        this.failures,
         invitation,
         token,
         actor.name,

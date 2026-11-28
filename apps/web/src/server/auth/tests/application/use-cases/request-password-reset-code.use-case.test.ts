@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type { Mailer } from '@server/shared/email/mailer.port'
+import type { FailureReporter } from '@server/shared/observability/failure-reporter.port'
 import type { EmailOwnershipCodeRepository } from '../../../application/ports/email-ownership-code-repository.port'
 import type { UserRepository } from '../../../application/ports/user-repository.port'
 import { RequestPasswordResetCodeUseCase } from '../../../application/use-cases/request-password-reset-code.use-case'
@@ -27,11 +28,13 @@ function createDeps() {
     verify: vi.fn(),
   }
   const mailer: Mailer = { send: vi.fn().mockResolvedValue(undefined) }
+  const reporter: FailureReporter = { report: vi.fn() }
   return {
     users,
     codes,
     mailer,
-    useCase: new RequestPasswordResetCodeUseCase(users, codes, mailer),
+    reporter,
+    useCase: new RequestPasswordResetCodeUseCase(users, codes, mailer, reporter),
   }
 }
 
@@ -74,17 +77,36 @@ describe('RequestPasswordResetCodeUseCase', () => {
     ).resolves.toBeUndefined()
     expect(deps.mailer.send).not.toHaveBeenCalled()
   })
-  it('does not reveal account existence through an email delivery failure', async () => {
+  it('does not reveal account existence through an email delivery failure, yet reports it without recipient', async () => {
     const deps = createDeps()
-    vi.mocked(deps.mailer.send).mockRejectedValue(new Error('delivery failed'))
+    const failure = Object.assign(new Error('Email address is not verified: ana@example.com'), {
+      name: 'MessageRejected',
+      code: 'MessageRejected',
+    })
+    vi.mocked(deps.mailer.send).mockRejectedValue(failure)
     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
       await expect(
         deps.useCase.execute({ email: user.email, locale: 'es-ES' }),
       ).resolves.toBeUndefined()
-      expect(log).toHaveBeenCalledWith('[auth] Password recovery email delivery failed.')
+      expect(log).toHaveBeenCalledWith('[auth] Password recovery email delivery failed.', {
+        name: 'MessageRejected',
+        code: 'MessageRejected',
+      })
+      expect(JSON.stringify(log.mock.calls)).not.toContain(user.email)
+      expect(deps.reporter.report).toHaveBeenCalledWith({
+        module: 'auth',
+        operation: 'password_reset_email',
+        error: failure,
+      })
     } finally {
       log.mockRestore()
     }
+  })
+
+  it('does not report anything when the email is delivered', async () => {
+    const deps = createDeps()
+    await deps.useCase.execute({ email: user.email, locale: 'es-ES' })
+    expect(deps.reporter.report).not.toHaveBeenCalled()
   })
 })

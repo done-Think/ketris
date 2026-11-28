@@ -23,6 +23,7 @@ import { PrismaPasswordResetAccountRepository } from './infrastructure/prisma-pa
 import { PrismaRefreshTokenRepository } from './infrastructure/prisma-refresh-token.repository'
 import { PrismaUserRepository } from './infrastructure/prisma-user.repository'
 import { SesMailer } from '@server/shared/email/ses-mailer'
+import { failureReporter } from '@server/shared/observability/sentry-failure-reporter'
 
 import { PrismaUserPortfolioReader } from './infrastructure/prisma-user-portfolio.reader'
 import { ValidateAccessTokenUseCase } from './application/use-cases/validate-access-token.use-case'
@@ -108,6 +109,7 @@ export const authContainer = {
     userRepository,
     emailOwnershipCodeRepository,
     mailer,
+    failureReporter,
   ),
   verifyPasswordResetCodeUseCase: new VerifyPasswordResetCodeUseCase(
     userRepository,

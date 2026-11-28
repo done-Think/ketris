@@ -2,6 +2,7 @@ import 'server-only'
 
 import { BcryptPasswordHasher } from '@server/auth/infrastructure/bcrypt-password-hasher'
 import { SesMailer } from '@server/shared/email/ses-mailer'
+import { failureReporter } from '@server/shared/observability/sentry-failure-reporter'
 
 import { GetTeamOverviewUseCase } from './application/use-cases/get-team-overview.use-case'
 import {
@@ -45,11 +46,13 @@ export const teamContainer = {
     invitationRepository,
     passwordHasher,
     mailer,
+    failureReporter,
   ),
   resendTeamInvitationUseCase: new ResendTeamInvitationUseCase(
     teamRepository,
     invitationRepository,
     mailer,
+    failureReporter,
   ),
   cancelTeamInvitationUseCase: new CancelTeamInvitationUseCase(
     teamRepository,

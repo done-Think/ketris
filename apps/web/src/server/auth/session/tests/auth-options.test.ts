@@ -11,6 +11,7 @@ const refreshExecuteMock = vi.fn()
 const platformRefreshExecuteMock = vi.fn()
 const findByIdMock = vi.fn()
 const verifyTokenMock = vi.fn()
+const reportMock = vi.fn()
 
 vi.mock('@server/auth/container', () => ({
   authContainer: {
@@ -20,6 +21,10 @@ vi.mock('@server/auth/container', () => ({
     validateSessionTokensUseCase: { execute: verifyTokenMock },
     refreshAccessTokenUseCase: { execute: refreshExecuteMock },
   },
+}))
+
+vi.mock('@server/shared/observability/sentry-failure-reporter', () => ({
+  failureReporter: { report: reportMock },
 }))
 
 vi.mock('@server/platform/container', () => ({
@@ -326,6 +331,49 @@ describe('authOptions — callbacks.jwt', () => {
   it('preserves private session tokens and marks a database outage without throwing', async () => {
     findByIdMock.mockRejectedValueOnce(new Error('database unavailable'))
     expect(await run()).toMatchObject({ ...currentToken, authUnavailable: true })
+  })
+
+  it('reports a non-authentication failure that makes authentication unavailable, with its cause', async () => {
+    const outage = Object.assign(new Error('connect ECONNREFUSED 10.0.0.1:5432'), {
+      code: 'ECONNREFUSED',
+    })
+    findByIdMock.mockRejectedValueOnce(outage)
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    await run()
+
+    expect(reportMock).toHaveBeenCalledWith({
+      module: 'auth',
+      operation: 'session_validation',
+      error: outage,
+    })
+    expect(log).toHaveBeenCalledWith('[auth] Session validation unavailable.', {
+      name: 'Error',
+      code: 'ECONNREFUSED',
+    })
+    expect(JSON.stringify(log.mock.calls)).not.toContain('10.0.0.1')
+  })
+
+  it('does not report expected authentication failures such as a revoked session', async () => {
+    findByIdMock.mockResolvedValueOnce({ ...currentUser, sessionVersion: 3 })
+    await run()
+    findByIdMock.mockRejectedValueOnce(new UnauthorizedError())
+    await run()
+    expect(reportMock).not.toHaveBeenCalled()
+  })
+
+  it('reports a non-authentication failure while rotating tokens but keeps the session', async () => {
+    const outage = new Error('database unavailable')
+    refreshExecuteMock.mockRejectedValueOnce(outage)
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    await run(currentToken, { trigger: 'update', session: { refresh: true } })
+
+    expect(reportMock).toHaveBeenCalledWith({
+      module: 'auth',
+      operation: 'session_refresh',
+      error: outage,
+    })
   })
 
   it('recovers from a temporary database outage only after checking the current account again', async () => {

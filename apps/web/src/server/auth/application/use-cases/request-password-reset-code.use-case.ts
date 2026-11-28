@@ -1,4 +1,6 @@
 import type { Mailer } from '@server/shared/email/mailer.port'
+import type { FailureReporter } from '@server/shared/observability/failure-reporter.port'
+import { describeFailure } from '@server/shared/observability/describe-failure'
 import { normalizeEmail } from '@server/shared/normalize-email'
 
 import type { RequestPasswordResetCodeInput } from '../../types/use-case-inputs'
@@ -16,6 +18,7 @@ export class RequestPasswordResetCodeUseCase {
     private readonly users: UserRepository,
     private readonly codes: EmailOwnershipCodeRepository,
     private readonly mailer: Mailer,
+    private readonly failures: FailureReporter,
   ) {}
 
   async execute(input: RequestPasswordResetCodeInput): Promise<void> {
@@ -31,8 +34,9 @@ export class RequestPasswordResetCodeUseCase {
     if (!stored) return
     try {
       await this.mailer.send({ to: email, ...(await buildPasswordResetEmail(code, input.locale)) })
-    } catch {
-      console.error('[auth] Password recovery email delivery failed.')
+    } catch (error) {
+      console.error('[auth] Password recovery email delivery failed.', describeFailure(error))
+      this.failures.report({ module: 'auth', operation: 'password_reset_email', error })
     }
   }
 }

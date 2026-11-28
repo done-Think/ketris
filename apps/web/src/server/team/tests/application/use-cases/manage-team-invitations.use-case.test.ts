@@ -31,6 +31,7 @@ const stored: StoredTeamInvitation = {
 }
 const hasher = { hash: vi.fn(async (value: string) => `hash:${value}`), compare: vi.fn() }
 const mailer = { send: vi.fn() }
+const reporter = { report: vi.fn() }
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -48,6 +49,7 @@ describe('InviteBrokerUseCase', () => {
       invitations,
       hasher,
       mailer,
+      reporter,
       () => now,
     ).execute({
       ...owner,
@@ -84,6 +86,7 @@ describe('InviteBrokerUseCase', () => {
       invitations,
       hasher,
       mailer,
+      reporter,
     ).execute({
       ...owner,
       name: 'Bruna',
@@ -94,11 +97,55 @@ describe('InviteBrokerUseCase', () => {
     expect(result.emailDelivered).toBe(false)
   })
 
+  it('reports the cause of an invitation email failure without the recipient', async () => {
+    const invitations = invitationRepository({ create: vi.fn().mockResolvedValue(stored) })
+    const failure = Object.assign(new Error('rejected for bruna@example.test'), {
+      name: 'MessageRejected',
+      code: 'MessageRejected',
+    })
+    mailer.send.mockRejectedValue(failure)
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    await new InviteBrokerUseCase(
+      teamRepository([staff({ id: 'owner-1', role: 'OWNER' })]),
+      invitations,
+      hasher,
+      mailer,
+      reporter,
+    ).execute({ ...owner, name: 'Bruna', email: 'bruna@example.test', locale: 'pt-BR' })
+
+    expect(reporter.report).toHaveBeenCalledWith({
+      module: 'team',
+      operation: 'invitation_email',
+      error: failure,
+    })
+    expect(log).toHaveBeenCalledWith('[team] Invitation email delivery failed.', {
+      name: 'MessageRejected',
+      code: 'MessageRejected',
+    })
+    expect(JSON.stringify(log.mock.calls)).not.toContain('bruna@example.test')
+  })
+
+  it('does not report when the invitation email is delivered', async () => {
+    const invitations = invitationRepository({ create: vi.fn().mockResolvedValue(stored) })
+    mailer.send.mockResolvedValue(undefined)
+
+    await new InviteBrokerUseCase(
+      teamRepository([staff({ id: 'owner-1', role: 'OWNER' })]),
+      invitations,
+      hasher,
+      mailer,
+      reporter,
+    ).execute({ ...owner, name: 'Bruna', email: 'bruna@example.test', locale: 'pt-BR' })
+
+    expect(reporter.report).not.toHaveBeenCalled()
+  })
+
   it('recusa e-mail já usado na imobiliária', async () => {
     const invitations = invitationRepository({ isEmailInUse: vi.fn().mockResolvedValue(true) })
 
     await expect(
-      new InviteBrokerUseCase(teamRepository(), invitations, hasher, mailer).execute({
+      new InviteBrokerUseCase(teamRepository(), invitations, hasher, mailer, reporter).execute({
         ...owner,
         name: 'Bruna',
         email: 'bruna@example.test',
@@ -116,7 +163,7 @@ describe('InviteBrokerUseCase', () => {
       const invitations = invitationRepository()
 
       await expect(
-        new InviteBrokerUseCase(team, invitations, hasher, mailer).execute({
+        new InviteBrokerUseCase(team, invitations, hasher, mailer, reporter).execute({
           ...owner,
           name: 'Bruna',
           email: 'bruna@example.test',
@@ -140,6 +187,7 @@ describe('reenvio e cancelamento', () => {
       teamRepository([staff({ id: 'owner-1', role: 'OWNER' })]),
       invitations,
       mailer,
+      reporter,
       () => now,
     ).execute({ ...owner, brokerId: 'agent-9', locale: 'en-US' })
 
