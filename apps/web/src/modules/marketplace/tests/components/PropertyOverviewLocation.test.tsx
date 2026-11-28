@@ -8,6 +8,9 @@ import { mapDetailToMarketplacePropertyDetail } from '../../utils/property-detai
 import type { PublicPropertyDetail } from '../../types/public-property'
 import type { SearchResultProperty } from '../../types/search'
 
+vi.mock('../../components/favorites/FavoriteButton', () => ({
+  FavoriteButton: () => <button type="button">Favoritar</button>,
+}))
 vi.mock('../../components/PropertyDetailMap', () => ({
   PropertyDetailMap: ({ latitude, longitude }: { latitude: number; longitude: number }) => (
     <div data-testid="property-map">
