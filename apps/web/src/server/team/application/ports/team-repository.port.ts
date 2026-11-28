@@ -6,6 +6,7 @@ import type {
   TeamMetricRows,
   TeamStaffUser,
   TeamTransferCommand,
+  TeamShareCommand,
 } from '../../types/team-repository'
 
 export interface TeamRepository {
@@ -14,6 +15,7 @@ export interface TeamRepository {
   loadMetrics(tenantId: string, memberIds: string[], period: TeamPeriod): Promise<TeamMetricRows>
   findStaffUser(tenantId: string, userId: string): Promise<TeamStaffUser | null>
   transfer(command: TeamTransferCommand): Promise<TeamTransferResult>
+  sharePortfolio(command: TeamShareCommand): Promise<TeamTransferResult>
   deactivateWithTransfer(command: TeamTransferCommand): Promise<TeamTransferResult>
   activate(tenantId: string, userId: string, actorId: string): Promise<boolean>
   setGoal(

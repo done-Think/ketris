@@ -1,3 +1,5 @@
+import type { SortOption } from '../types/search'
+
 export const priceFilterOptions = [
   { label: 'price', max: null },
   { label: 'upTo6000', max: 6000 },
@@ -17,3 +19,9 @@ export const areaFilterOptions = [
 ] as const
 
 export const searchResultsPageSize = 10
+
+export const searchSortOptions = [
+  'relevancia',
+  'menor-preco',
+  'maior-preco',
+] as const satisfies readonly SortOption[]

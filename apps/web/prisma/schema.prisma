@@ -57,6 +57,7 @@ model Tenant {
   teamInvitations       TeamInvitation[]
   brokerGoals           BrokerGoal[]
   portfolioTransfers    PortfolioTransfer[]
+  favoriteProperties    FavoriteProperty[]
   instagramConnections  InstagramConnection[]
   instagramPublications InstagramPublication[]
 
@@ -178,27 +179,29 @@ model UserAuditEvent {
 }
 
 model User {
-  id                   String    @id @default(cuid())
-  tenantId             String
-  name                 String
-  email                String
-  phone                String?
-  creci                String?
+  leadBrokerAccess        LeadBrokerAccess[]
+  opportunityBrokerAccess OpportunityBrokerAccess[]
+  id                      String                    @id @default(cuid())
+  tenantId                String
+  name                    String
+  email                   String
+  phone                   String?
+  creci                   String?
   // Normalized copies used only to enforce uniqueness inside a tenant (digits, upper-case).
-  phoneKey             String?
-  creciKey             String?
-  cpf                  String?
-  cnpj                 String?
-  emailVerifiedAt      DateTime? @default(now())
-  sessionVersion       Int       @default(0)
-  termsAcceptedAt      DateTime?
-  passwordHash         String
-  avatarUrl            String?
-  role                 UserRole  @default(AGENT)
-  active               Boolean   @default(true)
-  membershipApprovedAt DateTime? @default(now())
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  phoneKey                String?
+  creciKey                String?
+  cpf                     String?
+  cnpj                    String?
+  emailVerifiedAt         DateTime?                 @default(now())
+  sessionVersion          Int                       @default(0)
+  termsAcceptedAt         DateTime?
+  passwordHash            String
+  avatarUrl               String?
+  role                    UserRole                  @default(AGENT)
+  active                  Boolean                   @default(true)
+  membershipApprovedAt    DateTime?                 @default(now())
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
 
   tenant                    Tenant                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsibleProperties     Property[]                    @relation("PropertyResponsible")
@@ -253,6 +256,7 @@ model User {
   updatedProperties         Property[]                    @relation("PropertyUpdatedBy")
   propertyBrokerAccess      PropertyBrokerAccess[]
   propertyAuditEvents       PropertyAuditEvent[]
+  favoriteProperties        FavoriteProperty[]
   updatedLeads              Lead[]                        @relation("LeadUpdatedBy")
   updatedBrokerProfiles     BrokerPublicProfile[]         @relation("BrokerProfileUpdatedBy")
   updatedAgencyProfiles     AgencyPublicProfile[]         @relation("AgencyProfileUpdatedBy")
@@ -496,6 +500,7 @@ model Property {
   maintenanceTickets MaintenanceTicket[]
   brokerAccess       PropertyBrokerAccess[]
   faceCheckSessions  FaceCheckSession[]
+  favorites          FavoriteProperty[]
 
   @@unique([id, tenantId])
   @@index([tenantId])
@@ -692,6 +697,24 @@ model AgencyProfileHighlight {
   @@map("agency_profile_highlights")
 }
 
+model FavoriteProperty {
+  id         String   @id @default(cuid())
+  tenantId   String
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([tenantId, userId, createdAt])
+  @@index([propertyId])
+  @@map("favorite_properties")
+}
+
 // ---------------------------------------------------------------------------
 // Oportunidade / Proposta (módulo `crm`)
 // ---------------------------------------------------------------------------
@@ -712,28 +735,29 @@ enum OpportunityStatus {
 }
 
 model Opportunity {
-  id                 String            @id @default(cuid())
+  brokerAccess       OpportunityBrokerAccess[]
+  id                 String                    @id @default(cuid())
   tenantId           String
   propertyId         String
   responsibleId      String
   interestedName     String
   interestedEmail    String
   interestedPhone    String?
-  proposedValue      Decimal           @db.Decimal(12, 2)
+  proposedValue      Decimal                   @db.Decimal(12, 2)
   contractTermMonths Int?
   desiredStart       DateTime?
-  contractGuarantee  ContractGuarantee @default(NONE)
-  specialConditions  String[]          @default([])
+  contractGuarantee  ContractGuarantee         @default(NONE)
+  specialConditions  String[]                  @default([])
   notes              String?
-  status             OpportunityStatus @default(DRAFT)
+  status             OpportunityStatus         @default(DRAFT)
   archivedAt         DateTime?
   archivedById       String?
   updatedById        String?
   // Vínculo opcional: a oportunidade nasce do marketplace sem conta de usuário (data-model.md),
   // e só é associada a um Contato quando o corretor identifica o interessado na base.
   contactId          String?
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
 
   tenant      Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   // Restrict (não Cascade): excluir um imóvel nunca pode apagar oportunidades de tabela junto —
@@ -747,6 +771,7 @@ model Opportunity {
   updatedBy   User?                 @relation("OpportunityUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   archivedBy  User?                 @relation("OpportunityArchivedBy", fields: [archivedById], references: [id], onDelete: SetNull)
 
+  @@unique([id, tenantId])
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, archivedAt])
@@ -777,6 +802,7 @@ enum LeadStage {
 // Contato interessado, com vínculo opcional ao imóvel de interesse. Registros legados podem não ter imóvel.
 // A conversão manual preserva o Lead de origem. Contatos do marketplace já nascem vinculados à Oportunidade.
 model Lead {
+  brokerAccess   LeadBrokerAccess[]
   contactId      String?
   contact        Contact?         @relation(fields: [contactId, tenantId], references: [id, tenantId], onDelete: NoAction)
   interactions   CrmInteraction[]
@@ -1738,6 +1764,32 @@ model FaceCheckRateLimit {
 
   @@index([expiresAt])
   @@map("face_check_rate_limits")
+}
+
+model LeadBrokerAccess {
+  tenantId  String
+  leadId    String
+  userId    String
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  user      User     @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@id([leadId, userId])
+  @@index([tenantId, userId])
+  @@map("lead_broker_access")
+}
+
+model OpportunityBrokerAccess {
+  tenantId      String
+  opportunityId String
+  userId        String
+  createdAt     DateTime    @default(now())
+  opportunity   Opportunity @relation(fields: [opportunityId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  user          User        @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@id([opportunityId, userId])
+  @@index([tenantId, userId])
+  @@map("opportunity_broker_access")
 }
 
 enum CrmInteractionChannel {

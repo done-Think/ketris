@@ -85,4 +85,18 @@ describe('MaintenanceWorkflowControls', () => {
     expect(screen.queryByRole('button', { name: 'Aprovar troca' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Rejeitar troca' })).not.toBeInTheDocument()
   })
+
+  it('shows the provider phone with the Brazilian mask', () => {
+    mockSession('AGENT')
+    render(
+      <MaintenanceWorkflowControls
+        ticket={{
+          ...ticket,
+          provider: { id: 'provider-1', name: 'Hidráulica Rápida', phone: '11933335555' },
+        }}
+      />,
+    )
+
+    expect(screen.getByText('(11) 93333-5555')).toBeVisible()
+  })
 })

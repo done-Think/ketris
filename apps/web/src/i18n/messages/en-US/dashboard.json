@@ -577,7 +577,9 @@
       "deactivate": "Deactivate broker",
       "activate": "Reactivate broker",
       "resendInvitation": "Resend invitation",
-      "cancelInvitation": "Cancel invitation"
+      "cancelInvitation": "Cancel invitation",
+      "sharePortfolio": "Share portfolio",
+      "revokePortfolio": "Remove portfolio access"
     },
     "dialogs": {
       "performanceTitle": "Performance — {name}",
@@ -640,7 +642,18 @@
       "invitationCancelError": "We couldn't cancel the invitation",
       "invitationHasPortfolio": "This invitee already has properties, leads or events. Transfer them before canceling.",
       "goalSaveError": "We couldn't save the goal",
-      "selfDestination": "{name} (you)"
+      "selfDestination": "{name} (you)",
+      "share": "Share portfolio",
+      "revoke": "Remove access",
+      "shareDestination": "Brokers with access",
+      "shared": "Access granted: {properties} properties, {leads} leads, {opportunities} opportunities and {events} events",
+      "revoked": "Access removed: {properties} properties, {leads} leads, {opportunities} opportunities and {events} events",
+      "shareError": "Unable to update access. Please try again.",
+      "shareItemsError": "Select at least one category to share or remove access",
+      "shareHint": "Shares existing records without copies. Participants can edit leads and opportunities; proposals from shared leads retain access. New inquiries remain individual. Property access requires selecting Properties. Events are shared for reading only. Archiving or deleting an opportunity affects all participants.",
+      "revokeHint": "Removes selected brokers’ access to current portfolio items without deleting records or changing the primary responsible broker.",
+      "shareSource": "Source portfolio",
+      "shareItems": "Access categories"
     },
     "actions": {
       "message": "Send a WhatsApp message",

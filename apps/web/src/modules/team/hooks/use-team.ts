@@ -7,6 +7,7 @@ import type { AppLocale } from '@/i18n/types/locale.types'
 import { teamQueryKeys } from '../config/team-query-keys'
 import { teamService } from '../services/team-service'
 import type { TransferPortfolioPayload } from '../types/team'
+import type { SharePortfolioPayload } from '../types/team'
 
 function useTeamScope() {
   const { data: session } = useSession()
@@ -59,6 +60,12 @@ export function useTransferPortfolio() {
   return useTeamMutation(
     ({ memberId, ...payload }: TransferPortfolioPayload & { memberId: string }) =>
       teamService.transfer(memberId, payload),
+  )
+}
+
+export function useSharePortfolio() {
+  return useTeamMutation(({ memberId, ...payload }: SharePortfolioPayload & { memberId: string }) =>
+    teamService.sharePortfolio(memberId, payload),
   )
 }
 

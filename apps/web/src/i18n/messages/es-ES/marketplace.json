@@ -30,7 +30,8 @@
       "settings": "Configuración",
       "signOut": "Salir",
       "support": "Soporte",
-      "switchMode": "Cambiar modalidad"
+      "switchMode": "Cambiar modalidad",
+      "favorites": "Mis favoritos"
     }
   },
   "navigation": {
@@ -71,6 +72,9 @@
     "privacy": {
       "metadataTitle": "Ketris | Política de Privacidad",
       "metadataDescription": "Cómo Ketris trata los datos de la integración con Instagram."
+    },
+    "favorites": {
+      "metadataTitle": "Mis favoritos"
     }
   },
   "home": {
@@ -198,7 +202,6 @@
     "mapUnavailable": "La ubicación en el mapa aún no está disponible para esta dirección.",
     "searchAddressOnMaps": "Buscar dirección en Google Maps",
     "mapApproximate": "Ubicación aproximada",
-    "favorite": "Favorito",
     "share": "Compartir",
     "linkCopied": "Enlace copiado.",
     "shareError": "No se pudo compartir. Copia la dirección desde el navegador.",
@@ -667,6 +670,53 @@
       "changes": {
         "title": "Cambios en esta política",
         "body": "Si esta política cambia, la fecha de actualización al inicio de esta página también cambia."
+      }
+    }
+  },
+  "favorites": {
+    "save": "Guardar",
+    "saved": "Guardado",
+    "addLabel": "Guardar en favoritos",
+    "removeLabel": "Quitar de favoritos",
+    "login": {
+      "title": "Inicia sesión para guardar este inmueble",
+      "description": "Tus favoritos quedan en tu cuenta y aparecen en el móvil y en el ordenador. Al iniciar sesión, el inmueble ya queda guardado.",
+      "signIn": "Iniciar sesión",
+      "signUp": "Crear cuenta",
+      "notNow": "Ahora no"
+    },
+    "errors": {
+      "generic": "No pudimos actualizar tus favoritos. Inténtalo de nuevo.",
+      "unavailable": "Este inmueble ya no está disponible.",
+      "limitReached": "Ya guardaste {limit} inmuebles. Quita algún favorito para guardar otro."
+    },
+    "removed": "Inmueble quitado de favoritos.",
+    "undo": "Deshacer",
+    "page": {
+      "title": "Mis favoritos",
+      "count": "{count, plural, =0 {Ningún inmueble guardado} one {# inmueble guardado} other {# inmuebles guardados}}",
+      "loadError": "No pudimos cargar tus favoritos.",
+      "retry": "Intentar de nuevo",
+      "purpose": {
+        "all": "Todos ({count})",
+        "rent": "Alquilar ({count})",
+        "buy": "Comprar ({count})"
+      },
+      "unavailable": {
+        "title": "Ya no están disponibles",
+        "note": "El anuncio fue retirado.",
+        "remove": "Quitar"
+      },
+      "guest": {
+        "title": "Inicia sesión para ver tus favoritos",
+        "description": "Los inmuebles que guardes quedan en tu cuenta y aparecen en el móvil y en el ordenador.",
+        "action": "Iniciar sesión"
+      },
+      "empty": {
+        "title": "Aún no guardaste ningún inmueble",
+        "description": "Toca el corazón de cualquier inmueble para guardarlo aquí y comparar con calma después.",
+        "rentAction": "Ver inmuebles en alquiler",
+        "buyAction": "Ver inmuebles en venta"
       }
     }
   }

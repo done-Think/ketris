@@ -1,6 +1,7 @@
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
 import { z } from 'zod'
 import { registerProfileAddressOpenApi } from './profile-address-openapi'
+import { registerFavoritePropertyOpenApi } from './favorite-property-openapi'
 
 import { errorResponseSchema } from '@server/shared/schemas/error-response.schema'
 
@@ -52,6 +53,7 @@ const brokerIdParamsSchema = z.object({
 
 export function registerMarketplaceOpenApi(registry: OpenAPIRegistry): void {
   registerProfileAddressOpenApi(registry)
+  registerFavoritePropertyOpenApi(registry)
   registry.registerPath({
     method: 'get',
     path: '/marketplace/stats',

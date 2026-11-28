@@ -30,7 +30,8 @@
       "settings": "Configurações",
       "signOut": "Sair",
       "support": "Suporte",
-      "switchMode": "Trocar modalidade"
+      "switchMode": "Trocar modalidade",
+      "favorites": "Meus favoritos"
     }
   },
   "navigation": {
@@ -71,6 +72,9 @@
     "privacy": {
       "metadataTitle": "Ketris | Política de Privacidade",
       "metadataDescription": "Como o Ketris trata os dados da integração com o Instagram."
+    },
+    "favorites": {
+      "metadataTitle": "Meus favoritos"
     }
   },
   "home": {
@@ -198,7 +202,6 @@
     "mapUnavailable": "Localização no mapa ainda não disponível para este endereço.",
     "searchAddressOnMaps": "Buscar endereço no Google Maps",
     "mapApproximate": "Localização aproximada",
-    "favorite": "Favoritar",
     "share": "Compartilhar",
     "linkCopied": "Link copiado.",
     "shareError": "Não foi possível compartilhar. Copie o endereço pelo navegador.",
@@ -667,6 +670,53 @@
       "changes": {
         "title": "Mudanças nesta política",
         "body": "Se esta política mudar, a data de atualização no topo desta página muda também."
+      }
+    }
+  },
+  "favorites": {
+    "save": "Favoritar",
+    "saved": "Favoritado",
+    "addLabel": "Salvar nos favoritos",
+    "removeLabel": "Remover dos favoritos",
+    "login": {
+      "title": "Entre para salvar este imóvel",
+      "description": "Seus favoritos ficam na sua conta e aparecem no celular e no computador. Depois de entrar, o imóvel já volta salvo.",
+      "signIn": "Entrar",
+      "signUp": "Criar conta",
+      "notNow": "Agora não"
+    },
+    "errors": {
+      "generic": "Não foi possível atualizar seus favoritos. Tente novamente.",
+      "unavailable": "Este imóvel não está mais disponível.",
+      "limitReached": "Você já salvou {limit} imóveis. Remova algum favorito para salvar outro."
+    },
+    "removed": "Imóvel removido dos favoritos.",
+    "undo": "Desfazer",
+    "page": {
+      "title": "Meus favoritos",
+      "count": "{count, plural, =0 {Nenhum imóvel salvo} one {# imóvel salvo} other {# imóveis salvos}}",
+      "loadError": "Não foi possível carregar seus favoritos.",
+      "retry": "Tentar novamente",
+      "purpose": {
+        "all": "Todos ({count})",
+        "rent": "Alugar ({count})",
+        "buy": "Comprar ({count})"
+      },
+      "unavailable": {
+        "title": "Não estão mais disponíveis",
+        "note": "O anúncio saiu do ar.",
+        "remove": "Remover"
+      },
+      "guest": {
+        "title": "Entre para ver seus favoritos",
+        "description": "Os imóveis que você salvar ficam na sua conta e aparecem no celular e no computador.",
+        "action": "Entrar"
+      },
+      "empty": {
+        "title": "Você ainda não salvou nenhum imóvel",
+        "description": "Toque no coração de qualquer imóvel para guardá-lo aqui e comparar com calma depois.",
+        "rentAction": "Ver imóveis para alugar",
+        "buyAction": "Ver imóveis para comprar"
       }
     }
   }

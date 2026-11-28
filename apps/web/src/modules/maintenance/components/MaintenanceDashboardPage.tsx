@@ -155,28 +155,6 @@ export function MaintenanceDashboardPage() {
       >
         {t('newTicket')}
       </DashboardHeaderActionButton>
-      {session?.role === 'OWNER' && (
-        <>
-          <Button startIcon={<LinkRoundedIcon />} onClick={() => openDialog({ kind: 'links' })}>
-            {t('links.title')}
-          </Button>
-          <Button onClick={() => openDialog({ kind: 'providers' })}>{t('providers.title')}</Button>
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={archived ? 'archived' : 'active'}
-            onChange={(_, value) => {
-              if (value) {
-                setArchived(value === 'archived')
-                setCurrentPage(1)
-              }
-            }}
-          >
-            <ToggleButton value="active">{t('activeTickets')}</ToggleButton>
-            <ToggleButton value="archived">{t('archivedTickets')}</ToggleButton>
-          </ToggleButtonGroup>
-        </>
-      )}
       <Box sx={maintenanceStyles.boxSx}>
         <DashboardNotificationsButton />
       </Box>
@@ -190,23 +168,65 @@ export function MaintenanceDashboardPage() {
           title={t('title')}
           subtitle={t(session?.role === 'RENTER' ? 'renter.subtitle' : 'subtitle')}
           actions={headerActions}
-          sx={maintenanceStyles.dashboardPageHeaderSx}
         />
-        <MaintenanceStatusFilters
-          activeFilter={activeFilter}
-          getFilterCount={getFilterCount}
-          onChange={handleActiveFilterChange}
-          isDesktop
-        />
-        <Box sx={maintenanceStyles.boxSx3}>
-          {metrics.map((metric) => (
-            <MetricCard
-              key={metric.label}
-              label={t(`metrics.${metric.label}`)}
-              value={metric.value}
-              tone={metric.label}
+        <Box sx={maintenanceStyles.toolbarSx}>
+          <Box
+            sx={[
+              maintenanceStyles.statusFiltersSx,
+              session?.role === 'OWNER' && maintenanceStyles.ownerStatusFiltersSx,
+            ]}
+          >
+            <MaintenanceStatusFilters
+              activeFilter={activeFilter}
+              getFilterCount={getFilterCount}
+              onChange={handleActiveFilterChange}
+              isDesktop
             />
-          ))}
+          </Box>
+          {session?.role === 'OWNER' && (
+            <Stack useFlexGap gap={1.2} sx={maintenanceStyles.secondaryActionsSx}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                useFlexGap
+                gap={1.2}
+                sx={maintenanceStyles.secondaryButtonsSx}
+              >
+                <Button
+                  startIcon={<LinkRoundedIcon />}
+                  onClick={() => openDialog({ kind: 'links' })}
+                >
+                  {t('links.title')}
+                </Button>
+                <Button onClick={() => openDialog({ kind: 'providers' })}>
+                  {t('providers.title')}
+                </Button>
+              </Stack>
+              <ToggleButtonGroup
+                size="small"
+                exclusive
+                value={archived ? 'archived' : 'active'}
+                onChange={(_, value) => {
+                  if (value) {
+                    setArchived(value === 'archived')
+                    setCurrentPage(1)
+                  }
+                }}
+              >
+                <ToggleButton value="active">{t('activeTickets')}</ToggleButton>
+                <ToggleButton value="archived">{t('archivedTickets')}</ToggleButton>
+              </ToggleButtonGroup>
+            </Stack>
+          )}
+          <Box sx={maintenanceStyles.boxSx3}>
+            {metrics.map((metric) => (
+              <MetricCard
+                key={metric.label}
+                label={t(`metrics.${metric.label}`)}
+                value={metric.value}
+                tone={metric.label}
+              />
+            ))}
+          </Box>
         </Box>
         {contractFilter && (
           <Alert

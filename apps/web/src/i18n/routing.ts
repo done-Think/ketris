@@ -90,6 +90,11 @@ export const routing = defineRouting({
       'en-US': '/properties/[id]',
       'es-ES': '/inmuebles/[id]',
     },
+    '/favorites': {
+      'pt-BR': '/favoritos',
+      'en-US': '/favorites',
+      'es-ES': '/favoritos',
+    },
     '/brokers': {
       'pt-BR': '/corretores',
       'en-US': '/brokers',
