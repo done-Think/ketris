@@ -1,11 +1,17 @@
 import type { Session } from 'next-auth'
 import { getSession, signOut } from 'next-auth/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { clearClientSession } from '../clear-client-session'
+import { localOnlyLogoutEvent } from '../session-lifecycle'
+import { reportLogoutRevocationFailure } from '@shared/lib/telemetry/session-telemetry'
 import { httpClient } from '@shared/lib/api/http-client'
 
 vi.mock('@shared/lib/api/http-client', () => ({ httpClient: { post: vi.fn() } }))
+
+vi.mock('@shared/lib/telemetry/session-telemetry', () => ({
+  reportLogoutRevocationFailure: vi.fn(),
+}))
 
 vi.mock('next-auth/react', () => ({
   getSession: vi.fn(),
@@ -96,5 +102,50 @@ describe('clearClientSession', () => {
     expect(signOut).toHaveBeenCalledWith({ redirect: false })
 
     localStorageSpy.mockRestore()
+  })
+
+  describe('server-side revocation failure', () => {
+    const noticeListener = vi.fn()
+
+    beforeEach(() => {
+      noticeListener.mockReset()
+      window.addEventListener(localOnlyLogoutEvent, noticeListener)
+      vi.mocked(getSession).mockResolvedValue(mockSession({ scope: 'tenant' }))
+    })
+
+    afterEach(() => window.removeEventListener(localOnlyLogoutEvent, noticeListener))
+
+    it.each([
+      ['503', { isAxiosError: true, response: { status: 503 } }],
+      ['429', { isAxiosError: true, response: { status: 429 } }],
+      ['network failure', new Error('network down')],
+    ])(
+      'reports the failure and warns the user on %s while still signing out',
+      async (_name, error) => {
+        vi.mocked(httpClient.post).mockRejectedValueOnce(error)
+
+        await expect(clearClientSession()).resolves.toBeUndefined()
+
+        expect(reportLogoutRevocationFailure).toHaveBeenCalledWith(error)
+        expect(noticeListener).toHaveBeenCalledTimes(1)
+        expect(signOut).toHaveBeenCalledWith({ redirect: false })
+      },
+    )
+
+    it('does not warn nor report when the revocation succeeds', async () => {
+      await clearClientSession()
+
+      expect(reportLogoutRevocationFailure).not.toHaveBeenCalled()
+      expect(noticeListener).not.toHaveBeenCalled()
+      expect(signOut).toHaveBeenCalledWith({ redirect: false })
+    })
+
+    it('does not warn when there was no server session to revoke', async () => {
+      vi.mocked(getSession).mockResolvedValue(null)
+
+      await clearClientSession()
+
+      expect(noticeListener).not.toHaveBeenCalled()
+    })
   })
 })

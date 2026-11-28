@@ -2,7 +2,8 @@
 
 import { getSession, signOut } from 'next-auth/react'
 import { httpClient } from '@shared/lib/api/http-client'
-import { notifySessionEndRequested } from './session-lifecycle'
+import { reportLogoutRevocationFailure } from '@shared/lib/telemetry/session-telemetry'
+import { notifyLocalOnlyLogout, notifySessionEndRequested } from './session-lifecycle'
 
 export async function clearClientSession(): Promise<void> {
   notifySessionEndRequested()
@@ -12,7 +13,10 @@ export async function clearClientSession(): Promise<void> {
     if (session?.scope) {
       await httpClient.post('/session/logout', undefined, { skipUnauthorizedHandling: true })
     }
-  } catch {}
+  } catch (error) {
+    reportLogoutRevocationFailure(error)
+    notifyLocalOnlyLogout()
+  }
 
   try {
     window.localStorage.clear()

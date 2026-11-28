@@ -176,6 +176,9 @@
     "retry": "Tentar novamente",
     "retrying": "Verificando sessão…"
   },
+  "sessionNotice": {
+    "endedOnlyOnThisDevice": "Sessão encerrada apenas neste dispositivo. Não foi possível revogar o acesso no servidor; se este computador for compartilhado, altere sua senha."
+  },
   "perMonth": "/mês",
   "propertyNegotiation": {
     "title": "Condições de negociação",
