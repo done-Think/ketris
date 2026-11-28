@@ -28,6 +28,7 @@ export function assertCanManageAgendaEvent(
   event: AgendaEvent,
 ): void {
   if (isAgencyManager(role)) return
+  if (isReadOnlyAgendaParticipant(role, userId, event)) throw new ForbiddenError()
   if (event.internal || event.audience === 'ALL_AGENTS') throw new ForbiddenError()
   if (
     (isPropertyOwner(role) || role === 'RENTER') &&
@@ -39,6 +40,18 @@ export function assertCanManageAgendaEvent(
   if (event.audience === 'ASSIGNED_AGENT' && (role !== 'AGENT' || event.responsibleId !== userId)) {
     throw new ForbiddenError()
   }
+}
+
+export function isReadOnlyAgendaParticipant(
+  role: UserRole,
+  userId: string | undefined,
+  event: AgendaEvent,
+): boolean {
+  return (
+    role === 'AGENT' &&
+    event.responsibleId !== userId &&
+    event.participants?.some((participant) => participant.id === userId) === true
+  )
 }
 
 export function assertCanChooseAgendaAudience(

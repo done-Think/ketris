@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { UploadAvatarUseCase } from './application/use-cases/upload-avatar.use-case'
 import { S3AvatarStorage } from './infrastructure/s3-avatar-storage'
 import { ApproveUserMembershipUseCase } from './application/use-cases/approve-user-membership.use-case'
@@ -21,11 +23,13 @@ import { PrismaPasswordResetAccountRepository } from './infrastructure/prisma-pa
 import { PrismaRefreshTokenRepository } from './infrastructure/prisma-refresh-token.repository'
 import { PrismaUserRepository } from './infrastructure/prisma-user.repository'
 import { SesMailer } from '@server/shared/email/ses-mailer'
+import { failureReporter } from '@server/shared/observability/sentry-failure-reporter'
 
 import { PrismaUserPortfolioReader } from './infrastructure/prisma-user-portfolio.reader'
 import { ValidateAccessTokenUseCase } from './application/use-cases/validate-access-token.use-case'
 import { ValidateSessionTokensUseCase } from './application/use-cases/validate-session-tokens.use-case'
 import { ValidatedTokenService } from './infrastructure/validated-token.service'
+import { RateLimitCodeAttemptLimiter } from './infrastructure/rate-limit-code-attempt-limiter'
 import { PrismaEmailVerificationRepository } from './infrastructure/prisma-email-verification.repository'
 import { RequestSignupVerificationUseCase } from './application/use-cases/request-signup-verification.use-case'
 import { ConfirmSignupVerificationUseCase } from './application/use-cases/confirm-signup-verification.use-case'
@@ -42,6 +46,7 @@ const refreshTokenRepository = new PrismaRefreshTokenRepository()
 const emailOwnershipCodeRepository = new PrismaEmailOwnershipCodeRepository()
 const passwordResetAccountRepository = new PrismaPasswordResetAccountRepository()
 const passwordResetTokenService = new JosePasswordResetTokenService()
+const codeAttemptLimiter = new RateLimitCodeAttemptLimiter()
 const mailer = new SesMailer()
 const emailVerificationRepository = new PrismaEmailVerificationRepository()
 
@@ -49,6 +54,7 @@ export const authContainer = {
   confirmPublicEmailChangeUseCase: new ConfirmPublicEmailChangeUseCase(
     userRepository,
     emailVerificationRepository,
+    codeAttemptLimiter,
   ),
   requestEmailChangeUseCase: new RequestEmailChangeUseCase(
     userRepository,
@@ -58,6 +64,7 @@ export const authContainer = {
   confirmEmailChangeUseCase: new ConfirmEmailChangeUseCase(
     userRepository,
     emailVerificationRepository,
+    codeAttemptLimiter,
   ),
   requestSignupVerificationUseCase: new RequestSignupVerificationUseCase(
     userRepository,
@@ -69,6 +76,7 @@ export const authContainer = {
     emailVerificationRepository,
     tokenService,
     refreshTokenRepository,
+    codeAttemptLimiter,
   ),
   uploadAvatarUseCase: new UploadAvatarUseCase(userRepository, new S3AvatarStorage()),
   tokenService,
@@ -101,11 +109,13 @@ export const authContainer = {
     userRepository,
     emailOwnershipCodeRepository,
     mailer,
+    failureReporter,
   ),
   verifyPasswordResetCodeUseCase: new VerifyPasswordResetCodeUseCase(
     userRepository,
     emailOwnershipCodeRepository,
     passwordResetTokenService,
+    codeAttemptLimiter,
   ),
   resetPasswordUseCase: new ResetPasswordUseCase(
     userRepository,

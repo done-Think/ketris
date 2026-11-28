@@ -2,17 +2,13 @@
 
 import { Avatar, Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
-import BathtubOutlinedIcon from '@mui/icons-material/BathtubOutlined'
-import BedOutlinedIcon from '@mui/icons-material/BedOutlined'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined'
-import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
 import { PillBadge } from '@shared/components/ui'
+import { propertyFeatureIcons } from '@shared/config/property-feature-icons'
 import { componentText } from '@shared/theme/tokens'
-import type { PropertyFeatureKey } from '@shared/types'
 import type { SearchPropertyCardProps } from '../types/search'
 import { getPropertyFeatureLabel } from '../utils/property-feature-label'
 import { buildPropertyDetailHref } from '../utils/property-links'
@@ -22,13 +18,6 @@ import {
   getBoxStyles,
   getCardContentStyles,
 } from '../styles/search-property-card.styles'
-
-const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
-  bedrooms: BedOutlinedIcon,
-  bathrooms: BathtubOutlinedIcon,
-  parking: LocalParkingOutlinedIcon,
-  area: SquareFootOutlinedIcon,
-}
 
 export function SearchPropertyCard({
   property,
@@ -66,7 +55,7 @@ export function SearchPropertyCard({
 
         <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap sx={styles.stack}>
           {property.details.map((detail) => {
-            const Icon = detailIcons[detail.key] ?? ApartmentOutlinedIcon
+            const Icon = propertyFeatureIcons[detail.key] ?? ApartmentOutlinedIcon
             return (
               <Stack
                 key={`${property.title}-${detail.key}`}

@@ -257,7 +257,8 @@ describe('MarketplaceHeader', () => {
     await user.click(screen.getByRole('button', { name: 'Abrir perfil' }))
     await user.click(screen.getByRole('button', { name: /sair/i }))
 
-    expect(clearClientSession).toHaveBeenCalledOnce()
+    expect(clearClientSession).toHaveBeenCalledTimes(1)
+    expect(clearClientSession).toHaveBeenCalledWith({ reason: 'manual' })
     expect(routerMock.replace).toHaveBeenCalledWith('/')
     expect(routerMock.refresh).toHaveBeenCalledOnce()
   })

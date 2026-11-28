@@ -2,6 +2,7 @@ import type { RefreshAccessTokenOutput } from '../../types/use-case-outputs'
 import type { RefreshAccessTokenInput } from '../../types/use-case-inputs'
 import { InvalidRefreshTokenError } from '../../domain/errors'
 import {
+  REFRESH_TOKEN_ROTATION_GRACE_SECONDS,
   generateRefreshToken,
   hashRefreshToken,
   refreshTokenExpiryDate,
@@ -21,7 +22,12 @@ export class RefreshAccessTokenUseCase {
 
   async execute(input: RefreshAccessTokenInput): Promise<RefreshAccessTokenOutput> {
     const tokenHash = hashRefreshToken(input.refreshToken)
-    const stored = await this.refreshTokenRepository.findValidByTokenHash(tokenHash)
+    const stored =
+      (await this.refreshTokenRepository.findValidByTokenHash(tokenHash)) ??
+      (await this.refreshTokenRepository.findRecentlyRotatedByTokenHash(
+        tokenHash,
+        REFRESH_TOKEN_ROTATION_GRACE_SECONDS,
+      ))
 
     if (!stored) {
       throw new InvalidRefreshTokenError()

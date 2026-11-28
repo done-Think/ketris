@@ -30,4 +30,7 @@ export const marketplaceQueryKeys = {
     [...marketplaceQueryKeys.ownAddress(actorKey, kind), 'availability', handle] as const,
   tenantAgents: (actorKey: string) =>
     [...marketplaceQueryKeys.own(actorKey), 'tenant-agents'] as const,
+  profileMediaUpload: () => [...marketplaceQueryKeys.all, 'profile-media-upload'] as const,
+  logoPalette: (logoUrl: string) => [...marketplaceQueryKeys.all, 'logo-palette', logoUrl] as const,
+  favorites: (actorKey: string) => [...marketplaceQueryKeys.own(actorKey), 'favorites'] as const,
 }

@@ -1,9 +1,10 @@
 'use client'
 
-import { Autocomplete, Box, Stack, TextField } from '@mui/material'
+import { Autocomplete, Box, TextField } from '@mui/material'
 import { useLocale, useTranslations } from 'next-intl'
-import { useMemo } from 'react'
-import { Controller } from 'react-hook-form'
+import { useSnackbar } from 'notistack'
+import { useMemo, useState } from 'react'
+import { Controller, useWatch } from 'react-hook-form'
 
 import type { AppLocale } from '@/i18n/types/locale.types'
 import { RhfMaskedTextField, RhfTextField } from '@shared/components/form'
@@ -19,18 +20,26 @@ import { useOwnProfileAddress } from '../hooks/use-profile-address'
 import { useTenantAgents } from '../hooks/use-tenant-agents'
 import { createAgencyPublicProfileEditorSchema } from '../schemas/agency-public-profile-editor-schema'
 import { styles, teamPickerSlotProps } from '../styles/public-profile-editor.styles'
-import type { AgencyProfileEditorProps } from '../types/profile-editor'
+import type { AgencyBrandFormValues } from '../types/agency-brand-editor'
+import type {
+  AgencyProfileEditorProps,
+  AgencyPublicProfileEditorFormValues,
+} from '../types/profile-editor'
 import {
+  agencyBrandFields,
+  getInitialAgencyBrandDialogMode,
+  pickBrandValues,
   toDraft,
   toFormValues,
   toPreviewProfile,
 } from '../utils/agency-public-profile-editor-adapter'
+import { AgencyBrandDialog } from './agency-brand-editor/AgencyBrandDialog'
+import { AgencyBrandSummaryCard } from './agency-brand-editor/AgencyBrandSummaryCard'
 import { AgencyPublicProfilePage } from './AgencyPublicProfilePage'
 import { PublicProfileEditorLoader } from './public-profile-editor/PublicProfileEditorLoader'
 import { PublicProfileEditorPanel } from './public-profile-editor/PublicProfileEditorPanel'
 import { PublicProfileAddressPanel } from './public-profile-editor/PublicProfileAddressPanel'
 import { PublicProfileEditorShell } from './public-profile-editor/PublicProfileEditorShell'
-import { SingleImageUploadField } from './public-profile-editor/SingleImageUploadField'
 
 const formId = 'agency-public-profile-editor-form'
 const phoneMask = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
@@ -88,8 +97,22 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
       unpublishSuccess: t('unpublishSuccess'),
     },
   })
-  const { control, formState } = editor.form
+  const { control, formState, setValue, clearErrors } = editor.form
   const disabled = !editor.isEditing
+  const { enqueueSnackbar } = useSnackbar()
+  const [brandDialogOpen, setBrandDialogOpen] = useState(false)
+  const formValues = useWatch({ control }) as AgencyPublicProfileEditorFormValues
+  const brandValues = pickBrandValues(formValues)
+
+  const buildPreview = (brand: AgencyBrandFormValues) =>
+    toPreviewProfile({ ...formValues, ...brand }, profile, locale, tFeatures, t('previewName'))
+
+  const applyBrand = (brand: AgencyBrandFormValues) => {
+    for (const field of agencyBrandFields) setValue(field, brand[field], { shouldDirty: true })
+    clearErrors(agencyBrandFields.filter((field) => brand[field]))
+    setBrandDialogOpen(false)
+    enqueueSnackbar(t('brand.applied'), { variant: 'info' })
+  }
 
   return (
     <PublicProfileEditorShell
@@ -210,53 +233,13 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
           />
         </Box>
       </PublicProfileEditorPanel>
-      <Stack spacing={2}>
-        <PublicProfileEditorPanel title={t('fields.appearance')}>
-          <Box sx={styles.colorFields}>
-            <RhfTextField
-              control={control}
-              name="primaryColor"
-              label={t('fields.primaryColor')}
-              type="color"
-              disabled={disabled}
-            />
-            <RhfTextField
-              control={control}
-              name="secondaryColor"
-              label={t('fields.secondaryColor')}
-              type="color"
-              disabled={disabled}
-            />
-            <RhfTextField
-              control={control}
-              name="backgroundColor"
-              label={t('fields.backgroundColor')}
-              type="color"
-              disabled={disabled}
-            />
-          </Box>
-        </PublicProfileEditorPanel>
-        <PublicProfileEditorPanel title={t('fields.images')}>
-          <Box sx={styles.imageFields}>
-            <SingleImageUploadField
-              control={control}
-              name="logoUrl"
-              label={t('fields.logoUrl')}
-              target="agency-logo"
-              variant="avatar"
-              disabled={disabled}
-            />
-            <SingleImageUploadField
-              control={control}
-              name="bannerUrl"
-              label={t('fields.bannerUrl')}
-              target="agency-banner"
-              variant="banner"
-              disabled={disabled}
-            />
-          </Box>
-        </PublicProfileEditorPanel>
-      </Stack>
+      <AgencyBrandSummaryCard
+        agency={buildPreview(brandValues)}
+        values={brandValues}
+        errors={formState.errors}
+        disabled={disabled}
+        onOpen={() => setBrandDialogOpen(true)}
+      />
       <PublicProfileEditorPanel title={t('fields.team')} fullRow>
         <Controller
           control={control}
@@ -290,6 +273,14 @@ function AgencyProfileEditor({ profile }: AgencyProfileEditorProps) {
           )}
         />
       </PublicProfileEditorPanel>
+      <AgencyBrandDialog
+        open={brandDialogOpen}
+        initialMode={getInitialAgencyBrandDialogMode(profile)}
+        initialValues={brandValues}
+        buildPreview={buildPreview}
+        onClose={() => setBrandDialogOpen(false)}
+        onApply={applyBrand}
+      />
     </PublicProfileEditorShell>
   )
 }

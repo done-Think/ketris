@@ -10,6 +10,7 @@ import { recordUserAudit } from '@server/auth/infrastructure/user-audit'
 
 import type { TeamInvitationRepository } from '../application/ports/team-invitation-repository.port'
 import type { NewTeamInvitation, StoredTeamInvitation } from '../types/team-repository'
+import { userHasPortfolio } from './user-portfolio'
 
 const invitationSelect = {
   userId: true,
@@ -109,15 +110,8 @@ export class PrismaTeamInvitationRepository implements TeamInvitationRepository 
     return count > 0
   }
 
-  async hasPortfolio(tenantId: string, userId: string): Promise<boolean> {
-    const [properties, leads, opportunities, events] = await Promise.all([
-      prisma.property.count({ where: { tenantId, responsibleId: userId } }),
-      prisma.lead.count({ where: { tenantId, responsibleId: userId } }),
-      prisma.opportunity.count({ where: { tenantId, responsibleId: userId } }),
-      prisma.agendaEvent.count({ where: { tenantId, responsibleId: userId } }),
-    ])
-
-    return properties + leads + opportunities + events > 0
+  hasPortfolio(tenantId: string, userId: string): Promise<boolean> {
+    return userHasPortfolio(tenantId, userId)
   }
 
   async deleteInvitedUser(tenantId: string, userId: string): Promise<boolean> {

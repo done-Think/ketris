@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import type { CodeAttemptLimiter } from '../../../application/ports/code-attempt-limiter.port'
 import type { EmailOwnershipCodeRepository } from '../../../application/ports/email-ownership-code-repository.port'
 import type { PasswordResetTokenService } from '../../../application/ports/password-reset-token.port'
 import type { UserRepository } from '../../../application/ports/user-repository.port'
@@ -42,7 +43,17 @@ function createDeps() {
     issue: vi.fn().mockResolvedValue('reset-token'),
     verify: vi.fn(),
   }
-  return { users, codes, tokens, useCase: new VerifyPasswordResetCodeUseCase(users, codes, tokens) }
+  const attempts: CodeAttemptLimiter = {
+    isBlocked: vi.fn().mockResolvedValue(false),
+    recordFailure: vi.fn().mockResolvedValue(undefined),
+  }
+  return {
+    users,
+    codes,
+    tokens,
+    attempts,
+    useCase: new VerifyPasswordResetCodeUseCase(users, codes, tokens, attempts),
+  }
 }
 
 describe('VerifyPasswordResetCodeUseCase', () => {
@@ -107,5 +118,26 @@ describe('VerifyPasswordResetCodeUseCase', () => {
       InvalidPasswordResetCodeError,
     )
     expect(deps.tokens.issue).not.toHaveBeenCalled()
+  })
+  it('responds 429 once the failure budget for the e-mail is spent, before touching codes or accounts', async () => {
+    const deps = createDeps()
+    vi.mocked(deps.attempts.isBlocked).mockResolvedValue(true)
+    await expect(
+      deps.useCase.execute({ email: ' Ana@Example.com ', code: '123456' }),
+    ).rejects.toMatchObject({ status: 429, code: 'RATE_LIMIT_EXCEEDED' })
+    expect(deps.attempts.isBlocked).toHaveBeenCalledWith('PASSWORD_RESET', 'ana@example.com')
+    expect(deps.codes.verify).not.toHaveBeenCalled()
+    expect(deps.users.findManyByEmail).not.toHaveBeenCalled()
+  })
+
+  it('records a failure only for a wrong code, never for a correct one', async () => {
+    const deps = createDeps()
+    await deps.useCase.execute({ email: user.email, code: '123456' })
+    expect(deps.attempts.recordFailure).not.toHaveBeenCalled()
+    vi.mocked(deps.codes.verify).mockResolvedValue(false)
+    await expect(deps.useCase.execute({ email: user.email, code: '000000' })).rejects.toThrow(
+      InvalidPasswordResetCodeError,
+    )
+    expect(deps.attempts.recordFailure).toHaveBeenCalledWith('PASSWORD_RESET', user.email)
   })
 })

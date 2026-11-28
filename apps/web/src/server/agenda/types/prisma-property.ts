@@ -3,3 +3,7 @@ export interface AgendaPropertyRecord {
   title: string
   address: { neighborhood: string; city: string } | null
 }
+
+export interface AgendaPropertySummaryRecord extends AgendaPropertyRecord {
+  responsibleId: string
+}

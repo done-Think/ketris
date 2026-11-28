@@ -61,7 +61,15 @@ export const styles = {
     fontSize: 14,
     lineHeight: 1.65,
   } satisfies SxProps<Theme>,
-  dialogActions: { px: { xs: 2, md: 2.8 }, pb: 2.5, pt: 0 } satisfies SxProps<Theme>,
+  dialogActions: {
+    px: { xs: 2, md: 2.8 },
+    pb: 2.5,
+    pt: 0,
+    gap: 1,
+    flexWrap: 'wrap',
+  } satisfies SxProps<Theme>,
+  deleteButton: { mr: { sm: 'auto' } } satisfies SxProps<Theme>,
+  actionIcon: { fontSize: iconSize.sm } satisfies SxProps<Theme>,
   deleteOutlineRoundedIcon: { fontSize: iconSize.sm } satisfies SxProps<Theme>,
   editRoundedIcon: { fontSize: iconSize.sm } satisfies SxProps<Theme>,
 }

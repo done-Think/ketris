@@ -28,6 +28,7 @@ export function createBrokerTransferSchema(
 ) {
   return z
     .object({
+      sourceId: z.string().min(1),
       destinationId: z.string().min(1, t('destinationError')),
       properties: z.boolean(),
       leads: z.boolean(),
@@ -67,4 +68,25 @@ export function createAcceptInvitationSchema(
       path: ['passwordConfirmation'],
       message: t('passwordMismatch'),
     })
+}
+
+export function createBrokerShareSchema(
+  t: SchemaMessageTranslator<'destinationError' | 'itemsError'>,
+) {
+  return z
+    .object({
+      sourceId: z.string().min(1),
+      destinationIds: z.array(z.string().min(1)).min(1, t('destinationError')).max(50),
+      properties: z.boolean(),
+      leads: z.boolean(),
+      opportunities: z.boolean(),
+      futureEvents: z.boolean(),
+    })
+    .refine(
+      (values) => values.properties || values.leads || values.opportunities || values.futureEvents,
+      {
+        path: ['properties'],
+        message: t('itemsError'),
+      },
+    )
 }

@@ -22,18 +22,35 @@ describe('property input contract', () => {
     city: 'Itajubá',
     state: 'MG',
   }
+  it('accepts only the 27 Brazilian states as UF', () => {
+    for (const state of ['MG', 'SP', 'DF', 'TO'])
+      expect(
+        propertyAddressInputSchema.safeParse({ ...address, state, zipCode: '37502330' }).success,
+      ).toBe(true)
+    for (const state of ['XX', 'ZZ', 'mg', 'M', 'MGG', ''])
+      expect(
+        propertyAddressInputSchema.safeParse({ ...address, state, zipCode: '37502330' }).success,
+      ).toBe(false)
+  })
   it.each(['37502330', '37502-330', '37.502-330', '37 502 330'])(
     'normalizes accepted CEP %s to eight digits at the API boundary',
     (zipCode) => {
       expect(propertyAddressInputSchema.parse({ ...address, zipCode }).zipCode).toBe('37502330')
     },
   )
-  it.each(['1234567', '123456789', 'ABCDEFGH', '37502A330'])(
-    'rejects invalid CEP %s at the API boundary',
-    (zipCode) => {
-      expect(propertyAddressInputSchema.safeParse({ ...address, zipCode }).success).toBe(false)
-    },
-  )
+  it.each([
+    '1234567',
+    '123456789',
+    'ABCDEFGH',
+    '37502A330',
+    '00000-000',
+    '00000000',
+    '11111-111',
+    '99999999',
+    '00999-999',
+  ])('rejects invalid CEP %s at the API boundary', (zipCode) => {
+    expect(propertyAddressInputSchema.safeParse({ ...address, zipCode }).success).toBe(false)
+  })
 
   it('accepts typed property and listing fields', () => {
     expect(

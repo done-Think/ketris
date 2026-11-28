@@ -6,6 +6,7 @@ import type {
   PatchContactRequestDTO,
 } from '@shared/types/generated/crm/dto'
 import type { z } from 'zod'
+import type { InteractionChannel } from './interaction'
 
 import type { createContactFormSchema } from '../schemas/contact-schema'
 
@@ -54,6 +55,8 @@ export type ContactsPageResult = {
 export type ContactFilter = 'ALL' | 'OWNER' | 'RENTER' | 'BROKER'
 
 export type ContactsListProps = {
+  onAddLead?: (contact: ContactListItem) => void
+  onContactAction?: (contact: ContactListItem, channel: InteractionChannel) => boolean
   search?: string
   activeFilter?: ContactFilter
   counts?: Partial<Record<ContactFilter, number>>
@@ -76,7 +79,7 @@ export type ContactsListProps = {
 
 export type ContactActionsProps = Pick<
   ContactsListProps,
-  'onEditContact' | 'onOpenInteractions' | 'onOpenMoreOptions'
+  'onEditContact' | 'onOpenInteractions' | 'onOpenMoreOptions' | 'onAddLead' | 'onContactAction'
 > & {
   contact: ContactListItem
 }
@@ -91,7 +94,10 @@ export type ContactTypeChipProps = {
 
 export type ContactsTableProps = {
   contacts: readonly ContactListItem[]
-} & Pick<ContactsListProps, 'onEditContact' | 'onOpenInteractions' | 'onOpenMoreOptions'>
+} & Pick<
+  ContactsListProps,
+  'onEditContact' | 'onOpenInteractions' | 'onOpenMoreOptions' | 'onAddLead' | 'onContactAction'
+>
 
 export type ContactsCardsProps = ContactsTableProps
 
@@ -115,6 +121,8 @@ export type ArchiveContactDialogProps = {
 }
 
 export type ContactFormDialogProps = {
+  title?: string
+  errorMessage?: string
   open: boolean
   initialValues: ContactFormValues | null
   isPending: boolean

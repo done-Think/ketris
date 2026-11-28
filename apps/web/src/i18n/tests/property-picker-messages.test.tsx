@@ -11,7 +11,7 @@ import { defaultTimeZone } from '../formats'
 // The global test translator includes every catalog and hides missing route namespaces.
 vi.unmock('next-intl')
 vi.mock('next-intl/server', () => ({ getMessages: vi.fn() }))
-vi.mock('@shared/lib/auth/require-dashboard-feature', () => ({
+vi.mock('@server/auth/session/require-dashboard-feature', () => ({
   requireDashboardFeature: vi.fn(),
 }))
 

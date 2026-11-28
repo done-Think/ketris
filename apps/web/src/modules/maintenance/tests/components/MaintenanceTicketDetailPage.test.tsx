@@ -379,8 +379,8 @@ describe('MaintenanceTicketDetailPage', () => {
   it('renders the ticket header, description and property details from the API', () => {
     render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
 
-    expect(screen.getByText('MNT-0089')).toBeVisible()
-    expect(screen.getByText('Vazamento na cozinha')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Vazamento na cozinha' })).toBeVisible()
+    expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
     expect(screen.getByText('Em andamento')).toBeVisible()
     expect(screen.getByText('Urgente')).toBeVisible()
     expect(screen.getByText('Apt Jardins 3q')).toBeVisible()
@@ -410,16 +410,19 @@ describe('MaintenanceTicketDetailPage', () => {
       vi.mocked(useMaintenanceOptions).mockReturnValue({
         data: {
           users: [],
-          contracts: ['contract-1', 'contract-2', 'another-property'].map((id) => ({
-            id,
-            code: id,
-            propertyId: id === 'another-property' ? 'p2' : 'p1',
-            propertyTitle: 'Apt Jardins 3q',
-            agentId: 'agent',
-            ownerId: null,
-            renterIds: [],
-            parties: [],
-          })),
+          contracts: ['contract-1', 'contract-2', 'another-property', 'closed-contract'].map(
+            (id) => ({
+              id,
+              code: id,
+              status: id === 'closed-contract' ? 'CLOSED' : 'ACTIVE',
+              propertyId: id === 'another-property' ? 'p2' : 'p1',
+              propertyTitle: 'Apt Jardins 3q',
+              agentId: 'agent',
+              ownerId: null,
+              renterIds: [],
+              parties: [],
+            }),
+          ),
         },
       } as unknown as ReturnType<typeof useMaintenanceOptions>)
       const user = userEvent.setup()
@@ -430,6 +433,7 @@ describe('MaintenanceTicketDetailPage', () => {
       expect(actionMutation.mutateAsync).not.toHaveBeenCalled()
       await user.click(screen.getByRole('combobox', { name: /Contrato do chamado/ }))
       expect(screen.queryByRole('option', { name: /another-property/ })).not.toBeInTheDocument()
+      expect(screen.queryByRole('option', { name: /closed-contract/ })).not.toBeInTheDocument()
       expect(screen.getByRole('option', { name: /contract-1/ })).toBeVisible()
       await user.click(screen.getByRole('option', { name: /contract-2/ }))
       await user.click(screen.getByRole('button', { name: 'Confirmar' }))
@@ -547,19 +551,29 @@ describe('MaintenanceTicketDetailPage', () => {
 
     expect(screen.getByRole('button', { name: 'Definir prestador' })).toBeEnabled()
   })
-  it('lets the renter open and submit the existing provider modal', async () => {
+  it('shows the renter the team-defined provider and date without provider or scheduling controls', () => {
     mockSession('RENTER')
     mockTicketQuery({
       data: {
         ...mockTicket,
+        provider: { name: 'Team provider' },
+        scheduledAt: new Date(2026, 9, 24, 14, 0).toISOString(),
         permissions: {
           ...mockTicket.permissions!,
-          provider: true,
+          provider: false,
+          schedule: false,
           edit: false,
           complete: false,
         },
       },
     })
+    render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
+    expect(screen.queryByRole('button', { name: 'Definir prestador' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Data do atendimento')).toHaveValue('2026-10-24')
+    expect(screen.getByLabelText('Data do atendimento')).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Salvar data' })).toBeDisabled()
+  })
+  it('lets the agency team open and submit the existing provider modal', async () => {
     const user = userEvent.setup()
     render(<MaintenanceTicketDetailPage ticketId="MNT-0089" />)
     await user.click(screen.getByRole('button', { name: 'Definir prestador' }))

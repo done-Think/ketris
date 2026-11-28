@@ -26,6 +26,15 @@ export const transferBrokerPortfolioRequestSchema = z
   .strict()
   .openapi('TransferBrokerPortfolioRequest')
 
+export const shareBrokerPortfolioRequestSchema = z
+  .object({
+    ...transferBrokerPortfolioRequestSchema.omit({ destinationId: true }).shape,
+    destinationIds: z.array(z.string().trim().min(1).max(64)).min(1).max(50),
+    revoke: z.boolean().default(false),
+  })
+  .strict()
+  .openapi('ShareBrokerPortfolioRequest')
+
 export const deactivateBrokerRequestSchema = z
   .object({ destinationId: z.string().trim().min(1).max(64) })
   .strict()

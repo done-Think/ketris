@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { theme } from '@shared/theme/theme'
 
 import { TeamDashboardComposition } from '@/app/[locale]/(dashboard)/dashboard/team/TeamDashboardComposition'
+import { styles as teamPageStyles } from '../../styles/team-dashboard-page.styles'
 import type { TeamMember } from '../../types/team'
 import { teamMember, teamOverview } from '../fixtures/team-member'
 
@@ -26,6 +27,7 @@ const service = vi.hoisted(() => ({
   goals: vi.fn(),
   setGoal: vi.fn(),
   transfer: vi.fn(),
+  sharePortfolio: vi.fn(),
   deactivate: vi.fn(),
   activate: vi.fn(),
   invite: vi.fn(),
@@ -190,6 +192,11 @@ describe('BrokerTeamDashboardPage', () => {
     expect(within(await card('Diego Convidado')).getByText('Convite pendente')).toBeVisible()
   })
 
+  it('lets the broker cards shrink to the phone width', () => {
+    // "1fr" alone grows to the card content and pushed the cards past the screen on phones.
+    expect(teamPageStyles.grid.gridTemplateColumns.xs).toBe('minmax(0, 1fr)')
+  })
+
   it('opens the public profile by the user id and filters the list by search', async () => {
     renderPage()
     fireEvent.click(
@@ -277,6 +284,106 @@ describe('BrokerTeamDashboardPage', () => {
     expect(enqueueSnackbar).toHaveBeenCalledWith('Meta mensal atualizada', { variant: 'success' })
   })
 
+  it('shares only selected items to another broker without invoking transfer', async () => {
+    service.sharePortfolio.mockResolvedValue({
+      properties: 7,
+      leads: 0,
+      opportunities: 5,
+      futureEvents: 2,
+    })
+    renderPage()
+    await openAction('Marina Costa', 'Compartilhar carteira')
+    const dialog = screen.getByRole('dialog')
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Corretores com acesso' }))
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Bruno Lima',
+    ])
+    fireEvent.click(screen.getByRole('option', { name: 'Bruno Lima' }))
+    fireEvent.keyDown(screen.getByRole('listbox'), { key: 'Escape' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Compartilhar carteira' }))
+    expect(
+      await within(dialog).findByText(
+        'Selecione ao menos um item para compartilhar ou remover o acesso',
+      ),
+    ).toBeVisible()
+    fireEvent.click(within(dialog).getByLabelText('Imóveis'))
+    fireEvent.click(within(dialog).getByLabelText('Oportunidades em aberto'))
+    fireEvent.click(within(dialog).getByLabelText('Eventos futuros da agenda'))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Compartilhar carteira' }))
+    await waitFor(() =>
+      expect(service.sharePortfolio).toHaveBeenCalledWith('agent-1', {
+        destinationIds: ['agent-2'],
+        revoke: false,
+        properties: true,
+        leads: false,
+        opportunities: true,
+        futureEvents: true,
+      }),
+    )
+    expect(service.transfer).not.toHaveBeenCalled()
+  })
+
+  it.each(['Compartilhar carteira', 'Remover acesso \u00e0 carteira'])(
+    'keeps recipient checkmarks when closing and reopening the list in %s',
+    async (action) => {
+      renderPage()
+      await openAction('Marina Costa', action)
+      const dialog = screen.getByRole('dialog')
+      const select = within(dialog).getByRole('combobox', { name: 'Corretores com acesso' })
+      fireEvent.mouseDown(select)
+      const option = screen.getByRole('option', { name: 'Bruno Lima' })
+      expect(within(option).getByRole('checkbox', { hidden: true })).not.toBeChecked()
+
+      fireEvent.click(option)
+      expect(option).toHaveAttribute('aria-selected', 'true')
+      expect(within(option).getByRole('checkbox', { hidden: true })).toBeChecked()
+      fireEvent.click(within(screen.getByRole('listbox')).getByRole('button', { name: 'Fechar' }))
+      await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument())
+      expect(dialog).toBeVisible()
+      expect(select).toHaveTextContent('Bruno Lima')
+      expect(within(select).queryByRole('checkbox', { hidden: true })).not.toBeInTheDocument()
+
+      fireEvent.mouseDown(select)
+      const selected = screen.getByRole('option', { name: 'Bruno Lima' })
+      expect(within(selected).getByRole('checkbox', { hidden: true })).toBeChecked()
+      fireEvent.click(selected)
+      expect(selected).toHaveAttribute('aria-selected', 'false')
+      expect(within(selected).getByRole('checkbox', { hidden: true })).not.toBeChecked()
+      fireEvent.click(within(screen.getByRole('listbox')).getByRole('button', { name: 'Fechar' }))
+      await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument())
+      expect(select).not.toHaveTextContent('Bruno Lima')
+      expect(service.sharePortfolio).not.toHaveBeenCalled()
+    },
+  )
+
+  it('removes selected portfolio access without transferring or deleting records', async () => {
+    service.sharePortfolio.mockResolvedValue({
+      properties: 0,
+      leads: 2,
+      opportunities: 0,
+      futureEvents: 0,
+    })
+    renderPage()
+    await openAction('Marina Costa', 'Remover acesso \u00e0 carteira')
+    const dialog = screen.getByRole('dialog')
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Corretores com acesso' }))
+    fireEvent.click(screen.getByRole('option', { name: 'Bruno Lima' }))
+    fireEvent.keyDown(screen.getByRole('listbox'), { key: 'Escape' })
+    fireEvent.click(within(dialog).getByLabelText('Leads'))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Remover acesso' }))
+    await waitFor(() =>
+      expect(service.sharePortfolio).toHaveBeenCalledWith('agent-1', {
+        destinationIds: ['agent-2'],
+        revoke: true,
+        properties: false,
+        leads: true,
+        opportunities: false,
+        futureEvents: false,
+      }),
+    )
+    expect(service.transfer).not.toHaveBeenCalled()
+  })
+
   it('transfers the chosen items to another broker or to the owner', async () => {
     service.transfer.mockResolvedValue({
       properties: 7,
@@ -315,6 +422,68 @@ describe('BrokerTeamDashboardPage', () => {
         variant: 'success',
       },
     )
+  })
+
+  it('transfers from the agency itself to a broker', async () => {
+    service.transfer.mockResolvedValue({
+      properties: 1,
+      leads: 0,
+      opportunities: 0,
+      futureEvents: 0,
+    })
+    renderPage()
+    await openAction('Marina Costa', 'Transferir carteira')
+    const dialog = screen.getByRole('dialog')
+
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Transferir de' }))
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Ana Dona (você)',
+      'Marina Costa',
+      'Bruno Lima',
+      'Carla Inativa',
+    ])
+    fireEvent.click(screen.getByRole('option', { name: 'Ana Dona (você)' }))
+
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Transferir para' }))
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Marina Costa',
+      'Bruno Lima',
+    ])
+    fireEvent.click(screen.getByRole('option', { name: 'Marina Costa' }))
+    fireEvent.click(within(dialog).getByLabelText('Imóveis'))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Transferir' }))
+
+    await waitFor(() =>
+      expect(service.transfer).toHaveBeenCalledWith('owner-1', {
+        destinationId: 'agent-1',
+        properties: true,
+        leads: false,
+        opportunities: false,
+        futureEvents: false,
+      }),
+    )
+    expect(enqueueSnackbar).toHaveBeenCalledWith(
+      'Transferidos: 1 imóvel, 0 leads, 0 oportunidades e 0 eventos',
+      { variant: 'success' },
+    )
+  })
+
+  it('clears the destination when it becomes the source', async () => {
+    renderPage()
+    await openAction('Marina Costa', 'Transferir carteira')
+    const dialog = screen.getByRole('dialog')
+
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Transferir para' }))
+    fireEvent.click(screen.getByRole('option', { name: 'Bruno Lima' }))
+    fireEvent.mouseDown(within(dialog).getByRole('combobox', { name: 'Transferir de' }))
+    fireEvent.click(screen.getByRole('option', { name: 'Bruno Lima' }))
+    fireEvent.click(within(dialog).getByLabelText('Imóveis (4)'))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Transferir' }))
+
+    expect(
+      await within(dialog).findByText('Selecione o corretor que vai receber a carteira'),
+    ).toBeVisible()
+    expect(service.transfer).not.toHaveBeenCalled()
   })
 
   it('requires a destination before deactivating a broker', async () => {

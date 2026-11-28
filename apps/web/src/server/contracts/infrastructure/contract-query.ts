@@ -12,6 +12,7 @@ export const contractInclude = {
   canceledBy: userReferenceSelect,
   closedBy: userReferenceSelect,
   parties: { include: { signature: { include: { signedBy: userReferenceSelect } } } },
+  tenant: { select: { name: true } },
   documents: { include: { uploadedBy: userReferenceSelect } },
 } as const
 
@@ -50,5 +51,10 @@ export function contractReadWhere(scope: ContractReadScope): Prisma.ContractWher
     return { tenantId: scope.tenantId, property: { ownerId: scope.ownerId } }
   }
 
-  return { tenantId: scope.tenantId, ...contractScopeWhere(scope) }
+  const own = { tenantId: scope.tenantId, ...contractScopeWhere(scope) }
+  return scope.landlordUserId ? { OR: [own, landlordContractWhere(scope.landlordUserId)] } : own
+}
+
+export function landlordContractWhere(userId: string): Prisma.ContractWhereInput {
+  return { parties: { some: { role: 'LANDLORD', userId, user: { active: true } } } }
 }

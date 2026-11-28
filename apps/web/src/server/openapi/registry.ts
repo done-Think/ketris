@@ -17,6 +17,7 @@ import { registerMarketplaceOpenApi } from '@server/marketplace/openapi'
 import { registerPlatformOpenApi } from '@server/platform/openapi'
 import { registerPropertiesOpenApi } from '@server/properties/openapi'
 import { registerRegistrationOpenApi } from '@server/registration/openapi'
+import { registerInstagramOpenApi } from '@server/instagram/openapi'
 import { registerTeamOpenApi } from '@server/team/openapi'
 import { registerFaceCheckOpenApi } from '@server/face_check/openapi'
 import './zod-extend'
@@ -36,6 +37,7 @@ registerMarketplaceOpenApi(registry)
 registerPropertiesOpenApi(registry)
 registerCrmOpenApi(registry)
 registerRegistrationOpenApi(registry)
+registerInstagramOpenApi(registry)
 registerAgendaOpenApi(registry)
 registerContractsOpenApi(registry)
 registerFinancialOpenApi(registry)

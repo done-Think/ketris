@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { InitContractDocumentUploadUseCase } from './application/use-cases/init-contract-document-upload.use-case'
 import { ConfirmContractDocumentUploadUseCase } from './application/use-cases/confirm-contract-document-upload.use-case'
 import { DownloadContractDocumentUseCase } from './application/use-cases/download-contract-document.use-case'

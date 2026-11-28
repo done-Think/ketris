@@ -8,3 +8,5 @@ export type CrmPropertyAddress = NonNullable<CrmPropertyDetail['address']>
 export type CrmPropertyMedia = CrmPropertyDetail['media'][number]
 
 export type PublicPropertyAddress = CrmPropertyAddress
+export type CrmPropertyType =
+  'APARTMENT' | 'HOUSE' | 'STUDIO' | 'PENTHOUSE' | 'COMMERCIAL' | 'LOFT' | 'OTHER'

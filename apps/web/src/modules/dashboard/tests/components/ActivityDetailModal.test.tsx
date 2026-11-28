@@ -17,6 +17,7 @@ describe('ActivityDetailModal', () => {
     renderWithProviders(<ActivityDetailModal activity={upcomingActivity} onClose={vi.fn()} />)
 
     expect(screen.getByText('Horário de encontro')).toBeInTheDocument()
+    expect(screen.getByText('qua., 21/10, 10:00')).toBeInTheDocument()
     expect(screen.getByText('Apto Batel')).toBeInTheDocument()
     expect(screen.getAllByText('Ana').length).toBeGreaterThan(0)
     expect(screen.getByText('Sem observações registradas.')).toBeInTheDocument()

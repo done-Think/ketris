@@ -50,7 +50,7 @@ export const paperSx: SxProps<Theme> = {
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
-  height: '100%',
+  height: { lg: '100%' },
   p: { xs: 2, md: 2.5 },
 }
 

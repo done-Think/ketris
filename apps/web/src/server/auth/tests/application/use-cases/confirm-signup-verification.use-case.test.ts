@@ -15,7 +15,13 @@ function setup() {
   )
   return {
     ...d,
-    useCase: new ConfirmSignupVerificationUseCase(d.users, d.codes, d.tokens, d.refresh),
+    useCase: new ConfirmSignupVerificationUseCase(
+      d.users,
+      d.codes,
+      d.tokens,
+      d.refresh,
+      d.attempts,
+    ),
   }
 }
 describe('ConfirmSignupVerificationUseCase', () => {
@@ -74,5 +80,27 @@ describe('ConfirmSignupVerificationUseCase', () => {
     vi.mocked(d.users.findById).mockResolvedValue(account({ active: false }))
     await expect(d.useCase.execute(input)).rejects.toMatchObject({ code: 'ACCOUNT_DEACTIVATED' })
     expect(d.refresh.create).not.toHaveBeenCalled()
+  })
+  it('bloqueia com 429 quando o orçamento de falhas do e-mail está esgotado, antes de consultar conta ou código', async () => {
+    const d = setup()
+    vi.mocked(d.attempts.isBlocked).mockResolvedValue(true)
+    await expect(d.useCase.execute({ ...input, email: 'ANA@example.test' })).rejects.toMatchObject({
+      status: 429,
+      code: 'RATE_LIMIT_EXCEEDED',
+    })
+    expect(d.attempts.isBlocked).toHaveBeenCalledWith('SIGNUP_VERIFICATION', 'ana@example.test')
+    expect(d.users.findByEmail).not.toHaveBeenCalled()
+    expect(d.codes.confirm).not.toHaveBeenCalled()
+  })
+
+  it('registra falha só quando o código está errado e nunca em confirmação bem-sucedida', async () => {
+    const d = setup()
+    await d.useCase.execute(input)
+    expect(d.attempts.recordFailure).not.toHaveBeenCalled()
+    await expect(d.useCase.execute({ ...input, code: '999999' })).rejects.toMatchObject({
+      code: 'INVALID_EMAIL_VERIFICATION_CODE',
+    })
+    expect(d.attempts.recordFailure).toHaveBeenCalledTimes(1)
+    expect(d.attempts.recordFailure).toHaveBeenCalledWith('SIGNUP_VERIFICATION', input.email)
   })
 })

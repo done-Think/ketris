@@ -1,37 +1,69 @@
 import { describe, expect, it } from 'vitest'
 import dayjs from 'dayjs'
-import { layoutAgendaCards, buildAgendaEventSegments } from '../../utils/layout-agenda-events'
+import { buildAgendaHourRows, buildAgendaEventSegments } from '../../utils/layout-agenda-events'
 import { buildAgendaCalendarDays } from '../../utils/agenda-calendar'
 import { buildAgendaTimeline } from '../../utils/build-agenda-timeline'
 import { agendaTimeSlots } from '../../config/agenda-scheduling'
 import type { AgendaEvent } from '../../types/agenda-event'
+import type { AgendaOrganizationItem } from '../../types/agenda-organization'
+import { agendaEventFixture } from '../fixtures/agenda-event'
 
-describe('overlapping agenda cards', () => {
-  it('exposes a different lane for each simultaneous card', () => {
-    const cards = layoutAgendaCards(
-      ['one', 'two', 'three'].map((id) => ({ id, top: 100, height: 62 })),
+describe('adaptive agenda hour rows', () => {
+  const days = buildAgendaCalendarDays(dayjs('2031-03-01'), 'pt-BR')
+
+  it('keeps every simultaneous booking in its hour without losing dense groups', () => {
+    const events = Array.from({ length: 50 }, (_, index) =>
+      agendaEventFixture({ id: `event-${index}`, scheduledDate: days[0].key, time: '09:30' }),
     )
-    expect(new Set(cards.map((card) => card.lane)).size).toBe(3)
-    expect(cards.every((card) => card.laneCount === 3)).toBe(true)
+    const rows = buildAgendaHourRows(days, agendaTimeSlots, { [days[0].key]: events }, [])
+    const busy = rows.find((row) => row.hour === 9)!
+    expect(busy.cardsByDay[days[0].key]).toHaveLength(50)
+    expect(new Set(busy.cardsByDay[days[0].key].map((card) => card.id)).size).toBe(50)
+    expect(busy.cardsByDay[days[1].key]).toEqual([])
+    expect(rows.find((row) => row.hour === 10)?.cardsByDay[days[0].key]).toEqual([])
+    expect(events[0].durationMinutes).toBe(60)
   })
-  it('reuses lanes after an event ends and keeps separate periods at full width', () => {
-    const cards = layoutAgendaCards([
-      { id: 'long', top: 0, height: 120 },
-      { id: 'first', top: 30, height: 30 },
-      { id: 'second', top: 60, height: 30 },
-      { id: 'separate', top: 120, height: 60 },
+
+  it('sorts timed items and bookings together while keeping all-day items outside the grid', () => {
+    const events = [
+      agendaEventFixture({ id: 'later', time: '09:45' }),
+      agendaEventFixture({ id: 'earlier', time: '09:00' }),
+      agendaEventFixture({ id: 'long', time: '10:30', durationMinutes: 150 }),
+    ]
+    const ticket: AgendaOrganizationItem = {
+      id: 'ticket',
+      sourceId: 'ticket-1',
+      kind: 'ticketScheduled',
+      date: days[0].key,
+      time: '09:30',
+      title: 'Repair',
+      property: 'Apartment',
+      status: 'OPEN',
+    }
+    const allDay: AgendaOrganizationItem = {
+      id: 'charge',
+      sourceId: 'charge-1',
+      kind: 'charge',
+      date: days[0].key,
+      title: 'Rent',
+      property: 'Apartment',
+      status: 'PENDING',
+    }
+    const rows = buildAgendaHourRows(days, agendaTimeSlots, { [days[0].key]: events }, [
+      ticket,
+      allDay,
     ])
-    expect(cards.find((card) => card.id === 'first')?.lane).toBe(
-      cards.find((card) => card.id === 'second')?.lane,
-    )
-    expect(cards.find((card) => card.id === 'separate')).toMatchObject({ lane: 0, laneCount: 1 })
-  })
-  it('accounts for the actual card height, including cards taller than short bookings', () => {
-    const cards = layoutAgendaCards([
-      { id: 'one', top: 0, height: 38 },
-      { id: 'two', top: 31, height: 38 },
-    ])
-    expect(cards[0].lane).not.toBe(cards[1].lane)
+    expect(
+      rows.find((row) => row.hour === 9)?.cardsByDay[days[0].key].map((card) => card.id),
+    ).toEqual(['event-earlier', 'ticket', 'event-later'])
+    const long = rows.find((row) => row.hour === 10)?.cardsByDay[days[0].key][0]
+    expect(long?.kind === 'event' && long.event.durationMinutes).toBe(150)
+    expect(events[0].id).toBe('later')
+    expect(
+      rows
+        .flatMap((row) => Object.values(row.cardsByDay).flat())
+        .some((card) => card.id === 'charge'),
+    ).toBe(false)
   })
 })
 

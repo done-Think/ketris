@@ -1,10 +1,10 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
+import { useRef, useState } from 'react'
 
 import { styles } from '../styles/create-property-dashboard-page.styles'
 
-import { useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Divider } from '@mui/material'
@@ -13,12 +13,17 @@ import { useSnackbar } from 'notistack'
 
 import { useRouter } from '@/i18n/navigation'
 
+import { instagramService } from '@shared/lib/api/instagram-service'
+import { createPropertyPublishingOptions } from '../config/dashboard-property-ui'
+
 import { usePropertyFormWizard } from '../hooks/use-property-form-wizard'
-import { useCreateProperty, usePropertyMediaUploadsPending } from '../hooks/use-properties'
 import {
-  createDashboardPropertyDefaultValues,
-  createDashboardPropertySchema,
-} from '../schemas/create-dashboard-property-schema'
+  useCreateProperty,
+  usePropertyMediaUploadsPending,
+  usePublishProperty,
+} from '../hooks/use-properties'
+import { useDashboardPropertySchema } from '../hooks/use-dashboard-property-schema'
+import { createDashboardPropertyDefaultValues } from '../schemas/create-dashboard-property-schema'
 import type { CreateDashboardPropertyFormValues } from '../types/dashboard-property'
 import { extractErrorMessage } from '@shared/utils/error-message'
 import { toPropertyPayload } from '../utils/to-property-payload'
@@ -34,10 +39,10 @@ export function CreatePropertyDashboardPage() {
   const canChooseOwner = session?.role === 'OWNER' || session?.role === 'AGENT'
   const createProperty = useCreateProperty()
   const isUploading = usePropertyMediaUploadsPending()
-  const propertySchema = useMemo(
-    () => createDashboardPropertySchema((key) => t(`errors.${key}`)),
-    [t],
-  )
+  const publishProperty = usePublishProperty()
+  const instagramT = useTranslations('properties.instagram')
+  const [submitting, setSubmitting] = useState(false)
+  const propertySchema = useDashboardPropertySchema()
   const { control, handleSubmit, trigger, setValue, getValues } =
     useForm<CreateDashboardPropertyFormValues>({
       defaultValues: createDashboardPropertyDefaultValues,
@@ -54,13 +59,39 @@ export function CreatePropertyDashboardPage() {
     goToNextStep,
   } = wizard
   const propertyPurpose = useWatch({ control, name: 'purpose' })
+  const publishingOptions = useWatch({ control, name: 'publishingOptions' })
+  // The ref blocks a second submit at once; the state only drives the button. Both stay set
+  // after success, so the button cannot create a second property before the redirect.
+  const submitPending = useRef(false)
 
   const handleCreateSubmit = async (values: CreateDashboardPropertyFormValues) => {
-    if (isUploading) return
+    if (isUploading || submitPending.current) return
+    submitPending.current = true
+    setSubmitting(true)
     try {
       const property = await createProperty.mutateAsync(
-        toPropertyPayload(values, { canChooseOwner }),
+        toPropertyPayload(values, { canChooseOwner, canManageBrokers: session?.role === 'OWNER' }),
       )
+      if (values.publishingOptions.includes(createPropertyPublishingOptions[0])) {
+        try {
+          await publishProperty.mutateAsync(property.id)
+        } catch {
+          enqueueSnackbar(instagramT('sitePublishFailed'), { variant: 'warning' })
+          router.push({ pathname: '/dashboard/properties/[id]', params: { id: property.id } })
+          return
+        }
+        if (values.instagramEnabled) {
+          try {
+            await instagramService.queue(property.id, {
+              caption: values.instagramCaption,
+              imageUrls: values.instagramImageUrls,
+            })
+            enqueueSnackbar(instagramT('queued'), { variant: 'info' })
+          } catch {
+            enqueueSnackbar(instagramT('sitePublishedInstagramFailed'), { variant: 'warning' })
+          }
+        }
+      }
       enqueueSnackbar(t('createSuccess'), { variant: 'success' })
       if (
         property.address &&
@@ -69,6 +100,8 @@ export function CreatePropertyDashboardPage() {
         enqueueSnackbar(t('addressLocationUnavailable'), { variant: 'warning' })
       router.push({ pathname: '/dashboard/properties/[id]', params: { id: property.id } })
     } catch (error) {
+      submitPending.current = false
+      setSubmitting(false)
       enqueueSnackbar(extractErrorMessage(error, t('createError')), { variant: 'error' })
     }
   }
@@ -81,7 +114,7 @@ export function CreatePropertyDashboardPage() {
       maxVisitedStepIndex={maxVisitedStepIndex}
       isUploading={isUploading}
       onStepSelect={wizard.selectStep}
-      onSubmit={handleSubmit(handleCreateSubmit, wizard.showErrors)}
+      onSubmit={(event) => handleSubmit(handleCreateSubmit, wizard.showErrors)(event)}
     >
       <CreatePropertyStepFields
         getValues={getValues}
@@ -97,11 +130,15 @@ export function CreatePropertyDashboardPage() {
       <CreatePropertyActions
         firstStep={firstStep}
         lastStep={lastStep}
-        isSubmitting={createProperty.isPending}
+        isSubmitting={submitting}
         isUploading={isUploading}
         onPreviousStep={goToPreviousStep}
         onNextStep={goToNextStep}
-        submitLabel={t('saveDraft')}
+        submitLabel={
+          publishingOptions.includes(createPropertyPublishingOptions[0])
+            ? t('publish')
+            : t('saveDraft')
+        }
       />
     </PropertyFormLayout>
   )

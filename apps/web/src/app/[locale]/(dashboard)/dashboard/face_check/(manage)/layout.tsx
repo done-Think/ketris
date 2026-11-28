@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { notFound } from 'next/navigation'
 
 import { privateMetadata } from '@/i18n/seo'
-import { authOptions } from '@shared/lib/auth/auth-options'
+import { authOptions } from '@server/auth/session/auth-options'
 import { AuthenticationUnavailable } from '@shared/components/layout/AuthenticationUnavailable'
 import { resolveFaceCheckActor } from '@server/face_check/require-face-check-actor'
 import { AppError } from '@server/shared/errors'

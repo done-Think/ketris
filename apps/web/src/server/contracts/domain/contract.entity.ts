@@ -14,6 +14,7 @@ import type {
 export interface Contract {
   id: string
   tenantId: string
+  agencyName: string
   propertyId: string
   property: ContractPropertySummary
   opportunityId: string

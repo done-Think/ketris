@@ -1,6 +1,12 @@
 import { createLocalizedMetadata } from '@/i18n/metadata'
 import type { LocaleRoutePageProps } from '@/i18n/types/route.types'
 import { ContractDetailDashboardPage } from '@modules/contracts'
+import {
+  ContractChargeAlerts,
+  ContractChargeMonths,
+  ContractChargeSummary,
+} from '@modules/financial'
+import { ContractTicketsPanel } from '@modules/maintenance'
 
 export const generateMetadata = async ({ params }: LocaleRoutePageProps) => {
   const { locale } = await params
@@ -13,5 +19,15 @@ export default async function DashboardContractDetailRoute({
 }: LocaleRoutePageProps<{ id: string }>) {
   const { id } = await params
 
-  return <ContractDetailDashboardPage contractId={id} />
+  return (
+    <ContractDetailDashboardPage
+      contractId={id}
+      slots={{
+        alerts: <ContractChargeAlerts contractId={id} />,
+        paymentSummary: <ContractChargeSummary contractId={id} />,
+        payments: <ContractChargeMonths contractId={id} />,
+        tickets: <ContractTicketsPanel contractId={id} />,
+      }}
+    />
+  )
 }

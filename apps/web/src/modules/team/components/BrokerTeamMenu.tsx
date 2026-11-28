@@ -7,6 +7,7 @@ import PersonOffOutlinedIcon from '@mui/icons-material/PersonOffOutlined'
 import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded'
 import ScheduleSendOutlinedIcon from '@mui/icons-material/ScheduleSendOutlined'
 import SwapHorizRoundedIcon from '@mui/icons-material/SwapHorizRounded'
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import TrackChangesOutlinedIcon from '@mui/icons-material/TrackChangesOutlined'
 import { ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
 import { useTranslations } from 'next-intl'
@@ -20,6 +21,8 @@ const menuIcons: Record<BrokerTeamMenuAction, typeof BarChartRoundedIcon> = {
   performance: BarChartRoundedIcon,
   editGoal: TrackChangesOutlinedIcon,
   transferPortfolio: SwapHorizRoundedIcon,
+  sharePortfolio: ShareOutlinedIcon,
+  revokePortfolio: PersonOffOutlinedIcon,
   scheduleOneOnOne: EventAvailableOutlinedIcon,
   deactivate: PersonOffOutlinedIcon,
   activate: ReplayRoundedIcon,

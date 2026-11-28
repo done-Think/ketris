@@ -6,6 +6,7 @@ import { RhfTextField } from '@shared/components/form'
 
 import type { CreateLeadFieldName, CreateLeadReviewStepProps } from '../../types/lead'
 import { leadSourceKey } from '@shared/config/lead-sources'
+import { useCrmFormatter } from '../../hooks/use-crm-formatter'
 
 const reviewFieldKeys: readonly CreateLeadFieldName[] = [
   'name',
@@ -17,6 +18,7 @@ const reviewFieldKeys: readonly CreateLeadFieldName[] = [
 
 export function CreateLeadReviewStep({ control, formValues }: CreateLeadReviewStepProps) {
   const t = useTranslations('crm.leads')
+  const format = useCrmFormatter()
 
   return (
     <Stack spacing={1.6}>
@@ -27,9 +29,11 @@ export function CreateLeadReviewStep({ control, formValues }: CreateLeadReviewSt
             <Typography sx={crmStyles.typographySx2}>
               {fieldKey === 'property'
                 ? formValues.property?.title
-                : fieldKey === 'source' && formValues.source
-                  ? t(`create.sources.${leadSourceKey(formValues.source)}`)
-                  : formValues[fieldKey]}
+                : fieldKey === 'budget' && formValues.budget !== undefined
+                  ? format.money(formValues.budget)
+                  : fieldKey === 'source' && formValues.source
+                    ? t(`create.sources.${leadSourceKey(formValues.source)}`)
+                    : formValues[fieldKey]}
             </Typography>
           </Box>
         ))}

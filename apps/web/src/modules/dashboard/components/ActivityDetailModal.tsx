@@ -13,7 +13,7 @@ import {
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined'
 import CloseIcon from '@mui/icons-material/Close'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
-import { useLocale, useTranslations } from 'next-intl'
+import { useFormatter, useLocale, useTranslations } from 'next-intl'
 
 import type { AppLocale } from '@/i18n/types/locale.types'
 
@@ -26,6 +26,7 @@ import { styles } from '../styles/activity-detail-modal.styles'
 export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalProps) {
   const t = useTranslations('dashboard.overview.activityDetail')
   const locale = useLocale() as AppLocale
+  const format = useFormatter()
   const property = activity?.property ?? null
 
   return (
@@ -69,7 +70,9 @@ export function ActivityDetailModal({ activity, onClose }: ActivityDetailModalPr
                     <AccessTimeOutlinedIcon sx={styles.accessTimeOutlinedIcon} />
                     <Box>
                       <Typography sx={styles.typography}>{t('meetingTime')}</Typography>
-                      <Typography sx={styles.typography3}>{activity.meetingTime}</Typography>
+                      <Typography sx={styles.typography3}>
+                        {format.dateTime(new Date(activity.startsAt), 'weekdayDayTime')}
+                      </Typography>
                     </Box>
                   </Stack>
 

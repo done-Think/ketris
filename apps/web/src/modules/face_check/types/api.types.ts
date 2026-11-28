@@ -31,6 +31,7 @@ export type ApiErrorCode =
   | 'UNKNOWN'
   | 'PERSISTENCE_BUSY'
   | 'PERSISTENCE_UNAVAILABLE'
+  | 'STORAGE_UNAVAILABLE'
 
 export interface ApiErrorBody {
   code?: ApiErrorCode

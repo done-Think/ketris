@@ -334,12 +334,14 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse']
           }
         }
-        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        /** @description O resultado do evento já foi registrado (AGENDA_EVENT_CLOSED). */
         409: {
           headers: {
             [name: string]: unknown
           }
-          content?: never
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
         }
       }
     }
@@ -409,12 +411,107 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse']
           }
         }
-        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        /** @description O resultado do evento já foi registrado (AGENDA_EVENT_CLOSED). */
         409: {
           headers: {
             [name: string]: unknown
           }
-          content?: never
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/agenda/events/{id}/outcome': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Registra o resultado de um evento: realizado ou cliente não compareceu
+     * @description Só a equipe da imobiliária (OWNER e AGENT) registra, com as mesmas regras de acesso da edição. Aceito a partir do início do evento e nunca em evento cancelado. Em visita realizada, visitInterest é obrigatório; nos demais casos é recusado. NO_SHOW não se aplica a evento interno. Depois do registro o evento fica fechado para edição, reagendamento e cancelamento; só o OWNER pode registrar de novo para corrigir. Status, autor, data e auditoria são gravados na mesma transação.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['RecordAgendaEventOutcomeRequest']
+        }
+      }
+      responses: {
+        /** @description Resultado registrado. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['AgendaEventResponse']
+          }
+        }
+        /** @description Corpo inválido, interesse ausente em visita realizada (AGENDA_VISIT_INTEREST_REQUIRED), interesse fora de visita realizada (AGENDA_VISIT_INTEREST_NOT_ALLOWED) ou ausência em evento interno (AGENDA_NO_SHOW_INTERNAL_EVENT). */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Access token ausente, inválido ou expirado. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Sem permissão para registrar o resultado deste evento. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Evento não encontrado neste tenant. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Evento ainda não começou (AGENDA_OUTCOME_BEFORE_START), cancelado (AGENDA_OUTCOME_CANCELLED_EVENT), já com resultado para quem não é OWNER (AGENDA_EVENT_CLOSED) ou alterado por outra pessoa durante o registro (CONFLICT). */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
         }
       }
     }
@@ -491,7 +588,7 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse']
           }
         }
-        /** @description O responsável já tem outro evento agendado nesse horário. */
+        /** @description O responsável já tem outro evento agendado nesse horário, ou o resultado do evento já foi registrado (AGENDA_EVENT_CLOSED). */
         409: {
           headers: {
             [name: string]: unknown
@@ -626,6 +723,15 @@ export interface paths {
         }
         /** @description Novo e-mail passou a ser utilizado por outra conta do mesmo tenant. */
         409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Orçamento cumulativo de tentativas por e-mail esgotado. */
+        429: {
           headers: {
             [name: string]: unknown
           }
@@ -772,6 +878,15 @@ export interface paths {
             [name: string]: unknown
           }
           content?: never
+        }
+        /** @description Orçamento cumulativo de tentativas por e-mail esgotado. */
+        429: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
         }
       }
     }
@@ -1183,6 +1298,15 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse']
           }
         }
+        /** @description Orçamento cumulativo de tentativas por e-mail esgotado. */
+        429: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
       }
     }
     delete?: never
@@ -1381,7 +1505,7 @@ export interface paths {
     put?: never
     /**
      * Valida o código de 6 dígitos e emite um token de prova para a troca de senha
-     * @description Rota pública. O código prova o acesso à caixa de e-mail antes de qualquer listagem de contas. Se o e-mail pertencer a mais de um tenant e tenantId não for informado, retorna SELECT_TENANT sem consumir o código. Envie o mesmo e-mail e código com tenantId para escolher a conta e receber resetToken. O token dura 5 minutos e é exigido em POST /auth/reset-password. Até 5 tentativas inválidas por código; códigos expirados ou esgotados exigem novo envio.
+     * @description Rota pública. O código prova o acesso à caixa de e-mail antes de qualquer listagem de contas. Se o e-mail pertencer a mais de um tenant e tenantId não for informado, retorna SELECT_TENANT sem consumir o código. Envie o mesmo e-mail e código com tenantId para escolher a conta e receber resetToken. O token dura 5 minutos e é exigido em POST /auth/reset-password. Até 5 tentativas inválidas por código; códigos expirados ou esgotados exigem novo envio. Há ainda um orçamento cumulativo de tentativas por e-mail (por hora e por dia) que não é reiniciado ao reenviar o código; esgotado, retorna 429 mesmo com um código novo.
      */
     post: {
       parameters: {
@@ -1432,6 +1556,15 @@ export interface paths {
             [name: string]: unknown
           }
           content?: never
+        }
+        /** @description Orçamento cumulativo de tentativas por e-mail esgotado. */
+        429: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
         }
       }
     }
@@ -1598,6 +1731,7 @@ export interface paths {
           page?: number
           pageSize?: number
           pendingApproval?: 'true' | 'false'
+          pendingInvitation?: 'true' | 'false'
         }
         header: {
           /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
@@ -3598,6 +3732,266 @@ export interface paths {
     }
     trace?: never
   }
+  '/crm/contacts/{id}/interactions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Lists authorized lead contact attempts and outcomes */
+    get: {
+      parameters: {
+        query?: {
+          page?: number
+          pageSize?: number
+        }
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Paginated interaction history. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionsPage']
+          }
+        }
+        /** @description Invalid pagination. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Record not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    /** Records a contact shortcut attempt without confirming contact */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['StartCrmInteractionRequest']
+        }
+      }
+      responses: {
+        /** @description Created or replayed idempotent attempt. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionResponse']
+          }
+        }
+        /** @description Invalid input. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Lead not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Request identifier conflict. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Contact channel unavailable. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/crm/interactions/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /** Confirms the outcome of a pending contact attempt */
+    patch: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['CompleteCrmInteractionRequest']
+        }
+      }
+      responses: {
+        /** @description Recorded outcome. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionResponse']
+          }
+        }
+        /** @description Invalid input. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Actor cannot complete this attempt. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Attempt not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Outcome already recorded. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    trace?: never
+  }
   '/crm/leads': {
     parameters: {
       query?: never
@@ -3863,6 +4257,96 @@ export interface paths {
     }
     trace?: never
   }
+  '/crm/leads/{id}/contact': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Links a lead to an authorized contact or creates a contact explicitly */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['LinkLeadContactRequest']
+        }
+      }
+      responses: {
+        /** @description Linked lead. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['LeadResponse']
+          }
+        }
+        /** @description Invalid contact. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Lead or contact not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Conflicting link or duplicate contact email. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/crm/leads/{id}/convert': {
     parameters: {
       query?: never
@@ -3941,6 +4425,176 @@ export interface paths {
         }
         /** @description O lead já foi convertido em oportunidade. */
         409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/crm/leads/{id}/interactions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Lists authorized lead contact attempts and outcomes */
+    get: {
+      parameters: {
+        query?: {
+          page?: number
+          pageSize?: number
+        }
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Paginated interaction history. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionsPage']
+          }
+        }
+        /** @description Invalid pagination. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Record not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    /** Records a contact shortcut attempt without confirming contact */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['StartCrmInteractionRequest']
+        }
+      }
+      responses: {
+        /** @description Created or replayed idempotent attempt. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionResponse']
+          }
+        }
+        /** @description Invalid input. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Lead not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Request identifier conflict. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Contact channel unavailable. */
+        422: {
           headers: {
             [name: string]: unknown
           }
@@ -4436,6 +5090,93 @@ export interface paths {
         }
       }
     }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/crm/opportunities/{id}/interactions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Lists authorized lead contact attempts and outcomes */
+    get: {
+      parameters: {
+        query?: {
+          page?: number
+          pageSize?: number
+        }
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Paginated interaction history. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CrmInteractionsPage']
+          }
+        }
+        /** @description Invalid pagination. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CRM access required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Record not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
     delete?: never
     options?: never
     head?: never
@@ -8901,6 +9642,7 @@ export interface paths {
     get: {
       parameters: {
         query?: {
+          contractId?: string
           dueMonth?: string
           page?: number
           pageSize?: number
@@ -9731,7 +10473,7 @@ export interface paths {
     }
     /**
      * URL temporária para baixar um comprovante
-     * @description Quem vê a cobrança baixa o comprovante vigente. Comprovantes antigos (estornados) só o OWNER, pelo histórico.
+     * @description Quem vê a cobrança baixa o comprovante vigente. Comprovantes antigos (estornados) só o OWNER do tenant da cobrança, pelo histórico.
      */
     get: {
       parameters: {
@@ -9907,7 +10649,7 @@ export interface paths {
     }
     /**
      * Resumo financeiro do tenant (só OWNER)
-     * @description monthlyReceivable soma RECEIVABLE não canceladas com vencimento no mês (month, padrão o atual) e monthlySeries os 6 meses que terminam nele. overdueTotal, defaultRatePercentage, occupancyRatePercentage e upcomingDues são a posição de hoje. Valores em BRL.
+     * @description monthlyReceivable soma RECEIVABLE não canceladas com vencimento no mês (month, padrão o atual) e monthlySeries os 6 meses que terminam nele. overdueTotal, defaultRatePercentage e occupancyRatePercentage são a posição de hoje; upcomingDues traz até 5 cobranças pendentes que vencem de hoje em diante. Valores em BRL.
      */
     get: {
       parameters: {
@@ -9961,6 +10703,318 @@ export interface paths {
     }
     put?: never
     post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/instagram/connection': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Consulta conexão pessoal no tenant; gestor, corretor ou proprietário; nunca retorna token */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Estado da conexão */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              accountId?: string
+              configured: boolean
+              connected: boolean
+              expired?: boolean
+              /** Format: date-time */
+              expiresAt?: string
+              username?: string
+            }
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    /** Desconecta a conta local e cancela trabalhos pendentes; gestor, corretor ou proprietário */
+    delete: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Desconectado */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/instagram/oauth/start': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Inicia Instagram Login e emite cookie seguro; gestor, corretor ou proprietário */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description URL oficial de autorização */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              /** Format: uri */
+              authorizationUrl: string
+            }
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/instagram/properties/{propertyId}/publications': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Consulta histórico pessoal do imóvel autorizado no tenant; gestor, corretor ou proprietário */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          propertyId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Publicações */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              publications: {
+                accountId: string
+                /** Format: date-time */
+                createdAt: string
+                errorCode: string | null
+                id: string
+                permalink: string | null
+                propertyId: string
+                /** @enum {string} */
+                status:
+                  | 'QUEUED'
+                  | 'PREPARING'
+                  | 'READY'
+                  | 'PUBLISHING'
+                  | 'VERIFYING'
+                  | 'PUBLISHED'
+                  | 'FAILED'
+                  | 'BLOCKED'
+                  | 'CANCELLED'
+              }[]
+            }
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    /**
+     * Registra envio após revisão; imóvel precisa estar publicado; gestor, corretor ou proprietário
+     * @description Um envio por tenant, imóvel e conta Instagram. A conta pertence ao usuário autenticado, que precisa ter acesso atual ao imóvel. Uma solicitação repetida não produz outro post. Falha externa não altera o imóvel no site.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          propertyId: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': {
+            caption: string
+            imageUrls: string[]
+          }
+        }
+      }
+      responses: {
+        /** @description Publicação registrada ou existente */
+        202: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              publication: {
+                accountId: string
+                /** Format: date-time */
+                createdAt: string
+                errorCode: string | null
+                id: string
+                permalink: string | null
+                propertyId: string
+                /** @enum {string} */
+                status:
+                  | 'QUEUED'
+                  | 'PREPARING'
+                  | 'READY'
+                  | 'PUBLISHING'
+                  | 'VERIFYING'
+                  | 'PUBLISHED'
+                  | 'FAILED'
+                  | 'BLOCKED'
+                  | 'CANCELLED'
+              }
+            }
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/instagram/publications/{id}/retry': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Retenta somente falhas anteriores à confirmação; gestor, corretor ou proprietário
+     * @description Somente o solicitante com acesso atual ao imóvel pode tentar novamente. VERIFYING, BLOCKED, PUBLISHING e PUBLISHED não podem ser reenviados por esta rota.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Nova tentativa registrada */
+        202: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Estado não permite tentativa segura */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
     delete?: never
     options?: never
     head?: never
@@ -10131,6 +11185,7 @@ export interface paths {
                 propertyId: string
                 propertyTitle: string
                 renterIds: string[]
+                status: string
               }[]
               users: {
                 id: string
@@ -10374,6 +11429,7 @@ export interface paths {
         query?: {
           archived?: 'true' | 'false'
           category?: 'PLUMBING' | 'ELECTRICAL' | 'STRUCTURAL' | 'PAINTING' | 'OTHER'
+          contractId?: string
           locale?: 'pt-BR' | 'en-US' | 'es-ES'
           page?: number
           pageSize?: number
@@ -11436,6 +12492,202 @@ export interface paths {
     put?: never
     post?: never
     delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/marketplace/favorites': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Lista os imóveis favoritos de quem está logado
+     * @description Qualquer usuário de tenant logado. Retorna só os favoritos do próprio usuário, do mais recente para o mais antigo, até o limite. O favorito guarda o tenant de quem salvou e pode apontar para imóvel de qualquer tenant (mesma exceção do marketplace público). Imóvel que deixou de estar publicado volta com available=false e só título, cidade e bairro.
+     */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Favoritos do usuário. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FavoritePropertiesResponse']
+          }
+        }
+        /** @description Autenticação obrigatória. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/marketplace/favorites/{propertyId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /**
+     * Salva um imóvel publicado nos favoritos
+     * @description Idempotente: se o imóvel já estava salvo, devolve a data original. Só imóveis publicados podem ser salvos.
+     */
+    put: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          propertyId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Imóvel salvo. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['SavedFavoriteProperty']
+          }
+        }
+        /** @description ID do imóvel inválido. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Autenticação obrigatória. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Imóvel não encontrado ou não publicado. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Limite de favoritos atingido. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    post?: never
+    /**
+     * Remove um imóvel dos favoritos
+     * @description Idempotente: responde 204 mesmo que o imóvel não estivesse salvo.
+     */
+    delete: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          propertyId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Imóvel removido dos favoritos. */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description ID do imóvel inválido. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Autenticação obrigatória. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
     options?: never
     head?: never
     patch?: never
@@ -13696,7 +14948,7 @@ export interface paths {
     }
     /**
      * Lista imóveis do tenant autenticado
-     * @description RENTER consulta somente imóveis com contrato ACTIVE do mesmo tenant e vínculo explícito de RENTER ao seu usuário, independentemente do status do anúncio.
+     * @description RENTER consulta somente imóveis com contrato ACTIVE e vínculo explícito de RENTER ao seu usuário, inclusive de outras imobiliárias quando a conta está no tenant compartilhado de locatários (contrato e imóvel da mesma imobiliária), independentemente do status do anúncio.
      */
     get: {
       parameters: {
@@ -13960,6 +15212,160 @@ export interface paths {
     }
     trace?: never
   }
+  '/properties/{id}/history': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Lists authorized property audit history */
+    get: {
+      parameters: {
+        query?: {
+          page?: number
+          pageSize?: number
+        }
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Property audit history. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PropertyHistoryPage']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Property audit history unavailable for this role. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Property or event not found in the authorized scope. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/properties/{id}/history/{eventId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Reads one authorized property audit event */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          eventId: string
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Property audit history. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PropertyHistoryResponse']
+          }
+        }
+        /** @description Authentication required. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Property audit history unavailable for this role. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Property or event not found in the authorized scope. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/properties/{id}/publish': {
     parameters: {
       query?: never
@@ -14077,6 +15483,73 @@ export interface paths {
         }
       }
     }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/properties/brokers': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Lists active approved brokers in the agency for property access grants */
+    get: {
+      parameters: {
+        query?: {
+          page?: number
+          pageSize?: number
+        }
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Brokers selectable by the agency manager. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PropertyBrokersResponse']
+          }
+        }
+        /** @description Unauthenticated. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Agency management required. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
     delete?: never
     options?: never
     head?: never
@@ -15121,6 +16594,96 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/team/members/{id}/share': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Shares or revokes access to selected existing portfolio items */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['ShareBrokerPortfolioRequest']
+        }
+      }
+      responses: {
+        /** @description Counts of changed portfolio access grants. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              shared: components['schemas']['TeamTransferResponse']
+            }
+          }
+        }
+        /** @description Access token ausente, inválido ou expirado. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Só o dono da imobiliária (OWNER) gerencia a equipe. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Source member not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Invalid destination or empty selection. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/team/members/{id}/transfer': {
     parameters: {
       query?: never
@@ -15130,7 +16693,7 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** Transfere imóveis (com as oportunidades), leads e eventos futuros para outro corretor */
+    /** Transfere imóveis (com as oportunidades), leads e eventos futuros de um corretor ou da própria imobiliária para outro membro da equipe */
     post: {
       parameters: {
         query?: never
@@ -15211,6 +16774,84 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/team/membership-requests/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /**
+     * Recusa um pedido de vínculo pendente
+     * @description Remove o cadastro de um corretor que pediu para entrar na imobiliária e ainda não foi aprovado. Ele nunca acessou a imobiliária, então o cadastro é apagado e o e-mail fica livre para um novo pedido. Corretores já aprovados não são afetados: para retirá-los da equipe, use a desativação.
+     */
+    delete: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Pedido recusado. */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Access token ausente, inválido ou expirado. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Só o dono da imobiliária (OWNER) gerencia a equipe. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Pedido de vínculo pendente não encontrado. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description O corretor já tem imóveis, leads ou eventos. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/tenants/search': {
     parameters: {
       query?: never
@@ -15220,7 +16861,7 @@ export interface paths {
     }
     /**
      * Busca imobiliárias elegíveis para novos vínculos de corretor
-     * @description Rota pública. Busca por nome sem distinguir maiúsculas/minúsculas, limitada a 20 tenants AGENCY com status ACTIVE ou TRIAL. Usada no cadastro de corretor.
+     * @description Rota pública. Busca por nome sem distinguir maiúsculas/minúsculas, limitada a 20 tenants AGENCY com status ACTIVE ou TRIAL. Usada no cadastro de corretor. Exige ao menos 2 caracteres não vazios em q; com menos que isso (ou q ausente) devolve lista vazia, para que a rota pública não enumere imobiliárias.
      */
     get: {
       parameters: {
@@ -15314,9 +16955,8 @@ export interface components {
     }
     AgencyOverviewKpis: {
       activeBrokersCount: number
-      monthlyReceivable: number
-      /** @description Mesmo cálculo de monthlyReceivable, aplicado ao mês anterior inteiro. */
-      monthlyReceivablePreviousMonth: number
+      /** @description Faturado no mês corrente: cobranças a receber do mês, pagas ou em aberto, sem as canceladas (o último mês de revenueSeries). */
+      monthlyRevenue: number
       /** @description Imóveis cadastrados no mês corrente. */
       newPropertiesThisMonth: number
       occupancyPercentage: number
@@ -15372,15 +17012,25 @@ export interface components {
       internal: boolean
       kind: components['schemas']['AgendaEventKind']
       notes: string | null
+      outcomeNotes: string | null
+      /** @description Momento em que o resultado (realizado ou não compareceu) foi registrado. */
+      outcomeRecordedAt: string | null
+      outcomeRecordedBy: {
+        name: string
+      } | null
+      outcomeRecordedById: string | null
       owner: components['schemas']['AgendaEventLinkedUser']
       participantName: string
       participantPhone: string
       /** @description Usuários participantes vinculados (acesso de leitura). */
       participants: components['schemas']['AgendaEventLinkedUser'][]
+      /** @description Indica se o usuário pode abrir o imóvel. Um corretor vê o rótulo do imóvel de um evento atribuído a ele mesmo sem ser o responsável pelo imóvel, mas não ganha acesso ao cadastro. */
+      propertyAccessible: boolean
       propertyId: string | null
       propertyLabel: string | null
       /** @description Referência livre de imóvel, usada quando propertyId é nulo. */
       propertyReference: string | null
+      readOnly?: boolean
       /** @description ID do usuário responsável pelo evento. */
       responsibleId: string
       responsibleName: string
@@ -15390,7 +17040,13 @@ export interface components {
       tenantId: string
       title: string
       updatedAt: string
+      visitInterest: components['schemas']['AgendaVisitInterest']
     }
+    /**
+     * @description Status que podem ser definidos na edição. O resultado tem rota própria.
+     * @enum {string}
+     */
+    AgendaEventEditableStatus: 'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED'
     /** @enum {string|null} */
     AgendaEventKind: 'VISIT' | 'FOLLOW_UP' | 'MEETING' | 'INSPECTION' | 'SIGNATURE' | 'OTHER' | null
     /** @description Dono explícito do evento (acesso de leitura). */
@@ -15398,6 +17054,8 @@ export interface components {
       email: string
       name: string
     } | null
+    /** @enum {string} */
+    AgendaEventOutcome: 'COMPLETED' | 'NO_SHOW'
     AgendaEventReadResponse: {
       event: components['schemas']['AgendaEvent'] | components['schemas']['RenterAgendaEvent']
     }
@@ -15408,7 +17066,8 @@ export interface components {
       events: (components['schemas']['AgendaEvent'] | components['schemas']['RenterAgendaEvent'])[]
     }
     /** @enum {string} */
-    AgendaEventStatus: 'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED'
+    AgendaEventStatus:
+      'CONFIRMED' | 'PENDING' | 'RESCHEDULE' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW'
     AgendaPropertyOptionsResponse: {
       items: {
         id: string
@@ -15418,6 +17077,11 @@ export interface components {
       pageSize: number
       total: number
     }
+    /**
+     * @description Interesse do cliente, informado apenas em visitas realizadas.
+     * @enum {string|null}
+     */
+    AgendaVisitInterest: 'LOW' | 'MEDIUM' | 'HIGH' | null
     AssignOpportunityResponsibleRequest: {
       responsibleId: string
     }
@@ -15522,6 +17186,7 @@ export interface components {
        * @enum {string}
        */
       status: 'PENDING' | 'PAID' | 'OVERDUE' | 'SCHEDULED' | 'CANCELED'
+      tenantId: string
       /** @enum {string} */
       type: 'RECEIVABLE' | 'PAYABLE'
       updatedAt: string
@@ -15555,11 +17220,13 @@ export interface components {
       id: string
       payerName: string | null
       propertyTitle: string | null
+      receipt: components['schemas']['ChargeReceipt']
       /**
        * @description OVERDUE não é gravada: é calculada para PENDING ou SCHEDULED com vencimento antes de hoje (America/Sao_Paulo).
        * @enum {string}
        */
       status: 'PENDING' | 'PAID' | 'OVERDUE' | 'SCHEDULED' | 'CANCELED'
+      tenantId: string
       /** @enum {string} */
       type: 'RECEIVABLE' | 'PAYABLE'
       updatedAt: string
@@ -15602,6 +17269,11 @@ export interface components {
       PAID: number
       PENDING: number
       SCHEDULED: number
+    }
+    CompleteCrmInteractionRequest: {
+      description?: string
+      /** @enum {string} */
+      status: 'CONTACT_MADE' | 'NO_RESPONSE' | 'CANCELLED'
     }
     ConfirmContractDocumentRequest: {
       uploadToken: string
@@ -15661,6 +17333,7 @@ export interface components {
       activatedBy: components['schemas']['ContractActor']
       /** @enum {string} */
       adjustmentIndex: 'IPCA' | 'IGPM' | 'INPC'
+      agencyName: string
       amount: number
       cancellationReason: string | null
       cancelledAt: string | null
@@ -15776,6 +17449,7 @@ export interface components {
       totalCount: number
     }
     ContractListItem: {
+      agencyName: string
       amount: number
       canEdit: boolean
       code: string
@@ -15790,6 +17464,7 @@ export interface components {
       /** @enum {string} */
       status:
         'DRAFT' | 'IN_REVIEW' | 'AWAITING_SIGNATURE' | 'SIGNED' | 'ACTIVE' | 'CLOSED' | 'CANCELED'
+      tenantId: string
       tenantName: string | null
       /** @enum {string} */
       type: 'RESIDENTIAL' | 'COMMERCIAL' | 'SEASONAL'
@@ -15959,6 +17634,7 @@ export interface components {
     }
     CreateLeadRequest: {
       budget: string
+      contactId?: string
       /** Format: email */
       email?: string | null
       interest: string
@@ -16050,6 +17726,8 @@ export interface components {
       areaSqm?: number | null
       bathrooms?: number | null
       bedrooms?: number | null
+      /** @description Additional active approved brokers in this agency. Only agency management can change these grants. Omit to preserve existing grants; send an empty array to revoke all additional grants. The primary responsible user is unchanged. */
+      brokerIds?: string[]
       condoFee?: number | null
       description?: string | null
       listing?: components['schemas']['TenantPropertyListing']
@@ -16105,6 +17783,45 @@ export interface components {
     CreateUserResponse: {
       user: components['schemas']['AuthenticatedUserResponse']
     }
+    CrmInteraction: {
+      actorName: string
+      actorUserId: string
+      canComplete: boolean
+      channel: components['schemas']['CrmInteractionChannel']
+      /** Format: date-time */
+      completedAt: string | null
+      completedById: string | null
+      contactId?: string | null
+      createdAt: string
+      description: string | null
+      id: string
+      /** @enum {string} */
+      kind?: 'CONTACT_ATTEMPT' | 'STAGE_CHANGED' | 'CONTACT_LINKED' | 'LEAD_CREATED'
+      leadId: string | null
+      leadName: string | null
+      /** @enum {string|null} */
+      nextStage?: 'NEW' | 'IN_CONTACT' | 'VISIT_SCHEDULED' | 'PROPOSAL' | null
+      opportunityId: string | null
+      /** @enum {string|null} */
+      previousStage?: 'NEW' | 'IN_CONTACT' | 'VISIT_SCHEDULED' | 'PROPOSAL' | null
+      status: components['schemas']['CrmInteractionStatus']
+    }
+    /** @enum {string|null} */
+    CrmInteractionChannel: 'PHONE' | 'EMAIL' | 'WHATSAPP' | null
+    CrmInteractionResponse: {
+      interaction: components['schemas']['CrmInteraction']
+    }
+    CrmInteractionsPage: {
+      interactions: components['schemas']['CrmInteraction'][]
+      pagination: {
+        page: number
+        pageCount: number
+        pageSize: number
+        totalCount: number
+      }
+    }
+    /** @enum {string|null} */
+    CrmInteractionStatus: 'STARTED' | 'CONTACT_MADE' | 'NO_RESPONSE' | 'CANCELLED' | null
     CrmPropertyDetail: components['schemas']['CrmPropertySummary'] & {
       address: {
         city: string
@@ -16413,6 +18130,21 @@ export interface components {
       faceMatchThreshold: number
       maxAttempts: number
     }
+    FavoritePropertiesResponse: {
+      favorites: components['schemas']['FavoritePropertyEntry'][]
+      limit: number
+    }
+    FavoritePropertyEntry:
+      | (components['schemas']['SavedFavoriteProperty'] & {
+          /** @enum {boolean} */
+          available: true
+          property: components['schemas']['PublicPropertySummary']
+        })
+      | (components['schemas']['SavedFavoriteProperty'] & {
+          /** @enum {boolean} */
+          available: false
+          property: components['schemas']['UnavailableFavoriteProperty']
+        })
     FinancialMonthlyTotal: {
       month: number
       total: number
@@ -16492,11 +18224,15 @@ export interface components {
       emailDelivered: boolean
     }
     Lead: {
+      accessUserIds?: string[]
       budget: string
+      contactId?: string | null
       createdAt: string
       email: string | null
       id: string
       interest: string
+      /** Format: date-time */
+      lastContactAt?: string | null
       name: string
       notes: string | null
       opportunityId: string | null
@@ -16540,6 +18276,13 @@ export interface components {
       /** Format: email */
       email: string
     }
+    LinkLeadContactRequest:
+      | {
+          contactId: string
+        }
+      | {
+          contact: components['schemas']['CreateContactRequest']
+        }
     ListAgenciesResponse: {
       agencies: components['schemas']['PublicAgencyProfile'][]
       page: number
@@ -16654,6 +18397,7 @@ export interface components {
       archived?: 'true' | 'false'
       /** @enum {string} */
       category?: 'PLUMBING' | 'ELECTRICAL' | 'STRUCTURAL' | 'PAINTING' | 'OTHER'
+      contractId?: string
       /** @enum {string} */
       locale?: 'pt-BR' | 'en-US' | 'es-ES'
       page?: number
@@ -17006,6 +18750,7 @@ export interface components {
         propertyId: string
         propertyTitle: string
         renterIds: string[]
+        status: string
       }[]
       users: {
         id: string
@@ -17255,6 +19000,7 @@ export interface components {
       usageUnit: 'PROPERTIES' | 'BROKERS'
     } | null
     Opportunity: {
+      accessUserIds?: string[]
       archivedAt: string | null
       contactId: string | null
       contractTermMonths: number | null
@@ -17493,6 +19239,212 @@ export interface components {
       street: string
       zipCode: string
     } | null
+    PropertyBrokersResponse: {
+      brokers: {
+        id: string
+        name: string
+      }[]
+      pagination: {
+        page: number
+        pageSize: number
+        total: number
+        totalPages: number
+      }
+    }
+    PropertyHistoryChange: {
+      after: components['schemas']['PropertyHistoryValue'] &
+        (
+          | string
+          | number
+          | boolean
+          | string[]
+          | {
+              position: number
+              type: string
+              url: string
+            }[]
+          | {
+              id: string
+              name: string | null
+            }[]
+          | components['schemas']['TenantPropertyAddress']
+          | {
+              id: string
+              name: string | null
+            }
+          | unknown
+        )
+      before: components['schemas']['PropertyHistoryValue']
+      /** @enum {string} */
+      field:
+        | 'title'
+        | 'description'
+        | 'purpose'
+        | 'type'
+        | 'responsible'
+        | 'brokers'
+        | 'owner'
+        | 'ownerContact'
+        | 'status'
+        | 'price'
+        | 'rentalPrice'
+        | 'condoFee'
+        | 'propertyTax'
+        | 'bedrooms'
+        | 'bathrooms'
+        | 'parkingSpots'
+        | 'areaSqm'
+        | 'listing.amenities'
+        | 'listing.negotiationTerms'
+        | 'listing.negotiationConditions'
+        | 'listing.publishAfterReview'
+        | 'listing.allowWhatsappContact'
+        | 'listing.featured'
+        | 'address'
+        | 'media'
+    }
+    PropertyHistoryEvent: components['schemas']['PropertyHistorySummary'] & {
+      changes: {
+        after: components['schemas']['PropertyHistoryValue'] &
+          (
+            | string
+            | number
+            | boolean
+            | string[]
+            | {
+                position: number
+                type: string
+                url: string
+              }[]
+            | {
+                id: string
+                name: string | null
+              }[]
+            | components['schemas']['TenantPropertyAddress']
+            | {
+                id: string
+                name: string | null
+              }
+            | unknown
+          )
+        before: components['schemas']['PropertyHistoryValue'] &
+          (
+            | string
+            | number
+            | boolean
+            | string[]
+            | {
+                position: number
+                type: string
+                url: string
+              }[]
+            | {
+                id: string
+                name: string | null
+              }[]
+            | components['schemas']['TenantPropertyAddress']
+            | {
+                id: string
+                name: string | null
+              }
+            | unknown
+          )
+        /** @enum {string} */
+        field:
+          | 'title'
+          | 'description'
+          | 'purpose'
+          | 'type'
+          | 'responsible'
+          | 'brokers'
+          | 'owner'
+          | 'ownerContact'
+          | 'status'
+          | 'price'
+          | 'rentalPrice'
+          | 'condoFee'
+          | 'propertyTax'
+          | 'bedrooms'
+          | 'bathrooms'
+          | 'parkingSpots'
+          | 'areaSqm'
+          | 'listing.amenities'
+          | 'listing.negotiationTerms'
+          | 'listing.negotiationConditions'
+          | 'listing.publishAfterReview'
+          | 'listing.allowWhatsappContact'
+          | 'listing.featured'
+          | 'address'
+          | 'media'
+      }[]
+    }
+    PropertyHistoryNonNullValue:
+      | string
+      | number
+      | boolean
+      | string[]
+      | {
+          position: number
+          type: string
+          url: string
+        }[]
+      | {
+          id: string
+          name: string | null
+        }[]
+      | components['schemas']['TenantPropertyAddress']
+      | {
+          id: string
+          name: string | null
+        }
+    PropertyHistoryPage: {
+      events: components['schemas']['PropertyHistorySummary'][]
+      pagination: {
+        page: number
+        pageSize: number
+        total: number
+        totalPages: number
+      }
+    }
+    PropertyHistoryResponse: {
+      event: components['schemas']['PropertyHistoryEvent']
+    }
+    PropertyHistorySummary: {
+      /** @enum {string} */
+      action: 'CREATED' | 'UPDATED' | 'PUBLISHED' | 'UNPUBLISHED' | 'INACTIVATED' | 'STATUS_CHANGED'
+      actorName: string | null
+      actorRole: string | null
+      createdAt: string
+      fields: (
+        | 'title'
+        | 'description'
+        | 'purpose'
+        | 'type'
+        | 'responsible'
+        | 'brokers'
+        | 'owner'
+        | 'ownerContact'
+        | 'status'
+        | 'price'
+        | 'rentalPrice'
+        | 'condoFee'
+        | 'propertyTax'
+        | 'bedrooms'
+        | 'bathrooms'
+        | 'parkingSpots'
+        | 'areaSqm'
+        | 'listing.amenities'
+        | 'listing.negotiationTerms'
+        | 'listing.negotiationConditions'
+        | 'listing.publishAfterReview'
+        | 'listing.allowWhatsappContact'
+        | 'listing.featured'
+        | 'address'
+        | 'media'
+      )[]
+      id: string
+    }
+    PropertyHistoryValue: components['schemas']['PropertyHistoryNonNullValue'] | null
     PropertyMedia: {
       id: string
       order: number
@@ -17579,6 +19531,17 @@ export interface components {
       address: components['schemas']['PropertyAddress']
       description: string | null
       media: components['schemas']['PropertyMedia'][]
+      negotiationConditions?: (
+        | 'ACCEPTS_FINANCING'
+        | 'REQUIRES_DOWN_PAYMENT'
+        | 'CASH_ONLY'
+        | 'ACCEPTS_EXCHANGE'
+        | 'SALE_NEGOTIABLE'
+        | 'AGREE_WITH_OWNER'
+        | 'RENT_NEGOTIABLE'
+        | 'REQUIRES_DEPOSIT'
+      )[]
+      negotiationTerms?: string | null
     }
     PublicPropertySummary: {
       area: number | null
@@ -17603,6 +19566,11 @@ export interface components {
       purpose: 'RENT' | 'SALE' | 'BOTH'
       rentalPrice?: number | null
       title: string
+    }
+    RecordAgendaEventOutcomeRequest: {
+      notes?: string
+      outcome: components['schemas']['AgendaEventOutcome']
+      visitInterest?: components['schemas']['AgendaVisitInterest'] & unknown
     }
     RefreshPlatformTokenRequest: {
       refreshToken: string
@@ -17828,6 +19796,11 @@ export interface components {
       segments?: string[]
       summary?: string | null
     }
+    SavedFavoriteProperty: {
+      propertyId: string
+      /** @description Quando o imóvel foi salvo (ISO 8601). */
+      savedAt: string
+    }
     SavePublicProfileAddress: {
       handle: string
     }
@@ -17873,10 +19846,24 @@ export interface components {
       /** @example 8 */
       monthlySales: number
     }
+    ShareBrokerPortfolioRequest: {
+      destinationIds: string[]
+      futureEvents: boolean
+      leads: boolean
+      opportunities: boolean
+      properties: boolean
+      /** @default false */
+      revoke?: boolean
+    }
     /** @enum {string} */
     SignatureStatus: 'PENDING' | 'SIGNED'
     SignContractPartyRequest: {
       documentId: string
+    }
+    StartCrmInteractionRequest: {
+      channel: components['schemas']['CrmInteractionChannel']
+      /** Format: uuid */
+      requestId: string
     }
     SubmitInquiryRequest: {
       /**
@@ -18028,7 +20015,10 @@ export interface components {
     }
     TenantProperty: {
       activeContractId: string | null
-      address: components['schemas']['TenantPropertyAddress']
+      address: components['schemas']['TenantPropertyAddress'] & unknown
+      agencyManaged?: boolean
+      agencyName?: string
+      brokerIds?: string[]
       characteristics: components['schemas']['TenantPropertyCharacteristics']
       createdAt: string
       description: string | null
@@ -18065,7 +20055,7 @@ export interface components {
       state: string
       street: string
       zipCode: string
-    } | null
+    }
     TenantPropertyAddressInput: {
       city: string
       complement?: string | null
@@ -18076,7 +20066,7 @@ export interface components {
       state: string
       street: string
       /**
-       * @description CEP brasileiro com 8 dígitos. Pontos, espaços e hífen são aceitos e removidos ao salvar.
+       * @description CEP brasileiro com 8 dígitos, a partir de 01000-000 e sem todos os dígitos repetidos (00000-000, 11111-111…). Pontos, espaços e hífen são aceitos e removidos ao salvar.
        * @example 37502330
        */
       zipCode: string
@@ -18091,6 +20081,16 @@ export interface components {
       allowWhatsappContact: boolean
       amenities: ('FURNISHED' | 'GOURMET_BALCONY' | 'PET_FRIENDLY' | 'CONCIERGE_24H')[]
       featured: boolean
+      negotiationConditions?: (
+        | 'ACCEPTS_FINANCING'
+        | 'REQUIRES_DOWN_PAYMENT'
+        | 'CASH_ONLY'
+        | 'ACCEPTS_EXCHANGE'
+        | 'SALE_NEGOTIABLE'
+        | 'AGREE_WITH_OWNER'
+        | 'RENT_NEGOTIABLE'
+        | 'REQUIRES_DEPOSIT'
+      )[]
       negotiationTerms: string | null
       publishAfterReview: boolean
     }
@@ -18141,6 +20141,11 @@ export interface components {
     TransitionContractRequest: {
       reason: string
     }
+    UnavailableFavoriteProperty: {
+      city: string | null
+      neighborhood: string | null
+      title: string
+    }
     UpdateAgendaEventRequest: {
       /** @enum {string} */
       audience?: 'SHARED_TEAM' | 'ALL_AGENTS' | 'ASSIGNED_AGENT'
@@ -18164,7 +20169,7 @@ export interface components {
       propertyReference?: string | null
       responsibleId?: string
       start?: string | null
-      status?: components['schemas']['AgendaEventStatus']
+      status?: components['schemas']['AgendaEventEditableStatus']
       title?: string
     }
     /** @description Não troca status. Cobrança paga ou cancelada só aceita mudança de descrição (409 CHARGE_LOCKED). */
@@ -18273,6 +20278,8 @@ export interface components {
       areaSqm?: number | null
       bathrooms?: number | null
       bedrooms?: number | null
+      /** @description Additional active approved brokers in this agency. Only agency management can change these grants. Omit to preserve existing grants; send an empty array to revoke all additional grants. The primary responsible user is unchanged. */
+      brokerIds?: string[]
       condoFee?: number | null
       description?: string | null
       listing?: components['schemas']['TenantPropertyListing']

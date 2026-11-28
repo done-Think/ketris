@@ -5,9 +5,11 @@ import type { ContractListItem, CreateContractFormValues } from '../types/contra
 export function mapContractListItemFromApi(
   item: ApiContractListItem,
   presentation: ContractPresentation,
+  viewerTenantId?: string,
 ): ContractListItem {
   return {
     canEdit: item.canEdit,
+    managedBy: viewerTenantId && item.tenantId !== viewerTenantId ? item.agencyName : null,
     id: item.id,
     code: item.code,
     title: item.propertyTitle,
@@ -37,6 +39,7 @@ export function mapContractFromApi(
   const tenant = contract.parties.find((party) => party.role === 'RENTER')
 
   return {
+    managedBy: null,
     canEdit:
       ['DRAFT', 'IN_REVIEW', 'AWAITING_SIGNATURE'].includes(contract.status) &&
       !contract.parties.some((party) => party.signatureStatus === 'SIGNED'),

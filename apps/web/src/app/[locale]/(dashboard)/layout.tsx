@@ -10,7 +10,7 @@ import { privateMetadata } from '@/i18n/seo'
 
 import { resolveLocale } from '@/i18n/routing'
 import type { LocaleRouteParams } from '@/i18n/types/route.types'
-import { authOptions } from '@shared/lib/auth/auth-options'
+import { authOptions } from '@server/auth/session/auth-options'
 import { AuthenticationUnavailable } from '@shared/components/layout/AuthenticationUnavailable'
 
 export const metadata = privateMetadata

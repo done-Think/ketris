@@ -40,7 +40,7 @@ export function TenantSessionBoundary({ children }: TenantSessionBoundaryProps) 
 
     if (!isSessionInvalid) return
 
-    clearClientSession().finally(() => {
+    clearClientSession({ reason: 'forced' }).finally(() => {
       router.replace('/login')
       router.refresh()
     })

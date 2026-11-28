@@ -1,10 +1,20 @@
 import { useState } from 'react'
-import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
+import { MoneyInput } from '@shared/components/form/MoneyInput'
+import { formatCurrencySymbol } from '@shared/lib/utils/format'
 import type { PriceRange, PriceRangeMenuProps } from '../types/search'
-import { isValidPriceRange } from '../utils/search'
+import { isValidPriceRange, toPriceLimit } from '../utils/search'
 import { styles } from '../styles/price-range-menu.styles'
 
 export function PriceRangeMenu({
@@ -13,8 +23,17 @@ export function PriceRangeMenu({
   closeSearchMenu,
 }: PriceRangeMenuProps) {
   const t = useTranslations('marketplace.home.search')
+  const locale = useLocale()
   const [draft, setDraft] = useState<PriceRange>(priceRange)
   const valid = isValidPriceRange(draft)
+  const moneySlotProps = {
+    input: {
+      inputComponent: MoneyInput as never,
+      startAdornment: (
+        <InputAdornment position="start">{formatCurrencySymbol(locale)}</InputAdornment>
+      ),
+    },
+  }
 
   return (
     <Box
@@ -37,42 +56,28 @@ export function PriceRangeMenu({
       <Stack direction="row" spacing={0.8} sx={styles.stack2}>
         <TextField
           label={t('minPrice')}
-          type="number"
+          name="minPrice"
           value={draft[0] ?? ''}
           placeholder={t('noMinPrice')}
           error={!valid}
-          onChange={(event) =>
-            setDraft([event.target.value === '' ? null : Number(event.target.value), draft[1]])
-          }
+          onChange={(event) => setDraft([toPriceLimit(event.target.value), draft[1]])}
           size="small"
           fullWidth
           sx={styles.textField}
-          slotProps={{
-            htmlInput: {
-              min: 0,
-              step: 'any',
-            },
-          }}
+          slotProps={moneySlotProps}
         />
         <TextField
           label={t('maxPrice')}
-          type="number"
+          name="maxPrice"
           value={draft[1] ?? ''}
           placeholder={t('noMaxPrice')}
           error={!valid}
           helperText={!valid ? t('errors.priceInvalid') : undefined}
-          onChange={(event) =>
-            setDraft([draft[0], event.target.value === '' ? null : Number(event.target.value)])
-          }
+          onChange={(event) => setDraft([draft[0], toPriceLimit(event.target.value)])}
           size="small"
           fullWidth
           sx={styles.textField}
-          slotProps={{
-            htmlInput: {
-              min: 0,
-              step: 'any',
-            },
-          }}
+          slotProps={moneySlotProps}
         />
       </Stack>
 

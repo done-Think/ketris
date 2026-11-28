@@ -44,11 +44,11 @@ describe('computeEarliestSchedulableSlot', () => {
     expect(slot.format('HH:mm')).toBe('12:30')
     expect(meetsMinimumAdvanceNotice(slot, now)).toBe(true)
   })
-  it('soma 3 horas e arredonda para o próximo quarto de hora quando o resultado cai no horário comercial', () => {
+  it('soma 3 horas e arredonda para a próxima meia hora quando o resultado cai no horário comercial', () => {
     const now = dayjs('2026-09-29T09:10:00')
     const slot = computeEarliestSchedulableSlot(now)
 
-    expect(slot.format('YYYY-MM-DD HH:mm')).toBe('2026-09-29 12:15')
+    expect(slot.format('YYYY-MM-DD HH:mm')).toBe('2026-09-29 12:30')
   })
 
   it('keeps early morning slots available for confirmation', () => {

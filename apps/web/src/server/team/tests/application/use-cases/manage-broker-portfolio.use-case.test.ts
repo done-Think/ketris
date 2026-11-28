@@ -15,6 +15,7 @@ import { owner, staff, teamRepository } from './team-fixtures'
 const now = new Date('2026-10-20T12:00:00.000Z')
 const people = [
   staff({ id: 'owner-1', name: 'Dona', role: 'OWNER' }),
+  staff({ id: 'owner-2', name: 'Outra gestão', role: 'OWNER' }),
   staff({ id: 'agent-1', name: 'Marina' }),
   staff({ id: 'agent-2', name: 'Thiago' }),
   staff({ id: 'agent-3', name: 'Inativo', active: false }),
@@ -43,6 +44,25 @@ describe('TransferBrokerPortfolioUseCase', () => {
       actor: { id: 'owner-1', name: 'Dona' },
       now,
     })
+  })
+
+  it('transfere da carteira da própria imobiliária para um corretor', async () => {
+    const repository = teamRepository(people)
+
+    await new TransferBrokerPortfolioUseCase(repository, () => now).execute({
+      ...owner,
+      brokerId: 'owner-1',
+      destinationId: 'agent-1',
+      items: { properties: true, leads: false, opportunities: false, futureEvents: false },
+    })
+
+    expect(repository.transfer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceId: 'owner-1',
+        destinationId: 'agent-1',
+        actor: { id: 'owner-1', name: 'Dona' },
+      }),
+    )
   })
 
   it.each([
@@ -77,8 +97,20 @@ describe('TransferBrokerPortfolioUseCase', () => {
       }),
     ).rejects.toBeInstanceOf(EmptyTransferError)
     await expect(
-      useCase.execute({ ...owner, brokerId: 'owner-1', destinationId: 'agent-2', items: allItems }),
+      useCase.execute({ ...owner, brokerId: 'owner-2', destinationId: 'agent-2', items: allItems }),
     ).rejects.toBeInstanceOf(TeamMemberNotFoundError)
+    expect(repository.transfer).not.toHaveBeenCalled()
+  })
+
+  it('recusa a própria imobiliária como origem e destino ao mesmo tempo', async () => {
+    await expect(
+      new TransferBrokerPortfolioUseCase(teamRepository(people)).execute({
+        ...owner,
+        brokerId: 'owner-1',
+        destinationId: 'owner-1',
+        items: allItems,
+      }),
+    ).rejects.toBeInstanceOf(InvalidTransferDestinationError)
   })
 
   it('só o OWNER transfere', async () => {

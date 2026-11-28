@@ -3,7 +3,13 @@ import '@server/openapi/zod-extend'
 import { z } from 'zod'
 import { AGENDA_MINIMUM_VISIT_MINUTES } from '@shared/lib/utils/agenda-scheduling'
 
-import { agendaEventKindSchema, agendaEventStatusSchema } from './agenda-event.schema'
+import { AGENDA_OUTCOME_NOTES_MAX_LENGTH } from '@shared/lib/utils/agenda-outcome'
+import {
+  agendaEventEditableStatusSchema,
+  agendaEventKindSchema,
+  agendaEventOutcomeSchema,
+  agendaVisitInterestSchema,
+} from './agenda-event.schema'
 
 const durationMinutesSchema = z.number().int().min(15)
 const audienceSchema = z.enum(['SHARED_TEAM', 'ALL_AGENTS', 'ASSIGNED_AGENT'])
@@ -80,7 +86,7 @@ export const updateAgendaEventRequestSchema = z
     internal: z.boolean().optional(),
     title: z.string().trim().min(3).optional(),
     kind: agendaEventKindSchema.nullable().optional(),
-    status: agendaEventStatusSchema.optional(),
+    status: agendaEventEditableStatusSchema.optional(),
     cancellationReason: z.string().trim().min(1).max(10000).optional(),
     propertyId: z.string().trim().min(1).nullable().optional(),
     propertyReference: z.string().trim().min(1).max(500).nullable().optional(),
@@ -132,3 +138,18 @@ export const cancelAgendaEventRequestSchema = z
   .object({ reason: z.string().trim().min(1).max(10000) })
   .strict()
   .openapi('CancelAgendaEventRequest')
+
+export const recordAgendaEventOutcomeRequestSchema = z
+  .object({
+    outcome: agendaEventOutcomeSchema,
+    visitInterest: agendaVisitInterestSchema.optional().openapi({
+      description: 'Obrigatório em visita realizada e proibido nos demais casos.',
+    }),
+    notes: z.string().trim().max(AGENDA_OUTCOME_NOTES_MAX_LENGTH).optional(),
+  })
+  .strict()
+  .refine((value) => value.outcome === 'COMPLETED' || value.visitInterest === undefined, {
+    ...validationRefinement('visitInterestRequiresCompleted'),
+    path: ['visitInterest'],
+  })
+  .openapi('RecordAgendaEventOutcomeRequest')

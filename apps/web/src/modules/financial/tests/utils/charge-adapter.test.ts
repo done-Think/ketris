@@ -24,6 +24,7 @@ describe('charge-adapter', () => {
   it('maps a list item, keeping the derived overdue status', () => {
     expect(mapChargeListItemFromApi(apiListItem({ status: 'OVERDUE', type: 'PAYABLE' }))).toEqual({
       id: 'charge-1',
+      tenantId: 'tenant',
       code: 'COB-2026-0001',
       contractId: 'contract-1',
       direction: 'payable',
@@ -33,7 +34,12 @@ describe('charge-adapter', () => {
       amount: 2800,
       dueDate: '2026-10-10',
       status: 'overdue',
+      receipt: null,
     })
+  })
+
+  it('keeps the receipt of a list item so the month card can offer it', () => {
+    expect(mapChargeListItemFromApi(apiListItem({ receipt }))).toMatchObject({ receipt })
   })
 
   it('falls back to the description when a standalone charge has no payer', () => {

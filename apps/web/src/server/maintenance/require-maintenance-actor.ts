@@ -1,7 +1,7 @@
 import { authContainer } from '@server/auth/container'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { UnauthorizedError } from '@server/shared/errors'
-import { authOptions } from '@shared/lib/auth/auth-options'
+import { authOptions } from '@server/auth/session/auth-options'
 import { getServerSession } from 'next-auth'
 import type { NextRequest } from 'next/server'
 import type { MaintenanceActor } from './types/maintenance-ticket'

@@ -12,6 +12,16 @@ export const styles = {
     flexShrink: 0,
   } satisfies SxProps<Theme>,
   stack2: { minWidth: 0 } satisfies SxProps<Theme>,
+  managedByChip: {
+    alignSelf: 'flex-start',
+    height: 22,
+    mt: 0.4,
+    maxWidth: '100%',
+    bgcolor: brand.magenta[50],
+    color: brand.magenta[600],
+    fontSize: 11.5,
+    fontWeight: 800,
+  } satisfies SxProps<Theme>,
   typography: {
     color: brand.graphite[500],
     fontSize: 15,

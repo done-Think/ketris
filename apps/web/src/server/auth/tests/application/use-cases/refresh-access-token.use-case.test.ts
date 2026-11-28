@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { InvalidRefreshTokenError } from '../../../domain/errors'
-import { hashRefreshToken } from '../../../domain/refresh-token'
+import {
+  REFRESH_TOKEN_ROTATION_GRACE_SECONDS,
+  hashRefreshToken,
+} from '../../../domain/refresh-token'
 import type { User } from '../../../domain/user.entity'
 import type {
   RefreshTokenRepository,
@@ -47,6 +50,7 @@ function createDeps(overrides?: {
     rotate: vi.fn().mockResolvedValue(true),
     create: vi.fn().mockResolvedValue(undefined),
     findValidByTokenHash: overrides?.findValidByTokenHash ?? vi.fn().mockResolvedValue(stored),
+    findRecentlyRotatedByTokenHash: vi.fn().mockResolvedValue(null),
     revokeById: vi.fn().mockResolvedValue(undefined),
     revokeAllForUser: vi.fn().mockResolvedValue(undefined),
   }
@@ -181,5 +185,46 @@ describe('RefreshAccessTokenUseCase', () => {
     await expect(useCase.execute({ refreshToken: 'token-original' })).rejects.toThrow(
       'write unavailable',
     )
+  })
+
+  describe('reuse of a just-rotated refresh token', () => {
+    const rotatedStored: StoredRefreshToken = { ...stored, rotatedTo: 'rt-2' }
+
+    it('rotates the replacement again inside the grace window instead of rejecting', async () => {
+      const deps = createDeps({ findValidByTokenHash: vi.fn().mockResolvedValue(null) })
+      vi.mocked(deps.refreshTokenRepository.findRecentlyRotatedByTokenHash).mockResolvedValue(
+        rotatedStored,
+      )
+      const useCase = new RefreshAccessTokenUseCase(
+        deps.userRepository,
+        deps.tokenService,
+        deps.refreshTokenRepository,
+      )
+
+      const result = await useCase.execute({ refreshToken: 'rotated-original' })
+
+      expect(deps.refreshTokenRepository.findRecentlyRotatedByTokenHash).toHaveBeenCalledWith(
+        hashRefreshToken('rotated-original'),
+        REFRESH_TOKEN_ROTATION_GRACE_SECONDS,
+      )
+      expect(deps.refreshTokenRepository.rotate).toHaveBeenCalledWith(
+        expect.objectContaining({ previous: rotatedStored }),
+      )
+      expect(result.accessToken).toBe('jwt-novo')
+    })
+
+    it('rejects a rotated token outside the grace window (reuse detection)', async () => {
+      const deps = createDeps({ findValidByTokenHash: vi.fn().mockResolvedValue(null) })
+      const useCase = new RefreshAccessTokenUseCase(
+        deps.userRepository,
+        deps.tokenService,
+        deps.refreshTokenRepository,
+      )
+
+      await expect(useCase.execute({ refreshToken: 'rotated-original' })).rejects.toThrow(
+        InvalidRefreshTokenError,
+      )
+      expect(deps.refreshTokenRepository.rotate).not.toHaveBeenCalled()
+    })
   })
 })

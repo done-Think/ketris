@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import dayjs from 'dayjs'
-import { expect, it, vi } from 'vitest'
+import { expect, it, onTestFinished, vi } from 'vitest'
 
 import { AgendaWeekCalendar } from '../../components/agenda-dashboard/AgendaWeekCalendar'
 import { buildAgendaCalendarDays } from '../../utils/agenda-calendar'
@@ -73,6 +73,11 @@ it('uses the original hourly grid and keeps due dates separate from service time
 })
 
 it('keeps overlapping cards separately focusable and opens the correct record', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(dayjs().hour(8).minute(0).second(0).millisecond(0).toDate())
+  onTestFinished(() => {
+    vi.useRealTimers()
+  })
   const days = buildAgendaCalendarDays(dayjs(), 'pt-BR')
   const base: AgendaEvent = {
     id: 'one',
@@ -83,6 +88,7 @@ it('keeps overlapping cards separately focusable and opens the correct record', 
     property: 'Apartment',
     propertyHref: '/dashboard/properties',
     propertyId: null,
+    propertyAccessible: false,
     apiKind: 'MEETING',
     participant: 'Client',
     phone: '',
@@ -103,7 +109,10 @@ it('keeps overlapping cards separately focusable and opens the correct record', 
   const calendar = within(screen.getByRole('region', { name: 'Agenda' }))
   const first = calendar.getByRole('button', { name: 'Abrir First event' })
   const second = calendar.getByRole('button', { name: 'Abrir Second event' })
-  expect(getComputedStyle(first).zIndex).not.toBe(getComputedStyle(second).zIndex)
+  expect(first.parentElement).toBe(second.parentElement)
+  expect(getComputedStyle(first.parentElement!).display).toBe('grid')
+  expect(getComputedStyle(first).position).not.toBe('absolute')
+  expect(getComputedStyle(second).position).not.toBe('absolute')
   await userEvent.click(first)
   expect(onSelect).toHaveBeenLastCalledWith(base)
   second.focus()
@@ -123,6 +132,7 @@ it('opens the original booking when selecting its continuation after midnight', 
     property: '',
     propertyHref: '/dashboard/properties',
     propertyId: null,
+    propertyAccessible: false,
     apiKind: 'MEETING',
     participant: '',
     phone: '',
@@ -159,6 +169,7 @@ it('keeps the whole booked duration out of the mobile free-slot suggestion', () 
     property: '',
     propertyHref: '/dashboard/properties',
     propertyId: null,
+    propertyAccessible: false,
     apiKind: 'MEETING',
     participant: '',
     phone: '',

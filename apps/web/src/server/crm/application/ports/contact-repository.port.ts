@@ -9,6 +9,7 @@ export interface ContactListFilters extends CrmListFilters {
 }
 
 export interface ContactRepository {
+  hasLeadForAgent(tenantId: string, contactId: string, actorId: string): Promise<boolean>
   create(contact: NewContact): Promise<Contact>
   findManyByTenant(tenantId: string, filters?: ContactListFilters): Promise<CrmPage<Contact>>
   findById(id: string): Promise<Contact | null>

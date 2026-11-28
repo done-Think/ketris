@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type { ContactRepository } from '../../../application/ports/contact-repository.port'
+import type { LeadRepository } from '../../../application/ports/lead-repository.port'
 import type { OpportunityRepository } from '../../../application/ports/opportunity-repository.port'
 import { UpdateContactUseCase } from '../../../application/use-cases/update-contact.use-case'
 import type { Contact } from '../../../domain/contact.entity'
@@ -28,13 +29,26 @@ function createOpportunityRepository(existsForAgent?: OpportunityRepository['exi
   } as unknown as OpportunityRepository
 }
 
+function createLeadRepository() {
+  return { syncContactDetails: vi.fn().mockResolvedValue(undefined) } as unknown as LeadRepository
+}
+
 describe('UpdateContactUseCase', () => {
   it('atualiza campos sem tocar em findByEmail quando o e-mail não muda', async () => {
     const findById = vi.fn().mockResolvedValue(contact)
     const findByEmail = vi.fn()
     const update = vi.fn().mockResolvedValue({ ...contact, name: 'Carlos Silva' })
-    const repository = { findById, findByEmail, update } as unknown as ContactRepository
-    const useCase = new UpdateContactUseCase(repository, createOpportunityRepository())
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+      findByEmail,
+      update,
+    } as unknown as ContactRepository
+    const useCase = new UpdateContactUseCase(
+      repository,
+      createOpportunityRepository(),
+      createLeadRepository(),
+    )
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
@@ -48,11 +62,41 @@ describe('UpdateContactUseCase', () => {
     expect(update).toHaveBeenCalledWith('contato-1', { name: 'Carlos Silva' })
   })
 
+  it('keeps the linked lead phone when the contact phone is cleared', async () => {
+    const leads = createLeadRepository()
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById: vi.fn().mockResolvedValue({ ...contact, phone: '(11) 99999-0000' }),
+      update: vi.fn().mockResolvedValue({ ...contact, name: 'Carlos Silva', phone: null }),
+    } as unknown as ContactRepository
+    const useCase = new UpdateContactUseCase(repository, createOpportunityRepository(), leads)
+
+    await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'user-1',
+      actorRole: 'OWNER',
+      contactId: 'contato-1',
+      changes: { name: 'Carlos Silva', phone: null },
+    })
+
+    expect(leads.syncContactDetails).toHaveBeenCalledWith('tenant-1', 'contato-1', {
+      name: 'Carlos Silva',
+    })
+  })
+
   it('lança ContactNotFoundError quando o contato é de outro tenant', async () => {
     const findById = vi.fn().mockResolvedValue({ ...contact, tenantId: 'tenant-2' })
     const update = vi.fn()
-    const repository = { findById, update } as unknown as ContactRepository
-    const useCase = new UpdateContactUseCase(repository, createOpportunityRepository())
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+      update,
+    } as unknown as ContactRepository
+    const useCase = new UpdateContactUseCase(
+      repository,
+      createOpportunityRepository(),
+      createLeadRepository(),
+    )
 
     await expect(
       useCase.execute({
@@ -70,8 +114,17 @@ describe('UpdateContactUseCase', () => {
     const findById = vi.fn().mockResolvedValue(contact)
     const findByEmail = vi.fn().mockResolvedValue(null)
     const update = vi.fn().mockResolvedValue({ ...contact, email: 'novo@exemplo.com' })
-    const repository = { findById, findByEmail, update } as unknown as ContactRepository
-    const useCase = new UpdateContactUseCase(repository, createOpportunityRepository())
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+      findByEmail,
+      update,
+    } as unknown as ContactRepository
+    const useCase = new UpdateContactUseCase(
+      repository,
+      createOpportunityRepository(),
+      createLeadRepository(),
+    )
 
     await useCase.execute({
       actorTenantId: 'tenant-1',
@@ -89,8 +142,17 @@ describe('UpdateContactUseCase', () => {
     const findById = vi.fn().mockResolvedValue(contact)
     const findByEmail = vi.fn().mockResolvedValue({ ...contact, id: 'contato-2' })
     const update = vi.fn()
-    const repository = { findById, findByEmail, update } as unknown as ContactRepository
-    const useCase = new UpdateContactUseCase(repository, createOpportunityRepository())
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+      findByEmail,
+      update,
+    } as unknown as ContactRepository
+    const useCase = new UpdateContactUseCase(
+      repository,
+      createOpportunityRepository(),
+      createLeadRepository(),
+    )
 
     await expect(
       useCase.execute({
@@ -107,10 +169,15 @@ describe('UpdateContactUseCase', () => {
   it('AGENT sem nenhuma oportunidade acessível no contato recebe 404 opaco e não atualiza', async () => {
     const findById = vi.fn().mockResolvedValue(contact)
     const update = vi.fn()
-    const repository = { findById, update } as unknown as ContactRepository
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+      update,
+    } as unknown as ContactRepository
     const useCase = new UpdateContactUseCase(
       repository,
       createOpportunityRepository(vi.fn().mockResolvedValue(false)),
+      createLeadRepository(),
     )
 
     await expect(

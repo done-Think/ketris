@@ -8,7 +8,7 @@ The renter agenda combines explicitly linked appointments, charge due dates and 
 
 Each accessible maintenance ticket appears on its opening date (`createdAt`) and, when set, its scheduled service date (`scheduledAt`, stored as `atendimentoEm`). Both entries link to the same ticket. Opening dates remain unchanged when service is rescheduled. A ticket without a scheduled date has only its opening entry.
 
-Scheduling happens in the existing ticket detail after a provider has been assigned. The date/time selector stays disabled without a provider and displays a reminder to agree on the appointment with the selected provider first. A linked renter or authorized staff member can use the dedicated `schedule` action on an active ticket; it requires a valid date/time with timezone and appends an audit entry with the previous/new dates and provider. It does not grant permission to edit original ticket fields. Creation with an appointment is rejected because the new ticket has no provider yet; administrative field updates also enforce the provider requirement. Existing tickets remain unscheduled after the additive migration.
+Scheduling happens in the existing ticket detail after a provider has been assigned. The date/time selector stays disabled without a provider and displays a reminder to agree on the appointment with the selected provider first. Only the agency team (tenant ADMIN/OWNER, or an AGENT with access to the ticket) can use the dedicated `schedule` action on an active ticket; linked renters and property owners see the appointment date read-only. The action requires a valid date/time with timezone and appends an audit entry with the previous/new dates and provider. It does not grant permission to edit original ticket fields. Creation with an appointment is rejected because the new ticket has no provider yet; administrative field updates also enforce the provider requirement. Existing tickets remain unscheduled after the additive migration.
 
 ## Ticket access
 
@@ -29,7 +29,7 @@ email. A legacy ticket also requires the separate administrative `linkContract` 
 - Access requires an active tenant user with an approved membership.
 - The ticket must belong to the same tenant and property as its linked contract.
 - The renter must be explicitly linked through a contract party with role `LOCATARIO` and their user ID. Matching names or email addresses does not grant access.
-- Renters can open tickets for their linked contracts, including viewing tickets opened by other authorized users on those contracts.
+- Renters can open tickets only for their linked ACTIVE contracts; closed or canceled contracts leave the new-ticket options and creation is refused (`404`), while their existing tickets stay readable. They can view tickets opened by other authorized users on those contracts. The agency team can still open tickets on closed contracts.
 - Renters cannot edit original ticket fields, even on their own `ABERTO` tickets. Corrections and additional details must be appended as notes.
 - Notes and JPEG, PNG or WebP attachments up to 8 MB are allowed while the ticket permits collaboration.
 - Non-archived `RESOLVIDO` tickets remain readable by linked renters and accept additional notes. Notes preserve the resolution status and date. Uploads and field editing remain blocked until reopening; field editing stays unavailable to renters after reopening.
@@ -38,7 +38,7 @@ email. A legacy ticket also requires the separate administrative `linkContract` 
 
 ## Provider assignment
 
-Contract-linked renters can use the existing **Definir prestador** button and modal to enter provider details on accessible, non-archived active tickets, including those opened by other authorized users. The same `provider` action used by ADMIN and the assigned AGENT records the actor and snapshots of the previous and new provider details in the history. It does not grant editing of original ticket fields or previous activities.
+Only the agency team chooses the provider: tenant ADMIN/OWNER, or the AGENT assigned as responsible for the ticket. They use the **Definir prestador** button and modal; the `provider` action records the actor and snapshots of the previous and new provider details in the history. Contract-linked renters see the chosen provider but have no **Definir prestador** button, cannot use the `provider` action and cannot list or register providers in the agency catalog (`403`).
 
 Provider changes are blocked on `RESOLVIDO`, `CANCELADO`, `FECHADO`, archived or unlinked tickets. An existing pending replacement request must still be decided by ADMIN before the provider can be changed. OWNER replacement-request permissions remain unchanged. This delivery reuses the current form; it adds no professional catalog or database migration.
 

@@ -4,11 +4,32 @@ import { assertWithinAgendaSchedulingWindow } from '../../domain/agenda-scheduli
 import {
   AgendaMinimumAdvanceNoticeError,
   AgendaOutsideBusinessHoursError,
+  AgendaTimeSlotInvalidError,
 } from '../../domain/errors'
 
 const now = new Date('2026-09-29T12:00:00.000Z')
 
 describe('assertWithinAgendaSchedulingWindow', () => {
+  it.each([
+    '2026-09-29T18:15:00Z',
+    '2026-09-29T18:45:00Z',
+    '2026-09-29T18:30:01Z',
+    '2026-09-29T18:30:00.001Z',
+  ])('rejects off-grid starts even when business hours are confirmed: %s', (start) => {
+    expect(() =>
+      assertWithinAgendaSchedulingWindow(new Date(start), now, {
+        outsideBusinessHoursConfirmed: true,
+      }),
+    ).toThrow(AgendaTimeSlotInvalidError)
+  })
+  it('allows an unchanged legacy start when changing its duration', () => {
+    expect(() =>
+      assertWithinAgendaSchedulingWindow(new Date('2026-09-29T18:15:00Z'), now, {
+        unchangedStart: true,
+        durationMinutes: 30,
+      }),
+    ).not.toThrow()
+  })
   it('allows an explicitly confirmed outside-hours period', () => {
     expect(() =>
       assertWithinAgendaSchedulingWindow(new Date('2026-09-29T23:00:00Z'), now, {

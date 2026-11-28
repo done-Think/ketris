@@ -80,7 +80,7 @@ export function MarketplaceHeader({ activeItemId }: MarketplaceHeaderProps) {
           action.labelKey === 'signOut'
             ? async () => {
                 if (logoutToMarketplace) return logoutToMarketplace()
-                await clearClientSession()
+                await clearClientSession({ reason: 'manual' })
                 router.replace('/')
                 router.refresh()
               }

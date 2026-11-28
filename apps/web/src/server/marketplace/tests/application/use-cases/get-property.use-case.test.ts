@@ -53,6 +53,23 @@ function createDeps(findPublishedById?: PublicPropertyRepository['findPublishedB
 }
 
 describe('GetPropertyUseCase', () => {
+  it('exposes saved negotiation choices and legacy terms without tenant data', async () => {
+    const deps = createDeps(
+      vi.fn().mockResolvedValue({
+        ...detail,
+        negotiationConditions: ['REQUIRES_DEPOSIT'],
+        negotiationTerms: 'Condição anterior',
+      }),
+    )
+    const result = await new GetPropertyUseCase(deps.propertyRepository).execute({
+      propertyId: detail.id,
+    })
+    expect(result).toMatchObject({
+      negotiationConditions: ['REQUIRES_DEPOSIT'],
+      negotiationTerms: 'Condição anterior',
+    })
+    expect(result).not.toHaveProperty('tenantId')
+  })
   it('preserves the rental amount when exposing a dual-purpose listing', async () => {
     const deps = createDeps(
       vi.fn().mockResolvedValue({ ...detail, purpose: 'BOTH', price: 900000, rentalPrice: 2500 }),

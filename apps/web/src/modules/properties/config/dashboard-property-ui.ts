@@ -59,10 +59,26 @@ export const propertyFormStepFields: Record<
   CreatePropertyStepKey,
   Array<keyof CreateDashboardPropertyFormValues>
 > = {
-  basic: ['type', 'purpose', 'title', 'description', 'ownerUserId'],
+  basic: ['type', 'purpose', 'title', 'description', 'ownerUserId', 'brokerIds'],
   address: ['street', 'number', 'complement', 'neighborhood', 'city', 'state', 'zipCode'],
   features: ['bedrooms', 'bathrooms', 'parkingSpaces', 'area', 'features'],
   media: ['media'],
-  values: ['mainValue', 'rentalValue', 'condominium', 'propertyTax', 'negotiationTerm'],
-  publishing: ['publishingOptions'],
+  values: [
+    'mainValue',
+    'rentalValue',
+    'condominium',
+    'propertyTax',
+    'negotiationTerm',
+    'negotiationConditions',
+  ],
+  publishing: ['publishingOptions', 'instagramEnabled', 'instagramCaption', 'instagramImageUrls'],
 }
+
+export const propertyMediaAcceptedTypes = {
+  'image/jpeg': [],
+  'image/png': [],
+  'image/webp': [],
+}
+export const propertyMediaMaxSizeMb = 8
+export const propertyMediaMaxSizeBytes = propertyMediaMaxSizeMb * 1024 * 1024
+export const propertyMediaRejectionAutoHideMs = 6000

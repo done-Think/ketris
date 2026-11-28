@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -13,6 +13,24 @@ vi.mock('next-auth/react', () => ({
   useSession: () => ({
     data: { scope: 'tenant', tenantId: 'agency', user: { id: 'manager' }, role: 'OWNER' },
     status: 'authenticated',
+  }),
+}))
+
+// A sidebar também renderiza o histórico. Sem este mock, a chamada de rede real falha em segundo
+// plano e, num runner lento, o erro dele aparece junto com o dos participantes (dois botões
+// "Tentar novamente"), o que tornava o teste de nova tentativa instável.
+vi.mock('../../hooks/use-property-history', () => ({
+  usePropertyHistory: () => ({
+    data: { events: [], pagination: { totalPages: 1 } },
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
+  usePropertyHistoryEvent: () => ({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
   }),
 }))
 
@@ -33,11 +51,12 @@ function leaseFixture() {
   return lease
 }
 
-function renderSidebar(overrides: Partial<DashboardProperty> = {}) {
+function renderSidebar(overrides: Partial<DashboardProperty> = {}, showFullHistory = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={client}>
       <PropertyDetailSidebar
+        showFullHistory={showFullHistory}
         property={{
           ...dashboardProperties[0],
           id: 'property-1',
@@ -52,13 +71,23 @@ function renderSidebar(overrides: Partial<DashboardProperty> = {}) {
 }
 
 describe('Property contract participants', () => {
+  it('shows the full history button separately when the history tab is active', () => {
+    renderSidebar({ activeContractId: null }, true)
+    const heading = screen.getByRole('heading', { name: 'Atualizações recentes' })
+    const button = screen.getByRole('button', { name: 'Exibir todo histórico' })
+    expect(button).toBeVisible()
+    expect(heading.parentElement).not.toContainElement(button)
+  })
   it.each(['DRAFT', 'PUBLISHED', 'SOLD', 'INACTIVE'] as const)(
     'does not fetch or display participants for %s properties',
     (apiStatus) => {
       const get = vi.spyOn(contractsService, 'get')
       renderSidebar({ apiStatus })
       expect(screen.queryByText('Participantes')).not.toBeInTheDocument()
-      expect(screen.getByText('Histórico de Atividade')).toBeVisible()
+      expect(screen.getByText('Atualizações recentes')).toBeVisible()
+      expect(
+        screen.queryByRole('button', { name: 'Exibir todo histórico' }),
+      ).not.toBeInTheDocument()
       expect(get).not.toHaveBeenCalled()
     },
   )
@@ -127,7 +156,8 @@ describe('Property contract participants', () => {
       'Não foi possível carregar os participantes do contrato.',
     )
     expect(screen.queryByText('Private contract details')).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    const participants = screen.getByText('Participantes').parentElement as HTMLElement
+    await user.click(within(participants).getByRole('button', { name: 'Tentar novamente' }))
     expect(await screen.findByText('Locatária do contrato')).toBeVisible()
     expect(get).toHaveBeenCalledTimes(2)
   })

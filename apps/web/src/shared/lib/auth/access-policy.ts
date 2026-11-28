@@ -60,6 +60,9 @@ export const dashboardFeaturesByProfile: Record<AccessProfile, readonly Dashboar
   ],
   INDIVIDUAL_OWNER: [
     'properties',
+    'pipeline',
+    'contacts',
+    'leads',
     'contracts',
     'faceCheck',
     'faceCheckMyVerifications',
@@ -89,7 +92,14 @@ export const dashboardFeaturesByProfile: Record<AccessProfile, readonly Dashboar
     'agenda',
     'faceCheckMyVerifications',
   ],
-  RENTER: ['charges', 'maintenance', 'agenda', 'properties', 'faceCheckMyVerifications'],
+  RENTER: [
+    'charges',
+    'contracts',
+    'maintenance',
+    'agenda',
+    'properties',
+    'faceCheckMyVerifications',
+  ],
 }
 
 export function resolveAccessProfile(

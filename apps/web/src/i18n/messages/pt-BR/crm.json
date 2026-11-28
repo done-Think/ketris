@@ -84,7 +84,8 @@
       "editContact": "Editar {name}",
       "viewInteractions": "Ver interações de {name}",
       "moreOptions": "Mais opções para {name}",
-      "archiveContact": "Arquivar {name}"
+      "archiveContact": "Arquivar {name}",
+      "addLead": "Adicionar {name} a Leads"
     },
     "types": {
       "tenant": "Locatário",
@@ -142,6 +143,11 @@
       "confirm": "Arquivar",
       "success": "Contato arquivado.",
       "error": "Não foi possível arquivar o contato."
+    },
+    "shortcuts": {
+      "call": "Ligar",
+      "whatsapp": "WhatsApp",
+      "email": "E-mail"
     }
   },
   "leads": {
@@ -197,6 +203,7 @@
         "phoneInvalid": "Informe um telefone válido",
         "emailInvalid": "Informe um e-mail válido",
         "interestRequired": "Selecione um imóvel disponível.",
+        "budgetInvalid": "Informe um orçamento válido",
         "budgetRequired": "Informe o orçamento",
         "sourceRequired": "Informe a origem",
         "textTooLong": "O texto excede o limite permitido.",
@@ -232,7 +239,8 @@
       "email": "E-mail",
       "convert": "Converter em oportunidade",
       "alreadyConverted": "Já convertido",
-      "viewOpportunity": "Ver oportunidade"
+      "viewOpportunity": "Ver oportunidade",
+      "linkContact": "Vincular a Contatos"
     },
     "convert": {
       "eyebrow": "Converter lead",
@@ -323,7 +331,16 @@
       "title": "Imóvel associado",
       "retry": "Tentar novamente",
       "loadError": "Não foi possível carregar o imóvel associado. Referência: {id}",
-      "monthlySuffix": "/mês"
+      "monthlySuffix": "/mês",
+      "propertyTypes": {
+        "APARTMENT": "Apartamento",
+        "HOUSE": "Casa",
+        "STUDIO": "Studio",
+        "PENTHOUSE": "Cobertura",
+        "COMMERCIAL": "Comercial",
+        "LOFT": "Loft",
+        "OTHER": "Outro"
+      }
     },
     "fields": {
       "name": "Nome",
@@ -503,5 +520,56 @@
     "retry": "Tentar novamente",
     "loadError": "Não foi possível carregar as opções.",
     "loadMore": "Carregar mais"
+  },
+  "interactions": {
+    "title": "Interações",
+    "loading": "Carregando interações",
+    "retry": "Tentar novamente",
+    "loadError": "Não foi possível carregar o histórico.",
+    "empty": "Nenhuma interação registrada.",
+    "recordResult": "Registrar resultado",
+    "result": "Resultado do contato",
+    "description": "Observação (opcional)",
+    "cancel": "Cancelar",
+    "save": "Salvar resultado",
+    "required": "Selecione um resultado.",
+    "maximum": "Use no máximo 2000 caracteres.",
+    "completeError": "Não foi possível salvar. Atualize o histórico e tente novamente.",
+    "completedAt": "Resultado registrado em {date}",
+    "pagination": "Páginas de interações",
+    "close": "Fechar",
+    "contactScope": "Este histórico reúne as interações diretas do contato e os eventos dos leads explicitamente vinculados. Mudar uma etapa não confirma uma conversa.",
+    "recording": "Registrando a tentativa de contato...",
+    "attemptRecorded": "Atalho acionado. Registre abaixo o resultado quando concluir o atendimento.",
+    "startError": "O atalho foi acionado, mas a tentativa não foi registrada. Tente salvar o registro novamente, sem refazer o contato.",
+    "channels": {
+      "PHONE": "Ligação",
+      "EMAIL": "E-mail",
+      "WHATSAPP": "WhatsApp"
+    },
+    "statuses": {
+      "STARTED": "Tentativa iniciada",
+      "CONTACT_MADE": "Consegui contato",
+      "NO_RESPONSE": "Sem resposta",
+      "CANCELLED": "Cancelado"
+    },
+    "retryRecord": "Salvar tentativa novamente",
+    "refreshHistory": "Atualizar histórico",
+    "kinds": {
+      "CONTACT_ATTEMPT": "Tentativa de contato",
+      "STAGE_CHANGED": "Etapa do lead alterada",
+      "CONTACT_LINKED": "Lead vinculado a Contatos",
+      "LEAD_CREATED": "Lead criado a partir de Contatos"
+    }
+  },
+  "contactLinks": {
+    "title": "Vincular {name} a Contatos",
+    "explanation": "Selecione um contato existente ou crie um cadastro. O histórico do lead ficará disponível nos dois lugares.",
+    "existing": "Contato existente",
+    "required": "Selecione um contato.",
+    "create": "Criar contato",
+    "link": "Vincular contato",
+    "cancel": "Cancelar",
+    "error": "Não foi possível vincular. Confira os dados e, se o e-mail já estiver cadastrado, selecione o contato existente."
   }
 }

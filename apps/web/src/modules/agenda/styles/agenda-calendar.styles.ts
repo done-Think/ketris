@@ -1,4 +1,4 @@
-import { alpha, brand, radius, shadows, supportColor, surface } from '@shared/theme/tokens'
+import { alpha, brand, radius, shadows, supportColor } from '@shared/theme/tokens'
 import type { AgendaEventTone, AgendaEventToneStyle } from '../types/agenda-event'
 
 export const agendaCardBaseSx = {
@@ -28,33 +28,14 @@ export const agendaEventToneStyles: Record<AgendaEventTone, AgendaEventToneStyle
     borderColor: brand.semantic.warning,
     color: brand.semantic.warning,
   },
-}
-
-export function getAgendaCardPlacementSx(top: number, height: number, lane = 0, laneCount = 1) {
-  const shift = lane * Math.min(24, 80 / Math.max(1, laneCount - 1))
-  return {
-    position: 'absolute',
-    top,
-    height,
-    left: { xs: `${8 + shift}px`, md: `${16 + shift}px` },
-    right: { xs: 8, md: 16 },
-    zIndex: lane + 1,
-    bgcolor: surface.paper,
-    boxSizing: 'border-box',
-    transition: 'box-shadow 160ms ease, transform 160ms ease',
-    '&:hover, &:focus-within, &:focus-visible': {
-      height: 'auto',
-      minHeight: height,
-      zIndex: 1000,
-      boxShadow: shadows.crmCardHover,
-      transform: 'translateY(-1px)',
-      outline: 'none',
-      '& .MuiTypography-root': {
-        whiteSpace: 'normal',
-        overflow: 'visible',
-        textOverflow: 'clip',
-        overflowWrap: 'anywhere',
-      },
-    },
-  } as const
+  success: {
+    bgcolor: supportColor.successSoft,
+    borderColor: brand.semantic.success,
+    color: brand.semantic.success,
+  },
+  neutral: {
+    bgcolor: brand.neutral[50],
+    borderColor: brand.neutral[400],
+    color: brand.neutral[600],
+  },
 }

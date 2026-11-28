@@ -12,6 +12,14 @@ import type { AppRequestConfig, UnauthorizedHandler } from '@shared/types'
 type RetryableRequestConfig = InternalAxiosRequestConfig & {
   _retriedAfterRefresh?: boolean
   skipUnauthorizedHandling?: boolean
+  sessionAccessToken?: string
+}
+
+function readBearerToken(request: InternalAxiosRequestConfig): string | undefined {
+  const authorization = request.headers?.Authorization
+  return typeof authorization === 'string' && authorization.startsWith('Bearer ')
+    ? authorization.slice('Bearer '.length)
+    : undefined
 }
 
 export class HttpClient {
@@ -58,9 +66,24 @@ export class HttpClient {
           return Promise.reject(error)
         }
 
-        const newAccessToken = await this.refreshAccessToken()
+        const sessionToken = originalRequest.sessionAccessToken
+        const tenant = this.instance.defaults.headers.common['X-Tenant-Id']
+        if (
+          originalRequest.signal?.aborted ||
+          (sessionToken &&
+            this.instance.defaults.headers.common.Authorization !== `Bearer ${sessionToken}`)
+        )
+          return Promise.reject(error)
 
-        if (!newAccessToken) {
+        const newAccessToken = await this.refreshAccessToken(readBearerToken(originalRequest))
+
+        if (
+          !newAccessToken ||
+          originalRequest.signal?.aborted ||
+          (sessionToken &&
+            (this.instance.defaults.headers.common.Authorization !== `Bearer ${newAccessToken}` ||
+              this.instance.defaults.headers.common['X-Tenant-Id'] !== tenant))
+        ) {
           return Promise.reject(error)
         }
 
@@ -73,10 +96,10 @@ export class HttpClient {
     )
   }
 
-  private async refreshAccessToken(): Promise<string | null> {
+  private async refreshAccessToken(failedAccessToken?: string): Promise<string | null> {
     if (!this.unauthorizedHandler) return null
 
-    this.refreshPromise ??= this.unauthorizedHandler().finally(() => {
+    this.refreshPromise ??= this.unauthorizedHandler(failedAccessToken).finally(() => {
       this.refreshPromise = null
     })
 

@@ -23,7 +23,7 @@ vi.mock('@/i18n/scoped-messages', () => ({
 
 vi.mock('next-auth', () => ({ getServerSession: getServerSessionMock }))
 vi.mock('next-auth/react', () => ({ useSession: vi.fn() }))
-vi.mock('@shared/lib/auth/auth-options', () => ({ authOptions: {} }))
+vi.mock('@server/auth/session/auth-options', () => ({ authOptions: {} }))
 vi.mock('next/navigation', async () => ({
   ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
   redirect: redirectMock,

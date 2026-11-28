@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ContractsDashboardPage } from '../../components/ContractsDashboardPage'
@@ -95,4 +95,30 @@ it('apresenta a ação real de criação no estado vazio somente quando autoriza
   expect(create).toHaveBeenCalledOnce()
   rerender(<ContractsEmptyState />)
   expect(screen.queryByRole('button')).not.toBeInTheDocument()
+})
+
+it('mostra para a imobiliária o botão de vínculo do locador e confirma pelo e-mail da parte', async () => {
+  vi.spyOn(contractsService, 'get').mockResolvedValue(apiContractFixture({ status: 'ACTIVE' }))
+  vi.spyOn(contractsService, 'history').mockResolvedValue({
+    items: [],
+    totalCount: 0,
+    page: 1,
+    pageSize: 10,
+  })
+  const link = vi
+    .spyOn(contractsService, 'linkParty')
+    .mockResolvedValue({ partyId: 'party-owner', userId: 'landlord' })
+  show(<ContractDetailDashboardPage contractId="contract" />)
+  fireEvent.click(await screen.findByRole('button', { name: 'Confirmar vínculo do locador' }))
+  expect(
+    screen.getByText(/O dono do imóvel vai acompanhar este contrato.*owner@example\.test/),
+  ).toBeInTheDocument()
+  fireEvent.click(
+    within(screen.getByRole('dialog')).getByRole('button', {
+      name: 'Confirmar vínculo do locador',
+    }),
+  )
+  await waitFor(() =>
+    expect(link).toHaveBeenCalledWith('contract', 'party-owner', 'owner@example.test'),
+  )
 })

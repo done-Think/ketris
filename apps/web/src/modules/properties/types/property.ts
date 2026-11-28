@@ -1,3 +1,4 @@
+import type { PropertyNegotiationCondition } from '@shared/types/property-negotiation'
 import type { components } from '@shared/types/generated/api'
 
 export type PropertyType =
@@ -10,6 +11,7 @@ export type PropertyAmenity = 'furnished' | 'gourmetBalcony' | 'petFriendly' | '
 export type ApiPropertyAmenity = components['schemas']['TenantPropertyListing']['amenities'][number]
 
 export interface PropertyListing {
+  negotiationConditions?: PropertyNegotiationCondition[]
   amenities: PropertyAmenity[]
   negotiationTerms: string | null
   publishAfterReview: boolean
@@ -39,8 +41,11 @@ export type PropertyValues = components['schemas']['TenantPropertyValues']
 export type PropertyCharacteristics = components['schemas']['TenantPropertyCharacteristics']
 
 export interface Property {
+  brokerIds?: string[]
+  agencyManaged?: boolean
   id: string
   tenantId: string
+  agencyName?: string
   responsibleUserId: string
   responsibleName: string
   activeContractId: string | null
@@ -63,6 +68,7 @@ export interface Property {
 }
 
 export interface PropertyFormValues {
+  brokerIds?: string[]
   ownerUserId?: string | null
   ownerContactId?: string | null
   listing?: PropertyListing
@@ -96,9 +102,12 @@ export type ApiProperty = components['schemas']['TenantProperty']
 
 export type PropertyOwnerOption = components['schemas']['PropertyOwnersResponse']['owners'][number]
 export type PropertyOwnersResponse = components['schemas']['PropertyOwnersResponse']
+export type PropertyBrokersResponse = components['schemas']['PropertyBrokersResponse']
+export type PropertyBrokerOption = PropertyBrokersResponse['brokers'][number]
 export interface PropertyPayloadOptions {
   existingAddress?: PropertyAddress | null
   canChooseOwner?: boolean
+  canManageBrokers?: boolean
 }
 
 export type PropertyPage = Omit<components['schemas']['TenantPropertiesResponse'], 'properties'> & {

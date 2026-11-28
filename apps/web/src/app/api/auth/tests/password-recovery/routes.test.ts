@@ -3,10 +3,18 @@
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { requestCode, verifyCode, resetPassword } = vi.hoisted(() => ({
+const { requestCode, verifyCode, resetPassword, report } = vi.hoisted(() => ({
   requestCode: vi.fn(),
   verifyCode: vi.fn(),
   resetPassword: vi.fn(),
+  report: vi.fn(),
+}))
+vi.mock('next/server', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/server')>()),
+  after: (await import('@/test/after-queue')).queueAfterTask,
+}))
+vi.mock('@server/shared/observability/sentry-failure-reporter', () => ({
+  failureReporter: { report },
 }))
 vi.mock('@server/auth/container', () => ({
   authContainer: {
@@ -16,6 +24,7 @@ vi.mock('@server/auth/container', () => ({
   },
 }))
 
+import { flushAfterTasks, pendingAfterTasks } from '@/test/after-queue'
 import { POST as request } from '../../password-reset-codes/route'
 import { POST as verify } from '../../password-reset-codes/verify/route'
 import { POST as reset } from '../../reset-password/route'
@@ -40,7 +49,34 @@ describe('password recovery route contracts', () => {
     )
     expect(response.status).toBe(204)
     expect(await response.text()).toBe('')
+    await flushAfterTasks()
     expect(requestCode).toHaveBeenCalledWith({ email: 'ana@example.com', locale: 'pt-BR' })
+  })
+  it('answers before any account lookup or e-mail delivery so response time is uniform', async () => {
+    requestCode.mockResolvedValue(undefined)
+    const response = await request(
+      body('password-reset-codes', { email: 'ana@example.com', locale: 'pt-BR' }),
+    )
+    expect(response.status).toBe(204)
+    expect(requestCode).not.toHaveBeenCalled()
+    expect(pendingAfterTasks()).toBe(1)
+    await flushAfterTasks()
+    expect(requestCode).toHaveBeenCalledTimes(1)
+  })
+  it('keeps the neutral response and reports a failure that happens after it', async () => {
+    const failure = new Error('database unavailable')
+    requestCode.mockRejectedValue(failure)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const response = await request(
+      body('password-reset-codes', { email: 'ana@example.com', locale: 'pt-BR' }),
+    )
+    expect(response.status).toBe(204)
+    await flushAfterTasks()
+    expect(report).toHaveBeenCalledWith({
+      module: 'auth',
+      operation: 'password_reset_request',
+      error: failure,
+    })
   })
   it('rejects an early tenant selection instead of silently discarding it', async () => {
     const response = await request(
@@ -51,6 +87,7 @@ describe('password recovery route contracts', () => {
       }),
     )
     expect(response.status).toBe(400)
+    expect(pendingAfterTasks()).toBe(0)
     expect(requestCode).not.toHaveBeenCalled()
   })
   it('preserves SELECT_TENANT without manufacturing a resetToken', async () => {

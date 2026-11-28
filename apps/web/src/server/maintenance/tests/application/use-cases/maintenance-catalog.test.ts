@@ -1,12 +1,12 @@
 // @vitest-environment node
-import { ForbiddenError } from '@server/shared/errors'
+import { ConflictError, ForbiddenError } from '@server/shared/errors'
 import { describe, expect, it, vi } from 'vitest'
 import { CreateMaintenanceProviderUseCase } from '../../../application/use-cases/create-maintenance-provider.use-case'
 import { GetMaintenanceTicketUseCase } from '../../../application/use-cases/get-maintenance-ticket.use-case'
 import { ListMaintenanceProvidersUseCase } from '../../../application/use-cases/list-maintenance-providers.use-case'
 import { UpdateMaintenanceProviderUseCase } from '../../../application/use-cases/update-maintenance-provider.use-case'
 import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
-import { admin, agent, renter, repository } from '../../fixtures/maintenance-ticket'
+import { actor, admin, agent, renter, repository, ticket } from '../../fixtures/maintenance-ticket'
 
 function catalog() {
   return {
@@ -28,20 +28,42 @@ describe('Maintenance catalog permissions and safe output', () => {
       expect.objectContaining({ search: 'Jose' }),
     )
   })
-  it('registers a shared-tenant renter provider in the ticket agency and normalizes empty contact fields', async () => {
+  it('registers a provider from the assigned agent in the ticket agency and normalizes empty contact fields', async () => {
     const store = catalog()
-    const account = { ...renter, actorTenantId: 'shared-renters' }
-    await new CreateMaintenanceProviderUseCase(store, repository()).execute({
-      ...account,
+    await new CreateMaintenanceProviderUseCase(
+      store,
+      repository({ responsibleId: 'agent' }),
+    ).execute({
+      ...agent,
       ticketId: 'ticket-1',
       provider: { name: '  Jose  ', phone: ' ' },
     })
-    expect(store.create).toHaveBeenCalledWith(expect.objectContaining(account), 'tenant-1', {
+    expect(store.create).toHaveBeenCalledWith(expect.objectContaining(agent), 'tenant-1', {
       name: 'Jose',
       phone: null,
       email: null,
       notes: null,
     })
+  })
+  it('keeps the agency catalog closed to linked renters, including shared-tenant accounts', async () => {
+    for (const account of [renter, { ...renter, actorTenantId: 'shared-renters' }]) {
+      const store = catalog()
+      await expect(
+        new CreateMaintenanceProviderUseCase(store, repository()).execute({
+          ...account,
+          ticketId: 'ticket-1',
+          provider: { name: 'Renter choice' },
+        }),
+      ).rejects.toBeInstanceOf(ForbiddenError)
+      await expect(
+        new ListMaintenanceProvidersUseCase(store, repository()).execute({
+          ...account,
+          ticketId: 'ticket-1',
+        }),
+      ).rejects.toBeInstanceOf(ForbiddenError)
+      expect(store.create).not.toHaveBeenCalled()
+      expect(store.list).not.toHaveBeenCalled()
+    }
   })
   it('blocks unassigned agents, unrelated renters and access without a ticket', async () => {
     for (const input of [
@@ -55,6 +77,42 @@ describe('Maintenance catalog permissions and safe output', () => {
       ).rejects.toBeDefined()
       expect(store.list).not.toHaveBeenCalled()
     }
+  })
+  it('keeps the agency catalog closed to the linked landlord, who manages only their own account', async () => {
+    const landlord = actor('OWNER', 'landlord', 'landlord-tenant')
+    const linked = { access: { ...ticket.access, landlordIds: ['landlord'] } }
+    const store = catalog()
+    await expect(
+      new ListMaintenanceProvidersUseCase(store, repository(linked)).execute({
+        ...landlord,
+        ticketId: 'ticket-1',
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenError)
+    await expect(
+      new CreateMaintenanceProviderUseCase(store, repository(linked)).execute({
+        ...landlord,
+        ticketId: 'ticket-1',
+        provider: { name: 'Landlord choice' },
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenError)
+    expect(store.list).not.toHaveBeenCalled()
+    expect(store.create).not.toHaveBeenCalled()
+    await new ListMaintenanceProvidersUseCase(store, repository(linked)).execute(landlord)
+    expect(store.list).toHaveBeenCalledWith('landlord-tenant', expect.anything())
+  })
+  it('keeps the ticket catalog open to the agency management', async () => {
+    const store = catalog()
+    await new ListMaintenanceProvidersUseCase(store, repository()).execute({
+      ...admin,
+      ticketId: 'ticket-1',
+    })
+    await new CreateMaintenanceProviderUseCase(store, repository()).execute({
+      ...admin,
+      ticketId: 'ticket-1',
+      provider: { name: 'Agency choice' },
+    })
+    expect(store.list).toHaveBeenCalledWith('tenant-1', expect.anything())
+    expect(store.create).toHaveBeenCalledWith(expect.anything(), 'tenant-1', expect.anything())
   })
   it('does not list inactive providers or update the catalog for contributors', async () => {
     const store = catalog()
@@ -78,6 +136,7 @@ describe('Maintenance catalog permissions and safe output', () => {
   it('uses the same pending-replacement rule for inline assignment and catalog registration', async () => {
     const store = catalog()
     const tickets = repository({
+      responsibleId: 'agent',
       replacementRequests: [
         {
           id: 'request',
@@ -94,11 +153,11 @@ describe('Maintenance catalog permissions and safe output', () => {
     })
     await expect(
       new CreateMaintenanceProviderUseCase(store, tickets).execute({
-        ...renter,
+        ...agent,
         ticketId: 'ticket-1',
         provider: { name: 'Blocked' },
       }),
-    ).rejects.toBeDefined()
+    ).rejects.toBeInstanceOf(ConflictError)
     expect(store.create).not.toHaveBeenCalled()
   })
   it('never returns internal access metadata from the ticket use case', async () => {
@@ -107,7 +166,7 @@ describe('Maintenance catalog permissions and safe output', () => {
       ticketId: 'ticket-1',
     })
     expect(result).not.toHaveProperty('access')
-    expect(result.permissions).toMatchObject({ provider: true, edit: false })
+    expect(result.permissions).toMatchObject({ provider: false, schedule: false, edit: false })
     await expect(
       new GetMaintenanceTicketUseCase(repository()).execute({
         ...renter,

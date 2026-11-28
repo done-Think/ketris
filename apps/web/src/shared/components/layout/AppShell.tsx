@@ -74,7 +74,12 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     if (!accessProfile) return []
     const allowedHrefs = navigationHrefsFor(accessProfile)
 
-    return available.filter((item) => allowedHrefs.includes(item.href))
+    return available
+      .filter((item) => allowedHrefs.includes(item.href))
+      .map((item) => ({
+        ...item,
+        labelKey: item.profileLabelKeys?.[accessProfile] ?? item.labelKey,
+      }))
   }, [
     isLocalDashboardPreview,
     accessProfile,
@@ -105,7 +110,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     setSignOutFailed(false)
     setMobileOpen(false)
     try {
-      await clearClientSession()
+      await clearClientSession({ reason: 'manual' })
       router.replace('/')
     } catch {
       logoutPending.current = false
@@ -126,7 +131,9 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           <AppShellSidebar
             collapsed={sidebarCollapsed}
             showCollapseControl
-            isLoading={status === 'loading'}
+            isLoading={
+              status === 'loading' || (!isLocalDashboardPreview && faceCheckAccess.isLoading)
+            }
             visibleItems={visibleItems}
             activeTargetPath={activeTargetPath}
             userName={userName}
@@ -177,7 +184,9 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           <AppShellSidebar
             collapsed={false}
             showCollapseControl={false}
-            isLoading={status === 'loading'}
+            isLoading={
+              status === 'loading' || (!isLocalDashboardPreview && faceCheckAccess.isLoading)
+            }
             visibleItems={visibleItems}
             activeTargetPath={activeTargetPath}
             userName={userName}

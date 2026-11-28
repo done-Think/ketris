@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client'
+import { revokePropertyBrokerAccess } from '@server/properties/infrastructure/property-broker-access'
 import type { UserListRepository } from '../application/ports/user-list-repository.port'
 import type { UserListQuery, UserListPage } from '../types/user-list'
 import { recordUserAudit } from './user-audit'
@@ -90,14 +91,22 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
 
   async findPageByTenant(tenantId: string, query: UserListQuery): Promise<UserListPage> {
     const pending = { membershipApprovedAt: null }
+    const invited = { teamInvitation: { is: { acceptedAt: null } } }
     const where = {
       tenantId,
-      ...(query.pendingApproval === undefined
-        ? {}
-        : query.pendingApproval
-          ? pending
-          : { NOT: pending }),
-    }
+      AND: [
+        query.pendingApproval === undefined
+          ? {}
+          : query.pendingApproval
+            ? pending
+            : { NOT: pending },
+        query.pendingInvitation === undefined
+          ? {}
+          : query.pendingInvitation
+            ? invited
+            : { NOT: invited },
+      ],
+    } satisfies Prisma.UserWhereInput
     const [rows, total] = await prisma.$transaction(
       [
         prisma.user.findMany({
@@ -201,6 +210,14 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
             sessionVersion: credentialsChanged ? { increment: 1 } : undefined,
           },
         })
+        if (changes.role !== undefined && changes.role !== 'AGENT') {
+          await revokePropertyBrokerAccess(
+            tx,
+            user.tenantId,
+            id,
+            changes.auditActor?.kind === 'USER' ? changes.auditActor.id : null,
+          )
+        }
         if (changes.cnpj !== undefined) {
           const cnpj = documentKey(changes.cnpj)
           await tx.tenant.update({ where: { id: user.tenantId }, data: { cnpj } })
@@ -248,6 +265,12 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
         where: { id, tenantId },
         data: { active: false, sessionVersion: { increment: 1 } },
       })
+      await revokePropertyBrokerAccess(
+        tx,
+        user.tenantId,
+        id,
+        actor?.kind === 'USER' ? actor.id : null,
+      )
       await tx.refreshToken.updateMany({
         where: { userId: id, tenantId: user.tenantId, revokedAt: null },
         data: { revokedAt: new Date() },

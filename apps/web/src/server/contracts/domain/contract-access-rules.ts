@@ -22,5 +22,10 @@ export function resolveContractReadScope(
     return { kind: 'propertyOwner', tenantId: actorTenantId, ownerId: actorId }
   }
 
-  return { kind: 'tenant', tenantId: actorTenantId, ...resolveContractManageScope(actorId, role) }
+  return {
+    kind: 'tenant',
+    tenantId: actorTenantId,
+    ...resolveContractManageScope(actorId, role),
+    ...(isAgencyManager(role) ? { landlordUserId: actorId } : {}),
+  }
 }

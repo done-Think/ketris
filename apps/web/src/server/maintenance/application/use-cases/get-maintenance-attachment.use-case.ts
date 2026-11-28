@@ -1,3 +1,4 @@
+import { isAgencyManager } from '@server/auth/domain/roles'
 import { MaintenanceTicketNotFoundError } from '../../domain/errors'
 import { assertTicketAccess } from '../../domain/maintenance-policy'
 import type { GetMaintenanceAttachmentInput } from '../../types/use-case-inputs'
@@ -14,7 +15,9 @@ export class GetMaintenanceAttachmentUseCase {
     const { key, ...actor } = input
     if (
       key[0] !== 'maintenance' ||
-      (input.actorRole !== 'RENTER' && key[1] !== input.actorTenantId) ||
+      (input.actorRole !== 'RENTER' &&
+        !isAgencyManager(input.actorRole) &&
+        key[1] !== input.actorTenantId) ||
       key.some((part) => part === '..' || part === '.')
     )
       throw new MaintenanceTicketNotFoundError()

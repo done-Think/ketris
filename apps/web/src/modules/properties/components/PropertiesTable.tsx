@@ -20,6 +20,7 @@ import type {
 import { PropertyRowActions } from './PropertyRowActions'
 
 function PropertyIdentityCell({ row }: PropertyIdentityCellProps) {
+  const t = useTranslations('properties.dashboard.table')
   return (
     <Stack direction="row" alignItems="center" spacing={2} sx={styles.stack}>
       {row.imageUrl ? <Box component="img" src={row.imageUrl} alt="" sx={styles.box} /> : null}
@@ -30,6 +31,13 @@ function PropertyIdentityCell({ row }: PropertyIdentityCellProps) {
         <Typography noWrap sx={styles.typography2}>
           {row.address}
         </Typography>
+        {row.managedBy && (
+          <Chip
+            size="small"
+            label={t('managedBy', { agency: row.managedBy })}
+            sx={styles.managedByChip}
+          />
+        )}
       </Box>
     </Stack>
   )

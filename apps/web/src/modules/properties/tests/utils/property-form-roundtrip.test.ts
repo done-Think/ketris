@@ -12,6 +12,41 @@ import {
 } from '@server/properties/schemas/property-input.schema'
 
 describe('property form roundtrip', () => {
+  it('restores broker grants, sends explicit revocation for managers and omits grants for other roles', () => {
+    const values = buildEditPropertyFormValues({ ...property, brokerIds: ['broker-a', 'broker-b'] })
+    const managed = toPropertyPayload(values, { canManageBrokers: true })
+    expect(toCreatePayload(managed).brokerIds).toEqual(['broker-a', 'broker-b'])
+    expect(toUpdatePayload(managed).brokerIds).toEqual(['broker-a', 'broker-b'])
+    expect(
+      toUpdatePayload(toPropertyPayload({ ...values, brokerIds: [] }, { canManageBrokers: true }))
+        .brokerIds,
+    ).toEqual([])
+    expect(toUpdatePayload(toPropertyPayload(values))).not.toHaveProperty('brokerIds')
+  })
+  it('keeps structured choices and legacy text through edit and HTTP payload mapping', () => {
+    const original = {
+      ...property,
+      listing: {
+        ...property.listing,
+        negotiationConditions: ['ACCEPTS_FINANCING', 'REQUIRES_DEPOSIT'] as const,
+      },
+    }
+    const values = buildEditPropertyFormValues({
+      ...original,
+      listing: {
+        ...original.listing,
+        negotiationConditions: [...original.listing.negotiationConditions],
+      },
+    })
+    const payload = toPropertyPayload(values)
+    expect(toUpdatePayload(payload).listing).toMatchObject({
+      negotiationConditions: ['ACCEPTS_FINANCING', 'REQUIRES_DEPOSIT'],
+      negotiationTerms: property.listing.negotiationTerms,
+    })
+    expect(
+      toPropertyPayload({ ...values, purpose: ['RENT'] }).listing?.negotiationConditions,
+    ).toEqual(['REQUIRES_DEPOSIT'])
+  })
   it('sends a CEP with only digits without clearing coordinates when only its presentation changes', () => {
     const values = { ...buildEditPropertyFormValues(property), zipCode: '80.000-000' }
     const payload = toPropertyPayload(values, { existingAddress: property.address })

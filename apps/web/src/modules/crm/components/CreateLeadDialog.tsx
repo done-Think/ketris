@@ -42,13 +42,16 @@ export function CreateLeadDialog(props: CreateLeadDialogProps) {
   return props.open ? <CreateLeadForm {...props} /> : null
 }
 
-function CreateLeadForm({ onClose, open }: CreateLeadDialogProps) {
+function CreateLeadForm({ onClose, open, contact }: CreateLeadDialogProps) {
   const t = useTranslations('crm.leads')
   const { enqueueSnackbar } = useSnackbar()
   const createLead = useCreateLead()
   const leadSchema = useMemo(() => createLeadSchema((key) => t(`create.errors.${key}`)), [t])
   const { control, handleSubmit, trigger } = useForm<CreateLeadFormValues>({
-    defaultValues: createLeadDefaultValues,
+    defaultValues: {
+      ...createLeadDefaultValues,
+      ...(contact ? { name: contact.name, phone: contact.phone ?? '', email: contact.email } : {}),
+    },
     resolver: zodResolver(leadSchema),
   })
   const wizard = useLeadWizard()
@@ -83,12 +86,13 @@ function CreateLeadForm({ onClose, open }: CreateLeadDialogProps) {
     if (!values.property) return
     createLead.mutate(
       {
+        ...(contact ? { contactId: contact.id } : {}),
         name: values.name,
         phone: values.phone,
         email: values.email || null,
         interest: values.property.title,
         propertyId: values.property.id,
-        budget: values.budget,
+        budget: String(values.budget),
         source: values.source,
         notes: values.notes || null,
       },
@@ -150,7 +154,9 @@ function CreateLeadForm({ onClose, open }: CreateLeadDialogProps) {
             </Stepper>
 
             <Box sx={crmStyles.boxSx2}>
-              {activeStep.key === 'contact' ? <CreateLeadContactStep control={control} /> : null}
+              {activeStep.key === 'contact' ? (
+                <CreateLeadContactStep contact={contact} control={control} />
+              ) : null}
               {activeStep.key === 'interest' ? <CreateLeadInterestStep control={control} /> : null}
               {activeStep.key === 'review' ? (
                 <CreateLeadReviewStep control={control} formValues={formValues} />

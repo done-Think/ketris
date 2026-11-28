@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+import type { InteractionChannel } from './interaction'
 import type { LeadSource, LeadSourceKey } from '@shared/types/lead-source'
 import type {
   ConvertLeadRequestDTO,
@@ -44,6 +46,7 @@ export type LeadFilterKey = 'all' | 'new' | 'contacted' | 'visitScheduled' | 'pr
 export type LeadStageLabelKey = Exclude<LeadFilterKey, 'all'>
 
 export type DashboardLead = {
+  contactId?: string | null
   id: string
   name: string
   budget: string
@@ -144,11 +147,13 @@ export type LeadStageOption = {
 }
 
 export type CreateLeadDialogProps = {
+  contact?: { id: string; name: string; email: string; phone: string | null } | null
   onClose: () => void
   open: boolean
 }
 
 export type CreateLeadContactStepProps = {
+  contact?: CreateLeadDialogProps['contact']
   control: Control<CreateLeadFormValues>
 }
 
@@ -162,6 +167,10 @@ export type CreateLeadReviewStepProps = {
 }
 
 export type LeadContactDialogProps = {
+  onLinkContact?: (lead: DashboardLead) => void
+  onContactAction?: (channel: InteractionChannel) => boolean
+  contactActionPending?: boolean
+  interactionPanel?: ReactNode
   lead: DashboardLead | null
   onClose: () => void
   open: boolean

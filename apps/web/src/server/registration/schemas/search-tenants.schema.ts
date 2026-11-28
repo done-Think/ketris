@@ -2,7 +2,7 @@ import '@server/openapi/zod-extend'
 import { z } from 'zod'
 
 export const searchTenantsQuerySchema = z.object({
-  // An empty query lists the first agencies so the broker sees options as soon as the field opens.
+  // Queries with fewer than two non-space characters return an empty list (public endpoint).
   q: z.string().trim().max(100).default(''),
 })
 

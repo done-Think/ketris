@@ -14,6 +14,7 @@ import {
   buildCreateChargePayload,
   buildUpdateChargePayload,
   mapChargeFromApi,
+  mapChargeListItemFromApi,
   mapHistoryEventFromApi,
 } from '../utils/charge-adapter'
 
@@ -56,6 +57,17 @@ export function useCharges(filters: ChargeListFilters) {
     queryFn: () => financialService.listCharges(filters),
     enabled,
     placeholderData: keepPreviousInScope(tenantId, actorKey),
+  })
+}
+
+export function useContractCharges(contractId: string) {
+  const { tenantId, actorKey, enabled } = useFinancialScope()
+
+  return useQuery({
+    queryKey: financialQueryKeys.contractCharges(tenantId, actorKey, contractId),
+    queryFn: () => financialService.listContractCharges(contractId),
+    select: (items) => items.map(mapChargeListItemFromApi),
+    enabled: enabled && Boolean(contractId),
   })
 }
 

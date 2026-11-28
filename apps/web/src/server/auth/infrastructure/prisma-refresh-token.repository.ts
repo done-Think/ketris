@@ -22,18 +22,23 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
       `
       if (!account?.active || account.sessionVersion !== input.expectedSessionVersion) return false
       const now = new Date()
+      const claimedId = previous.rotatedTo ?? previous.id
       const claimed = await transaction.refreshToken.updateMany({
         where: {
-          id: previous.id,
+          id: claimedId,
           userId: previous.userId,
           tenantId: previous.tenantId,
           revokedAt: null,
           expiresAt: { gt: now },
         },
-        data: { revokedAt: now },
+        data: { revokedAt: now, rotatedAt: now },
       })
       if (claimed.count !== 1) return false
-      await transaction.refreshToken.create({ data: replacement })
+      const created = await transaction.refreshToken.create({ data: replacement })
+      await transaction.refreshToken.updateMany({
+        where: { id: { in: [claimedId, previous.id] } },
+        data: { replacedById: created.id },
+      })
       return true
     })
   }
@@ -60,6 +65,24 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
       id: refreshToken.id,
       userId: refreshToken.userId,
       tenantId: refreshToken.tenantId,
+    }
+  }
+
+  async findRecentlyRotatedByTokenHash(
+    tokenHash: string,
+    graceSeconds: number,
+  ): Promise<StoredRefreshToken | null> {
+    const now = Date.now()
+    const refreshToken = await prisma.refreshToken.findUnique({ where: { tokenHash } })
+    if (!refreshToken?.rotatedAt || !refreshToken.replacedById) return null
+    if (refreshToken.expiresAt.getTime() < now) return null
+    if (now - refreshToken.rotatedAt.getTime() > graceSeconds * 1000) return null
+
+    return {
+      id: refreshToken.id,
+      userId: refreshToken.userId,
+      tenantId: refreshToken.tenantId,
+      rotatedTo: refreshToken.replacedById,
     }
   }
 

@@ -32,6 +32,7 @@ export const editableProperty: Property = {
   listing: {
     amenities: ['furnished', 'petFriendly'],
     negotiationTerms: 'Caução de dois aluguéis',
+    negotiationConditions: [],
     publishAfterReview: true,
     allowWhatsappContact: false,
     featured: true,

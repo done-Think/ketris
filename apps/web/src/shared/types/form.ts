@@ -1,3 +1,4 @@
+import type { InputHTMLAttributes } from 'react'
 import type { FieldPath, FieldValues, UseControllerProps } from 'react-hook-form'
 import type { TextFieldProps } from '@mui/material'
 import type { ReactElementProps } from 'react-imask'
@@ -31,6 +32,23 @@ export type RhfMaskedTextFieldProps<
   Omit<TextFieldProps, 'name' | 'defaultValue' | 'value' | 'disabled'> & {
     disabled?: boolean
     mask: InputMask
+  }
+
+export type MoneyInputProps = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'onChange' | 'name' | 'value'
+> & {
+  value?: number | string
+  name: string
+  onChange: (event: { target: { name: string; value: string } }) => void
+}
+
+export type RhfMoneyFieldProps<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues>,
+> = UseControllerProps<TFieldValues, TName> &
+  Omit<TextFieldProps, 'name' | 'defaultValue' | 'value' | 'disabled' | 'type'> & {
+    disabled?: boolean
   }
 
 export type RhfTextFieldProps<

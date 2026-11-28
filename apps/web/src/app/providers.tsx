@@ -13,8 +13,9 @@ import { NextIntlClientProvider, useLocale } from 'next-intl'
 import { SnackbarProvider } from 'notistack'
 import { useMemo, useState } from 'react'
 
+import { formats } from '@/i18n/formats'
 import type { LocaleProvidersProps, ProvidersProps } from '@/i18n/types/provider.types'
-import { HttpClientSessionBridge } from '@shared/components/providers'
+import { HttpClientSessionBridge, LogoutNoticeListener } from '@shared/components/providers'
 import { AuthAvailabilityBoundary } from '@shared/components/layout/AuthAvailabilityBoundary'
 import { makeQueryClient } from '@shared/lib/query/query-client'
 import { getDatePickerLocaleText, getLocalizedTheme } from '@shared/theme/localized-theme'
@@ -36,6 +37,7 @@ export function Providers({ children }: ProvidersProps) {
               autoHideDuration={2000}
               anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
+              <LogoutNoticeListener />
               <AuthAvailabilityBoundary>{children}</AuthAvailabilityBoundary>
             </SnackbarProvider>
             <ReactQueryDevtools initialIsOpen={false} />
@@ -50,7 +52,12 @@ export function LocaleProviders({ children, i18n }: LocaleProvidersProps) {
   const dayjsAdapterLocale = getDayjsAdapterLocale(i18n.locale)
 
   return (
-    <NextIntlClientProvider locale={i18n.locale} messages={i18n.messages} timeZone={i18n.timeZone}>
+    <NextIntlClientProvider
+      locale={i18n.locale}
+      messages={i18n.messages}
+      timeZone={i18n.timeZone}
+      formats={formats}
+    >
       <LocalizationProvider
         dateAdapter={AdapterDayjs}
         adapterLocale={dayjsAdapterLocale}

@@ -37,6 +37,14 @@ const authPolicy = createRateLimitPolicy(
   toPositiveInteger(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60_000),
 )
 
+// Recovery must remain available when login/callback/refresh attempts exhaust their quota.
+// Its steps share one budget so switching endpoints cannot bypass the recovery limit.
+const passwordRecoveryPolicy = createRateLimitPolicy(
+  'auth-password-recovery',
+  authPolicy.limit,
+  authPolicy.windowMs,
+)
+
 const inquiryPolicy = createRateLimitPolicy(
   'marketplace-inquiry',
   toPositiveInteger(process.env.MARKETPLACE_INQUIRY_RATE_LIMIT_MAX, 5),
@@ -45,15 +53,18 @@ const inquiryPolicy = createRateLimitPolicy(
 
 const inquiryPathPattern = /^\/api\/marketplace\/properties\/[^/]+\/inquiries$/
 
+const passwordRecoveryPaths = new Set([
+  '/api/auth/reset-password',
+  '/api/auth/password-reset-codes',
+  '/api/auth/password-reset-codes/verify',
+])
+
 const authPaths = new Set([
   '/api/auth/login',
   '/api/auth/refresh',
   '/api/platform/login',
   '/api/platform/refresh',
   '/api/register',
-  '/api/auth/reset-password',
-  '/api/auth/password-reset-codes',
-  '/api/auth/password-reset-codes/verify',
   '/api/auth/email-verification-codes',
   '/api/auth/email-verification-codes/verify',
   '/api/auth/me/email-change',
@@ -80,7 +91,9 @@ export async function proxy(request: NextRequest) {
       {
         error: {
           code:
-            policy === authPolicy ? 'AUTH_RATE_LIMIT_UNAVAILABLE' : 'API_RATE_LIMIT_UNAVAILABLE',
+            policy === authPolicy || policy === passwordRecoveryPolicy
+              ? 'AUTH_RATE_LIMIT_UNAVAILABLE'
+              : 'API_RATE_LIMIT_UNAVAILABLE',
           message: validationMessage(locale, 'rateLimitUnavailable'),
         },
       },
@@ -137,6 +150,7 @@ function selectPolicy(pathname: string): RateLimitPolicy {
   normalizedPathname = normalizedPathname.replace(/\/+$/, '')
 
   if (inquiryPathPattern.test(normalizedPathname)) return inquiryPolicy
+  if (passwordRecoveryPaths.has(normalizedPathname)) return passwordRecoveryPolicy
 
   return authPaths.has(normalizedPathname) ||
     normalizedPathname.startsWith('/api/auth/callback/') ||

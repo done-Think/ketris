@@ -21,7 +21,7 @@ const mocks = vi.hoisted(() => ({ user: vi.fn(), token: vi.fn(), session: vi.fn(
 vi.mock('@server/db/prisma', () => ({ prisma: { user: { findFirst: mocks.user } } }))
 vi.mock('@server/auth/container', () => ({ authContainer: { tokenService: {} } }))
 vi.mock('@server/auth/require-bearer-auth', () => ({ requireBearerAuth: mocks.token }))
-vi.mock('@shared/lib/auth/auth-options', () => ({ authOptions: {} }))
+vi.mock('@server/auth/session/auth-options', () => ({ authOptions: {} }))
 vi.mock('next-auth', () => ({ getServerSession: mocks.session }))
 
 import { requireFaceCheckCandidate } from '../require-face-check-candidate'

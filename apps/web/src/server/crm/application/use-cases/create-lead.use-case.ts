@@ -2,6 +2,8 @@ import type { CreateLeadInput, CreateLeadOutput } from '../../types/create-lead.
 export type { CreateLeadInput, CreateLeadOutput } from '../../types/create-lead.use-case.types'
 
 import { assertCrmAccess } from '../authorization'
+import type { ContactRepository } from '../ports/contact-repository.port'
+import { ContactNotFoundError } from '../../domain/errors'
 import type { LeadRepository } from '../ports/lead-repository.port'
 import type { LeadPropertyLookupPort } from '../ports/lead-property-lookup.port'
 import { OpportunityPropertyNotFoundError } from '../../domain/errors'
@@ -10,10 +12,17 @@ export class CreateLeadUseCase {
   constructor(
     private readonly leadRepository: LeadRepository,
     private readonly propertyLookup: LeadPropertyLookupPort,
+    private readonly contacts: ContactRepository,
   ) {}
 
   async execute(input: CreateLeadInput): Promise<CreateLeadOutput> {
     assertCrmAccess(input.actorRole)
+    const contact = input.contactId ? await this.contacts.findById(input.contactId) : null
+    if (
+      input.contactId &&
+      (!contact || contact.tenantId !== input.actorTenantId || contact.archivedAt)
+    )
+      throw new ContactNotFoundError()
     const property = input.propertyId
       ? await this.propertyLookup.findAvailable(
           input.actorTenantId,
@@ -24,11 +33,13 @@ export class CreateLeadUseCase {
     if (input.propertyId && !property) throw new OpportunityPropertyNotFoundError()
     return this.leadRepository.create({
       tenantId: input.actorTenantId,
-      responsibleId: property?.responsibleId ?? input.actorId,
+      responsibleId:
+        input.actorRole === 'AGENT' ? input.actorId : (property?.responsibleId ?? input.actorId),
       propertyId: property?.id ?? null,
-      name: input.name,
-      phone: input.phone,
-      email: input.email ?? null,
+      ...(contact ? { contactId: contact.id } : {}),
+      name: contact?.name ?? input.name,
+      phone: contact?.phone || input.phone,
+      email: contact?.email ?? input.email ?? null,
       interest: property?.title ?? input.interest,
       budget: input.budget,
       source: input.source,

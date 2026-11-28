@@ -5,6 +5,7 @@ import { maintenanceFileSha256 } from '../../utils/maintenance-file'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MaintenanceService } from '../../services/maintenance-service'
 import { MaintenanceUploadValidationError } from '../../utils/maintenance-file'
+import { maintenanceTicketListItemFixture } from '../fixtures/maintenance-ticket'
 
 vi.mock('../../utils/maintenance-file', async (original) => ({
   ...(await original<typeof import('../../utils/maintenance-file')>()),
@@ -132,5 +133,33 @@ describe('MaintenanceService signed upload', () => {
     )
     expect(post).not.toHaveBeenCalled()
     expect(put).not.toHaveBeenCalled()
+  })
+})
+
+describe('MaintenanceService contract tickets', () => {
+  afterEach(() => vi.restoreAllMocks())
+
+  it('asks the API for the tickets of the contract, page by page', async () => {
+    const http = new HttpClient()
+    const get = vi
+      .spyOn(http, 'get')
+      .mockResolvedValueOnce({
+        items: [
+          maintenanceTicketListItemFixture({ id: 'a', contractId: 'contract-1' }),
+          maintenanceTicketListItemFixture({ id: 'b', contractId: 'contract-1' }),
+        ],
+        totalCount: 3,
+      })
+      .mockResolvedValueOnce({
+        items: [maintenanceTicketListItemFixture({ id: 'c', contractId: 'contract-1' })],
+        totalCount: 3,
+      })
+
+    const tickets = await new MaintenanceService(http).listContractTickets('contract-1', 'es-ES')
+
+    expect(tickets.map((ticket) => ticket.id)).toEqual(['a', 'b', 'c'])
+    expect(get).toHaveBeenLastCalledWith('/maintenance/tickets', {
+      params: { locale: 'es-ES', contractId: 'contract-1', page: '2', pageSize: '100' },
+    })
   })
 })

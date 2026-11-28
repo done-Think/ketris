@@ -51,21 +51,13 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     ).toMatchObject([{ action: 'CREATED', actorUserId: env.fixture.admin.id, actorRole: 'OWNER' }])
   })
 
-  it('lets linked renters register for the ticket agency and refuses unrelated and unassigned accounts', async () => {
+  it('keeps the agency catalog closed to renters, owners, unrelated and unassigned accounts', async () => {
     const id = await create()
-    const response = await createProvider(
-      request('providers', 'POST', env.fixture.renter.token, {
-        ticketId: id,
-        provider: { ...data, name: 'Renter chosen' },
-      }),
-    )
-    expect(response.status).toBe(201)
-    const body = await response.json()
-    expect(
-      (await prisma.maintenanceProvider.findUniqueOrThrow({ where: { id: body.provider.id } }))
-        .tenantId,
-    ).toBe(env.fixture.tenant.id)
+    const before = await prisma.maintenanceProvider.count({
+      where: { tenantId: env.fixture.tenant.id },
+    })
     for (const account of [
+      env.fixture.renter,
       env.fixture.agent,
       env.fixture.owner,
       env.fixture.unrelated,
@@ -80,6 +72,9 @@ describe('/api/maintenance provider catalog (database integration)', () => {
       expect([403, 404]).toContain(denied.status)
     }
     expect(
+      await prisma.maintenanceProvider.count({ where: { tenantId: env.fixture.tenant.id } }),
+    ).toBe(before)
+    expect(
       (
         await createProvider(
           request('providers', 'POST', env.fixture.renter.token, { provider: data }),
@@ -89,7 +84,7 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     expect(
       (await listProviders(request(`providers?ticketId=${id}`, 'GET', env.fixture.renter.token)))
         .status,
-    ).toBe(200)
+    ).toBe(403)
     expect(
       (
         await listProviders(
@@ -99,27 +94,32 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     ).toBe(403)
   })
 
-  it('scopes shared-tenant renters to the linked ticket agency instead of their account tenant', async () => {
+  it('refuses shared-tenant renters linked to the ticket without touching either catalog', async () => {
     const id = await create(env.fixture.admin.token)
+    const provider = await add('Agency provider')
     const partyId = env.fixture.contract.parties[0].id
     await prisma.contractParty.update({
       where: { id: partyId },
       data: { userId: env.other.renter.id, email: env.other.renter.email },
     })
     try {
-      const chosen = await add('Shared renter chosen', env.other.renter.token, id)
-      expect(
-        (await prisma.maintenanceProvider.findUniqueOrThrow({ where: { id: chosen.id } })).tenantId,
-      ).toBe(env.fixture.tenant.id)
-      const response = await action(id, env.other.renter.token, {
+      const before = await prisma.maintenanceProvider.count()
+      const created = await createProvider(
+        request('providers', 'POST', env.other.renter.token, {
+          ticketId: id,
+          provider: { ...data, name: 'Shared renter chosen' },
+        }),
+      )
+      expect(created.status).toBe(403)
+      const chosen = await action(id, env.other.renter.token, {
         action: 'provider',
-        provider: { id: chosen.id },
+        provider: { id: provider.id },
       })
-      expect(response.status).toBe(200)
-      expect((await response.json()).ticket.provider).toMatchObject({
-        id: chosen.id,
-        name: chosen.name,
-      })
+      expect(chosen.status).toBe(403)
+      expect(await prisma.maintenanceProvider.count()).toBe(before)
+      expect(
+        (await prisma.maintenanceTicket.findUniqueOrThrow({ where: { id } })).providerName,
+      ).toBeNull()
     } finally {
       await prisma.contractParty.update({
         where: { id: partyId },
@@ -131,7 +131,7 @@ describe('/api/maintenance provider catalog (database integration)', () => {
   it('uses catalog data for ID selection and preserves ticket snapshots when the catalog changes', async () => {
     const provider = await add('Snapshot provider')
     const id = await create()
-    const chosen = await action(id, env.fixture.renter.token, {
+    const chosen = await action(id, env.fixture.admin.token, {
       action: 'provider',
       provider: { id: provider.id, name: 'Forged name', phone: '000' },
     })
@@ -154,7 +154,7 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     expect(after.provider).toEqual(before.provider)
     expect(after.activities).toEqual(before.activities)
     const nextId = await create()
-    const next = await action(nextId, env.fixture.renter.token, {
+    const next = await action(nextId, env.fixture.admin.token, {
       action: 'provider',
       provider: { id: provider.id },
     })
@@ -188,7 +188,7 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     const id = await create()
     expect(
       (
-        await action(id, env.fixture.renter.token, {
+        await action(id, env.fixture.admin.token, {
           action: 'provider',
           provider: { id: foreign.id },
         })
@@ -205,7 +205,7 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     const id = await create()
     expect(
       (
-        await action(id, env.fixture.renter.token, {
+        await action(id, env.fixture.admin.token, {
           action: 'provider',
           provider: { id: provider.id },
         })
@@ -239,7 +239,7 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     ).toBe(provider.id)
     expect(
       (
-        await action(id, env.fixture.renter.token, {
+        await action(id, env.fixture.admin.token, {
           action: 'provider',
           provider: { id: provider.id },
         })
@@ -248,7 +248,7 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     expect(
       (
         await createProvider(
-          request('providers', 'POST', env.fixture.renter.token, {
+          request('providers', 'POST', env.fixture.admin.token, {
             ticketId: id,
             provider: { ...data, name: 'Inactive provider' },
           }),
@@ -265,7 +265,7 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     ).toBe(200)
     expect(
       (
-        await action(id, env.fixture.renter.token, {
+        await action(id, env.fixture.admin.token, {
           action: 'provider',
           provider: { id: provider.id },
         })
@@ -300,7 +300,7 @@ describe('/api/maintenance provider catalog (database integration)', () => {
     try {
       expect(
         (
-          await action(id, env.fixture.renter.token, {
+          await action(id, env.fixture.admin.token, {
             action: 'provider',
             provider: { name: 'Rollback provider' },
           })

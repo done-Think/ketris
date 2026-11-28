@@ -121,25 +121,50 @@ describe('AppShell access rules', () => {
 describe('AppShell navigation per papel', () => {
   it.each([
     '/dashboard/agenda',
+    '/dashboard/contracts',
+    '/dashboard/contracts/[id]',
     '/dashboard/finance/charges',
     '/dashboard/finance/charges/[id]',
     '/dashboard/maintenance',
     '/dashboard/maintenance/[id]',
     '/dashboard/properties',
     '/dashboard/properties/[id]',
-  ] as const)('shows charges, tickets, properties and agenda to RENTER on %s', (pathname) => {
+  ] as const)(
+    'shows rental, charges, tickets, properties and agenda to RENTER on %s',
+    (pathname) => {
+      mockSession({ role: 'RENTER' })
+      vi.mocked(usePathname).mockReturnValue(pathname)
+      renderShell()
+      expect(screen.getByText('Conteúdo da rota')).toBeVisible()
+      const links = within(screen.getByRole('navigation')).getAllByRole('link')
+      expect(links).toHaveLength(5)
+      expect(links.map((link) => link.getAttribute('href')).sort()).toEqual([
+        '/dashboard/agenda',
+        '/dashboard/contracts',
+        '/dashboard/finance/charges',
+        '/dashboard/maintenance',
+        '/dashboard/properties',
+      ])
+    },
+  )
+
+  it('labels the contracts item as the rental of the RENTER and keeps Contratos for the agency', () => {
+    vi.mocked(usePathname).mockReturnValue('/dashboard/contracts')
     mockSession({ role: 'RENTER' })
-    vi.mocked(usePathname).mockReturnValue(pathname)
+    const { unmount } = renderShell()
+    const renterNav = within(screen.getByRole('navigation'))
+    expect(renterNav.getByRole('link', { name: 'Meu aluguel' })).toHaveAttribute(
+      'href',
+      '/dashboard/contracts',
+    )
+    expect(renterNav.queryByText('Contratos')).not.toBeInTheDocument()
+    unmount()
+
+    mockSession({ role: 'OWNER' })
     renderShell()
-    expect(screen.getByText('Conteúdo da rota')).toBeVisible()
-    const links = within(screen.getByRole('navigation')).getAllByRole('link')
-    expect(links).toHaveLength(4)
-    expect(links.map((link) => link.getAttribute('href')).sort()).toEqual([
-      '/dashboard/agenda',
-      '/dashboard/finance/charges',
-      '/dashboard/maintenance',
-      '/dashboard/properties',
-    ])
+    const agencyNav = within(screen.getByRole('navigation'))
+    expect(agencyNav.getByRole('link', { name: 'Contratos' })).toBeInTheDocument()
+    expect(agencyNav.queryByText('Meu aluguel')).not.toBeInTheDocument()
   })
 
   it.each([
@@ -148,7 +173,7 @@ describe('AppShell navigation per papel', () => {
     '/dashboard/properties/new',
     '/dashboard/properties/[id]/edit',
     '/crm',
-    '/dashboard/contracts',
+    '/dashboard/contracts/new',
   ] as const)('redirects RENTER away from %s without rendering its contents', (pathname) => {
     mockSession({ role: 'RENTER' })
     vi.mocked(usePathname).mockReturnValue(pathname)
@@ -433,7 +458,8 @@ describe('AppShell marketplace logout shortcut', () => {
 
     await user.click(screen.getAllByRole('button', { name: /sair e voltar/i })[0])
 
-    expect(clearClientSession).toHaveBeenCalledOnce()
+    expect(clearClientSession).toHaveBeenCalledTimes(1)
+    expect(clearClientSession).toHaveBeenCalledWith({ reason: 'manual' })
     expect(routerMock.replace).toHaveBeenCalledWith('/')
     expect(routerMock.refresh).not.toHaveBeenCalled()
   })

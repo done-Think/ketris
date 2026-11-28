@@ -23,7 +23,6 @@ declare module 'next-auth' {
   interface Session {
     authUnavailable?: boolean
     accessToken?: string
-    refreshToken?: string
     scope?: SessionScope
     tenantId?: string
     role?: UserRole
@@ -36,8 +35,6 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT {
     authUnavailable?: boolean
-    pendingAccessToken?: string
-    pendingRefreshToken?: string
     accessToken?: string
     refreshToken?: string
     scope?: SessionScope

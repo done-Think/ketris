@@ -20,6 +20,7 @@ import type {
   ApiMaintenanceActivity,
   ApiMaintenanceAttachment,
   ApiMaintenanceTicket,
+  ApiMaintenanceTicketListItem,
   CreateMaintenanceTicketPayload,
   ListMaintenanceTicketsResponse,
   MaintenanceActivitiesResponse,
@@ -48,12 +49,25 @@ export class MaintenanceService extends BaseService {
       ...(filters.priority ? { priority: filters.priority } : {}),
       ...(filters.category ? { category: filters.category } : {}),
       ...(filters.propertyId ? { propertyId: filters.propertyId } : {}),
+      ...(filters.contractId ? { contractId: filters.contractId } : {}),
       ...(filters.search ? { search: filters.search } : {}),
       ...(filters.page ? { page: String(filters.page) } : {}),
       ...(filters.pageSize ? { pageSize: String(filters.pageSize) } : {}),
     }
 
     return this.http.get<ListMaintenanceTicketsResponse>(this.path, { params })
+  }
+
+  async listContractTickets(
+    contractId: string,
+    locale: MaintenanceTicketListFilters['locale'],
+  ): Promise<ApiMaintenanceTicketListItem[]> {
+    const items: ApiMaintenanceTicketListItem[] = []
+    for (let page = 1; ; page += 1) {
+      const result = await this.list({ locale, contractId, page, pageSize: 100 })
+      items.push(...result.items)
+      if (!result.items.length || items.length >= result.totalCount) return items
+    }
   }
 
   get(id: string): Promise<ApiMaintenanceTicket> {

@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -80,12 +80,10 @@ describe('ConvertLeadDialog', () => {
     } as unknown as ReturnType<typeof useConvertLeadToOpportunity>)
     renderDialog()
 
-    fireEvent.change(screen.getByLabelText('Valor proposto'), {
-      target: { value: '365000000.25' },
-    })
+    await user.type(screen.getByLabelText('Valor proposto'), '036500000025')
     await user.click(screen.getByRole('button', { name: 'Selecionar imóvel' }))
 
-    expect(screen.getByLabelText('Valor proposto')).toHaveValue(365000000.25)
+    expect(screen.getByLabelText('Valor proposto')).toHaveValue('365.000.000,25')
 
     await user.click(screen.getByRole('button', { name: 'Converter' }))
 

@@ -86,7 +86,7 @@ describe('Equipe de corretores', () => {
       evidence().its('goal').should('eq', 5)
 
       openAction(fixture!.sourceName, 'Transferir carteira')
-      dialog().find('[role="combobox"]').click()
+      dialog().contains('.MuiFormControl-root', 'Transferir para').find('[role="combobox"]').click()
       cy.contains('[role="option"]', fixture!.destinationName).click()
       dialog().contains('Leads (2)').click()
       dialog().contains('button', 'Transferir').click()

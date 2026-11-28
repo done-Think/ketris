@@ -14,7 +14,9 @@
     "title": "Contratos",
     "subtitle": "Gestiona contratos, vencimientos y firmas en curso.",
     "searchPlaceholder": "Buscar contratos...",
-    "newContract": "Nuevo Contrato"
+    "newContract": "Nuevo Contrato",
+    "myRentalTitle": "Mi alquiler",
+    "myRentalSubtitle": "Consulta el contrato, los pagos, los documentos y las solicitudes de tu alquiler."
   },
   "filters": {
     "tabs": {
@@ -72,7 +74,8 @@
       "previous": "Página anterior",
       "first": "Primera página",
       "last": "Última página"
-    }
+    },
+    "managedBy": "Administrado por {agency}"
   },
   "status": {
     "draft": "Borrador",
@@ -133,7 +136,8 @@
       "dateInvalid": "Indique una fecha válida en formato DD/MM/AAAA.",
       "endAfterStart": "El fin debe ser posterior al inicio.",
       "amountTooLarge": "El importe máximo es 9.999.999.999,99.",
-      "amountPrecision": "Use como máximo dos decimales."
+      "amountPrecision": "Use como máximo dos decimales.",
+      "partiesSamePerson": "El propietario, el inquilino y el fiador deben ser personas distintas"
     },
     "actions": {
       "back": "Volver",
@@ -184,7 +188,7 @@
         "endDate": "Término",
         "adjustmentIndex": "Reajuste",
         "notes": "Observaciones",
-        "amount": "Importe del contrato (BRL)"
+        "amount": "Importe del contrato"
       },
       "contractTypeOptions": {
         "residential": "Alquiler residencial",
@@ -257,16 +261,30 @@
     "sign": "Registrar firma manual",
     "link": "Confirmar vínculo del arrendatario",
     "linkNotice": "Confirme el acceso para {email}.",
+    "linkLandlord": "Confirmar vínculo del arrendador",
+    "linkLandlordNotice": "El propietario del inmueble seguirá este contrato, el inmueble, los cobros y las solicitudes, sin poder editarlos. Confirma el vínculo de acceso para {email}.",
     "linked": "Cuenta vinculada",
     "linkSuccess": "Vínculo confirmado.",
     "uploadBusy": "Espere a que finalice la carga del PDF antes de modificar el contrato.",
     "back": "Volver",
     "landlord": "Arrendador",
+    "landlordView": "Sigues este contrato como arrendador. Lo administra {agency}. Para cambiar algo, habla con la inmobiliaria.",
     "guarantor": "Fiador",
     "manual": "Registro manual",
-    "provider": "Firma electrónica"
+    "provider": "Firma electrónica",
+    "myRental": "Mi alquiler",
+    "rentDue": "Alquiler · vence cada día {day}",
+    "tabs": {
+      "label": "Secciones del contrato",
+      "summary": "Resumen",
+      "payments": "Pagos",
+      "documents": "Documentos",
+      "tickets": "Solicitudes"
+    }
   },
   "documents": {
+    "chooseFile": "Elegir archivo",
+    "noFileSelected": "Ningún archivo seleccionado",
     "title": "Documentos",
     "file": "PDF justificativo",
     "limits": "Solo PDF, hasta 10 MB.",
@@ -354,6 +372,7 @@
     "CONTRACT_UPLOAD_INVALID": "La autorización de carga no es válida. Inicie de nuevo.",
     "CONTRACT_PARTY_ALREADY_SIGNED": "La firma de esta parte ya fue registrada.",
     "CONTRACT_RENTER_USER_NOT_FOUND": "No se encontró una cuenta activa de arrendatario para este correo.",
+    "CONTRACT_LANDLORD_USER_NOT_FOUND": "No se encontró una cuenta activa de propietario para este correo.",
     "CONTRACT_PARTY_EMAIL_MISMATCH": "El correo no coincide con la parte del contrato.",
     "CONTRACT_RENTER_USER_AMBIGUOUS": "Hay varias cuentas elegibles. Revise el vínculo antes de continuar.",
     "CONTRACT_PARTY_ALREADY_LINKED": "Esta parte ya está vinculada a otra cuenta.",

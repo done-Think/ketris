@@ -41,3 +41,17 @@ it('notifica atribuição apenas ao responsável quando outra pessoa criou o eve
     expect.objectContaining({ role: 'corretor', name: 'Ana' }),
   )
 })
+
+it('não avisa sobre visita de hoje que já tem resultado registrado', () => {
+  const notifications = getAgendaNotifications({
+    events: [
+      agendaEventFixture({ id: 'done', apiKind: 'VISIT', status: 'COMPLETED' }),
+      agendaEventFixture({ id: 'absent', apiKind: 'VISIT', status: 'NO_SHOW' }),
+    ],
+    t: vi.fn((key: string) => key),
+    today,
+    currentUserId: 'user',
+  })
+
+  expect(notifications).toEqual([])
+})

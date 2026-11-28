@@ -7,6 +7,7 @@ import {
   teamMemberMenuActions,
   teamMemberState,
   transferDestinations,
+  transferSources,
 } from '../../utils/team-member'
 import { teamMember } from '../fixtures/team-member'
 
@@ -25,6 +26,8 @@ describe('team member utils', () => {
       'performance',
       'editGoal',
       'transferPortfolio',
+      'sharePortfolio',
+      'revokePortfolio',
       'scheduleOneOnOne',
       'deactivate',
     ])
@@ -72,6 +75,22 @@ describe('team member utils', () => {
     expect(transferDestinations(members, 'a', self)).toEqual([self, { id: 'b', label: 'Bruno' }])
     expect(transferDestinations(members, 'owner', self)).toHaveLength(2)
     expect(transferDestinations(members, 'a', null)).toEqual([{ id: 'b', label: 'Bruno' }])
+  })
+
+  it('offers the owner and every non-invited broker as transfer sources', () => {
+    const members = [
+      teamMember({ id: 'a' }),
+      teamMember({ id: 'c', name: 'Carla', active: false }),
+      teamMember({ id: 'd', invitation }),
+    ]
+    const self = { id: 'owner', label: 'Ana (você)' }
+
+    expect(transferSources(members, self)).toEqual([
+      self,
+      { id: 'a', label: 'Marina Costa' },
+      { id: 'c', label: 'Carla' },
+    ])
+    expect(transferSources(members, null)).toHaveLength(2)
   })
 
   it('splits the response time into a readable unit', () => {

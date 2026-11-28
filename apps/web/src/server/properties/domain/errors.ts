@@ -1,5 +1,32 @@
 import { AppError, NotFoundError } from '@server/shared/errors'
 
+export class PropertyBrokerValidationError extends AppError {
+  constructor() {
+    super('Selecione corretores ativos e aprovados da mesma imobiliária.', {
+      status: 400,
+      code: 'PROPERTY_BROKER_INVALID',
+    })
+  }
+}
+
+export class PropertyNegotiationValidationError extends AppError {
+  constructor() {
+    super('Condições de negociação incompatíveis.', {
+      status: 400,
+      code: 'PROPERTY_NEGOTIATION_INVALID',
+    })
+  }
+}
+
+export class PropertyPublicationForbiddenError extends AppError {
+  constructor() {
+    super('Somente a imobiliária pode retirar este imóvel da publicação.', {
+      status: 403,
+      code: 'PROPERTY_PUBLICATION_FORBIDDEN',
+    })
+  }
+}
+
 export class PropertyNotFoundError extends NotFoundError {
   constructor() {
     super('Imóvel não encontrado.')

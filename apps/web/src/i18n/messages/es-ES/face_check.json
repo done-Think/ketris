@@ -384,6 +384,8 @@
       "title": "Resumen",
       "subtitle": "Últimos 7 días",
       "newVerification": "Nueva verificación",
+      "loading": "Cargando indicadores",
+      "retry": "Intentar de nuevo",
       "pilotWarning": "El análisis ayuda a revisar las evidencias. La aprobación requiere una decisión humana del equipo de la inmobiliaria.",
       "kpis": {
         "label": "Indicadores",
@@ -812,6 +814,7 @@
       "ABANDONED": "Abandonada"
     },
     "errors": {
+      "STORAGE_UNAVAILABLE": "El almacenamiento no está disponible. Inténtalo de nuevo más tarde.",
       "SESSION_NOT_FOUND": "No encontramos esta verificación. Consulta el enlace con la inmobiliaria.",
       "SESSION_EXPIRED": "Este enlace caducó. Pide uno nuevo a la inmobiliaria.",
       "SESSION_NOT_IN_REVIEW": "Esta sesión ya no está en revisión. Actualiza la página.",

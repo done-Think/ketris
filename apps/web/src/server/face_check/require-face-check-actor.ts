@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authContainer } from '@server/auth/container'
 import { requireBearerAuth } from '@server/auth/require-bearer-auth'
 import { prisma } from '@server/db/prisma'
-import { authOptions } from '@shared/lib/auth/auth-options'
+import { authOptions } from '@server/auth/session/auth-options'
 import { FaceCheckError } from './http/errors'
 import type { FaceCheckActor, FaceCheckDatabase } from './types/access'
 

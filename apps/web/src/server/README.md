@@ -69,18 +69,25 @@ sensíveis de autenticação e cadastro usam uma política mais restrita que a A
   envio público de proposta (`POST /api/marketplace/properties/{id}/inquiries`), por endereço do cliente e
   com contador no PostgreSQL, como o de Auth.
 
+O fluxo “Esqueci minha senha” tem uma quota própria (`auth-password-recovery`), usando
+os mesmos valores de `AUTH_RATE_LIMIT_*`. Solicitação de código, validação e redefinição
+compartilham esse contador. Login, callbacks e refresh usam o contador de autenticação;
+esgotar um dos fluxos não bloqueia o outro. O intervalo de reenvio e a validação do código
+no backend continuam independentes do limite do proxy.
+
 O endereço do cliente vem de `x-vercel-forwarded-for` na Vercel. Fora da Vercel, só é confiável o
 cabeçalho que o proxy da frente do app define e sobrescreve (ex.: `CloudFront-Viewer-Address` no
 CloudFront, `X-Real-IP` num Nginx próprio), informado em `TRUSTED_CLIENT_IP_HEADER`. Sem essa variável,
 todos os clientes dividem o mesmo contador (`local`), o que só serve para desenvolvimento.
 
 Respostas bloqueadas retornam 429 (`RATE_LIMIT_EXCEEDED`) com headers `RateLimit-Limit`,
-`RateLimit-Remaining`, `RateLimit-Reset` e `Retry-After`. Os contadores de Auth ficam no PostgreSQL e são compartilhados entre instâncias, com incremento
+`RateLimit-Remaining`, `RateLimit-Reset` e `Retry-After`. Os contadores ficam no PostgreSQL e são compartilhados entre instâncias, com incremento
 atômico e limpeza limitada de janelas expiradas. Na Vercel, a identidade usa apenas o cabeçalho de IP
 controlado pela plataforma; fora dela, ignora cabeçalhos forjáveis e usa o agrupamento local. Uma falha
-do contador de Auth retorna 503 sem liberar a tentativa. A política geral da API mantém armazenamento
-em memória; sua substituição foi reservada para uma [branch de infraestrutura](../../../../docs/technical-debt/api-distributed-rate-limit.md)
-por decisão do produto na revisão de Agenda (T23). Nenhum serviço Redis/Upstash é necessário.
+do contador retorna 503 sem liberar a tentativa. A política geral da API também usa
+armazenamento compartilhado; os ensaios estão registrados na
+[documentação de infraestrutura](../../../../docs/technical-debt/api-distributed-rate-limit.md).
+Nenhum serviço Redis/Upstash é necessário.
 
 ## Autenticação: access token + refresh token
 
@@ -89,6 +96,12 @@ Quando a autenticação é concluída, `POST /auth/login` retorna um access toke
 token válido por um par novo (access + refresh), revogando o antigo (rotação — reuso de um token já
 revogado é tratado como inválido). Detalhe completo e racional das decisões em ADR-0002, seção "Nota:
 refresh token".
+
+No navegador, o refresh token fica apenas no cookie criptografado do NextAuth: `/api/auth/session` expõe
+só o access token. A renovação acontece no servidor (`update({ refresh: true })` aciona o callback `jwt`
+em `server/auth/session/auth-options.ts`, que chama o caso de uso de refresh) e o logout revoga o token
+por `POST /api/session/logout`. Os endpoints públicos `/auth/refresh` e `/auth/logout` continuam para
+clientes de API.
 
 ## Recuperação de senha e contas por tenant
 
@@ -148,8 +161,8 @@ completo em `docs/adr/0003-platform-admin-identidade-separada.md` e `specs/003-p
 - As rotas de criação de admin deste módulo (criar platform admin, criar admin de tenant) nunca são
   registradas em `src/server/openapi/registry.ts` — ver o contrato próprio de Platform.
 - Sessão NextAuth: segundo `CredentialsProvider` (`id: 'platform-credentials'`), mesma estratégia JWT, com
-  `session.scope` (`'tenant' | 'platform'`) como discriminador — `shared/lib/auth/require-platform-session.ts`
-  e `shared/lib/auth/require-admin-session.ts` rejeitam a sessão uma da outra, mesmo com o mesmo mecanismo de
+  `session.scope` (`'tenant' | 'platform'`) como discriminador — `server/auth/session/require-platform-session.ts`
+  e `server/auth/session/require-admin-session.ts` rejeitam a sessão uma da outra, mesmo com o mesmo mecanismo de
   sessão por baixo.
 
 ## Marketplace: vitrine pública (sem autenticação)

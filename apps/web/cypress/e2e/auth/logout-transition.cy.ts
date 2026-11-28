@@ -32,7 +32,7 @@ describe('Logout transitions', () => {
     const marketplaceGate = new Promise<void>((resolve) => {
       releaseMarketplace = resolve
     })
-    cy.intercept('POST', '**/api/auth/logout', (request) => {
+    cy.intercept('POST', '**/api/session/logout', (request) => {
       request.continue(() => revocationGate)
     }).as('revokeSession')
     cy.intercept('POST', '**/api/auth/signout').as('signOut')

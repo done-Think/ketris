@@ -10,8 +10,16 @@ export function teamMemberState(member: TeamMember): TeamMemberState {
 }
 
 const menuActionsByState: Record<TeamMemberState, readonly BrokerTeamMenuAction[]> = {
-  active: ['performance', 'editGoal', 'transferPortfolio', 'scheduleOneOnOne', 'deactivate'],
-  inactive: ['performance', 'transferPortfolio', 'activate'],
+  active: [
+    'performance',
+    'editGoal',
+    'transferPortfolio',
+    'sharePortfolio',
+    'revokePortfolio',
+    'scheduleOneOnOne',
+    'deactivate',
+  ],
+  inactive: ['performance', 'transferPortfolio', 'sharePortfolio', 'revokePortfolio', 'activate'],
   invited: ['resendInvitation', 'cancelInvitation'],
 }
 
@@ -59,6 +67,17 @@ export function transferDestinations(
     .map((member) => ({ id: member.id, label: member.name }))
 
   return self && self.id !== sourceId ? [self, ...brokers] : brokers
+}
+
+export function transferSources(
+  members: readonly TeamMember[],
+  self: TransferDestination | null,
+): TransferDestination[] {
+  const brokers = members
+    .filter((member) => teamMemberState(member) !== 'invited')
+    .map((member) => ({ id: member.id, label: member.name }))
+
+  return self ? [self, ...brokers] : brokers
 }
 
 export function responseTimeParts(minutes: number) {

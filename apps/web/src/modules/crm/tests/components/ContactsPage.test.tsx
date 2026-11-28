@@ -1,5 +1,8 @@
+vi.mock('../../hooks/use-leads', () => ({
+  useCreateLead: () => ({ mutate: vi.fn(), isPending: false }),
+}))
 import { ThemeProvider } from '@mui/material'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, within, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -10,6 +13,7 @@ import type { ApiContactListItem } from '../../types/contact'
 import { contactListFixtures } from '../fixtures/contact-list-fixtures'
 
 const mocks = vi.hoisted(() => ({
+  startContactMutateAsync: vi.fn(),
   useContacts: vi.fn(),
   useCreateContact: vi.fn(),
   useUpdateContact: vi.fn(),
@@ -125,6 +129,49 @@ describe('ContactsPage', () => {
     expect(screen.getByText('0-0 de 0')).toBeVisible()
   })
 
+  it('opens a prefilled lead form from the existing contact action', async () => {
+    const user = userEvent.setup()
+    renderContactsPage()
+    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
+    await user.click(within(table).getByRole('button', { name: 'Mais opções para Ricardo Mendes' }))
+    await user.click(screen.getByRole('menuitem', { name: 'Adicionar Ricardo Mendes a Leads' }))
+    expect(screen.getByLabelText('Nome')).toHaveValue(contact.name)
+    expect(screen.getByLabelText(/E-mail/)).toHaveValue(contact.email)
+  })
+
+  it('records a direct contact attempt and opens its history from the email menu item', async () => {
+    const user = userEvent.setup()
+    renderContactsPage()
+    const table = screen.getByRole('table', { name: 'Contatos do CRM' })
+    expect(within(table).queryByRole('link', { name: contact.email })).not.toBeInTheDocument()
+    await user.click(within(table).getByRole('button', { name: 'Mais opções para Ricardo Mendes' }))
+    const email = screen.getByRole('menuitem', { name: 'E-mail' })
+    email.addEventListener('click', (event) => event.preventDefault())
+    fireEvent.click(email)
+    await waitFor(() =>
+      expect(mocks.startContactMutateAsync).toHaveBeenCalledWith({
+        contactId: contact.id,
+        payload: { channel: 'EMAIL', requestId: expect.any(String) },
+      }),
+    )
+    expect(screen.getByRole('dialog')).toBeVisible()
+  })
+
+  it('opens and closes the interaction history for the selected contact', async () => {
+    const user = userEvent.setup()
+    renderContactsPage()
+    await user.click(
+      within(screen.getByRole('table', { name: 'Contatos do CRM' })).getByRole('button', {
+        name: 'Ver intera\u00e7\u00f5es de Ricardo Mendes',
+      }),
+    )
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText('Intera\u00e7\u00f5es')).toBeVisible()
+    expect(within(dialog).getByText('Nenhuma intera\u00e7\u00e3o registrada.')).toBeVisible()
+    await user.click(within(dialog).getByRole('button', { name: 'Fechar' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
   it('opens the create dialog and saves a new contact', async () => {
     const user = userEvent.setup()
     mocks.createContactMutateAsync.mockResolvedValueOnce(contact)
@@ -177,3 +224,18 @@ describe('ContactsPage', () => {
     expect(mocks.archiveContactMutateAsync).toHaveBeenCalledWith(contact.id)
   })
 })
+
+vi.mock('../../hooks/use-interactions', () => ({
+  useInteractions: () => ({
+    data: { interactions: [], pagination: { page: 1, pageSize: 5, pageCount: 1, totalCount: 0 } },
+    isLoading: false,
+    isError: false,
+  }),
+  useStartContactInteraction: () => ({
+    mutateAsync: mocks.startContactMutateAsync,
+    isPending: false,
+    isSuccess: false,
+  }),
+  useStartInteraction: () => ({ mutateAsync: vi.fn(), isPending: false, isSuccess: false }),
+  useCompleteInteraction: () => ({ mutateAsync: vi.fn(), isPending: false, isError: false }),
+}))

@@ -4,11 +4,7 @@ import { prisma } from '@server/db/prisma'
 
 import type { AgencyActivity, AgencyBrokerSale, AgencyTopBroker } from '../types/agency-overview'
 import type { AgencyOverviewRepository } from '../application/ports/agency-overview-repository.port'
-import {
-  currentMonthRange,
-  previousMonthDueDateRange,
-  previousMonthSamePeriodRange,
-} from '../domain/agency-overview-periods'
+import { currentMonthRange, previousMonthSamePeriodRange } from '../domain/agency-overview-periods'
 
 function buildLocation(address: { neighborhood: string; city: string } | null): string | null {
   if (!address) return null
@@ -38,7 +34,20 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
 
   async getActiveBrokersCount(tenantId: string): Promise<number> {
     return prisma.user.count({
-      where: { tenantId, role: { in: ['AGENT', 'OWNER'] }, active: true },
+      where: {
+        tenantId,
+        role: 'AGENT',
+        active: true,
+        AND: [
+          { OR: [{ membershipApprovedAt: { not: null } }, { teamInvitation: { isNot: null } }] },
+          {
+            OR: [
+              { teamInvitation: { is: null } },
+              { teamInvitation: { is: { acceptedAt: { not: null } } } },
+            ],
+          },
+        ],
+      },
     })
   }
 
@@ -56,21 +65,6 @@ export class PrismaAgencyOverviewRepository implements AgencyOverviewRepository 
     return prisma.lead.count({
       where: { tenantId, createdAt: { gte: start, lt: end } },
     })
-  }
-
-  async getMonthlyReceivablePreviousMonth(tenantId: string, referenceDate: Date): Promise<number> {
-    const { start, end } = previousMonthDueDateRange(referenceDate)
-    const aggregate = await prisma.charge.aggregate({
-      _sum: { amount: true },
-      where: {
-        tenantId,
-        type: 'RECEIVABLE',
-        dueDate: { gte: start, lt: end },
-        status: { not: 'CANCELED' },
-      },
-    })
-
-    return aggregate._sum.amount?.toNumber() ?? 0
   }
 
   async getOccupancyPercentage(tenantId: string): Promise<number> {

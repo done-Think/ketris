@@ -24,6 +24,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { useConvertLeadToOpportunity } from '../hooks/use-leads'
 import { createConvertLeadSchema } from '../schemas/convert-lead-schema'
 import type { ConvertLeadDialogProps, ConvertLeadFormValues } from '../types/lead'
+import { RhfMoneyField } from '@shared/components/form'
 import { extractErrorMessage } from '@shared/utils/error-message'
 import { PropertyAutocomplete } from './opportunity-detail/PropertyAutocomplete'
 
@@ -120,30 +121,12 @@ function ConvertLeadForm({ lead, onClose, open }: ConvertLeadDialogProps) {
               />
             )}
           />
-          <Controller
+          <RhfMoneyField
             control={control}
             name="proposedValue"
-            render={({ field, fieldState }) => (
-              <TextField
-                name={field.name}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-                label={t('proposedValue')}
-                fullWidth
-                type="number"
-                value={field.value || ''}
-                onChange={(event) => field.onChange(Number(event.target.value))}
-                slotProps={{
-                  htmlInput: {
-                    inputMode: 'decimal',
-                    min: 0.01,
-                    step: 0.01,
-                  },
-                }}
-                error={Boolean(fieldState.error)}
-                helperText={fieldState.error?.message ?? ' '}
-              />
-            )}
+            label={t('proposedValue')}
+            fullWidth
+            helperText=" "
           />
         </Stack>
       </DialogContent>

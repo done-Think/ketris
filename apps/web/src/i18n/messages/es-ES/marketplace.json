@@ -30,7 +30,8 @@
       "settings": "Configuración",
       "signOut": "Salir",
       "support": "Soporte",
-      "switchMode": "Cambiar modalidad"
+      "switchMode": "Cambiar modalidad",
+      "favorites": "Mis favoritos"
     }
   },
   "navigation": {
@@ -67,6 +68,13 @@
       "notFoundTitle": "Ketris",
       "agencyDescription": "{name}, {creci}, opera en {headquarters}.",
       "brokerDescription": "{name}, {creci}, representa inmuebles en {region}."
+    },
+    "privacy": {
+      "metadataTitle": "Ketris | Política de Privacidad",
+      "metadataDescription": "Cómo Ketris trata los datos de la integración con Instagram."
+    },
+    "favorites": {
+      "metadataTitle": "Mis favoritos"
     }
   },
   "home": {
@@ -194,8 +202,9 @@
     "mapUnavailable": "La ubicación en el mapa aún no está disponible para esta dirección.",
     "searchAddressOnMaps": "Buscar dirección en Google Maps",
     "mapApproximate": "Ubicación aproximada",
-    "favorite": "Favorito",
     "share": "Compartir",
+    "linkCopied": "Enlace copiado.",
+    "shareError": "No se pudo compartir. Copia la dirección desde el navegador.",
     "aboutProperty": "Sobre el inmueble",
     "location": "Ubicación",
     "notInformed": "No informado",
@@ -257,6 +266,7 @@
       "errors": {
         "nameRequired": "Indica tu nombre",
         "emailInvalid": "Indica un correo electrónico válido",
+        "phoneInvalid": "Ingresa un teléfono con código de área, como (11) 99999-9999",
         "proposedValueInvalid": "Indica un valor válido"
       }
     }
@@ -352,14 +362,14 @@
       "appearance": "Apariencia",
       "images": "Imágenes",
       "backgroundColor": "Fondo de la marca",
-      "logoUrl": "URL del logo",
-      "bannerUrl": "URL del banner",
+      "logoUrl": "Logotipo",
+      "bannerUrl": "Imagen de portada",
       "team": "Equipo destacado",
       "teamPicker": "Corredores destacados",
       "teamPickerPlaceholder": "Selecciona hasta 6 corredores",
       "teamPickerHint": "Opcional. Puedes publicar sin corredores destacados y añadirlos después.",
-      "primaryColor": "Color principal",
-      "secondaryColor": "Color secundario"
+      "primaryColor": "Color de destacados",
+      "secondaryColor": "Color del nombre"
     },
     "actions": {
       "preview": "Vista previa",
@@ -389,7 +399,91 @@
     },
     "validatedDraft": "Borrador validado",
     "loadError": "No se pudo cargar el perfil.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "brand": {
+      "summaryDescription": "Logotipo, imagen de portada y los colores que aparecen en tu perfil y en las tarjetas de búsqueda.",
+      "open": "Personalizar marca",
+      "ready": "Listo para publicar",
+      "missingHint": "Para publicar, falta: {items}",
+      "missingItems": {
+        "backgroundColor": "fondo de la marca",
+        "logoUrl": "logotipo",
+        "bannerUrl": "imagen de portada"
+      },
+      "dialogTitle": "Personalizar marca",
+      "close": "Cerrar",
+      "logoHint": "PNG con fondo transparente, desde 400 px.",
+      "bannerHint": "Imagen horizontal, 1600 × 500 px. JPG, PNG o WEBP.",
+      "colors": "Colores",
+      "palettes": "Paletas listas",
+      "applyPalette": "Usar la paleta {name}",
+      "paletteNames": {
+        "ketris": "Ketris",
+        "ocean": "Océano",
+        "forest": "Verde",
+        "terracotta": "Terracota",
+        "graphite": "Grafito",
+        "wine": "Vino"
+      },
+      "colorHelp": {
+        "backgroundColor": "Fondo de la franja del logotipo y de las tarjetas del equipo.",
+        "primaryColor": "Etiquetas, números del perfil, botones de contacto y precio de los inmuebles.",
+        "secondaryColor": "Nombre y CRECI en la tarjeta. Si queda vacío, usa el color de destacados."
+      },
+      "requiredToPublish": "obligatorio para publicar",
+      "emptyColor": "Sin color",
+      "pickColor": "Elegir {name}",
+      "contrast": {
+        "nameOnBackground": "El nombre es difícil de leer sobre el fondo (contraste {ratio} : 1). Elige un color del nombre más {suggestion, select, darker {oscuro} other {claro}}.",
+        "textOnPrimary": "El texto blanco de los botones queda débil sobre el color de destacados (contraste {ratio} : 1). Un color más oscuro ayuda."
+      },
+      "previewTabs": {
+        "profile": "Perfil",
+        "card": "Tarjeta en la búsqueda"
+      },
+      "cancel": "Cancelar",
+      "apply": "Aplicar",
+      "applied": "Marca aplicada. Haz clic en Guardar para conservarla.",
+      "suggestion": "Sugerencia a partir del logotipo:",
+      "useSuggestion": "Usar colores del logotipo",
+      "wizard": {
+        "steps": {
+          "logo": "Logotipo",
+          "colors": "Colores",
+          "cover": "Portada",
+          "review": "Revisar"
+        },
+        "titles": {
+          "logo": "Sube el logotipo",
+          "colors": "Elige los colores",
+          "cover": "Imagen de portada",
+          "review": "Revisa antes de aplicar"
+        },
+        "descriptions": {
+          "logo": "Preferiblemente en PNG con fondo transparente. Después sugerimos colores a partir de él.",
+          "colors": "Usa la sugerencia del logotipo, una paleta lista o elige cada color.",
+          "cover": "Aparece en la parte superior de tu perfil. Las fotos de la fachada o de la ciudad funcionan bien.",
+          "review": "Mira lo que ya está listo y lo que aún falta para publicar."
+        },
+        "next": "Siguiente",
+        "back": "Atrás",
+        "skip": "Ver todo en una pantalla",
+        "review": {
+          "logo": {
+            "ok": "Logotipo subido",
+            "missing": "Falta el logotipo (obligatorio para publicar)"
+          },
+          "background": {
+            "ok": "Fondo de la marca elegido",
+            "missing": "Falta el fondo de la marca (obligatorio para publicar)"
+          },
+          "cover": {
+            "ok": "Imagen de portada subida",
+            "missing": "Falta la imagen de portada (obligatoria para publicar)"
+          }
+        }
+      }
+    }
   },
   "searchResults": {
     "toolbar": {
@@ -538,5 +632,92 @@
     "loadError": "No se pudo cargar tu dirección pública.",
     "loading": "Cargando dirección pública…",
     "unpublishedHint": "Publica el perfil para habilitar el enlace público y editar la dirección personalizada. El enlace solo funciona mientras el perfil esté publicado."
+  },
+  "privacy": {
+    "title": "Política de Privacidad",
+    "updatedAt": "Actualizada el {date}",
+    "intro": "Esta página explica cómo Ketris trata los datos de la integración con Instagram. Se aplica a quien conecta una cuenta profesional de Instagram a Ketris para publicar inmuebles.",
+    "sections": {
+      "access": {
+        "title": "Datos de Instagram a los que Ketris accede",
+        "intro": "Ketris solo accede a Instagram después de que conectas tu cuenta y autorizas dos permisos:",
+        "basic": "instagram_business_basic: lee el identificador y el nombre de usuario (@) de la cuenta profesional. Ketris los usa para mostrar qué cuenta está conectada.",
+        "publish": "instagram_business_content_publish: publica en tu cuenta las fotos y el texto que revisas y confirmas en Ketris. Nada se publica sin tu confirmación.",
+        "notAccessed": "Ketris no lee mensajes, comentarios, seguidores, estadísticas ni publicaciones que no hiciste con Ketris. Ketris nunca recibe tu contraseña de Instagram."
+      },
+      "storage": {
+        "title": "Cómo guardamos los datos",
+        "token": "El token de acceso entregado por Meta se guarda cifrado (AES-256-GCM) en la base de datos de Ketris, separado por inmobiliaria y por usuario. El token nunca se envía al navegador.",
+        "photos": "Para publicar, Ketris crea copias de las fotos elegidas en el formato de Instagram y las guarda en Amazon S3. Meta descarga las copias mediante una dirección firmada que caduca en 48 horas. Las copias solo sirven para la publicación y se eliminan cuando solicitas la eliminación de los datos.",
+        "history": "Ketris guarda el historial de cada publicación (texto, fotos elegidas, estado y enlace) para mostrar el resultado en el detalle del inmueble."
+      },
+      "use": {
+        "title": "Cómo usamos los datos",
+        "body": "Los datos de Instagram solo sirven para conectar tu cuenta y publicar los inmuebles que elijas. Ketris no vende, no comparte ni usa estos datos para publicidad."
+      },
+      "disconnect": {
+        "title": "Cómo desconectar la cuenta",
+        "ketris": "En Ketris, abre Mi perfil y haz clic en Desconectar en la tarjeta Mi Instagram. Ketris elimina el token al instante y cancela las publicaciones que aún no se enviaron.",
+        "instagram": "En Instagram, abre Configuración, luego Apps y sitios web, y elimina Ketris. Meta avisa a Ketris y el acceso queda revocado."
+      },
+      "deletion": {
+        "title": "Cómo solicitar la eliminación de los datos",
+        "meta": "Al eliminar Ketris en la configuración de Instagram, puedes solicitar la eliminación de los datos. Meta envía la solicitud a Ketris en {endpoint}. Ketris elimina el token, el historial de publicaciones y las copias de las fotos, y devuelve un código de confirmación para que sigas la solicitud.",
+        "kept": "Esta solicitud no elimina los inmuebles publicados en el sitio ni las publicaciones ya hechas en Instagram. Para eliminar una publicación, usa Instagram.",
+        "email": "También puedes solicitar la eliminación por correo: {email}. Indica el @ de la cuenta de Instagram y el correo que usas en Ketris.",
+        "emailFallback": "También puedes solicitar la eliminación al administrador de tu inmobiliaria, que envía la solicitud a Ketris."
+      },
+      "changes": {
+        "title": "Cambios en esta política",
+        "body": "Si esta política cambia, la fecha de actualización al inicio de esta página también cambia."
+      }
+    }
+  },
+  "favorites": {
+    "save": "Guardar",
+    "saved": "Guardado",
+    "addLabel": "Guardar en favoritos",
+    "removeLabel": "Quitar de favoritos",
+    "login": {
+      "title": "Inicia sesión para guardar este inmueble",
+      "description": "Tus favoritos quedan en tu cuenta y aparecen en el móvil y en el ordenador. Al iniciar sesión, el inmueble ya queda guardado.",
+      "signIn": "Iniciar sesión",
+      "signUp": "Crear cuenta",
+      "notNow": "Ahora no"
+    },
+    "errors": {
+      "generic": "No pudimos actualizar tus favoritos. Inténtalo de nuevo.",
+      "unavailable": "Este inmueble ya no está disponible.",
+      "limitReached": "Ya guardaste {limit} inmuebles. Quita algún favorito para guardar otro."
+    },
+    "removed": "Inmueble quitado de favoritos.",
+    "undo": "Deshacer",
+    "page": {
+      "title": "Mis favoritos",
+      "count": "{count, plural, =0 {Ningún inmueble guardado} one {# inmueble guardado} other {# inmuebles guardados}}",
+      "loadError": "No pudimos cargar tus favoritos.",
+      "retry": "Intentar de nuevo",
+      "purpose": {
+        "all": "Todos ({count})",
+        "rent": "Alquilar ({count})",
+        "buy": "Comprar ({count})"
+      },
+      "unavailable": {
+        "title": "Ya no están disponibles",
+        "note": "El anuncio fue retirado.",
+        "remove": "Quitar"
+      },
+      "guest": {
+        "title": "Inicia sesión para ver tus favoritos",
+        "description": "Los inmuebles que guardes quedan en tu cuenta y aparecen en el móvil y en el ordenador.",
+        "action": "Iniciar sesión"
+      },
+      "empty": {
+        "title": "Aún no guardaste ningún inmueble",
+        "description": "Toca el corazón de cualquier inmueble para guardarlo aquí y comparar con calma después.",
+        "rentAction": "Ver inmuebles en alquiler",
+        "buyAction": "Ver inmuebles en venta"
+      }
+    }
   }
 }

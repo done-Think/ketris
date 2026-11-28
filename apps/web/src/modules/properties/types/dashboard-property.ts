@@ -1,4 +1,5 @@
 import type { useFormatter } from 'next-intl'
+import type { FileRejection } from 'react-dropzone'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { TextFieldProps } from '@mui/material'
 import type { Property, PropertyListing } from './property'
@@ -31,6 +32,10 @@ export type CreatePropertyPurpose = 'RENT' | 'SALE'
 
 export type DashboardActivityTone = 'success' | 'accent' | 'info' | 'warning' | 'neutral' | 'error'
 
+export type DashboardPropertySchemaOptions = {
+  isPostalCodeNotFound?: (zipCode: string) => boolean
+}
+
 type NumericFormField = 'bedrooms' | 'bathrooms' | 'parkingSpaces' | 'area'
 
 /** The numeric fields start empty in the form and are coerced to numbers by the schema. */
@@ -49,9 +54,12 @@ export type PropertiesDashboardFiltersState = {
 }
 
 export type DashboardProperty = {
+  agencyManaged?: boolean
   activeContractId?: string | null
+  managedBy?: string | null
   id: string
   responsibleUserId: string
+  brokerIds?: string[]
   apiStatus: ApiPropertyStatus
   title: string
   description: string | null
@@ -86,6 +94,8 @@ export type DashboardProperty = {
     propertyTax: string
   }
   activityHistory: Array<{
+    action?: 'CREATED' | 'PUBLISHED' | 'UPDATED'
+    occurredAt?: string
     label: string
     date: string
     tone: DashboardActivityTone
@@ -162,21 +172,19 @@ export type CreatePropertyValuesStepFieldsProps = {
   control: Control<CreateDashboardPropertyFormValues>
   hasDualPurpose: boolean
   mainValueLabel: 'rentValue' | 'saleValue' | 'referenceValue'
-  negotiationTermLabel: 'securityDeposit' | 'commission' | 'commercialTerms'
+  propertyPurpose: CreatePropertyPurpose[]
+}
+
+export interface PropertyNegotiationConditionsFieldProps {
+  control: Control<CreateDashboardPropertyFormValues>
+  propertyPurpose: CreatePropertyPurpose[]
 }
 
 export type PropertyValueFieldName =
   'mainValue' | 'rentalValue' | 'condominium' | 'propertyTax' | 'negotiationTerm'
 
 export type PropertyValueFieldLabel =
-  | 'referenceValue'
-  | 'rentValue'
-  | 'saleValue'
-  | 'condominium'
-  | 'propertyTax'
-  | 'securityDeposit'
-  | 'commission'
-  | 'commercialTerms'
+  'referenceValue' | 'rentValue' | 'saleValue' | 'condominium' | 'propertyTax' | 'condition'
 
 export type PropertyValueFieldConfig = readonly [
   name: PropertyValueFieldName,
@@ -239,6 +247,7 @@ export type PropertyFormatter = Pick<ReturnType<typeof useFormatter>, 'number' |
 export type DashboardPropertyMappingOptions = {
   formatter: PropertyFormatter
   locale: AppLocale
+  viewerTenantId?: string
   messages: DashboardPropertyMappingMessages
 }
 
@@ -257,6 +266,8 @@ export type CreatePropertyActionsProps = {
 }
 
 export type PropertyDetailHeaderProps = {
+  canUnpublish?: boolean
+  canInactivate?: boolean
   property: DashboardProperty
   canManage: boolean
   isPublishing: boolean
@@ -281,6 +292,7 @@ export type PropertyDetailMainPanelProps = {
 
 export type PropertyDetailSidebarProps = {
   property: DashboardProperty
+  showFullHistory?: boolean
 }
 
 export type PropertyContractParticipantsProps = {
@@ -325,7 +337,9 @@ export interface PropertyMediaDropzoneProps {
   items: CreateDashboardPropertyFormValues['media']
   isUploading: boolean
   onDrop: (files: File[]) => void
+  onReject: (rejections: FileRejection[]) => void
   onRemove: (index: number) => void
+  onSelectFeatured: (index: number) => void
 }
 
 export interface PropertyStatusStyle {

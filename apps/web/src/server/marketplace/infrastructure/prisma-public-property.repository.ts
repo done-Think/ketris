@@ -1,3 +1,5 @@
+import { isPropertyNegotiationCondition } from '@shared/config/property-negotiation'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '@server/db/prisma'
 import { publicPropertySearchPage } from './public-property-search-page'
 
@@ -23,7 +25,28 @@ function toNumber(value: DecimalLike | null): number | null {
   return value === null ? null : value.toNumber()
 }
 
-function toSummary(row: PropertySummaryRow): PublishedPropertySummary {
+export const publicPropertySummarySelect = {
+  id: true,
+  title: true,
+  purpose: true,
+  type: true,
+  price: true,
+  rentalPrice: true,
+  condoFee: true,
+  propertyTax: true,
+  bedrooms: true,
+  bathrooms: true,
+  parkingSpots: true,
+  areaSqm: true,
+  publishedAt: true,
+  address: {
+    select: { city: true, neighborhood: true, latitude: true, longitude: true },
+  },
+  responsible: { select: { name: true, avatarUrl: true } },
+  media: { orderBy: { position: 'asc' }, take: 1, select: { url: true } },
+} satisfies Prisma.PropertySelect
+
+export function toPublishedPropertySummary(row: PropertySummaryRow): PublishedPropertySummary {
   return {
     id: row.id,
     title: row.title,
@@ -59,9 +82,11 @@ function toMedia(row: PropertyMediaRow): PropertyMedia {
 
 function toDetail(row: PropertyDetailRow): PublishedPropertyDetail {
   return {
-    ...toSummary(row),
+    ...toPublishedPropertySummary(row),
     tenantId: row.tenantId,
     description: row.description,
+    negotiationTerms: row.negotiationTerms ?? null,
+    negotiationConditions: (row.negotiationConditions ?? []).filter(isPropertyNegotiationCondition),
     address: row.address
       ? {
           street: row.address.street,
@@ -92,32 +117,13 @@ export class PrismaPublicPropertyRepository implements PublicPropertyRepository 
         })
         const properties = await transaction.property.findMany({
           where: { id: { in: ids } },
-          select: {
-            id: true,
-            title: true,
-            purpose: true,
-            type: true,
-            price: true,
-            rentalPrice: true,
-            condoFee: true,
-            propertyTax: true,
-            bedrooms: true,
-            bathrooms: true,
-            parkingSpots: true,
-            areaSqm: true,
-            publishedAt: true,
-            address: {
-              select: { city: true, neighborhood: true, latitude: true, longitude: true },
-            },
-            responsible: { select: { name: true, avatarUrl: true } },
-            media: { orderBy: { position: 'asc' }, take: 1, select: { url: true } },
-          },
+          select: publicPropertySummarySelect,
         })
         const byId = new Map(properties.map((property) => [property.id, property]))
         return {
           items: ids.flatMap((id) => {
             const property = byId.get(id)
-            return property ? [toSummary(property)] : []
+            return property ? [toPublishedPropertySummary(property)] : []
           }),
           totalCount,
         }

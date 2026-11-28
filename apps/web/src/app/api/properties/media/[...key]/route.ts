@@ -19,6 +19,8 @@ export const GET = withErrorHandling(
       return new NextResponse(null, { status: 404 })
 
     const objectKey = key.join('/')
+    if (/^properties\/[^/]+\/instagram\//.test(objectKey))
+      return new NextResponse(null, { status: 404 })
 
     try {
       if (shouldUseLocalUploadsStorage()) {

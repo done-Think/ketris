@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
-import { createCpfSchema, isValidCpf } from '../../schemas/cpf-schema'
+import { cpfDigits, createCpfSchema, isValidCpf } from '../../schemas/cpf-schema'
 
 const schema = createCpfSchema((key) => key)
+
+describe('cpfDigits', () => {
+  it('keeps only the digits of a formatted CPF', () => {
+    expect(cpfDigits('111.444.777-35')).toBe('11144477735')
+    expect(cpfDigits(' 111 444 777 35 ')).toBe('11144477735')
+  })
+})
 
 describe('isValidCpf', () => {
   it('accepts a valid CPF, formatted or not', () => {

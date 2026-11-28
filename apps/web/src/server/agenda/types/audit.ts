@@ -1,4 +1,5 @@
-export type AgendaAuditAction = 'CREATED' | 'UPDATED' | 'RESCHEDULED' | 'CANCELLED'
+export type AgendaAuditAction =
+  'CREATED' | 'UPDATED' | 'RESCHEDULED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW'
 export interface AgendaAuditInput {
   tenantId: string
   eventId: string

@@ -13,6 +13,7 @@ function toDashboardPurpose(purpose: Property['purpose']): CreatePropertyPurpose
 
 export function buildEditPropertyFormValues(property: Property): CreateDashboardPropertyFormValues {
   return {
+    brokerIds: property.brokerIds ?? [],
     ownerUserId: property.ownerUserId ?? '',
     ownerContact: property.ownerContact ?? null,
     complement: property.address?.complement ?? '',
@@ -36,7 +37,11 @@ export function buildEditPropertyFormValues(property: Property): CreateDashboard
     rentalValue: property.values.rentalPrice ?? 0,
     condominium: property.values.condoFee ?? 0,
     propertyTax: property.values.propertyTax ?? 0,
+    instagramEnabled: false,
+    instagramCaption: '',
+    instagramImageUrls: [],
     negotiationTerm: property.listing.negotiationTerms ?? '',
+    negotiationConditions: property.listing.negotiationConditions ?? [],
     publishingOptions: createPropertyPublishingOptions.filter(
       (_, index) =>
         [

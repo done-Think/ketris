@@ -122,7 +122,7 @@ describe('ListChargesUseCase e GetChargeUseCase', () => {
       expect.objectContaining({
         today,
         status: 'OVERDUE',
-        scope: { kind: 'tenant', tenantId: 'tenant-1' },
+        scope: expect.objectContaining({ kind: 'tenant', tenantId: 'tenant-1' }),
       }),
     )
     expect(result.items[0].status).toBe('OVERDUE')
@@ -422,6 +422,100 @@ describe('DownloadChargeReceiptUseCase', () => {
       true,
       false,
     ])
+  })
+
+  const renter = { actorId: 'renter-1', actorTenantId: 'renters', actorRole: 'RENTER' } as const
+  const propertyOwner = {
+    actorId: 'property-owner-1',
+    actorTenantId: 'tenant-1',
+    actorRole: 'PROPERTY_OWNER',
+  } as const
+  const linkedLandlord = {
+    actorId: 'landlord-1',
+    actorTenantId: 'landlord-tenant',
+    actorRole: 'OWNER',
+  } as const
+  const request = { chargeId: 'charge-1', receiptId: 'receipt-1' }
+
+  it.each([
+    ['a gestão da imobiliária', owner, { kind: 'tenant', tenantId: 'tenant-1' }, true],
+    ['o locatário parte do contrato', renter, { kind: 'renter', userId: 'renter-1' }, false],
+    [
+      'o proprietário do imóvel do contrato',
+      propertyOwner,
+      { kind: 'propertyOwner', tenantId: 'tenant-1', ownerId: 'property-owner-1' },
+      false,
+    ],
+  ] as const)(
+    '%s baixa pelo mesmo escopo de leitura da cobrança',
+    async (_, actor, scope, history) => {
+      const repository = createRepository({ findReceipt: vi.fn().mockResolvedValue(stored) })
+      const storage = createStorage()
+
+      const download = await new DownloadChargeReceiptUseCase(repository, storage).execute({
+        ...actor,
+        ...request,
+      })
+
+      expect(repository.findReceipt).toHaveBeenCalledWith(scope, 'charge-1', 'receipt-1', history)
+      expect(storage.downloadUrl).toHaveBeenCalledWith(
+        stored.objectKey,
+        stored.name,
+        stored.contentType,
+      )
+      expect(download.url).toEqual(expect.any(String))
+    },
+  )
+
+  it('o locador vinculado baixa só o comprovante vigente da cobrança que ele vê', async () => {
+    const repository = createRepository({
+      findReceipt: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(stored),
+    })
+
+    await new DownloadChargeReceiptUseCase(repository, createStorage()).execute({
+      ...linkedLandlord,
+      ...request,
+    })
+
+    expect(vi.mocked(repository.findReceipt).mock.calls).toEqual([
+      [{ kind: 'tenant', tenantId: 'landlord-tenant' }, 'charge-1', 'receipt-1', true],
+      [
+        { kind: 'tenant', tenantId: 'landlord-tenant', landlordUserId: 'landlord-1' },
+        'charge-1',
+        'receipt-1',
+        false,
+      ],
+    ])
+  })
+
+  it.each([
+    ['o locatário de outro contrato', renter],
+    ['a gestão de outro tenant', { ...owner, actorTenantId: 'tenant-2' }],
+    ['o proprietário de outro imóvel', propertyOwner],
+    ['o locador vinculado com comprovante estornado', linkedLandlord],
+  ] as const)('%s recebe o 404 de comprovante inexistente', async (_, actor) => {
+    const storage = createStorage()
+
+    await expect(
+      new DownloadChargeReceiptUseCase(createRepository(), storage).execute({
+        ...actor,
+        ...request,
+      }),
+    ).rejects.toBeInstanceOf(ChargeReceiptNotFoundError)
+    expect(storage.downloadUrl).not.toHaveBeenCalled()
+  })
+
+  it('o corretor continua sem acesso ao financeiro (403)', async () => {
+    const repository = createRepository({ findReceipt: vi.fn().mockResolvedValue(stored) })
+
+    await expect(
+      new DownloadChargeReceiptUseCase(repository, createStorage()).execute({
+        ...owner,
+        actorRole: 'AGENT',
+        ...request,
+      }),
+    ).rejects.toMatchObject({ status: 403 })
+    expect(repository.findReceipt).not.toHaveBeenCalled()
   })
 
   it('devolve 404 quando o comprovante não está no escopo', async () => {

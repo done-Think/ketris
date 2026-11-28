@@ -4,12 +4,17 @@ import { NextRequest } from 'next/server'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 const { send } = vi.hoisted(() => ({ send: vi.fn().mockResolvedValue(undefined) }))
+vi.mock('next/server', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/server')>()),
+  after: (await import('@/test/after-queue')).queueAfterTask,
+}))
 vi.mock('@server/shared/email/ses-mailer', () => ({
   SesMailer: class {
     send = send
   },
 }))
 
+import { flushAfterTasks } from '@/test/after-queue'
 import { prisma } from '@server/db/prisma'
 import { hashPasswordResetCode } from '@server/auth/domain/password-reset-code'
 import { POST as requestCode } from '../../../password-reset-codes/route'
@@ -51,6 +56,8 @@ describe('POST /auth/password-reset-codes mailbox ownership integration', () => 
     const response = await requestCode(request('password-reset-codes', { email, locale: 'pt-BR' }))
     expect(response.status).toBe(204)
     expect(await response.text()).toBe('')
+    expect(send).not.toHaveBeenCalled()
+    await flushAfterTasks()
     expect(send).toHaveBeenCalledTimes(1)
     const message = send.mock.calls[0][0]
     const code = `${message.text} ${message.html}`.match(/\b\d{6}\b/)?.[0]
@@ -73,6 +80,7 @@ describe('POST /auth/password-reset-codes mailbox ownership integration', () => 
         locale: 'pt-BR',
       }),
     )
+    await flushAfterTasks()
     expect(cooldown.status).toBe(204)
     expect(unknown.status).toBe(204)
     expect(await cooldown.text()).toBe(await unknown.text())

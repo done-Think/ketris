@@ -1,9 +1,12 @@
 import type { ChargeStatus, StoredChargeStatus } from '../types/charge'
 
-const openStatuses: readonly StoredChargeStatus[] = ['PENDING', 'SCHEDULED']
+export const openChargeStatuses = [
+  'PENDING',
+  'SCHEDULED',
+] as const satisfies readonly StoredChargeStatus[]
 
 export function isOpenChargeStatus(status: StoredChargeStatus): boolean {
-  return openStatuses.includes(status)
+  return (openChargeStatuses as readonly StoredChargeStatus[]).includes(status)
 }
 
 export function effectiveChargeStatus(

@@ -1,4 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
+import type { Instrumentation } from 'next'
+
+import { sanitizeInstagramTelemetry } from '@shared/lib/telemetry/instagram-telemetry'
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'edge') {
@@ -15,4 +18,6 @@ export async function register() {
   console.log(`   - Docs (Swagger):      ${appUrl}/api/docs`)
 }
 
-export const onRequestError = Sentry.captureRequestError
+export const onRequestError: Instrumentation.onRequestError = (error, request, context) => {
+  Sentry.captureRequestError(error, sanitizeInstagramTelemetry(request), context)
+}

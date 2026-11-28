@@ -4,6 +4,7 @@ import type { UserRepository } from '../../../application/ports/user-repository.
 import type { EmailVerificationRepository } from '../../../application/ports/email-verification-repository.port'
 import type { TokenService } from '../../../application/ports/token-service.port'
 import type { RefreshTokenRepository } from '../../../application/ports/refresh-token-repository.port'
+import type { CodeAttemptLimiter } from '../../../application/ports/code-attempt-limiter.port'
 import type { User } from '../../../domain/user.entity'
 import type { EmailVerificationRecord } from '../../../types/email-verification'
 import { hashPasswordResetCode } from '../../../domain/password-reset-code'
@@ -68,9 +69,14 @@ export function verificationDeps() {
   const refresh: RefreshTokenRepository = {
     create: vi.fn(),
     rotate: vi.fn(),
+    findRecentlyRotatedByTokenHash: vi.fn().mockResolvedValue(null),
     findValidByTokenHash: vi.fn(),
     revokeById: vi.fn(),
     revokeAllForUser: vi.fn(),
   }
-  return { users, codes, mailer, tokens, refresh }
+  const attempts: CodeAttemptLimiter = {
+    isBlocked: vi.fn().mockResolvedValue(false),
+    recordFailure: vi.fn().mockResolvedValue(undefined),
+  }
+  return { users, codes, mailer, tokens, refresh, attempts }
 }

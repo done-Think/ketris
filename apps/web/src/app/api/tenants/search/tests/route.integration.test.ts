@@ -10,6 +10,25 @@ import { GET } from '../route'
 describe('GET /api/tenants/search (integração)', () => {
   const marker = randomUUID().slice(0, 8)
   let tenantId: string
+  let unconfirmedTenantId: string
+
+  function agencyWithOwner(name: string, slug: string, emailVerifiedAt: Date | null) {
+    return prisma.tenant.create({
+      data: {
+        name,
+        slug,
+        users: {
+          create: {
+            name: 'Dona',
+            email: `${slug}@example.test`,
+            passwordHash: 'owner-test-hash',
+            role: 'OWNER',
+            emailVerifiedAt,
+          },
+        },
+      },
+    })
+  }
 
   beforeAll(async () => {
     await prisma.tenant.upsert({
@@ -18,14 +37,23 @@ describe('GET /api/tenants/search (integração)', () => {
       create: { name: 'Locatários Ketris', slug: 'locatarios' },
     })
 
-    const tenant = await prisma.tenant.create({
-      data: { name: `Imobiliária Buscável ${marker}`, slug: `imobiliaria-buscavel-${marker}` },
-    })
+    const tenant = await agencyWithOwner(
+      `Imobiliária Buscável ${marker}`,
+      `imobiliaria-buscavel-${marker}`,
+      new Date(),
+    )
     tenantId = tenant.id
+    unconfirmedTenantId = (
+      await agencyWithOwner(
+        `Imobiliária Pendente ${marker}`,
+        `imobiliaria-pendente-${marker}`,
+        null,
+      )
+    ).id
   })
 
   afterAll(async () => {
-    await prisma.tenant.delete({ where: { id: tenantId } })
+    await prisma.tenant.deleteMany({ where: { id: { in: [tenantId, unconfirmedTenantId] } } })
     await prisma.$disconnect()
   })
 
@@ -41,6 +69,14 @@ describe('GET /api/tenants/search (integração)', () => {
     expect(json.tenants).toEqual([{ id: tenantId, name: `Imobiliária Buscável ${marker}` }])
   })
 
+  it('não oferece imobiliária cuja dona ainda não confirmou o e-mail', async () => {
+    const response = await GET(buildRequest(`pendente ${marker}`))
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(json.tenants).toEqual([])
+  })
+
   it('nunca retorna o tenant compartilhado de locatários', async () => {
     const response = await GET(buildRequest('locatários'))
     const json = await response.json()
@@ -51,12 +87,30 @@ describe('GET /api/tenants/search (integração)', () => {
     ).toBe(false)
   })
 
-  it('lista as primeiras imobiliárias quando o parâmetro q está ausente', async () => {
+  it.each(['', ' ', 'i', ' i '])(
+    'devolve lista vazia, sem enumerar imobiliárias, para a busca curta %j',
+    async (query) => {
+      const response = await GET(buildRequest(query))
+      const json = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(json.tenants).toEqual([])
+    },
+  )
+
+  it('devolve lista vazia quando o parâmetro q está ausente', async () => {
     const response = await GET(new NextRequest('http://localhost/api/tenants/search'))
     const json = await response.json()
 
     expect(response.status).toBe(200)
-    expect(Array.isArray(json.tenants)).toBe(true)
+    expect(json.tenants).toEqual([])
+  })
+
+  it('continua limitando a busca com dois caracteres a 20 resultados', async () => {
+    const response = await GET(buildRequest('im'))
+    const json = await response.json()
+
+    expect(response.status).toBe(200)
     expect(json.tenants.length).toBeLessThanOrEqual(20)
   })
 

@@ -1,6 +1,8 @@
 import type { PasswordHasher } from '@server/auth/application/ports/password-hasher.port'
 import { EmailAlreadyInUseError } from '@server/auth/domain/errors'
 import type { Mailer } from '@server/shared/email/mailer.port'
+import { describeFailure } from '@server/shared/observability/describe-failure'
+import type { FailureReporter } from '@server/shared/observability/failure-reporter.port'
 import { normalizeEmail } from '@server/shared/normalize-email'
 
 import {
@@ -33,6 +35,7 @@ import type { AppLocale } from '@/i18n/types/locale.types'
 
 async function deliverInvitation(
   mailer: Mailer,
+  failures: FailureReporter,
   invitation: StoredTeamInvitation,
   token: string,
   inviterName: string,
@@ -50,8 +53,9 @@ async function deliverInvitation(
       })),
     })
     return true
-  } catch {
-    console.error('[team] Invitation email delivery failed.')
+  } catch (error) {
+    console.error('[team] Invitation email delivery failed.', describeFailure(error))
+    failures.report({ module: 'team', operation: 'invitation_email', error })
     return false
   }
 }
@@ -62,11 +66,12 @@ export class InviteBrokerUseCase {
     private readonly invitations: TeamInvitationRepository,
     private readonly passwordHasher: PasswordHasher,
     private readonly mailer: Mailer,
+    private readonly failures: FailureReporter,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
   async execute(input: InviteBrokerInput): Promise<InviteBrokerOutput> {
-    assertTeamManager(input)
+    await assertTeamManager(this.team, input)
     const email = normalizeEmail(input.email)
     if (await this.invitations.isEmailInUse(input.actorTenantId, email))
       throw new EmailAlreadyInUseError()
@@ -86,6 +91,7 @@ export class InviteBrokerUseCase {
       brokerId: invitation.userId,
       emailDelivered: await deliverInvitation(
         this.mailer,
+        this.failures,
         invitation,
         token,
         actor.name,
@@ -100,11 +106,12 @@ export class ResendTeamInvitationUseCase {
     private readonly team: TeamRepository,
     private readonly invitations: TeamInvitationRepository,
     private readonly mailer: Mailer,
+    private readonly failures: FailureReporter,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
   async execute(input: ResendTeamInvitationInput): Promise<{ emailDelivered: boolean }> {
-    assertTeamManager(input)
+    await assertTeamManager(this.team, input)
     const invitation = await this.invitations.findPendingByUser(input.actorTenantId, input.brokerId)
     if (!invitation) throw new TeamInvitationNotFoundError()
     const actor = await teamActorIdentity(this.team, input)
@@ -122,6 +129,7 @@ export class ResendTeamInvitationUseCase {
     return {
       emailDelivered: await deliverInvitation(
         this.mailer,
+        this.failures,
         invitation,
         token,
         actor.name,
@@ -132,10 +140,13 @@ export class ResendTeamInvitationUseCase {
 }
 
 export class CancelTeamInvitationUseCase {
-  constructor(private readonly invitations: TeamInvitationRepository) {}
+  constructor(
+    private readonly team: TeamRepository,
+    private readonly invitations: TeamInvitationRepository,
+  ) {}
 
   async execute(input: BrokerInput): Promise<void> {
-    assertTeamManager(input)
+    await assertTeamManager(this.team, input)
     const invitation = await this.invitations.findPendingByUser(input.actorTenantId, input.brokerId)
     if (!invitation) throw new TeamInvitationNotFoundError()
     if (await this.invitations.hasPortfolio(input.actorTenantId, input.brokerId))

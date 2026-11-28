@@ -2,30 +2,41 @@
 
 import { getSession, signOut } from 'next-auth/react'
 import { httpClient } from '@shared/lib/api/http-client'
-import { notifySessionEndRequested } from './session-lifecycle'
+import { reportLogoutRevocationFailure } from '@shared/lib/telemetry/session-telemetry'
+import { notifyLocalOnlyLogout, notifySessionEndRequested } from './session-lifecycle'
 
-export async function clearClientSession(): Promise<void> {
+const sessionKeyPrefixes = ['nextauth.']
+const userDraftKeyPrefixes = ['maintenance-draft:']
+
+type ClearClientSessionOptions = { reason: 'manual' | 'forced' }
+
+function removeStoredKeys(...prefixGroups: string[][]) {
+  const prefixes = prefixGroups.flat()
+  for (const storageName of ['localStorage', 'sessionStorage'] as const) {
+    try {
+      const storage = window[storageName]
+      const keys = Array.from({ length: storage.length }, (_, index) => storage.key(index))
+      for (const key of keys) {
+        if (key && prefixes.some((prefix) => key.startsWith(prefix))) storage.removeItem(key)
+      }
+    } catch {}
+  }
+}
+
+export async function clearClientSession({ reason }: ClearClientSessionOptions): Promise<void> {
   notifySessionEndRequested()
   try {
     const session = await getSession()
 
-    if (session?.scope && session.refreshToken) {
-      const endpoint = session.scope === 'platform' ? '/platform/logout' : '/auth/logout'
-      await httpClient.post(
-        endpoint,
-        { refreshToken: session.refreshToken },
-        { skipUnauthorizedHandling: true },
-      )
+    if (session?.scope) {
+      await httpClient.post('/session/logout', undefined, { skipUnauthorizedHandling: true })
     }
-  } catch {}
+  } catch (error) {
+    reportLogoutRevocationFailure(error)
+    notifyLocalOnlyLogout()
+  }
 
-  try {
-    window.localStorage.clear()
-  } catch {}
-
-  try {
-    window.sessionStorage.clear()
-  } catch {}
+  removeStoredKeys(sessionKeyPrefixes, reason === 'manual' ? userDraftKeyPrefixes : [])
 
   await signOut({ redirect: false })
 }
