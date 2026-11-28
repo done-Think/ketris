@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SnackbarProvider } from 'notistack'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -8,7 +8,7 @@ import * as navigation from '@/i18n/navigation'
 
 import { FavoritesPage } from '../../components/favorites/FavoritesPage'
 import { favoritePropertiesService } from '../../services/favorite-properties-service'
-import { availableFavorite } from '../fixtures/favorite-properties'
+import { availableFavorite, unavailableFavorite } from '../fixtures/favorite-properties'
 
 const mocks = vi.hoisted(() => ({
   status: 'authenticated' as 'authenticated' | 'unauthenticated' | 'loading',
@@ -28,6 +28,7 @@ const service = vi.mocked(favoritePropertiesService)
 const favorites = [
   availableFavorite('p1', { title: 'Apartamento Localizado' }),
   availableFavorite('p2', { title: 'Casa com quintal', purpose: 'SALE', price: 890000 }),
+  unavailableFavorite('p3'),
 ]
 
 function renderPage() {
@@ -45,6 +46,8 @@ beforeEach(() => {
   vi.clearAllMocks()
   mocks.status = 'authenticated'
   service.list.mockResolvedValue({ limit: 200, favorites })
+  service.save.mockResolvedValue({ propertyId: 'p3', savedAt: '2026-11-23T12:00:00.000Z' })
+  service.remove.mockResolvedValue(undefined)
 })
 
 describe('FavoritesPage', () => {
@@ -66,18 +69,19 @@ describe('FavoritesPage', () => {
     expect(screen.getByRole('button', { name: 'Ver imóveis para alugar' })).toBeVisible()
   })
 
-  it('lists the saved properties with the search cards', async () => {
+  it('lists saved properties with counts per purpose and the unavailable ones', async () => {
     renderPage()
 
-    expect(await screen.findByText('2 imóveis salvos')).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Todos (2)' })).toHaveAttribute(
+    expect(await screen.findByText('3 imóveis salvos')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Todos (3)' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
     expect(screen.getByRole('button', { name: 'Alugar (1)' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Comprar (1)' })).toBeVisible()
     expect(screen.getByText('Apartamento Localizado')).toBeVisible()
     expect(screen.getByText('Casa com quintal')).toBeVisible()
-    expect(screen.getAllByRole('button', { name: 'Remover dos favoritos' })).toHaveLength(2)
+    expect(screen.getByRole('heading', { name: 'Não estão mais disponíveis' })).toBeVisible()
   })
 
   it('keeps the purpose filter in the address', async () => {
@@ -94,6 +98,17 @@ describe('FavoritesPage', () => {
     )
   })
 
+  it('removes an unavailable property and lets the person undo it', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.click(await screen.findByRole('button', { name: 'Remover' }))
+
+    expect(service.remove).toHaveBeenCalledWith('p3')
+    await user.click(await screen.findByRole('button', { name: 'Desfazer' }))
+    await waitFor(() => expect(service.save).toHaveBeenCalledWith('p3'))
+  })
+
   it('offers to try again when the list cannot be loaded', async () => {
     service.list.mockRejectedValueOnce(new Error('offline'))
     const user = userEvent.setup()
@@ -102,6 +117,6 @@ describe('FavoritesPage', () => {
     expect(await screen.findByText('Não foi possível carregar seus favoritos.')).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Tentar novamente' }))
 
-    expect(await screen.findByText('2 imóveis salvos')).toBeVisible()
+    expect(await screen.findByText('3 imóveis salvos')).toBeVisible()
   })
 })

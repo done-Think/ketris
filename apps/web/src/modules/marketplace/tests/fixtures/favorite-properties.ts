@@ -1,4 +1,7 @@
-import type { AvailableFavoriteEntry } from '../../types/favorite-property'
+import type {
+  AvailableFavoriteEntry,
+  UnavailableFavoriteEntry,
+} from '../../types/favorite-property'
 
 export function availableFavorite(
   id: string,
@@ -32,5 +35,17 @@ export function availableFavorite(
       publishedAt: '2026-11-01T00:00:00.000Z',
       ...property,
     },
+  }
+}
+
+export function unavailableFavorite(
+  id: string,
+  savedAt = '2026-11-25T12:00:00.000Z',
+): UnavailableFavoriteEntry {
+  return {
+    propertyId: id,
+    savedAt,
+    available: false,
+    property: { title: `Imóvel ${id}`, city: 'Campinas', neighborhood: 'Barão Geraldo' },
   }
 }
