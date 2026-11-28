@@ -12,4 +12,19 @@ describe('SearchRegisterableTenantsUseCase', () => {
     ).toEqual([tenant])
     expect(accounts.searchByName).toHaveBeenCalledWith('Imobiliária', [RENTER_TENANT_SLUG])
   })
+
+  it.each(['', ' ', '   ', 'a', ' a ', 'a   ', '\t\n'])(
+    'refuses to list agencies for the too-short query %j without touching the repository',
+    async (query) => {
+      const { accounts } = createDeps()
+      expect(await new SearchRegisterableTenantsUseCase(accounts).execute({ query })).toEqual([])
+      expect(accounts.searchByName).not.toHaveBeenCalled()
+    },
+  )
+
+  it('searches with two non-space characters, trimmed', async () => {
+    const { accounts } = createDeps()
+    await new SearchRegisterableTenantsUseCase(accounts).execute({ query: '  Im ' })
+    expect(accounts.searchByName).toHaveBeenCalledWith('Im', [RENTER_TENANT_SLUG])
+  })
 })

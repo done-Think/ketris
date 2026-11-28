@@ -16861,7 +16861,7 @@ export interface paths {
     }
     /**
      * Busca imobiliárias elegíveis para novos vínculos de corretor
-     * @description Rota pública. Busca por nome sem distinguir maiúsculas/minúsculas, limitada a 20 tenants AGENCY com status ACTIVE ou TRIAL. Usada no cadastro de corretor.
+     * @description Rota pública. Busca por nome sem distinguir maiúsculas/minúsculas, limitada a 20 tenants AGENCY com status ACTIVE ou TRIAL. Usada no cadastro de corretor. Exige ao menos 2 caracteres não vazios em q; com menos que isso (ou q ausente) devolve lista vazia, para que a rota pública não enumere imobiliárias.
      */
     get: {
       parameters: {

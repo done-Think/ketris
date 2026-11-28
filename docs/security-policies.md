@@ -110,6 +110,23 @@ por IP do proxy restringe o ritmo de cada origem, mas não impede vários IPs). 
 não o acesso à conta. Não há como distinguir o dono de um atacante antes de checar o código sem
 reabrir a força bruta, então o bloqueio vale também para o código correto.
 
+## Enumeração de contas e imobiliárias
+
+Decisão do produto (F-11): mitigar apenas o que é barato e manter a experiência de cadastro.
+
+- **Cadastro:** continua informando "e-mail já em uso". Exigir verificação de e-mail antes de
+  revelar isso prejudicaria o cadastro; o risco aceito é a confirmação de que um e-mail tem conta,
+  limitado pelo orçamento de autenticação por cliente (`AUTH_RATE_LIMIT_*`).
+- **Busca pública de imobiliárias (`GET /tenants/search`):** exige `q` com pelo menos 2 caracteres
+  não vazios. Com `q` ausente, vazio ou curto, responde 200 com `tenants: []` (e não 400, para não
+  quebrar o autocomplete do cadastro), de modo que a rota deixa de listar as imobiliárias sem
+  critério. Com 2 ou mais caracteres, o limite de 20 resultados e os filtros de elegibilidade
+  continuam. O cliente só consulta a API a partir de 2 caracteres.
+- **Recuperação de senha (`POST /auth/password-reset-codes`):** a resposta é sempre 204 neutra e é
+  enviada antes de consultar contas, gravar o código ou enviar o e-mail (`after()` do Next). O
+  tempo de resposta deixa de depender de o e-mail existir, de estar em cooldown ou da latência do
+  SES. Falhas ocorridas depois da resposta são registradas no Sentry sem PII, com limitação de taxa.
+
 ## Propostas públicas
 
 O campo opcional `website` é um honeypot: o formulário o mantém vazio, fora da navegação e dos

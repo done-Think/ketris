@@ -27,7 +27,9 @@ export function AgencyAutocomplete({ value, onChange }: AgencyAutocompleteProps)
       loading={agenciesQuery.isFetching}
       getOptionLabel={(agency) => agency.name}
       isOptionEqualToValue={(option, selected) => option.id === selected.id}
-      noOptionsText={t('agency.noOptions')}
+      noOptionsText={
+        inputValue.replace(/\s/g, '').length < 2 ? t('agency.minCharacters') : t('agency.noOptions')
+      }
       loadingText={t('agency.loading')}
       openText={t('agency.open')}
       closeText={t('agency.close')}
