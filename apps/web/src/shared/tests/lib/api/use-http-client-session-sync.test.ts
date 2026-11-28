@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react'
 import { useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useRouter } from '@/i18n/navigation'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
@@ -34,16 +34,15 @@ vi.mock('../../../lib/api/http-client', () => ({
 
 const router = { replace: vi.fn(), refresh: vi.fn() }
 
-function mockSession(
-  overrides: Partial<{
-    accessToken: string
-    refreshToken: string
-    tenantId: string
-    scope: 'tenant' | 'platform'
-    authUnavailable: boolean
-  }>,
-  update = vi.fn(),
-) {
+type SessionData = Partial<{
+  accessToken: string
+  tenantId: string
+  scope: 'tenant' | 'platform'
+  authUnavailable: boolean
+  user: { id: string }
+}>
+
+function mockSession(overrides: SessionData, update = vi.fn()) {
   vi.mocked(useSession).mockReturnValue({
     data: { ...overrides },
     status: 'authenticated',
@@ -62,7 +61,6 @@ describe('useHttpClientSessionSync', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(useRouter).mockReturnValue(router as unknown as ReturnType<typeof useRouter>)
-    vi.mocked(httpClient.post).mockReset()
   })
 
   it('prepares authentication before notification effects can start requests', () => {
@@ -80,27 +78,23 @@ describe('useHttpClientSessionSync', () => {
   it.each([true, false])(
     'ignores a refresh completed after switching accounts (success: %s)',
     async (success) => {
-      const update = vi.fn()
       let finish: () => void = () => undefined
-      vi.mocked(httpClient.post).mockImplementation(
+      const update = vi.fn(
         () =>
-          new Promise((resolve, reject) => {
-            finish = () =>
-              success
-                ? resolve({ accessToken: 'old-account-renewed', refreshToken: 'rotated' })
-                : reject({ isAxiosError: true, response: { status: 401 } })
+          new Promise((resolve) => {
+            finish = () => resolve(success ? { accessToken: 'old-account-renewed' } : {})
           }),
       )
-      mockSession({ accessToken: 'old', refreshToken: 'old-refresh', tenantId: 'tenant-a' }, update)
+      mockSession({ accessToken: 'old', tenantId: 'tenant-a' }, update)
       const view = renderHook(() => useHttpClientSessionSync())
       const refresh = getRegisteredHandler()?.()
-      mockSession({ accessToken: 'new-account', refreshToken: 'new-refresh', tenantId: 'tenant-b' })
+      mockSession({ accessToken: 'new-account', tenantId: 'tenant-b' })
       view.rerender()
       finish()
       expect(await refresh).toBeNull()
-      expect(update).not.toHaveBeenCalled()
       expect(clearClientSession).not.toHaveBeenCalled()
       expect(httpClient.setAuthToken).toHaveBeenLastCalledWith('new-account')
+      expect(httpClient.setAuthToken).not.toHaveBeenCalledWith('old-account-renewed')
     },
   )
 
@@ -116,32 +110,24 @@ describe('useHttpClientSessionSync', () => {
   it.each([true, false])(
     'ignores refresh completion after unmount and remount with another account (success: %s)',
     async (success) => {
-      const update = vi.fn().mockResolvedValue({ accessToken: 'renewed-a' })
       let finish: () => void = () => undefined
-      vi.mocked(httpClient.post).mockImplementation(
+      const update = vi.fn(
         () =>
-          new Promise((resolve, reject) => {
-            finish = () =>
-              success
-                ? resolve({ accessToken: 'renewed-a', refreshToken: 'rotated-a' })
-                : reject({ isAxiosError: true, response: { status: 401 } })
+          new Promise((resolve) => {
+            finish = () => resolve(success ? { accessToken: 'renewed-a' } : {})
           }),
       )
-      mockSession(
-        { accessToken: 'token-a', refreshToken: 'refresh-a', tenantId: 'tenant-a' },
-        update,
-      )
+      mockSession({ accessToken: 'token-a', tenantId: 'tenant-a' }, update)
       const previous = renderHook(() => useHttpClientSessionSync())
       const refresh = getRegisteredHandler()?.()
       previous.unmount()
-      mockSession({ accessToken: 'token-b', refreshToken: 'refresh-b', tenantId: 'tenant-b' })
+      mockSession({ accessToken: 'token-b', tenantId: 'tenant-b' })
       renderHook(() => useHttpClientSessionSync())
       const currentHandler = getRegisteredHandler()
 
       finish()
 
       expect(await refresh).toBeNull()
-      expect(update).not.toHaveBeenCalled()
       expect(clearClientSession).not.toHaveBeenCalled()
       expect(router.replace).not.toHaveBeenCalled()
       expect(httpClient.setAuthToken).toHaveBeenLastCalledWith('token-b')
@@ -161,19 +147,12 @@ describe('useHttpClientSessionSync', () => {
               resolve(unavailable ? { authUnavailable: true } : { accessToken: 'renewed-a' })
           }),
       )
-      vi.mocked(httpClient.post).mockResolvedValue({
-        accessToken: 'renewed-a',
-        refreshToken: 'rotated-a',
-      })
-      mockSession(
-        { accessToken: 'token-a', refreshToken: 'refresh-a', tenantId: 'tenant-a' },
-        update,
-      )
+      mockSession({ accessToken: 'token-a', tenantId: 'tenant-a' }, update)
       const previous = renderHook(() => useHttpClientSessionSync())
       const refresh = getRegisteredHandler()?.()
       await vi.waitFor(() => expect(update).toHaveBeenCalledTimes(1))
       previous.unmount()
-      mockSession({ accessToken: 'token-b', refreshToken: 'refresh-b', tenantId: 'tenant-b' })
+      mockSession({ accessToken: 'token-b', tenantId: 'tenant-b' })
       renderHook(() => useHttpClientSessionSync())
 
       finishUpdate()
@@ -187,70 +166,47 @@ describe('useHttpClientSessionSync', () => {
   )
 
   it('does not start refresh through a handler retained after unmount', async () => {
-    mockSession({ accessToken: 'token-a', refreshToken: 'refresh-a' })
+    const update = mockSession({ accessToken: 'token-a' })
     const previous = renderHook(() => useHttpClientSessionSync())
     const handler = getRegisteredHandler()
     previous.unmount()
 
     expect(await handler?.()).toBeNull()
-    expect(httpClient.post).not.toHaveBeenCalled()
+    expect(update).not.toHaveBeenCalled()
   })
 
-  it('sem refreshToken, o handler de 401 limpa a sessão e redireciona pro login', async () => {
-    mockSession({ accessToken: 'token-1' })
+  it('sem accessToken, o handler de 401 limpa a sessão e redireciona pro login', async () => {
+    const update = mockSession({})
     renderHook(() => useHttpClientSessionSync())
 
-    const handler = getRegisteredHandler()
-    const result = await handler?.()
+    const result = await getRegisteredHandler()?.()
 
     expect(result).toBeNull()
+    expect(update).not.toHaveBeenCalled()
     expect(clearClientSession).toHaveBeenCalledTimes(1)
     expect(router.replace).toHaveBeenCalledWith('/login')
     expect(router.refresh).toHaveBeenCalledTimes(1)
   })
 
-  it('com refreshToken e refresh bem-sucedido, atualiza a sessão e o httpClient', async () => {
-    const update = vi
-      .fn()
-      .mockResolvedValue({ accessToken: 'novo-access', refreshToken: 'novo-refresh' })
-    mockSession({ accessToken: 'stale', refreshToken: 'refresh-1' }, update)
-    vi.mocked(httpClient.post).mockResolvedValueOnce({
-      accessToken: 'novo-access',
-      refreshToken: 'novo-refresh',
-    })
-
+  it('refreshes through the server-side session update and never posts a refresh token', async () => {
+    const update = vi.fn().mockResolvedValue({ accessToken: 'novo-access' })
+    mockSession({ accessToken: 'stale' }, update)
     renderHook(() => useHttpClientSessionSync())
 
-    const handler = getRegisteredHandler()
-    const result = await handler?.()
+    const result = await getRegisteredHandler()?.('stale')
 
-    expect(httpClient.post).toHaveBeenCalledWith(
-      '/auth/refresh',
-      { refreshToken: 'refresh-1' },
-      { skipUnauthorizedHandling: true },
-    )
-    expect(update).toHaveBeenCalledWith({
-      accessToken: 'novo-access',
-      refreshToken: 'novo-refresh',
-    })
+    expect(update).toHaveBeenCalledWith({ refresh: true })
+    expect(httpClient.post).not.toHaveBeenCalled()
     expect(httpClient.setAuthToken).toHaveBeenCalledWith('novo-access')
     expect(result).toBe('novo-access')
     expect(clearClientSession).not.toHaveBeenCalled()
   })
 
-  it('quando o endpoint de refresh falha, limpa a sessão e redireciona pro login', async () => {
-    mockSession({ accessToken: 'stale', refreshToken: 'refresh-1' })
-    vi.mocked(httpClient.post).mockRejectedValueOnce({
-      isAxiosError: true,
-      response: { status: 401 },
-    })
-
+  it('ends the session when the server rejected the refresh token', async () => {
+    mockSession({ accessToken: 'stale' }, vi.fn().mockResolvedValue({ user: { id: 'u1' } }))
     renderHook(() => useHttpClientSessionSync())
 
-    const handler = getRegisteredHandler()
-    const result = await handler?.()
-
-    expect(result).toBeNull()
+    expect(await getRegisteredHandler()?.()).toBeNull()
     expect(clearClientSession).toHaveBeenCalledTimes(1)
     expect(router.replace).toHaveBeenCalledWith('/login')
   })
@@ -263,144 +219,101 @@ describe('useHttpClientSessionSync', () => {
 
     expect(httpClient.setUnauthorizedHandler).toHaveBeenLastCalledWith(null)
   })
-  it('renews a platform session through its own endpoint', async () => {
-    const update = vi
-      .fn()
-      .mockResolvedValue({ accessToken: 'new-platform', refreshToken: 'new-refresh' })
-    mockSession(
-      { scope: 'platform', accessToken: 'stale', refreshToken: 'platform-refresh' },
-      update,
-    )
-    vi.mocked(httpClient.post).mockResolvedValueOnce({
-      accessToken: 'new-platform',
-      refreshToken: 'new-refresh',
-    })
-    renderHook(() => useHttpClientSessionSync())
-    expect(await getRegisteredHandler()?.()).toBe('new-platform')
-    expect(httpClient.post).toHaveBeenCalledWith(
-      '/platform/refresh',
-      { refreshToken: 'platform-refresh' },
-      { skipUnauthorizedHandling: true },
-    )
-    expect(update).toHaveBeenCalledWith({
-      accessToken: 'new-platform',
-      refreshToken: 'new-refresh',
-    })
-  })
 
   it('redirects an expired platform session to the platform login', async () => {
-    mockSession({ scope: 'platform', refreshToken: 'invalid-platform-refresh' })
-    vi.mocked(httpClient.post).mockRejectedValueOnce({
-      isAxiosError: true,
-      response: { status: 401 },
-    })
+    mockSession({ scope: 'platform', accessToken: 'stale' }, vi.fn().mockResolvedValue({}))
     renderHook(() => useHttpClientSessionSync())
     expect(await getRegisteredHandler()?.()).toBeNull()
     expect(router.replace).toHaveBeenCalledWith('/platform/login')
   })
 
-  it.each([429, 500, 503, undefined])(
-    'preserves the session during a temporary refresh failure (%s)',
-    async (status) => {
-      mockSession({ scope: 'tenant', refreshToken: 'refresh-token' })
-      vi.mocked(httpClient.post).mockRejectedValueOnce({
-        isAxiosError: true,
-        response: status ? { status } : undefined,
-      })
-      renderHook(() => useHttpClientSessionSync())
-      expect(await getRegisteredHandler()?.()).toBeNull()
-      expect(clearClientSession).not.toHaveBeenCalled()
-      expect(router.replace).not.toHaveBeenCalled()
-    },
-  )
-  it('blocks transport and never logs out an unavailable session that temporarily has no public refresh token', async () => {
-    mockSession({ authUnavailable: true })
+  it.each([
+    ['no answer', () => vi.fn().mockResolvedValue(null)],
+    ['a thrown error', () => vi.fn().mockRejectedValue(new Error('network down'))],
+    ['an unchanged access token', () => vi.fn().mockResolvedValue({ accessToken: 'stale' })],
+  ])('preserves the session during a temporary refresh failure (%s)', async (_name, build) => {
+    mockSession({ scope: 'tenant', accessToken: 'stale' }, build())
+    renderHook(() => useHttpClientSessionSync())
+    expect(await getRegisteredHandler()?.()).toBeNull()
+    expect(clearClientSession).not.toHaveBeenCalled()
+    expect(router.replace).not.toHaveBeenCalled()
+  })
+
+  it('blocks transport and never logs out an unavailable session that temporarily has no public access token', async () => {
+    const update = mockSession({ authUnavailable: true })
     renderHook(() => useHttpClientSessionSync())
     expect(httpClient.setAuthUnavailable).toHaveBeenCalledWith(true)
     expect(httpClient.setAuthToken).toHaveBeenCalledWith(null)
     expect(await getRegisteredHandler()?.()).toBeNull()
     expect(clearClientSession).not.toHaveBeenCalled()
-    expect(httpClient.post).not.toHaveBeenCalled()
+    expect(update).not.toHaveBeenCalled()
     expect(router.replace).not.toHaveBeenCalled()
   })
 
-  it('does not install raw rotated tokens if their NextAuth validation is unavailable', async () => {
+  it('does not install rotated tokens if their NextAuth validation is unavailable', async () => {
     const update = vi.fn().mockResolvedValue({ authUnavailable: true })
-    mockSession({ scope: 'tenant', accessToken: 'old', refreshToken: 'old-refresh' }, update)
-    vi.mocked(httpClient.post).mockResolvedValueOnce({
-      accessToken: 'fresh',
-      refreshToken: 'fresh-refresh',
-    })
+    mockSession({ scope: 'tenant', accessToken: 'old' }, update)
     renderHook(() => useHttpClientSessionSync())
     expect(await getRegisteredHandler()?.()).toBeNull()
     expect(httpClient.setAuthUnavailable).toHaveBeenLastCalledWith(true)
-    expect(httpClient.setAuthToken).not.toHaveBeenCalledWith('fresh')
+    expect(httpClient.setAuthToken).toHaveBeenLastCalledWith(null)
     expect(clearClientSession).not.toHaveBeenCalled()
   })
 
   it('restores transport only when the public session is successfully revalidated', () => {
     mockSession({ authUnavailable: true })
     const { rerender } = renderHook(() => useHttpClientSessionSync())
-    mockSession({ scope: 'tenant', accessToken: 'revalidated', refreshToken: 'refresh' })
+    mockSession({ scope: 'tenant', accessToken: 'revalidated' })
     rerender()
     expect(httpClient.setAuthUnavailable).toHaveBeenLastCalledWith(false)
     expect(httpClient.setAuthToken).toHaveBeenLastCalledWith('revalidated')
   })
 
-  describe('rotated refresh tokens', () => {
-    it('reuses the rotated session for a late 401 instead of refreshing with a revoked token', async () => {
-      const update = vi.fn().mockResolvedValue({ accessToken: 'a2', refreshToken: 'r2' })
-      mockSession({ accessToken: 'a1', refreshToken: 'r1' }, update)
-      vi.mocked(httpClient.post).mockResolvedValueOnce({ accessToken: 'a2', refreshToken: 'r2' })
+  describe('rotated sessions', () => {
+    it('reuses the rotated session for a late 401 instead of refreshing again', async () => {
+      const update = vi.fn().mockResolvedValue({ accessToken: 'a2' })
+      mockSession({ accessToken: 'a1' }, update)
       renderHook(() => useHttpClientSessionSync())
       const handler = getRegisteredHandler()
 
       expect(await handler?.('a1')).toBe('a2')
       expect(await handler?.('a1')).toBe('a2')
 
-      expect(httpClient.post).toHaveBeenCalledTimes(1)
+      expect(update).toHaveBeenCalledTimes(1)
       expect(clearClientSession).not.toHaveBeenCalled()
     })
 
-    it('always refreshes with the latest refresh token even before React re-registers the handler', async () => {
+    it('keeps refreshing from the latest session even before React re-registers the handler', async () => {
       const update = vi
         .fn()
-        .mockResolvedValueOnce({ accessToken: 'a2', refreshToken: 'r2' })
-        .mockResolvedValueOnce({ accessToken: 'a3', refreshToken: 'r3' })
-      mockSession({ accessToken: 'a1', refreshToken: 'r1' }, update)
-      vi.mocked(httpClient.post)
-        .mockResolvedValueOnce({ accessToken: 'a2', refreshToken: 'r2' })
-        .mockResolvedValueOnce({ accessToken: 'a3', refreshToken: 'r3' })
+        .mockResolvedValueOnce({ accessToken: 'a2' })
+        .mockResolvedValueOnce({ accessToken: 'a3' })
+      mockSession({ accessToken: 'a1' }, update)
       renderHook(() => useHttpClientSessionSync())
       const handler = getRegisteredHandler()
 
       await handler?.('a1')
       expect(await handler?.('a2')).toBe('a3')
 
-      expect(httpClient.post).toHaveBeenNthCalledWith(
-        2,
-        '/auth/refresh',
-        { refreshToken: 'r2' },
-        { skipUnauthorizedHandling: true },
-      )
+      expect(update).toHaveBeenCalledTimes(2)
       expect(clearClientSession).not.toHaveBeenCalled()
     })
 
-    it('does not log out when another refresh already rotated the session before a 401 answer arrives', async () => {
-      let reject: () => void = () => undefined
-      vi.mocked(httpClient.post).mockImplementation(
+    it('does not log out when another tab already rotated the session before the answer arrives', async () => {
+      let finish: () => void = () => undefined
+      const update = vi.fn(
         () =>
-          new Promise((_resolve, rejectPost) => {
-            reject = () => rejectPost({ isAxiosError: true, response: { status: 401 } })
+          new Promise((resolve) => {
+            finish = () => resolve({ user: { id: 'u1' } })
           }),
       )
-      mockSession({ accessToken: 'a1', refreshToken: 'r1' })
+      mockSession({ accessToken: 'a1', user: { id: 'u1' } }, update)
       const view = renderHook(() => useHttpClientSessionSync())
       const refresh = getRegisteredHandler()?.('a1')
-      mockSession({ accessToken: 'a2', refreshToken: 'r2' })
+      mockSession({ accessToken: 'a2', user: { id: 'u1' } })
       view.rerender()
 
-      reject()
+      finish()
 
       expect(await refresh).toBe('a2')
       expect(clearClientSession).not.toHaveBeenCalled()
@@ -408,21 +321,30 @@ describe('useHttpClientSessionSync', () => {
     })
 
     it('does not reuse the session of another account for a stale 401', async () => {
-      mockSession({ accessToken: 'a1', refreshToken: 'r1', tenantId: 'tenant-a' })
+      const update = vi.fn().mockResolvedValue(null)
+      mockSession({ accessToken: 'a1', tenantId: 'tenant-a' }, update)
       const view = renderHook(() => useHttpClientSessionSync())
-      mockSession({ accessToken: 'b1', refreshToken: 'rb1', tenantId: 'tenant-b' })
+      mockSession({ accessToken: 'b1', tenantId: 'tenant-b' }, update)
       view.rerender()
-      vi.mocked(httpClient.post).mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 500 },
-      })
 
       expect(await getRegisteredHandler()?.('a1')).toBeNull()
-      expect(httpClient.post).toHaveBeenCalledWith(
-        '/auth/refresh',
-        { refreshToken: 'rb1' },
-        { skipUnauthorizedHandling: true },
-      )
+      expect(update).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('cross-tab serialization', () => {
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, 'locks')
+    })
+
+    it('runs the refresh inside an exclusive Web Lock when the browser supports it', async () => {
+      const request = vi.fn(async (_name: string, task: () => Promise<unknown>) => task())
+      Object.defineProperty(navigator, 'locks', { value: { request }, configurable: true })
+      mockSession({ accessToken: 'a1' }, vi.fn().mockResolvedValue({ accessToken: 'a2' }))
+      renderHook(() => useHttpClientSessionSync())
+
+      expect(await getRegisteredHandler()?.('a1')).toBe('a2')
+      expect(request).toHaveBeenCalledWith('ketris-session-refresh', expect.any(Function))
     })
   })
 })

@@ -35,36 +35,28 @@ describe('clearClientSession', () => {
   })
 
   it('revoga o refresh token no servidor quando a sessão é de tenant', async () => {
-    vi.mocked(getSession).mockResolvedValue(
-      mockSession({ scope: 'tenant', refreshToken: 'refresh-fake' }),
-    )
+    vi.mocked(getSession).mockResolvedValue(mockSession({ scope: 'tenant' }))
 
     await clearClientSession()
 
-    expect(httpClient.post).toHaveBeenCalledWith(
-      '/auth/logout',
-      { refreshToken: 'refresh-fake' },
-      { skipUnauthorizedHandling: true },
-    )
+    expect(httpClient.post).toHaveBeenCalledWith('/session/logout', undefined, {
+      skipUnauthorizedHandling: true,
+    })
   })
 
-  it('revoga o refresh token de plataforma no endpoint do mesmo escopo', async () => {
-    vi.mocked(getSession).mockResolvedValue(
-      mockSession({ scope: 'platform', refreshToken: 'refresh-fake' }),
-    )
+  it('revoga o refresh token de plataforma pelo mesmo endpoint de sessão do servidor', async () => {
+    vi.mocked(getSession).mockResolvedValue(mockSession({ scope: 'platform' }))
 
     await clearClientSession()
 
-    expect(httpClient.post).toHaveBeenCalledWith(
-      '/platform/logout',
-      { refreshToken: 'refresh-fake' },
-      { skipUnauthorizedHandling: true },
-    )
+    expect(httpClient.post).toHaveBeenCalledWith('/session/logout', undefined, {
+      skipUnauthorizedHandling: true,
+    })
     expect(signOut).toHaveBeenCalledWith({ redirect: false })
   })
 
-  it('não tenta revogar quando a sessão de tenant não tem refresh token', async () => {
-    vi.mocked(getSession).mockResolvedValue(mockSession({ scope: 'tenant' }))
+  it('não tenta revogar quando a sessão não tem escopo (indisponível ou encerrada)', async () => {
+    vi.mocked(getSession).mockResolvedValue(mockSession({}))
 
     await clearClientSession()
 
@@ -88,9 +80,7 @@ describe('clearClientSession', () => {
   })
 
   it('não lança e ainda encerra a sessão quando a chamada de revogação falha', async () => {
-    vi.mocked(getSession).mockResolvedValue(
-      mockSession({ scope: 'tenant', refreshToken: 'refresh-fake' }),
-    )
+    vi.mocked(getSession).mockResolvedValue(mockSession({ scope: 'tenant' }))
     vi.mocked(httpClient.post).mockRejectedValueOnce(new Error('network down'))
 
     await expect(clearClientSession()).resolves.toBeUndefined()

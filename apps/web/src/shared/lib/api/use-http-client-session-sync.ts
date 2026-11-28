@@ -3,26 +3,29 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import type { Session } from 'next-auth'
-import { isAxiosError } from 'axios'
 
 import { useRouter } from '@/i18n/navigation'
 import { clearClientSession } from '@shared/lib/auth/clear-client-session'
 import { useTenantStore } from '@shared/stores/tenant-store'
-import type { RefreshTokenResponse } from '@shared/types'
 
 import { httpClient } from './http-client'
 
 const MAX_KNOWN_ACCESS_TOKENS = 5
+const REFRESH_LOCK_NAME = 'ketris-session-refresh'
 
 type SessionTokens = {
   identity: string
   accessToken?: string
-  refreshToken?: string
   accessTokens: string[]
 }
 
 function identityOf(session: Session | null | undefined): string {
   return `${session?.scope ?? ''}:${session?.tenantId ?? ''}:${session?.user?.id ?? ''}`
+}
+
+async function withRefreshLock<T>(task: () => Promise<T>): Promise<T> {
+  const locks = typeof navigator === 'undefined' ? undefined : navigator.locks
+  return locks ? await locks.request(REFRESH_LOCK_NAME, task) : task()
 }
 
 const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
@@ -74,7 +77,6 @@ export function useHttpClientSessionSync() {
     tokens.current = {
       identity,
       accessToken: session.accessToken,
-      refreshToken: session.refreshToken,
       accessTokens: accessTokens.slice(-MAX_KNOWN_ACCESS_TOKENS),
     }
   }, [session])
@@ -84,6 +86,12 @@ export function useHttpClientSessionSync() {
     const isActive = () => lifecycle.current === generation
     const isPlatform = session?.scope === 'platform'
     const loginPath = isPlatform ? '/platform/login' : '/login'
+    const endSession = async () => {
+      await clearClientSession()
+      if (!isActive()) return
+      router.replace(loginPath)
+      router.refresh()
+    }
 
     httpClient.setUnauthorizedHandler(async (failedAccessToken) => {
       if (!isActive() || currentSession.current?.authUnavailable) return null
@@ -96,52 +104,38 @@ export function useHttpClientSessionSync() {
       )
         return started.accessToken
 
-      const usedRefreshToken = started.refreshToken
-      if (!usedRefreshToken) {
-        await clearClientSession()
-        if (!isActive()) return null
-        router.replace(loginPath)
-        router.refresh()
+      if (!started.accessToken) {
+        await endSession()
         return null
       }
 
       try {
-        const refreshed = await httpClient.post<RefreshTokenResponse>(
-          isPlatform ? '/platform/refresh' : '/auth/refresh',
-          { refreshToken: usedRefreshToken },
-          { skipUnauthorizedHandling: true },
-        )
-
-        if (!isActive() || tokens.current.refreshToken !== usedRefreshToken) return null
-        const updatedSession = await update(refreshed)
+        const updatedSession = await withRefreshLock(() => update({ refresh: true }))
         if (!isActive() || tokens.current.identity !== started.identity) return null
-        if (updatedSession?.authUnavailable) {
+        if (!updatedSession) return null
+        if (updatedSession.authUnavailable) {
           httpClient.setAuthUnavailable(true)
           httpClient.setAuthToken(null)
           return null
         }
-        if (updatedSession?.accessToken !== refreshed.accessToken) return null
+        if (!updatedSession.accessToken) {
+          if (tokens.current.accessToken !== started.accessToken)
+            return tokens.current.accessToken ?? null
+          await endSession()
+          return null
+        }
+        if (updatedSession.accessToken === started.accessToken) return null
         tokens.current = {
           identity: started.identity,
-          accessToken: refreshed.accessToken,
-          refreshToken: refreshed.refreshToken,
-          accessTokens: [...tokens.current.accessTokens, refreshed.accessToken].slice(
+          accessToken: updatedSession.accessToken,
+          accessTokens: [...tokens.current.accessTokens, updatedSession.accessToken].slice(
             -MAX_KNOWN_ACCESS_TOKENS,
           ),
         }
-        httpClient.setAuthToken(refreshed.accessToken)
+        httpClient.setAuthToken(updatedSession.accessToken)
 
-        return refreshed.accessToken
-      } catch (error) {
-        if (!isActive() || tokens.current.identity !== started.identity) return null
-        if (tokens.current.refreshToken !== usedRefreshToken)
-          return tokens.current.accessToken ?? null
-        const status = isAxiosError(error) ? error.response?.status : undefined
-        if (status !== 401 && status !== 403) return null
-        await clearClientSession()
-        if (!isActive()) return null
-        router.replace(loginPath)
-        router.refresh()
+        return updatedSession.accessToken
+      } catch {
         return null
       }
     })

@@ -138,21 +138,10 @@ export const authOptions: NextAuthOptions = {
         token.platformRole = user.platformRole
         token.sessionVersion = user.sessionVersion ?? 0
         delete token.authUnavailable
-        delete token.pendingAccessToken
-        delete token.pendingRefreshToken
         return token
       }
 
-      if (
-        trigger === 'update' &&
-        typeof session?.accessToken === 'string' &&
-        session.accessToken &&
-        typeof session?.refreshToken === 'string' &&
-        session.refreshToken
-      ) {
-        token.pendingAccessToken = session.accessToken
-        token.pendingRefreshToken = session.refreshToken
-      }
+      const refreshRequested = trigger === 'update' && session?.refresh === true
 
       try {
         if (token.scope === 'tenant' && typeof token.sub === 'string') {
@@ -171,14 +160,16 @@ export const authOptions: NextAuthOptions = {
           token.name = currentUser.name
           token.email = currentUser.email
           token.picture = currentUser.avatarUrl
-          await adoptValidatedSessionTokens(token)
+          if (refreshRequested && !(await rotateSessionTokens(token)))
+            return clearSessionToken(token)
         } else if (token.scope === 'platform' && typeof token.sub === 'string') {
           const admin = await platformContainer.platformAdminRepository.findById(token.sub)
           if (!admin?.active) return clearSessionToken(token)
           token.name = admin.name
           token.email = admin.email
           token.platformRole = admin.role
-          await adoptValidatedSessionTokens(token)
+          if (refreshRequested && !(await rotateSessionTokens(token)))
+            return clearSessionToken(token)
         } else if (token.scope === 'tenant' || token.scope === 'platform') {
           return clearSessionToken(token)
         }
@@ -193,7 +184,6 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       session.authUnavailable = token.authUnavailable === true
       session.accessToken = token.authUnavailable ? undefined : token.accessToken
-      session.refreshToken = token.authUnavailable ? undefined : token.refreshToken
       session.scope = token.authUnavailable ? undefined : token.scope
       session.tenantId = token.authUnavailable ? undefined : token.tenantId
       session.role = token.authUnavailable ? undefined : token.role
@@ -210,42 +200,23 @@ export const authOptions: NextAuthOptions = {
   },
 }
 
-async function adoptValidatedSessionTokens(token: JWT): Promise<void> {
-  if (!token.pendingAccessToken || !token.pendingRefreshToken) return
+async function rotateSessionTokens(token: JWT): Promise<boolean> {
+  if (!token.refreshToken) return false
   try {
-    if (token.scope === 'tenant') {
-      const claims = await authContainer.validateSessionTokensUseCase.execute(
-        token.pendingAccessToken,
-        token.pendingRefreshToken,
-      )
-      if (
-        claims.sub !== token.sub ||
-        claims.tenantId !== token.tenantId ||
-        claims.role !== token.role ||
-        (claims.sessionVersion ?? 0) !== (token.sessionVersion ?? 0)
-      ) {
-        delete token.pendingAccessToken
-        delete token.pendingRefreshToken
-        return
-      }
-    } else if (token.scope === 'platform') {
-      const claims = await platformContainer.validatePlatformSessionTokensUseCase.execute(
-        token.pendingAccessToken,
-        token.pendingRefreshToken,
-      )
-      if (claims.sub !== token.sub) {
-        delete token.pendingAccessToken
-        delete token.pendingRefreshToken
-        return
-      }
-    } else return
-    token.accessToken = token.pendingAccessToken
-    token.refreshToken = token.pendingRefreshToken
+    const rotated =
+      token.scope === 'platform'
+        ? await platformContainer.refreshPlatformAdminTokenUseCase.execute({
+            refreshToken: token.refreshToken,
+          })
+        : await authContainer.refreshAccessTokenUseCase.execute({
+            refreshToken: token.refreshToken,
+          })
+    token.accessToken = rotated.accessToken
+    token.refreshToken = rotated.refreshToken
   } catch (error) {
-    if (!isAuthenticationError(error)) throw error
+    if (isAuthenticationError(error)) return false
   }
-  delete token.pendingAccessToken
-  delete token.pendingRefreshToken
+  return true
 }
 
 async function accountTypeOf(userId: string) {
@@ -258,8 +229,6 @@ async function accountTypeOf(userId: string) {
 
 function clearSessionToken(token: JWT): JWT {
   delete token.authUnavailable
-  delete token.pendingAccessToken
-  delete token.pendingRefreshToken
   delete token.accessToken
   delete token.refreshToken
   delete token.scope

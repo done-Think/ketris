@@ -9,6 +9,7 @@ export interface StoredRefreshToken {
   id: string
   userId: string
   tenantId: string
+  rotatedTo?: string
 }
 
 export interface RefreshTokenRotation {
@@ -26,6 +27,10 @@ export interface RefreshTokenRepository {
   create(input: NewRefreshToken): Promise<void>
   rotate(input: RefreshTokenRotation): Promise<boolean>
   findValidByTokenHash(tokenHash: string): Promise<StoredRefreshToken | null>
+  findRecentlyRotatedByTokenHash(
+    tokenHash: string,
+    graceSeconds: number,
+  ): Promise<StoredRefreshToken | null>
   revokeById(id: string): Promise<void>
   revokeAllForUser(userId: string): Promise<void>
 }

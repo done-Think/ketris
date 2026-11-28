@@ -68,6 +68,7 @@ export function verificationDeps() {
   const refresh: RefreshTokenRepository = {
     create: vi.fn(),
     rotate: vi.fn(),
+    findRecentlyRotatedByTokenHash: vi.fn().mockResolvedValue(null),
     findValidByTokenHash: vi.fn(),
     revokeById: vi.fn(),
     revokeAllForUser: vi.fn(),

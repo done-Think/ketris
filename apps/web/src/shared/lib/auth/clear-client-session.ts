@@ -9,13 +9,8 @@ export async function clearClientSession(): Promise<void> {
   try {
     const session = await getSession()
 
-    if (session?.scope && session.refreshToken) {
-      const endpoint = session.scope === 'platform' ? '/platform/logout' : '/auth/logout'
-      await httpClient.post(
-        endpoint,
-        { refreshToken: session.refreshToken },
-        { skipUnauthorizedHandling: true },
-      )
+    if (session?.scope) {
+      await httpClient.post('/session/logout', undefined, { skipUnauthorizedHandling: true })
     }
   } catch {}
 

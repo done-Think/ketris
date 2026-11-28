@@ -97,6 +97,12 @@ token válido por um par novo (access + refresh), revogando o antigo (rotação 
 revogado é tratado como inválido). Detalhe completo e racional das decisões em ADR-0002, seção "Nota:
 refresh token".
 
+No navegador, o refresh token fica apenas no cookie criptografado do NextAuth: `/api/auth/session` expõe
+só o access token. A renovação acontece no servidor (`update({ refresh: true })` aciona o callback `jwt`
+em `server/auth/session/auth-options.ts`, que chama o caso de uso de refresh) e o logout revoga o token
+por `POST /api/session/logout`. Os endpoints públicos `/auth/refresh` e `/auth/logout` continuam para
+clientes de API.
+
 ## Recuperação de senha e contas por tenant
 
 - `POST /auth/password-reset-codes` recebe e-mail e locale, envia uma prova para a caixa de e-mail e

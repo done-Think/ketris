@@ -28,6 +28,28 @@ Listas, detalhes e estatísticas públicas devolvem `Cache-Control: no-store`. C
 uma aba muda no próximo refetch/recarregamento; essa política não afirma remoção instantânea do
 estado já carregado pelo navegador.
 
+## Sessão no navegador e refresh tokens
+
+O refresh token (30 dias) fica apenas no cookie criptografado do NextAuth. `/api/auth/session`
+devolve só o access token curto; a renovação roda no servidor (`update({ refresh: true })` no
+callback `jwt`) e o logout revoga o token por `POST /api/session/logout`.
+
+O refresh token é de uso único, mas aceita **reapresentação por 20 segundos** depois da rotação
+(`REFRESH_TOKEN_ROTATION_GRACE_SECONDS`). Isso cobre a corrida em que outra aba reescreve o cookie
+com o token anterior (o `GET /api/auth/session` regrava o cookie a partir do que o navegador enviou).
+Dentro da janela, o token antigo é rotacionado de novo a partir do seu substituto, que é revogado,
+então só há um token vivo. Fora da janela, o reuso é rejeitado como antes. O logout feito com um
+token recém-rotacionado revoga o substituto. A rotação guarda `rotatedAt` e `replacedById` em
+`refresh_tokens`. Limitação conhecida: os tokens de administradores da plataforma ainda não têm a
+janela de tolerância (acompanhamento).
+
+**Exceção conhecida e aceita:** as respostas de `POST /auth/login`, `POST /platform/login` e da
+confirmação de e-mail do cadastro ainda devolvem o refresh token no corpo, e o cliente o passa uma
+vez ao provider `token-session` do NextAuth durante o login. Ele não fica na sessão exposta ao
+JavaScript depois disso, mas um XSS durante o login poderia observá-lo. Acompanhamento: emitir a
+sessão inteiramente no servidor (login e confirmação via Route Handler que grava o cookie), sem
+devolver o refresh token ao navegador.
+
 ## Limites compartilhados
 
 Todos os contadores da API usam a tabela `auth_rate_limit_buckets` existente. Os nomes das políticas

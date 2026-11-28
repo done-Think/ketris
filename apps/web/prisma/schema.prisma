@@ -291,6 +291,8 @@ model RefreshToken {
   tenantId  String
   expiresAt DateTime
   revokedAt DateTime?
+  rotatedAt DateTime?
+  replacedById String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now()) @updatedAt
 

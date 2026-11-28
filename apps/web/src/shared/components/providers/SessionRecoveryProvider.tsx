@@ -19,7 +19,7 @@ function RecoverSession({
 }>) {
   const parentUpdate = useRef(parent.update)
   const [snapshot, setSnapshot] = useState<Session | null>(() =>
-    parent.data?.refreshToken && !parent.data.authUnavailable ? parent.data : null,
+    parent.data?.accessToken && !parent.data.authUnavailable ? parent.data : null,
   )
   const previous = useRef<Session | null>(snapshot)
   const [endedToken, setEndedToken] = useState<string | undefined>()
@@ -38,21 +38,21 @@ function RecoverSession({
   }, [parent.data])
   useClientLayoutEffect(() => {
     if (
-      parent.data?.refreshToken &&
+      parent.data?.accessToken &&
       !parent.data.authUnavailable &&
-      parent.data.refreshToken !== endedToken
+      parent.data.accessToken !== endedToken
     ) {
       previous.current = parent.data
       setSnapshot(parent.data)
     }
   }, [parent.data, endedToken])
 
-  const key = snapshot?.refreshToken
+  const key = snapshot?.accessToken
   const ended = confirmedEnd?.key === key && parent.data === confirmedEnd?.source
   const recovering = !!key && (!parent.data || failedUpdate) && !ended
 
   const confirm = useCallback(async (): Promise<Session | null> => {
-    const expected = previous.current?.refreshToken
+    const expected = previous.current?.accessToken
     if (!expected) return null
     pending.current?.abort()
     const controller = new AbortController()
@@ -66,7 +66,7 @@ function RecoverSession({
       })
       if (!response.ok) return null
       const body: unknown = await response.json()
-      if (controller.signal.aborted || previous.current?.refreshToken !== expected) return null
+      if (controller.signal.aborted || previous.current?.accessToken !== expected) return null
       if (!body || typeof body !== 'object' || Array.isArray(body)) return null
       if (Object.keys(body).length === 0) {
         setConfirmedEnd({ key: expected, source: parentSession.current })
@@ -87,13 +87,7 @@ function RecoverSession({
         setConfirmedEnd({ key: expected, source: parentSession.current })
         return null
       }
-      if (
-        !('accessToken' in body) ||
-        typeof body.accessToken !== 'string' ||
-        !('refreshToken' in body) ||
-        typeof body.refreshToken !== 'string'
-      )
-        return null
+      if (!('accessToken' in body) || typeof body.accessToken !== 'string') return null
       // This is a fresh, cookie-authenticated /session response, never cached credentials.
       const session = body as Session
       onRecovered(session)
@@ -108,7 +102,7 @@ function RecoverSession({
 
   useEffect(() => {
     const end = () => {
-      setEndedToken(previous.current?.refreshToken)
+      setEndedToken(previous.current?.accessToken)
       previous.current = null
       setSnapshot(null)
       pending.current?.abort()
@@ -121,12 +115,12 @@ function RecoverSession({
   }, [])
 
   useEffect(() => {
-    if (parent.data?.refreshToken) setConfirmedEnd(null)
+    if (parent.data?.accessToken) setConfirmedEnd(null)
     if (recovering) void confirm()
     return () => {
       pending.current?.abort()
     }
-  }, [recovering, key, parent.data?.refreshToken, confirm])
+  }, [recovering, key, parent.data?.accessToken, confirm])
 
   useEffect(() => {
     if (parent.data) setFailedUpdate(false)
@@ -153,7 +147,6 @@ function RecoverSession({
             ...snapshot,
             authUnavailable: true,
             accessToken: undefined,
-            refreshToken: undefined,
             scope: undefined,
             tenantId: undefined,
             role: undefined,
