@@ -37,3 +37,7 @@ export type FavoritePropertiesOutput = {
   favorites: FavoritePropertyEntry[]
   limit: number
 }
+
+export type FavoritePropertyRouteContext = {
+  params: Promise<{ propertyId: string }>
+}

@@ -12149,6 +12149,144 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/marketplace/favorites/{propertyId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /**
+     * Salva um imóvel publicado nos favoritos
+     * @description Idempotente: se o imóvel já estava salvo, devolve a data original. Só imóveis publicados podem ser salvos.
+     */
+    put: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          propertyId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Imóvel salvo. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['SavedFavoriteProperty']
+          }
+        }
+        /** @description ID do imóvel inválido. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Autenticação obrigatória. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Imóvel não encontrado ou não publicado. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Limite de favoritos atingido. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    post?: never
+    /**
+     * Remove um imóvel dos favoritos
+     * @description Idempotente: responde 204 mesmo que o imóvel não estivesse salvo.
+     */
+    delete: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          propertyId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Imóvel removido dos favoritos. */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description ID do imóvel inválido. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Autenticação obrigatória. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/marketplace/media/{key}': {
     parameters: {
       query?: never
@@ -19142,6 +19280,11 @@ export interface components {
       /** @default [] */
       segments?: string[]
       summary?: string | null
+    }
+    SavedFavoriteProperty: {
+      propertyId: string
+      /** @description Quando o imóvel foi salvo (ISO 8601). */
+      savedAt: string
     }
     SavePublicProfileAddress: {
       handle: string
