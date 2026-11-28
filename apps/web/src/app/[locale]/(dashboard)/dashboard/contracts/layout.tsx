@@ -10,7 +10,9 @@ export const metadata = privateMetadata
 export default async function ScopedLayout({ children }: { children: ReactNode }) {
   await requireDashboardFeature('contracts')
   return (
-    <ScopedMessages namespaces={[...dashboardMessageNamespaces, 'contracts']}>
+    <ScopedMessages
+      namespaces={[...dashboardMessageNamespaces, 'contracts', 'charges', 'dashboard.maintenance']}
+    >
       {children}
     </ScopedMessages>
   )

@@ -72,4 +72,6 @@ for (const [name, file, source, count] of [
     0,
   ],
 ])
-  test(name, () => assert.equal(findConventionViolations(file, source).length, count))
+  for (const target of [file, file.replaceAll('/', '\\')])
+    test(`${name}: ${target}`, () =>
+      assert.equal(findConventionViolations(target, source).length, count))

@@ -1,30 +1,22 @@
 'use client'
 
 import { Box, Button, Stack, Typography } from '@mui/material'
-import BathtubOutlinedIcon from '@mui/icons-material/BathtubOutlined'
-import BedOutlinedIcon from '@mui/icons-material/BedOutlined'
-import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined'
-import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
-import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
 import { useTranslations } from 'next-intl'
 
+import { propertyFeatureIcons } from '@shared/config/property-feature-icons'
 import { isPropertyTypeCode, propertyTypeLabelKeys } from '../../config/property-types'
+import { useShareLink } from '../../hooks/use-share-link'
 import type { PropertyOverviewProps } from '../../types/property-detail'
 import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { PropertyDetailMap } from '../PropertyDetailMap'
+import { FavoriteButton } from '../favorites/FavoriteButton'
 import { styles } from '../../styles/property-overview.styles'
 import { PropertyNegotiationSummary } from '@shared/components/ui/PropertyNegotiationSummary'
 
-const featureIcons = [
-  BedOutlinedIcon,
-  BathtubOutlinedIcon,
-  LocalParkingOutlinedIcon,
-  SquareFootOutlinedIcon,
-]
-
 export function PropertyOverview({ property }: PropertyOverviewProps) {
   const t = useTranslations('marketplace.propertyDetail')
+  const share = useShareLink()
   const categoryKey = isPropertyTypeCode(property.category)
     ? propertyTypeLabelKeys[property.category]
     : undefined
@@ -43,17 +35,20 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
       </Typography>
 
       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={styles.stack2}>
-        <Button startIcon={<FavoriteBorderOutlinedIcon />} variant="outlined" color="secondary">
-          {t('favorite')}
-        </Button>
-        <Button startIcon={<ShareOutlinedIcon />} variant="outlined" color="secondary">
+        <FavoriteButton propertyId={property.id} variant="detail" />
+        <Button
+          startIcon={<ShareOutlinedIcon />}
+          variant="outlined"
+          color="secondary"
+          onClick={() => void share({ title: property.title, url: window.location.href })}
+        >
           {t('share')}
         </Button>
       </Stack>
 
       <Box sx={styles.box}>
-        {property.details.map((detail, index) => {
-          const Icon = featureIcons[index] ?? SquareFootOutlinedIcon
+        {property.details.map((detail) => {
+          const Icon = propertyFeatureIcons[detail.key]
 
           return (
             <Box key={detail.key} sx={styles.box2}>

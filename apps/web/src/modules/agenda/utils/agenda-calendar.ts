@@ -15,16 +15,6 @@ export const agendaVisibleDayCount = 5
 export const scheduleStartHour = AGENDA_BUSINESS_HOURS_START
 export const scheduleHourHeight = 62
 
-export function getEventOffsetTop(time: string, startHour = scheduleStartHour) {
-  const [hour = scheduleStartHour, minute = 0] = time.split(':').map(Number)
-
-  return (hour - startHour) * scheduleHourHeight + (minute / 60) * scheduleHourHeight
-}
-
-export function getEventHeight(durationMinutes: number) {
-  return Math.max((durationMinutes / 60) * scheduleHourHeight, 38)
-}
-
 function resolveDayjsLocale(locale: string) {
   if (locale.startsWith('pt')) return 'pt-br'
   if (locale.startsWith('es')) return 'es'

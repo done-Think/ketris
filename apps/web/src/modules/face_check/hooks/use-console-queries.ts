@@ -5,6 +5,8 @@ import type { OverviewScope, SessionListQuery } from '../types'
 import { isCaptureInFlight } from '../utils/session-status'
 
 import { consoleService } from '../services/console-service'
+import { ApiError } from '../services/api-error'
+import { hasLostFaceCheckAccess } from '../utils/query-access'
 import { consoleKeys } from './console-query-keys'
 
 const livePollingMs = 3000
@@ -39,7 +41,15 @@ export function useOverview(overviewScope: OverviewScope) {
     enabled: scope.enabled,
     queryFn: ({ signal }) => consoleService.getOverview(overviewScope, signal),
     staleTime: 0,
-    refetchInterval: livePollingMs,
+    retry: (attempt, error) =>
+      attempt < 1 &&
+      !hasLostFaceCheckAccess(error) &&
+      !(error instanceof ApiError && error.status === 503),
+    refetchInterval: (query) => (query.state.error ? false : livePollingMs),
+    retryOnMount: false,
+    refetchOnMount: (query) => !query.state.error,
+    refetchOnReconnect: (query) => !query.state.error,
+    refetchOnWindowFocus: false,
   })
 }
 

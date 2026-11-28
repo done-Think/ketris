@@ -1,3 +1,6 @@
 export { FinancialDashboardPage } from './components/FinancialDashboardPage'
 export { ChargesPage } from './components/ChargesPage'
 export { ChargeDetailsPage } from './components/ChargeDetailsPage'
+export { ContractChargeAlerts } from './components/ContractChargeAlerts'
+export { ContractChargeMonths } from './components/ContractChargeMonths'
+export { ContractChargeSummary } from './components/ContractChargeSummary'

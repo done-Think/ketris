@@ -27,8 +27,7 @@ const kpis: AgencyOverviewKpi[] = [
     id: 'revenue',
     labelKey: 'revenue',
     value: 'R$ 8.500,00',
-    helper: { key: 'revenueIncrease', values: { percent: 12 } },
-    tone: 'success',
+    tone: 'neutral',
   },
   {
     id: 'occupancy',
@@ -62,7 +61,6 @@ describe('AgencyOverviewKpiGrid', () => {
 
     expect(screen.getByText('+1 novo este mês')).toBeInTheDocument()
     expect(screen.getByText('−2 vs mês passado')).toBeInTheDocument()
-    expect(screen.getByText('+12% vs mês passado')).toBeInTheDocument()
   })
 
   it('usa o plural e o texto de "nenhum" para imóveis novos', () => {

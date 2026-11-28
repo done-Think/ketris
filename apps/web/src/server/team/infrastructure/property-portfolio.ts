@@ -5,7 +5,11 @@ import type { TeamTransferCommand } from '../types/team-repository'
 
 export async function lockPortfolioPeople(
   tx: Prisma.TransactionClient,
-  { tenantId, sourceId, destinationId }: TeamTransferCommand,
+  {
+    tenantId,
+    sourceId,
+    destinationId,
+  }: Pick<TeamTransferCommand, 'tenantId' | 'sourceId' | 'destinationId'>,
 ): Promise<void> {
   await tx.$queryRaw(Prisma.sql`
     SELECT id FROM users WHERE "tenantId" = ${tenantId} AND id IN (${sourceId}, ${destinationId})

@@ -43,4 +43,34 @@ export const stackSx2: SxProps<Theme> = { height: '100%' }
 
 export const stackSx3: SxProps<Theme> = { height: { lg: '100%' } }
 
+export const historyContainerSx: SxProps<Theme> = {
+  position: 'relative',
+  flex: 1,
+  minHeight: 312,
+}
+
+export const historyGridSx: SxProps<Theme> = {
+  position: 'absolute',
+  inset: 0,
+  display: 'grid',
+  gridTemplateRows: 'repeat(2, minmax(0, 1fr))',
+  gap: 2,
+}
+
+export const historyPanelSx: SxProps<Theme> = {
+  minWidth: 0,
+  minHeight: 0,
+  overflowY: 'auto',
+  scrollbarWidth: 'thin',
+}
+
+export const interactionsPanelSx: SxProps<Theme> = {
+  ...panelSx,
+  minWidth: 0,
+  minHeight: 0,
+  p: { xs: 2, md: 2.5 },
+  overflowY: 'auto',
+  scrollbarWidth: 'thin',
+}
+
 export const boxSx3: SxProps<Theme> = { pt: 2 }

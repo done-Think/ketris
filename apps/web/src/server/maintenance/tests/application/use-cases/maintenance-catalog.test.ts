@@ -6,7 +6,7 @@ import { GetMaintenanceTicketUseCase } from '../../../application/use-cases/get-
 import { ListMaintenanceProvidersUseCase } from '../../../application/use-cases/list-maintenance-providers.use-case'
 import { UpdateMaintenanceProviderUseCase } from '../../../application/use-cases/update-maintenance-provider.use-case'
 import { MaintenanceTicketNotFoundError } from '../../../domain/errors'
-import { admin, agent, renter, repository } from '../../fixtures/maintenance-ticket'
+import { actor, admin, agent, renter, repository, ticket } from '../../fixtures/maintenance-ticket'
 
 function catalog() {
   return {
@@ -77,6 +77,42 @@ describe('Maintenance catalog permissions and safe output', () => {
       ).rejects.toBeDefined()
       expect(store.list).not.toHaveBeenCalled()
     }
+  })
+  it('keeps the agency catalog closed to the linked landlord, who manages only their own account', async () => {
+    const landlord = actor('OWNER', 'landlord', 'landlord-tenant')
+    const linked = { access: { ...ticket.access, landlordIds: ['landlord'] } }
+    const store = catalog()
+    await expect(
+      new ListMaintenanceProvidersUseCase(store, repository(linked)).execute({
+        ...landlord,
+        ticketId: 'ticket-1',
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenError)
+    await expect(
+      new CreateMaintenanceProviderUseCase(store, repository(linked)).execute({
+        ...landlord,
+        ticketId: 'ticket-1',
+        provider: { name: 'Landlord choice' },
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenError)
+    expect(store.list).not.toHaveBeenCalled()
+    expect(store.create).not.toHaveBeenCalled()
+    await new ListMaintenanceProvidersUseCase(store, repository(linked)).execute(landlord)
+    expect(store.list).toHaveBeenCalledWith('landlord-tenant', expect.anything())
+  })
+  it('keeps the ticket catalog open to the agency management', async () => {
+    const store = catalog()
+    await new ListMaintenanceProvidersUseCase(store, repository()).execute({
+      ...admin,
+      ticketId: 'ticket-1',
+    })
+    await new CreateMaintenanceProviderUseCase(store, repository()).execute({
+      ...admin,
+      ticketId: 'ticket-1',
+      provider: { name: 'Agency choice' },
+    })
+    expect(store.list).toHaveBeenCalledWith('tenant-1', expect.anything())
+    expect(store.create).toHaveBeenCalledWith(expect.anything(), 'tenant-1', expect.anything())
   })
   it('does not list inactive providers or update the catalog for contributors', async () => {
     const store = catalog()

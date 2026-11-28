@@ -45,6 +45,7 @@ export type AgendaEventCreatorRole = NonNullable<AgendaEventResponseDTO['created
 export type AgendaEventVisualKind = 'followUp' | 'inspection' | 'meeting' | 'signature' | 'visit'
 
 export type AgendaEvent = {
+  readOnly?: boolean
   audience?: AgendaEventAudience
   internal?: boolean
   responsibleId?: string
@@ -100,17 +101,17 @@ export type AgendaEventToneStyle = {
 }
 
 export type AgendaEventCardProps = {
-  lane?: number
-  laneCount?: number
   event: AgendaEvent
-  top: number
-  height: number
   onSelect: (event: AgendaEvent) => void
 }
 
-export type AgendaCalendarCard = { id: string; top: number; height: number } & (
+export type AgendaCalendarCard = { id: string; time: string } & (
   { kind: 'event'; event: AgendaEvent } | { kind: 'organization'; item: AgendaOrganizationItem }
 )
+
+export type AgendaHourRow = AgendaTimeSlot & {
+  cardsByDay: Record<string, AgendaCalendarCard[]>
+}
 
 export type AgendaEventFormValues = z.infer<ReturnType<typeof buildAgendaEventFormSchema>>
 
@@ -143,6 +144,12 @@ export type AgendaEventFormFieldsProps = {
   minDate: string
   propertyOptions: AgendaPropertyOption[]
 }
+
+export type AgendaTimeFieldProps = {
+  control: Control<AgendaEventFormValues>
+}
+
+export type AgendaTimePart = 'hour' | 'minute'
 
 export type AgendaEventDetailDialogProps = {
   canRecordOutcome?: boolean
@@ -256,15 +263,6 @@ export type CancelAgendaEventPayload =
 export interface CancelAgendaEventMutationInput {
   id: string
   payload: CancelAgendaEventPayload
-}
-export interface AgendaLayoutPlacement {
-  id: string
-  top: number
-  height: number
-}
-export type AgendaLaidOutCard<T extends AgendaLayoutPlacement = AgendaCalendarCard> = T & {
-  lane: number
-  laneCount: number
 }
 
 export interface AgendaPropertyFieldProps {

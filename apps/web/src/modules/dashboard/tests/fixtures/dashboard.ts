@@ -54,8 +54,7 @@ export const apiAgencyOverview: ApiAgencyOverview = {
     activeBrokersCount: 7,
     receivedLeadsThisMonth: 9,
     receivedLeadsPreviousPeriod: 5,
-    monthlyReceivable: 12000,
-    monthlyReceivablePreviousMonth: 10000,
+    monthlyRevenue: 12000,
     overdueTotal: 450,
     occupancyPercentage: 80,
   },
@@ -74,12 +73,11 @@ export const apiAgencyOverview: ApiAgencyOverview = {
 
 export const upcomingActivity: DashboardUpcomingActivity = {
   id: 'event-1',
-  time: '10:00',
+  startsAt: '2026-10-21T13:00:00.000Z',
   title: 'Visita ao apartamento Batel',
   contact: 'Ana',
   phone: '(11) 98888-0000',
   accent: 'magenta',
-  meetingTime: '10:00',
   notes: '',
   propertyId: 'property-1',
   propertyReference: 'Apto Batel',

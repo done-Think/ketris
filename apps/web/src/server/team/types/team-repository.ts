@@ -42,6 +42,15 @@ export interface TeamStaffUser {
   pendingInvitation: boolean
 }
 
+export type TeamPortfolioAccessCommand = Omit<
+  TeamTransferCommand,
+  'reason' | 'opportunityScope'
+> & { revoke?: boolean }
+
+export type TeamShareCommand = Omit<TeamPortfolioAccessCommand, 'destinationId'> & {
+  destinationIds: string[]
+}
+
 export interface NewTeamInvitation {
   tenantId: string
   name: string

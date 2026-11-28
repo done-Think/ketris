@@ -86,6 +86,15 @@ export function buildAgendaEventFormSchema(
 
     if (isUnchangedSchedule || !values.scheduledDate || !values.scheduledTime) return
 
+    if (!/^(?:[01]\d|2[0-3]):(?:00|30)$/.test(values.scheduledTime)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: t('timeSlotInvalid'),
+        path: ['scheduledTime'],
+      })
+      return
+    }
+
     const start = dayjs(`${values.scheduledDate}T${values.scheduledTime}`)
     if (!start.isValid()) return
 

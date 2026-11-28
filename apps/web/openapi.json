@@ -316,6 +316,7 @@
           "status": { "$ref": "#/components/schemas/AgendaEventStatus" },
           "start": { "type": "string", "description": "Início do evento (ISO 8601)." },
           "end": { "type": "string", "description": "Término do evento (ISO 8601)." },
+          "readOnly": { "type": "boolean" },
           "participantName": { "type": "string" },
           "participantPhone": { "type": "string" },
           "notes": { "type": "string", "nullable": true },
@@ -517,6 +518,15 @@
           "password": { "type": "string", "minLength": 8, "example": "trocar-em-desenvolvimento" }
         },
         "required": ["currentPassword", "password"],
+        "additionalProperties": false
+      },
+      "CompleteCrmInteractionRequest": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["CONTACT_MADE", "NO_RESPONSE", "CANCELLED"] },
+          "description": { "type": "string", "maxLength": 2000 }
+        },
+        "required": ["status"],
         "additionalProperties": false
       },
       "ConfirmContractDocumentRequest": {
@@ -1054,7 +1064,9 @@
           "id": { "type": "string" },
           "tenantId": { "type": "string" },
           "responsibleId": { "type": "string" },
+          "accessUserIds": { "type": "array", "items": { "type": "string" } },
           "responsibleName": { "type": "string" },
+          "contactId": { "type": "string", "nullable": true },
           "name": { "type": "string" },
           "phone": { "type": "string" },
           "email": { "type": "string", "nullable": true },
@@ -1066,7 +1078,8 @@
           "notes": { "type": "string", "nullable": true },
           "opportunityId": { "type": "string", "nullable": true },
           "createdAt": { "anyOf": [{ "type": "string" }, { "type": "string" }] },
-          "updatedAt": { "anyOf": [{ "type": "string" }, { "type": "string" }] }
+          "updatedAt": { "anyOf": [{ "type": "string" }, { "type": "string" }] },
+          "lastContactAt": { "type": "string", "nullable": true, "format": "date-time" }
         },
         "required": [
           "id",
@@ -1211,6 +1224,7 @@
       "CreateLeadRequest": {
         "type": "object",
         "properties": {
+          "contactId": { "type": "string", "minLength": 1 },
           "name": { "type": "string", "minLength": 1, "maxLength": 200 },
           "phone": { "type": "string", "minLength": 1, "maxLength": 32 },
           "email": { "type": "string", "nullable": true, "maxLength": 254, "format": "email" },
@@ -1514,6 +1528,89 @@
         "type": "object",
         "properties": { "user": { "$ref": "#/components/schemas/AuthenticatedUserResponse" } },
         "required": ["user"]
+      },
+      "CrmInteractionChannel": {
+        "type": "string",
+        "nullable": true,
+        "enum": ["PHONE", "EMAIL", "WHATSAPP"]
+      },
+      "CrmInteractionStatus": {
+        "type": "string",
+        "nullable": true,
+        "enum": ["STARTED", "CONTACT_MADE", "NO_RESPONSE", "CANCELLED"]
+      },
+      "CrmInteraction": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": ["CONTACT_ATTEMPT", "STAGE_CHANGED", "CONTACT_LINKED", "LEAD_CREATED"]
+          },
+          "contactId": { "type": "string", "nullable": true },
+          "previousStage": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["NEW", "IN_CONTACT", "VISIT_SCHEDULED", "PROPOSAL"]
+          },
+          "nextStage": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["NEW", "IN_CONTACT", "VISIT_SCHEDULED", "PROPOSAL"]
+          },
+          "leadId": { "type": "string", "nullable": true },
+          "leadName": { "type": "string", "nullable": true },
+          "opportunityId": { "type": "string", "nullable": true },
+          "channel": { "$ref": "#/components/schemas/CrmInteractionChannel" },
+          "status": { "$ref": "#/components/schemas/CrmInteractionStatus" },
+          "description": { "type": "string", "nullable": true },
+          "actorUserId": { "type": "string" },
+          "actorName": { "type": "string" },
+          "completedById": { "type": "string", "nullable": true },
+          "createdAt": { "anyOf": [{ "type": "string" }, { "type": "string" }] },
+          "completedAt": { "type": "string", "nullable": true, "format": "date-time" },
+          "canComplete": { "type": "boolean" }
+        },
+        "required": [
+          "id",
+          "leadId",
+          "leadName",
+          "opportunityId",
+          "channel",
+          "status",
+          "description",
+          "actorUserId",
+          "actorName",
+          "completedById",
+          "createdAt",
+          "completedAt",
+          "canComplete"
+        ]
+      },
+      "CrmInteractionResponse": {
+        "type": "object",
+        "properties": { "interaction": { "$ref": "#/components/schemas/CrmInteraction" } },
+        "required": ["interaction"]
+      },
+      "CrmInteractionsPage": {
+        "type": "object",
+        "properties": {
+          "interactions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CrmInteraction" }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "integer" },
+              "pageSize": { "type": "integer" },
+              "pageCount": { "type": "integer" },
+              "totalCount": { "type": "integer" }
+            },
+            "required": ["page", "pageSize", "pageCount", "totalCount"]
+          }
+        },
+        "required": ["interactions", "pagination"]
       },
       "CrmPropertySummary": {
         "type": "object",
@@ -1936,6 +2033,22 @@
         "properties": { "lead": { "$ref": "#/components/schemas/Lead" } },
         "required": ["lead"]
       },
+      "LinkLeadContactRequest": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": { "contactId": { "type": "string", "minLength": 1 } },
+            "required": ["contactId"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": { "contact": { "$ref": "#/components/schemas/CreateContactRequest" } },
+            "required": ["contact"],
+            "additionalProperties": false
+          }
+        ]
+      },
       "ListAgendaEventsQuery": {
         "type": "object",
         "properties": {
@@ -2104,6 +2217,7 @@
             "enum": ["PLUMBING", "ELECTRICAL", "STRUCTURAL", "PAINTING", "OTHER"]
           },
           "propertyId": { "type": "string", "minLength": 1 },
+          "contractId": { "type": "string", "minLength": 1, "maxLength": 64 },
           "search": { "type": "string", "minLength": 1, "maxLength": 500 },
           "page": { "type": "integer", "minimum": 0, "exclusiveMinimum": true },
           "pageSize": { "type": "integer", "minimum": 0, "exclusiveMinimum": true, "maximum": 100 },
@@ -2143,6 +2257,7 @@
           "tenantId": { "type": "string" },
           "propertyId": { "type": "string" },
           "responsibleId": { "type": "string" },
+          "accessUserIds": { "type": "array", "items": { "type": "string" } },
           "responsibleName": { "type": "string" },
           "property": { "$ref": "#/components/schemas/CrmPropertySummary" },
           "contactId": { "type": "string", "nullable": true },
@@ -3814,6 +3929,15 @@
         "required": ["documentId"],
         "additionalProperties": false
       },
+      "StartCrmInteractionRequest": {
+        "type": "object",
+        "properties": {
+          "channel": { "$ref": "#/components/schemas/CrmInteractionChannel" },
+          "requestId": { "type": "string", "format": "uuid" }
+        },
+        "required": ["channel", "requestId"],
+        "additionalProperties": false
+      },
       "SubmitInquiryRequest": {
         "type": "object",
         "properties": {
@@ -4464,16 +4588,6 @@
         "properties": { "available": { "type": "boolean" } },
         "required": ["available"]
       },
-      "MarketplaceStatsResponse": {
-        "type": "object",
-        "properties": {
-          "publishedProperties": { "type": "integer", "minimum": 0 },
-          "publishedBrokers": { "type": "integer", "minimum": 0 },
-          "servedCities": { "type": "integer", "minimum": 0 },
-          "locations": { "type": "array", "items": { "type": "string" }, "maxItems": 20 }
-        },
-        "required": ["publishedProperties", "publishedBrokers", "servedCities"]
-      },
       "PublicPropertySummary": {
         "type": "object",
         "properties": {
@@ -4522,6 +4636,74 @@
           "coverUrl",
           "publishedAt"
         ]
+      },
+      "SavedFavoriteProperty": {
+        "type": "object",
+        "properties": {
+          "propertyId": { "type": "string" },
+          "savedAt": { "type": "string", "description": "Quando o imóvel foi salvo (ISO 8601)." }
+        },
+        "required": ["propertyId", "savedAt"]
+      },
+      "UnavailableFavoriteProperty": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "city": { "type": "string", "nullable": true },
+          "neighborhood": { "type": "string", "nullable": true }
+        },
+        "required": ["title", "city", "neighborhood"]
+      },
+      "FavoritePropertyEntry": {
+        "oneOf": [
+          {
+            "allOf": [
+              { "$ref": "#/components/schemas/SavedFavoriteProperty" },
+              {
+                "type": "object",
+                "properties": {
+                  "available": { "type": "boolean", "enum": [true] },
+                  "property": { "$ref": "#/components/schemas/PublicPropertySummary" }
+                },
+                "required": ["available", "property"]
+              }
+            ]
+          },
+          {
+            "allOf": [
+              { "$ref": "#/components/schemas/SavedFavoriteProperty" },
+              {
+                "type": "object",
+                "properties": {
+                  "available": { "type": "boolean", "enum": [false] },
+                  "property": { "$ref": "#/components/schemas/UnavailableFavoriteProperty" }
+                },
+                "required": ["available", "property"]
+              }
+            ]
+          }
+        ]
+      },
+      "FavoritePropertiesResponse": {
+        "type": "object",
+        "properties": {
+          "favorites": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FavoritePropertyEntry" }
+          },
+          "limit": { "type": "integer", "minimum": 0, "exclusiveMinimum": true }
+        },
+        "required": ["favorites", "limit"]
+      },
+      "MarketplaceStatsResponse": {
+        "type": "object",
+        "properties": {
+          "publishedProperties": { "type": "integer", "minimum": 0 },
+          "publishedBrokers": { "type": "integer", "minimum": 0 },
+          "servedCities": { "type": "integer", "minimum": 0 },
+          "locations": { "type": "array", "items": { "type": "string" }, "maxItems": 20 }
+        },
+        "required": ["publishedProperties", "publishedBrokers", "servedCities"]
       },
       "SearchPropertiesResponse": {
         "type": "object",
@@ -5123,6 +5305,18 @@
         "required": ["email"],
         "additionalProperties": false
       },
+      "ChargeReceipt": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "contentType": { "type": "string" },
+          "size": { "type": "integer" },
+          "uploadedAt": { "type": "string" }
+        },
+        "required": ["id", "name", "contentType", "size", "uploadedAt"]
+      },
       "ChargeListItem": {
         "type": "object",
         "properties": {
@@ -5141,6 +5335,7 @@
           "contractId": { "type": "string", "nullable": true },
           "payerName": { "type": "string", "nullable": true },
           "propertyTitle": { "type": "string", "nullable": true },
+          "receipt": { "$ref": "#/components/schemas/ChargeReceipt" },
           "updatedAt": { "type": "string" }
         },
         "required": [
@@ -5155,6 +5350,7 @@
           "contractId",
           "payerName",
           "propertyTitle",
+          "receipt",
           "updatedAt"
         ]
       },
@@ -5179,18 +5375,6 @@
           "statusCounts": { "$ref": "#/components/schemas/ChargeStatusCounts" }
         },
         "required": ["items", "totalCount", "statusCounts"]
-      },
-      "ChargeReceipt": {
-        "type": "object",
-        "nullable": true,
-        "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "contentType": { "type": "string" },
-          "size": { "type": "integer" },
-          "uploadedAt": { "type": "string" }
-        },
-        "required": ["id", "name", "contentType", "size", "uploadedAt"]
       },
       "Charge": {
         "type": "object",
@@ -5532,10 +5716,9 @@
             "type": "integer",
             "description": "Leads recebidos no mesmo trecho do mês anterior (do dia 1 até o mesmo dia/hora de hoje)."
           },
-          "monthlyReceivable": { "type": "number" },
-          "monthlyReceivablePreviousMonth": {
+          "monthlyRevenue": {
             "type": "number",
-            "description": "Mesmo cálculo de monthlyReceivable, aplicado ao mês anterior inteiro."
+            "description": "Faturado no mês corrente: cobranças a receber do mês, pagas ou em aberto, sem as canceladas (o último mês de revenueSeries)."
           },
           "overdueTotal": {
             "type": "number",
@@ -5549,8 +5732,7 @@
           "activeBrokersCount",
           "receivedLeadsThisMonth",
           "receivedLeadsPreviousPeriod",
-          "monthlyReceivable",
-          "monthlyReceivablePreviousMonth",
+          "monthlyRevenue",
           "overdueTotal",
           "occupancyPercentage"
         ]
@@ -5629,6 +5811,34 @@
           }
         },
         "required": ["kpis", "revenueSeries", "topBrokers", "recentActivities"]
+      },
+      "TeamTransferResponse": {
+        "type": "object",
+        "properties": {
+          "properties": { "type": "integer" },
+          "leads": { "type": "integer" },
+          "opportunities": { "type": "integer" },
+          "futureEvents": { "type": "integer" }
+        },
+        "required": ["properties", "leads", "opportunities", "futureEvents"]
+      },
+      "ShareBrokerPortfolioRequest": {
+        "type": "object",
+        "properties": {
+          "properties": { "type": "boolean" },
+          "leads": { "type": "boolean" },
+          "opportunities": { "type": "boolean" },
+          "futureEvents": { "type": "boolean" },
+          "destinationIds": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "revoke": { "type": "boolean", "default": false }
+        },
+        "required": ["properties", "leads", "opportunities", "futureEvents", "destinationIds"],
+        "additionalProperties": false
       },
       "TeamMember": {
         "type": "object",
@@ -5746,16 +5956,6 @@
         },
         "required": ["monthlySales"],
         "additionalProperties": false
-      },
-      "TeamTransferResponse": {
-        "type": "object",
-        "properties": {
-          "properties": { "type": "integer" },
-          "leads": { "type": "integer" },
-          "opportunities": { "type": "integer" },
-          "futureEvents": { "type": "integer" }
-        },
-        "required": ["properties", "leads", "opportunities", "futureEvents"]
       },
       "TransferBrokerPortfolioRequest": {
         "type": "object",
@@ -6267,6 +6467,16 @@
             "schema": { "type": "string", "enum": ["true", "false"] },
             "required": false,
             "name": "pendingApproval",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": ["true", "false"],
+              "description": "Filtra quem ainda não aceitou o convite para a equipe."
+            },
+            "required": false,
+            "name": "pendingInvitation",
             "in": "query"
           },
           {
@@ -8144,6 +8354,153 @@
         }
       }
     },
+    "/marketplace/favorites": {
+      "get": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Lista os imóveis favoritos de quem está logado",
+        "description": "Qualquer usuário de tenant logado. Retorna só os favoritos do próprio usuário, do mais recente para o mais antigo, até o limite. O favorito guarda o tenant de quem salvou e pode apontar para imóvel de qualquer tenant (mesma exceção do marketplace público). Imóvel que deixou de estar publicado volta com available=false e só título, cidade e bairro.",
+        "responses": {
+          "200": {
+            "description": "Favoritos do usuário.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FavoritePropertiesResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Autenticação obrigatória.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ]
+      }
+    },
+    "/marketplace/favorites/{propertyId}": {
+      "put": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Salva um imóvel publicado nos favoritos",
+        "description": "Idempotente: se o imóvel já estava salvo, devolve a data original. Só imóveis publicados podem ser salvos.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "ID do imóvel.",
+              "example": "clx1y2z3a0000abcd1234efgh"
+            },
+            "required": true,
+            "name": "propertyId",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Imóvel salvo.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SavedFavoriteProperty" }
+              }
+            }
+          },
+          "400": {
+            "description": "ID do imóvel inválido.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Autenticação obrigatória.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Imóvel não encontrado ou não publicado.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          },
+          "422": {
+            "description": "Limite de favoritos atingido.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Remove um imóvel dos favoritos",
+        "description": "Idempotente: responde 204 mesmo que o imóvel não estivesse salvo.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "ID do imóvel.",
+              "example": "clx1y2z3a0000abcd1234efgh"
+            },
+            "required": true,
+            "name": "propertyId",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "204": { "description": "Imóvel removido dos favoritos." },
+          "400": {
+            "description": "ID do imóvel inválido.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Autenticação obrigatória.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      }
+    },
     "/marketplace/stats": {
       "get": {
         "tags": ["Marketplace"],
@@ -9763,6 +10120,466 @@
         }
       }
     },
+    "/crm/leads/{id}/interactions": {
+      "get": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Lists authorized lead contact attempts and outcomes",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "schema": { "type": "integer", "minimum": 1, "maximum": 1000000, "default": 1 },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": { "type": "integer", "default": 5 },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated interaction history.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionsPage" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Record not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      },
+      "post": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Records a contact shortcut attempt without confirming contact",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/StartCrmInteractionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created or replayed idempotent attempt.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Lead not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "Request identifier conflict.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "422": {
+            "description": "Contact channel unavailable.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/crm/contacts/{id}/interactions": {
+      "get": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Lists authorized lead contact attempts and outcomes",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "schema": { "type": "integer", "minimum": 1, "maximum": 1000000, "default": 1 },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": { "type": "integer", "default": 5 },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated interaction history.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionsPage" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Record not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      },
+      "post": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Records a contact shortcut attempt without confirming contact",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/StartCrmInteractionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created or replayed idempotent attempt.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Lead not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "Request identifier conflict.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "422": {
+            "description": "Contact channel unavailable.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/crm/opportunities/{id}/interactions": {
+      "get": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Lists authorized lead contact attempts and outcomes",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "schema": { "type": "integer", "minimum": 1, "maximum": 1000000, "default": 1 },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": { "type": "integer", "default": 5 },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated interaction history.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionsPage" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Record not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      }
+    },
+    "/crm/interactions/{id}": {
+      "patch": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Confirms the outcome of a pending contact attempt",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CompleteCrmInteractionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recorded outcome.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CrmInteractionResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "Actor cannot complete this attempt.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Attempt not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "Outcome already recorded.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/crm/leads/{id}/contact": {
+      "post": {
+        "tags": ["CRM"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Links a lead to an authorized contact or creates a contact explicitly",
+        "parameters": [
+          { "schema": { "type": "string" }, "required": true, "name": "id", "in": "path" },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LinkLeadContactRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Linked lead.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/LeadResponse" } }
+            }
+          },
+          "400": {
+            "description": "Invalid contact.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "CRM access required.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Lead or contact not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "Conflicting link or duplicate contact email.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
+      }
+    },
     "/crm/responsibles": {
       "get": {
         "tags": ["CRM"],
@@ -11312,6 +12129,297 @@
         }
       }
     },
+    "/instagram/connection": {
+      "get": {
+        "tags": ["Instagram"],
+        "summary": "Consulta conexão pessoal no tenant; gestor, corretor ou proprietário; nunca retorna token",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Estado da conexão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "configured": { "type": "boolean" },
+                    "connected": { "type": "boolean" },
+                    "accountId": { "type": "string" },
+                    "username": { "type": "string" },
+                    "expired": { "type": "boolean" },
+                    "expiresAt": { "type": "string", "format": "date-time" }
+                  },
+                  "required": ["configured", "connected"]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Instagram"],
+        "summary": "Desconecta a conta local e cancela trabalhos pendentes; gestor, corretor ou proprietário",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Desconectado" },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ]
+      }
+    },
+    "/instagram/oauth/start": {
+      "post": {
+        "tags": ["Instagram"],
+        "summary": "Inicia Instagram Login e emite cookie seguro; gestor, corretor ou proprietário",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "URL oficial de autorização",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "authorizationUrl": { "type": "string", "format": "uri" } },
+                  "required": ["authorizationUrl"]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ]
+      }
+    },
+    "/instagram/properties/{propertyId}/publications": {
+      "get": {
+        "tags": ["Instagram"],
+        "summary": "Consulta histórico pessoal do imóvel autorizado no tenant; gestor, corretor ou proprietário",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1 },
+            "required": true,
+            "name": "propertyId",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Publicações",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "publications": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "propertyId": { "type": "string" },
+                          "accountId": { "type": "string" },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "QUEUED",
+                              "PREPARING",
+                              "READY",
+                              "PUBLISHING",
+                              "VERIFYING",
+                              "PUBLISHED",
+                              "FAILED",
+                              "BLOCKED",
+                              "CANCELLED"
+                            ]
+                          },
+                          "permalink": { "type": "string", "nullable": true },
+                          "errorCode": { "type": "string", "nullable": true },
+                          "createdAt": { "type": "string", "format": "date-time" }
+                        },
+                        "required": [
+                          "id",
+                          "propertyId",
+                          "accountId",
+                          "status",
+                          "permalink",
+                          "errorCode",
+                          "createdAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": ["publications"]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      },
+      "post": {
+        "tags": ["Instagram"],
+        "summary": "Registra envio após revisão; imóvel precisa estar publicado; gestor, corretor ou proprietário",
+        "description": "Um envio por tenant, imóvel e conta Instagram. A conta pertence ao usuário autenticado, que precisa ter acesso atual ao imóvel. Uma solicitação repetida não produz outro post. Falha externa não altera o imóvel no site.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1 },
+            "required": true,
+            "name": "propertyId",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "caption": { "type": "string", "maxLength": 2200 },
+                  "imageUrls": {
+                    "type": "array",
+                    "items": { "type": "string", "minLength": 1, "maxLength": 2048 },
+                    "minItems": 1,
+                    "maxItems": 20
+                  }
+                },
+                "required": ["caption", "imageUrls"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Publicação registrada ou existente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "publication": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "propertyId": { "type": "string" },
+                        "accountId": { "type": "string" },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "QUEUED",
+                            "PREPARING",
+                            "READY",
+                            "PUBLISHING",
+                            "VERIFYING",
+                            "PUBLISHED",
+                            "FAILED",
+                            "BLOCKED",
+                            "CANCELLED"
+                          ]
+                        },
+                        "permalink": { "type": "string", "nullable": true },
+                        "errorCode": { "type": "string", "nullable": true },
+                        "createdAt": { "type": "string", "format": "date-time" }
+                      },
+                      "required": [
+                        "id",
+                        "propertyId",
+                        "accountId",
+                        "status",
+                        "permalink",
+                        "errorCode",
+                        "createdAt"
+                      ]
+                    }
+                  },
+                  "required": ["publication"]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        }
+      }
+    },
+    "/instagram/publications/{id}/retry": {
+      "post": {
+        "tags": ["Instagram"],
+        "summary": "Retenta somente falhas anteriores à confirmação; gestor, corretor ou proprietário",
+        "description": "Somente o solicitante com acesso atual ao imóvel pode tentar novamente. VERIFYING, BLOCKED, PUBLISHING e PUBLISHED não podem ser reenviados por esta rota.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1 },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "responses": {
+          "202": { "description": "Nova tentativa registrada" },
+          "409": { "description": "Estado não permite tentativa segura" }
+        }
+      }
+    },
     "/agenda/properties": {
       "get": {
         "tags": ["Agenda"],
@@ -12727,6 +13835,12 @@
             "in": "query"
           },
           {
+            "schema": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "required": false,
+            "name": "contractId",
+            "in": "query"
+          },
+          {
             "schema": {
               "type": "integer",
               "minimum": 0,
@@ -13339,7 +14453,7 @@
       "get": {
         "tags": ["Financial"],
         "summary": "URL temporária para baixar um comprovante",
-        "description": "Quem vê a cobrança baixa o comprovante vigente. Comprovantes antigos (estornados) só o OWNER, pelo histórico.",
+        "description": "Quem vê a cobrança baixa o comprovante vigente. Comprovantes antigos (estornados) só o OWNER do tenant da cobrança, pelo histórico.",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
@@ -13411,7 +14525,7 @@
       "get": {
         "tags": ["Financial"],
         "summary": "Resumo financeiro do tenant (só OWNER)",
-        "description": "monthlyReceivable soma RECEIVABLE não canceladas com vencimento no mês (month, padrão o atual) e monthlySeries os 6 meses que terminam nele. overdueTotal, defaultRatePercentage, occupancyRatePercentage e upcomingDues são a posição de hoje. Valores em BRL.",
+        "description": "monthlyReceivable soma RECEIVABLE não canceladas com vencimento no mês (month, padrão o atual) e monthlySeries os 6 meses que terminam nele. overdueTotal, defaultRatePercentage e occupancyRatePercentage são a posição de hoje; upcomingDues traz até 5 cobranças pendentes que vencem de hoje em diante. Valores em BRL.",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
@@ -14196,6 +15310,12 @@
             "in": "query"
           },
           {
+            "schema": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "required": false,
+            "name": "contractId",
+            "in": "query"
+          },
+          {
             "schema": { "type": "string", "minLength": 1, "maxLength": 500 },
             "required": false,
             "name": "search",
@@ -14661,6 +15781,78 @@
             "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
           }
         ]
+      }
+    },
+    "/team/members/{id}/share": {
+      "post": {
+        "summary": "Shares or revokes access to selected existing portfolio items",
+        "tags": ["Team"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ShareBrokerPortfolioRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Counts of changed portfolio access grants.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "shared": { "$ref": "#/components/schemas/TeamTransferResponse" }
+                  },
+                  "required": ["shared"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Access token ausente, inválido ou expirado.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "403": {
+            "description": "Só o dono da imobiliária (OWNER) gerencia a equipe.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "404": {
+            "description": "Source member not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          },
+          "422": {
+            "description": "Invalid destination or empty selection.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          }
+        }
       }
     },
     "/team": {

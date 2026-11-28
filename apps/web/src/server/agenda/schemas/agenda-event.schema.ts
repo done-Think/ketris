@@ -55,6 +55,7 @@ export const agendaEventSchema = z
     status: agendaEventStatusSchema,
     start: z.string().openapi({ description: 'Início do evento (ISO 8601).' }),
     end: z.string().openapi({ description: 'Término do evento (ISO 8601).' }),
+    readOnly: z.boolean().optional(),
     participantName: z.string(),
     participantPhone: z.string(),
     notes: z.string().nullable(),

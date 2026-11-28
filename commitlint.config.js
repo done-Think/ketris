@@ -24,6 +24,7 @@ const scopes = [
   'face-check',
   'financial',
   'i18n',
+  'instagram',
   'maintenance',
   'marketplace',
   'platform',

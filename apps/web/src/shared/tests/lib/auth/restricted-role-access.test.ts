@@ -38,6 +38,9 @@ describe('restricted-role-access', () => {
     expect(access?.isAllowedPathname('/dashboard/finance/charges/abc')).toBe(true)
     expect(access?.isAllowedPathname('/dashboard/properties/abc')).toBe(true)
     expect(access?.isAllowedPathname('/dashboard/properties/new')).toBe(false)
+    expect(access?.isAllowedPathname('/dashboard/contracts')).toBe(true)
+    expect(access?.isAllowedPathname('/dashboard/contracts/abc')).toBe(true)
+    expect(access?.isAllowedPathname('/dashboard/contracts/new')).toBe(false)
     expect(access?.isAllowedPathname('/crm')).toBe(false)
     expect(access).toMatchObject({
       canManageProperties: false,

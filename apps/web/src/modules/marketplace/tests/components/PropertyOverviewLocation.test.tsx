@@ -1,11 +1,17 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { SnackbarProvider } from 'notistack'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { PropertyOverview } from '../../components/property-detail/PropertyOverview'
-import { mapDetailToMarketplacePropertyDetail } from '../../utils/property-detail-adapter'
-import type { PublicPropertyDetail } from '../../types/public-property'
-import type { SearchResultProperty } from '../../types/search'
+import {
+  publicPropertyDetail as property,
+  toMarketplacePropertyDetail as mapped,
+} from '../fixtures/public-property-detail'
 
+vi.mock('../../components/favorites/FavoriteButton', () => ({
+  FavoriteButton: () => <button type="button">Favoritar</button>,
+}))
 vi.mock('../../components/PropertyDetailMap', () => ({
   PropertyDetailMap: ({ latitude, longitude }: { latitude: number; longitude: number }) => (
     <div data-testid="property-map">
@@ -13,45 +19,6 @@ vi.mock('../../components/PropertyDetailMap', () => ({
     </div>
   ),
 }))
-
-const property: PublicPropertyDetail = {
-  id: 'property-itajuba',
-  title: 'Casa em Itajubá',
-  purpose: 'SALE',
-  propertyType: 'HOUSE',
-  price: 450000,
-  condoFee: null,
-  propertyTax: null,
-  bedrooms: 3,
-  bathrooms: 2,
-  parkingSpots: 1,
-  area: 90,
-  city: 'Itajubá',
-  neighborhood: 'Anhumas',
-  latitude: null,
-  longitude: null,
-  brokerName: null,
-  brokerAvatarUrl: null,
-  coverUrl: null,
-  publishedAt: null,
-  description: 'Casa em Itajubá',
-  media: [],
-  address: {
-    street: 'Rua Padre Júlio Chevalier',
-    number: '35',
-    complement: null,
-    neighborhood: 'Anhumas',
-    city: 'Itajubá',
-    state: 'MG',
-    zipCode: '37500-000',
-    latitude: null,
-    longitude: null,
-  },
-}
-
-function mapped(input = property, purpose?: SearchResultProperty['purpose']) {
-  return mapDetailToMarketplacePropertyDetail(input, 'pt-BR', (key) => key, purpose)
-}
 
 describe('property location', () => {
   it.each([
@@ -142,4 +109,34 @@ describe('property location', () => {
     )
     expect(screen.getByTestId('property-map')).toHaveTextContent('-22.43,-45.45')
   })
+})
+
+describe('property overview actions', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it.each([
+    [vi.fn().mockResolvedValue(undefined), 'Link copiado.'],
+    [
+      vi.fn().mockRejectedValue(new Error('denied')),
+      'Não foi possível compartilhar. Copie o endereço pelo navegador.',
+    ],
+  ])(
+    'shows favorite and share on every screen and reports the copied link',
+    async (writeText, message) => {
+      vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
+      const user = userEvent.setup()
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
+      render(
+        <SnackbarProvider domRoot={document.body}>
+          <PropertyOverview property={mapped()} />
+        </SnackbarProvider>,
+      )
+
+      expect(screen.getByRole('button', { name: 'Favoritar' })).toBeVisible()
+      await user.click(screen.getByRole('button', { name: 'Compartilhar' }))
+
+      expect(writeText).toHaveBeenCalledWith(window.location.href)
+      expect(await screen.findByText(message)).toBeInTheDocument()
+    },
+  )
 })

@@ -14,7 +14,9 @@
     "title": "Contracts",
     "subtitle": "Manage contracts, due dates, and signatures in progress.",
     "searchPlaceholder": "Search contracts...",
-    "newContract": "New Contract"
+    "newContract": "New Contract",
+    "myRentalTitle": "My rental",
+    "myRentalSubtitle": "Follow your rental contract, payments, documents and tickets."
   },
   "filters": {
     "tabs": {
@@ -134,7 +136,8 @@
       "dateInvalid": "Enter a valid date in DD/MM/YYYY format.",
       "endAfterStart": "The end date must be after the start date.",
       "amountTooLarge": "The maximum amount is 9,999,999,999.99.",
-      "amountPrecision": "Use at most two decimal places."
+      "amountPrecision": "Use at most two decimal places.",
+      "partiesSamePerson": "Landlord, tenant and guarantor must be different people"
     },
     "actions": {
       "back": "Back",
@@ -268,9 +271,20 @@
     "landlordView": "You follow this contract as the landlord. It is managed by {agency}. To change anything, contact the agency.",
     "guarantor": "Guarantor",
     "manual": "Manual record",
-    "provider": "Electronic signature"
+    "provider": "Electronic signature",
+    "myRental": "My rental",
+    "rentDue": "Rent · due every month on day {day}",
+    "tabs": {
+      "label": "Contract sections",
+      "summary": "Summary",
+      "payments": "Payments",
+      "documents": "Documents",
+      "tickets": "Tickets"
+    }
   },
   "documents": {
+    "chooseFile": "Choose file",
+    "noFileSelected": "No file selected",
     "title": "Documents",
     "file": "Supporting PDF",
     "limits": "PDF only, up to 10 MB.",

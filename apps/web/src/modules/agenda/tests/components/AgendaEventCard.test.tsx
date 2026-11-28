@@ -11,19 +11,18 @@ it('abre o evento original por um controle com nome acessível', async () => {
     property: 'Jardins',
   })
   const onSelect = vi.fn()
-  render(<AgendaEventCard event={event} height={62} top={0} onSelect={onSelect} />)
+  render(<AgendaEventCard event={event} onSelect={onSelect} />)
   await userEvent.click(screen.getByRole('button', { name: 'Abrir Visita ao apartamento' }))
   expect(onSelect).toHaveBeenCalledOnce()
   expect(onSelect).toHaveBeenCalledWith(event)
   expect(screen.getByText('Ana - Jardins')).toBeVisible()
+  expect(screen.getByText('12:00 – 13:00')).toBeVisible()
 })
 
 it('mostra no nome acessível o resultado registrado', () => {
   render(
     <AgendaEventCard
       event={agendaEventFixture({ title: 'Visita', status: 'COMPLETED', tone: 'success' })}
-      height={62}
-      top={0}
       onSelect={vi.fn()}
     />,
   )
@@ -37,8 +36,6 @@ it('destaca evento que já terminou sem resultado registrado', () => {
   render(
     <AgendaEventCard
       event={agendaEventFixture({ title: 'Visita', scheduledDate: '2031-03-01', time: '11:00' })}
-      height={62}
-      top={0}
       onSelect={vi.fn()}
     />,
   )

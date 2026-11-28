@@ -20,12 +20,16 @@ export function staff(overrides: Partial<TeamStaffUser>): TeamStaffUser {
 
 export function teamRepository(people: TeamStaffUser[] = []): TeamRepository {
   return {
+    findTenantAccountType: vi.fn().mockResolvedValue('AGENCY'),
     listMembers: vi.fn().mockResolvedValue([]),
     loadMetrics: vi.fn(),
     findStaffUser: vi.fn(
       async (_tenantId: string, id: string) => people.find((person) => person.id === id) ?? null,
     ),
     transfer: vi.fn().mockResolvedValue({ propertyIds: ['p1'], leadIds: [], eventIds: [] }),
+    sharePortfolio: vi
+      .fn()
+      .mockResolvedValue({ propertyIds: ['p1'], leadIds: [], opportunityIds: [], eventIds: [] }),
     deactivateWithTransfer: vi
       .fn()
       .mockResolvedValue({ propertyIds: ['p1'], leadIds: ['l1'], eventIds: ['e1'] }),

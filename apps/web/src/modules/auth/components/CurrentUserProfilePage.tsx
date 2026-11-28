@@ -1,5 +1,7 @@
 'use client'
 
+import { InstagramConnectionCard } from '@shared/components/integrations/InstagramConnectionCard'
+
 import { Alert, Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
@@ -36,6 +38,7 @@ export function CurrentUserProfilePage() {
               user={profile.data}
             />
             <CurrentUserPasswordForm />
+            <InstagramConnectionCard />
           </>
         ) : null}
       </Stack>

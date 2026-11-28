@@ -51,7 +51,7 @@ function buildRepos(overrides?: {
 
   const propertyLookup = {
     existsForTenant: vi.fn().mockResolvedValue(true),
-    findResponsibleId: vi.fn().mockResolvedValue('agent-1'),
+    canAccess: vi.fn().mockResolvedValue(true),
     ...overrides?.propertyLookup,
   } as unknown as PropertyLookupPort
 
@@ -145,7 +145,7 @@ describe('ConvertLeadToOpportunityUseCase', () => {
 
   it('bloqueia AGENT convertendo com um imóvel do qual não é responsável', async () => {
     const { leadRepository, opportunityRepository, propertyLookup } = buildRepos({
-      propertyLookup: { findResponsibleId: vi.fn().mockResolvedValue('agent-2') },
+      propertyLookup: { canAccess: vi.fn().mockResolvedValue(false) },
     })
     const useCase = new ConvertLeadToOpportunityUseCase(
       leadRepository,
@@ -162,7 +162,9 @@ describe('ConvertLeadToOpportunityUseCase', () => {
         propertyId: 'property-1',
         proposedValue: 3000,
       }),
-    ).rejects.toThrow('Você só pode criar oportunidades para os próprios imóveis.')
+    ).rejects.toThrow(
+      'Você só pode criar oportunidades para imóveis da sua carteira ou compartilhados com você.',
+    )
     expect(opportunityRepository.create).not.toHaveBeenCalled()
   })
 

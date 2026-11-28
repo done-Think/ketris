@@ -112,6 +112,28 @@ describe('createContractSchema', () => {
     expect(result.success).toBe(true)
   })
 
+  it('rejects the same CPF for landlord, tenant and guarantor', () => {
+    const sameTenant = schema.safeParse({ ...validValues, tenantCpf: '52998224725' })
+
+    expect(sameTenant.success).toBe(false)
+    expect(sameTenant.error?.issues).toEqual([
+      expect.objectContaining({ path: ['tenantCpf'], message: 'partiesSamePerson' }),
+    ])
+
+    const sameGuarantor = schema.safeParse({
+      ...validValues,
+      guaranteeType: 'GUARANTOR',
+      guarantorName: 'Fiadora',
+      guarantorCpf: '987.654.321-00',
+      guarantorEmail: 'fiadora@example.com',
+      guarantorPhone: '(11) 98888-7777',
+    })
+
+    expect(sameGuarantor.error?.issues).toEqual([
+      expect.objectContaining({ path: ['guarantorCpf'], message: 'partiesSamePerson' }),
+    ])
+  })
+
   it('routes each validation message through the translator with the right key', () => {
     const translated = createContractSchema((key) => `translated:${key}`)
     const result = translated.safeParse({ ...validValues, opportunityId: '' })

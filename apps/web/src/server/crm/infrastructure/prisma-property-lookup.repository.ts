@@ -2,16 +2,16 @@ import type { CrmDatabase } from '../types/prisma'
 
 import type { PropertyLookupPort } from '../application/ports/property-lookup.port'
 import type { LeadPropertyLookupPort } from '../application/ports/lead-property-lookup.port'
+import { crmPropertyAccessWhere } from './crm-property-access'
 
 export class PrismaPropertyLookupRepository implements PropertyLookupPort, LeadPropertyLookupPort {
   constructor(private readonly db: CrmDatabase) {}
   findAvailable(tenantId: string, propertyId: string, responsibleId?: string) {
     return this.db.property.findFirst({
       where: {
-        tenantId,
+        ...crmPropertyAccessWhere(tenantId, responsibleId),
         id: propertyId,
         status: 'PUBLISHED',
-        ...(responsibleId !== undefined ? { responsibleId } : {}),
       },
       select: { id: true, title: true, responsibleId: true },
     })
@@ -22,12 +22,12 @@ export class PrismaPropertyLookupRepository implements PropertyLookupPort, LeadP
     return count > 0
   }
 
-  async findResponsibleId(tenantId: string, propertyId: string): Promise<string | null> {
+  async canAccess(tenantId: string, propertyId: string, brokerId: string): Promise<boolean> {
     const property = await this.db.property.findFirst({
-      where: { tenantId, id: propertyId },
-      select: { responsibleId: true },
+      where: { ...crmPropertyAccessWhere(tenantId, brokerId), id: propertyId },
+      select: { id: true },
     })
 
-    return property?.responsibleId ?? null
+    return property !== null
   }
 }

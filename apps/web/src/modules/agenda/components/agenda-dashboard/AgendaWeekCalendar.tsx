@@ -5,25 +5,16 @@ import { styles } from '../../styles/agenda-week-calendar.styles'
 import { Box, Stack, Typography } from '@mui/material'
 import dayjs from 'dayjs'
 import { useTranslations } from 'next-intl'
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 
-import type {
-  AgendaWeekCalendarProps,
-  AgendaCalendarCard,
-  AgendaEvent,
-} from '../../types/agenda-event'
+import type { AgendaWeekCalendarProps, AgendaEvent } from '../../types/agenda-event'
 import { buildAgendaTimeline } from '../../utils/build-agenda-timeline'
-import { buildAgendaEventSegments, layoutAgendaCards } from '../../utils/layout-agenda-events'
+import { buildAgendaEventSegments, buildAgendaHourRows } from '../../utils/layout-agenda-events'
 import { AgendaEventCard } from './AgendaEventCard'
 import { AgendaOrganizationCard } from './AgendaOrganizationCard'
 import { agendaEventToneStyles } from '../../styles/agenda-calendar.styles'
 import { getAgendaEventPresentation } from '../../utils/agenda-event-outcome'
-import {
-  getEventEndTime,
-  getEventHeight,
-  getEventOffsetTop,
-  scheduleHourHeight,
-} from '../../utils/agenda-calendar'
+import { getEventEndTime } from '../../utils/agenda-calendar'
 
 export function AgendaWeekCalendar({
   days,
@@ -39,14 +30,14 @@ export function AgendaWeekCalendar({
   const selectedDay =
     days.find((day) => day.key === selectedDayKey) ?? days.find((day) => day.today) ?? days[0]
   const eventSegments = useMemo(() => buildAgendaEventSegments(days, events), [days, events])
-  const { itemsByDay, firstHour, calendarTimeSlots, hasAllDayItems } = buildAgendaTimeline(
+  const { itemsByDay, calendarTimeSlots, hasAllDayItems } = buildAgendaTimeline(
     days,
     organizationItems,
     timeSlots,
     eventSegments,
   )
   const selectedDayItems = itemsByDay[selectedDay?.key ?? '']?.items ?? []
-  const timelineHeight = calendarTimeSlots.length * scheduleHourHeight
+  const hourRows = buildAgendaHourRows(days, calendarTimeSlots, eventSegments, organizationItems)
   const selectedDayEvents = useMemo(
     () => eventSegments[selectedDay?.key ?? ''] ?? [],
     [eventSegments, selectedDay?.key],
@@ -196,53 +187,22 @@ export function AgendaWeekCalendar({
           </>
         )}
 
-        <Box sx={styles.box13(timelineHeight)}>
-          {calendarTimeSlots.map((slot, index) => (
-            <Typography key={slot.label} sx={styles.typography13(index)}>
-              {slot.label}
-            </Typography>
-          ))}
-        </Box>
-
-        {days.map((day) => {
-          const cards: AgendaCalendarCard[] = [
-            ...(eventSegments[day.key] ?? []).map((event) => ({
-              kind: 'event' as const,
-              event,
-              id: `event-${event.id}`,
-              top: getEventOffsetTop(event.time, firstHour),
-              height: getEventHeight(event.durationMinutes),
-            })),
-            ...itemsByDay[day.key].timedItems.map((item) => ({
-              kind: 'organization' as const,
-              item,
-              id: item.id,
-              top: getEventOffsetTop(item.time!, firstHour),
-              height: 64,
-            })),
-          ]
-          return (
-            <Box key={`timeline-${day.key}`} sx={styles.box14(timelineHeight)}>
-              {layoutAgendaCards(cards).map((card) =>
-                card.kind === 'event' ? (
-                  <AgendaEventCard
-                    key={card.id}
-                    event={card.event}
-                    height={card.height}
-                    onSelect={selectEvent}
-                    top={card.top}
-                    lane={card.lane}
-                    laneCount={card.laneCount}
-                  />
-                ) : (
-                  <Box key={card.id} sx={styles.box15(card)}>
-                    <AgendaOrganizationCard item={card.item} />
-                  </Box>
-                ),
-              )}
-            </Box>
-          )
-        })}
+        {hourRows.map((row) => (
+          <Fragment key={row.hour}>
+            <Typography sx={styles.hourLabel}>{row.label}</Typography>
+            {days.map((day) => (
+              <Box key={day.key} sx={styles.hourCell}>
+                {row.cardsByDay[day.key].map((card) =>
+                  card.kind === 'event' ? (
+                    <AgendaEventCard key={card.id} event={card.event} onSelect={selectEvent} />
+                  ) : (
+                    <AgendaOrganizationCard key={card.id} item={card.item} />
+                  ),
+                )}
+              </Box>
+            ))}
+          </Fragment>
+        ))}
       </Box>
     </Box>
   )

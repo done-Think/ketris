@@ -69,6 +69,16 @@ describe('createDashboardPropertySchema', () => {
     })
   })
 
+  it('accepts only a Brazilian state as UF', () => {
+    const values = buildEditPropertyFormValues(editableProperty)
+    const issue = (state: string) =>
+      schema.safeParse({ ...values, state }).error?.issues.find((item) => item.path[0] === 'state')
+
+    expect(issue('SP')).toBeUndefined()
+    expect(issue('XX')).toMatchObject({ message: 'stateInvalid' })
+    expect(issue('')).toMatchObject({ message: 'stateRequired' })
+  })
+
   it('rejects missing required listing fields', () => {
     const result = schema.safeParse({
       ...createDashboardPropertyDefaultValues,
@@ -78,6 +88,32 @@ describe('createDashboardPropertySchema', () => {
     })
 
     expect(result.success).toBe(false)
+  })
+
+  it('keeps Instagram disabled until explicitly selected', () => {
+    expect(createDashboardPropertyDefaultValues.instagramEnabled).toBe(false)
+    expect(createDashboardPropertyDefaultValues.instagramImageUrls).toEqual([])
+    expect(createDashboardPropertyDefaultValues.instagramCaption).toBe('')
+  })
+
+  it('requires selected photos only when Instagram publication is enabled', () => {
+    const values = buildEditPropertyFormValues(editableProperty)
+    expect(schema.safeParse(values).success).toBe(true)
+    const result = schema.safeParse({ ...values, instagramEnabled: true })
+    expect(result.success).toBe(false)
+    if (!result.success)
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: ['instagramImageUrls'],
+            message: 'instagramPhotosRequired',
+          }),
+        ]),
+      )
+    expect(
+      schema.safeParse({ ...values, instagramEnabled: true, instagramImageUrls: ['/photo.jpg'] })
+        .success,
+    ).toBe(true)
   })
 
   it('routes each validation message through the translator with the right key', () => {

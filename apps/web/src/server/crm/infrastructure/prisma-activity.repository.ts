@@ -47,6 +47,14 @@ export class PrismaActivityRepository implements ActivityRepository {
       !activity.systemAction
     ) {
       const authorId = await crmMutationAuthor(this.db, this.scope)
+      await this.db.lead.updateMany({
+        where: {
+          tenantId: this.scope.actorTenantId,
+          opportunityId: activity.opportunityId,
+          OR: [{ lastContactAt: null }, { lastContactAt: { lt: row.createdAt } }],
+        },
+        data: { lastContactAt: row.createdAt, updatedById: authorId },
+      })
       const opportunity = await this.db.opportunity.findFirst({
         where: { id: activity.opportunityId, tenantId: this.scope.actorTenantId },
         select: { contactId: true },

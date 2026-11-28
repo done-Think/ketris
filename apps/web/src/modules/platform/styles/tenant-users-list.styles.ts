@@ -29,7 +29,16 @@ export const styles = {
   typography3: { color: brand.graphite[500], fontSize: 14, fontWeight: 800 },
   typography4: { color: brand.neutral[500], fontSize: 13, overflowWrap: 'anywhere' },
   stack3: { mt: 0.8 },
-  tableCell: { fontWeight: 700 },
+  // Fixed shares keep the table inside the card at any width: a long e-mail used to squeeze the name.
+  table: {
+    tableLayout: 'fixed',
+    '& th:nth-of-type(1)': { width: '32%' },
+    '& th:nth-of-type(2)': { width: '34%' },
+    '& th:nth-of-type(3)': { width: '16%' },
+    '& th:nth-of-type(4)': { width: '18%' },
+  },
+  tableCell: { fontWeight: 700, overflowWrap: 'anywhere' },
+  emailCell: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   stack4: { px: 3, py: { xs: 5, md: 6 }, textAlign: 'center' },
   box3: {
     display: 'grid',

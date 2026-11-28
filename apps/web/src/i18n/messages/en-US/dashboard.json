@@ -60,6 +60,7 @@
       "visitProperty": "Visit property"
     },
     "leadDetails": {
+      "openLead": "Open lead",
       "title": "Lead details",
       "close": "Close",
       "client": "Client",
@@ -107,17 +108,13 @@
         "leadsIncrease": "+{count, number} vs last month",
         "leadsDecrease": "−{count, number} vs last month",
         "leadsSame": "Same as last month",
-        "revenueIncrease": "+{percent, number}% vs last month",
-        "revenueDecrease": "−{percent, number}% vs last month",
-        "revenueSame": "Same as last month",
-        "revenueNoPrevious": "Last month was zero",
         "overdue": "Past due, unpaid",
         "noOverdue": "Nothing overdue"
       }
     },
     "performance": {
       "title": "Revenue Performance",
-      "subtitle": "Monthly revenue receivable by the agency",
+      "subtitle": "Monthly billed total, excluding canceled charges",
       "revenue": "Revenue"
     },
     "topBrokers": {
@@ -488,7 +485,17 @@
       "linksRegularized": "Access links regularized by management.",
       "attachmentAdded": "Attachment added."
     },
-    "allCategories": "All categories"
+    "allCategories": "All categories",
+    "contractFilter": {
+      "message": "Showing only the tickets of this contract.",
+      "clear": "See all tickets"
+    },
+    "contractTickets": {
+      "title": "Tickets for this contract",
+      "openAll": "See all tickets",
+      "empty": "No open tickets for this contract.",
+      "meta": "{category} · opened on {date} by {name}"
+    }
   },
   "finance": {
     "title": "Finance",
@@ -507,9 +514,10 @@
       "date": "Date"
     },
     "export": "Export",
-    "revenueChartTitle": "Receivable (6 months)",
-    "revenue": "Receivable",
+    "revenueChartTitle": "Billed (6 months)",
+    "revenue": "Billed",
     "upcomingDuesTitle": "Upcoming dues",
+    "upcomingDuesEmpty": "No charges due from today on.",
     "kpis": {
       "receivable": "Receivable",
       "delinquency": "Delinquency",
@@ -570,7 +578,9 @@
       "deactivate": "Deactivate broker",
       "activate": "Reactivate broker",
       "resendInvitation": "Resend invitation",
-      "cancelInvitation": "Cancel invitation"
+      "cancelInvitation": "Cancel invitation",
+      "sharePortfolio": "Share portfolio",
+      "revokePortfolio": "Remove portfolio access"
     },
     "dialogs": {
       "performanceTitle": "Performance — {name}",
@@ -633,7 +643,18 @@
       "invitationCancelError": "We couldn't cancel the invitation",
       "invitationHasPortfolio": "This invitee already has properties, leads or events. Transfer them before canceling.",
       "goalSaveError": "We couldn't save the goal",
-      "selfDestination": "{name} (you)"
+      "selfDestination": "{name} (you)",
+      "share": "Share portfolio",
+      "revoke": "Remove access",
+      "shareDestination": "Brokers with access",
+      "shared": "Access granted: {properties} properties, {leads} leads, {opportunities} opportunities and {events} events",
+      "revoked": "Access removed: {properties} properties, {leads} leads, {opportunities} opportunities and {events} events",
+      "shareError": "Unable to update access. Please try again.",
+      "shareItemsError": "Select at least one category to share or remove access",
+      "shareHint": "Shares existing records without copies. Participants can edit leads and opportunities; proposals from shared leads retain access. New inquiries remain individual. Property access requires selecting Properties. Events are shared for reading only. Archiving or deleting an opportunity affects all participants.",
+      "revokeHint": "Removes selected brokers’ access to current portfolio items without deleting records or changing the primary responsible broker.",
+      "shareSource": "Source portfolio",
+      "shareItems": "Access categories"
     },
     "actions": {
       "message": "Send a WhatsApp message",

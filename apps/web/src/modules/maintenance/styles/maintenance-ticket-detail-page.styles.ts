@@ -37,19 +37,6 @@ export const typographySx3: SxProps<Theme> = {
   fontWeight: 900,
 }
 
-export const boxSx3: SxProps<Theme> = {
-  width: 4,
-  height: 4,
-  borderRadius: '50%',
-  bgcolor: brand.neutral[500],
-}
-
-export const typographySx4: SxProps<Theme> = {
-  color: brand.graphite[500],
-  fontSize: { xs: 18, md: 20 },
-  fontWeight: 900,
-}
-
 export const typographySx5: SxProps<Theme> = { fontSize: 11, fontWeight: 800 }
 
 export const boxSx4: SxProps<Theme> = {

@@ -4,24 +4,14 @@ import { styles } from '@shared/styles/property-card.styles'
 
 import { Avatar, Box, Card, CardContent, Divider, Stack, Typography } from '@mui/material'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
-import BathtubOutlinedIcon from '@mui/icons-material/BathtubOutlined'
-import BedOutlinedIcon from '@mui/icons-material/BedOutlined'
-import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined'
-import SquareFootOutlinedIcon from '@mui/icons-material/SquareFootOutlined'
 import { useTranslations } from 'next-intl'
 
 import { Link } from '@/i18n/navigation'
+import { propertyFeatureIcons } from '@shared/config/property-feature-icons'
 import { componentText } from '@shared/theme/tokens'
-import type { PropertyCardProps, PropertyFeatureKey } from '@shared/types'
+import type { PropertyCardProps } from '@shared/types'
 import type { LocalizedHref } from '@shared/types/localized-href'
 import { PillBadge } from './PillBadge'
-
-const detailIcons: Record<PropertyFeatureKey, typeof ApartmentOutlinedIcon> = {
-  bedrooms: BedOutlinedIcon,
-  bathrooms: BathtubOutlinedIcon,
-  parking: LocalParkingOutlinedIcon,
-  area: SquareFootOutlinedIcon,
-}
 
 function getPropertyCardHref(href: string): LocalizedHref {
   const id = href.split('?')[0].split('/').filter(Boolean).at(-1)
@@ -56,7 +46,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
         </Typography>
         <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={styles.stack}>
           {property.details.map((detail) => {
-            const Icon = detailIcons[detail.key] ?? ApartmentOutlinedIcon
+            const Icon = propertyFeatureIcons[detail.key] ?? ApartmentOutlinedIcon
             return (
               <Stack key={detail.key} direction="row" alignItems="center" spacing={0.4}>
                 <Icon sx={styles.icon} />

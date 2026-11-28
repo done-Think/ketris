@@ -6,12 +6,16 @@ import {
 import { revokePropertyBrokerAccess } from '@server/properties/infrastructure/property-broker-access'
 
 import { prisma } from '@server/db/prisma'
+import { shareBrokerPortfolio } from './share-broker-portfolio'
+import type { TeamShareCommand } from '../types/team-repository'
 import { recordUserAudit } from '@server/auth/infrastructure/user-audit'
 import {
   lockPortfolioPeople,
   propertyPortfolioCounts,
   transferPropertyAccess,
 } from './property-portfolio'
+
+import type { TenantAccountType } from '@server/auth/types/user-access'
 
 import type { TeamRepository } from '../application/ports/team-repository.port'
 import type { TeamGoalChange, TeamPeriod, TeamTransferResult } from '../types/team'
@@ -39,6 +43,7 @@ async function moveItems(
   command: TeamTransferCommand,
 ): Promise<TeamTransferResult> {
   const { tenantId, sourceId, destinationId, items, opportunityScope, now, actor } = command
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`crm:${tenantId}`}, 0))`
   await lockPortfolioPeople(tx, command)
   const [properties, leads, opportunities, events] = await Promise.all([
     items.properties
@@ -94,13 +99,13 @@ async function moveItems(
       : null,
     result.leadIds.length
       ? tx.lead.updateMany({
-          where: { tenantId, id: { in: result.leadIds } },
+          where: { tenantId, id: { in: result.leadIds }, responsibleId: sourceId },
           data: { responsibleId: destinationId, updatedById: actor.id },
         })
       : null,
     result.opportunityIds.length
       ? tx.opportunity.updateMany({
-          where: { tenantId, id: { in: result.opportunityIds } },
+          where: { tenantId, id: { in: result.opportunityIds }, responsibleId: sourceId },
           data: { responsibleId: destinationId, updatedById: actor.id },
         })
       : null,
@@ -118,6 +123,59 @@ async function moveItems(
       : null,
   ])
 
+  for (const category of ['lead', 'opportunity'] as const) {
+    if (!(category === 'lead' ? items.leads : items.opportunities)) continue
+    if (category === 'lead') {
+      const access = await tx.leadBrokerAccess.findMany({
+        where: { tenantId, userId: sourceId },
+        select: { leadId: true },
+      })
+      result.leadIds = [...new Set([...result.leadIds, ...access.map(({ leadId }) => leadId)])]
+      await tx.leadBrokerAccess.createMany({
+        data: access.map(({ leadId }) => ({ tenantId, leadId, userId: destinationId })),
+        skipDuplicates: true,
+      })
+      const convertedLeads = await tx.lead.findMany({
+        where: { tenantId, id: { in: result.leadIds }, opportunityId: { not: null } },
+        select: { opportunityId: true },
+      })
+      const linkedOpportunityIds = convertedLeads.flatMap((lead) =>
+        lead.opportunityId ? [lead.opportunityId] : [],
+      )
+      if (linkedOpportunityIds.length) {
+        await tx.opportunityBrokerAccess.createMany({
+          data: linkedOpportunityIds.map((opportunityId) => ({
+            tenantId,
+            opportunityId,
+            userId: destinationId,
+          })),
+          skipDuplicates: true,
+        })
+        await tx.opportunityBrokerAccess.deleteMany({
+          where: { tenantId, userId: sourceId, opportunityId: { in: linkedOpportunityIds } },
+        })
+      }
+    } else {
+      const access = await tx.opportunityBrokerAccess.findMany({
+        where: { tenantId, userId: sourceId },
+        select: { opportunityId: true },
+      })
+      result.opportunityIds = [
+        ...new Set([...result.opportunityIds, ...access.map(({ opportunityId }) => opportunityId)]),
+      ]
+      await tx.opportunityBrokerAccess.createMany({
+        data: access.map(({ opportunityId }) => ({
+          tenantId,
+          opportunityId,
+          userId: destinationId,
+        })),
+        skipDuplicates: true,
+      })
+    }
+    if (category === 'lead')
+      await tx.leadBrokerAccess.deleteMany({ where: { tenantId, userId: sourceId } })
+    else await tx.opportunityBrokerAccess.deleteMany({ where: { tenantId, userId: sourceId } })
+  }
   if (items.properties) await transferPropertyAccess(tx, command)
   await recordPropertyAccessHistory(tx, tenantId, accessBefore, actor.id)
   return result
@@ -309,6 +367,15 @@ export class PrismaTeamRepository implements TeamRepository {
     }
   }
 
+  async findTenantAccountType(tenantId: string): Promise<TenantAccountType | null> {
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { accountType: true },
+    })
+
+    return tenant?.accountType ?? null
+  }
+
   async findStaffUser(tenantId: string, userId: string): Promise<TeamStaffUser | null> {
     const user = await prisma.user.findFirst({
       where: { tenantId, id: userId, role: { in: [...staffRoles] } },
@@ -332,6 +399,28 @@ export class PrismaTeamRepository implements TeamRepository {
       : null
   }
 
+  async sharePortfolio(command: TeamShareCommand): Promise<TeamTransferResult> {
+    return prisma.$transaction(
+      async (tx) => {
+        const result: TeamTransferResult = {
+          propertyIds: [],
+          leadIds: [],
+          opportunityIds: [],
+          eventIds: [],
+        }
+        for (const destinationId of [...command.destinationIds].sort()) {
+          const shared = await shareBrokerPortfolio(tx, { ...command, destinationId })
+          result.propertyIds.push(...shared.propertyIds)
+          result.leadIds.push(...shared.leadIds)
+          result.opportunityIds.push(...shared.opportunityIds)
+          result.eventIds.push(...shared.eventIds)
+        }
+        return result
+      },
+      { timeout: 30_000 },
+    )
+  }
+
   async transfer(command: TeamTransferCommand): Promise<TeamTransferResult> {
     return prisma.$transaction(async (tx) => {
       const result = await moveItems(tx, command)
@@ -349,6 +438,12 @@ export class PrismaTeamRepository implements TeamRepository {
         data: { active: false, sessionVersion: { increment: 1 } },
       })
       await revokePropertyBrokerAccess(tx, command.tenantId, command.sourceId, command.actor.id)
+      await tx.leadBrokerAccess.deleteMany({
+        where: { tenantId: command.tenantId, userId: command.sourceId },
+      })
+      await tx.opportunityBrokerAccess.deleteMany({
+        where: { tenantId: command.tenantId, userId: command.sourceId },
+      })
       await tx.refreshToken.updateMany({
         where: { userId: command.sourceId, tenantId: command.tenantId, revokedAt: null },
         data: { revokedAt: command.now },

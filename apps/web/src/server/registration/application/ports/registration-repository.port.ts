@@ -15,5 +15,6 @@ export interface RegistrationRepository {
   findAccountByEmail(tenantId: string, email: string): Promise<RegistrationAccount | null>
   findTenantById(id: string): Promise<RegistrationTenant | null>
   findTenantBySlug(slug: string): Promise<RegistrationTenant | null>
+  hasVerifiedOwner(tenantId: string): Promise<boolean>
   searchByName(query: string, excludeSlugs: string[]): Promise<RegistrationTenant[]>
 }

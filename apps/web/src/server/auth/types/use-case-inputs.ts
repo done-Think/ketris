@@ -42,6 +42,7 @@ export interface ListUsersInput {
   page?: number
   pageSize?: number
   pendingApproval?: boolean
+  pendingInvitation?: boolean
   actorTenantId: string
   actorRole: UserRole
 }

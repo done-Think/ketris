@@ -270,6 +270,7 @@
       "neighborhoodRequired": "Enter the neighborhood",
       "cityRequired": "Enter the city",
       "stateRequired": "Enter the state",
+      "stateInvalid": "Enter a valid Brazilian state (UF).",
       "zipCodeRequired": "Enter the ZIP code",
       "zipCodeInvalid": "Enter a valid ZIP code",
       "zipCodeNotFound": "Postal code not found. Check the code you entered.",
@@ -283,7 +284,8 @@
       "descriptionTooLong": "The description must contain at most 10,000 characters.",
       "negotiationTermTooLong": "The note must contain at most 2,000 characters.",
       "integerRequired": "Enter a whole number",
-      "negotiationConditionsInvalid": "Payment in full only cannot be combined with financing."
+      "negotiationConditionsInvalid": "Payment in full only cannot be combined with financing.",
+      "instagramPhotosRequired": "Select 1 to 20 property photos."
     },
     "saveDraft": "Save draft",
     "noOwner": "No linked owner",
@@ -391,5 +393,49 @@
       "STATUS_CHANGED": "Property status changed"
     },
     "eventTitle": "{action} by {name}"
+  },
+  "instagram": {
+    "connectionTitle": "My Instagram",
+    "connectionDescription": "Connect your professional account to advertise properties you are authorized to represent in this agency.",
+    "connected": "Connected account: @{username}",
+    "expired": "Authorization expired. Reconnect your account to continue.",
+    "connectionError": "Unable to connect or disconnect the account. Try again.",
+    "unavailable": "Instagram integration is not available yet. Ask your administrator to configure it.",
+    "connect": "Connect Instagram",
+    "reconnect": "Reconnect",
+    "disconnect": "Disconnect",
+    "reviewInstructions": "Select and order up to 20 photos. Selected: {count}.",
+    "photo": "Property photo",
+    "photoOrder": "Photo {order}",
+    "selectPhoto": "Select",
+    "moveEarlier": "Move photo earlier",
+    "moveLater": "Move photo later",
+    "caption": "Caption",
+    "imagePreparation": "Photos are published in a square format, with padding when needed, preserving the original image.",
+    "alsoPublish": "Also publish on Instagram",
+    "connectFirst": "Connect your professional account in My Profile and enable marketplace publication.",
+    "target": "Review publication on @{username}",
+    "choosePhotos": "Select 1 to 20 property photos.",
+    "sitePublishFailed": "The property was saved but could not be published on the website. Review its details and publish from the property page.",
+    "queued": "Instagram publication registered. Track its result on the property page.",
+    "sitePublishedInstagramFailed": "The property is published on the website. Instagram publication could not be registered; try from the property page.",
+    "postError": "Unable to register the Instagram operation. The website listing remains available.",
+    "loadError": "Unable to load Instagram publications.",
+    "viewPost": "View post",
+    "retry": "Try again",
+    "reviewPost": "Review Instagram post",
+    "cancel": "Cancel",
+    "confirmPost": "Confirm publication",
+    "statuses": {
+      "QUEUED": "Waiting to send to Instagram.",
+      "PREPARING": "Preparing photos for Instagram.",
+      "READY": "Waiting for Instagram to process the photos.",
+      "PUBLISHING": "Confirming Instagram publication.",
+      "VERIFYING": "Checking the result with Instagram. The request will not be repeated to avoid duplicates.",
+      "PUBLISHED": "Published on Instagram.",
+      "FAILED": "Publication was not completed. Check the connection or photos before retrying.",
+      "BLOCKED": "Uncertain result. Check the Instagram account before requesting support; automatic resubmission is blocked.",
+      "CANCELLED": "Publication cancelled because the connection, property or your permission to advertise it changed."
+    }
   }
 }

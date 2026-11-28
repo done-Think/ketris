@@ -28,6 +28,7 @@ export function createDeps() {
     findAccountByEmail: vi.fn().mockResolvedValue(null),
     findTenantById: vi.fn().mockResolvedValue(tenant),
     findTenantBySlug: vi.fn().mockResolvedValue(tenant),
+    hasVerifiedOwner: vi.fn().mockResolvedValue(true),
     searchByName: vi.fn().mockResolvedValue([tenant]),
   }
   const passwords: RegistrationPasswordHasher = { hash: vi.fn().mockResolvedValue('test-hash') }

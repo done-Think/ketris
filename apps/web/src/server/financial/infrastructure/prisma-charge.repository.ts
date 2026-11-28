@@ -5,6 +5,7 @@ import { calendarMonthDateRange } from '@server/shared/time-zone-calendar'
 import type { CalendarMonth } from '@server/shared/types/time-zone-calendar'
 
 import type { ChargeRepository } from '../application/ports/charge-repository.port'
+import { openChargeStatuses } from '../domain/charge-status'
 import { ChargeConcurrentChangeError } from '../domain/errors'
 import type {
   ChargeAuditEvent,
@@ -26,7 +27,6 @@ import type { ChargeReadScope } from '../types/charge-read-scope'
 import type { ChargeWithRelations } from '../types/prisma-charge-repository'
 import { insertCharge, recordChargeAudit } from './charge-writes'
 
-const openStatuses = ['PENDING', 'SCHEDULED'] as const
 const countedStatuses = [undefined, 'PENDING', 'OVERDUE', 'PAID', 'SCHEDULED', 'CANCELED'] as const
 
 const receiptSelect = {
@@ -159,7 +159,8 @@ function chargeReadWhere(scope: ChargeReadScope): Prisma.ChargeWhereInput {
 
 function statusWhere(status: ChargeStatus | undefined, today: Date): Prisma.ChargeWhereInput {
   if (!status) return {}
-  if (status === 'OVERDUE') return { status: { in: [...openStatuses] }, dueDate: { lt: today } }
+  if (status === 'OVERDUE')
+    return { status: { in: [...openChargeStatuses] }, dueDate: { lt: today } }
   if (status === 'PENDING' || status === 'SCHEDULED') return { status, dueDate: { gte: today } }
   return { status }
 }
@@ -241,6 +242,7 @@ export class PrismaChargeRepository implements ChargeRepository {
       chargeReadWhere(filters.scope),
       searchWhere(filters.search?.trim()),
       filters.type ? { type: filters.type } : {},
+      filters.contractId ? { contractId: filters.contractId } : {},
       filters.dueMonth
         ? {
             dueDate: {
@@ -287,6 +289,7 @@ export class PrismaChargeRepository implements ChargeRepository {
           contractId: charge.contractId,
           payerName: charge.payerName,
           propertyTitle: charge.propertyTitle,
+          receipt: charge.receipt,
           updatedAt: charge.updatedAt,
         }
       }),
@@ -577,6 +580,12 @@ export class PrismaChargeRepository implements ChargeRepository {
       type: 'RECEIVABLE' as const,
       status: { not: 'CANCELED' as const },
     }
+    // What is still to be received: the month card and the overdue total only count open charges.
+    const openReceivable = {
+      tenantId,
+      type: 'RECEIVABLE' as const,
+      status: { in: [...openChargeStatuses] },
+    }
 
     const [
       monthlyReceivableAggregate,
@@ -589,16 +598,11 @@ export class PrismaChargeRepository implements ChargeRepository {
     ] = await Promise.all([
       prisma.charge.aggregate({
         _sum: { amount: true },
-        where: { ...receivable, dueDate: { gte: currentMonth.start, lt: currentMonth.end } },
+        where: { ...openReceivable, dueDate: { gte: currentMonth.start, lt: currentMonth.end } },
       }),
       prisma.charge.aggregate({
         _sum: { amount: true },
-        where: {
-          tenantId,
-          type: 'RECEIVABLE',
-          status: { in: [...openStatuses] },
-          dueDate: { lt: today },
-        },
+        where: { ...openReceivable, dueDate: { lt: today } },
       }),
       prisma.charge.aggregate({ _sum: { amount: true }, where: receivable }),
       prisma.charge.findMany({
@@ -609,7 +613,7 @@ export class PrismaChargeRepository implements ChargeRepository {
         select: { amount: true, dueDate: true },
       }),
       prisma.charge.findMany({
-        where: { tenantId, type: 'RECEIVABLE', status: 'PENDING' },
+        where: { tenantId, type: 'RECEIVABLE', status: 'PENDING', dueDate: { gte: today } },
         orderBy: [{ dueDate: 'asc' }, { id: 'asc' }],
         take: 5,
         include: chargeInclude,

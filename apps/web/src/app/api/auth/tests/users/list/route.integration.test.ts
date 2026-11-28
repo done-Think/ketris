@@ -81,10 +81,53 @@ describe('paginação dos usuários autenticados', () => {
       new Set([...body.users, ...page.users].map((user: { id: string }) => user.id)).size,
     ).toBe(3)
   })
-  it.each(['page=0', 'page=1.5', 'pageSize=101', 'pendingApproval=unknown', 'tenantId=foreign'])(
-    'rejeita query inválida %s',
-    async (query) => {
-      expect((await GET(request(query))).status).toBe(400)
-    },
-  )
+  it('separa quem ainda não aceitou o convite para a equipe', async () => {
+    const invite = async (name: string, acceptedAt: Date | null) => {
+      const user = await prisma.user.create({
+        data: {
+          tenantId,
+          name,
+          email: `${randomUUID()}@example.test`,
+          passwordHash: 'hash-fake',
+          role: 'AGENT',
+          membershipApprovedAt: new Date(),
+        },
+      })
+      await prisma.teamInvitation.create({
+        data: {
+          tenantId,
+          userId: user.id,
+          tokenHash: randomUUID(),
+          expiresAt: new Date(Date.now() + 86_400_000),
+          acceptedAt,
+          createdByName: 'Gestão',
+        },
+      })
+      return user.id
+    }
+    const waiting = await invite('Convite pendente', null)
+    const accepted = await invite('Convite aceito', new Date())
+
+    const ids = async (query: string) =>
+      ((await (await GET(request(`pageSize=100&${query}`))).json()).users as { id: string }[]).map(
+        (user) => user.id,
+      )
+
+    expect(await ids('pendingInvitation=true')).toEqual([waiting])
+    const withoutPending = await ids('pendingInvitation=false')
+    expect(withoutPending).toContain(accepted)
+    expect(withoutPending).not.toContain(waiting)
+    expect(await ids('')).toEqual(expect.arrayContaining([waiting, accepted]))
+  })
+
+  it.each([
+    'page=0',
+    'page=1.5',
+    'pageSize=101',
+    'pendingApproval=unknown',
+    'pendingInvitation=unknown',
+    'tenantId=foreign',
+  ])('rejeita query inválida %s', async (query) => {
+    expect((await GET(request(query))).status).toBe(400)
+  })
 })

@@ -1,4 +1,5 @@
 import type { ApiContractStatus, ApiContractType } from './service'
+import type { ContractDetailSlots } from './detail'
 import type { Control, FieldPath, UseFormSetValue } from 'react-hook-form'
 import type { GridPaginationModel, GridSortModel, GridRenderCellParams } from '@mui/x-data-grid'
 import type { z } from 'zod'
@@ -72,6 +73,7 @@ export type ContractsFiltersFormValues = z.infer<typeof contractsFiltersSchema>
 
 export type ContractsDashboardPageHeaderProps = {
   control: Control<ContractsFiltersFormValues>
+  renter: boolean
   onCreateContract?: () => void
 }
 
@@ -100,6 +102,7 @@ export type ContractsTableProps = {
 
 export type ContractDetailDashboardPageProps = {
   contractId: string
+  slots?: ContractDetailSlots
 }
 
 export type ContractIdentityCellProps = GridRenderCellParams<ContractListItem>

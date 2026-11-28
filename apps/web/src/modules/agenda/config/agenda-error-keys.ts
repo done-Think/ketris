@@ -1,5 +1,6 @@
 export const agendaErrorKeys = {
   AGENDA_MINIMUM_ADVANCE_NOTICE: 'minimumAdvanceNotice',
+  AGENDA_TIME_SLOT_INVALID: 'timeSlotInvalid',
   AGENDA_OUTSIDE_BUSINESS_HOURS: 'outsideBusinessHours',
   AGENDA_VISIT_MINIMUM_DURATION: 'visitMinimumDuration',
   AGENDA_EVENT_USER_LINK_UNAVAILABLE: 'userUnavailable',

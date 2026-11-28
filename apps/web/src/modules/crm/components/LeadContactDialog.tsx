@@ -1,5 +1,7 @@
 'use client'
 
+import { getPhoneDigits, getWhatsAppUrl } from '../utils/contact-links'
+
 import * as crmStyles from '../styles/lead-contact-dialog.styles'
 
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
@@ -27,26 +29,16 @@ import { defaultLocale, isAppLocale } from '@/i18n/routing'
 import { leadStageOptions } from '../config/lead-creation'
 import type { LeadContactDialogProps } from '../types/lead'
 
-function getPhoneDigits(phone: string) {
-  return phone.replace(/\D/g, '')
-}
-
-function getWhatsAppUrl(phone: string) {
-  const phoneDigits = getPhoneDigits(phone)
-  const brazilCountryCode = '55'
-  const internationalPhone = phoneDigits.startsWith(brazilCountryCode)
-    ? phoneDigits
-    : `${brazilCountryCode}${phoneDigits}`
-
-  return `https://wa.me/${internationalPhone}`
-}
-
 export function LeadContactDialog({
   lead,
   onClose,
   open,
   onStageChange,
   onConvertRequest,
+  onContactAction,
+  contactActionPending = false,
+  interactionPanel,
+  onLinkContact,
 }: LeadContactDialogProps) {
   const t = useTranslations('crm.leads.contact')
   const tFilters = useTranslations('crm.leads.filters')
@@ -107,7 +99,10 @@ export function LeadContactDialog({
             <Button
               component="a"
               href={`tel:${getPhoneDigits(lead.phone)}`}
-              disabled={!getPhoneDigits(lead.phone)}
+              onClick={(event) => {
+                if (onContactAction?.('PHONE') === false) event.preventDefault()
+              }}
+              disabled={contactActionPending || !getPhoneDigits(lead.phone)}
               variant="contained"
               fullWidth
               startIcon={<PhoneRoundedIcon sx={crmStyles.phoneRoundedIconSx} />}
@@ -118,7 +113,10 @@ export function LeadContactDialog({
             <Button
               component="a"
               href={`mailto:${lead.email}`}
-              disabled={!lead.email}
+              onClick={(event) => {
+                if (onContactAction?.('EMAIL') === false) event.preventDefault()
+              }}
+              disabled={contactActionPending || !lead.email}
               variant="outlined"
               fullWidth
               startIcon={<EmailRoundedIcon sx={crmStyles.phoneRoundedIconSx} />}
@@ -129,7 +127,10 @@ export function LeadContactDialog({
             <Button
               component="a"
               href={getWhatsAppUrl(lead.phone)}
-              disabled={!getPhoneDigits(lead.phone)}
+              onClick={(event) => {
+                if (onContactAction?.('WHATSAPP') === false) event.preventDefault()
+              }}
+              disabled={contactActionPending || !getPhoneDigits(lead.phone)}
               target="_blank"
               rel="noreferrer"
               variant="outlined"
@@ -140,6 +141,10 @@ export function LeadContactDialog({
               {t('whatsApp')}
             </Button>
           </Stack>
+          {onLinkContact && !lead.contactId && (
+            <Button onClick={() => onLinkContact(lead)}>{t('linkContact')}</Button>
+          )}
+          {interactionPanel}
         </Stack>
       </DialogContent>
 

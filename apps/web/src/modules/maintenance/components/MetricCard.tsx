@@ -30,9 +30,7 @@ export function MetricCard({ label, value, tone }: MetricCardProps) {
         <config.Icon sx={maintenanceStyles.configIconSx} />
       </Box>
       <Box sx={maintenanceStyles.boxSx}>
-        <Typography noWrap sx={maintenanceStyles.typographySx}>
-          {label}
-        </Typography>
+        <Typography sx={maintenanceStyles.typographySx}>{label}</Typography>
         <Typography sx={maintenanceStyles.typographySx2}>{value}</Typography>
       </Box>
     </Stack>

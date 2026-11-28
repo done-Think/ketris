@@ -58,6 +58,7 @@ export function toAgendaEvent(
 
   return {
     id: api.id,
+    readOnly: 'readOnly' in api ? api.readOnly : undefined,
     audience: 'audience' in api ? api.audience : undefined,
     internal: 'internal' in api ? api.internal : undefined,
     responsibleId: 'responsibleId' in api ? api.responsibleId : undefined,

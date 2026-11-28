@@ -67,13 +67,14 @@ async function files(directory) {
 
 function allowed(file, token, literal) {
   const basename = path.basename(file)
+  const relativeFile = path.relative(root, file).replaceAll('\\', '/')
   return (
-    (opportunityActionCompatibilityFiles.has(path.relative(root, file)) &&
+    (opportunityActionCompatibilityFiles.has(relativeFile) &&
       legacyOpportunityActions.has(token)) ||
-    (postalCodeBoundaryFiles.has(path.relative(root, file)) && postalCodeWireTokens.has(token)) ||
+    (postalCodeBoundaryFiles.has(relativeFile) && postalCodeWireTokens.has(token)) ||
     basename === 'maintenance-migrations.integration.test.ts' ||
     (literal && auditReaders.has(basename)) ||
-    (token === 'papel' && jwtRejectionTests.has(path.relative(root, file))) ||
+    (token === 'papel' && jwtRejectionTests.has(relativeFile)) ||
     (basename === 'api-contract.cy.ts' && oldClientTokens.has(token))
   )
 }
@@ -109,7 +110,7 @@ for (const file of targets.filter((name) => /\.(ts|tsx|json)$/.test(name))) {
         /[?&]profile=(proprietario|corretor|imobiliaria|construtora|locatario)(?=&|$)/g,
       ))
         report(node, match[1], true)
-      if (!file.includes('/i18n/messages/') && oldEnumValues.has(node.text))
+      if (!file.replaceAll('\\', '/').includes('/i18n/messages/') && oldEnumValues.has(node.text))
         report(node, node.text, true)
       if (
         file.endsWith('.json') &&

@@ -17,3 +17,11 @@ const dateText = z
   }, validationRefinement('isoDateInvalid'))
 
 export const crmDateSchema = z.union([z.date(), dateText]).pipe(z.coerce.date())
+
+export const crmNullableTimestampSchema = z
+  .preprocess(
+    (value) =>
+      value instanceof Date && Number.isFinite(value.getTime()) ? value.toISOString() : value,
+    z.string().datetime({ offset: true }).nullable(),
+  )
+  .transform((value) => (value === null ? null : new Date(value)))
