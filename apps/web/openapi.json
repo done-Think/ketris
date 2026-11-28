@@ -4585,24 +4585,6 @@
         "properties": { "available": { "type": "boolean" } },
         "required": ["available"]
       },
-      "SavedFavoriteProperty": {
-        "type": "object",
-        "properties": {
-          "propertyId": { "type": "string" },
-          "savedAt": { "type": "string", "description": "Quando o imóvel foi salvo (ISO 8601)." }
-        },
-        "required": ["propertyId", "savedAt"]
-      },
-      "MarketplaceStatsResponse": {
-        "type": "object",
-        "properties": {
-          "publishedProperties": { "type": "integer", "minimum": 0 },
-          "publishedBrokers": { "type": "integer", "minimum": 0 },
-          "servedCities": { "type": "integer", "minimum": 0 },
-          "locations": { "type": "array", "items": { "type": "string" }, "maxItems": 20 }
-        },
-        "required": ["publishedProperties", "publishedBrokers", "servedCities"]
-      },
       "PublicPropertySummary": {
         "type": "object",
         "properties": {
@@ -4651,6 +4633,74 @@
           "coverUrl",
           "publishedAt"
         ]
+      },
+      "SavedFavoriteProperty": {
+        "type": "object",
+        "properties": {
+          "propertyId": { "type": "string" },
+          "savedAt": { "type": "string", "description": "Quando o imóvel foi salvo (ISO 8601)." }
+        },
+        "required": ["propertyId", "savedAt"]
+      },
+      "UnavailableFavoriteProperty": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "city": { "type": "string", "nullable": true },
+          "neighborhood": { "type": "string", "nullable": true }
+        },
+        "required": ["title", "city", "neighborhood"]
+      },
+      "FavoritePropertyEntry": {
+        "oneOf": [
+          {
+            "allOf": [
+              { "$ref": "#/components/schemas/SavedFavoriteProperty" },
+              {
+                "type": "object",
+                "properties": {
+                  "available": { "type": "boolean", "enum": [true] },
+                  "property": { "$ref": "#/components/schemas/PublicPropertySummary" }
+                },
+                "required": ["available", "property"]
+              }
+            ]
+          },
+          {
+            "allOf": [
+              { "$ref": "#/components/schemas/SavedFavoriteProperty" },
+              {
+                "type": "object",
+                "properties": {
+                  "available": { "type": "boolean", "enum": [false] },
+                  "property": { "$ref": "#/components/schemas/UnavailableFavoriteProperty" }
+                },
+                "required": ["available", "property"]
+              }
+            ]
+          }
+        ]
+      },
+      "FavoritePropertiesResponse": {
+        "type": "object",
+        "properties": {
+          "favorites": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FavoritePropertyEntry" }
+          },
+          "limit": { "type": "integer", "minimum": 0, "exclusiveMinimum": true }
+        },
+        "required": ["favorites", "limit"]
+      },
+      "MarketplaceStatsResponse": {
+        "type": "object",
+        "properties": {
+          "publishedProperties": { "type": "integer", "minimum": 0 },
+          "publishedBrokers": { "type": "integer", "minimum": 0 },
+          "servedCities": { "type": "integer", "minimum": 0 },
+          "locations": { "type": "array", "items": { "type": "string" }, "maxItems": 20 }
+        },
+        "required": ["publishedProperties", "publishedBrokers", "servedCities"]
       },
       "SearchPropertiesResponse": {
         "type": "object",
@@ -8278,6 +8328,42 @@
             }
           }
         }
+      }
+    },
+    "/marketplace/favorites": {
+      "get": {
+        "tags": ["Marketplace"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Lista os imóveis favoritos de quem está logado",
+        "description": "Qualquer usuário de tenant logado. Retorna só os favoritos do próprio usuário, do mais recente para o mais antigo, até o limite. O favorito guarda o tenant de quem salvou e pode apontar para imóvel de qualquer tenant (mesma exceção do marketplace público). Imóvel que deixou de estar publicado volta com available=false e só título, cidade e bairro.",
+        "responses": {
+          "200": {
+            "description": "Favoritos do usuário.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FavoritePropertiesResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Autenticação obrigatória.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "409": {
+            "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Ketris-Api-Version",
+            "required": true,
+            "schema": { "type": "string", "enum": ["3"] },
+            "description": "Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação."
+          }
+        ]
       }
     },
     "/marketplace/favorites/{propertyId}": {
