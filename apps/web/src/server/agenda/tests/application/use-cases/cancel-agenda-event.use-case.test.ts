@@ -16,6 +16,7 @@ function createDeps(overrides?: { cancel?: AgendaEventRepository['cancel'] }) {
     update: vi.fn(),
     reschedule: vi.fn(),
     cancel: overrides?.cancel ?? vi.fn().mockResolvedValue(cancelledEvent),
+    recordOutcome: vi.fn(),
     hasOverlap: vi.fn(),
   }
 
@@ -103,4 +104,26 @@ describe('CancelAgendaEventUseCase', () => {
       }),
     ).rejects.toThrow(AgendaEventNotFoundError)
   })
+
+  it.each(['COMPLETED', 'NO_SHOW'] as const)(
+    'não cancela evento com resultado %s registrado',
+    async (status) => {
+      const deps = createDeps()
+      vi.mocked(deps.agendaEventRepository.findByTenantAndId).mockResolvedValue({
+        ...cancelledEvent,
+        status,
+      } as AgendaEvent)
+      const useCase = new CancelAgendaEventUseCase(deps.agendaEventRepository)
+
+      await expect(
+        useCase.execute({
+          reason: 'Cliente indisponível',
+          actorTenantId: 'tenant-1',
+          actorRole: 'OWNER',
+          id: 'event-1',
+        }),
+      ).rejects.toMatchObject({ status: 409, code: 'AGENDA_EVENT_CLOSED' })
+      expect(deps.agendaEventRepository.cancel).not.toHaveBeenCalled()
+    },
+  )
 })

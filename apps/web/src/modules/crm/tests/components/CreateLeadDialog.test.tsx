@@ -56,7 +56,8 @@ async function fillContactStep(user: ReturnType<typeof userEvent.setup>) {
 async function fillInterestStep(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByLabelText(/^Imóvel de interesse/))
   await user.click(await screen.findByRole('option', { name: /Studio Pinheiros/ }))
-  await user.type(screen.getByLabelText('Orçamento'), 'R$ 3.200')
+  await user.type(screen.getByLabelText('Orçamento'), '320045')
+  expect(screen.getByLabelText('Orçamento')).toHaveValue('3.200,45')
 }
 
 describe('CreateLeadDialog', () => {
@@ -71,6 +72,40 @@ describe('CreateLeadDialog', () => {
       data: [{ ...property, title: 'Studio Pinheiros' }],
       isFetching: false,
     } as ReturnType<typeof useCrmProperties>)
+  })
+
+  it('prefills an existing contact and sends its explicit identifier with the new lead', async () => {
+    const user = userEvent.setup()
+    const mutate = vi.fn()
+    mockCreateLead({ mutate })
+    render(
+      <ThemeProvider theme={theme}>
+        <CreateLeadDialog
+          open
+          onClose={vi.fn()}
+          contact={{
+            id: 'contact-1',
+            name: 'Existing customer',
+            phone: '11999990000',
+            email: 'existing@example.invalid',
+          }}
+        />
+      </ThemeProvider>,
+    )
+    expect(screen.getByLabelText('Nome')).toHaveValue('Existing customer')
+    expect(screen.getByLabelText(/E-mail/)).toHaveValue('existing@example.invalid')
+    await user.click(screen.getByRole('button', { name: 'Pr\u00f3ximo' }))
+    await fillInterestStep(user)
+    await user.click(screen.getByRole('button', { name: 'Pr\u00f3ximo' }))
+    await user.click(screen.getByRole('button', { name: 'Criar lead' }))
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contactId: 'contact-1',
+        name: 'Existing customer',
+        email: 'existing@example.invalid',
+      }),
+      expect.any(Object),
+    )
   })
 
   it('renders the create lead title and the first step fields', () => {
@@ -104,8 +139,25 @@ describe('CreateLeadDialog', () => {
 
     expect(screen.getByText('Beatriz Nunes')).toBeVisible()
     expect(screen.getByText('Studio Pinheiros')).toBeVisible()
-    expect(screen.getByText('R$ 3.200')).toBeVisible()
-  })
+    expect(screen.getByText(/R\$\s*3\.200,45/)).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Voltar' }))
+    expect(screen.getByLabelText('Orçamento')).toHaveValue('3.200,45')
+  }, 20000)
+
+  it('requires a positive budget before advancing and preserves cents after clearing the field', async () => {
+    const user = userEvent.setup()
+    renderDialog()
+    await fillContactStep(user)
+    await user.click(screen.getByRole('button', { name: 'Próximo' }))
+    await fillInterestStep(user)
+    await user.clear(screen.getByLabelText('Orçamento'))
+    await user.click(screen.getByRole('button', { name: 'Próximo' }))
+    expect(await screen.findByText('Informe o orçamento')).toBeVisible()
+    await user.type(screen.getByLabelText('Orçamento'), '45')
+    expect(screen.getByLabelText('Orçamento')).toHaveValue('0,45')
+    await user.click(screen.getByRole('button', { name: 'Próximo' }))
+    expect(screen.getByText(/R\$\s*0,45/)).toBeVisible()
+  }, 20000)
 
   it('lets the user go back to a previous step', async () => {
     const user = userEvent.setup()
@@ -138,6 +190,7 @@ describe('CreateLeadDialog', () => {
         email: 'beatriz@example.com',
         interest: 'Studio Pinheiros',
         propertyId: 'property-1',
+        budget: '3200.45',
       }),
       expect.anything(),
     )

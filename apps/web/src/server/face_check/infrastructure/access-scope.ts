@@ -11,7 +11,9 @@ const eligibleUser = {
   role: { in: ['OWNER', 'AGENT'] as ('OWNER' | 'AGENT')[] },
   tenant: {
     status: { in: ['ACTIVE', 'TRIAL'] as ('ACTIVE' | 'TRIAL')[] },
-    accountType: { in: ['AGENCY', 'BROKER'] as ('AGENCY' | 'BROKER')[] },
+    accountType: {
+      in: ['AGENCY', 'BROKER', 'INDIVIDUAL'] as ('AGENCY' | 'BROKER' | 'INDIVIDUAL')[],
+    },
   },
 }
 

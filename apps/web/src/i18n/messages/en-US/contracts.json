@@ -14,7 +14,9 @@
     "title": "Contracts",
     "subtitle": "Manage contracts, due dates, and signatures in progress.",
     "searchPlaceholder": "Search contracts...",
-    "newContract": "New Contract"
+    "newContract": "New Contract",
+    "myRentalTitle": "My rental",
+    "myRentalSubtitle": "Follow your rental contract, payments, documents and tickets."
   },
   "filters": {
     "tabs": {
@@ -72,7 +74,8 @@
       "previous": "Previous page",
       "first": "First page",
       "last": "Last page"
-    }
+    },
+    "managedBy": "Managed by {agency}"
   },
   "status": {
     "draft": "Draft",
@@ -133,7 +136,8 @@
       "dateInvalid": "Enter a valid date in DD/MM/YYYY format.",
       "endAfterStart": "The end date must be after the start date.",
       "amountTooLarge": "The maximum amount is 9,999,999,999.99.",
-      "amountPrecision": "Use at most two decimal places."
+      "amountPrecision": "Use at most two decimal places.",
+      "partiesSamePerson": "Landlord, tenant and guarantor must be different people"
     },
     "actions": {
       "back": "Back",
@@ -184,7 +188,7 @@
         "endDate": "End",
         "adjustmentIndex": "Adjustment index",
         "notes": "Notes",
-        "amount": "Contract amount (BRL)"
+        "amount": "Contract amount"
       },
       "contractTypeOptions": {
         "residential": "Residential",
@@ -257,16 +261,30 @@
     "sign": "Record manual signature",
     "link": "Confirm tenant account link",
     "linkNotice": "Confirm account access for {email}.",
+    "linkLandlord": "Confirm landlord link",
+    "linkLandlordNotice": "The property owner will follow this contract, the property, the charges and the tickets, without editing them. Confirm the access link for {email}.",
     "linked": "Account linked",
     "linkSuccess": "Account link confirmed.",
     "uploadBusy": "Wait for the PDF upload to finish before changing the contract.",
     "back": "Back",
     "landlord": "Landlord",
+    "landlordView": "You follow this contract as the landlord. It is managed by {agency}. To change anything, contact the agency.",
     "guarantor": "Guarantor",
     "manual": "Manual record",
-    "provider": "Electronic signature"
+    "provider": "Electronic signature",
+    "myRental": "My rental",
+    "rentDue": "Rent · due every month on day {day}",
+    "tabs": {
+      "label": "Contract sections",
+      "summary": "Summary",
+      "payments": "Payments",
+      "documents": "Documents",
+      "tickets": "Tickets"
+    }
   },
   "documents": {
+    "chooseFile": "Choose file",
+    "noFileSelected": "No file selected",
     "title": "Documents",
     "file": "Supporting PDF",
     "limits": "PDF only, up to 10 MB.",
@@ -354,6 +372,7 @@
     "CONTRACT_UPLOAD_INVALID": "The upload authorization is invalid. Start again.",
     "CONTRACT_PARTY_ALREADY_SIGNED": "This party signature has already been recorded.",
     "CONTRACT_RENTER_USER_NOT_FOUND": "No active tenant account found for this email.",
+    "CONTRACT_LANDLORD_USER_NOT_FOUND": "No active property owner account found for this email.",
     "CONTRACT_PARTY_EMAIL_MISMATCH": "The email does not match the contract party.",
     "CONTRACT_RENTER_USER_AMBIGUOUS": "Multiple eligible accounts were found. Review the link before continuing.",
     "CONTRACT_PARTY_ALREADY_LINKED": "This party is already linked to another account.",

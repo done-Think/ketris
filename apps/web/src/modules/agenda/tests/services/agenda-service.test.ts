@@ -13,9 +13,15 @@ const event: AgendaEventApi = {
   createdBy: null,
   participants: [],
   propertyLabel: null,
+  propertyAccessible: false,
   cancelledAt: null,
   cancelledById: null,
   cancellationReason: null,
+  outcomeRecordedAt: null,
+  outcomeRecordedById: null,
+  outcomeRecordedBy: null,
+  visitInterest: null,
+  outcomeNotes: null,
   id: 'event-1',
   tenantId: 'tenant-1',
   responsibleId: 'user-1',
@@ -144,6 +150,18 @@ describe('AgendaService', () => {
     )
     expect(http.post).toHaveBeenCalledWith(`/agenda/events/${event.id}/cancel`, {
       reason: 'Cliente indisponível',
+    })
+  })
+
+  it('records an outcome on its own endpoint and unwraps the response', async () => {
+    http.post.mockResolvedValueOnce({ event })
+
+    await expect(
+      service.recordOutcome(event.id, { outcome: 'COMPLETED', visitInterest: 'HIGH' }),
+    ).resolves.toEqual(event)
+    expect(http.post).toHaveBeenCalledWith(`/agenda/events/${event.id}/outcome`, {
+      outcome: 'COMPLETED',
+      visitInterest: 'HIGH',
     })
   })
 })

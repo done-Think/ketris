@@ -6,7 +6,7 @@ import { setupMaintenanceIntegration } from '../fixtures/maintenance-api'
 describe('/api/maintenance scheduling (database integration)', () => {
   const env = setupMaintenanceIntegration()
   const { request, context, create, action } = env
-  it('stores appointment dates and returns them on renter lists while staff retains rescheduling control', async () => {
+  it('stores appointment dates set by the agency team and returns them on renter lists', async () => {
     const id = await create(env.fixture.renter.token)
     const scheduledAt = '2026-10-24T14:00:00.000Z'
     expect(
@@ -22,14 +22,16 @@ describe('/api/maintenance scheduling (database integration)', () => {
     ).toBe(403)
     expect(
       (
-        await action(id, env.fixture.renter.token, {
+        await action(id, env.fixture.admin.token, {
           action: 'provider',
           provider: { name: 'Selected provider' },
         })
       ).status,
     ).toBe(200)
+    for (const user of [env.fixture.renter, env.fixture.owner])
+      expect((await action(id, user.token, { action: 'schedule', scheduledAt })).status).toBe(403)
     expect(
-      (await action(id, env.fixture.renter.token, { action: 'schedule', scheduledAt })).status,
+      (await action(id, env.fixture.agent.token, { action: 'schedule', scheduledAt })).status,
     ).toBe(200)
     expect(
       (await action(id, env.fixture.unrelated.token, { action: 'schedule', scheduledAt })).status,
@@ -69,7 +71,7 @@ describe('/api/maintenance scheduling (database integration)', () => {
     )
     expect((await detail.json()).ticket.activities).toContainEqual(
       expect.objectContaining({
-        authorId: env.fixture.renter.id,
+        authorId: env.fixture.agent.id,
         type: 'EDIT',
         details: {
           before: { scheduledAt: null },

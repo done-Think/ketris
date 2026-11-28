@@ -2,6 +2,7 @@ import type { UserRole } from '@server/auth/domain/user.entity'
 import type { AgendaEvent } from '../domain/agenda-event.entity'
 import type { AgendaEventLinkedUser } from '../types/agenda-event'
 import type { AgendaEventResponseDTO, RenterAgendaEventResponseDTO } from '../types/http'
+import { isReadOnlyAgendaParticipant } from '../domain/agenda-access-rules'
 
 export function toAgendaEventResponse(event: AgendaEvent): AgendaEventResponseDTO {
   return {
@@ -15,6 +16,7 @@ export function toAgendaEventResponse(event: AgendaEvent): AgendaEventResponseDT
     createdBy: event.createdBy ? { name: event.createdBy.name, role: event.createdBy.role } : null,
     propertyId: event.propertyId,
     propertyLabel: event.propertyLabel ?? null,
+    propertyAccessible: event.propertyAccessible ?? false,
     propertyReference: event.freeFormPropertyReference,
     title: event.title,
     kind: event.type,
@@ -29,6 +31,11 @@ export function toAgendaEventResponse(event: AgendaEvent): AgendaEventResponseDT
     cancelledAt: event.canceledAt?.toISOString() ?? null,
     cancelledById: event.canceledById ?? null,
     cancellationReason: event.cancellationReason ?? null,
+    outcomeRecordedAt: event.outcomeRecordedAt?.toISOString() ?? null,
+    outcomeRecordedById: event.outcomeRecordedById ?? null,
+    outcomeRecordedBy: event.outcomeRecordedByName ? { name: event.outcomeRecordedByName } : null,
+    visitInterest: event.visitInterest ?? null,
+    outcomeNotes: event.outcomeNotes ?? null,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
   }
@@ -56,7 +63,10 @@ export function toAgendaEventReadResponse(
 ): AgendaEventResponseDTO | RenterAgendaEventResponseDTO {
   return actorRole === 'RENTER' && event.createdById !== actorUserId
     ? toRenterAgendaEventResponse(event)
-    : toAgendaEventResponse(event)
+    : {
+        ...toAgendaEventResponse(event),
+        readOnly: isReadOnlyAgendaParticipant(actorRole, actorUserId, event),
+      }
 }
 
 function toLinkedUserResponse(user: AgendaEventLinkedUser) {

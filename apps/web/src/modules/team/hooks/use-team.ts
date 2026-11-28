@@ -7,6 +7,7 @@ import type { AppLocale } from '@/i18n/types/locale.types'
 import { teamQueryKeys } from '../config/team-query-keys'
 import { teamService } from '../services/team-service'
 import type { TransferPortfolioPayload } from '../types/team'
+import type { SharePortfolioPayload } from '../types/team'
 
 function useTeamScope() {
   const { data: session } = useSession()
@@ -62,6 +63,12 @@ export function useTransferPortfolio() {
   )
 }
 
+export function useSharePortfolio() {
+  return useTeamMutation(({ memberId, ...payload }: SharePortfolioPayload & { memberId: string }) =>
+    teamService.sharePortfolio(memberId, payload),
+  )
+}
+
 export function useDeactivateBroker() {
   return useTeamMutation(
     ({ memberId, destinationId }: { memberId: string; destinationId: string }) =>
@@ -102,7 +109,14 @@ export function useTeamInvitation(token: string | null) {
 
 export function useAcceptTeamInvitation() {
   return useMutation({
-    mutationFn: ({ token, password }: { token: string; password: string }) =>
-      teamService.acceptInvitation(token, password),
+    mutationFn: ({
+      token,
+      password,
+      document,
+    }: {
+      token: string
+      password: string
+      document: string
+    }) => teamService.acceptInvitation(token, password, document),
   })
 }

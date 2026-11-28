@@ -40,10 +40,9 @@ describe('Face Check sidebar navigation', () => {
     navigation.query = ''
   })
 
-  it('declares only Sessions, Review and Settings under the overview parent', () => {
+  it('declares only Sessions and Settings under the overview parent', () => {
     expect(children.map((child) => child.labelKey)).toEqual([
       'faceCheckSessions',
-      'faceCheckReview',
       'faceCheckSettings',
     ])
     const candidate = appShellNavigationItems.find(
@@ -51,19 +50,16 @@ describe('Face Check sidebar navigation', () => {
     )
     expect(candidate?.labelKey).toBe('faceCheckMyVerifications')
     expect(candidate?.children).toBeUndefined()
-    expect(candidate?.roles).toBeUndefined()
   })
 
   it.each([
-    ['/dashboard/face_check/sessions', '', true, false],
-    ['/dashboard/face_check/sessions', 'filter=review', false, true],
-    ['/dashboard/face_check/sessions', 'filter=open', true, false],
-    ['/dashboard/face_check/sessions/session-id', '', true, false],
-    ['/dashboard/face_check/sessions/session-id', 'filter=review', true, false],
-  ] as const)('selects the correct child for %s?%s', (pathname, query, sessions, review) => {
+    ['/dashboard/face_check/sessions', '', true],
+    ['/dashboard/face_check/sessions', 'filter=review', true],
+    ['/dashboard/face_check/sessions/session-id', '', true],
+    ['/dashboard/face_check/settings', '', false],
+  ] as const)('selects Sessions correctly for %s?%s', (pathname, query, sessions) => {
     const params = new URLSearchParams(query)
     expect(isAppShellNavChildActive(children[0], children, pathname, params)).toBe(sessions)
-    expect(isAppShellNavChildActive(children[1], children, pathname, params)).toBe(review)
   })
 
   it('opens children on the active section and keeps the parent linked to Overview', () => {
@@ -96,22 +92,8 @@ describe('Face Check sidebar navigation', () => {
       'aria-expanded',
       'true',
     )
-    await user.click(await screen.findByRole('link', { name: 'Revisão' }))
+    await user.click(await screen.findByRole('link', { name: 'Sessões' }))
     expect(onNavigate).toHaveBeenCalledTimes(1)
-    expect(screen.getByRole('link', { name: 'Revisão' })).toHaveAttribute(
-      'href',
-      '/dashboard/face_check/sessions?filter=review',
-    )
-  })
-
-  it('marks only Review active when filter=review is present', () => {
-    navigation.pathname = '/dashboard/face_check/sessions'
-    navigation.query = 'filter=review'
-    render(
-      <AppShellNavigationGroup item={faceCheck} active collapsed={false} onNavigate={vi.fn()} />,
-    )
-    expect(screen.getByRole('link', { name: 'Revisão' })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('link', { name: 'Sessões' })).not.toHaveAttribute('aria-current')
-    expect(screen.getByRole('link', { name: 'Face Check' })).not.toHaveAttribute('aria-current')
+    expect(screen.queryByRole('link', { name: 'Revisão' })).not.toBeInTheDocument()
   })
 })

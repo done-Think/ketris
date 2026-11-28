@@ -17,6 +17,8 @@ export const financialQueryKeys = {
   charges: (tenantId: string) => [...financialQueryKeys.tenant(tenantId), 'charges'] as const,
   chargesList: (tenantId: string, actorKey: string, filters: ChargeListFilters) =>
     [...financialQueryKeys.charges(tenantId), 'list', actorKey, normalizeFilters(filters)] as const,
+  contractCharges: (tenantId: string, actorKey: string, contractId: string) =>
+    [...financialQueryKeys.charges(tenantId), 'contract', actorKey, contractId] as const,
   chargeDetail: (tenantId: string, actorKey: string, chargeId: string) =>
     [...financialQueryKeys.charges(tenantId), 'detail', actorKey, chargeId] as const,
   chargeHistory: (tenantId: string, actorKey: string, chargeId: string) =>

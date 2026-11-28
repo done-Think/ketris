@@ -118,7 +118,7 @@ describe('/api/agenda/events/{id}/reschedule (integração)', () => {
 
   it('retorna 409 ao reagendar para um horário que colide com outro evento do mesmo responsável', async () => {
     const response = await POST(
-      buildRequest(eventId, { start: '2031-10-13T13:15:00.000Z', durationMinutes: 60 }),
+      buildRequest(eventId, { start: '2031-10-13T13:00:00.000Z', durationMinutes: 60 }),
       context(eventId),
     )
     const json = await response.json()

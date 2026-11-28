@@ -26,6 +26,7 @@ export function contractFixture(overrides: Partial<Contract> = {}): Contract {
   return {
     id: 'contract',
     tenantId: 'agency',
+    agencyName: 'Imobiliária',
     propertyId: 'property',
     property: { title: 'Apartamento', address: 'Rua do contrato' },
     opportunityId: 'opportunity',
@@ -52,7 +53,12 @@ export function contractFixture(overrides: Partial<Contract> = {}): Contract {
     closedBy: null,
     closingReason: null,
     parties: [
-      contractParty({ id: 'party-owner', role: 'LANDLORD', email: 'owner@example.test' }),
+      contractParty({
+        id: 'party-owner',
+        role: 'LANDLORD',
+        cpf: '987.654.321-00',
+        email: 'owner@example.test',
+      }),
       contractParty(),
     ],
     documents: [],

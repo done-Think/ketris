@@ -1,3 +1,10 @@
+import { StartContactInteractionUseCase } from './application/use-cases/start-contact-interaction.use-case'
+import { LinkLeadContactUseCase } from './application/use-cases/link-lead-contact.use-case'
+import { PrismaLeadContactLinkRepository } from './infrastructure/prisma-lead-contact-link.repository'
+import { PrismaInteractionRepository } from './infrastructure/prisma-interaction.repository'
+import { StartLeadInteractionUseCase } from './application/use-cases/start-lead-interaction.use-case'
+import { CompleteInteractionUseCase } from './application/use-cases/complete-interaction.use-case'
+import { ListInteractionsUseCase } from './application/use-cases/list-interactions.use-case'
 import { AddOpportunityNoteUseCase } from './application/use-cases/add-opportunity-note.use-case'
 import { ListOpportunityResponsiblesUseCase } from './application/use-cases/list-opportunity-responsibles.use-case'
 import { AssignOpportunityResponsibleUseCase } from './application/use-cases/assign-opportunity-responsible.use-case'
@@ -41,7 +48,29 @@ function buildUseCases(db: CrmDatabase, scope: CrmScope) {
   const leadRepository = new PrismaLeadRepository(db, scope)
   const responsibleLookup = new PrismaResponsibleLookup(db)
 
+  const interactionRepository = new PrismaInteractionRepository(db, scope)
   return {
+    linkLeadContactUseCase: new LinkLeadContactUseCase(
+      leadRepository,
+      new PrismaLeadContactLinkRepository(db, scope),
+      new GetContactUseCase(contactRepository, opportunityRepository),
+      new CreateContactUseCase(contactRepository),
+    ),
+    startContactInteractionUseCase: new StartContactInteractionUseCase(
+      interactionRepository,
+      new GetContactUseCase(contactRepository, opportunityRepository),
+    ),
+    startLeadInteractionUseCase: new StartLeadInteractionUseCase(
+      interactionRepository,
+      leadRepository,
+    ),
+    completeInteractionUseCase: new CompleteInteractionUseCase(interactionRepository),
+    listInteractionsUseCase: new ListInteractionsUseCase(
+      interactionRepository,
+      leadRepository,
+      new GetContactUseCase(contactRepository, opportunityRepository),
+      new GetOpportunityUseCase(opportunityRepository),
+    ),
     listCrmPropertiesUseCase: new ListCrmPropertiesUseCase(new PrismaCrmPropertyCatalog(db, scope)),
     getCrmPropertyUseCase: new GetCrmPropertyUseCase(new PrismaCrmPropertyCatalog(db, scope)),
     listOpportunitiesUseCase: new ListOpportunitiesUseCase(opportunityRepository),
@@ -83,10 +112,14 @@ function buildUseCases(db: CrmDatabase, scope: CrmScope) {
     listContactsUseCase: new ListContactsUseCase(contactRepository, opportunityRepository),
     getContactUseCase: new GetContactUseCase(contactRepository, opportunityRepository),
     createContactUseCase: new CreateContactUseCase(contactRepository),
-    updateContactUseCase: new UpdateContactUseCase(contactRepository, opportunityRepository),
+    updateContactUseCase: new UpdateContactUseCase(
+      contactRepository,
+      opportunityRepository,
+      leadRepository,
+    ),
     archiveContactUseCase: new ArchiveContactUseCase(contactRepository, opportunityRepository),
 
-    createLeadUseCase: new CreateLeadUseCase(leadRepository, propertyLookup),
+    createLeadUseCase: new CreateLeadUseCase(leadRepository, propertyLookup, contactRepository),
     listLeadsUseCase: new ListLeadsUseCase(leadRepository),
     getLeadUseCase: new GetLeadUseCase(leadRepository),
     updateLeadUseCase: new UpdateLeadUseCase(leadRepository),
@@ -113,6 +146,14 @@ function scopedUseCase<Input extends CrmScope, Output>(
 }
 
 export const crmContainer = {
+  linkLeadContactUseCase: scopedUseCase((cases) => cases.linkLeadContactUseCase, true),
+  startContactInteractionUseCase: scopedUseCase(
+    (cases) => cases.startContactInteractionUseCase,
+    true,
+  ),
+  startLeadInteractionUseCase: scopedUseCase((cases) => cases.startLeadInteractionUseCase, true),
+  completeInteractionUseCase: scopedUseCase((cases) => cases.completeInteractionUseCase, true),
+  listInteractionsUseCase: scopedUseCase((cases) => cases.listInteractionsUseCase),
   listCrmPropertiesUseCase: scopedUseCase((cases) => cases.listCrmPropertiesUseCase),
   getCrmPropertyUseCase: scopedUseCase((cases) => cases.getCrmPropertyUseCase),
   listOpportunitiesUseCase: scopedUseCase((cases) => cases.listOpportunitiesUseCase),

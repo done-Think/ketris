@@ -22,12 +22,12 @@ export interface BrokerProfile {
   email: string
   displayName: string
   headline: string | null
-  bio: string | null
+  summary: string | null
   creci: string | null
   phone: string | null
   region: string | null
-  neighborhoods: string[]
-  specialties: string[]
+  coverage: string[]
+  segments: string[]
   availability: string | null
   primaryColor: string | null
   secondaryColor: string | null
@@ -45,12 +45,12 @@ export type PublicBrokerProfile = Omit<BrokerProfile, 'tenantId'>
 export interface BrokerProfileDraft {
   displayName: string
   headline: string | null
-  bio: string | null
+  summary: string | null
   creci: string | null
   phone: string | null
   region: string | null
-  neighborhoods: string[]
-  specialties: string[]
+  coverage: string[]
+  segments: string[]
   availability: string | null
   primaryColor: string | null
   secondaryColor: string | null

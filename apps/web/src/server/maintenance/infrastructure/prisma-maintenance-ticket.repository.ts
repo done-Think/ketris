@@ -23,6 +23,7 @@ import type { MaintenanceTicketRepository } from '../types/maintenance-ticket-re
 import type { MaintenanceContractPartyLink } from '../types/prisma-maintenance-ticket-repository'
 import {
   maintenanceTicketScope,
+  landlordContractScope,
   renterContractScope,
   validContract,
 } from './maintenance-access-scope'
@@ -50,8 +51,15 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
       where: {
         id: contractId,
         ...(actor.actorRole === 'RENTER'
-          ? renterContractScope(actor.actorId)
-          : { tenantId: actor.actorTenantId, property: { tenantId: actor.actorTenantId } }),
+          ? { ...renterContractScope(actor.actorId), status: 'ACTIVE' as const }
+          : isAgencyManager(actor.actorRole)
+            ? {
+                OR: [
+                  { tenantId: actor.actorTenantId, property: { tenantId: actor.actorTenantId } },
+                  { ...landlordContractScope(actor.actorId), status: 'ACTIVE' as const },
+                ],
+              }
+            : { tenantId: actor.actorTenantId, property: { tenantId: actor.actorTenantId } }),
       },
       include: contractInclude,
     })
@@ -59,16 +67,20 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
   }
   async findUser(tenantId: string, userId: string) {
     const row = await prisma.user.findFirst({
-      where: { id: userId, tenantId, active: true },
+      where: { id: userId, tenantId, active: true, membershipApprovedAt: { not: null } },
       select: { id: true, role: true },
     })
     return row ? { id: row.id, role: row.role } : null
   }
   async options(actor: MaintenanceActor): Promise<MaintenanceOptions> {
-    const where: Prisma.ContractWhereInput = {
-      tenantId: actor.actorTenantId,
-      property: { tenantId: actor.actorTenantId },
-    }
+    const where: Prisma.ContractWhereInput = isAgencyManager(actor.actorRole)
+      ? {
+          OR: [
+            { tenantId: actor.actorTenantId, property: { tenantId: actor.actorTenantId } },
+            { ...landlordContractScope(actor.actorId), status: 'ACTIVE' },
+          ],
+        }
+      : { tenantId: actor.actorTenantId, property: { tenantId: actor.actorTenantId } }
     if (actor.actorRole === 'AGENT')
       where.property = { tenantId: actor.actorTenantId, responsibleId: actor.actorId }
     else if (actor.actorRole === 'PROPERTY_OWNER')
@@ -77,6 +89,7 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
       Object.assign(where, {
         tenantId: undefined,
         property: undefined,
+        status: 'ACTIVE',
         ...renterContractScope(actor.actorId),
       })
     else if (!isAgencyManager(actor.actorRole)) throw new ForbiddenError()
@@ -86,9 +99,12 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
       orderBy: { code: 'asc' },
     })
     const validContracts = contracts.filter(validContract)
+    const ownContracts = validContracts.filter(
+      (contract) => contract.tenantId === actor.actorTenantId,
+    )
     const renterEmails = [
       ...new Set(
-        validContracts.flatMap((c) =>
+        ownContracts.flatMap((c) =>
           c.parties.filter((p) => p.role === 'RENTER').map((p) => normalizeEmail(p.email)),
         ),
       ),
@@ -98,7 +114,11 @@ export class PrismaMaintenanceTicketRepository implements MaintenanceTicketRepos
           where: {
             active: true,
             OR: [
-              { tenantId: actor.actorTenantId, role: { not: 'RENTER' } },
+              {
+                tenantId: actor.actorTenantId,
+                role: { not: 'RENTER' },
+                membershipApprovedAt: { not: null },
+              },
               { role: 'RENTER', email: { in: renterEmails, mode: 'insensitive' } },
             ],
           },

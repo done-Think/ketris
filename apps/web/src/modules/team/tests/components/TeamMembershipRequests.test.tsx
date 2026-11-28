@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { theme } from '@shared/theme/theme'
@@ -8,6 +8,7 @@ import { TeamMembershipRequests } from '../../components/TeamMembershipRequests'
 
 const enqueueSnackbar = vi.fn()
 const approve = vi.fn()
+const reject = vi.fn()
 const usersQuery = vi.hoisted(() => ({
   current: { data: undefined as unknown, isError: false },
 }))
@@ -17,6 +18,7 @@ vi.mock('notistack', () => ({ useSnackbar: () => ({ enqueueSnackbar }) }))
 vi.mock('../../hooks/use-team-memberships', () => ({
   useTeamMembershipRequests: (enabled: boolean) => useUsers(enabled),
   useApproveTeamMembership: () => ({ mutateAsync: approve, isPending: false }),
+  useRejectTeamMembership: () => ({ mutateAsync: reject, isPending: false }),
 }))
 
 const pendingAgent = {
@@ -60,6 +62,53 @@ describe('TeamMembershipRequests', () => {
     expect(enqueueSnackbar).toHaveBeenCalledWith('Bruna Corretora agora faz parte da equipe.', {
       variant: 'success',
     })
+  })
+
+  it('recusa o pedido depois de confirmar e avisa quem recusou', async () => {
+    reject.mockResolvedValue(undefined)
+    renderRequests()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Recusar vínculo de Bruna Corretora' }))
+    const dialog = screen.getByRole('dialog', { name: 'Recusar o pedido de Bruna Corretora?' })
+    expect(dialog).toHaveTextContent('O e-mail fica livre para um novo pedido.')
+    expect(reject).not.toHaveBeenCalled()
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Recusar pedido' }))
+
+    await waitFor(() => expect(reject).toHaveBeenCalledWith('agent-1'))
+    expect(enqueueSnackbar).toHaveBeenCalledWith('Pedido de Bruna Corretora recusado.', {
+      variant: 'success',
+    })
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
+  it('não recusa quando a pessoa desiste no diálogo', async () => {
+    renderRequests()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Recusar vínculo de Bruna Corretora' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(reject).not.toHaveBeenCalled()
+  })
+
+  it('explica quando o corretor já tem carteira e não pode ser recusado', async () => {
+    reject.mockRejectedValue({
+      isAxiosError: true,
+      response: { data: { error: { code: 'TEAM_MEMBERSHIP_REQUEST_HAS_PORTFOLIO' } } },
+    })
+    renderRequests()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Recusar vínculo de Bruna Corretora' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Recusar pedido' }))
+
+    await waitFor(() =>
+      expect(enqueueSnackbar).toHaveBeenCalledWith(
+        'Este corretor já tem imóveis, leads ou eventos. Transfira antes de recusar.',
+        { variant: 'error' },
+      ),
+    )
+    expect(screen.getByRole('dialog')).toBeVisible()
   })
 
   it('não busca nem mostra nada para quem não é o dono da imobiliária', () => {

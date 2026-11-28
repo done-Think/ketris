@@ -7,6 +7,7 @@ import {
 import type { TeamActor, TeamTransferResult } from '../../types/team'
 import type {
   BrokerInput,
+  ShareBrokerPortfolioInput,
   DeactivateBrokerInput,
   TransferBrokerPortfolioInput,
 } from '../../types/use-case-inputs'
@@ -18,12 +19,14 @@ async function assertTransferPeople(
   actor: TeamActor,
   brokerId: string,
   destinationId: string,
+  allowActorAsSource = false,
 ) {
   const [source, destination] = await Promise.all([
     repository.findStaffUser(actor.actorTenantId, brokerId),
     repository.findStaffUser(actor.actorTenantId, destinationId),
   ])
-  if (!source || source.role !== 'AGENT') throw new TeamMemberNotFoundError()
+  const isActorSource = allowActorAsSource && source?.id === actor.actorId
+  if (!source || (source.role !== 'AGENT' && !isActorSource)) throw new TeamMemberNotFoundError()
   if (
     !destination ||
     destination.id === source.id ||
@@ -42,9 +45,9 @@ export class TransferBrokerPortfolioUseCase {
   ) {}
 
   async execute(input: TransferBrokerPortfolioInput): Promise<TeamTransferResult> {
-    assertTeamManager(input)
+    await assertTeamManager(this.repository, input)
     if (!Object.values(input.items).some(Boolean)) throw new EmptyTransferError()
-    await assertTransferPeople(this.repository, input, input.brokerId, input.destinationId)
+    await assertTransferPeople(this.repository, input, input.brokerId, input.destinationId, true)
     const actor = await teamActorIdentity(this.repository, input)
 
     return this.repository.transfer({
@@ -60,6 +63,35 @@ export class TransferBrokerPortfolioUseCase {
   }
 }
 
+export class ShareBrokerPortfolioUseCase {
+  constructor(
+    private readonly repository: TeamRepository,
+    private readonly now: () => Date = () => new Date(),
+  ) {}
+
+  async execute(input: ShareBrokerPortfolioInput): Promise<TeamTransferResult> {
+    await assertTeamManager(this.repository, input)
+    if (!Object.values(input.items).some(Boolean)) throw new EmptyTransferError()
+    for (const destinationId of input.destinationIds) {
+      await assertTransferPeople(this.repository, input, input.brokerId, destinationId, true)
+      const destination = await this.repository.findStaffUser(input.actorTenantId, destinationId)
+      if (destination?.role !== 'AGENT') throw new InvalidTransferDestinationError()
+    }
+    if (!input.destinationIds.length || input.destinationIds.length > 50)
+      throw new InvalidTransferDestinationError()
+    const actor = await teamActorIdentity(this.repository, input)
+    return this.repository.sharePortfolio({
+      tenantId: input.actorTenantId,
+      sourceId: input.brokerId,
+      destinationIds: [...new Set(input.destinationIds)],
+      revoke: input.revoke ?? false,
+      items: input.items,
+      actor,
+      now: this.now(),
+    })
+  }
+}
+
 export class DeactivateBrokerUseCase {
   constructor(
     private readonly repository: TeamRepository,
@@ -67,7 +99,7 @@ export class DeactivateBrokerUseCase {
   ) {}
 
   async execute(input: DeactivateBrokerInput): Promise<TeamTransferResult> {
-    assertTeamManager(input)
+    await assertTeamManager(this.repository, input)
     if (input.brokerId === input.actorId) throw new CannotDeactivateSelfFromTeamError()
     const source = await assertTransferPeople(
       this.repository,
@@ -95,7 +127,7 @@ export class ActivateBrokerUseCase {
   constructor(private readonly repository: TeamRepository) {}
 
   async execute(input: BrokerInput): Promise<void> {
-    assertTeamManager(input)
+    await assertTeamManager(this.repository, input)
     const broker = await this.repository.findStaffUser(input.actorTenantId, input.brokerId)
     if (!broker || broker.role !== 'AGENT') throw new TeamMemberNotFoundError()
     await this.repository.activate(input.actorTenantId, input.brokerId, input.actorId)

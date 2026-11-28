@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 
 import { createPropertyPublishingOptions } from '../config/dashboard-property-ui'
 import type { CreatePropertyPublishingStepFieldsProps } from '../types/dashboard-property'
+import { PropertyInstagramReview } from './PropertyInstagramReview'
 
 export function CreatePropertyPublishingStepFields({
   control,
@@ -43,6 +44,7 @@ export function CreatePropertyPublishingStepFields({
           }}
         />
       ))}
+      <PropertyInstagramReview control={control} />
     </Stack>
   )
 }

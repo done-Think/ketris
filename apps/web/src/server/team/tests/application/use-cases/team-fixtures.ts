@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 
 import type { TeamInvitationRepository } from '../../../application/ports/team-invitation-repository.port'
+import type { TeamMembershipRequestRepository } from '../../../application/ports/team-membership-request-repository.port'
 import type { TeamRepository } from '../../../application/ports/team-repository.port'
 import type { TeamStaffUser } from '../../../types/team-repository'
 
@@ -19,12 +20,16 @@ export function staff(overrides: Partial<TeamStaffUser>): TeamStaffUser {
 
 export function teamRepository(people: TeamStaffUser[] = []): TeamRepository {
   return {
+    findTenantAccountType: vi.fn().mockResolvedValue('AGENCY'),
     listMembers: vi.fn().mockResolvedValue([]),
     loadMetrics: vi.fn(),
     findStaffUser: vi.fn(
       async (_tenantId: string, id: string) => people.find((person) => person.id === id) ?? null,
     ),
     transfer: vi.fn().mockResolvedValue({ propertyIds: ['p1'], leadIds: [], eventIds: [] }),
+    sharePortfolio: vi
+      .fn()
+      .mockResolvedValue({ propertyIds: ['p1'], leadIds: [], opportunityIds: [], eventIds: [] }),
     deactivateWithTransfer: vi
       .fn()
       .mockResolvedValue({ propertyIds: ['p1'], leadIds: ['l1'], eventIds: ['e1'] }),
@@ -46,6 +51,17 @@ export function invitationRepository(
     deleteInvitedUser: vi.fn().mockResolvedValue(true),
     findByTokenHash: vi.fn().mockResolvedValue(null),
     accept: vi.fn().mockResolvedValue(true),
+    ...overrides,
+  }
+}
+
+export function membershipRequestRepository(
+  overrides: Partial<TeamMembershipRequestRepository> = {},
+): TeamMembershipRequestRepository {
+  return {
+    isPending: vi.fn().mockResolvedValue(true),
+    hasPortfolio: vi.fn().mockResolvedValue(false),
+    deletePending: vi.fn().mockResolvedValue(true),
     ...overrides,
   }
 }

@@ -215,6 +215,30 @@ describe('ChargeDetailsPage', () => {
     },
   )
 
+  it('shows the rent as payable to the renter, who is the one paying it', async () => {
+    mocks.session.role = 'RENTER'
+    renderWithProviders(<ChargeDetailsPage chargeId="charge-1" />)
+
+    expect(await screen.findByRole('heading', { name: 'COB-2026-0001' })).toBeVisible()
+    expect(screen.getByText('A pagar')).toBeVisible()
+    expect(screen.getByText(/^A pagar —/)).toBeVisible()
+    expect(screen.queryByText('A receber')).toBeNull()
+    expect(screen.queryByText(/A receber/)).toBeNull()
+  })
+
+  it.each(['OWNER', 'PROPERTY_OWNER'])(
+    'keeps the rent as receivable for %s, who receives it',
+    async (role) => {
+      mocks.session.role = role
+      renderWithProviders(<ChargeDetailsPage chargeId="charge-1" />)
+
+      expect(await screen.findByRole('heading', { name: 'COB-2026-0001' })).toBeVisible()
+      expect(screen.getByText('A receber')).toBeVisible()
+      expect(screen.getByText(/^A receber —/)).toBeVisible()
+      expect(screen.queryByText(/A pagar/)).toBeNull()
+    },
+  )
+
   it('shows a not found state with a way back to the list', async () => {
     service.getCharge.mockRejectedValue(apiError('CHARGE_NOT_FOUND', 404))
     renderWithProviders(<ChargeDetailsPage chargeId="missing" />)

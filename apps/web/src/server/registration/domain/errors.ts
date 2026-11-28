@@ -26,3 +26,30 @@ export class RenterTenantNotConfiguredError extends AppError {
     })
   }
 }
+
+export class RegistrationPhoneAlreadyInUseError extends AppError {
+  constructor() {
+    super('Este telefone já está em uso nesta conta.', {
+      status: 409,
+      code: 'PHONE_ALREADY_IN_USE',
+    })
+  }
+}
+
+export class RegistrationCreciAlreadyInUseError extends AppError {
+  constructor() {
+    super('Este CRECI já está em uso nesta conta.', { status: 409, code: 'CRECI_ALREADY_IN_USE' })
+  }
+}
+
+export class RegistrationCpfAlreadyInUseError extends AppError {
+  constructor() {
+    super('Este CPF já está em uso nesta conta.', { status: 409, code: 'CPF_ALREADY_IN_USE' })
+  }
+}
+
+export class RegistrationCnpjAlreadyInUseError extends AppError {
+  constructor() {
+    super('Este CNPJ já possui cadastro.', { status: 409, code: 'CNPJ_ALREADY_IN_USE' })
+  }
+}

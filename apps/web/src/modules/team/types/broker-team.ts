@@ -6,8 +6,14 @@ import type {
   createBrokerGoalSchema,
   createBrokerInviteSchema,
   createBrokerTransferSchema,
+  createBrokerShareSchema,
 } from '../schemas/broker-team-action-schemas'
-import type { BrokerTeamMenuAction, BrokerTeamMenuState, TeamMember } from './team'
+import type {
+  BrokerTeamMenuAction,
+  BrokerTeamMenuState,
+  TeamMember,
+  TeamMembershipRequest,
+} from './team'
 
 export type BrokerGoalFormInput = z.input<ReturnType<typeof createBrokerGoalSchema>>
 export type BrokerGoalFormValues = z.infer<ReturnType<typeof createBrokerGoalSchema>>
@@ -37,6 +43,11 @@ export interface BrokerDestinationDialogProps extends BrokerMemberDialogProps {
   destinations: TransferDestination[]
 }
 
+export interface BrokerTransferDialogProps extends BrokerMemberDialogProps {
+  members: readonly TeamMember[]
+  self: TransferDestination | null
+}
+
 export interface BrokerInviteDialogProps {
   onClose: () => void
 }
@@ -55,6 +66,11 @@ export interface TeamMembershipRequestsProps {
   enabled: boolean
 }
 
+export interface RejectMembershipDialogProps {
+  request: TeamMembershipRequest
+  onClose: () => void
+}
+
 export interface AcceptInvitationScreenProps {
   token: string | null
 }
@@ -69,3 +85,9 @@ export interface TeamDialogTitleProps {
   title: string
   onClose: () => void
 }
+
+export interface BrokerShareDialogProps extends BrokerTransferDialogProps {
+  revoke?: boolean
+}
+
+export type BrokerShareFormValues = z.infer<ReturnType<typeof createBrokerShareSchema>>

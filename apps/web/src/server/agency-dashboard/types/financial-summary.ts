@@ -8,7 +8,6 @@ export interface AgencyFinancialSummaryInput {
 }
 
 export interface AgencyFinancialSummary {
-  monthlyReceivable: number
   overdueTotal: number
   monthlySeries: AgencyRevenueMonth[]
 }

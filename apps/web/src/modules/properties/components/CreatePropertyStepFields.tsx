@@ -21,12 +21,6 @@ export function CreatePropertyStepFields({
   const hasSalePurpose = propertyPurpose.includes('SALE')
   const hasDualPurpose = hasRentPurpose && hasSalePurpose
   const mainValueLabel = hasRentPurpose && !hasSalePurpose ? 'rentValue' : 'saleValue'
-  const negotiationTermLabel =
-    hasRentPurpose && !hasSalePurpose
-      ? 'securityDeposit'
-      : hasSalePurpose && !hasRentPurpose
-        ? 'commission'
-        : 'commercialTerms'
 
   return (
     <>
@@ -51,7 +45,7 @@ export function CreatePropertyStepFields({
           control={control}
           hasDualPurpose={hasDualPurpose}
           mainValueLabel={mainValueLabel}
-          negotiationTermLabel={negotiationTermLabel}
+          propertyPurpose={propertyPurpose}
         />
       ) : null}
 

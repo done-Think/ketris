@@ -1,3 +1,4 @@
+import { resolveActorAccountType } from '@server/auth/resolve-actor-account-type'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
@@ -13,6 +14,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const profile = await marketplaceContainer.getOwnBrokerProfileUseCase.execute({
     actorId: actor.sub,
     actorRole: actor.role,
+    actorAccountType: await resolveActorAccountType(actor.sub),
   })
 
   return NextResponse.json({ profile }, { status: 200 })
@@ -25,14 +27,15 @@ export const PUT = withErrorHandling(async (request: NextRequest) => {
   const profile = await marketplaceContainer.saveBrokerProfileUseCase.execute({
     actorId: actor.sub,
     actorRole: actor.role,
+    actorAccountType: await resolveActorAccountType(actor.sub),
     displayName: body.displayName,
     headline: body.headline ?? null,
-    bio: body.bio ?? null,
+    summary: body.summary ?? null,
     creci: body.creci ?? null,
     phone: body.phone ?? null,
     region: body.region ?? null,
-    neighborhoods: body.neighborhoods,
-    specialties: body.specialties,
+    coverage: body.coverage,
+    segments: body.segments,
     availability: body.availability ?? null,
     primaryColor: body.primaryColor ?? null,
     secondaryColor: body.secondaryColor ?? null,

@@ -7,11 +7,12 @@ describe('searchTenantsQuerySchema', () => {
     expect(searchTenantsQuerySchema.safeParse({ q: 'imobiliária' }).success).toBe(true)
   })
 
-  it('rejeita um termo de busca vazio', () => {
-    expect(searchTenantsQuerySchema.safeParse({ q: '' }).success).toBe(false)
+  it('aceita um termo vazio ou ausente para listar as primeiras imobiliárias', () => {
+    expect(searchTenantsQuerySchema.parse({ q: '' }).q).toBe('')
+    expect(searchTenantsQuerySchema.parse({}).q).toBe('')
   })
 
-  it('rejeita quando o parâmetro q está ausente', () => {
-    expect(searchTenantsQuerySchema.safeParse({}).success).toBe(false)
+  it('rejeita um termo de busca grande demais', () => {
+    expect(searchTenantsQuerySchema.safeParse({ q: 'a'.repeat(101) }).success).toBe(false)
   })
 })

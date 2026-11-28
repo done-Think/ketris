@@ -1,4 +1,5 @@
 import { BaseService } from '@shared/lib/api/base-service'
+import type { SharePortfolioPayload, TeamPortfolioShareResponse } from '../types/team'
 
 import type {
   InviteBrokerPayload,
@@ -46,6 +47,10 @@ class TeamService extends BaseService {
       .then((response) => response.user)
   }
 
+  rejectMembership(userId: string): Promise<void> {
+    return this.http.delete<void>(`${this.path}/membership-requests/${userId}`)
+  }
+
   goals(memberId: string): Promise<TeamGoalChange[]> {
     return this.http
       .get<TeamGoalHistoryResponse>(`${this.path}/members/${memberId}/goal`)
@@ -56,6 +61,12 @@ class TeamService extends BaseService {
     return this.http
       .put<TeamGoalResponse>(`${this.path}/members/${memberId}/goal`, { monthlySales })
       .then((data) => data.goal)
+  }
+
+  sharePortfolio(memberId: string, payload: SharePortfolioPayload): Promise<TeamTransferCounts> {
+    return this.http
+      .post<TeamPortfolioShareResponse>(`${this.path}/members/${memberId}/share`, payload)
+      .then((data) => data.shared)
   }
 
   transfer(memberId: string, payload: TransferPortfolioPayload): Promise<TeamTransferCounts> {
@@ -99,10 +110,15 @@ class TeamService extends BaseService {
       .then((data) => data.invitation)
   }
 
-  acceptInvitation(token: string, password: string): Promise<AcceptTeamInvitationResponse> {
+  acceptInvitation(
+    token: string,
+    password: string,
+    document: string,
+  ): Promise<AcceptTeamInvitationResponse> {
     return this.http.post<AcceptTeamInvitationResponse>(`${this.path}/invitations/accept`, {
       token,
       password,
+      document,
     })
   }
 }

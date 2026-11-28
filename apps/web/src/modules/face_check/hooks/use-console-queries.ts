@@ -3,10 +3,10 @@ import { useTenantSessionScope } from '@shared/hooks/use-tenant-session-scope'
 
 import type { OverviewScope, SessionListQuery } from '../types'
 import { isCaptureInFlight } from '../utils/session-status'
-import { hasLostFaceCheckAccess } from '../utils/query-access'
 
-import { ApiError } from '../services/api-error'
 import { consoleService } from '../services/console-service'
+import { ApiError } from '../services/api-error'
+import { hasLostFaceCheckAccess } from '../utils/query-access'
 import { consoleKeys } from './console-query-keys'
 
 const listPollingMs = 30_000
@@ -58,13 +58,19 @@ export function useSession(id: string) {
 export function useOverview(overviewScope: OverviewScope) {
   const scope = useTenantSessionScope()
   return useQuery({
-    ...consoleRequestOptions,
     queryKey: [...consoleKeys.overviewScope(overviewScope), scope.tenantId, ...scope.actorKey],
     enabled: scope.enabled,
     queryFn: ({ signal }) => consoleService.getOverview(overviewScope, signal),
-    staleTime: listPollingMs,
-    refetchInterval: (query) =>
-      shouldPauseAutomaticRequests(query.state.error) ? false : listPollingMs,
+    staleTime: 0,
+    retry: (attempt, error) =>
+      attempt < 1 &&
+      !hasLostFaceCheckAccess(error) &&
+      !(error instanceof ApiError && error.status === 503),
+    refetchInterval: (query) => (query.state.error ? false : livePollingMs),
+    retryOnMount: false,
+    refetchOnMount: (query) => !query.state.error,
+    refetchOnReconnect: (query) => !query.state.error,
+    refetchOnWindowFocus: false,
   })
 }
 

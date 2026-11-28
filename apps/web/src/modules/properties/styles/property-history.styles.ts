@@ -1,0 +1,40 @@
+import type { SxProps, Theme } from '@mui/material'
+import { alpha, brand, radius } from '@shared/theme/tokens'
+
+export const styles = {
+  events: { display: 'flex', flexDirection: 'column', gap: 2, listStyle: 'none', m: 0, p: 0 },
+  row: { display: 'flex', alignItems: 'flex-start', gap: 1.5 },
+  event: {
+    width: '100%',
+    minWidth: 0,
+    textAlign: 'left',
+    p: 0,
+    borderRadius: `${radius.sm}px`,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+    '&.Mui-focusVisible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 3 },
+  },
+  entry: { display: 'block', minWidth: 0 },
+  entryText: { display: 'block', fontSize: 15.5, fontWeight: 700, overflowWrap: 'anywhere' },
+  entryDate: { display: 'block', color: 'text.secondary', fontSize: 13, mt: 0.5 },
+  metadata: { color: 'text.secondary', mt: 0.5 },
+  eventChanges: { mt: 2 },
+  change: { py: 2, borderBottom: '1px solid', borderColor: 'divider' },
+  columns: { display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mt: 1 },
+  comparisonLabel: {
+    display: 'inline-flex',
+    px: 1.25,
+    py: 0.5,
+    mb: 1,
+    fontSize: 14,
+    fontWeight: 700,
+    borderRadius: `${radius.sm}px`,
+  },
+  beforeLabel: { bgcolor: alpha.graphite[6], color: 'text.primary' },
+  afterLabel: { bgcolor: alpha.magenta[10], color: brand.magenta[700] },
+  value: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' },
+  media: { display: 'flex', gap: 1, flexWrap: 'wrap' },
+  photo: { width: 150, height: 105, objectFit: 'cover', borderRadius: `${radius.sm}px` },
+  pagination: { mt: 2 },
+} satisfies Record<string, SxProps<Theme>>

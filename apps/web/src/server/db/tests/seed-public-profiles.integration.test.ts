@@ -83,7 +83,7 @@ describe('demonstration public profile seed', () => {
       where: { userId: camila.id },
       data: {
         displayName: 'Custom broker',
-        bio: 'Existing content',
+        summary: 'Existing content',
         status: 'DRAFT',
         publishedAt: null,
       },

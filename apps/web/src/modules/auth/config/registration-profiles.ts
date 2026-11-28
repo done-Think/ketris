@@ -5,6 +5,7 @@ export const REGISTRATION_PROFILE_IDS = [
   'broker',
   'agency',
   'developer',
+  'condoManager',
   'renter',
 ] as const satisfies readonly RegistrationProfileId[]
 
@@ -26,6 +27,10 @@ export const REGISTRATION_PROFILES: readonly RegistrationProfile[] = [
   {
     id: 'developer',
     icon: 'developer',
+  },
+  {
+    id: 'condoManager',
+    icon: 'condoManager',
   },
   {
     id: 'renter',

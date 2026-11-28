@@ -1,7 +1,8 @@
 import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
 import { z } from 'zod'
-import { normalizePostalCode } from '@shared/utils/postal-code'
+import { isBrazilianState } from '@shared/config/brazilian-states'
+import { isValidPostalCode, normalizePostalCode } from '@shared/utils/postal-code'
 
 import {
   propertyListingSchema,
@@ -17,18 +18,23 @@ export const propertyAddressInputSchema = z
     complement: z.string().trim().min(1).nullable().optional(),
     neighborhood: z.string().trim().min(1),
     city: z.string().trim().min(1),
-    state: z.string().trim().length(2),
+    state: z
+      .string()
+      .trim()
+      .length(2)
+      .refine(isBrazilianState, validationRefinement('stateInvalid')),
     zipCode: z
       .string()
       .trim()
       .min(8)
-      .refine((value) => normalizePostalCode(value) !== null, {
+      .refine(isValidPostalCode, {
         ...validationRefinement('postalCodeInvalid'),
       })
       .transform((value) => normalizePostalCode(value)!)
       .openapi({
         description:
-          'CEP brasileiro com 8 dígitos. Pontos, espaços e hífen são aceitos e removidos ao salvar.',
+          'CEP brasileiro com 8 dígitos, a partir de 01000-000 e sem todos os dígitos repetidos ' +
+          '(00000-000, 11111-111…). Pontos, espaços e hífen são aceitos e removidos ao salvar.',
         example: '37502330',
       }),
     latitude: z.number().min(-90).max(90).nullable().optional(),
@@ -50,6 +56,10 @@ const optionalNullableNonNegativeNumberSchema = z.number().nonnegative().nullabl
 export const createPropertyRequestSchema = z
   .object({
     ownerId: z.string().min(1).nullable().optional(),
+    brokerIds: z.array(z.string().min(1)).max(100).optional().openapi({
+      description:
+        'Additional active approved brokers in this agency. Only agency management can change these grants. Omit to preserve existing grants; send an empty array to revoke all additional grants. The primary responsible user is unchanged.',
+    }),
     ownerContactId: z.string().min(1).nullable().optional(),
     title: z.string().trim().min(1).max(200),
     description: z.string().trim().min(1).max(10000).nullable().optional(),

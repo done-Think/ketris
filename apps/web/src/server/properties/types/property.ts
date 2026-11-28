@@ -1,3 +1,4 @@
+import type { PropertyNegotiationCondition } from '@shared/types/property-negotiation'
 import type { AppLocale } from '@/i18n/types/locale.types'
 export type PropertyType =
   'APARTMENT' | 'HOUSE' | 'STUDIO' | 'PENTHOUSE' | 'COMMERCIAL' | 'LOFT' | 'OTHER'
@@ -5,6 +6,7 @@ export type PropertyType =
 export type PropertyAmenity = 'FURNISHED' | 'GOURMET_BALCONY' | 'PET_FRIENDLY' | 'CONCIERGE_24H'
 
 export interface PropertyListing {
+  negotiationConditions?: PropertyNegotiationCondition[]
   amenities: PropertyAmenity[]
   negotiationTerms: string | null
   publishAfterReview: boolean
@@ -57,10 +59,13 @@ export interface PropertyCharacteristics {
 }
 
 export interface Property {
+  brokerIds?: string[]
+  agencyManaged?: boolean
   responsibleName: string
   activeContractId: string | null
   id: string
   tenantId: string
+  agencyName?: string
   responsibleId: string
   ownerId: string | null
   ownerContactId?: string | null
@@ -81,6 +86,7 @@ export interface Property {
 }
 
 export interface NewProperty {
+  brokerIds?: string[]
   tenantId: string
   responsibleId: string
   ownerId?: string | null
@@ -103,6 +109,7 @@ export interface NewProperty {
 }
 
 export interface PropertyChanges {
+  brokerIds?: string[]
   ownerId?: string | null
   ownerContactId?: string | null
   title?: string
@@ -134,6 +141,7 @@ export interface PropertyListFilters {
   search?: string
   tenantId: string
   renterId?: string
+  landlordId?: string
   ownerId?: string
   status?: PropertyStatus
   purpose?: PropertyPurpose
@@ -169,4 +177,9 @@ export interface PropertyOwnersPage {
   pagination: { page: number; pageSize: number; total: number; totalPages: number }
 }
 
-export type PropertyAccessTarget = Pick<Property, 'responsibleId' | 'ownerId'>
+export type PropertyAccessTarget = Pick<Property, 'responsibleId' | 'ownerId' | 'brokerIds'>
+
+export interface PropertyBrokersPage {
+  brokers: PropertyOwnerOption[]
+  pagination: PropertyOwnersPage['pagination']
+}

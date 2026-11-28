@@ -278,9 +278,9 @@ describe('authOptions — callbacks.jwt', () => {
   }
 
   it('copies trusted provider claims on initial sign-in', async () => {
+    findByIdMock.mockResolvedValueOnce({ ...currentUser, tenantAccountType: 'AGENCY' })
     const token = await run(currentToken, { user: { ...currentToken, sessionVersion: 3 } })
-    expect(token).toMatchObject({ role: 'AGENT', sessionVersion: 3 })
-    expect(findByIdMock).not.toHaveBeenCalled()
+    expect(token).toMatchObject({ role: 'AGENT', sessionVersion: 3, accountType: 'AGENCY' })
   })
 
   it.each(['ACTIVE', 'TRIAL'])('keeps a current session in tenant %s', async (tenantStatus) => {

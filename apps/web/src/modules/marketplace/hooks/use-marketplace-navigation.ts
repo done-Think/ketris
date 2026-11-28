@@ -20,7 +20,7 @@ export function useMarketplaceNavigation(): MarketplaceNavigation {
         title: t('footer.columns.forYou'),
         links: [
           { label: t('footer.links.searchProperties'), href: hrefs.properties },
-          { label: t('footer.links.favorites'), href: hrefs.properties },
+          { label: t('footer.links.favorites'), href: hrefs.favorites },
           { label: t('footer.links.financialSimulator'), href: hrefs.properties },
         ],
       },
@@ -43,7 +43,7 @@ export function useMarketplaceNavigation(): MarketplaceNavigation {
     ],
     legalLinks: [
       { label: t('footer.links.termsOfUse'), href: hrefs.home },
-      { label: t('footer.links.privacyPolicy'), href: hrefs.home },
+      { label: t('footer.links.privacyPolicy'), href: hrefs.privacy },
     ],
   }
 }
@@ -56,6 +56,8 @@ function getMarketplaceHrefs(): Record<MarketplaceNavigationHrefKey, LocalizedHr
     brokers: '/brokers',
     agencies: '/agencies',
     properties: '/properties',
+    favorites: '/favorites',
     login: '/login',
+    privacy: '/privacy',
   }
 }

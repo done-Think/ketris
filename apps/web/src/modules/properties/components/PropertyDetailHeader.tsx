@@ -15,6 +15,8 @@ import type { PropertyDetailHeaderProps } from '../types/dashboard-property'
 export function PropertyDetailHeader({
   property,
   canManage,
+  canUnpublish = true,
+  canInactivate = true,
   isPublishing,
   isUnpublishing,
   isDeleting,
@@ -69,16 +71,18 @@ export function PropertyDetailHeader({
           gap={1.2}
           sx={styles.stack3}
         >
-          <Button
-            variant="outlined"
-            color="error"
-            startIcon={<DeleteOutlineRoundedIcon />}
-            onClick={onDeleteRequest}
-            disabled={isDeleting}
-            sx={styles.button}
-          >
-            {t('delete')}
-          </Button>
+          {canInactivate ? (
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteOutlineRoundedIcon />}
+              onClick={onDeleteRequest}
+              disabled={isDeleting}
+              sx={styles.button}
+            >
+              {t('delete')}
+            </Button>
+          ) : null}
           <Button
             variant="outlined"
             color="secondary"
@@ -89,23 +93,25 @@ export function PropertyDetailHeader({
             {t('edit')}
           </Button>
           <Stack spacing={1.1}>
-            <Button
-              variant="contained"
-              startIcon={
-                isPublishing || isUnpublishing ? (
-                  <CircularProgress size={16} color="inherit" />
-                ) : isPublished ? (
-                  <VisibilityOffOutlinedIcon />
-                ) : (
-                  <PublishOutlinedIcon />
-                )
-              }
-              onClick={isPublished ? onUnpublish : onPublish}
-              disabled={isPublishing || isUnpublishing}
-              sx={styles.button3}
-            >
-              {isPublished ? t('unpublish') : t('publish')}
-            </Button>
+            {!isPublished || canUnpublish ? (
+              <Button
+                variant="contained"
+                startIcon={
+                  isPublishing || isUnpublishing ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : isPublished ? (
+                    <VisibilityOffOutlinedIcon />
+                  ) : (
+                    <PublishOutlinedIcon />
+                  )
+                }
+                onClick={isPublished ? onUnpublish : onPublish}
+                disabled={isPublishing || isUnpublishing}
+                sx={styles.button3}
+              >
+                {isPublished ? t('unpublish') : t('publish')}
+              </Button>
+            ) : null}
             {isRented && activeContractId ? (
               <Button
                 onClick={() =>

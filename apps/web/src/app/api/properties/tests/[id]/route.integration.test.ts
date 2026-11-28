@@ -320,12 +320,18 @@ describe('/api/properties/{id} (integração)', () => {
     expect(json.error.code).toBe('PROPERTY_PUBLISH_VALIDATION_ERROR')
   })
 
-  it('despublica imóvel publicado', async () => {
+  it('permite que a gestão despublique o imóvel e bloqueia o corretor responsável', async () => {
     const beforeUnpublish = await prisma.property.findUniqueOrThrow({
       where: { id: completePropertyId },
     })
-    const response = await unpublish(
+    const denied = await unpublish(
       buildRequest('POST', completePropertyId),
+      context(completePropertyId),
+    )
+    expect(denied.status).toBe(403)
+    expect((await denied.json()).error.code).toBe('PROPERTY_PUBLICATION_FORBIDDEN')
+    const response = await unpublish(
+      buildRequest('POST', completePropertyId, undefined, adminToken),
       context(completePropertyId),
     )
     const json = await response.json()
@@ -469,7 +475,7 @@ describe('/api/properties/{id} (integração)', () => {
       expect(response.status).toBe(404)
     })
 
-    it('permite que o próprio corretor responsável inative seu imóvel', async () => {
+    it('impede que o corretor responsável inative o imóvel publicado da imobiliária', async () => {
       const beforeInactivation = await prisma.property.findUniqueOrThrow({
         where: { id: ownedByActorPropertyId },
       })
@@ -478,12 +484,14 @@ describe('/api/properties/{id} (integração)', () => {
         context(ownedByActorPropertyId),
       )
 
-      expect(response.status).toBe(204)
+      expect(response.status).toBe(403)
+      expect((await response.json()).error.code).toBe('PROPERTY_PUBLICATION_FORBIDDEN')
 
       const afterDelete = await prisma.property.findUnique({
         where: { id: ownedByActorPropertyId },
       })
-      expect(afterDelete?.status).toBe('INACTIVE')
+      expect(afterDelete?.status).toBe(beforeInactivation.status)
+      expect(afterDelete?.updatedAt).toEqual(beforeInactivation.updatedAt)
       expect(afterDelete?.publishedAt).toEqual(beforeInactivation.publishedAt)
       expect(afterDelete?.createdAt).toEqual(beforeInactivation.createdAt)
     })

@@ -1,4 +1,4 @@
-import { isPropertyOwner } from '@server/auth/domain/roles'
+import { isAgencyManager, isPropertyOwner } from '@server/auth/domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
 
 import type { ChargeReadActor } from '../types/charge-read'
@@ -17,7 +17,13 @@ export function resolveChargeReadScope(actor: ChargeReadActor): ChargeReadScope 
   assertCanAccessFinance(actor.actorRole)
 
   if (actor.actorTenantId) {
-    return { kind: 'tenant', tenantId: actor.actorTenantId }
+    return {
+      kind: 'tenant',
+      tenantId: actor.actorTenantId,
+      ...(isAgencyManager(actor.actorRole) && actor.actorId
+        ? { landlordUserId: actor.actorId }
+        : {}),
+    }
   }
 
   throw new ForbiddenError()

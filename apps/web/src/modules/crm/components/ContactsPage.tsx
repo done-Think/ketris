@@ -10,7 +10,10 @@ import { crmPageCounts } from '../utils/page-counts'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import { useLocale, useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { useStartContactInteraction } from '../hooks/use-interactions'
+import type { InteractionChannel, StartInteractionPayload } from '../types/interaction'
+import { CreateLeadDialog } from './CreateLeadDialog'
 
 import {
   useArchiveContact,
@@ -22,6 +25,7 @@ import type { ApiContactListItem, ContactFormValues, ContactListItem } from '../
 import { mapContactToListItem } from '../utils/contact-adapter'
 import { extractErrorMessage } from '@shared/utils/error-message'
 import { ContactsList } from './ContactsList'
+import { ContactInteractionsDialog } from './interactions/ContactInteractionsDialog'
 import { ArchiveContactDialog } from './contacts-list/ArchiveContactDialog'
 import { ContactFormDialog } from './contacts-list/ContactFormDialog'
 
@@ -48,6 +52,32 @@ export function ContactsPage() {
   const updateContact = useUpdateContact()
   const archiveContact = useArchiveContact()
 
+  const [interactionContact, setInteractionContact] = useState<ContactListItem | null>(null)
+  const startInteraction = useStartContactInteraction()
+  const busy = useRef(false)
+  const [shortcut, setShortcut] = useState<{
+    contactId: string
+    payload: StartInteractionPayload
+    failed: boolean
+  } | null>(null)
+  const [leadContact, setLeadContact] = useState<ApiContactListItem | null>(null)
+  async function recordAttempt(contactId: string, payload: StartInteractionPayload) {
+    busy.current = true
+    setShortcut({ contactId, payload, failed: false })
+    try {
+      await startInteraction.mutateAsync({ contactId, payload })
+    } catch {
+      setShortcut({ contactId, payload, failed: true })
+    } finally {
+      busy.current = false
+    }
+  }
+  function contactAction(contact: ContactListItem, channel: InteractionChannel) {
+    if (busy.current) return false
+    setInteractionContact(contact)
+    void recordAttempt(contact.id, { channel, requestId: crypto.randomUUID() })
+    return true
+  }
   const [formOpen, setFormOpen] = useState(false)
   const [editingContact, setEditingContact] = useState<ApiContactListItem | null>(null)
   const [archivingContact, setArchivingContact] = useState<ApiContactListItem | null>(null)
@@ -156,11 +186,36 @@ export function ContactsPage() {
           setFilter('pageSize', value)
           setFilter('page', 1)
         }}
+        onAddLead={(item) => setLeadContact(findRawContact(item) ?? null)}
+        onContactAction={contactAction}
         onNewContact={openCreateDialog}
         onEditContact={openEditDialog}
+        onOpenInteractions={setInteractionContact}
         onOpenMoreOptions={openArchiveDialog}
       />
 
+      <ContactInteractionsDialog
+        contact={interactionContact}
+        attempt={
+          shortcut?.contactId === interactionContact?.id
+            ? {
+                isPending: startInteraction.isPending,
+                isSuccess: startInteraction.isSuccess,
+                failed: shortcut?.failed ?? false,
+                retry: () => {
+                  if (shortcut && !busy.current)
+                    void recordAttempt(shortcut.contactId, shortcut.payload)
+                },
+              }
+            : undefined
+        }
+        onClose={() => setInteractionContact(null)}
+      />
+      <CreateLeadDialog
+        contact={leadContact}
+        open={Boolean(leadContact)}
+        onClose={() => setLeadContact(null)}
+      />
       <ContactFormDialog
         key={editingContact?.id ?? 'new'}
         open={formOpen}

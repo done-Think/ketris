@@ -4,7 +4,7 @@ import { styles } from '../styles/property-detail-dashboard-page.styles'
 
 import { useState } from 'react'
 import { notFound } from 'next/navigation'
-import { Box, Stack, Typography } from '@mui/material'
+import { Alert, Box, Stack, Typography } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
@@ -32,10 +32,12 @@ import { PropertyDetailHeader } from './PropertyDetailHeader'
 import { PropertyDetailMainPanel } from './PropertyDetailMainPanel'
 import { PropertyDetailSidebar } from './PropertyDetailSidebar'
 import { PropertyDetailTabs } from './PropertyDetailTabs'
+import { PropertyInstagramPanel } from './PropertyInstagramPanel'
 
 export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashboardPageProps) {
   const t = useTranslations('properties.detail')
   const renterT = useTranslations('properties.dashboard.renter')
+  const detailT = useTranslations('properties.detail')
   const { enqueueSnackbar } = useSnackbar()
   const router = useRouter()
   const mappingOptions = useDashboardPropertyMappingOptions()
@@ -62,10 +64,18 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
   if (!propertyQuery.data) return <PropertyQueryFeedback loading />
 
   const property = toDashboardProperty(propertyQuery.data, mappingOptions)
+  const publicationRestricted = session?.role === 'AGENT' && property.agencyManaged === true
   const canManage =
-    Boolean(restrictedAccess?.canManageProperties) ||
-    (!isRestrictedViewer &&
-      (session?.role === 'OWNER' || session?.user?.id === property.responsibleUserId))
+    !property.managedBy &&
+    (Boolean(restrictedAccess?.canManageProperties) ||
+      (!isRestrictedViewer &&
+        (session?.role === 'OWNER' ||
+          (session?.role === 'AGENT' &&
+            Boolean(
+              session.user?.id &&
+              (session.user.id === property.responsibleUserId ||
+                property.brokerIds?.includes(session.user.id)),
+            )))))
 
   const handlePublish = async () => {
     try {
@@ -102,6 +112,8 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
       <PropertyDetailHeader
         property={property}
         canManage={canManage}
+        canUnpublish={!publicationRestricted}
+        canInactivate={!publicationRestricted || property.apiStatus !== 'PUBLISHED'}
         isPublishing={publishProperty.isPending}
         isUnpublishing={unpublishProperty.isPending}
         isDeleting={deleteProperty.isPending}
@@ -120,10 +132,16 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
+      <PropertyInstagramPanel property={property} />
       {isReadOnlyViewer && (
         <Typography color="text.secondary" sx={styles.typography}>
           {renterT('readOnly')}
         </Typography>
+      )}
+      {property.managedBy && (
+        <Alert severity="info" sx={styles.managedByAlert}>
+          {detailT('managedBy', { agency: property.managedBy })}
+        </Alert>
       )}
       <Stack
         direction={{ xs: 'column', lg: 'row' }}
@@ -137,7 +155,9 @@ export function PropertyDetailDashboardPage({ propertyId }: PropertyDetailDashbo
           />
         </Box>
 
-        {!isReadOnlyViewer && <PropertyDetailSidebar property={property} />}
+        {!isReadOnlyViewer && (
+          <PropertyDetailSidebar property={property} showFullHistory={activeTab === 'history'} />
+        )}
       </Stack>
 
       {canManage && (

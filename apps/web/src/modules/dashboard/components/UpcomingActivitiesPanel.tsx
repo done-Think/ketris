@@ -1,5 +1,5 @@
 import { Box, Stack, Typography } from '@mui/material'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { DashboardPanel } from '@shared/components/ui/DashboardPanel'
 
@@ -15,6 +15,7 @@ export function UpcomingActivitiesPanel({
   onActivitySelect,
 }: UpcomingActivitiesPanelProps) {
   const t = useTranslations('dashboard.overview.upcomingActivities')
+  const format = useFormatter()
 
   return (
     <DashboardPanel>
@@ -34,7 +35,9 @@ export function UpcomingActivitiesPanel({
                 sx={styles.box2}
               >
                 <Box sx={getAccentBarStyles(activity.accent)} />
-                <Typography sx={getAccentTimeStyles(activity.accent)}>{activity.time}</Typography>
+                <Typography sx={getAccentTimeStyles(activity.accent)}>
+                  {format.dateTime(new Date(activity.startsAt), 'weekdayDayTime')}
+                </Typography>
                 <Typography sx={styles.typography3}>{activity.title}</Typography>
                 <Typography sx={styles.typography4}>{activity.contact}</Typography>
               </Box>

@@ -44,86 +44,94 @@ export function SalesPipelineToolbar({
   const t = useTranslations('crm.pipeline')
 
   const actions = (
-    <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.2} sx={crmStyles.stackSx}>
-      <ToggleButtonGroup
-        value={viewMode}
-        exclusive
-        onChange={(_event, nextViewMode: SalesPipelineViewMode | null) => {
-          if (nextViewMode) onViewModeChange(nextViewMode)
-        }}
-        sx={crmStyles.toggleButtonGroupSx}
-      >
-        <Tooltip title={t('viewMode.kanban')}>
-          <ToggleButton value="kanban" aria-label={t('viewMode.kanban')}>
-            <ViewKanbanOutlinedIcon sx={crmStyles.viewKanbanOutlinedIconSx} />
-          </ToggleButton>
-        </Tooltip>
-        <Tooltip title={t('viewMode.list')}>
-          <ToggleButton value="list" aria-label={t('viewMode.list')}>
-            <TableRowsRoundedIcon sx={crmStyles.viewKanbanOutlinedIconSx} />
-          </ToggleButton>
-        </Tooltip>
-      </ToggleButtonGroup>
+    <Stack direction="column" gap={1.2} sx={crmStyles.stackSx}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.2} sx={crmStyles.secondaryActionsSx}>
+        <ToggleButtonGroup
+          value={viewMode}
+          exclusive
+          onChange={(_event, nextViewMode: SalesPipelineViewMode | null) => {
+            if (nextViewMode) onViewModeChange(nextViewMode)
+          }}
+          sx={crmStyles.toggleButtonGroupSx}
+        >
+          <Tooltip title={t('viewMode.kanban')}>
+            <ToggleButton value="kanban" aria-label={t('viewMode.kanban')}>
+              <ViewKanbanOutlinedIcon sx={crmStyles.viewKanbanOutlinedIconSx} />
+            </ToggleButton>
+          </Tooltip>
+          <Tooltip title={t('viewMode.list')}>
+            <ToggleButton value="list" aria-label={t('viewMode.list')}>
+              <TableRowsRoundedIcon sx={crmStyles.viewKanbanOutlinedIconSx} />
+            </ToggleButton>
+          </Tooltip>
+        </ToggleButtonGroup>
 
-      <TextField
-        value={search}
-        onChange={(event) => onSearchChange(event.target.value)}
-        placeholder={t('searchPlaceholder')}
-        size="small"
-        slotProps={{
-          htmlInput: { 'aria-label': t('searchAriaLabel') },
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchRoundedIcon sx={crmStyles.searchRoundedIconSx} />
-              </InputAdornment>
-            ),
-          },
-        }}
-        sx={crmStyles.textFieldSx}
-      />
+        <TextField
+          value={search}
+          onChange={(event) => onSearchChange(event.target.value)}
+          placeholder={t('searchPlaceholder')}
+          size="small"
+          slotProps={{
+            htmlInput: { 'aria-label': t('searchAriaLabel') },
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchRoundedIcon sx={crmStyles.searchRoundedIconSx} />
+                </InputAdornment>
+              ),
+            },
+          }}
+          sx={crmStyles.textFieldSx}
+        />
+      </Stack>
 
-      {viewMode === 'kanban' ? (
-        <>
-          <Button
-            variant="outlined"
-            color="secondary"
-            startIcon={<FilterAltOutlinedIcon />}
-            endIcon={<KeyboardArrowDownRoundedIcon />}
-            onClick={(event) => onFilterOpen(event.currentTarget)}
-            aria-haspopup="menu"
-            aria-expanded={Boolean(filterAnchor)}
-            sx={crmStyles.buttonSx}
-          >
-            {selectedStage ? t(`stages.${selectedStage.labelKey}`) : t('filterByStage')}
-          </Button>
-          <Menu anchorEl={filterAnchor} open={Boolean(filterAnchor)} onClose={onFilterClose}>
-            <MenuItem selected={!selectedStageId} onClick={() => onStageSelect(null)}>
-              {t('allStages')}
-            </MenuItem>
-            {salesPipelineStages.map((stage) => (
-              <MenuItem
-                key={stage.id}
-                selected={selectedStageId === stage.id}
-                onClick={() => onStageSelect(stage.id)}
-              >
-                <Box aria-hidden="true" sx={crmStyles.getBoxSx(stage)} />
-                {t(`stages.${stage.labelKey}`)}
+      <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.2} sx={crmStyles.primaryActionsSx}>
+        {viewMode === 'kanban' ? (
+          <>
+            <Button
+              variant="outlined"
+              color="secondary"
+              startIcon={<FilterAltOutlinedIcon />}
+              endIcon={<KeyboardArrowDownRoundedIcon />}
+              onClick={(event) => onFilterOpen(event.currentTarget)}
+              aria-haspopup="menu"
+              aria-expanded={Boolean(filterAnchor)}
+              sx={crmStyles.buttonSx}
+            >
+              {selectedStage ? t(`stages.${selectedStage.labelKey}`) : t('filterByStage')}
+            </Button>
+            <Menu anchorEl={filterAnchor} open={Boolean(filterAnchor)} onClose={onFilterClose}>
+              <MenuItem selected={!selectedStageId} onClick={() => onStageSelect(null)}>
+                {t('allStages')}
               </MenuItem>
-            ))}
-          </Menu>
-        </>
-      ) : null}
+              {salesPipelineStages.map((stage) => (
+                <MenuItem
+                  key={stage.id}
+                  selected={selectedStageId === stage.id}
+                  onClick={() => onStageSelect(stage.id)}
+                >
+                  <Box aria-hidden="true" sx={crmStyles.getBoxSx(stage)} />
+                  {t(`stages.${stage.labelKey}`)}
+                </MenuItem>
+              ))}
+            </Menu>
+          </>
+        ) : null}
 
-      <DashboardHeaderActionButton startIcon={<AddRoundedIcon />} onClick={onNewOpportunity}>
-        {t('newOpportunity')}
-      </DashboardHeaderActionButton>
+        <DashboardHeaderActionButton startIcon={<AddRoundedIcon />} onClick={onNewOpportunity}>
+          {t('newOpportunity')}
+        </DashboardHeaderActionButton>
 
-      <Box sx={crmStyles.boxSx}>
-        <DashboardNotificationsButton />
-      </Box>
+        <Box sx={crmStyles.boxSx}>
+          <DashboardNotificationsButton />
+        </Box>
+      </Stack>
     </Stack>
   )
 
-  return <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={actions} />
+  return (
+    <Box sx={crmStyles.containerSx}>
+      <DashboardPageHeader title={t('title')} subtitle={t('subtitle')} actions={actions} />
+    </Box>
+  )
 }

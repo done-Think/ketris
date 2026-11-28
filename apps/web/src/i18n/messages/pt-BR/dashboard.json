@@ -60,6 +60,7 @@
       "visitProperty": "Imóvel da visita"
     },
     "leadDetails": {
+      "openLead": "Abrir lead",
       "title": "Detalhes do lead",
       "close": "Fechar",
       "client": "Cliente",
@@ -107,17 +108,13 @@
         "leadsIncrease": "+{count, number} vs mês passado",
         "leadsDecrease": "−{count, number} vs mês passado",
         "leadsSame": "Igual ao mês passado",
-        "revenueIncrease": "+{percent, number}% vs mês passado",
-        "revenueDecrease": "−{percent, number}% vs mês passado",
-        "revenueSame": "Igual ao mês passado",
-        "revenueNoPrevious": "Mês passado zerado",
         "overdue": "Vencidas e não pagas",
         "noOverdue": "Nada em atraso"
       }
     },
     "performance": {
       "title": "Performance de Faturamento",
-      "subtitle": "Receita mensal a receber pela imobiliária",
+      "subtitle": "Total faturado por mês, sem as cobranças canceladas",
       "revenue": "Receita"
     },
     "topBrokers": {
@@ -488,7 +485,17 @@
       "linksRegularized": "Vínculos de acesso regularizados pela gestão.",
       "attachmentAdded": "Anexo adicionado."
     },
-    "allCategories": "Todas as categorias"
+    "allCategories": "Todas as categorias",
+    "contractFilter": {
+      "message": "Mostrando só os chamados deste contrato.",
+      "clear": "Ver todos os chamados"
+    },
+    "contractTickets": {
+      "title": "Chamados deste contrato",
+      "openAll": "Ver todos os chamados",
+      "empty": "Nenhum chamado aberto para este contrato.",
+      "meta": "{category} · aberto em {date} por {name}"
+    }
   },
   "finance": {
     "title": "Financeiro",
@@ -507,9 +514,10 @@
       "date": "Data"
     },
     "export": "Exportar",
-    "revenueChartTitle": "A receber (6 meses)",
-    "revenue": "A receber",
+    "revenueChartTitle": "Faturado (6 meses)",
+    "revenue": "Faturado",
     "upcomingDuesTitle": "Próximos vencimentos",
+    "upcomingDuesEmpty": "Nenhum vencimento a partir de hoje.",
     "kpis": {
       "receivable": "A receber",
       "delinquency": "Inadimplência",
@@ -570,7 +578,9 @@
       "deactivate": "Desativar corretor",
       "activate": "Reativar corretor",
       "resendInvitation": "Reenviar convite",
-      "cancelInvitation": "Cancelar convite"
+      "cancelInvitation": "Cancelar convite",
+      "sharePortfolio": "Compartilhar carteira",
+      "revokePortfolio": "Remover acesso à carteira"
     },
     "dialogs": {
       "performanceTitle": "Desempenho — {name}",
@@ -582,13 +592,16 @@
       "goalHistoryEmpty": "Ainda sem meta definida.",
       "goalSetBy": "{goal, plural, one {# venda} other {# vendas}} · {name} em {date}",
       "broker": "Corretor",
-      "source": "Origem",
+      "source": "Transferir de",
       "destination": "Transferir para",
       "items": "O que transferir",
       "itemProperties": "Imóveis ({count})",
       "itemLeads": "Leads ({count})",
       "itemOpportunities": "Oportunidades em aberto ({count})",
       "itemFutureEvents": "Eventos futuros da agenda",
+      "itemPropertiesNoCount": "Imóveis",
+      "itemLeadsNoCount": "Leads",
+      "itemOpportunitiesNoCount": "Oportunidades em aberto",
       "close": "Fechar",
       "cancel": "Cancelar",
       "save": "Salvar",
@@ -599,7 +612,7 @@
       "itemsError": "Selecione ao menos um item",
       "transferError": "Não foi possível transferir a carteira",
       "goalSaved": "Meta mensal atualizada",
-      "transferred": "Transferidos: {properties} imóveis, {leads} leads, {opportunities} oportunidades e {events} eventos",
+      "transferred": "Transferidos: {properties, plural, =0 {# imóveis} one {# imóvel} other {# imóveis}}, {leads, plural, =0 {# leads} one {# lead} other {# leads}}, {opportunities, plural, =0 {# oportunidades} one {# oportunidade} other {# oportunidades}} e {events, plural, =0 {# eventos} one {# evento} other {# eventos}}",
       "deactivateTitle": "Desativar {name}",
       "deactivateDescription": "Toda a carteira (imóveis, leads, oportunidades e eventos futuros) passa para o corretor escolhido, e {name} perde o acesso. Tudo fica registrado.",
       "deactivateSubmit": "Transferir e desativar",
@@ -630,7 +643,18 @@
       "invitationCancelError": "Não foi possível cancelar o convite",
       "invitationHasPortfolio": "Este convidado já tem imóveis, leads ou eventos. Transfira antes de cancelar.",
       "goalSaveError": "Não foi possível salvar a meta",
-      "selfDestination": "{name} (você)"
+      "selfDestination": "{name} (você)",
+      "share": "Compartilhar carteira",
+      "revoke": "Remover acesso",
+      "shareDestination": "Corretores com acesso",
+      "shared": "Acessos concedidos: {properties} imóveis, {leads} leads, {opportunities} oportunidades e {events} eventos",
+      "revoked": "Acessos removidos: {properties} imóveis, {leads} leads, {opportunities} oportunidades e {events} eventos",
+      "shareError": "Não foi possível atualizar os acessos. Tente novamente.",
+      "shareItemsError": "Selecione ao menos um item para compartilhar ou remover o acesso",
+      "shareHint": "Compartilha os registros existentes, sem criar cópias. Leads e oportunidades podem ser editados pelos participantes; propostas de leads compartilhados mantêm o acesso. Novos atendimentos continuam individuais. O acesso ao imóvel depende da seleção de Imóveis. Eventos são compartilhados somente para leitura. Arquivar ou excluir uma oportunidade afeta todos os participantes.",
+      "revokeHint": "Remove o acesso dos corretores selecionados aos itens atuais desta carteira, sem apagar registros ou alterar o responsável principal.",
+      "shareSource": "Carteira de origem",
+      "shareItems": "Categorias de acesso"
     },
     "actions": {
       "message": "Enviar mensagem no WhatsApp",
@@ -656,6 +680,10 @@
       "email": "E-mail",
       "password": "Senha",
       "passwordConfirmation": "Confirmar senha",
+      "document": "CPF / CNPJ",
+      "documentRequired": "Informe seu CPF ou CNPJ",
+      "documentInvalid": "Informe um CPF ou CNPJ válido",
+      "documentInUse": "Este CPF ou CNPJ já está em uso nesta imobiliária",
       "submit": "Definir senha",
       "success": "Senha definida! Entre com o seu e-mail e a nova senha.",
       "login": "Ir para o login",
@@ -676,7 +704,16 @@
       "approveAriaLabel": "Aprovar vínculo de {name}",
       "approveSuccess": "{name} agora faz parte da equipe.",
       "approveError": "Não foi possível aprovar o vínculo.",
-      "loadError": "Não foi possível carregar os pedidos de vínculo."
+      "loadError": "Não foi possível carregar os pedidos de vínculo.",
+      "reject": "Recusar",
+      "rejectAriaLabel": "Recusar vínculo de {name}",
+      "rejectTitle": "Recusar o pedido de {name}?",
+      "rejectDescription": "{name} não entra na equipe e o cadastro nesta imobiliária é apagado. O e-mail fica livre para um novo pedido.",
+      "rejectSubmit": "Recusar pedido",
+      "rejectCancel": "Voltar",
+      "rejectSuccess": "Pedido de {name} recusado.",
+      "rejectError": "Não foi possível recusar o pedido.",
+      "rejectHasPortfolio": "Este corretor já tem imóveis, leads ou eventos. Transfira antes de recusar."
     }
   },
   "proposals": {

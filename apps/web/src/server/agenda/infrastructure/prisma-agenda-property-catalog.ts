@@ -3,7 +3,7 @@ import { prisma } from '@server/db/prisma'
 import type { AgendaPropertyCatalog } from '../application/ports/agenda-property-catalog.port'
 import type { AgendaReadActor } from '../types/read-actor'
 import type { AgendaPropertyOptionsQuery } from '../types/property-catalog'
-import type { AgendaPropertyRecord } from '../types/prisma-property'
+import type { AgendaPropertyRecord, AgendaPropertySummaryRecord } from '../types/prisma-property'
 
 const propertySelect = {
   id: true,
@@ -58,10 +58,10 @@ export class PrismaAgendaPropertyCatalog implements AgendaPropertyCatalog {
   async summaries(actor: AgendaReadActor, propertyIds: string[]) {
     if (!propertyIds.length) return []
     const records = await prisma.property.findMany({
-      where: { ...agendaPropertyWhere(actor), id: { in: propertyIds } },
-      select: propertySelect,
+      where: { ...agendaEventPropertyWhere(actor), id: { in: propertyIds } },
+      select: { ...propertySelect, responsibleId: true },
     })
-    return records.map(toPropertyOption)
+    return records.map((record) => toPropertySummary(actor, record))
   }
 }
 
@@ -79,6 +79,19 @@ export function agendaPropertyWhere(actor: AgendaReadActor): Prisma.PropertyWher
     tenantId: actor.actorTenantId,
     ...(actor.actorRole === 'AGENT' ? { responsibleId: actor.actorUserId } : {}),
     ...(actor.actorRole === 'PROPERTY_OWNER' ? { ownerId: actor.actorUserId } : {}),
+  }
+}
+
+export function agendaEventPropertyWhere(actor: AgendaReadActor): Prisma.PropertyWhereInput {
+  return actor.actorRole === 'AGENT'
+    ? { tenantId: actor.actorTenantId }
+    : agendaPropertyWhere(actor)
+}
+
+function toPropertySummary(actor: AgendaReadActor, record: AgendaPropertySummaryRecord) {
+  return {
+    ...toPropertyOption(record),
+    accessible: actor.actorRole !== 'AGENT' || record.responsibleId === actor.actorUserId,
   }
 }
 

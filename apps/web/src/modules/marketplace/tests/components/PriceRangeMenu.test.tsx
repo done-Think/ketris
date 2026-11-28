@@ -15,9 +15,10 @@ describe('free marketplace price range', () => {
         closeSearchMenu={close}
       />,
     )
-    const maximum = screen.getByRole('spinbutton', { name: 'Máximo' })
+    const maximum = screen.getByRole('textbox', { name: 'Máximo' })
     expect(maximum).not.toHaveAttribute('max')
-    await user.type(maximum, '750000')
+    await user.type(maximum, '75000000')
+    expect(maximum).toHaveValue('750.000,00')
     expect(update).not.toHaveBeenCalled()
     await user.click(screen.getByRole('button', { name: 'Aplicar' }))
     expect(update).toHaveBeenCalledWith([null, 750000])
@@ -34,12 +35,13 @@ describe('free marketplace price range', () => {
         closeSearchMenu={vi.fn()}
       />,
     )
-    await user.clear(screen.getByRole('spinbutton', { name: 'Máximo' }))
+    expect(screen.getByRole('textbox', { name: 'Máximo' })).toHaveValue('750.000,00')
+    await user.clear(screen.getByRole('textbox', { name: 'Máximo' }))
     await user.click(screen.getByRole('button', { name: 'Aplicar' }))
     expect(update).toHaveBeenCalledWith([25000, null])
   })
 
-  it('blocks a negative or reversed range instead of silently changing the entered values', async () => {
+  it('blocks a reversed range instead of silently changing the entered values', async () => {
     const user = userEvent.setup()
     const update = vi.fn()
     render(
@@ -51,8 +53,9 @@ describe('free marketplace price range', () => {
     )
     expect(screen.getByRole('button', { name: 'Aplicar' })).toBeDisabled()
     expect(screen.getByText('Valor de preço inválido')).toBeVisible()
-    await user.clear(screen.getByRole('spinbutton', { name: 'Mínimo' }))
-    await user.type(screen.getByRole('spinbutton', { name: 'Mínimo' }), '-1')
+    await user.clear(screen.getByRole('textbox', { name: 'Mínimo' }))
+    await user.type(screen.getByRole('textbox', { name: 'Mínimo' }), '-6000000')
+    expect(screen.getByRole('textbox', { name: 'Mínimo' })).toHaveValue('60.000,00')
     expect(screen.getByRole('button', { name: 'Aplicar' })).toBeDisabled()
     expect(update).not.toHaveBeenCalled()
   })

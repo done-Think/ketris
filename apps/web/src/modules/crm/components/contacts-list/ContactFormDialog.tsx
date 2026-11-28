@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
+  Alert,
   Button,
   CircularProgress,
   Dialog,
@@ -19,8 +20,12 @@ import { useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import * as crmStyles from '../../styles/contact-form-dialog.styles'
 
+import { RhfMaskedTextField } from '@shared/components/form'
+
 import { createContactFormSchema } from '../../schemas/contact-schema'
 import type { ContactFormDialogProps, ContactFormValues } from '../../types/contact'
+
+const phoneMask = [{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]
 
 const emptyContactFormValues: ContactFormValues = {
   name: '',
@@ -37,6 +42,8 @@ export function ContactFormDialog(props: ContactFormDialogProps) {
 function ContactFormDialogForm({
   open,
   initialValues,
+  title,
+  errorMessage,
   isPending,
   onClose,
   onSave,
@@ -57,9 +64,10 @@ function ContactFormDialogForm({
     <Dialog open={open} onClose={() => !isPending && onClose()} fullWidth maxWidth="sm">
       <Box component="form" noValidate onSubmit={handleSubmit(onSave)}>
         <DialogTitle sx={crmStyles.dialogTitleSx}>
-          {initialValues ? t('editTitle') : t('createTitle')}
+          {title ?? (initialValues ? t('editTitle') : t('createTitle'))}
         </DialogTitle>
         <DialogContent>
+          {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
           <Box sx={crmStyles.boxSx}>
             <TextField
               label={t('fields.name')}
@@ -76,11 +84,11 @@ function ContactFormDialogForm({
               helperText={errors.email?.message}
               {...register('email')}
             />
-            <TextField
+            <RhfMaskedTextField
+              control={control}
+              name="phone"
               label={t('fields.phone')}
-              error={Boolean(errors.phone)}
-              helperText={errors.phone?.message}
-              {...register('phone')}
+              mask={phoneMask}
             />
             <Controller
               control={control}

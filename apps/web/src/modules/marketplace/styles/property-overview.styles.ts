@@ -6,10 +6,7 @@ export const styles = {
   typography: { color: 'primary.main', ...componentText.cardEyebrow },
   typography2: { color: 'text.secondary', fontSize: 12, fontWeight: 700 },
   typography3: { maxWidth: 760, mb: 2 },
-  stack2: {
-    display: { xs: 'flex', lg: 'none' },
-    mb: 3,
-  },
+  stack2: { mb: 3 },
   box: {
     display: 'grid',
     gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },

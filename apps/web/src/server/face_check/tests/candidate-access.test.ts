@@ -109,9 +109,18 @@ describe('FaceCheck candidate identity and permissions', () => {
       accountType: 'INDIVIDUAL',
     })
     expect(repository.list).not.toHaveBeenCalled()
+    // An individual property owner may verify their own prospective tenant.
     expect(
       (await new GetFaceCheckAccessUseCase(repository).execute({ ...candidate, role: 'OWNER' }))
         .allowed,
+    ).toBe(true)
+    expect(
+      (
+        await new GetFaceCheckAccessUseCase(repository).execute({
+          ...candidate,
+          role: 'PROPERTY_OWNER',
+        })
+      ).allowed,
     ).toBe(false)
     expect(
       (

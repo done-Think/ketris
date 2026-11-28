@@ -50,13 +50,19 @@ vi.mock('@shared/hooks/use-dashboard-agenda-notifications', () => ({
   useDashboardAgendaNotifications: () => [],
 }))
 
-function mockSession(overrides?: Partial<{ role: 'OWNER' | 'AGENT' | 'RENTER' }>) {
+function mockSession(
+  overrides?: Partial<{
+    role: 'OWNER' | 'AGENT' | 'RENTER'
+    accountType: 'INDIVIDUAL' | 'BROKER' | 'AGENCY'
+  }>,
+) {
   vi.mocked(useSession).mockReturnValue({
     data: {
       user: { id: 'user-1', name: 'Ana', email: 'ana@example.com' },
       scope: 'tenant',
       tenantId: 't1',
       role: overrides?.role ?? 'OWNER',
+      accountType: overrides?.accountType ?? 'AGENCY',
     },
     status: 'authenticated',
     update: vi.fn(),
@@ -115,25 +121,50 @@ describe('AppShell access rules', () => {
 describe('AppShell navigation per papel', () => {
   it.each([
     '/dashboard/agenda',
+    '/dashboard/contracts',
+    '/dashboard/contracts/[id]',
     '/dashboard/finance/charges',
     '/dashboard/finance/charges/[id]',
     '/dashboard/maintenance',
     '/dashboard/maintenance/[id]',
     '/dashboard/properties',
     '/dashboard/properties/[id]',
-  ] as const)('shows charges, tickets, properties and agenda to RENTER on %s', (pathname) => {
+  ] as const)(
+    'shows rental, charges, tickets, properties and agenda to RENTER on %s',
+    (pathname) => {
+      mockSession({ role: 'RENTER' })
+      vi.mocked(usePathname).mockReturnValue(pathname)
+      renderShell()
+      expect(screen.getByText('Conteúdo da rota')).toBeVisible()
+      const links = within(screen.getByRole('navigation')).getAllByRole('link')
+      expect(links).toHaveLength(5)
+      expect(links.map((link) => link.getAttribute('href')).sort()).toEqual([
+        '/dashboard/agenda',
+        '/dashboard/contracts',
+        '/dashboard/finance/charges',
+        '/dashboard/maintenance',
+        '/dashboard/properties',
+      ])
+    },
+  )
+
+  it('labels the contracts item as the rental of the RENTER and keeps Contratos for the agency', () => {
+    vi.mocked(usePathname).mockReturnValue('/dashboard/contracts')
     mockSession({ role: 'RENTER' })
-    vi.mocked(usePathname).mockReturnValue(pathname)
+    const { unmount } = renderShell()
+    const renterNav = within(screen.getByRole('navigation'))
+    expect(renterNav.getByRole('link', { name: 'Meu aluguel' })).toHaveAttribute(
+      'href',
+      '/dashboard/contracts',
+    )
+    expect(renterNav.queryByText('Contratos')).not.toBeInTheDocument()
+    unmount()
+
+    mockSession({ role: 'OWNER' })
     renderShell()
-    expect(screen.getByText('Conteúdo da rota')).toBeVisible()
-    const links = within(screen.getByRole('navigation')).getAllByRole('link')
-    expect(links).toHaveLength(4)
-    expect(links.map((link) => link.getAttribute('href')).sort()).toEqual([
-      '/dashboard/agenda',
-      '/dashboard/finance/charges',
-      '/dashboard/maintenance',
-      '/dashboard/properties',
-    ])
+    const agencyNav = within(screen.getByRole('navigation'))
+    expect(agencyNav.getByRole('link', { name: 'Contratos' })).toBeInTheDocument()
+    expect(agencyNav.queryByText('Meu aluguel')).not.toBeInTheDocument()
   })
 
   it.each([
@@ -142,7 +173,7 @@ describe('AppShell navigation per papel', () => {
     '/dashboard/properties/new',
     '/dashboard/properties/[id]/edit',
     '/crm',
-    '/dashboard/contracts',
+    '/dashboard/contracts/new',
   ] as const)('redirects RENTER away from %s without rendering its contents', (pathname) => {
     mockSession({ role: 'RENTER' })
     vi.mocked(usePathname).mockReturnValue(pathname)
@@ -189,12 +220,12 @@ describe('AppShell navigation per papel', () => {
     expect(screen.getAllByText('Financeiro').length).toBeGreaterThan(0)
   })
 
-  it('AGENT não vê Dashboard, Perfil da Imobiliária nem Financeiro, mas vê Perfil Público, Pipeline e Contatos', () => {
+  it('AGENT vê o próprio Dashboard, mas não o Perfil da Imobiliária nem o Financeiro, e vê Perfil Público, Pipeline e Contatos', () => {
     mockSession({ role: 'AGENT' })
 
     renderShell()
 
-    expect(screen.queryAllByText('Dashboard')).toHaveLength(0)
+    expect(screen.getAllByText('Dashboard').length).toBeGreaterThan(0)
     expect(screen.queryAllByText('Perfil da Imobiliária')).toHaveLength(0)
     expect(screen.queryAllByText('Financeiro')).toHaveLength(0)
     expect(screen.getAllByText('Perfil Público').length).toBeGreaterThan(0)

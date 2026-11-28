@@ -1,12 +1,7 @@
 import type { SxProps, Theme } from '@mui/material'
-import { alpha, brand, radius, shadows, surface } from '@shared/theme/tokens'
-import { getAgendaCardPlacementSx } from './agenda-calendar.styles'
+import { alpha, brand, iconSize, radius, shadows, surface } from '@shared/theme/tokens'
 import { scheduleHourHeight } from '../utils/agenda-calendar'
-import type {
-  AgendaEventToneStyle,
-  AgendaCalendarDay,
-  AgendaLaidOutCard,
-} from '../types/agenda-event'
+import type { AgendaEventToneStyle, AgendaCalendarDay } from '../types/agenda-event'
 
 export const styles = {
   box: {
@@ -107,6 +102,12 @@ export const styles = {
     fontSize: 14,
     fontWeight: 900,
   } satisfies SxProps<Theme>,
+  statusIcon: (tone: AgendaEventToneStyle): SxProps<Theme> => ({
+    color: tone.color,
+    fontSize: iconSize.md,
+    mt: 0.2,
+    flexShrink: 0,
+  }),
   typography8: {
     color: brand.neutral[500],
     flex: '0 0 auto',
@@ -159,31 +160,29 @@ export const styles = {
     borderColor: alpha.graphite[8],
     minWidth: 0,
   } satisfies SxProps<Theme>,
-  box13: (timelineHeight: number): SxProps<Theme> => ({
-    position: 'relative',
-    height: timelineHeight,
+  hourLabel: {
+    minHeight: scheduleHourHeight,
+    boxSizing: 'border-box',
     borderTop: '1px solid',
     borderColor: alpha.graphite[8],
-  }),
-  typography13: (index: number): SxProps<Theme> => ({
-    position: 'absolute',
-    top: index * scheduleHourHeight + 14,
-    left: { xs: 8, md: 18 },
+    px: 1.5,
+    py: 1.5,
     color: brand.neutral[500],
     fontSize: 12,
     fontWeight: 700,
-  }),
-  box14: (timelineHeight: number): SxProps<Theme> => ({
-    position: 'relative',
-    height: timelineHeight,
+  } satisfies SxProps<Theme>,
+  hourCell: {
+    minWidth: 0,
+    minHeight: scheduleHourHeight,
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 112px), 1fr))',
+    alignContent: 'start',
+    alignItems: 'stretch',
+    gap: 0.75,
+    p: 1,
     borderTop: '1px solid',
     borderLeft: '1px solid',
     borderColor: alpha.graphite[8],
-    backgroundImage: `linear-gradient(${alpha.graphite[6]} 1px, ${surface.paper} 1px)`,
-    backgroundSize: `100% ${scheduleHourHeight}px`,
-  }),
-  box15: (card: AgendaLaidOutCard): SxProps<Theme> => ({
-    ...getAgendaCardPlacementSx(card.top, card.height, card.lane, card.laneCount),
-    '& > a': { height: '100%', boxSizing: 'border-box' },
-  }),
+    '& > a': { minWidth: 0, boxSizing: 'border-box' },
+  } satisfies SxProps<Theme>,
 }

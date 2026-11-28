@@ -6,13 +6,14 @@ import dayjs from 'dayjs'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
+import { isAgendaOutcomeStatus } from '@shared/lib/utils/agenda-outcome'
 import { dashboardAgendaService } from '@shared/services/dashboard-agenda-service'
 import { dashboardAgendaQueryKeys } from '@shared/config/dashboard-agenda-query-keys'
 import type { AgendaEventNotificationSource } from '@shared/types/dashboard-agenda-notifications'
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
 export function useDashboardAgendaNotifications(): DashboardNotificationItem[] {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const tenantId = session?.tenantId
   const t = useTranslations('agenda.dashboard')
   const today = useMemo(() => dayjs().startOf('day'), [])
@@ -25,8 +26,19 @@ export function useDashboardAgendaNotifications(): DashboardNotificationItem[] {
       session?.role,
       today.format('YYYY-MM-DD'),
     ),
-    queryFn: () => dashboardAgendaService.list(today.toISOString(), horizonEnd.toISOString()),
-    enabled: Boolean(tenantId && session?.user?.id && session?.role) && session?.role !== 'RENTER',
+    queryFn: ({ signal }) =>
+      dashboardAgendaService.list(
+        today.toISOString(),
+        horizonEnd.toISOString(),
+        session?.accessToken ?? '',
+        signal,
+      ),
+    enabled:
+      status === 'authenticated' &&
+      session?.scope === 'tenant' &&
+      !session.authUnavailable &&
+      Boolean(tenantId && session.user?.id && session.role && session.accessToken) &&
+      session.role !== 'RENTER',
   })
 
   return useMemo<DashboardNotificationItem[]>(() => {
@@ -34,7 +46,12 @@ export function useDashboardAgendaNotifications(): DashboardNotificationItem[] {
     const events = eventsQuery.data ?? []
 
     return events
-      .filter((event) => event.status !== 'CANCELLED' && event.kind === 'VISIT')
+      .filter(
+        (event) =>
+          event.status !== 'CANCELLED' &&
+          !isAgendaOutcomeStatus(event.status) &&
+          event.kind === 'VISIT',
+      )
       .map((event) => ({
         href: { pathname: '/dashboard/agenda' as const, query: { eventId: event.id } },
         id: `${event.id}-today-visit`,

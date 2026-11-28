@@ -1,3 +1,4 @@
+import { requireDashboardFeature } from '@shared/lib/auth/require-dashboard-feature'
 import type { ReactNode } from 'react'
 
 import { ScopedMessages } from '@/i18n/scoped-messages'
@@ -6,9 +7,12 @@ import { privateMetadata } from '@/i18n/seo'
 
 export const metadata = privateMetadata
 
-export default function ScopedLayout({ children }: { children: ReactNode }) {
+export default async function ScopedLayout({ children }: { children: ReactNode }) {
+  await requireDashboardFeature('contracts')
   return (
-    <ScopedMessages namespaces={[...dashboardMessageNamespaces, 'contracts']}>
+    <ScopedMessages
+      namespaces={[...dashboardMessageNamespaces, 'contracts', 'charges', 'dashboard.maintenance']}
+    >
       {children}
     </ScopedMessages>
   )

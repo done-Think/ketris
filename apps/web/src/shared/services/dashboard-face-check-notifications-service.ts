@@ -24,7 +24,7 @@ export const dashboardFaceCheckNotificationsService = {
         {
           signal,
           headers: { Authorization: `Bearer ${accessToken}` },
-          skipUnauthorizedHandling: true,
+          sessionAccessToken: accessToken,
         },
       )
     } catch (error) {

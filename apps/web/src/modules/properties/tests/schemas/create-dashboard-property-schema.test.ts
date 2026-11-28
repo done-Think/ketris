@@ -10,6 +10,37 @@ import {
 const schema = createDashboardPropertySchema((key) => key)
 
 describe('createDashboardPropertySchema', () => {
+  it('requires a selection for new listings, accepts legacy text and rejects conflicting selections', () => {
+    const values = {
+      ...buildEditPropertyFormValues(editableProperty),
+      negotiationTerm: '',
+      negotiationConditions: [],
+    }
+    expect(schema.safeParse(values).error?.issues).toEqual(
+      expect.arrayContaining([expect.objectContaining({ path: ['negotiationConditions'] })]),
+    )
+    expect(
+      schema.safeParse({
+        ...values,
+        purpose: ['RENT'],
+        negotiationConditions: ['REQUIRES_DEPOSIT'],
+      }).success,
+    ).toBe(true)
+    expect(
+      schema.safeParse({
+        ...values,
+        purpose: ['SALE'],
+        negotiationConditions: ['REQUIRES_DEPOSIT'],
+      }).success,
+    ).toBe(false)
+    expect(
+      schema.safeParse({ ...values, negotiationConditions: ['CASH_ONLY', 'ACCEPTS_FINANCING'] })
+        .success,
+    ).toBe(false)
+    expect(
+      schema.safeParse({ ...values, negotiationTerm: 'Informação anterior preservada' }).success,
+    ).toBe(true)
+  })
   it('starts empty and requires the user to fill in the listing', () => {
     const result = schema.safeParse(createDashboardPropertyDefaultValues)
 
@@ -17,6 +48,35 @@ describe('createDashboardPropertySchema', () => {
     expect(createDashboardPropertyDefaultValues.title).toBe('')
     expect(createDashboardPropertyDefaultValues.features).toEqual([])
     expect(createDashboardPropertyDefaultValues.publishingOptions).toEqual([])
+  })
+
+  it('starts the numeric characteristics empty instead of 0, with the area still required', () => {
+    const { bedrooms, bathrooms, parkingSpaces, area } = createDashboardPropertyDefaultValues
+    expect([bedrooms, bathrooms, parkingSpaces, area]).toEqual(['', '', '', ''])
+
+    const filled = {
+      ...buildEditPropertyFormValues(editableProperty),
+      bedrooms: '',
+      bathrooms: '',
+      parkingSpaces: '',
+    }
+    expect(schema.safeParse({ ...filled, area: '' }).error?.issues.map((i) => i.message)).toEqual([
+      'areaRequired',
+    ])
+    expect(schema.safeParse({ ...filled, area: '85.5' })).toMatchObject({
+      success: true,
+      data: { bedrooms: 0, bathrooms: 0, parkingSpaces: 0, area: 85.5 },
+    })
+  })
+
+  it('accepts only a Brazilian state as UF', () => {
+    const values = buildEditPropertyFormValues(editableProperty)
+    const issue = (state: string) =>
+      schema.safeParse({ ...values, state }).error?.issues.find((item) => item.path[0] === 'state')
+
+    expect(issue('SP')).toBeUndefined()
+    expect(issue('XX')).toMatchObject({ message: 'stateInvalid' })
+    expect(issue('')).toMatchObject({ message: 'stateRequired' })
   })
 
   it('rejects missing required listing fields', () => {
@@ -28,6 +88,32 @@ describe('createDashboardPropertySchema', () => {
     })
 
     expect(result.success).toBe(false)
+  })
+
+  it('keeps Instagram disabled until explicitly selected', () => {
+    expect(createDashboardPropertyDefaultValues.instagramEnabled).toBe(false)
+    expect(createDashboardPropertyDefaultValues.instagramImageUrls).toEqual([])
+    expect(createDashboardPropertyDefaultValues.instagramCaption).toBe('')
+  })
+
+  it('requires selected photos only when Instagram publication is enabled', () => {
+    const values = buildEditPropertyFormValues(editableProperty)
+    expect(schema.safeParse(values).success).toBe(true)
+    const result = schema.safeParse({ ...values, instagramEnabled: true })
+    expect(result.success).toBe(false)
+    if (!result.success)
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: ['instagramImageUrls'],
+            message: 'instagramPhotosRequired',
+          }),
+        ]),
+      )
+    expect(
+      schema.safeParse({ ...values, instagramEnabled: true, instagramImageUrls: ['/photo.jpg'] })
+        .success,
+    ).toBe(true)
   })
 
   it('routes each validation message through the translator with the right key', () => {
@@ -59,3 +145,33 @@ it.each(['bedrooms', 'bathrooms', 'parkingSpaces'] as const)(
       )
   },
 )
+
+it.each(['00000-000', '00000000', '11111-111', '00999-999'])(
+  'blocks the CEP %s that cannot exist',
+  (zipCode) => {
+    const values = buildEditPropertyFormValues(editableProperty)
+    const result = schema.safeParse({ ...values, zipCode })
+    expect(result.success).toBe(false)
+    if (!result.success)
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: ['zipCode'], message: 'zipCodeInvalid' }),
+        ]),
+      )
+  },
+)
+
+it('blocks a CEP the postal code lookup did not find', () => {
+  const values = buildEditPropertyFormValues(editableProperty)
+  const blocking = createDashboardPropertySchema((key) => key, {
+    isPostalCodeNotFound: (zipCode) => zipCode === values.zipCode,
+  })
+  const result = blocking.safeParse(values)
+  expect(result.success).toBe(false)
+  if (!result.success)
+    expect(result.error.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: ['zipCode'], message: 'zipCodeNotFound' }),
+      ]),
+    )
+})

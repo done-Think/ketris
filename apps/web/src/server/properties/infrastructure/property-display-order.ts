@@ -9,16 +9,29 @@ export async function findPropertyIdsInDisplayOrder(
   transaction: PropertyTransaction,
   filters: PropertyListFilters,
 ): Promise<string[]> {
-  const conditions = [Prisma.sql`i."tenantId" = ${filters.tenantId}`]
+  const conditions = filters.renterId
+    ? []
+    : [
+        filters.landlordId
+          ? Prisma.sql`(i."tenantId" = ${filters.tenantId} OR EXISTS (SELECT 1 FROM contracts c JOIN contract_parties p ON p."contractId" = c.id JOIN users u ON u.id = p."userId" WHERE c."propertyId" = i.id AND c."tenantId" = i."tenantId" AND c.status = 'ACTIVE' AND p.role = 'LANDLORD' AND p."userId" = ${filters.landlordId} AND u.active = true))`
+          : Prisma.sql`i."tenantId" = ${filters.tenantId}`,
+      ]
   if (filters.responsibleId)
-    conditions.push(Prisma.sql`i."responsibleId" = ${filters.responsibleId}`)
+    conditions.push(Prisma.sql`(i."responsibleId" = ${filters.responsibleId} OR EXISTS (
+      SELECT 1 FROM property_broker_access a JOIN users b ON b.id = a."userId" AND b."tenantId" = a."tenantId"
+      WHERE a."propertyId" = i.id AND a."tenantId" = ${filters.tenantId}
+        AND a."userId" = ${filters.responsibleId} AND b.active = true AND b.role = 'AGENT'
+        AND b."membershipApprovedAt" IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM team_invitations invitation
+          WHERE invitation."userId" = b.id AND invitation."acceptedAt" IS NULL)
+    ))`)
   if (filters.ownerId) conditions.push(Prisma.sql`i."ownerId" = ${filters.ownerId}`)
   if (filters.status)
     conditions.push(Prisma.sql`i.status::text = ${propertyDatabaseStatus[filters.status]}`)
   if (filters.purpose) conditions.push(Prisma.sql`i.purpose::text = ${filters.purpose}`)
   if (filters.renterId)
     conditions.push(
-      Prisma.sql`EXISTS (SELECT 1 FROM contracts c JOIN contract_parties p ON p."contractId" = c.id WHERE c."propertyId" = i.id AND c."tenantId" = ${filters.tenantId} AND c.status = 'ACTIVE' AND p.role = 'RENTER' AND p."userId" = ${filters.renterId})`,
+      Prisma.sql`EXISTS (SELECT 1 FROM contracts c JOIN contract_parties p ON p."contractId" = c.id WHERE c."propertyId" = i.id AND c."tenantId" = i."tenantId" AND c.status = 'ACTIVE' AND p.role = 'RENTER' AND p."userId" = ${filters.renterId})`,
     )
   if (filters.search) {
     const term = `%${filters.search}%`

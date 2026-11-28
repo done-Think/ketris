@@ -34,6 +34,6 @@ export function useCaptureStatus(token: string) {
     queryKey: captureKeys.status(token),
     queryFn: ({ signal }) => captureService.getStatus(token, signal),
     refetchInterval: (query) =>
-      !query.state.data || isCaptureInFlight(query.state.data.status) ? 400 : false,
+      !query.state.data || isCaptureInFlight(query.state.data.status) ? 5000 : false,
   })
 }

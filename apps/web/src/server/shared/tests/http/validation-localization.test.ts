@@ -51,6 +51,7 @@ describe('request validation localization', () => {
             fullName: 'Test User',
             email: 'test@example.test',
             phone: '11999999999',
+            cpf: '52998224725',
             password: 'test-password-123',
             acceptTerms: false,
           }),
@@ -67,6 +68,7 @@ describe('request validation localization', () => {
           fullName: 'Test User',
           email: 'test@example.test',
           phone: '11999999999',
+          cpf: '52998224725',
           password: 'test-password-123',
         }).success,
       ).toBe(false)

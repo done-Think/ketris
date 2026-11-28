@@ -24,6 +24,7 @@ jobs:
       pull-requests: read
     outputs:
       reuse: ${{ steps.plan.outputs.reuse }}
+      kind: ${{ steps.plan.outputs.kind }}
       tree: ${{ steps.plan.outputs.tree }}
       source_run: ${{ steps.plan.outputs.source_run }}
     steps:
@@ -85,7 +86,7 @@ jobs:
       - run: npm ci
 
       - name: Testa as garantias operacionais de staging sem tráfego externo
-        run: node --test scripts/tests/ci-validation.test.mjs scripts/tests/staging-release.test.mjs scripts/tests/explore-staging-rate-limit.test.mjs scripts/tests/face-check-retention.test.mjs scripts/tests/face-check-invitation-emails.test.mjs
+        run: node --test scripts/tests/ci-validation.test.mjs scripts/tests/ci-local-attestation.test.mjs scripts/tests/local-validation.test.mjs scripts/tests/commitlint-config.test.mjs scripts/tests/staging-release.test.mjs scripts/tests/explore-staging-rate-limit.test.mjs scripts/tests/face-check-retention.test.mjs scripts/tests/face-check-invitation-emails.test.mjs scripts/tests/face-check-analysis.test.mjs
 
       - uses: actions/setup-python@v6
         with:
@@ -281,6 +282,7 @@ jobs:
         env:
           CI_PLAN_RESULT: ${{ needs.plan.result }}
           CI_REUSE: ${{ needs.plan.outputs.reuse }}
+          CI_REUSE_KIND: ${{ needs.plan.outputs.kind }}
           CI_TREE: ${{ needs.plan.outputs.tree }}
           CI_SOURCE_RUN: ${{ needs.plan.outputs.source_run }}
           CI_QUALITY_RESULT: ${{ needs.quality.result }}

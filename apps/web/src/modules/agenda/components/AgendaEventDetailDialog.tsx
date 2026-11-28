@@ -4,9 +4,12 @@ import { styles } from '../styles/agenda-event-detail-dialog.styles'
 
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
+import EditNoteRoundedIcon from '@mui/icons-material/EditNoteRounded'
 import EditRoundedIcon from '@mui/icons-material/EditRounded'
+import EventRepeatRoundedIcon from '@mui/icons-material/EventRepeatRounded'
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined'
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined'
+import TaskAltRoundedIcon from '@mui/icons-material/TaskAltRounded'
 import {
   Box,
   Button,
@@ -21,6 +24,7 @@ import {
   Typography,
 } from '@mui/material'
 import { zodResolver } from '@hookform/resolvers/zod'
+import dayjs from 'dayjs'
 import { useFormatter, useTranslations } from 'next-intl'
 import { Fragment, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -34,12 +38,18 @@ import {
 import type {
   AgendaEvent,
   AgendaEventDetailDialogProps,
+  AgendaEventDetailSubDialog,
   AgendaEventFormValues,
   CancelAgendaEventValues,
+  RecordAgendaEventOutcomeValues,
 } from '../types/agenda-event'
 import { AgendaScheduleConfirmationDialog } from './AgendaScheduleConfirmationDialog'
 import { AgendaEventFormFields } from './AgendaEventFormFields'
 import { CancelAgendaEventDialog } from './CancelAgendaEventDialog'
+import { AgendaEventOutcomeSummary } from './AgendaEventOutcomeSummary'
+import { AgendaEventStatusChip } from './AgendaEventStatusChip'
+import { RecordAgendaEventOutcomeDialog } from './RecordAgendaEventOutcomeDialog'
+import { getAgendaEventDisplayStatus, isAgendaEventClosed } from '../utils/agenda-event-outcome'
 import { useAgendaScheduleConfirmation } from '../hooks/use-agenda-schedule-confirmation'
 
 function buildEditFormValues(event: AgendaEvent): AgendaEventFormValues {
@@ -76,6 +86,10 @@ export function AgendaEventDetailDialog(props: AgendaEventDetailDialogProps) {
 function AgendaEventDetailDialogContent({
   readOnly = false,
   hidePrivateDetails = readOnly,
+  canRecordOutcome = false,
+  isRecordingOutcome = false,
+  onRecordOutcome,
+  onScheduleFollowUp,
   canManageAudience = false,
   agentOptions,
   agentsLoading,
@@ -96,7 +110,7 @@ function AgendaEventDetailDialogContent({
   const agendaT = useTranslations('agenda.dashboard')
   const formT = useTranslations('agenda.eventForm')
   const [mode, setMode] = useState<'view' | 'edit'>('view')
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [subDialog, setSubDialog] = useState<AgendaEventDetailSubDialog>(null)
   const editFormSchema = useMemo(
     () =>
       buildAgendaEventFormSchema((key) => formT(`errors.${key}`), {
@@ -156,12 +170,20 @@ function AgendaEventDetailDialogContent({
     if (readOnly) return
     const success = await onDelete(reason)
     if (success) {
-      setIsDeleteDialogOpen(false)
+      setSubDialog(null)
       closeDialog()
     }
   }
 
+  const confirmOutcome = async (values: RecordAgendaEventOutcomeValues) => {
+    if (readOnly || !onRecordOutcome) return
+    if (await onRecordOutcome(values)) setSubDialog(null)
+  }
+
   if (!event) return null
+
+  const closed = isAgendaEventClosed(event)
+  const hasViewActions = !closed || canRecordOutcome || Boolean(onScheduleFollowUp)
 
   const formattedEventDate = formatter.dateTime(new Date(`${event.scheduledDate}T00:00:00Z`), {
     timeZone: 'UTC',
@@ -182,9 +204,12 @@ function AgendaEventDetailDialogContent({
               spacing={2}
             >
               <Box sx={styles.box}>
-                <Typography sx={styles.typography}>
-                  {event.time} · {formattedEventDate}
-                </Typography>
+                <Stack direction="row" spacing={1} alignItems="center" useFlexGap flexWrap="wrap">
+                  <Typography sx={styles.typography}>
+                    {event.time} · {formattedEventDate}
+                  </Typography>
+                  <AgendaEventStatusChip status={getAgendaEventDisplayStatus(event, dayjs())} />
+                </Stack>
                 <Typography sx={styles.typography2}>
                   {!readOnly && mode === 'edit' ? t('editTitle') : event.title}
                 </Typography>
@@ -213,7 +238,7 @@ function AgendaEventDetailDialogContent({
                   <Stack spacing={1.3}>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <HomeWorkOutlinedIcon sx={styles.homeWorkOutlinedIcon} />
-                      {event.property && !readOnly ? (
+                      {event.property && event.propertyAccessible && !readOnly ? (
                         <MuiLink
                           component={Link}
                           href={event.propertyHref}
@@ -260,6 +285,8 @@ function AgendaEventDetailDialogContent({
                   </Stack>
                 </Box>
 
+                {!hidePrivateDetails && <AgendaEventOutcomeSummary event={event} />}
+
                 {!hidePrivateDetails && (
                   <Box>
                     <Typography sx={styles.typography8}>{t('notesTitle')}</Typography>
@@ -270,8 +297,8 @@ function AgendaEventDetailDialogContent({
             )}
           </DialogContent>
 
-          {!readOnly && (
-            <DialogActions sx={styles.dialogActions}>
+          {!readOnly && (mode === 'edit' || hasViewActions) && (
+            <DialogActions disableSpacing sx={styles.dialogActions}>
               {mode === 'edit' ? (
                 <Fragment key="edit-actions">
                   <Button
@@ -286,6 +313,29 @@ function AgendaEventDetailDialogContent({
                     {isSaving ? <CircularProgress size={20} /> : t('save')}
                   </Button>
                 </Fragment>
+              ) : closed ? (
+                <Fragment key="closed-actions">
+                  {canRecordOutcome && (
+                    <Button
+                      type="button"
+                      variant="outlined"
+                      startIcon={<EditNoteRoundedIcon sx={styles.actionIcon} />}
+                      onClick={() => setSubDialog('outcome')}
+                    >
+                      {t('correctOutcome')}
+                    </Button>
+                  )}
+                  {onScheduleFollowUp && (
+                    <Button
+                      type="button"
+                      variant="contained"
+                      startIcon={<EventRepeatRoundedIcon sx={styles.actionIcon} />}
+                      onClick={() => onScheduleFollowUp(event)}
+                    >
+                      {t('scheduleFollowUp')}
+                    </Button>
+                  )}
+                </Fragment>
               ) : (
                 <Fragment key="view-actions">
                   <Button
@@ -293,18 +343,29 @@ function AgendaEventDetailDialogContent({
                     variant="outlined"
                     color="error"
                     startIcon={<DeleteOutlineRoundedIcon sx={styles.deleteOutlineRoundedIcon} />}
-                    onClick={() => setIsDeleteDialogOpen(true)}
+                    onClick={() => setSubDialog('delete')}
+                    sx={styles.deleteButton}
                   >
                     {t('delete')}
                   </Button>
                   <Button
                     type="button"
-                    variant="contained"
+                    variant={canRecordOutcome ? 'outlined' : 'contained'}
                     startIcon={<EditRoundedIcon sx={styles.editRoundedIcon} />}
                     onClick={startEditing}
                   >
                     {t('edit')}
                   </Button>
+                  {canRecordOutcome && (
+                    <Button
+                      type="button"
+                      variant="contained"
+                      startIcon={<TaskAltRoundedIcon sx={styles.actionIcon} />}
+                      onClick={() => setSubDialog('outcome')}
+                    >
+                      {t('recordOutcome')}
+                    </Button>
+                  )}
                 </Fragment>
               )}
             </DialogActions>
@@ -320,11 +381,20 @@ function AgendaEventDetailDialogContent({
       />
       {!readOnly && (
         <CancelAgendaEventDialog
-          open={isDeleteDialogOpen}
+          open={subDialog === 'delete'}
           isPending={isDeleting}
           title={event.title}
-          onClose={() => setIsDeleteDialogOpen(false)}
+          onClose={() => setSubDialog(null)}
           onConfirm={confirmDelete}
+        />
+      )}
+      {!readOnly && canRecordOutcome && (
+        <RecordAgendaEventOutcomeDialog
+          open={subDialog === 'outcome'}
+          isPending={isRecordingOutcome}
+          event={event}
+          onClose={() => setSubDialog(null)}
+          onConfirm={confirmOutcome}
         />
       )}
     </>

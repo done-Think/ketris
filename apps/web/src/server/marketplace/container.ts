@@ -29,6 +29,8 @@ import { ResolvePublishedPropertyLocationsUseCase } from './application/use-case
 import { PrismaPublishedPropertyLocationRepository } from './infrastructure/prisma-published-property-location.repository'
 import { ProfileAddressUseCase } from './application/use-cases/profile-address.use-case'
 import { PrismaProfileAddressRepository } from './infrastructure/prisma-profile-address.repository'
+import { FavoritePropertiesUseCase } from './application/use-cases/favorite-properties.use-case'
+import { PrismaFavoritePropertyRepository } from './infrastructure/prisma-favorite-property.repository'
 
 const propertyRepository = new PrismaPublicPropertyRepository()
 const propertyLocations = new ResolvePublishedPropertyLocationsUseCase(
@@ -52,6 +54,10 @@ export const marketplaceContainer = {
   ),
   getMarketplaceStatsUseCase: new GetMarketplaceStatsUseCase(new PrismaMarketplaceStatsReader()),
   submitInquiryUseCase: new SubmitInquiryUseCase(propertyRepository, inquiryRepository),
+  favoritePropertiesUseCase: new FavoritePropertiesUseCase(
+    new PrismaFavoritePropertyRepository(),
+    propertyRepository,
+  ),
 
   getBrokerProfileUseCase: new GetBrokerProfileUseCase(brokerProfileRepository),
   listBrokerProfilesUseCase: new ListBrokerProfilesUseCase(brokerProfileRepository),

@@ -21,6 +21,7 @@ import { getInitials } from '@shared/utils/get-initials'
 import { useSidebarPreferencesStore } from '@shared/stores/sidebar-preferences-store'
 import { useRetainedAuthContent } from '@shared/hooks/use-retained-auth-content'
 import { useFaceCheckNavigation } from '@shared/hooks/use-face-check-navigation'
+import { navigationHrefsFor, resolveAccessProfile } from '@shared/lib/auth/access-policy'
 import { appShellNavigationItems } from './app-shell-navigation-items'
 import { AppShellSidebar } from './AppShellSidebar'
 import { DashboardNotificationsButton } from './DashboardNotificationsButton'
@@ -34,6 +35,8 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
   const faceCheckAccess = useFaceCheckNavigation()
   const restrictedAccess =
     session?.scope === 'tenant' ? getRestrictedRoleAccess(session.role) : null
+  const accessProfile =
+    session?.scope === 'tenant' ? resolveAccessProfile(session.role, session.accountType) : null
   const isRenter = session?.scope === 'tenant' && session.role === 'RENTER'
   const retainRenterLayout = useRetainedAuthContent(
     isRenter,
@@ -67,17 +70,19 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
         (item.href !== '/dashboard/face_check' || faceCheckAccess.canManage) &&
         (item.href !== '/dashboard/face_check/my-verifications' || faceCheckAccess.hasRequests),
     )
-    if (restrictedAccess)
-      return available.filter((item) => restrictedAccess.navigationHrefs.includes(item.href))
     if (isLocalDashboardPreview) return appShellNavigationItems
+    if (!accessProfile) return []
+    const allowedHrefs = navigationHrefsFor(accessProfile)
 
-    return available.filter(
-      (item) => !item.roles || (session?.role && item.roles.includes(session.role)),
-    )
+    return available
+      .filter((item) => allowedHrefs.includes(item.href))
+      .map((item) => ({
+        ...item,
+        labelKey: item.profileLabelKeys?.[accessProfile] ?? item.labelKey,
+      }))
   }, [
     isLocalDashboardPreview,
-    restrictedAccess,
-    session,
+    accessProfile,
     faceCheckAccess.canManage,
     faceCheckAccess.hasRequests,
   ])
@@ -126,7 +131,9 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           <AppShellSidebar
             collapsed={sidebarCollapsed}
             showCollapseControl
-            isLoading={status === 'loading'}
+            isLoading={
+              status === 'loading' || (!isLocalDashboardPreview && faceCheckAccess.isLoading)
+            }
             visibleItems={visibleItems}
             activeTargetPath={activeTargetPath}
             userName={userName}
@@ -177,7 +184,9 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           <AppShellSidebar
             collapsed={false}
             showCollapseControl={false}
-            isLoading={status === 'loading'}
+            isLoading={
+              status === 'loading' || (!isLocalDashboardPreview && faceCheckAccess.isLoading)
+            }
             visibleItems={visibleItems}
             activeTargetPath={activeTargetPath}
             userName={userName}

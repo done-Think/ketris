@@ -37,23 +37,25 @@ export function DirectoryPageHeader({
         useFlexGap
         flexWrap="wrap"
       >
-        <TextField
-          value={search}
-          onChange={(event) => onSearchChange(event.target.value)}
-          placeholder={placeholder}
-          size="small"
-          slotProps={{
-            htmlInput: { maxLength: 80, 'aria-label': placeholder },
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchRoundedIcon sx={styles.searchRoundedIcon} />
-                </InputAdornment>
-              ),
-            },
-          }}
-          sx={styles.textField}
-        />
+        {onSearchChange ? (
+          <TextField
+            value={search}
+            onChange={(event) => onSearchChange(event.target.value)}
+            placeholder={placeholder}
+            size="small"
+            slotProps={{
+              htmlInput: { maxLength: 80, 'aria-label': placeholder },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={styles.searchRoundedIcon} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={styles.textField}
+          />
+        ) : null}
         {actions}
       </Stack>
     </Stack>

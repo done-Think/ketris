@@ -40,6 +40,9 @@ import { LoginTenantSelect } from './LoginTenantSelect'
 
 import type { LoginFormProps } from '../types/login'
 
+// Google sign-in is not wired to the backend yet; flip to true to show it again.
+const SHOW_GOOGLE_LOGIN = false
+
 export function LoginForm({ callbackUrl }: LoginFormProps) {
   const t = useTranslations('auth.login')
   const validation = useTranslations('validation')
@@ -192,25 +195,29 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             {isSubmitting ? <CircularProgress color="inherit" size={21} /> : t('submit')}
           </Button>
 
-          <Divider sx={styles.divider}>{t('separator')}</Divider>
+          {SHOW_GOOGLE_LOGIN ? (
+            <>
+              <Divider sx={styles.divider}>{t('separator')}</Divider>
 
-          <Button
-            type="button"
-            variant="outlined"
-            color="secondary"
-            size="large"
-            fullWidth
-            disabled
-            aria-label={t('google.ariaLabel')}
-            startIcon={
-              <Box aria-hidden="true" sx={styles.box3}>
-                G
-              </Box>
-            }
-            sx={styles.button}
-          >
-            {t('google.label')}
-          </Button>
+              <Button
+                type="button"
+                variant="outlined"
+                color="secondary"
+                size="large"
+                fullWidth
+                disabled
+                aria-label={t('google.ariaLabel')}
+                startIcon={
+                  <Box aria-hidden="true" sx={styles.box3}>
+                    G
+                  </Box>
+                }
+                sx={styles.button}
+              >
+                {t('google.label')}
+              </Button>
+            </>
+          ) : null}
         </Stack>
       </Box>
 

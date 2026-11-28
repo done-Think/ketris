@@ -16,6 +16,10 @@ export function FinancialUpcomingDueList({ items, onOpen }: FinancialUpcomingDue
     <Box sx={styles.card}>
       <Typography sx={styles.title}>{t('upcomingDuesTitle')}</Typography>
 
+      {items.length === 0 ? (
+        <Typography sx={styles.empty}>{t('upcomingDuesEmpty')}</Typography>
+      ) : null}
+
       <Stack spacing={1}>
         {items.map((item) => {
           return (

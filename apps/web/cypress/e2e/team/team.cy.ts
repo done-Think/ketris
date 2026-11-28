@@ -86,7 +86,7 @@ describe('Equipe de corretores', () => {
       evidence().its('goal').should('eq', 5)
 
       openAction(fixture!.sourceName, 'Transferir carteira')
-      dialog().find('[role="combobox"]').click()
+      dialog().contains('.MuiFormControl-root', 'Transferir para').find('[role="combobox"]').click()
       cy.contains('[role="option"]', fixture!.destinationName).click()
       dialog().contains('Leads (2)').click()
       dialog().contains('button', 'Transferir').click()
@@ -136,6 +136,7 @@ describe('Equipe de corretores', () => {
       cy.visit(new URL(invitationUrl).pathname + new URL(invitationUrl).search)
     })
     cy.contains('Defina sua senha para acessar a Imobiliária Equipe E2E.').should('be.visible')
+    cy.get('input[name="document"]').type('52998224725')
     cy.get('input[name="password"]').type('nova-senha-do-convite', { log: false })
     cy.get('input[name="passwordConfirmation"]').type('nova-senha-diferente', { log: false })
     cy.contains('button', 'Definir senha').click()

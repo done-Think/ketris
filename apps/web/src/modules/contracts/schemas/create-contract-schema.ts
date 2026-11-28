@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { parseContractFormDate } from '../utils/contract-date'
-import { createCpfSchema, isValidCpf } from '@shared/schemas/cpf-schema'
+import { cpfDigits, createCpfSchema, isValidCpf } from '@shared/schemas/cpf-schema'
 import { createPhoneSchema } from '@shared/schemas/phone-schema'
 import type { SchemaMessageTranslator } from '@shared/types'
 import type { TranslationKey } from '@/i18n/types/messages.types'
@@ -108,7 +108,23 @@ export function createContractSchema(
           message: t('endAfterStart'),
           path: ['endDate'],
         })
+      const ownerCpf = cpfDigits(values.ownerCpf)
+      const tenantCpf = cpfDigits(values.tenantCpf)
+      if (ownerCpf && ownerCpf === tenantCpf)
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('partiesSamePerson'),
+          path: ['tenantCpf'],
+        })
       if (!values.hasGuarantor && values.guaranteeType !== 'GUARANTOR') return
+
+      const guarantorCpf = cpfDigits(values.guarantorCpf)
+      if (guarantorCpf && (guarantorCpf === ownerCpf || guarantorCpf === tenantCpf))
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('partiesSamePerson'),
+          path: ['guarantorCpf'],
+        })
 
       addGuarantorTextIssue(
         context,

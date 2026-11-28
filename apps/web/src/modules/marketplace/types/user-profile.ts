@@ -3,7 +3,14 @@ import type { ComponentType } from 'react'
 import type { LocalizedStringHref } from '@shared/types/localized-href'
 
 export type ProfileActionTranslationKey =
-  'addBroker' | 'becomeBroker' | 'createAgency' | 'support' | 'settings' | 'switchMode' | 'signOut'
+  | 'addBroker'
+  | 'becomeBroker'
+  | 'createAgency'
+  | 'favorites'
+  | 'support'
+  | 'settings'
+  | 'switchMode'
+  | 'signOut'
 
 export type ProfileAction = {
   labelKey: ProfileActionTranslationKey

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 
 import {
   currentMonthRange,
-  previousMonthDueDateRange,
   previousMonthRange,
   previousMonthSamePeriodRange,
 } from '../../domain/agency-overview-periods'
@@ -45,13 +44,6 @@ describe('agency overview periods (America/Sao_Paulo)', () => {
     expect(iso(previousMonthSamePeriodRange(new Date('2026-03-31T13:00:00.000Z')))).toEqual({
       start: '2026-02-01T03:00:00.000Z',
       end: '2026-03-01T03:00:00.000Z',
-    })
-  })
-
-  it('vencimentos do mês anterior são comparados como datas de calendário', () => {
-    expect(iso(previousMonthDueDateRange(new Date('2026-11-01T01:00:00.000Z')))).toEqual({
-      start: '2026-09-01T00:00:00.000Z',
-      end: '2026-10-01T00:00:00.000Z',
     })
   })
 })

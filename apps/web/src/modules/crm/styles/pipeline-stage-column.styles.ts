@@ -15,7 +15,7 @@ export const stackSx2: SxProps<Theme> = {
   borderColor: 'divider',
 }
 
-export const stackSx3: SxProps<Theme> = {
+export const stackSx3 = {
   pt: { xs: 2, lg: 1.75 },
   pb: { md: 1.5 },
   mx: { md: -0.5 },
@@ -24,11 +24,22 @@ export const stackSx3: SxProps<Theme> = {
   minHeight: { md: 0 },
   overflowY: { md: 'auto' },
   scrollbarWidth: 'thin',
-}
+} satisfies SxProps<Theme>
 
 export const skeletonSx: SxProps<Theme> = { borderRadius: `${radius.md}px` }
 
-export const stackSx4: SxProps<Theme> = {
+export const focusedCardsSx = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
+  alignContent: 'start',
+  gap: { xs: 1.5, lg: 1.375 },
+  mx: { md: 0 },
+  px: { md: 0 },
+} satisfies SxProps<Theme>
+
+export const focusedEmptySx = { gridColumn: '1 / -1' } satisfies SxProps<Theme>
+
+export const stackSx4 = {
   minHeight: 124,
   px: 1.5,
   border: '1px dashed',
@@ -36,7 +47,7 @@ export const stackSx4: SxProps<Theme> = {
   borderRadius: `${radius.md}px`,
   bgcolor: surface.paper,
   textAlign: 'center',
-}
+} satisfies SxProps<Theme>
 
 export const typographySx: SxProps<Theme> = { fontSize: 15.5 }
 
@@ -57,11 +68,22 @@ export const typographySx2: SxProps<Theme> = {
 }
 
 export const typographySx3: SxProps<Theme> = {
-  mt: 0.25,
   fontSize: 17,
   fontWeight: 800,
   lineHeight: 1.3,
 }
+
+// Every stage reserves room for the largest breakdown (rent, sale and uncategorized), so the
+// "Total projetado" footers line up across columns whether a stage has 0, 1 or 3 totals.
+const projectedTotalFontSize = 17
+const projectedTotalLineHeight = 1.3
+const projectedTotalRows = 3
+const projectedTotalRowHeight = projectedTotalFontSize * projectedTotalLineHeight
+
+export const projectedTotalsSx: SxProps<Theme> = (theme) => ({
+  mt: 0.25,
+  minHeight: `calc(${projectedTotalRows * projectedTotalRowHeight}px + ${theme.spacing((projectedTotalRows - 1) * 0.25)})`,
+})
 
 export const typographySx4: SxProps<Theme> = {
   color: 'text.secondary',
@@ -69,7 +91,11 @@ export const typographySx4: SxProps<Theme> = {
   lineHeight: 1.2,
 }
 
-export const typographySx5: SxProps<Theme> = { fontSize: 17, fontWeight: 800, lineHeight: 1.3 }
+export const typographySx5: SxProps<Theme> = {
+  fontSize: projectedTotalFontSize,
+  fontWeight: 800,
+  lineHeight: projectedTotalLineHeight,
+}
 
 export function getBoxSx(stage: CrmStatusColors): SxProps<Theme> {
   return {
@@ -96,10 +122,6 @@ export function getBoxSx2(stage: CrmStatusColors): SxProps<Theme> {
     fontSize: 14.5,
     fontWeight: 700,
   }
-}
-
-export function getStackSx(projectedTotals: readonly unknown[]): SxProps<Theme> {
-  return { mt: 0.25, minHeight: projectedTotals.length > 1 ? 36 : 0 }
 }
 
 export const pipelineBodyFontFamily = 'var(--font-inter), system-ui, -apple-system, sans-serif'

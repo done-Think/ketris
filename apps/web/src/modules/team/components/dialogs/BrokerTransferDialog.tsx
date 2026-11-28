@@ -18,22 +18,21 @@ import {
 import { useTranslations } from 'next-intl'
 import { useSnackbar } from 'notistack'
 import { useMemo } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 
 import { useTransferPortfolio } from '../../hooks/use-team'
 import { createBrokerTransferSchema } from '../../schemas/broker-team-action-schemas'
 import { styles } from '../../styles/team-dialog.styles'
-import type {
-  BrokerDestinationDialogProps,
-  BrokerTransferFormValues,
-} from '../../types/broker-team'
+import type { BrokerTransferDialogProps, BrokerTransferFormValues } from '../../types/broker-team'
+import { transferDestinations, transferSources } from '../../utils/team-member'
 import { TeamDialogTitle } from './TeamDialogTitle'
 
 export function BrokerTransferDialog({
   member,
-  destinations,
+  members,
+  self,
   onClose,
-}: BrokerDestinationDialogProps) {
+}: BrokerTransferDialogProps) {
   const t = useTranslations('dashboard.team')
   const { enqueueSnackbar } = useSnackbar()
   const transfer = useTransferPortfolio()
@@ -41,10 +40,13 @@ export function BrokerTransferDialog({
   const {
     control,
     handleSubmit,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<BrokerTransferFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      sourceId: member.id,
       destinationId: '',
       properties: false,
       leads: false,
@@ -52,16 +54,35 @@ export function BrokerTransferDialog({
       futureEvents: false,
     },
   })
+  const sourceId = useWatch({ control, name: 'sourceId' })
+  const sources = transferSources(members, self)
+  const destinations = transferDestinations(members, sourceId, self)
+  const sourceMetrics = members.find((candidate) => candidate.id === sourceId)?.metrics
   const items = [
-    ['properties', t('dialogs.itemProperties', { count: member.metrics.properties })],
-    ['leads', t('dialogs.itemLeads', { count: member.metrics.openLeads })],
-    ['opportunities', t('dialogs.itemOpportunities', { count: member.metrics.openOpportunities })],
+    [
+      'properties',
+      sourceMetrics
+        ? t('dialogs.itemProperties', { count: sourceMetrics.properties })
+        : t('dialogs.itemPropertiesNoCount'),
+    ],
+    [
+      'leads',
+      sourceMetrics
+        ? t('dialogs.itemLeads', { count: sourceMetrics.openLeads })
+        : t('dialogs.itemLeadsNoCount'),
+    ],
+    [
+      'opportunities',
+      sourceMetrics
+        ? t('dialogs.itemOpportunities', { count: sourceMetrics.openOpportunities })
+        : t('dialogs.itemOpportunitiesNoCount'),
+    ],
     ['futureEvents', t('dialogs.itemFutureEvents')],
   ] as const
 
-  const submit = handleSubmit(async (values) => {
+  const submit = handleSubmit(async ({ sourceId: memberId, ...values }) => {
     try {
-      const result = await transfer.mutateAsync({ memberId: member.id, ...values })
+      const result = await transfer.mutateAsync({ memberId, ...values })
       enqueueSnackbar(
         t('dialogs.transferred', {
           properties: result.properties,
@@ -82,10 +103,30 @@ export function BrokerTransferDialog({
       <Box component="form" noValidate onSubmit={submit}>
         <TeamDialogTitle title={t('menu.transferPortfolio')} onClose={onClose} />
         <DialogContent sx={styles.content}>
-          <Stack spacing={2}>
-            <Typography>
-              {t('dialogs.source')}: <strong>{member.name}</strong>
-            </Typography>
+          <Stack spacing={2} sx={styles.fieldsStack}>
+            <Controller
+              name="sourceId"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  fullWidth
+                  label={t('dialogs.source')}
+                  onChange={(event) => {
+                    field.onChange(event)
+                    if (getValues('destinationId') === event.target.value)
+                      setValue('destinationId', '')
+                  }}
+                >
+                  {sources.map((source) => (
+                    <MenuItem key={source.id} value={source.id}>
+                      {source.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
             {destinations.length ? (
               <Controller
                 name="destinationId"

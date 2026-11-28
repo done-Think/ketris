@@ -1,10 +1,16 @@
 import { styles } from '../styles/create-property-features-step-fields.styles'
 import { Controller } from 'react-hook-form'
-import { Box, Checkbox, FormControlLabel, TextField } from '@mui/material'
+import { Box, Checkbox, FormControlLabel } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
+import { RhfMaskedTextField } from '@shared/components/form'
+import type { NumberInputMask } from '@shared/types'
 import { createPropertyFeatureOptions } from '../config/dashboard-property-ui'
 import type { CreatePropertyFeaturesStepFieldsProps } from '../types/dashboard-property'
+
+// Text inputs that only accept numbers; type="number" would show the spin arrows.
+const wholeNumber: NumberInputMask = { mask: Number, scale: 0, min: 0 }
+const areaNumber: NumberInputMask = { mask: Number, scale: 2, min: 0 }
 
 export function CreatePropertyFeaturesStepFields({
   control,
@@ -15,25 +21,19 @@ export function CreatePropertyFeaturesStepFields({
     <Box sx={styles.box}>
       {(
         [
-          ['bedrooms', 'bedrooms', 'number'],
-          ['bathrooms', 'bathrooms', 'number'],
-          ['parkingSpaces', 'parkingSpaces', 'number'],
-          ['area', 'area', 'number'],
+          ['bedrooms', wholeNumber],
+          ['bathrooms', wholeNumber],
+          ['parkingSpaces', wholeNumber],
+          ['area', areaNumber],
         ] as const
-      ).map(([name, label, type]) => (
-        <Controller
+      ).map(([name, mask]) => (
+        <RhfMaskedTextField
           key={name}
           control={control}
-          name={name as 'bedrooms' | 'bathrooms' | 'parkingSpaces' | 'area'}
-          render={({ field, fieldState }) => (
-            <TextField
-              {...field}
-              label={t(`fields.${label}`)}
-              type={type}
-              error={Boolean(fieldState.error)}
-              helperText={fieldState.error?.message}
-            />
-          )}
+          name={name}
+          label={t(`fields.${name}`)}
+          mask={mask}
+          inputMode={mask.scale ? 'decimal' : 'numeric'}
         />
       ))}
 

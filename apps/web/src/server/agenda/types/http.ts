@@ -28,6 +28,10 @@ export type CancelAgendaEventRequestDTO = z.infer<
   typeof import('../schemas/agenda-event-input.schema').cancelAgendaEventRequestSchema
 >
 
+export type RecordAgendaEventOutcomeRequestDTO = z.infer<
+  typeof import('../schemas/agenda-event-input.schema').recordAgendaEventOutcomeRequestSchema
+>
+
 export type AgendaPropertyOptionsResponseDTO = z.infer<
   typeof import('../schemas/agenda-property.schema').agendaPropertyOptionsResponseSchema
 >

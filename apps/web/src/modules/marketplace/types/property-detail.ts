@@ -1,3 +1,4 @@
+import type { PropertyNegotiationCondition } from '@shared/types/property-negotiation'
 import type { z } from 'zod'
 
 import type { PropertyCardData } from '@shared/types'
@@ -11,6 +12,8 @@ export type MarketplacePropertyDetail = PropertyCardData & {
   condominium: string
   gallery: string[]
   description: string
+  negotiationTerms?: string | null
+  negotiationConditions?: PropertyNegotiationCondition[]
   address: string
   mapCenter: {
     latitude: number

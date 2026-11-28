@@ -45,6 +45,7 @@ import type {
 } from '../types/contract'
 
 function ContractIdentityCell({ row }: ContractIdentityCellProps) {
+  const t = useTranslations('contracts.table')
   return (
     <Stack direction="row" alignItems="center" spacing={2} sx={styles.stack}>
       <Box sx={styles.box}>
@@ -57,6 +58,13 @@ function ContractIdentityCell({ row }: ContractIdentityCellProps) {
         <Typography noWrap sx={styles.typography2}>
           {row.propertyAddress}
         </Typography>
+        {row.managedBy && (
+          <Chip
+            size="small"
+            label={t('managedBy', { agency: row.managedBy })}
+            sx={styles.managedByChip}
+          />
+        )}
       </Stack>
     </Stack>
   )

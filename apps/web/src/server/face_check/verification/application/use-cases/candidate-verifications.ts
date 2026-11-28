@@ -46,7 +46,7 @@ export class GetFaceCheckAccessUseCase {
   async execute(candidate: FaceCheckCandidate): Promise<FaceCheckAccessView> {
     const allowed =
       ['OWNER', 'AGENT'].includes(candidate.role) &&
-      ['AGENCY', 'BROKER'].includes(candidate.accountType)
+      ['AGENCY', 'BROKER', 'INDIVIDUAL'].includes(candidate.accountType)
     return {
       allowed,
       candidateVerifications: (await this.verifications.count(candidate)) > 0,

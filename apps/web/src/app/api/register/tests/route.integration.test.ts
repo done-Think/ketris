@@ -24,10 +24,26 @@ function details() {
     fullName: `Cadastro ${randomUUID()}`,
     email: `${randomUUID()}@signup.example.test`,
     phone: '(11) 99999-9999',
+    cpf: '529.982.247-25',
     password: 'senha-longa-123',
     acceptTerms: true,
     locale: 'pt-BR',
   }
+}
+// A valid CNPJ that is unique per call, because a company can register only once.
+function randomCnpj() {
+  const base = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10))
+  const digit = (digits: number[]) => {
+    const weights =
+      digits.length === 12
+        ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    const total = digits.reduce((sum, value, index) => sum + value * weights[index], 0) % 11
+    return total < 2 ? 0 : 11 - total
+  }
+  const first = digit(base)
+  const second = digit([...base, first])
+  return [...base, first, second].join('')
 }
 function latestCode() {
   const code = send.mock.calls.at(-1)?.[0].text?.match(/\b\d{6}\b/)?.[0]
@@ -93,7 +109,13 @@ describe('cadastro e primeiro login com confirmação real', () => {
   })
 
   it('inicializa perfil público do corretor com telefone e CRECI reais sem publicá-lo', async () => {
-    const input = { ...details(), profile: 'broker', creci: '12345-F' }
+    const input = {
+      ...details(),
+      cpf: undefined,
+      document: '529.982.247-25',
+      profile: 'broker',
+      creci: '12345-F',
+    }
     const response = await register(request('register', input))
     expect(response.status).toBe(201)
     const body = await response.json()
@@ -110,9 +132,30 @@ describe('cadastro e primeiro login com confirmação real', () => {
     expect(profile.status).toBe('DRAFT')
   })
 
+  it('stores a broker CNPJ in its own column and leaves the CPF empty', async () => {
+    const cnpj = randomCnpj()
+    const input = {
+      ...details(),
+      cpf: undefined,
+      document: cnpj,
+      profile: 'broker',
+      creci: '45678-J',
+    }
+    const response = await register(request('register', input))
+    expect(response.status).toBe(201)
+    const body = await response.json()
+    tenants.push(body.tenantId)
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { tenantId_email: { tenantId: body.tenantId, email: input.email } },
+    })
+    expect(user).toMatchObject({ cpf: null, cnpj })
+  })
+
   it('preserves agency registration CRECI and reuses it in the public profile editor after verification', async () => {
     const input = {
       ...details(),
+      cpf: undefined,
+      cnpj: randomCnpj(),
       profile: 'agency',
       companyName: 'Imobiliária Nova',
       creci: 'MG-54321-J',
@@ -157,10 +200,25 @@ describe('cadastro e primeiro login com confirmação real', () => {
         slug: `agency-${randomUUID()}`,
         accountType: 'AGENCY',
         status: 'ACTIVE',
+        users: {
+          create: {
+            name: 'Dona confirmada',
+            email: `owner-${randomUUID()}@example.test`,
+            passwordHash: 'owner-test-hash',
+            role: 'OWNER',
+          },
+        },
       },
     })
     tenants.push(agency.id)
-    const input = { ...details(), profile: 'broker', creci: '12345-F', agencyId: agency.id }
+    const input = {
+      ...details(),
+      cpf: undefined,
+      document: '529.982.247-25',
+      profile: 'broker',
+      creci: '12345-F',
+      agencyId: agency.id,
+    }
     const response = await register(request('register', input))
     expect(response.status).toBe(202)
     const body = await response.json()

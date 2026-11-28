@@ -3,14 +3,14 @@ import { describe, expect, it } from 'vitest'
 import { resolveChargeReadScope } from '../../application/charge-read-scope'
 
 describe('resolveChargeReadScope', () => {
-  it('libera o tenant inteiro para o OWNER', () => {
+  it('libera o tenant inteiro para o OWNER e as cobranças dos contratos em que é locador', () => {
     expect(
       resolveChargeReadScope({
         actorId: 'owner-1',
         actorTenantId: 'tenant-1',
         actorRole: 'OWNER',
       }),
-    ).toEqual({ kind: 'tenant', tenantId: 'tenant-1' })
+    ).toEqual({ kind: 'tenant', tenantId: 'tenant-1', landlordUserId: 'owner-1' })
   })
 
   it('limita o RENTER às cobranças dos contratos dele', () => {

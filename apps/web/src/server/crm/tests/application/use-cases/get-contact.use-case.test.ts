@@ -30,7 +30,10 @@ function createOpportunityRepository(existsForAgent?: OpportunityRepository['exi
 describe('GetContactUseCase', () => {
   it('retorna o contato quando pertence ao tenant do ator (OWNER)', async () => {
     const findById = vi.fn().mockResolvedValue(contact)
-    const repository = { findById } as unknown as ContactRepository
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+    } as unknown as ContactRepository
     const useCase = new GetContactUseCase(repository, createOpportunityRepository())
 
     const result = await useCase.execute({
@@ -45,7 +48,10 @@ describe('GetContactUseCase', () => {
 
   it('lança ContactNotFoundError (opaco) quando é de outro tenant', async () => {
     const findById = vi.fn().mockResolvedValue({ ...contact, tenantId: 'tenant-2' })
-    const repository = { findById } as unknown as ContactRepository
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+    } as unknown as ContactRepository
     const useCase = new GetContactUseCase(repository, createOpportunityRepository())
 
     await expect(
@@ -60,7 +66,10 @@ describe('GetContactUseCase', () => {
 
   it('AGENT com uma oportunidade acessível no contato consegue vê-lo', async () => {
     const findById = vi.fn().mockResolvedValue(contact)
-    const repository = { findById } as unknown as ContactRepository
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+    } as unknown as ContactRepository
     const existsForAgent = vi.fn().mockResolvedValue(true)
     const useCase = new GetContactUseCase(repository, createOpportunityRepository(existsForAgent))
 
@@ -77,7 +86,10 @@ describe('GetContactUseCase', () => {
 
   it('AGENT sem nenhuma oportunidade acessível no contato recebe 404 opaco', async () => {
     const findById = vi.fn().mockResolvedValue(contact)
-    const repository = { findById } as unknown as ContactRepository
+    const repository = {
+      hasLeadForAgent: vi.fn().mockResolvedValue(false),
+      findById,
+    } as unknown as ContactRepository
     const useCase = new GetContactUseCase(
       repository,
       createOpportunityRepository(vi.fn().mockResolvedValue(false)),

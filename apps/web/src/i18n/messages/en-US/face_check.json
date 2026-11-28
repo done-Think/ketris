@@ -120,6 +120,9 @@
       }
     },
     "submit": {
+      "receivedTitle": "Photos sent successfully",
+      "receivedBody": "The {agency} team has received your images and will review them. If another capture is needed, the team will contact you.",
+      "closeHint": "You can close this page. You do not need to send the photos again.",
       "titleRunning": "Uploading and analyzing",
       "titleDone": "Analysis complete",
       "body": "Keep this page open. If your connection drops, reopen the same link to continue.",
@@ -332,12 +335,12 @@
     "review": {
       "title": "Review before sending",
       "body": "Check the document photos, selfie and movements. Nothing has been sent for validation. Send when you are happy with the captures.",
-      "resumeBody": "Some photos have already been sent. You can resume validation or retake a capture.",
+      "resumeBody": "Some photos have already been received. Continue to finish sending the remaining images.",
       "send": "Confirm and send for analysis",
-      "sending": "Sending and validating photos…",
+      "sending": "Sending photos…",
       "retake": "Retake capture",
-      "checking": "Checking: {photo}",
-      "failedPhoto": "Could not validate: {photo}. Check the guidance and retake the capture if needed.",
+      "checking": "Sending: {photo}",
+      "failedPhoto": "Could not finish sending: {photo}. Try continuing; images already received will be preserved.",
       "photos": {
         "front": "Document front",
         "back": "Document back",
@@ -381,6 +384,8 @@
       "title": "Overview",
       "subtitle": "Last 7 days",
       "newVerification": "New verification",
+      "loading": "Loading metrics",
+      "retry": "Try again",
       "pilotWarning": "Analysis supports the review of evidence. Approval requires a human decision by the agency team.",
       "kpis": {
         "label": "Metrics",
@@ -809,6 +814,7 @@
       "ABANDONED": "Abandoned"
     },
     "errors": {
+      "STORAGE_UNAVAILABLE": "Storage is unavailable. Try again later.",
       "SESSION_NOT_FOUND": "We could not find this verification. Check the link with the agency.",
       "SESSION_EXPIRED": "This link has expired. Ask the agency for a new one.",
       "SESSION_NOT_IN_REVIEW": "This session is no longer in review. Refresh the page.",
@@ -828,10 +834,10 @@
       "LIVENESS_FAILED": "The liveness check was not confirmed. Try again.",
       "SESSION_NOT_REJECTED": "Another attempt can only be enabled for a rejected verification. Refresh the page.",
       "VERIFICATION_INCOMPLETE": "Document, liveness check and similarity must be available before approval.",
-      "STORAGE_UNAVAILABLE": "Secure storage is unavailable.",
       "PERSISTENCE_BUSY": "Another operation is finishing. Wait a moment and try again.",
       "PERSISTENCE_UNAVAILABLE": "Could not save or retrieve this verification. Try again shortly.",
       "AGENCY_NAME_MISSING": "Add the agency name in settings before creating a verification.",
+      "INVITEE_NOT_ELIGIBLE": "This email already belongs to a registered profile. Face verification is only required for people renting a property.",
       "CONSENT_TERMS_OUTDATED": "The consent information has changed. Reload this page and read it again.",
       "DOCUMENT_TYPE_NOT_ACCEPTED": "This document type is not accepted. Use the type requested by the agency, the same for front and back.",
       "PAYLOAD_TOO_LARGE": "Each photo must be 3 MiB or less. Take it again.",

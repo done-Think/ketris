@@ -8,7 +8,7 @@ export function teamMember(overrides: Partial<TeamMember> = {}): TeamMember {
     phone: '(11) 98888-7777',
     avatarUrl: null,
     headline: 'Especialista em alto padrão',
-    specialties: ['Alto padrão'],
+    segments: ['Alto padrão'],
     hasPublicProfile: true,
     active: true,
     invitation: null,

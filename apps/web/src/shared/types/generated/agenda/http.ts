@@ -13,5 +13,7 @@ export type UpdateAgendaEventRequestInput = components['schemas']['UpdateAgendaE
 export type RescheduleAgendaEventRequestInput =
   components['schemas']['RescheduleAgendaEventRequest']
 export type CancelAgendaEventRequestDTO = components['schemas']['CancelAgendaEventRequest']
+export type RecordAgendaEventOutcomeRequestDTO =
+  components['schemas']['RecordAgendaEventOutcomeRequest']
 export type AgendaPropertyOptionsResponseDTO =
   components['schemas']['AgendaPropertyOptionsResponse']

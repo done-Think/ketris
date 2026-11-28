@@ -26,7 +26,7 @@ function createContract(data: ContractFixtureSeedResult) {
   cy.get('input[name="ownerCpf"]').type('52998224725')
   cy.get('input[name="tenantCpf"]').type('98765432100')
   cy.contains('button', 'Próximo passo').click()
-  cy.get('input[name="amount"]').clear().type('2300.45')
+  cy.get('input[name="amount"]').clear().type('230045').should('have.value', '2.300,45')
   cy.get('input[name="dueDay"]').type('05')
   cy.get('input[name="startDate"]').type('01012031')
   cy.get('input[name="endDate"]').type('01012032')
@@ -43,13 +43,23 @@ function createContract(data: ContractFixtureSeedResult) {
     return response?.body.contract.id as string
   })
 }
+function openTab(name: 'Resumo' | 'Documentos') {
+  cy.contains('[role="tab"]', name).click()
+  cy.contains('[role="tab"]', name).should('have.attr', 'aria-selected', 'true')
+}
 function upload(name: string) {
   cy.intercept('POST', '**/api/contracts/*/documents').as('confirmDocument')
-  cy.get('input[type="file"]').selectFile({
-    contents: Cypress.Buffer.from('%PDF-1.7\n' + name + '\n%%EOF'),
-    fileName: name,
-    mimeType: 'application/pdf',
-  })
+  cy.contains('button', 'Escolher arquivo').should('be.visible')
+  // O input nativo fica oculto atrás do botão "Escolher arquivo"; o Cypress precisa de force.
+  cy.get('input[type="file"]').selectFile(
+    {
+      contents: Cypress.Buffer.from('%PDF-1.7\n' + name + '\n%%EOF'),
+      fileName: name,
+      mimeType: 'application/pdf',
+    },
+    { force: true },
+  )
+  cy.contains(name).should('be.visible')
   cy.contains('button', 'Enviar PDF').click()
   cy.wait('@confirmDocument').then(({ response }) => {
     expect(response?.statusCode).to.eq(200)
@@ -105,19 +115,27 @@ describe('Contracts — fluxos reais com documentos privados', () => {
       cy.intercept('POST', '**/api/contracts/' + contractId + '/close').as('closeContract')
       cy.visit('/pt/dashboard/contracts/' + contractId)
       cy.contains('Dados do contrato').should('be.visible')
+      openTab('Documentos')
       upload('Original.pdf')
       cy.contains('button', 'Editar').click()
-      cy.get('[role="dialog"]').find('input[name="amount"]').clear().type('1800.25')
+      cy.get('[role="dialog"]')
+        .find('input[name="amount"]')
+        .clear()
+        .type('180025')
+        .should('have.value', '1.800,25')
       cy.get('[role="dialog"]').contains('button', 'Salvar alterações').click()
       cy.wait('@editContract').its('response.body.contract.dataRevision').should('eq', 1)
       cy.contains('Versão anterior: envie um novo PDF').should('be.visible')
+      openTab('Resumo')
       cy.contains('button', 'Registrar assinatura manual').first().click()
       cy.get('[role="dialog"]').contains('Envie um PDF para a revisão atual').should('be.visible')
       cy.get('[role="dialog"]')
         .contains('button', 'Confirmar registro manual')
         .should('be.disabled')
       cy.get('[role="dialog"]').contains('button', 'Voltar').click()
+      openTab('Documentos')
       upload('Atualizado.pdf')
+      openTab('Resumo')
       registerSignature().its('response.statusCode').should('eq', 200)
       cy.contains('button', 'Editar').should('not.exist')
       registerSignature().its('response.body.contract.status').should('eq', 'ACTIVE')

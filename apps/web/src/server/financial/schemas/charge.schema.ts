@@ -27,6 +27,7 @@ export const newChargeStatusSchema = z.enum(['PENDING', 'SCHEDULED'])
 export const chargeSchema = z
   .object({
     id: z.string(),
+    tenantId: z.string(),
     code: z.string(),
     type: chargeTypeSchema,
     status: chargeStatusSchema,
@@ -53,6 +54,7 @@ export const chargeSchema = z
 export const chargeListItemSchema = z
   .object({
     id: z.string(),
+    tenantId: z.string(),
     code: z.string(),
     type: chargeTypeSchema,
     status: chargeStatusSchema,
@@ -62,6 +64,7 @@ export const chargeListItemSchema = z
     contractId: z.string().nullable(),
     payerName: z.string().nullable(),
     propertyTitle: z.string().nullable(),
+    receipt: chargeReceiptSchema.nullable(),
     updatedAt: z.string(),
   })
   .openapi('ChargeListItem')

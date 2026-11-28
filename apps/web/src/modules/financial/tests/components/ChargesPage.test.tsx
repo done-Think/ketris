@@ -115,7 +115,8 @@ describe('ChargesPage', () => {
 
     await userEvent.type(within(dialog).getByLabelText('Descrição'), 'Taxa de condomínio')
     await userEvent.clear(within(dialog).getByLabelText('Valor'))
-    await userEvent.type(within(dialog).getByLabelText('Valor'), '450')
+    await userEvent.type(within(dialog).getByLabelText('Valor'), '045050')
+    expect(within(dialog).getByLabelText('Valor')).toHaveValue('450,50')
     await userEvent.type(within(dialog).getByLabelText('Vencimento'), '2026-11-05')
     await userEvent.click(within(dialog).getByRole('combobox', { name: 'Status inicial' }))
     const options = within(await screen.findByRole('listbox')).getAllByRole('option')
@@ -127,7 +128,7 @@ describe('ChargesPage', () => {
       expect(service.createCharge).toHaveBeenCalledWith({
         description: 'Taxa de condomínio',
         type: 'RECEIVABLE',
-        amount: 450,
+        amount: 450.5,
         dueDate: '2026-11-05',
         status: 'SCHEDULED',
       }),
@@ -148,8 +149,10 @@ describe('ChargesPage', () => {
         'Para mudar o status, use registrar pagamento ou cancelar cobrança.',
       ),
     ).toBeVisible()
+    expect(within(dialog).getByLabelText('Valor')).toHaveValue('2.800,00')
     await userEvent.clear(within(dialog).getByLabelText('Valor'))
-    await userEvent.type(within(dialog).getByLabelText('Valor'), '3000')
+    await userEvent.type(within(dialog).getByLabelText('Valor'), '300000')
+    expect(within(dialog).getByLabelText('Valor')).toHaveValue('3.000,00')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar alterações' }))
 
     await waitFor(() =>
@@ -243,4 +246,21 @@ describe('ChargesPage', () => {
     expect(screen.getByText('Consulte as cobranças dos seus contratos.')).toBeVisible()
     expect(lastListCall()).toMatchObject({ type: 'RECEIVABLE' })
   })
+})
+
+it('mostra ao locador as cobranças da imobiliária sem o menu de ações', async () => {
+  service.listCharges.mockResolvedValue({
+    ...listResponse(
+      [
+        apiListItem(),
+        apiListItem({ id: 'agency-charge', code: 'COB-2026-0009', tenantId: 'agency' }),
+      ],
+      2,
+    ),
+    statusCounts: { ALL: 2, PENDING: 2, OVERDUE: 0, PAID: 0, SCHEDULED: 0, CANCELED: 0 },
+  })
+  renderWithProviders(<ChargesPage />)
+  expect(await screen.findByText('COB-2026-0009')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Ações COB-2026-0001' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Ações COB-2026-0009' })).not.toBeInTheDocument()
 })

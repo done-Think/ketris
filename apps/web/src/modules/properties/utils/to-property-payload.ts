@@ -1,5 +1,6 @@
 import type { CreateDashboardPropertyFormValues } from '../types/dashboard-property'
 import type { PropertyFormValues, PropertyPurpose, PropertyPayloadOptions } from '../types/property'
+import { conditionsForPurpose } from '@shared/config/property-negotiation'
 import { normalizePostalCode } from '@shared/utils/postal-code'
 
 export function toPropertyPayload(
@@ -24,6 +25,7 @@ export function toPropertyPayload(
   )
 
   return {
+    ...(options.canManageBrokers ? { brokerIds: values.brokerIds } : {}),
     ...(options.canChooseOwner
       ? { ownerUserId: values.ownerUserId || null, ownerContactId: values.ownerContact?.id ?? null }
       : {}),
@@ -34,14 +36,15 @@ export function toPropertyPayload(
     listing: {
       amenities: values.features,
       negotiationTerms: values.negotiationTerm || null,
+      negotiationConditions: conditionsForPurpose(purpose, values.negotiationConditions ?? []),
       publishAfterReview: values.publishingOptions.includes('publishAfterReview'),
       allowWhatsappContact: values.publishingOptions.includes('allowWhatsappContact'),
       featured: values.publishingOptions.includes('featured'),
     },
-    bedrooms: values.bedrooms,
-    bathrooms: values.bathrooms,
-    parkingSpots: values.parkingSpaces,
-    areaSqm: values.area,
+    bedrooms: Number(values.bedrooms),
+    bathrooms: Number(values.bathrooms),
+    parkingSpots: Number(values.parkingSpaces),
+    areaSqm: Number(values.area),
     price: values.mainValue,
     rentalPrice: purpose === 'BOTH' ? values.rentalValue : null,
     condoFee: values.condominium,

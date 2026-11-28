@@ -157,15 +157,15 @@ function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
           />
           <RhfTextField
             control={control}
-            name="neighborhoods"
-            label={t('fields.neighborhoods')}
-            helperText={t('fields.neighborhoodsHint')}
+            name="coverage"
+            label={t('fields.coverage')}
+            helperText={t('fields.coverageHint')}
             disabled={disabled}
           />
           <RhfTextField
             control={control}
-            name="specialties"
-            label={t('fields.specialties')}
+            name="segments"
+            label={t('fields.segments')}
             helperText={t('fields.commaSeparatedHint')}
             disabled={disabled}
           />
@@ -177,8 +177,8 @@ function BrokerProfileEditor({ profile }: BrokerProfileEditorProps) {
           />
           <RhfTextField
             control={control}
-            name="bio"
-            label={t('fields.bio')}
+            name="summary"
+            label={t('fields.summary')}
             multiline
             minRows={6}
             fullWidth

@@ -5,6 +5,7 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined'
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
+import MapsHomeWorkOutlinedIcon from '@mui/icons-material/MapsHomeWorkOutlined'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
 
 import type {
@@ -17,6 +18,7 @@ const profileIcons: Record<RegistrationProfileIconVariant, SvgIconComponent> = {
   broker: BadgeOutlinedIcon,
   agency: BusinessOutlinedIcon,
   developer: ApartmentOutlinedIcon,
+  condoManager: MapsHomeWorkOutlinedIcon,
   tenant: SearchOutlinedIcon,
 }
 

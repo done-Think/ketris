@@ -6,11 +6,11 @@ import { styles } from '../styles/charge-details.styles'
 import type { ChargeDetailFieldsProps } from '../types/charge'
 import { ChargeSectionCard } from './ChargeSectionCard'
 
-export function ChargeDetailFields({ charge }: ChargeDetailFieldsProps) {
+export function ChargeDetailFields({ charge, direction }: ChargeDetailFieldsProps) {
   const t = useTranslations('charges.details')
   const format = useFinancialFormat()
   const fields: Array<[string, string]> = [
-    [t('fields.type'), t(`directions.${charge.direction}`)],
+    [t('fields.type'), t(`directions.${direction}`)],
     [t('fields.description'), charge.description ?? t('notAvailable')],
     [t('fields.competence'), format.month(charge.competence)],
     [t('fields.amount'), format.currency(charge.amount)],

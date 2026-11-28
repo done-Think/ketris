@@ -141,13 +141,26 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
       }
     })
 
-    it('allows eligible agency and independent broker accounts and rejects all excluded identities', async () => {
+    it('allows eligible agency, broker and individual-owner accounts and rejects all excluded identities', async () => {
       const brokerTenant = await tenant('broker', 'BROKER')
       expect((await actor(brokerTenant, 'OWNER', 'broker')).accountType).toBe('BROKER')
       const individualTenant = await tenant('individual', 'INDIVIDUAL')
       const individual = await user(individualTenant, 'OWNER', 'individual')
+      // An individual owner screens their own prospective tenant.
+      expect(
+        (
+          await resolveFaceCheckActor(
+            { userId: individual.id, tenantId: individualTenant },
+            database,
+          )
+        ).accountType,
+      ).toBe('INDIVIDUAL')
+      const individualRenter = await user(individualTenant, 'RENTER', 'individual-renter')
       await expect(
-        resolveFaceCheckActor({ userId: individual.id, tenantId: individualTenant }, database),
+        resolveFaceCheckActor(
+          { userId: individualRenter.id, tenantId: individualTenant },
+          database,
+        ),
       ).rejects.toMatchObject({ code: 'FORBIDDEN' })
       for (const role of ['RENTER', 'PROPERTY_OWNER'] as const) {
         const excluded = await user(agency, role, role.toLowerCase())
@@ -359,6 +372,48 @@ describe.skipIf(!process.env.FACE_CHECK_TEST_DATABASE_URL)(
       release()
       await expect(stale).rejects.toMatchObject({ code: 'PERSISTENCE_BUSY' })
       expect((await repo.read({ id: record.session.id }))?.session.reference).toBe('newer')
+    })
+
+    it('loads operator and candidate snapshots while a slow analysis owns the database lease', async () => {
+      const record = await session()
+      const repo = repository(owner)
+      await repo.update({ id: record.session.id }, (working) => {
+        working.session.status = 'PROCESSING'
+        working.session.submittedAt = new Date().toISOString()
+      })
+      let entered!: () => void, release!: () => void
+      const started = new Promise<void>((resolve) => {
+        entered = resolve
+      })
+      const gate = new Promise<void>((resolve) => {
+        release = resolve
+      })
+      const analysis = repo.update({ id: record.session.id }, async (working) => {
+        entered()
+        await gate
+        working.session.status = 'REVIEW'
+      })
+      await started
+      try {
+        const deps = { ...verificationHarness().deps, sessions: repository(owner) }
+        const cases = buildVerificationUseCases(deps)
+        expect((await cases.getSessionUseCase.execute(record.session.id)).status).toBe('PROCESSING')
+        expect((await cases.getCaptureStatusUseCase.execute(record.session.token)).status).toBe(
+          'PROCESSING',
+        )
+        expect((await cases.getCaptureSessionUseCase.execute(record.session.token)).status).toBe(
+          'PROCESSING',
+        )
+        const row = await database.faceCheckSession.findUniqueOrThrow({
+          where: { id: record.session.id },
+        })
+        expect(row.leaseId).not.toBeNull()
+        expect(row.revision).toBe(1)
+      } finally {
+        release()
+        await analysis
+      }
+      expect((await repo.read({ id: record.session.id }))?.session.status).toBe('REVIEW')
     })
 
     it('denies finalization after a portfolio transfer and retains rejected evidence when the callback throws', async () => {

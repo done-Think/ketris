@@ -57,6 +57,15 @@ export class AgendaMinimumAdvanceNoticeError extends AppError {
   }
 }
 
+export class AgendaTimeSlotInvalidError extends AppError {
+  constructor() {
+    super('Selecione um horário com minutos 00 ou 30.', {
+      status: 400,
+      code: 'AGENDA_TIME_SLOT_INVALID',
+    })
+  }
+}
+
 export class AgendaOutsideBusinessHoursError extends AppError {
   constructor() {
     super(
@@ -86,6 +95,66 @@ export class AgendaCancellationReasonRequiredError extends AppError {
     super('Informe o motivo do cancelamento.', {
       status: 400,
       code: 'AGENDA_CANCELLATION_REASON_REQUIRED',
+    })
+  }
+}
+
+export class AgendaEventClosedError extends AppError {
+  constructor() {
+    super('O resultado deste evento já foi registrado.', {
+      status: 409,
+      code: 'AGENDA_EVENT_CLOSED',
+    })
+  }
+}
+
+export class AgendaEventChangedError extends ConflictError {
+  constructor() {
+    super('O evento foi alterado por outra pessoa. Atualize a agenda e tente novamente.')
+  }
+}
+
+export class AgendaOutcomeBeforeStartError extends AppError {
+  constructor() {
+    super('O resultado só pode ser registrado depois do início do evento.', {
+      status: 409,
+      code: 'AGENDA_OUTCOME_BEFORE_START',
+    })
+  }
+}
+
+export class AgendaOutcomeCancelledEventError extends AppError {
+  constructor() {
+    super('Eventos cancelados não recebem resultado.', {
+      status: 409,
+      code: 'AGENDA_OUTCOME_CANCELLED_EVENT',
+    })
+  }
+}
+
+export class AgendaNoShowInternalEventError extends AppError {
+  constructor() {
+    super('Eventos internos não têm cliente para registrar ausência.', {
+      status: 400,
+      code: 'AGENDA_NO_SHOW_INTERNAL_EVENT',
+    })
+  }
+}
+
+export class AgendaVisitInterestRequiredError extends AppError {
+  constructor() {
+    super('Informe o interesse do cliente na visita realizada.', {
+      status: 400,
+      code: 'AGENDA_VISIT_INTEREST_REQUIRED',
+    })
+  }
+}
+
+export class AgendaVisitInterestNotAllowedError extends AppError {
+  constructor() {
+    super('O interesse do cliente só se aplica a visitas realizadas.', {
+      status: 400,
+      code: 'AGENDA_VISIT_INTEREST_NOT_ALLOWED',
     })
   }
 }

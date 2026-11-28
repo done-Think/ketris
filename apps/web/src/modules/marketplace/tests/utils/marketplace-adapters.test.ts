@@ -131,19 +131,57 @@ describe('property presentation', () => {
 })
 
 describe('public profile editor adapters', () => {
+  it('counts the brand background as ready only when it is a valid hex color', () => {
+    const values = {
+      ...agencyEditor.pickBrandValues(agencyEditor.emptyValues),
+      logoUrl: '/logo.png',
+    }
+
+    expect(agencyEditor.isAgencyBrandFieldReady('logoUrl', values)).toBe(true)
+    expect(agencyEditor.isAgencyBrandFieldReady('bannerUrl', values)).toBe(false)
+    expect(
+      agencyEditor.isAgencyBrandFieldReady('backgroundColor', {
+        ...values,
+        backgroundColor: '#12',
+      }),
+    ).toBe(false)
+    expect(
+      agencyEditor.isAgencyBrandFieldReady('backgroundColor', {
+        ...values,
+        backgroundColor: '#EEF6EF',
+      }),
+    ).toBe(true)
+  })
+
+  it('opens the brand setup steps only for a profile without a brand yet', () => {
+    expect(agencyEditor.getInitialAgencyBrandDialogMode(null)).toBe('wizard')
+    expect(
+      agencyEditor.getInitialAgencyBrandDialogMode({ backgroundColor: null, bannerUrl: null }),
+    ).toBe('wizard')
+    expect(
+      agencyEditor.getInitialAgencyBrandDialogMode({ backgroundColor: '#FFFFFF', bannerUrl: null }),
+    ).toBe('panel')
+    expect(
+      agencyEditor.getInitialAgencyBrandDialogMode({
+        backgroundColor: null,
+        bannerUrl: '/capa.jpg',
+      }),
+    ).toBe('panel')
+  })
+
   it('turns broker form text into lists and empty fields into null, and back', () => {
     const draft = brokerEditor.toDraft({
       ...brokerEditor.emptyValues,
       displayName: 'Ana',
-      neighborhoods: ' Jardins,  Moema ,, ',
-      specialties: '',
+      coverage: ' Jardins,  Moema ,, ',
+      segments: '',
     })
 
     expect(draft).toMatchObject({
       displayName: 'Ana',
       headline: null,
-      neighborhoods: ['Jardins', 'Moema'],
-      specialties: [],
+      coverage: ['Jardins', 'Moema'],
+      segments: [],
     })
     expect(brokerEditor.toFormValues(null)).toBe(brokerEditor.emptyValues)
   })

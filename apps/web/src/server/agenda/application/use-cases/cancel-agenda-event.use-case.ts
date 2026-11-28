@@ -6,6 +6,7 @@ import type { AgendaPropertyCatalog } from '../ports/agenda-property-catalog.por
 import type { CancelAgendaEventInput } from '../../types/use-case-inputs'
 
 import { assertCanManageAgendaEvent } from '../../domain/agenda-access-rules'
+import { assertAgendaEventOpen } from '../../domain/agenda-outcome-rules'
 import {
   findManageableAgendaEvent,
   manageableAgendaEventTenantId,
@@ -26,6 +27,7 @@ export class CancelAgendaEventUseCase {
     const existing = await findManageableAgendaEvent(this.agendaEventRepository, input, input.id)
     if (!existing) throw new AgendaEventNotFoundError()
     assertCanManageAgendaEvent(input.actorRole, input.actorUserId, existing)
+    assertAgendaEventOpen(existing)
 
     if (!input.reason?.trim()) throw new AgendaCancellationReasonRequiredError()
 

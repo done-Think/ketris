@@ -41,6 +41,11 @@ const messages = {
     'The attempt limit has been reached.',
     'Se ha alcanzado el límite de intentos.',
   ],
+  INVITEE_NOT_ELIGIBLE: [
+    'Este e-mail já pertence a um perfil cadastrado na plataforma. A verificação facial é exigida apenas de quem deseja alugar um imóvel.',
+    'This email already belongs to a registered profile. Face verification is only required for people renting a property.',
+    'Este correo ya pertenece a un perfil registrado en la plataforma. La verificación facial solo se exige a quien desea alquilar un inmueble.',
+  ],
   AGENCY_NAME_MISSING: [
     'O nome da empresa está indisponível.',
     'The company name is unavailable.',

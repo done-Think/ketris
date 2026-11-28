@@ -19,12 +19,12 @@ const draftBrokerProfile: PublicBrokerProfile = {
   email: 'broker@example.com',
   displayName: '',
   headline: null,
-  bio: null,
+  summary: null,
   creci: null,
   phone: null,
   region: null,
-  neighborhoods: [],
-  specialties: [],
+  coverage: [],
+  segments: [],
   availability: null,
   primaryColor: null,
   secondaryColor: null,
@@ -121,8 +121,14 @@ vi.mock('../../hooks/use-tenant-agents', () => ({
   useTenantAgents: () => ({ data: [] }),
 }))
 
+vi.mock('../../hooks/use-logo-palette', () => ({
+  useLogoPalette: () => ({ data: null }),
+}))
+
+const mediaUpload = vi.hoisted(() => ({ isUploading: false }))
 vi.mock('../../hooks/use-profile-media', () => ({
   useUploadProfileMedia: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useIsUploadingProfileMedia: () => mediaUpload.isUploading,
 }))
 
 function renderWithTheme(component: ReactElement) {
@@ -233,9 +239,11 @@ describe('PublicProfileEditorPage', () => {
     renderWithTheme(<AgencyPublicProfileEditorPage />)
 
     expect(screen.getByRole('heading', { name: 'Editar Perfil da Imobiliária' })).toBeVisible()
-    expect(screen.getByLabelText('Cor principal')).toBeVisible()
-    expect(screen.getByLabelText('Cor secundária')).toBeVisible()
-    expect(screen.getByLabelText('Fundo da marca')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Personalizar marca' })).toBeDisabled()
+    expect(
+      screen.getByText('Para publicar, falta: logotipo, fundo da marca e imagem de capa'),
+    ).toBeVisible()
+    expect(screen.queryByLabelText('Cor dos destaques')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Nome da imobiliária')).toBeVisible()
     expect(screen.getByLabelText('CRECI')).toBeVisible()
     expect(screen.getByLabelText('Corretores em destaque')).toBeVisible()
@@ -324,17 +332,14 @@ describe('PublicProfileEditorPage', () => {
 
       await user.click(screen.getByRole('button', { name: 'Publicar' }))
 
-      expect(await screen.findByText('Informe a biografia')).toBeVisible()
+      expect(await screen.findByText('Informe o resumo')).toBeVisible()
       expect(screen.getByText('Informe o telefone')).toBeVisible()
       expect(screen.getByText('Informe o CRECI')).toBeVisible()
       expect(screen.getByText('Informe a disponibilidade')).toBeVisible()
       expect(screen.getByText('Informe o título de destaque')).toBeVisible()
       expect(screen.getByText('Informe a região de atuação')).toBeVisible()
-      expect(screen.getByLabelText('Bairros de atuação')).not.toHaveAttribute(
-        'aria-invalid',
-        'true',
-      )
-      expect(screen.getByText('Informe as especialidades')).toBeVisible()
+      expect(screen.getByLabelText('Cobertura')).not.toHaveAttribute('aria-invalid', 'true')
+      expect(screen.getByText('Informe os segmentos de atuação')).toBeVisible()
       expect(screen.getByText('Informe a cor principal')).toBeVisible()
       expect(screen.getByText('Informe a cor secundária')).toBeVisible()
       expect(screen.getByText('Informe a cor de fundo')).toBeVisible()
@@ -344,18 +349,18 @@ describe('PublicProfileEditorPage', () => {
       expect(brokerProfileMocks.publishMutate).not.toHaveBeenCalled()
     })
 
-    it('publishes a broker covering a broad region without neighborhoods', async () => {
+    it('publishes a broker covering a broad region without coverage', async () => {
       vi.mocked(useOwnBrokerProfile).mockReturnValue({
         data: {
           ...draftBrokerProfile,
           displayName: 'Ana Souza',
           headline: 'Especialista em imóveis de alto padrão',
-          bio: 'Especialista em imóveis residenciais.',
+          summary: 'Especialista em imóveis residenciais.',
           phone: '11999998888',
           creci: '12345-F',
           region: 'Sul de Minas',
-          neighborhoods: [],
-          specialties: ['Apartamentos', 'Cobertura'],
+          coverage: [],
+          segments: ['Apartamentos', 'Cobertura'],
           availability: 'Seg a sex, 9h às 18h',
           primaryColor: '#111111',
           secondaryColor: '#222222',
@@ -376,9 +381,81 @@ describe('PublicProfileEditorPage', () => {
       expect(brokerProfileMocks.saveMutate.mock.calls[0][0]).toMatchObject({
         displayName: 'Ana Souza',
         region: 'Sul de Minas',
-        neighborhoods: [],
+        coverage: [],
       })
       await waitFor(() => expect(brokerProfileMocks.publishMutate).toHaveBeenCalledTimes(1))
+    })
+  })
+
+  describe('agency brand dialog', () => {
+    afterEach(() => {
+      vi.mocked(useOwnAgencyProfile).mockReturnValue({ data: null } as unknown as ReturnType<
+        typeof useOwnAgencyProfile
+      >)
+      agencyProfileMocks.saveMutate.mockClear()
+    })
+
+    it('opens the first-time wizard, applies a palette and saves it with the profile', async () => {
+      vi.mocked(useOwnAgencyProfile).mockReturnValue({
+        data: { ...draftAgencyProfile, displayName: 'Imobiliária Horizonte' },
+      } as unknown as ReturnType<typeof useOwnAgencyProfile>)
+      const user = userEvent.setup()
+      renderWithTheme(<AgencyPublicProfileEditorPage />)
+
+      await user.click(screen.getByRole('button', { name: 'Editar' }))
+      await user.click(screen.getByRole('button', { name: 'Personalizar marca' }))
+      const dialog = await screen.findByRole('dialog', { name: 'Personalizar marca' })
+      expect(within(dialog).getByRole('heading', { name: 'Envie o logotipo' })).toBeVisible()
+      await user.click(within(dialog).getByRole('button', { name: 'Ver tudo em uma tela' }))
+      await user.click(within(dialog).getByRole('button', { name: 'Usar a paleta Verde' }))
+      await user.click(within(dialog).getByRole('button', { name: 'Aplicar' }))
+
+      await waitFor(() =>
+        expect(
+          screen.queryByRole('dialog', { name: 'Personalizar marca' }),
+        ).not.toBeInTheDocument(),
+      )
+      expect(screen.getByRole('img', { name: 'Fundo da marca: #EEF6EF' })).toBeInTheDocument()
+      expect(agencyProfileMocks.saveMutate).not.toHaveBeenCalled()
+
+      await user.click(screen.getByRole('button', { name: 'Salvar' }))
+
+      await waitFor(() =>
+        expect(agencyProfileMocks.saveMutate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            backgroundColor: '#EEF6EF',
+            primaryColor: '#1B7F3B',
+            secondaryColor: '#123821',
+          }),
+          expect.any(Object),
+        ),
+      )
+    })
+
+    it('opens the single-screen panel once the brand was set and keeps the colors on cancel', async () => {
+      vi.mocked(useOwnAgencyProfile).mockReturnValue({
+        data: {
+          ...draftAgencyProfile,
+          displayName: 'Imobiliária Horizonte',
+          backgroundColor: '#FFFFFF',
+        },
+      } as unknown as ReturnType<typeof useOwnAgencyProfile>)
+      const user = userEvent.setup()
+      renderWithTheme(<AgencyPublicProfileEditorPage />)
+
+      await user.click(screen.getByRole('button', { name: 'Editar' }))
+      await user.click(screen.getByRole('button', { name: 'Personalizar marca' }))
+      const dialog = await screen.findByRole('dialog', { name: 'Personalizar marca' })
+      expect(within(dialog).queryByRole('button', { name: 'Próximo' })).not.toBeInTheDocument()
+      await user.click(within(dialog).getByRole('button', { name: 'Usar a paleta Grafite' }))
+      await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
+
+      await waitFor(() =>
+        expect(
+          screen.queryByRole('dialog', { name: 'Personalizar marca' }),
+        ).not.toBeInTheDocument(),
+      )
+      expect(screen.getByRole('img', { name: 'Fundo da marca: #FFFFFF' })).toBeInTheDocument()
     })
   })
 
