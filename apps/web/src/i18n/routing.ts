@@ -105,6 +105,11 @@ export const routing = defineRouting({
       'en-US': '/brokers/[id]',
       'es-ES': '/corredores/[id]',
     },
+    '/privacy': {
+      'pt-BR': '/privacidade',
+      'en-US': '/privacy',
+      'es-ES': '/privacidad',
+    },
     '/agencies': {
       'pt-BR': '/imobiliarias',
       'en-US': '/agencies',

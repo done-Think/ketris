@@ -27,7 +27,7 @@ export type PropertyDetailNavigationParams = {
 }
 
 export type MarketplaceNavigationHrefKey =
-  MarketplaceNavigationItemId | 'properties' | 'favorites' | 'login'
+  MarketplaceNavigationItemId | 'properties' | 'favorites' | 'login' | 'privacy'
 
 export type MarketplaceNavigationPurposeMap = Record<
   SearchResultPurpose,

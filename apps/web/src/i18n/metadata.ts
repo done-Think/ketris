@@ -18,6 +18,7 @@ export async function createLocalizedMetadata(
     namespace === 'charges.metadata' ||
     namespace === 'marketplace.metadata.agencies' ||
     namespace === 'marketplace.metadata.brokers' ||
+    namespace === 'marketplace.metadata.privacy' ||
     namespace === 'marketplace.metadata.searchBuy' ||
     namespace === 'marketplace.metadata.searchRent'
   ) {
