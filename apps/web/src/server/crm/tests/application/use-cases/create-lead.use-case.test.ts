@@ -1,8 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import type { ContactRepository } from '../../../application/ports/contact-repository.port'
+import type { LeadPropertyLookupPort } from '../../../application/ports/lead-property-lookup.port'
 import type { LeadRepository } from '../../../application/ports/lead-repository.port'
 import { CreateLeadUseCase } from '../../../application/use-cases/create-lead.use-case'
 import type { Lead } from '../../../domain/lead.entity'
+
+function createUseCase(leads: LeadRepository, propertyLookup: LeadPropertyLookupPort) {
+  return new CreateLeadUseCase(leads, propertyLookup, {
+    findById: vi.fn(),
+  } as unknown as ContactRepository)
+}
 
 const created: Lead = {
   id: 'lead-1',
@@ -29,19 +37,18 @@ describe('CreateLeadUseCase', () => {
       title: 'Shared property',
       responsibleId: 'manager-1',
     })
-    await new CreateLeadUseCase({ create } as unknown as LeadRepository, { findAvailable }).execute(
-      {
-        actorTenantId: 'tenant-1',
-        actorId: 'agent-1',
-        actorRole: 'AGENT',
-        name: 'Buyer',
-        phone: '(11) 99999-0000',
-        propertyId: 'property-1',
-        interest: 'Property',
-        budget: '500000',
-        source: 'OTHER',
-      },
-    )
+    const useCase = createUseCase({ create } as unknown as LeadRepository, { findAvailable })
+    await useCase.execute({
+      actorTenantId: 'tenant-1',
+      actorId: 'agent-1',
+      actorRole: 'AGENT',
+      name: 'Buyer',
+      phone: '(11) 99999-0000',
+      propertyId: 'property-1',
+      interest: 'Property',
+      budget: '500000',
+      source: 'OTHER',
+    })
     expect(findAvailable).toHaveBeenCalledWith('tenant-1', 'property-1', 'agent-1')
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -56,7 +63,7 @@ describe('CreateLeadUseCase', () => {
     const findAvailable = vi
       .fn()
       .mockResolvedValue({ id: 'property-1', title: 'Imóvel cadastrado', responsibleId: 'agent-1' })
-    const useCase = new CreateLeadUseCase({ create } as unknown as LeadRepository, {
+    const useCase = createUseCase({ create } as unknown as LeadRepository, {
       findAvailable,
     })
     await useCase.execute({
@@ -83,7 +90,7 @@ describe('CreateLeadUseCase', () => {
   it('restricts an agent lookup to their own available properties and rejects stale or inaccessible selections', async () => {
     const create = vi.fn()
     const findAvailable = vi.fn().mockResolvedValue(null)
-    const useCase = new CreateLeadUseCase({ create } as unknown as LeadRepository, {
+    const useCase = createUseCase({ create } as unknown as LeadRepository, {
       findAvailable,
     })
     await expect(
@@ -105,7 +112,7 @@ describe('CreateLeadUseCase', () => {
   it('cria o lead com o ator autenticado como responsável', async () => {
     const create = vi.fn().mockResolvedValue(created)
     const repository = { create } as unknown as LeadRepository
-    const useCase = new CreateLeadUseCase(repository, { findAvailable: vi.fn() })
+    const useCase = createUseCase(repository, { findAvailable: vi.fn() })
 
     const result = await useCase.execute({
       actorTenantId: 'tenant-1',
@@ -127,7 +134,7 @@ describe('CreateLeadUseCase', () => {
   it('bloqueia RENTER ao tentar criar um lead', async () => {
     const create = vi.fn()
     const repository = { create } as unknown as LeadRepository
-    const useCase = new CreateLeadUseCase(repository, { findAvailable: vi.fn() })
+    const useCase = createUseCase(repository, { findAvailable: vi.fn() })
 
     await expect(
       useCase.execute({

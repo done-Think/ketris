@@ -55,7 +55,9 @@ export class ConvertLeadToOpportunityUseCase {
       )
 
       if (!canAccess) {
-        throw new ForbiddenError('Você só pode criar oportunidades para os próprios imóveis.')
+        throw new ForbiddenError(
+          'Você só pode criar oportunidades para imóveis da sua carteira ou compartilhados com você.',
+        )
       }
     }
 
@@ -66,6 +68,7 @@ export class ConvertLeadToOpportunityUseCase {
       tenantId: input.actorTenantId,
       propertyId: input.propertyId,
       responsibleId: lead.responsibleId,
+      contactId: lead.contactId ?? undefined,
       leadName: lead.name,
       leadEmail: email,
       leadPhone: lead.phone,

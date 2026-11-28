@@ -1,4 +1,5 @@
 import { crmRecordAccess } from './crm-record-access'
+import { recordLeadEvent } from './record-lead-event'
 import { crmMutationAuthor } from './crm-mutation-author'
 import type { CrmPage } from '../types/pagination'
 import { crmChangedFields } from './crm-changed-fields'
@@ -8,7 +9,7 @@ import type { CrmDatabase, CrmScope, LeadRow } from '../types/prisma'
 import { recordCrmAudit } from './record-crm-audit'
 
 import type { LeadListFilters, LeadRepository } from '../application/ports/lead-repository.port'
-import type { Lead, LeadUpdate, NewLead } from '../domain/lead.entity'
+import type { Lead, LeadContactDetails, LeadUpdate, NewLead } from '../domain/lead.entity'
 
 function toDomain(row: LeadRow): Lead {
   return {
@@ -16,6 +17,7 @@ function toDomain(row: LeadRow): Lead {
       ? { accessUserIds: row.brokerAccess.map((access) => access.userId) }
       : {}),
     id: row.id,
+    contactId: row.contactId,
     tenantId: row.tenantId,
     responsibleId: row.responsibleId,
     name: row.name,
@@ -30,6 +32,7 @@ function toDomain(row: LeadRow): Lead {
     opportunityId: row.opportunityId,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    lastContactAt: row.lastContactAt,
   }
 }
 
@@ -46,6 +49,7 @@ export class PrismaLeadRepository implements LeadRepository {
         tenantId: this.scope.actorTenantId,
         updatedById: authorId,
         responsibleId: lead.responsibleId,
+        contactId: lead.contactId,
         name: lead.name,
         phone: lead.phone,
         email: lead.email,
@@ -57,6 +61,10 @@ export class PrismaLeadRepository implements LeadRepository {
       },
     })
 
+    if (lead.contactId) {
+      await recordLeadEvent(this.db, this.scope, row.id, 'LEAD_CREATED')
+      await recordCrmAudit(this.db, this.scope, 'CONTACT', lead.contactId, 'UPDATED', ['leads'])
+    }
     await recordCrmAudit(this.db, this.scope, 'LEAD', row.id, 'CREATED', [])
     return toDomain(row)
   }
@@ -110,6 +118,11 @@ export class PrismaLeadRepository implements LeadRepository {
       },
     })
 
+    if (changes.stage && current && changes.stage !== current.stage)
+      await recordLeadEvent(this.db, this.scope, row.id, 'STAGE_CHANGED', {
+        previousStage: current.stage,
+        nextStage: changes.stage,
+      })
     if (changes.stage && changes.stage !== 'NEW') await this.markFirstContact(row.id)
     await recordCrmAudit(this.db, this.scope, 'LEAD', row.id, 'UPDATED', changedFields)
     return toDomain(row)
@@ -123,6 +136,7 @@ export class PrismaLeadRepository implements LeadRepository {
   }
 
   async markConverted(id: string, opportunityId: string, email?: string): Promise<Lead> {
+    const previous = await this.findById(id)
     const authorId = await crmMutationAuthor(this.db, this.scope)
     const row = await this.db.lead.update({
       where: {
@@ -146,11 +160,37 @@ export class PrismaLeadRepository implements LeadRepository {
         })),
         skipDuplicates: true,
       })
+    if (previous && previous.stage !== row.stage)
+      await recordLeadEvent(this.db, this.scope, row.id, 'STAGE_CHANGED', {
+        previousStage: previous.stage,
+        nextStage: row.stage,
+      })
     await this.markFirstContact(row.id)
     await recordCrmAudit(this.db, this.scope, 'LEAD', row.id, 'CONVERTED', [
       'stage',
       'opportunityId',
     ])
     return toDomain(row)
+  }
+
+  async syncContactDetails(
+    tenantId: string,
+    contactId: string,
+    details: LeadContactDetails,
+  ): Promise<void> {
+    const fields = Object.keys(details)
+    if (!fields.length || tenantId !== this.scope.actorTenantId) return
+    const leads = await this.db.lead.findMany({
+      where: { tenantId: this.scope.actorTenantId, contactId },
+      select: { id: true },
+    })
+    if (!leads.length) return
+    const authorId = await crmMutationAuthor(this.db, this.scope)
+    await this.db.lead.updateMany({
+      where: { tenantId: this.scope.actorTenantId, contactId },
+      data: { ...details, updatedById: authorId },
+    })
+    for (const lead of leads)
+      await recordCrmAudit(this.db, this.scope, 'LEAD', lead.id, 'UPDATED', fields)
   }
 }

@@ -18,6 +18,25 @@ const baseValues = {
 }
 
 describe('buildAgendaEventFormSchema', () => {
+  it.each(['09:15', '13:01', '13:29', '13:45', '24:00', '13:30:01'])(
+    'rejects unsupported time %s',
+    (scheduledTime) => {
+      const result = buildAgendaEventFormSchema(t).safeParse({ ...baseValues, scheduledTime })
+      expect(result.success).toBe(false)
+      if (!result.success)
+        expect(result.error.issues).toContainEqual(
+          expect.objectContaining({ path: ['scheduledTime'], message: 'timeSlotInvalid' }),
+        )
+    },
+  )
+
+  it('preserves a legacy time when editing without rescheduling', () => {
+    const result = buildAgendaEventFormSchema(t, {
+      unchangedScheduleDate: baseValues.scheduledDate,
+      unchangedScheduleTime: '13:15',
+    }).safeParse({ ...baseValues, scheduledTime: '13:15' })
+    expect(result.success).toBe(true)
+  })
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-09-29T09:00:00'))

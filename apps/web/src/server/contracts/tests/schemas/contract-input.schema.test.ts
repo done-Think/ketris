@@ -103,3 +103,41 @@ it('recusa campos desconhecidos dentro das partes e não permite trocar origem o
     false,
   )
 })
+
+it('recusa a mesma pessoa como locador, locatário ou fiador, na criação e na edição', () => {
+  const sameTenant = createContractRequestSchema.safeParse({
+    ...valid,
+    tenant: { ...valid.tenant, cpf: '529.982.247-25' },
+  })
+  expect(sameTenant.success).toBe(false)
+  expect(sameTenant.error?.issues).toEqual([
+    expect.objectContaining({
+      path: ['tenant', 'cpf'],
+      params: expect.objectContaining({ i18nKey: 'contractPartiesSamePerson' }),
+    }),
+  ])
+
+  const guarantor = { name: 'Fiadora', email: 'fiadora@example.test', phone: '11977777777' }
+  const sameGuarantor = createContractRequestSchema.safeParse({
+    ...valid,
+    guaranteeType: 'GUARANTOR',
+    guarantor: { ...guarantor, cpf: valid.owner.cpf },
+  })
+  expect(sameGuarantor.error?.issues).toEqual([
+    expect.objectContaining({ path: ['guarantor', 'cpf'] }),
+  ])
+  expect(
+    createContractRequestSchema.safeParse({
+      ...valid,
+      guaranteeType: 'GUARANTOR',
+      guarantor: { ...guarantor, cpf: '11144477735' },
+    }).success,
+  ).toBe(true)
+
+  expect(
+    editContractRequestSchema.safeParse({
+      ...validEdit,
+      tenant: { ...valid.tenant, cpf: valid.owner.cpf },
+    }).success,
+  ).toBe(false)
+})

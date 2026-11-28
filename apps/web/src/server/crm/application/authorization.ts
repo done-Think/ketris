@@ -28,10 +28,11 @@ export async function assertAgentOwnsContact(
   actorId: string,
   actorRole: UserRole,
   createdById?: string | null,
+  hasLeadAccess = false,
 ): Promise<void> {
   if (isAgencyManager(actorRole)) return
   if (actorRole !== 'AGENT') throw new ContactNotFoundError()
-  if (createdById === actorId) return
+  if (hasLeadAccess || createdById === actorId) return
 
   const hasAccess = await opportunityRepository.existsForAgent(tenantId, contactId, actorId)
 

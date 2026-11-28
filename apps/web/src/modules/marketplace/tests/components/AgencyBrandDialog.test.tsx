@@ -9,8 +9,17 @@ import { AgencyBrandDialog } from '../../components/agency-brand-editor/AgencyBr
 import type { AgencyProfile } from '../../types/agency'
 import type { AgencyBrandColorField, AgencyBrandFormValues } from '../../types/agency-brand-editor'
 
+const mediaUpload = vi.hoisted(() => ({ isUploading: false }))
 vi.mock('../../hooks/use-profile-media', () => ({
   useUploadProfileMedia: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useIsUploadingProfileMedia: () => mediaUpload.isUploading,
+}))
+
+const logoPalette = vi.hoisted(() => ({
+  data: null as null | { backgroundColor: string; primaryColor: string; secondaryColor: string },
+}))
+vi.mock('../../hooks/use-logo-palette', () => ({
+  useLogoPalette: () => ({ data: logoPalette.data }),
 }))
 
 const initialValues: AgencyBrandFormValues = {
@@ -68,10 +77,13 @@ function isOutlined(element: HTMLElement) {
   return window.getComputedStyle(element).outlineStyle === 'dashed'
 }
 
-function renderDialog(values: AgencyBrandFormValues = initialValues) {
+function renderDialog(
+  values: AgencyBrandFormValues = initialValues,
+  initialMode: 'panel' | 'wizard' = 'panel',
+) {
   return render(
     <ThemeProvider theme={theme}>
-      <AgencyBrandDialog open initialValues={values} {...handlers} />
+      <AgencyBrandDialog open initialMode={initialMode} initialValues={values} {...handlers} />
     </ThemeProvider>,
   )
 }
@@ -93,6 +105,8 @@ beforeAll(() => {
 })
 
 beforeEach(() => {
+  mediaUpload.isUploading = false
+  logoPalette.data = null
   handlers.buildPreview.mockClear()
   handlers.onApply.mockClear()
   handlers.onClose.mockClear()
@@ -224,5 +238,141 @@ describe('AgencyBrandDialog', () => {
       .map((part) => part.textContent)
     expect(outlinedTexts).toEqual(expect.arrayContaining(['Residencial', 'Imobiliária Horizonte']))
     previewParts('backgroundColor').forEach((part) => expect(isOutlined(part)).toBe(false))
+  })
+
+  it('suggests colors read from the logo and applies them', async () => {
+    logoPalette.data = {
+      backgroundColor: '#FFFFFF',
+      primaryColor: '#1B7F3B',
+      secondaryColor: '#123821',
+    }
+    const user = userEvent.setup()
+    renderDialog({ ...initialValues, logoUrl: '/api/marketplace/media/logo.png' })
+
+    expect(screen.getByText('Sugestão a partir do logotipo:')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Usar cores do logotipo' }))
+
+    expect(screen.getByLabelText('Cor dos destaques')).toHaveValue('#1B7F3B')
+    expect(screen.getByLabelText('Cor do nome')).toHaveValue('#123821')
+  })
+
+  it('blocks Aplicar while an image is still uploading', () => {
+    mediaUpload.isUploading = true
+    renderDialog()
+
+    expect(screen.getByRole('button', { name: 'Aplicar' })).toBeDisabled()
+  })
+
+  it('hides the logo suggestion while there is none', () => {
+    renderDialog()
+
+    expect(screen.queryByRole('button', { name: 'Usar cores do logotipo' })).not.toBeInTheDocument()
+  })
+
+  describe('first-time wizard', () => {
+    const emptyValues: AgencyBrandFormValues = {
+      backgroundColor: '',
+      primaryColor: '',
+      secondaryColor: '',
+      logoUrl: '',
+      bannerUrl: '',
+    }
+
+    it('walks through logo, colors, cover and review before applying', async () => {
+      const user = userEvent.setup()
+      renderDialog(emptyValues, 'wizard')
+
+      expect(screen.getByRole('heading', { name: 'Envie o logotipo' })).toBeVisible()
+      expect(screen.getByRole('button', { name: 'Voltar' })).toBeDisabled()
+      expect(screen.queryByLabelText('Fundo da marca')).not.toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Próximo' }))
+      expect(screen.getByRole('heading', { name: 'Escolha as cores' })).toBeVisible()
+      await user.click(screen.getByRole('button', { name: 'Usar a paleta Vinho' }))
+
+      await user.click(screen.getByRole('button', { name: 'Próximo' }))
+      expect(screen.getByRole('heading', { name: 'Imagem de capa' })).toBeVisible()
+
+      await user.click(screen.getByRole('button', { name: 'Próximo' }))
+      expect(screen.getByRole('heading', { name: 'Confira antes de aplicar' })).toBeVisible()
+      expect(screen.getByText('Fundo da marca escolhido')).toBeVisible()
+      expect(screen.getByText('Falta o logotipo (obrigatório para publicar)')).toBeVisible()
+      expect(screen.getByText('Falta a imagem de capa (obrigatória para publicar)')).toBeVisible()
+      expect(screen.getAllByRole('listitem')).toHaveLength(3)
+      expect(screen.queryByText(/contraste/)).not.toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Aplicar' }))
+
+      expect(handlers.onApply).toHaveBeenCalledWith(
+        {
+          ...emptyValues,
+          backgroundColor: '#F7EEF1',
+          primaryColor: '#8E1B3D',
+          secondaryColor: '#3A0B19',
+        },
+        expect.anything(),
+      )
+    })
+
+    it('goes back a step and keeps what was chosen', async () => {
+      const user = userEvent.setup()
+      renderDialog(emptyValues, 'wizard')
+
+      await user.click(screen.getByRole('button', { name: 'Próximo' }))
+      await user.type(screen.getByLabelText('Fundo da marca'), '#EEF6EF')
+      await user.click(screen.getByRole('button', { name: 'Próximo' }))
+      await user.click(screen.getByRole('button', { name: 'Voltar' }))
+
+      expect(screen.getByLabelText('Fundo da marca')).toHaveValue('#EEF6EF')
+    })
+
+    it('blocks moving between steps while an image is still uploading', () => {
+      mediaUpload.isUploading = true
+      renderDialog(emptyValues, 'wizard')
+
+      expect(screen.getByRole('button', { name: 'Próximo' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Voltar' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Ver tudo em uma tela' })).toBeDisabled()
+    })
+
+    it('stays on the colors step and shows the error while a color is not a valid hex code', async () => {
+      const user = userEvent.setup()
+      renderDialog(emptyValues, 'wizard')
+
+      await user.click(screen.getByRole('button', { name: 'Próximo' }))
+      await user.type(screen.getByLabelText('Fundo da marca'), '#12')
+      await user.click(screen.getByRole('button', { name: 'Próximo' }))
+
+      expect(screen.getByRole('heading', { name: 'Escolha as cores' })).toBeVisible()
+      expect(await screen.findByText('Informe uma cor hexadecimal válida')).toBeVisible()
+
+      await user.clear(screen.getByLabelText('Fundo da marca'))
+      await user.type(screen.getByLabelText('Fundo da marca'), '#EEF6EF')
+      await user.click(screen.getByRole('button', { name: 'Próximo' }))
+
+      expect(await screen.findByRole('heading', { name: 'Imagem de capa' })).toBeVisible()
+    })
+
+    it('closes without applying on Cancelar during the steps', async () => {
+      const user = userEvent.setup()
+      renderDialog(emptyValues, 'wizard')
+
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+      expect(handlers.onClose).toHaveBeenCalled()
+      expect(handlers.onApply).not.toHaveBeenCalled()
+    })
+
+    it('switches to the single-screen panel on demand', async () => {
+      const user = userEvent.setup()
+      renderDialog(emptyValues, 'wizard')
+
+      await user.click(screen.getByRole('button', { name: 'Ver tudo em uma tela' }))
+
+      expect(screen.getByLabelText('Fundo da marca')).toBeVisible()
+      expect(screen.getByText('Logotipo')).toBeVisible()
+      expect(screen.getByRole('button', { name: 'Cancelar' })).toBeVisible()
+      expect(screen.queryByRole('button', { name: 'Próximo' })).not.toBeInTheDocument()
+    })
   })
 })

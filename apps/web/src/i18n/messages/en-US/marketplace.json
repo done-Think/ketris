@@ -30,7 +30,8 @@
       "settings": "Settings",
       "signOut": "Sign out",
       "support": "Support",
-      "switchMode": "Switch mode"
+      "switchMode": "Switch mode",
+      "favorites": "My favorites"
     }
   },
   "navigation": {
@@ -67,6 +68,9 @@
       "notFoundTitle": "Ketris",
       "agencyDescription": "{name}, {creci}, operates in {headquarters}.",
       "brokerDescription": "{name}, {creci}, represents properties in {region}."
+    },
+    "favorites": {
+      "metadataTitle": "My favorites"
     }
   },
   "home": {
@@ -194,8 +198,9 @@
     "mapUnavailable": "Map location is not yet available for this address.",
     "searchAddressOnMaps": "Search address on Google Maps",
     "mapApproximate": "Approximate location",
-    "favorite": "Favorite",
     "share": "Share",
+    "linkCopied": "Link copied.",
+    "shareError": "Could not share. Copy the address from your browser.",
     "aboutProperty": "About this property",
     "location": "Location",
     "notInformed": "Not informed",
@@ -434,7 +439,46 @@
       },
       "cancel": "Cancel",
       "apply": "Apply",
-      "applied": "Brand applied. Click Save to keep it."
+      "applied": "Brand applied. Click Save to keep it.",
+      "suggestion": "Suggested from your logo:",
+      "useSuggestion": "Use logo colors",
+      "wizard": {
+        "steps": {
+          "logo": "Logo",
+          "colors": "Colors",
+          "cover": "Cover",
+          "review": "Review"
+        },
+        "titles": {
+          "logo": "Upload your logo",
+          "colors": "Choose the colors",
+          "cover": "Cover image",
+          "review": "Review before applying"
+        },
+        "descriptions": {
+          "logo": "Preferably a PNG with a transparent background. We then suggest colors from it.",
+          "colors": "Use the logo suggestion, a ready-made palette or pick each color.",
+          "cover": "Shown at the top of your profile. Photos of the storefront or the city work well.",
+          "review": "See what is ready and what is still missing to publish."
+        },
+        "next": "Next",
+        "back": "Back",
+        "skip": "See everything on one screen",
+        "review": {
+          "logo": {
+            "ok": "Logo uploaded",
+            "missing": "Logo missing (required to publish)"
+          },
+          "background": {
+            "ok": "Brand background chosen",
+            "missing": "Brand background missing (required to publish)"
+          },
+          "cover": {
+            "ok": "Cover image uploaded",
+            "missing": "Cover image missing (required to publish)"
+          }
+        }
+      }
     }
   },
   "searchResults": {
@@ -584,5 +628,52 @@
     "loadError": "Could not load your public address.",
     "loading": "Loading public address…",
     "unpublishedHint": "Publish your profile to enable its public link and edit your custom address. The link works only while the profile is published."
+  },
+  "favorites": {
+    "save": "Save",
+    "saved": "Saved",
+    "addLabel": "Save to favorites",
+    "removeLabel": "Remove from favorites",
+    "login": {
+      "title": "Sign in to save this property",
+      "description": "Your favorites stay in your account and show up on your phone and computer. After you sign in, the property is already saved.",
+      "signIn": "Sign in",
+      "signUp": "Create account",
+      "notNow": "Not now"
+    },
+    "errors": {
+      "generic": "We couldn't update your favorites. Please try again.",
+      "unavailable": "This property is no longer available.",
+      "limitReached": "You have already saved {limit} properties. Remove a favorite to save another one."
+    },
+    "removed": "Property removed from favorites.",
+    "undo": "Undo",
+    "page": {
+      "title": "My favorites",
+      "count": "{count, plural, =0 {No saved properties} one {# saved property} other {# saved properties}}",
+      "loadError": "We couldn't load your favorites.",
+      "retry": "Try again",
+      "purpose": {
+        "all": "All ({count})",
+        "rent": "Rent ({count})",
+        "buy": "Buy ({count})"
+      },
+      "unavailable": {
+        "title": "No longer available",
+        "note": "The listing was taken down.",
+        "remove": "Remove"
+      },
+      "guest": {
+        "title": "Sign in to see your favorites",
+        "description": "The properties you save stay in your account and show up on your phone and computer.",
+        "action": "Sign in"
+      },
+      "empty": {
+        "title": "You haven't saved any property yet",
+        "description": "Tap the heart on any property to keep it here and compare later.",
+        "rentAction": "See properties for rent",
+        "buyAction": "See properties for sale"
+      }
+    }
   }
 }

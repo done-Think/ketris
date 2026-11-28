@@ -49,11 +49,17 @@ function openTab(name: 'Resumo' | 'Documentos') {
 }
 function upload(name: string) {
   cy.intercept('POST', '**/api/contracts/*/documents').as('confirmDocument')
-  cy.get('input[type="file"]').selectFile({
-    contents: Cypress.Buffer.from('%PDF-1.7\n' + name + '\n%%EOF'),
-    fileName: name,
-    mimeType: 'application/pdf',
-  })
+  cy.contains('button', 'Escolher arquivo').should('be.visible')
+  // O input nativo fica oculto atrás do botão "Escolher arquivo"; o Cypress precisa de force.
+  cy.get('input[type="file"]').selectFile(
+    {
+      contents: Cypress.Buffer.from('%PDF-1.7\n' + name + '\n%%EOF'),
+      fileName: name,
+      mimeType: 'application/pdf',
+    },
+    { force: true },
+  )
+  cy.contains(name).should('be.visible')
   cy.contains('button', 'Enviar PDF').click()
   cy.wait('@confirmDocument').then(({ response }) => {
     expect(response?.statusCode).to.eq(200)

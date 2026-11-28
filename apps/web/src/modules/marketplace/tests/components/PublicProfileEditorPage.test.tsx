@@ -121,8 +121,14 @@ vi.mock('../../hooks/use-tenant-agents', () => ({
   useTenantAgents: () => ({ data: [] }),
 }))
 
+vi.mock('../../hooks/use-logo-palette', () => ({
+  useLogoPalette: () => ({ data: null }),
+}))
+
+const mediaUpload = vi.hoisted(() => ({ isUploading: false }))
 vi.mock('../../hooks/use-profile-media', () => ({
   useUploadProfileMedia: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useIsUploadingProfileMedia: () => mediaUpload.isUploading,
 }))
 
 function renderWithTheme(component: ReactElement) {
@@ -235,7 +241,7 @@ describe('PublicProfileEditorPage', () => {
     expect(screen.getByRole('heading', { name: 'Editar Perfil da Imobiliária' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Personalizar marca' })).toBeDisabled()
     expect(
-      screen.getByText('Para publicar, falta: fundo da marca, logotipo e imagem de capa'),
+      screen.getByText('Para publicar, falta: logotipo, fundo da marca e imagem de capa'),
     ).toBeVisible()
     expect(screen.queryByLabelText('Cor dos destaques')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Nome da imobiliária')).toBeVisible()
@@ -389,7 +395,7 @@ describe('PublicProfileEditorPage', () => {
       agencyProfileMocks.saveMutate.mockClear()
     })
 
-    it('applies a palette from the dialog and saves it with the profile', async () => {
+    it('opens the first-time wizard, applies a palette and saves it with the profile', async () => {
       vi.mocked(useOwnAgencyProfile).mockReturnValue({
         data: { ...draftAgencyProfile, displayName: 'Imobiliária Horizonte' },
       } as unknown as ReturnType<typeof useOwnAgencyProfile>)
@@ -399,6 +405,8 @@ describe('PublicProfileEditorPage', () => {
       await user.click(screen.getByRole('button', { name: 'Editar' }))
       await user.click(screen.getByRole('button', { name: 'Personalizar marca' }))
       const dialog = await screen.findByRole('dialog', { name: 'Personalizar marca' })
+      expect(within(dialog).getByRole('heading', { name: 'Envie o logotipo' })).toBeVisible()
+      await user.click(within(dialog).getByRole('button', { name: 'Ver tudo em uma tela' }))
       await user.click(within(dialog).getByRole('button', { name: 'Usar a paleta Verde' }))
       await user.click(within(dialog).getByRole('button', { name: 'Aplicar' }))
 
@@ -424,7 +432,7 @@ describe('PublicProfileEditorPage', () => {
       )
     })
 
-    it('keeps the profile colors when the dialog is cancelled', async () => {
+    it('opens the single-screen panel once the brand was set and keeps the colors on cancel', async () => {
       vi.mocked(useOwnAgencyProfile).mockReturnValue({
         data: {
           ...draftAgencyProfile,
@@ -438,6 +446,7 @@ describe('PublicProfileEditorPage', () => {
       await user.click(screen.getByRole('button', { name: 'Editar' }))
       await user.click(screen.getByRole('button', { name: 'Personalizar marca' }))
       const dialog = await screen.findByRole('dialog', { name: 'Personalizar marca' })
+      expect(within(dialog).queryByRole('button', { name: 'Próximo' })).not.toBeInTheDocument()
       await user.click(within(dialog).getByRole('button', { name: 'Usar a paleta Grafite' }))
       await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
 

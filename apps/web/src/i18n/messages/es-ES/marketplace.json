@@ -30,7 +30,8 @@
       "settings": "Configuración",
       "signOut": "Salir",
       "support": "Soporte",
-      "switchMode": "Cambiar modalidad"
+      "switchMode": "Cambiar modalidad",
+      "favorites": "Mis favoritos"
     }
   },
   "navigation": {
@@ -67,6 +68,9 @@
       "notFoundTitle": "Ketris",
       "agencyDescription": "{name}, {creci}, opera en {headquarters}.",
       "brokerDescription": "{name}, {creci}, representa inmuebles en {region}."
+    },
+    "favorites": {
+      "metadataTitle": "Mis favoritos"
     }
   },
   "home": {
@@ -194,8 +198,9 @@
     "mapUnavailable": "La ubicación en el mapa aún no está disponible para esta dirección.",
     "searchAddressOnMaps": "Buscar dirección en Google Maps",
     "mapApproximate": "Ubicación aproximada",
-    "favorite": "Favorito",
     "share": "Compartir",
+    "linkCopied": "Enlace copiado.",
+    "shareError": "No se pudo compartir. Copia la dirección desde el navegador.",
     "aboutProperty": "Sobre el inmueble",
     "location": "Ubicación",
     "notInformed": "No informado",
@@ -434,7 +439,46 @@
       },
       "cancel": "Cancelar",
       "apply": "Aplicar",
-      "applied": "Marca aplicada. Haz clic en Guardar para conservarla."
+      "applied": "Marca aplicada. Haz clic en Guardar para conservarla.",
+      "suggestion": "Sugerencia a partir del logotipo:",
+      "useSuggestion": "Usar colores del logotipo",
+      "wizard": {
+        "steps": {
+          "logo": "Logotipo",
+          "colors": "Colores",
+          "cover": "Portada",
+          "review": "Revisar"
+        },
+        "titles": {
+          "logo": "Sube el logotipo",
+          "colors": "Elige los colores",
+          "cover": "Imagen de portada",
+          "review": "Revisa antes de aplicar"
+        },
+        "descriptions": {
+          "logo": "Preferiblemente en PNG con fondo transparente. Después sugerimos colores a partir de él.",
+          "colors": "Usa la sugerencia del logotipo, una paleta lista o elige cada color.",
+          "cover": "Aparece en la parte superior de tu perfil. Las fotos de la fachada o de la ciudad funcionan bien.",
+          "review": "Mira lo que ya está listo y lo que aún falta para publicar."
+        },
+        "next": "Siguiente",
+        "back": "Atrás",
+        "skip": "Ver todo en una pantalla",
+        "review": {
+          "logo": {
+            "ok": "Logotipo subido",
+            "missing": "Falta el logotipo (obligatorio para publicar)"
+          },
+          "background": {
+            "ok": "Fondo de la marca elegido",
+            "missing": "Falta el fondo de la marca (obligatorio para publicar)"
+          },
+          "cover": {
+            "ok": "Imagen de portada subida",
+            "missing": "Falta la imagen de portada (obligatoria para publicar)"
+          }
+        }
+      }
     }
   },
   "searchResults": {
@@ -584,5 +628,52 @@
     "loadError": "No se pudo cargar tu dirección pública.",
     "loading": "Cargando dirección pública…",
     "unpublishedHint": "Publica el perfil para habilitar el enlace público y editar la dirección personalizada. El enlace solo funciona mientras el perfil esté publicado."
+  },
+  "favorites": {
+    "save": "Guardar",
+    "saved": "Guardado",
+    "addLabel": "Guardar en favoritos",
+    "removeLabel": "Quitar de favoritos",
+    "login": {
+      "title": "Inicia sesión para guardar este inmueble",
+      "description": "Tus favoritos quedan en tu cuenta y aparecen en el móvil y en el ordenador. Al iniciar sesión, el inmueble ya queda guardado.",
+      "signIn": "Iniciar sesión",
+      "signUp": "Crear cuenta",
+      "notNow": "Ahora no"
+    },
+    "errors": {
+      "generic": "No pudimos actualizar tus favoritos. Inténtalo de nuevo.",
+      "unavailable": "Este inmueble ya no está disponible.",
+      "limitReached": "Ya guardaste {limit} inmuebles. Quita algún favorito para guardar otro."
+    },
+    "removed": "Inmueble quitado de favoritos.",
+    "undo": "Deshacer",
+    "page": {
+      "title": "Mis favoritos",
+      "count": "{count, plural, =0 {Ningún inmueble guardado} one {# inmueble guardado} other {# inmuebles guardados}}",
+      "loadError": "No pudimos cargar tus favoritos.",
+      "retry": "Intentar de nuevo",
+      "purpose": {
+        "all": "Todos ({count})",
+        "rent": "Alquilar ({count})",
+        "buy": "Comprar ({count})"
+      },
+      "unavailable": {
+        "title": "Ya no están disponibles",
+        "note": "El anuncio fue retirado.",
+        "remove": "Quitar"
+      },
+      "guest": {
+        "title": "Inicia sesión para ver tus favoritos",
+        "description": "Los inmuebles que guardes quedan en tu cuenta y aparecen en el móvil y en el ordenador.",
+        "action": "Iniciar sesión"
+      },
+      "empty": {
+        "title": "Aún no guardaste ningún inmueble",
+        "description": "Toca el corazón de cualquier inmueble para guardarlo aquí y comparar con calma después.",
+        "rentAction": "Ver inmuebles en alquiler",
+        "buyAction": "Ver inmuebles en venta"
+      }
+    }
   }
 }

@@ -28,6 +28,21 @@ export type AgencyBrandContrastIssue = {
 
 export type AgencyBrandPreviewTab = 'profile' | 'card'
 
+export type AgencyBrandSuggestedPalette = Pick<AgencyBrandPalette, AgencyBrandColorField>
+
+export type AgencyBrandDialogMode = 'wizard' | 'panel'
+
+export type AgencyBrandWizardStep = 'logo' | 'colors' | 'cover' | 'review'
+
+export type AgencyBrandReviewKey = 'logo' | 'background' | 'cover'
+
+export type LogoColorSample = {
+  count: number
+  hex: string
+  saturation: number
+  lightness: number
+}
+
 export type AgencyBrandSummaryCardProps = {
   agency: AgencyProfile
   values: AgencyBrandFormValues
@@ -38,6 +53,7 @@ export type AgencyBrandSummaryCardProps = {
 
 export type AgencyBrandDialogProps = {
   open: boolean
+  initialMode: AgencyBrandDialogMode
   initialValues: AgencyBrandFormValues
   buildPreview: (values: AgencyBrandFormValues) => AgencyProfile
   onClose: () => void
@@ -49,7 +65,8 @@ export type AgencyBrandDialogContentProps = Omit<AgencyBrandDialogProps, 'open'>
 export type AgencyBrandColorFieldsProps = {
   control: Control<AgencyBrandFormValues>
   values: AgencyBrandFormValues
-  onApplyPalette: (palette: AgencyBrandPalette) => void
+  suggestion: AgencyBrandSuggestedPalette | null
+  onApplyPalette: (palette: AgencyBrandSuggestedPalette) => void
   onHighlight: (field: AgencyBrandColorField | null) => void
 }
 
@@ -62,4 +79,22 @@ export type AgencyBrandColorFieldProps = {
 export type AgencyBrandPreviewProps = {
   agency: AgencyProfile
   highlightedColor: AgencyBrandColorField | null
+}
+
+export type AgencyBrandImageFieldProps = {
+  control: Control<AgencyBrandFormValues>
+  name: 'logoUrl' | 'bannerUrl'
+}
+
+export type AgencyBrandReviewProps = {
+  values: AgencyBrandFormValues
+}
+
+export type AgencyBrandWizardStepProps = {
+  step: AgencyBrandWizardStep
+  control: Control<AgencyBrandFormValues>
+  values: AgencyBrandFormValues
+  suggestion: AgencyBrandSuggestedPalette | null
+  onApplyPalette: (palette: AgencyBrandSuggestedPalette) => void
+  onHighlight: (field: AgencyBrandColorField | null) => void
 }

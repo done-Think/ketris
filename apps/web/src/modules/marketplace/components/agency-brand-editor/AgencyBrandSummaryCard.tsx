@@ -4,25 +4,11 @@ import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import { Box, Button, Stack, Tooltip, Typography } from '@mui/material'
 import { useFormatter, useTranslations } from 'next-intl'
 
+import { agencyBrandColorFields, agencyBrandRequiredFields } from '../../config/agency-brand-fields'
 import { getColorDotStyles, styles } from '../../styles/agency-brand-editor.styles'
-import type {
-  AgencyBrandColorField,
-  AgencyBrandRequiredField,
-  AgencyBrandSummaryCardProps,
-} from '../../types/agency-brand-editor'
+import type { AgencyBrandSummaryCardProps } from '../../types/agency-brand-editor'
 import { AgencyAdaptiveBrandHeader } from '../AgencyAdaptiveBrandHeader'
 import { PublicProfileEditorPanel } from '../public-profile-editor/PublicProfileEditorPanel'
-
-const colorFields: readonly AgencyBrandColorField[] = [
-  'backgroundColor',
-  'primaryColor',
-  'secondaryColor',
-]
-const requiredToPublish: readonly AgencyBrandRequiredField[] = [
-  'backgroundColor',
-  'logoUrl',
-  'bannerUrl',
-]
 
 export function AgencyBrandSummaryCard({
   agency,
@@ -33,10 +19,10 @@ export function AgencyBrandSummaryCard({
 }: AgencyBrandSummaryCardProps) {
   const t = useTranslations('marketplace.agencyProfileEditor')
   const format = useFormatter()
-  const errorMessages = requiredToPublish
+  const errorMessages = agencyBrandRequiredFields
     .map((field) => errors[field]?.message)
     .filter((message): message is string => Boolean(message))
-  const missing = requiredToPublish.filter((field) => !values[field])
+  const missing = agencyBrandRequiredFields.filter((field) => !values[field])
 
   return (
     <PublicProfileEditorPanel title={t('fields.appearance')}>
@@ -46,7 +32,7 @@ export function AgencyBrandSummaryCard({
         </Box>
         <Box sx={styles.summaryInfo}>
           <Box sx={styles.summaryDots}>
-            {colorFields.map((field) => (
+            {agencyBrandColorFields.map((field) => (
               <Tooltip key={field} title={t(`fields.${field}`)}>
                 <Box
                   role="img"

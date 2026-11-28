@@ -35,6 +35,7 @@ import type {
   MaintenanceProviderOption,
   MaintenanceProvidersDialogProps,
 } from '../types/maintenance-provider'
+import { formatMaintenancePhone } from '../utils/maintenance-phone'
 import { MaintenanceProviderForm } from './MaintenanceProviderForm'
 
 export function MaintenanceProvidersDialog(props: MaintenanceProvidersDialogProps) {
@@ -134,7 +135,9 @@ function MaintenanceProvidersList({ onClose }: MaintenanceProvidersDialogProps) 
                     <Typography fontWeight={700}>
                       {provider.name} {!provider.active && t('inactive')}
                     </Typography>
-                    <Typography>{provider.phone}</Typography>
+                    <Typography>
+                      {provider.phone && formatMaintenancePhone(provider.phone)}
+                    </Typography>
                     <Typography>{provider.email}</Typography>
                     <Typography sx={maintenanceStyles.typographySx}>{provider.notes}</Typography>
                   </Stack>

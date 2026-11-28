@@ -411,3 +411,13 @@ describe('OpportunityDetail', () => {
     })
   })
 })
+
+vi.mock('../../hooks/use-interactions', () => ({
+  useInteractions: () => ({
+    data: { interactions: [], pagination: { page: 1, pageSize: 5, pageCount: 1, totalCount: 0 } },
+    isLoading: false,
+    isError: false,
+  }),
+  useStartInteraction: () => ({ mutateAsync: vi.fn(), isPending: false, isSuccess: false }),
+  useCompleteInteraction: () => ({ mutateAsync: vi.fn(), isPending: false, isError: false }),
+}))

@@ -3,6 +3,7 @@ import type { UserRole } from '@server/auth/domain/user.entity'
 import type { Lead } from '../domain/lead.entity'
 
 export interface CreateLeadInput {
+  contactId?: string
   actorTenantId: string
   actorId: string
   actorRole: UserRole

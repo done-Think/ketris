@@ -270,6 +270,7 @@
       "neighborhoodRequired": "Informe o bairro",
       "cityRequired": "Informe a cidade",
       "stateRequired": "Informe a UF",
+      "stateInvalid": "Informe uma UF válida.",
       "zipCodeRequired": "Informe o CEP",
       "zipCodeInvalid": "Informe um CEP válido",
       "zipCodeNotFound": "CEP não encontrado. Confira o CEP informado.",

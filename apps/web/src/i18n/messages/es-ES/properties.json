@@ -270,6 +270,7 @@
       "neighborhoodRequired": "Indica el barrio",
       "cityRequired": "Indica la ciudad",
       "stateRequired": "Indica el estado",
+      "stateInvalid": "Indica una UF válida.",
       "zipCodeRequired": "Indica el código postal",
       "zipCodeInvalid": "Indica un código postal válido",
       "zipCodeNotFound": "Código postal no encontrado. Revisa el código introducido.",

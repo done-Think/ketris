@@ -41,10 +41,10 @@ export type UseDirectoryListResult<TItem> = {
 
 export type DirectoryPageHeaderProps = {
   actions?: ReactNode
-  placeholder: string
+  placeholder?: string
   resultCountLabel: string
-  search: string
-  onSearchChange: (value: string) => void
+  search?: string
+  onSearchChange?: (value: string) => void
   title: string
 }
 

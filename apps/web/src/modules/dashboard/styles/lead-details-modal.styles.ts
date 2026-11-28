@@ -9,6 +9,7 @@ export const styles = {
   },
   dialogTitle: { px: { xs: 2, md: 2.6 }, py: 2 },
   box2: { minWidth: 0 },
+  dialogActions: { px: { xs: 2, md: 2.6 }, pt: 0, pb: 2.6 },
   typography3: { color: brand.graphite[500], fontSize: { xs: 20, md: 24 }, fontWeight: 900 },
   dialogContent: { px: { xs: 2, md: 2.6 }, pb: 2.6 },
   box3: {

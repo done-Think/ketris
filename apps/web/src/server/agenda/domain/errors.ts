@@ -57,6 +57,15 @@ export class AgendaMinimumAdvanceNoticeError extends AppError {
   }
 }
 
+export class AgendaTimeSlotInvalidError extends AppError {
+  constructor() {
+    super('Selecione um horário com minutos 00 ou 30.', {
+      status: 400,
+      code: 'AGENDA_TIME_SLOT_INVALID',
+    })
+  }
+}
+
 export class AgendaOutsideBusinessHoursError extends AppError {
   constructor() {
     super(

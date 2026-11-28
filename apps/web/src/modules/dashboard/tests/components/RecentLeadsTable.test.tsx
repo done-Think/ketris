@@ -13,6 +13,15 @@ describe('RecentLeadsTable', () => {
     expect(screen.getByText('Nenhum lead recente encontrado.')).toBeInTheDocument()
   })
 
+  it('formats the budget and keeps the open-lead shortcut out of the table', () => {
+    renderWithProviders(
+      <RecentLeadsTable leads={[{ ...recentLead, budget: '700000' }]} onLeadSelect={vi.fn()} />,
+    )
+
+    expect(screen.getByText('R$ 700.000,00')).toBeVisible()
+    expect(screen.queryByRole('link', { name: 'Abrir lead' })).not.toBeInTheDocument()
+  })
+
   it('lista o lead com status traduzido, link de ligação e detalhes', async () => {
     const onLeadSelect = vi.fn()
     renderWithProviders(<RecentLeadsTable leads={[recentLead]} onLeadSelect={onLeadSelect} />)

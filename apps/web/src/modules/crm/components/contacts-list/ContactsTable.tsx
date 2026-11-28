@@ -21,6 +21,8 @@ export function ContactsTable({
   onEditContact,
   onOpenInteractions,
   onOpenMoreOptions,
+  onAddLead,
+  onContactAction,
 }: ContactsTableProps) {
   const t = useTranslations('crm.contacts')
 
@@ -82,9 +84,11 @@ export function ContactsTable({
               <TableCell align="center">
                 <ContactActions
                   contact={contact}
+                  onAddLead={onAddLead}
                   onEditContact={onEditContact}
                   onOpenInteractions={onOpenInteractions}
                   onOpenMoreOptions={onOpenMoreOptions}
+                  onContactAction={onContactAction}
                 />
               </TableCell>
             </TableRow>

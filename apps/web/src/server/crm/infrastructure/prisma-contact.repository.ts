@@ -1,4 +1,4 @@
-import { crmRecordAccess } from './crm-record-access'
+import { contactAccess } from './contact-access'
 import type { CrmPage } from '../types/pagination'
 import { crmChangedFields } from './crm-changed-fields'
 import { crmMutationAuthor } from './crm-mutation-author'
@@ -79,27 +79,21 @@ export class PrismaContactRepository implements ContactRepository {
   async findById(id: string): Promise<Contact | null> {
     const row = await this.db.contact.findFirst({
       where: {
+        ...contactAccess(this.scope),
         id,
-        tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorRole === 'AGENT'
-          ? {
-              OR: [
-                { createdById: this.scope.actorId ?? '' },
-                {
-                  opportunities: {
-                    some: {
-                      tenantId: this.scope.actorTenantId,
-                      ...crmRecordAccess(this.scope),
-                    },
-                  },
-                },
-              ],
-            }
-          : {}),
       },
     })
 
     return row ? toDomain(row) : null
+  }
+
+  async hasLeadForAgent(tenantId: string, contactId: string, actorId: string) {
+    return Boolean(
+      await this.db.lead.findFirst({
+        where: { tenantId, contactId, responsibleId: actorId },
+        select: { id: true },
+      }),
+    )
   }
 
   async findByEmail(tenantId: string, email: string): Promise<Contact | null> {
@@ -116,23 +110,8 @@ export class PrismaContactRepository implements ContactRepository {
     const changedFields = current ? crmChangedFields(current, changes) : []
     const row = await this.db.contact.update({
       where: {
+        ...contactAccess(this.scope),
         id,
-        tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorRole === 'AGENT'
-          ? {
-              OR: [
-                { createdById: this.scope.actorId ?? '' },
-                {
-                  opportunities: {
-                    some: {
-                      tenantId: this.scope.actorTenantId,
-                      ...crmRecordAccess(this.scope),
-                    },
-                  },
-                },
-              ],
-            }
-          : {}),
       },
       data: {
         updatedById: authorId,
@@ -156,23 +135,8 @@ export class PrismaContactRepository implements ContactRepository {
     if (current?.archivedAt) return current
     const row = await this.db.contact.update({
       where: {
+        ...contactAccess(this.scope),
         id,
-        tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorRole === 'AGENT'
-          ? {
-              OR: [
-                { createdById: this.scope.actorId ?? '' },
-                {
-                  opportunities: {
-                    some: {
-                      tenantId: this.scope.actorTenantId,
-                      ...crmRecordAccess(this.scope),
-                    },
-                  },
-                },
-              ],
-            }
-          : {}),
       },
       data: { archivedAt: new Date(), archivedById: authorId, updatedById: authorId },
     })

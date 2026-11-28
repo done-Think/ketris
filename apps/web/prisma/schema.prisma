@@ -57,6 +57,7 @@ model Tenant {
   teamInvitations    TeamInvitation[]
   brokerGoals        BrokerGoal[]
   portfolioTransfers PortfolioTransfer[]
+  favoriteProperties FavoriteProperty[]
 
   @@map("tenants")
 }
@@ -253,6 +254,7 @@ model User {
   updatedProperties         Property[]                    @relation("PropertyUpdatedBy")
   propertyBrokerAccess      PropertyBrokerAccess[]
   propertyAuditEvents       PropertyAuditEvent[]
+  favoriteProperties        FavoriteProperty[]
   updatedLeads              Lead[]                        @relation("LeadUpdatedBy")
   updatedBrokerProfiles     BrokerPublicProfile[]         @relation("BrokerProfileUpdatedBy")
   updatedAgencyProfiles     AgencyPublicProfile[]         @relation("AgencyProfileUpdatedBy")
@@ -496,6 +498,7 @@ model Property {
   maintenanceTickets MaintenanceTicket[]
   brokerAccess       PropertyBrokerAccess[]
   faceCheckSessions  FaceCheckSession[]
+  favorites          FavoriteProperty[]
 
   @@unique([id, tenantId])
   @@index([tenantId])
@@ -692,6 +695,24 @@ model AgencyProfileHighlight {
   @@map("agency_profile_highlights")
 }
 
+model FavoriteProperty {
+  id         String   @id @default(cuid())
+  tenantId   String
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([tenantId, userId, createdAt])
+  @@index([propertyId])
+  @@map("favorite_properties")
+}
+
 // ---------------------------------------------------------------------------
 // Oportunidade / Proposta (módulo `crm`)
 // ---------------------------------------------------------------------------
@@ -780,9 +801,13 @@ enum LeadStage {
 // A conversão manual preserva o Lead de origem. Contatos do marketplace já nascem vinculados à Oportunidade.
 model Lead {
   brokerAccess   LeadBrokerAccess[]
+  contactId      String?
+  contact        Contact?         @relation(fields: [contactId, tenantId], references: [id, tenantId], onDelete: NoAction)
+  interactions   CrmInteraction[]
+  lastContactAt  DateTime?
   updatedById    String?
-  updatedBy      User?              @relation("LeadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  id             String             @id @default(cuid())
+  updatedBy      User?            @relation("LeadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  id             String           @id @default(cuid())
   tenantId       String
   responsibleId  String
   propertyId     String?
@@ -792,12 +817,12 @@ model Lead {
   interest       String
   budget         String
   source         LeadSource
-  stage          LeadStage          @default(NEW)
+  stage          LeadStage        @default(NEW)
   firstContactAt DateTime?
   notes          String?
-  opportunityId  String?            @unique
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  opportunityId  String?          @unique
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   responsible User         @relation("LeadResponsible", fields: [responsibleId], references: [id])
@@ -809,6 +834,7 @@ model Lead {
   @@index([tenantId])
   @@index([tenantId, stage])
   @@index([tenantId, propertyId])
+  @@index([tenantId, contactId])
   @@map("leads")
 }
 
@@ -825,21 +851,23 @@ enum ContactType {
 // Agenda de relacionamento do tenant. Independente de `Usuario`: um contato é alguém com quem o
 // tenant se relaciona (proprietário, locatário, corretor parceiro), não alguém que loga no sistema.
 model Contact {
+  leads           Lead[]
+  interactions    CrmInteraction[]
   createdById     String?
   updatedById     String?
   archivedById    String?
-  id              String      @id @default(cuid())
+  id              String           @id @default(cuid())
   tenantId        String
   name            String
   email           String
   phone           String?
-  type            ContactType @default(RENTER)
+  type            ContactType      @default(RENTER)
   avatarUrl       String?
   notes           String?
   lastInteraction DateTime?
   archivedAt      DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   opportunities   Opportunity[]
@@ -1760,4 +1788,50 @@ model OpportunityBrokerAccess {
   @@id([opportunityId, userId])
   @@index([tenantId, userId])
   @@map("opportunity_broker_access")
+}
+
+enum CrmInteractionChannel {
+  PHONE
+  EMAIL
+  WHATSAPP
+}
+
+enum CrmInteractionStatus {
+  STARTED
+  CONTACT_MADE
+  NO_RESPONSE
+  CANCELLED
+}
+
+model CrmInteraction {
+  kind          CrmInteractionKind     @default(CONTACT_ATTEMPT)
+  contactId     String?
+  contact       Contact?               @relation(fields: [contactId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  previousStage LeadStage?
+  nextStage     LeadStage?
+  id            String                 @id @default(cuid())
+  tenantId      String
+  leadId        String?
+  requestId     String
+  channel       CrmInteractionChannel?
+  status        CrmInteractionStatus?  @default(STARTED)
+  description   String?
+  actorUserId   String
+  actorName     String
+  completedById String?
+  createdAt     DateTime               @default(now())
+  completedAt   DateTime?
+  lead          Lead?                  @relation(fields: [leadId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@unique([tenantId, requestId])
+  @@index([tenantId, leadId, createdAt, id])
+  @@index([tenantId, contactId, createdAt, id])
+  @@map("crm_interactions")
+}
+
+enum CrmInteractionKind {
+  CONTACT_ATTEMPT
+  STAGE_CHANGED
+  CONTACT_LINKED
+  LEAD_CREATED
 }

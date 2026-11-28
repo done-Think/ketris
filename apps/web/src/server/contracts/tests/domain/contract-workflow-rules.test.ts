@@ -38,7 +38,7 @@ it('não invalida o PDF quando só muda a formatação do CPF, telefone ou e-mai
     ...contract,
     parties: contract.parties.map((party) => ({
       ...party,
-      cpf: '52998224725',
+      cpf: party.cpf.replace(/\D/g, ''),
       phone: '(11) 99999-9999',
       email: party.email.toUpperCase(),
     })),

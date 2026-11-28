@@ -91,14 +91,22 @@ export class PrismaUserRepository implements UserRepository, UserListRepository 
 
   async findPageByTenant(tenantId: string, query: UserListQuery): Promise<UserListPage> {
     const pending = { membershipApprovedAt: null }
+    const invited = { teamInvitation: { is: { acceptedAt: null } } }
     const where = {
       tenantId,
-      ...(query.pendingApproval === undefined
-        ? {}
-        : query.pendingApproval
-          ? pending
-          : { NOT: pending }),
-    }
+      AND: [
+        query.pendingApproval === undefined
+          ? {}
+          : query.pendingApproval
+            ? pending
+            : { NOT: pending },
+        query.pendingInvitation === undefined
+          ? {}
+          : query.pendingInvitation
+            ? invited
+            : { NOT: invited },
+      ],
+    } satisfies Prisma.UserWhereInput
     const [rows, total] = await prisma.$transaction(
       [
         prisma.user.findMany({

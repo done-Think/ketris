@@ -21,9 +21,41 @@ import {
 } from '../../hooks/use-maintenance'
 import type { ApiMaintenanceTicket, ApiMaintenanceTicketListItem } from '../../types/service'
 
+const navigation = vi.hoisted(() => ({
+  search: new URLSearchParams(),
+  replace: vi.fn(),
+}))
+
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
 }))
+
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>('next/navigation')),
+  useSearchParams: () => navigation.search,
+}))
+
+vi.mock('@/i18n/navigation', async () => {
+  const React = await import('react')
+  type Href = string | { pathname: string; params?: Record<string, string> }
+  const toPath = (href: Href) =>
+    typeof href === 'string'
+      ? href
+      : Object.entries(href.params ?? {}).reduce(
+          (path, [key, value]) => path.replace(`[${key}]`, value),
+          href.pathname,
+        )
+  return {
+    usePathname: () => '/dashboard/maintenance',
+    useRouter: () => ({ replace: navigation.replace, push: vi.fn(), prefetch: vi.fn() }),
+    Link: React.forwardRef<HTMLAnchorElement, { href: Href }>(function MockLink(
+      { href, ...props },
+      ref,
+    ) {
+      return React.createElement('a', { ...props, href: toPath(href), ref })
+    }),
+  }
+})
 
 vi.mock('@shared/hooks/use-dashboard-face-check-notifications', () => ({
   useDashboardFaceCheckNotifications: () => [],
@@ -218,6 +250,7 @@ function mockDefaults() {
 describe('MaintenanceDashboardPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    navigation.search = new URLSearchParams()
     mockDefaults()
   })
 
@@ -344,6 +377,29 @@ describe('MaintenanceDashboardPage', () => {
 
     expect(screen.getByText('MNT-0087')).toBeVisible()
     expect(screen.queryByText('MNT-0089')).not.toBeInTheDocument()
+  })
+
+  it('opens filtered by the contract from the URL and clears that filter', async () => {
+    const user = userEvent.setup()
+    navigation.search = new URLSearchParams({ contractId: 'contract-9' })
+    render(<MaintenanceDashboardPage />)
+
+    expect(useMaintenanceTickets).toHaveBeenLastCalledWith(
+      expect.objectContaining({ contractId: 'contract-9', page: 1 }),
+    )
+    expect(screen.getByText('Mostrando só os chamados deste contrato.')).toBeVisible()
+
+    await user.click(screen.getByRole('button', { name: 'Ver todos os chamados' }))
+    expect(navigation.replace).toHaveBeenCalledWith('/dashboard/maintenance')
+  })
+
+  it('lists every ticket without the contract notice when no contract is in the URL', () => {
+    render(<MaintenanceDashboardPage />)
+
+    expect(useMaintenanceTickets).toHaveBeenLastCalledWith(
+      expect.objectContaining({ contractId: undefined }),
+    )
+    expect(screen.queryByText('Mostrando só os chamados deste contrato.')).not.toBeInTheDocument()
   })
 
   it('filters tickets by status', async () => {
