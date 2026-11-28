@@ -9,28 +9,49 @@ import { ApiError } from '../services/api-error'
 import { hasLostFaceCheckAccess } from '../utils/query-access'
 import { consoleKeys } from './console-query-keys'
 
+const listPollingMs = 30_000
 const livePollingMs = 3000
+
+function shouldPauseAutomaticRequests(error: unknown) {
+  return (
+    hasLostFaceCheckAccess(error) ||
+    (error instanceof ApiError && error.code === 'STORAGE_UNAVAILABLE')
+  )
+}
+
+const consoleRequestOptions = {
+  retry: (attempt: number, error: unknown) => attempt < 1 && !shouldPauseAutomaticRequests(error),
+  retryDelay: 5000,
+  retryOnMount: false,
+}
 
 export function useSessionList(query: SessionListQuery) {
   const scope = useTenantSessionScope()
   return useQuery({
+    ...consoleRequestOptions,
     queryKey: [...consoleKeys.sessionList(query), scope.tenantId, ...scope.actorKey],
     enabled: scope.enabled,
     queryFn: ({ signal }) => consoleService.listSessions(query, signal),
-    staleTime: 0,
-    refetchInterval: livePollingMs,
+    staleTime: listPollingMs,
+    refetchInterval: (query) =>
+      shouldPauseAutomaticRequests(query.state.error) ? false : listPollingMs,
   })
 }
 
 export function useSession(id: string) {
   const scope = useTenantSessionScope()
   return useQuery({
+    ...consoleRequestOptions,
     queryKey: [...consoleKeys.session(id), scope.tenantId, ...scope.actorKey],
     enabled: scope.enabled,
     queryFn: ({ signal }) => consoleService.getSession(id, signal),
     staleTime: 0,
     refetchInterval: (query) =>
-      query.state.data && isCaptureInFlight(query.state.data.status) ? 1000 : livePollingMs,
+      shouldPauseAutomaticRequests(query.state.error)
+        ? false
+        : query.state.data && isCaptureInFlight(query.state.data.status)
+          ? 1000
+          : livePollingMs,
   })
 }
 
@@ -56,6 +77,7 @@ export function useOverview(overviewScope: OverviewScope) {
 export function useSettings() {
   const scope = useTenantSessionScope()
   return useQuery({
+    ...consoleRequestOptions,
     queryKey: [...consoleKeys.settings, scope.tenantId, ...scope.actorKey],
     queryFn: ({ signal }) => consoleService.getSettings(signal),
     enabled: scope.enabled,
@@ -65,6 +87,7 @@ export function useSettings() {
 export function useFaceCheckProperties() {
   const scope = useTenantSessionScope()
   return useQuery({
+    ...consoleRequestOptions,
     queryKey: ['face_check', 'properties', scope.tenantId, ...scope.actorKey],
     queryFn: ({ signal }) => consoleService.listProperties(signal),
     enabled: scope.enabled,
