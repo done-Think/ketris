@@ -55,7 +55,7 @@ function mockSession(
 
 function getRegisteredHandler() {
   const call = vi.mocked(httpClient.setUnauthorizedHandler).mock.calls.at(-1)
-  return call?.[0] as (() => Promise<string | null>) | null
+  return call?.[0] as ((failedAccessToken?: string) => Promise<string | null>) | null
 }
 
 describe('useHttpClientSessionSync', () => {
@@ -345,5 +345,84 @@ describe('useHttpClientSessionSync', () => {
     rerender()
     expect(httpClient.setAuthUnavailable).toHaveBeenLastCalledWith(false)
     expect(httpClient.setAuthToken).toHaveBeenLastCalledWith('revalidated')
+  })
+
+  describe('rotated refresh tokens', () => {
+    it('reuses the rotated session for a late 401 instead of refreshing with a revoked token', async () => {
+      const update = vi.fn().mockResolvedValue({ accessToken: 'a2', refreshToken: 'r2' })
+      mockSession({ accessToken: 'a1', refreshToken: 'r1' }, update)
+      vi.mocked(httpClient.post).mockResolvedValueOnce({ accessToken: 'a2', refreshToken: 'r2' })
+      renderHook(() => useHttpClientSessionSync())
+      const handler = getRegisteredHandler()
+
+      expect(await handler?.('a1')).toBe('a2')
+      expect(await handler?.('a1')).toBe('a2')
+
+      expect(httpClient.post).toHaveBeenCalledTimes(1)
+      expect(clearClientSession).not.toHaveBeenCalled()
+    })
+
+    it('always refreshes with the latest refresh token even before React re-registers the handler', async () => {
+      const update = vi
+        .fn()
+        .mockResolvedValueOnce({ accessToken: 'a2', refreshToken: 'r2' })
+        .mockResolvedValueOnce({ accessToken: 'a3', refreshToken: 'r3' })
+      mockSession({ accessToken: 'a1', refreshToken: 'r1' }, update)
+      vi.mocked(httpClient.post)
+        .mockResolvedValueOnce({ accessToken: 'a2', refreshToken: 'r2' })
+        .mockResolvedValueOnce({ accessToken: 'a3', refreshToken: 'r3' })
+      renderHook(() => useHttpClientSessionSync())
+      const handler = getRegisteredHandler()
+
+      await handler?.('a1')
+      expect(await handler?.('a2')).toBe('a3')
+
+      expect(httpClient.post).toHaveBeenNthCalledWith(
+        2,
+        '/auth/refresh',
+        { refreshToken: 'r2' },
+        { skipUnauthorizedHandling: true },
+      )
+      expect(clearClientSession).not.toHaveBeenCalled()
+    })
+
+    it('does not log out when another refresh already rotated the session before a 401 answer arrives', async () => {
+      let reject: () => void = () => undefined
+      vi.mocked(httpClient.post).mockImplementation(
+        () =>
+          new Promise((_resolve, rejectPost) => {
+            reject = () => rejectPost({ isAxiosError: true, response: { status: 401 } })
+          }),
+      )
+      mockSession({ accessToken: 'a1', refreshToken: 'r1' })
+      const view = renderHook(() => useHttpClientSessionSync())
+      const refresh = getRegisteredHandler()?.('a1')
+      mockSession({ accessToken: 'a2', refreshToken: 'r2' })
+      view.rerender()
+
+      reject()
+
+      expect(await refresh).toBe('a2')
+      expect(clearClientSession).not.toHaveBeenCalled()
+      expect(router.replace).not.toHaveBeenCalled()
+    })
+
+    it('does not reuse the session of another account for a stale 401', async () => {
+      mockSession({ accessToken: 'a1', refreshToken: 'r1', tenantId: 'tenant-a' })
+      const view = renderHook(() => useHttpClientSessionSync())
+      mockSession({ accessToken: 'b1', refreshToken: 'rb1', tenantId: 'tenant-b' })
+      view.rerender()
+      vi.mocked(httpClient.post).mockRejectedValueOnce({
+        isAxiosError: true,
+        response: { status: 500 },
+      })
+
+      expect(await getRegisteredHandler()?.('a1')).toBeNull()
+      expect(httpClient.post).toHaveBeenCalledWith(
+        '/auth/refresh',
+        { refreshToken: 'rb1' },
+        { skipUnauthorizedHandling: true },
+      )
+    })
   })
 })

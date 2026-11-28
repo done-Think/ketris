@@ -237,4 +237,16 @@ describe('HttpClient — refresh de token em respostas 401', () => {
     client.setAuthUnavailable(false)
     expect(onRequest(config)).toBe(config)
   })
+
+  it('informs the handler which access token the rejected request carried', async () => {
+    const client = new HttpClient()
+    const { instance, onRejected } = getResponseErrorHandler()
+    const handler = vi.fn().mockResolvedValue('renewed')
+    client.setUnauthorizedHandler(handler)
+    instance.mockResolvedValue({ data: 'ok' })
+
+    await onRejected(fakeUnauthorizedError({ headers: { Authorization: 'Bearer sent-token' } }))
+
+    expect(handler).toHaveBeenCalledWith('sent-token')
+  })
 })
