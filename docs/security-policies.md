@@ -82,6 +82,34 @@ Sem a configuração, todos compartilham o identificador `local`, adequado ao de
 Endereços IPv4/IPv6, inclusive com porta, são reconhecidos. As chaves persistidas usam HMAC com
 `AUTH_TOKEN_SECRET`, sem registrar o IP ou o e-mail em texto nos contadores.
 
+## Tentativas de códigos de 6 dígitos
+
+Os códigos de recuperação de senha, de confirmação de e-mail no cadastro e de troca de e-mail
+têm 6 dígitos e até 5 tentativas por código. Como um novo código pode ser pedido a cada 60 segundos,
+esse contador sozinho permitia cerca de 5 palpites por minuto por e-mail, com rotação de IP.
+
+Cada **falha** de confirmação (código errado, expirado ou inexistente) consome também um orçamento
+cumulativo por e-mail, que **não é reiniciado quando o código é substituído ou reenviado**: 10
+falhas por hora e 30 por dia, por fluxo (`PASSWORD_RESET`, `SIGNUP_VERIFICATION`, `EMAIL_CHANGE`).
+Antes de verificar o código, o use-case apenas consulta o orçamento (sem gastá-lo); com o orçamento
+esgotado, a confirmação retorna 429 (`RATE_LIMIT_EXCEEDED`) mesmo com um código novo e correto,
+até a janela expirar. Confirmações bem-sucedidas nunca gastam orçamento, e um código correto
+continua funcionando depois de falhas abaixo do limite. Na troca de e-mail a chave é o endereço de
+destino do código, não o valor enviado pelo cliente, para que variar o campo não gere orçamentos
+novos. Verificações concorrentes podem ultrapassar o limite em no máximo o número de requisições
+simultâneas.
+
+Os contadores usam a tabela `auth_rate_limit_buckets` (políticas `auth-code-attempts-hour` e
+`auth-code-attempts-day`), com chave HMAC do e-mail normalizado (`AUTH_TOKEN_SECRET`), sem e-mail em
+texto. Os limites podem ser ajustados com `AUTH_CODE_ATTEMPTS_HOURLY_LIMIT` e
+`AUTH_CODE_ATTEMPTS_DAILY_LIMIT`.
+
+Trade-off conhecido: quem conhece o e-mail de outra pessoa pode gastar o orçamento de falhas dela
+com palpites errados e adiar a confirmação até a janela expirar (até 10 falhas por hora; o limite
+por IP do proxy restringe o ritmo de cada origem, mas não impede vários IPs). O dano é uma espera,
+não o acesso à conta. Não há como distinguir o dono de um atacante antes de checar o código sem
+reabrir a força bruta, então o bloqueio vale também para o código correto.
+
 ## Propostas públicas
 
 O campo opcional `website` é um honeypot: o formulário o mantém vazio, fora da navegação e dos

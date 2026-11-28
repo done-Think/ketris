@@ -44,6 +44,15 @@ export class EmailVerificationRateLimitError extends AppError {
   }
 }
 
+export class TooManyCodeAttemptsError extends AppError {
+  constructor() {
+    super('Muitas tentativas de confirmação. Aguarde antes de tentar novamente.', {
+      status: 429,
+      code: 'RATE_LIMIT_EXCEEDED',
+    })
+  }
+}
+
 export class TenantSelectionRequiredError extends AppError {
   constructor(readonly tenants: TenantLoginChoice[]) {
     super('Selecione a conta que deseja acessar.', {

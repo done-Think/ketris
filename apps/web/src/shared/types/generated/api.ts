@@ -730,6 +730,15 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse']
           }
         }
+        /** @description Orçamento cumulativo de tentativas por e-mail esgotado. */
+        429: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
       }
     }
     delete?: never
@@ -869,6 +878,15 @@ export interface paths {
             [name: string]: unknown
           }
           content?: never
+        }
+        /** @description Orçamento cumulativo de tentativas por e-mail esgotado. */
+        429: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
         }
       }
     }
@@ -1280,6 +1298,15 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse']
           }
         }
+        /** @description Orçamento cumulativo de tentativas por e-mail esgotado. */
+        429: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
       }
     }
     delete?: never
@@ -1478,7 +1505,7 @@ export interface paths {
     put?: never
     /**
      * Valida o código de 6 dígitos e emite um token de prova para a troca de senha
-     * @description Rota pública. O código prova o acesso à caixa de e-mail antes de qualquer listagem de contas. Se o e-mail pertencer a mais de um tenant e tenantId não for informado, retorna SELECT_TENANT sem consumir o código. Envie o mesmo e-mail e código com tenantId para escolher a conta e receber resetToken. O token dura 5 minutos e é exigido em POST /auth/reset-password. Até 5 tentativas inválidas por código; códigos expirados ou esgotados exigem novo envio.
+     * @description Rota pública. O código prova o acesso à caixa de e-mail antes de qualquer listagem de contas. Se o e-mail pertencer a mais de um tenant e tenantId não for informado, retorna SELECT_TENANT sem consumir o código. Envie o mesmo e-mail e código com tenantId para escolher a conta e receber resetToken. O token dura 5 minutos e é exigido em POST /auth/reset-password. Até 5 tentativas inválidas por código; códigos expirados ou esgotados exigem novo envio. Há ainda um orçamento cumulativo de tentativas por e-mail (por hora e por dia) que não é reiniciado ao reenviar o código; esgotado, retorna 429 mesmo com um código novo.
      */
     post: {
       parameters: {
@@ -1529,6 +1556,15 @@ export interface paths {
             [name: string]: unknown
           }
           content?: never
+        }
+        /** @description Orçamento cumulativo de tentativas por e-mail esgotado. */
+        429: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
         }
       }
     }

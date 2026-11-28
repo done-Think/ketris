@@ -406,7 +406,9 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
       'Se o e-mail pertencer a mais de um tenant e tenantId não for informado, retorna SELECT_TENANT ' +
       'sem consumir o código. Envie o mesmo e-mail e código com tenantId para escolher a conta e ' +
       'receber resetToken. O token dura 5 minutos e é exigido em POST /auth/reset-password. ' +
-      'Até 5 tentativas inválidas por código; códigos expirados ou esgotados exigem novo envio.',
+      'Até 5 tentativas inválidas por código; códigos expirados ou esgotados exigem novo envio. ' +
+      'Há ainda um orçamento cumulativo de tentativas por e-mail (por hora e por dia) que não é ' +
+      'reiniciado ao reenviar o código; esgotado, retorna 429 mesmo com um código novo.',
     request: {
       body: {
         content: { 'application/json': { schema: verifyPasswordResetCodeSchema } },
@@ -423,6 +425,10 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
       },
       401: {
         description: 'Código inválido, expirado ou com tentativas excedidas.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      429: {
+        description: 'Orçamento cumulativo de tentativas por e-mail esgotado.',
         content: { 'application/json': { schema: errorResponseSchema } },
       },
     },
@@ -558,6 +564,10 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
       },
       400: { description: 'Dados ou código de confirmação inválidos.', content: jsonError },
       403: { description: 'Conta ou tenant sem acesso permitido.', content: jsonError },
+      429: {
+        description: 'Orçamento cumulativo de tentativas por e-mail esgotado.',
+        content: jsonError,
+      },
     },
   })
 
@@ -605,6 +615,10 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
       403: { description: 'Conta ou tenant sem acesso permitido.', content: jsonError },
       404: { description: 'Usuário não encontrado no tenant.', content: jsonError },
       409: { description: 'E-mail já utilizado no tenant.', content: jsonError },
+      429: {
+        description: 'Orçamento cumulativo de tentativas por e-mail esgotado.',
+        content: jsonError,
+      },
     },
   })
 
@@ -662,6 +676,10 @@ export function registerAuthOpenApi(registry: OpenAPIRegistry): void {
       },
       409: {
         description: 'Novo e-mail passou a ser utilizado por outra conta do mesmo tenant.',
+        content: jsonError,
+      },
+      429: {
+        description: 'Orçamento cumulativo de tentativas por e-mail esgotado.',
         content: jsonError,
       },
     },

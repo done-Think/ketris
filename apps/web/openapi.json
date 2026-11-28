@@ -6813,7 +6813,7 @@
       "post": {
         "tags": ["Auth"],
         "summary": "Valida o código de 6 dígitos e emite um token de prova para a troca de senha",
-        "description": "Rota pública. O código prova o acesso à caixa de e-mail antes de qualquer listagem de contas. Se o e-mail pertencer a mais de um tenant e tenantId não for informado, retorna SELECT_TENANT sem consumir o código. Envie o mesmo e-mail e código com tenantId para escolher a conta e receber resetToken. O token dura 5 minutos e é exigido em POST /auth/reset-password. Até 5 tentativas inválidas por código; códigos expirados ou esgotados exigem novo envio.",
+        "description": "Rota pública. O código prova o acesso à caixa de e-mail antes de qualquer listagem de contas. Se o e-mail pertencer a mais de um tenant e tenantId não for informado, retorna SELECT_TENANT sem consumir o código. Envie o mesmo e-mail e código com tenantId para escolher a conta e receber resetToken. O token dura 5 minutos e é exigido em POST /auth/reset-password. Até 5 tentativas inválidas por código; códigos expirados ou esgotados exigem novo envio. Há ainda um orçamento cumulativo de tentativas por e-mail (por hora e por dia) que não é reiniciado ao reenviar o código; esgotado, retorna 429 mesmo com um código novo.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -6844,6 +6844,12 @@
           },
           "409": {
             "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          },
+          "429": {
+            "description": "Orçamento cumulativo de tentativas por e-mail esgotado.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
           }
         },
         "parameters": [
@@ -7053,6 +7059,12 @@
           },
           "409": {
             "description": "CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual."
+          },
+          "429": {
+            "description": "Orçamento cumulativo de tentativas por e-mail esgotado.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
           }
         },
         "parameters": [
@@ -7171,6 +7183,12 @@
             "content": {
               "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
             }
+          },
+          "429": {
+            "description": "Orçamento cumulativo de tentativas por e-mail esgotado.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
           }
         },
         "parameters": [
@@ -7283,6 +7301,12 @@
           },
           "409": {
             "description": "Novo e-mail passou a ser utilizado por outra conta do mesmo tenant.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
+            }
+          },
+          "429": {
+            "description": "Orçamento cumulativo de tentativas por e-mail esgotado.",
             "content": {
               "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } }
             }
