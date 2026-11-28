@@ -628,6 +628,15 @@
   "favorites": {
     "save": "Favoritar",
     "saved": "Favoritado",
+    "addLabel": "Salvar nos favoritos",
+    "removeLabel": "Remover dos favoritos",
+    "login": {
+      "title": "Entre para salvar este imóvel",
+      "description": "Seus favoritos ficam na sua conta e aparecem no celular e no computador. Depois de entrar, o imóvel já volta salvo.",
+      "signIn": "Entrar",
+      "signUp": "Criar conta",
+      "notNow": "Agora não"
+    },
     "errors": {
       "generic": "Não foi possível atualizar seus favoritos. Tente novamente.",
       "unavailable": "Este imóvel não está mais disponível.",

@@ -628,6 +628,15 @@
   "favorites": {
     "save": "Save",
     "saved": "Saved",
+    "addLabel": "Save to favorites",
+    "removeLabel": "Remove from favorites",
+    "login": {
+      "title": "Sign in to save this property",
+      "description": "Your favorites stay in your account and show up on your phone and computer. After you sign in, the property is already saved.",
+      "signIn": "Sign in",
+      "signUp": "Create account",
+      "notNow": "Not now"
+    },
     "errors": {
       "generic": "We couldn't update your favorites. Please try again.",
       "unavailable": "This property is no longer available.",

@@ -9,12 +9,18 @@ import * as navigation from '@/i18n/navigation'
 
 import { FavoriteButton } from '../../components/favorites/FavoriteButton'
 import { favoritePropertiesService } from '../../services/favorite-properties-service'
+import type { FavoriteButtonVariant } from '../../types/favorite-property'
 
 const mocks = vi.hoisted(() => ({
   status: 'authenticated' as 'authenticated' | 'unauthenticated' | 'loading',
+  searchParams: new URLSearchParams(),
 }))
 
 vi.mock('next-auth/react', () => ({ useSession: () => ({ status: mocks.status, data: null }) }))
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useSearchParams: () => mocks.searchParams,
+}))
 vi.mock('../../hooks/use-marketplace-actor-key', () => ({
   useMarketplaceActorKey: () => 'tenant-1:user-1:RENTER',
 }))
@@ -37,12 +43,12 @@ function mockSavedIds(ids: string[]) {
   })
 }
 
-function renderButton() {
+function renderButton(variant: FavoriteButtonVariant = 'detail') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={client}>
       <SnackbarProvider domRoot={document.body}>
-        <FavoriteButton propertyId="p1" />
+        <FavoriteButton propertyId="p1" variant={variant} />
       </SnackbarProvider>
     </QueryClientProvider>,
   )
@@ -51,6 +57,7 @@ function renderButton() {
 beforeEach(() => {
   vi.clearAllMocks()
   mocks.status = 'authenticated'
+  mocks.searchParams = new URLSearchParams()
   mockSavedIds([])
   service.save.mockResolvedValue({ propertyId: 'p1', savedAt })
   service.remove.mockResolvedValue(undefined)
@@ -72,12 +79,12 @@ describe('FavoriteButton', () => {
     )
   })
 
-  it('removes a saved property', async () => {
+  it('removes a saved property from the card heart', async () => {
     mockSavedIds(['p1'])
     const user = userEvent.setup()
-    renderButton()
+    renderButton('card')
 
-    await user.click(await screen.findByRole('button', { name: 'Favoritado' }))
+    await user.click(await screen.findByRole('button', { name: 'Remover dos favoritos' }))
 
     expect(service.remove).toHaveBeenCalledWith('p1')
   })
@@ -106,20 +113,50 @@ describe('FavoriteButton', () => {
     )
   })
 
-  it('sends a visitor to sign in and come back to the property', async () => {
+  it('invites a visitor to sign in and come back to save the property', async () => {
     mocks.status = 'unauthenticated'
+    const user = userEvent.setup()
     const push = vi.fn()
     vi.spyOn(navigation, 'useRouter').mockReturnValue({ push } as never)
-    window.history.replaceState(null, '', '/pt/imoveis/p1?purpose=rent')
-    const user = userEvent.setup()
-    renderButton()
+    renderButton('card')
 
-    await user.click(screen.getByRole('button', { name: 'Favoritar' }))
+    await user.click(screen.getByRole('button', { name: 'Salvar nos favoritos' }))
 
     expect(service.save).not.toHaveBeenCalled()
+    expect(screen.getByRole('dialog', { name: 'Entre para salvar este imóvel' })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Entrar' }))
     expect(push).toHaveBeenCalledWith({
       pathname: '/login',
-      query: { callbackUrl: '/pt/imoveis/p1?purpose=rent' },
+      query: { callbackUrl: expect.stringContaining('saveFavorite=p1') },
     })
+
+    await user.click(screen.getByRole('button', { name: 'Agora não' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
+  it('saves the property once when the person comes back from login', async () => {
+    mocks.searchParams = new URLSearchParams('saveFavorite=p1')
+    window.history.replaceState(null, '', '/pt/imoveis/p1?purpose=rent&saveFavorite=p1')
+    renderButton()
+
+    await waitFor(() => expect(service.save).toHaveBeenCalledTimes(1))
+    expect(window.location.search).toBe('?purpose=rent')
+  })
+
+  it('saves the property from the card heart when the person comes back from login', async () => {
+    mocks.searchParams = new URLSearchParams('saveFavorite=p1')
+    window.history.replaceState(null, '', '/pt/imoveis?purpose=buy&saveFavorite=p1')
+    renderButton('card')
+
+    await waitFor(() => expect(service.save).toHaveBeenCalledTimes(1))
+    expect(window.location.search).toBe('?purpose=buy')
+  })
+
+  it('does not save a card for another property on the login return', async () => {
+    mocks.searchParams = new URLSearchParams('saveFavorite=p2')
+    renderButton('card')
+
+    await screen.findByRole('button', { name: 'Salvar nos favoritos' })
+    expect(service.save).not.toHaveBeenCalled()
   })
 })

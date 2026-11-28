@@ -1,47 +1,75 @@
 'use client'
 
-import { Button } from '@mui/material'
+import { useCallback, useState, type MouseEvent } from 'react'
+import { Button, IconButton } from '@mui/material'
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 
-import { useRouter } from '@/i18n/navigation'
-
 import {
   useFavoritePropertyIds,
+  useSaveFavoriteAfterLogin,
   useToggleFavoriteProperty,
 } from '../../hooks/use-favorite-properties'
 import type { FavoriteButtonProps } from '../../types/favorite-property'
+import { styles } from '../../styles/favorite-button.styles'
+import { FavoriteLoginDialog } from './FavoriteLoginDialog'
 
-export function FavoriteButton({ propertyId }: FavoriteButtonProps) {
+export function FavoriteButton({ propertyId, variant }: FavoriteButtonProps) {
   const t = useTranslations('marketplace.favorites')
-  const router = useRouter()
   const { status } = useSession()
+  const [isLoginOpen, setIsLoginOpen] = useState(false)
   const favoriteIds = useFavoritePropertyIds()
   const { mutate, isPending, variables } = useToggleFavoriteProperty()
   const favorite = isPending && variables ? variables.favorite : favoriteIds.has(propertyId)
-  const Icon = favorite ? FavoriteIcon : FavoriteBorderOutlinedIcon
+  const saveAfterLogin = useCallback(
+    () => mutate({ propertyId, favorite: true }),
+    [mutate, propertyId],
+  )
 
-  function handleClick() {
-    if (status === 'authenticated') {
-      mutate({ propertyId, favorite: !favorite })
+  useSaveFavoriteAfterLogin({ propertyId, onSave: saveAfterLogin })
+
+  function handleClick(event: MouseEvent) {
+    event.preventDefault()
+    event.stopPropagation()
+    if (status !== 'authenticated') {
+      setIsLoginOpen(true)
       return
     }
-    const callbackUrl = `${window.location.pathname}${window.location.search}`
-    router.push({ pathname: '/login', query: { callbackUrl } })
+    mutate({ propertyId, favorite: !favorite })
   }
 
+  const Icon = favorite ? FavoriteIcon : FavoriteBorderOutlinedIcon
+  const disabled = status === 'loading'
+
   return (
-    <Button
-      startIcon={<Icon />}
-      variant="outlined"
-      color={favorite ? 'primary' : 'secondary'}
-      aria-pressed={favorite}
-      disabled={status === 'loading'}
-      onClick={handleClick}
-    >
-      {t(favorite ? 'saved' : 'save')}
-    </Button>
+    <>
+      {variant === 'card' ? (
+        <IconButton
+          aria-label={t(favorite ? 'removeLabel' : 'addLabel')}
+          aria-pressed={favorite}
+          disabled={disabled}
+          onClick={handleClick}
+          sx={styles.cardButton}
+        >
+          <Icon sx={styles.cardIcon} />
+        </IconButton>
+      ) : (
+        <Button
+          startIcon={<Icon />}
+          variant="outlined"
+          color={favorite ? 'primary' : 'secondary'}
+          aria-pressed={favorite}
+          disabled={disabled}
+          onClick={handleClick}
+        >
+          {t(favorite ? 'saved' : 'save')}
+        </Button>
+      )}
+      {isLoginOpen ? (
+        <FavoriteLoginDialog propertyId={propertyId} onClose={() => setIsLoginOpen(false)} />
+      ) : null}
+    </>
   )
 }

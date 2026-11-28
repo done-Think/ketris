@@ -628,6 +628,15 @@
   "favorites": {
     "save": "Guardar",
     "saved": "Guardado",
+    "addLabel": "Guardar en favoritos",
+    "removeLabel": "Quitar de favoritos",
+    "login": {
+      "title": "Inicia sesión para guardar este inmueble",
+      "description": "Tus favoritos quedan en tu cuenta y aparecen en el móvil y en el ordenador. Al iniciar sesión, el inmueble ya queda guardado.",
+      "signIn": "Iniciar sesión",
+      "signUp": "Crear cuenta",
+      "notNow": "Ahora no"
+    },
     "errors": {
       "generic": "No pudimos actualizar tus favoritos. Inténtalo de nuevo.",
       "unavailable": "Este inmueble ya no está disponible.",
