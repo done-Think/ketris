@@ -12,7 +12,7 @@ vi.mock('@shared/lib/api/http-client', () => ({ httpClient: { get: vi.fn() } }))
 describe('private notification counts', () => {
   afterEach(() => vi.resetAllMocks())
 
-  it('uses the current actor token and disables cross-account refresh retries', async () => {
+  it('uses the current actor token and scopes refresh retries to that session', async () => {
     vi.mocked(httpClient.get).mockResolvedValue({ count: 3, pendingCount: 2 })
     const controller = new AbortController()
     await expect(
@@ -21,7 +21,7 @@ describe('private notification counts', () => {
     expect(httpClient.get).toHaveBeenCalledWith('/face_check/my-verifications/count', {
       signal: controller.signal,
       headers: { Authorization: 'Bearer actor-token' },
-      skipUnauthorizedHandling: true,
+      sessionAccessToken: 'actor-token',
     })
   })
 

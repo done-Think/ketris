@@ -131,7 +131,9 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           <AppShellSidebar
             collapsed={sidebarCollapsed}
             showCollapseControl
-            isLoading={status === 'loading'}
+            isLoading={
+              status === 'loading' || (!isLocalDashboardPreview && faceCheckAccess.isLoading)
+            }
             visibleItems={visibleItems}
             activeTargetPath={activeTargetPath}
             userName={userName}
@@ -182,7 +184,9 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
           <AppShellSidebar
             collapsed={false}
             showCollapseControl={false}
-            isLoading={status === 'loading'}
+            isLoading={
+              status === 'loading' || (!isLocalDashboardPreview && faceCheckAccess.isLoading)
+            }
             visibleItems={visibleItems}
             activeTargetPath={activeTargetPath}
             userName={userName}

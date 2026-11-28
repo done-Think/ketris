@@ -384,6 +384,8 @@
       "title": "Overview",
       "subtitle": "Last 7 days",
       "newVerification": "New verification",
+      "loading": "Loading metrics",
+      "retry": "Try again",
       "pilotWarning": "Analysis supports the review of evidence. Approval requires a human decision by the agency team.",
       "kpis": {
         "label": "Metrics",
@@ -812,6 +814,7 @@
       "ABANDONED": "Abandoned"
     },
     "errors": {
+      "STORAGE_UNAVAILABLE": "Storage is unavailable. Try again later.",
       "SESSION_NOT_FOUND": "We could not find this verification. Check the link with the agency.",
       "SESSION_EXPIRED": "This link has expired. Ask the agency for a new one.",
       "SESSION_NOT_IN_REVIEW": "This session is no longer in review. Refresh the page.",

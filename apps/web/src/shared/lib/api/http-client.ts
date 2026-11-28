@@ -12,6 +12,7 @@ import type { AppRequestConfig, UnauthorizedHandler } from '@shared/types'
 type RetryableRequestConfig = InternalAxiosRequestConfig & {
   _retriedAfterRefresh?: boolean
   skipUnauthorizedHandling?: boolean
+  sessionAccessToken?: string
 }
 
 export class HttpClient {
@@ -58,9 +59,24 @@ export class HttpClient {
           return Promise.reject(error)
         }
 
+        const sessionToken = originalRequest.sessionAccessToken
+        const tenant = this.instance.defaults.headers.common['X-Tenant-Id']
+        if (
+          originalRequest.signal?.aborted ||
+          (sessionToken &&
+            this.instance.defaults.headers.common.Authorization !== `Bearer ${sessionToken}`)
+        )
+          return Promise.reject(error)
+
         const newAccessToken = await this.refreshAccessToken()
 
-        if (!newAccessToken) {
+        if (
+          !newAccessToken ||
+          originalRequest.signal?.aborted ||
+          (sessionToken &&
+            (this.instance.defaults.headers.common.Authorization !== `Bearer ${newAccessToken}` ||
+              this.instance.defaults.headers.common['X-Tenant-Id'] !== tenant))
+        ) {
           return Promise.reject(error)
         }
 
