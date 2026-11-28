@@ -87,7 +87,7 @@ export function useHttpClientSessionSync() {
     const isPlatform = session?.scope === 'platform'
     const loginPath = isPlatform ? '/platform/login' : '/login'
     const endSession = async () => {
-      await clearClientSession()
+      await clearClientSession({ reason: 'forced' })
       if (!isActive()) return
       router.replace(loginPath)
       router.refresh()

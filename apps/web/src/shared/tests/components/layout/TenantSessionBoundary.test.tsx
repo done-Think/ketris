@@ -82,6 +82,14 @@ describe('TenantSessionBoundary', () => {
     expect(screen.queryByText('Conteúdo do CRM')).not.toBeInTheDocument()
     await waitFor(() => expect(routerMock.replace).toHaveBeenCalledWith('/login'))
   })
+
+  it('treats an invalid session as a forced logout that keeps drafts and preferences', async () => {
+    mockSession({ scope: undefined, tenantId: undefined, role: undefined })
+
+    renderBoundary()
+
+    await waitFor(() => expect(clearClientSession).toHaveBeenCalledWith({ reason: 'forced' }))
+  })
   it('shows temporary unavailability without treating the preserved session as logged out', () => {
     mockSession({ authUnavailable: true, scope: undefined, tenantId: undefined, role: undefined })
     renderBoundary()

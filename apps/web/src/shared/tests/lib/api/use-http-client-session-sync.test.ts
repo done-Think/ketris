@@ -184,6 +184,7 @@ describe('useHttpClientSessionSync', () => {
     expect(result).toBeNull()
     expect(update).not.toHaveBeenCalled()
     expect(clearClientSession).toHaveBeenCalledTimes(1)
+    expect(clearClientSession).toHaveBeenCalledWith({ reason: 'forced' })
     expect(router.replace).toHaveBeenCalledWith('/login')
     expect(router.refresh).toHaveBeenCalledTimes(1)
   })
@@ -208,6 +209,7 @@ describe('useHttpClientSessionSync', () => {
 
     expect(await getRegisteredHandler()?.()).toBeNull()
     expect(clearClientSession).toHaveBeenCalledTimes(1)
+    expect(clearClientSession).toHaveBeenCalledWith({ reason: 'forced' })
     expect(router.replace).toHaveBeenCalledWith('/login')
   })
 

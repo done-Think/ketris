@@ -458,7 +458,8 @@ describe('AppShell marketplace logout shortcut', () => {
 
     await user.click(screen.getAllByRole('button', { name: /sair e voltar/i })[0])
 
-    expect(clearClientSession).toHaveBeenCalledOnce()
+    expect(clearClientSession).toHaveBeenCalledTimes(1)
+    expect(clearClientSession).toHaveBeenCalledWith({ reason: 'manual' })
     expect(routerMock.replace).toHaveBeenCalledWith('/')
     expect(routerMock.refresh).not.toHaveBeenCalled()
   })

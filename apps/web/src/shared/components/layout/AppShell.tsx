@@ -110,7 +110,7 @@ export function AppShell({ children, allowLocalDashboardPreview = false }: AppSh
     setSignOutFailed(false)
     setMobileOpen(false)
     try {
-      await clearClientSession()
+      await clearClientSession({ reason: 'manual' })
       router.replace('/')
     } catch {
       logoutPending.current = false
