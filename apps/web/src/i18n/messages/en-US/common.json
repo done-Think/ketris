@@ -35,6 +35,7 @@
     "team": "Team",
     "properties": "My Properties",
     "contracts": "Contracts",
+    "myRental": "My rental",
     "publicProfile": "Public Profile",
     "agencyPublicProfile": "Agency Profile",
     "agenda": "Schedule",
@@ -64,7 +65,6 @@
     "retrySignOut": "Try signing out again",
     "faceCheck": "Face Check",
     "faceCheckSessions": "Sessions",
-    "faceCheckReview": "Review",
     "faceCheckSettings": "Settings",
     "faceCheckMyVerifications": "My verifications",
     "expandNavigationSection": "Expand {section} options",
@@ -111,6 +111,12 @@
       "nameTooLong": "Use at most 200 characters.",
       "phoneTooLong": "Use at most 32 characters.",
       "creciTooLong": "Use at most 32 characters.",
+      "cpfRequired": "Enter your CPF.",
+      "cpfInvalid": "Enter a valid CPF.",
+      "cnpjRequired": "Enter the CNPJ.",
+      "cnpjInvalid": "Enter a valid CNPJ.",
+      "documentRequired": "Enter your CPF or CNPJ.",
+      "documentInvalid": "Enter a valid CPF or CNPJ.",
       "emailTooLong": "Use at most 254 characters.",
       "passwordTooLong": "Password must be at most 72 bytes. Use fewer characters."
     },
@@ -118,6 +124,13 @@
     "retry": "Try again",
     "loadError": "Unable to load your profile.",
     "creci": "CRECI",
+    "cpf": "CPF",
+    "cnpj": "CNPJ",
+    "document": "CPF / CNPJ",
+    "phoneInUse": "An account with this phone number already exists.",
+    "creciInUse": "An account with this CRECI already exists.",
+    "cpfInUse": "An account with this CPF already exists.",
+    "cnpjInUse": "This CNPJ is already registered.",
     "changeEmail": "Change email",
     "permissionError": "You do not have permission to update this profile.",
     "newEmail": "New email",
@@ -163,5 +176,25 @@
     "retry": "Try again",
     "retrying": "Checking session…"
   },
-  "perMonth": "/month"
+  "perMonth": "/month",
+  "propertyNegotiation": {
+    "title": "Negotiation conditions",
+    "sale": "Sale",
+    "rent": "Rental",
+    "hint": "Select one or more options. Payment in full only cannot be combined with financing.",
+    "helpLabel": "About negotiation conditions",
+    "help": "Select the accepted sale or rental conditions. A down payment can be combined with financing. For rentals, specify whether a security deposit is required or conditions will be agreed with the property owner.",
+    "options": {
+      "ACCEPTS_FINANCING": "Financing accepted",
+      "REQUIRES_DOWN_PAYMENT": "Down payment required",
+      "CASH_ONLY": "Payment in full only",
+      "ACCEPTS_EXCHANGE": "Property exchange accepted",
+      "SALE_NEGOTIABLE": "Sale terms negotiable",
+      "AGREE_WITH_OWNER": "Rental terms to be agreed with the property owner",
+      "RENT_NEGOTIABLE": "Rental terms negotiable",
+      "REQUIRES_DEPOSIT": "Security deposit required"
+    },
+    "observation": "Note",
+    "observationHint": "Optional. This note will be shown on the public property page."
+  }
 }

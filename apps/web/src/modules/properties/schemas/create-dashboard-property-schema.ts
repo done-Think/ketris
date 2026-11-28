@@ -1,4 +1,10 @@
+import { isBrazilianState } from '@shared/config/brazilian-states'
 import { z } from 'zod'
+import {
+  propertyNegotiationConditions,
+  conditionsForPurpose,
+  hasConflictingConditions,
+} from '@shared/config/property-negotiation'
 
 import {
   createPropertyTypeOptions,
@@ -9,9 +15,10 @@ import {
 import type {
   CreateDashboardPropertyFormValues,
   CreatePropertyPurpose,
+  DashboardPropertySchemaOptions,
 } from '../types/dashboard-property'
 import type { SchemaMessageTranslator } from '@shared/types'
-import { normalizePostalCode } from '@shared/utils/postal-code'
+import { isValidPostalCode, normalizePostalCode } from '@shared/utils/postal-code'
 
 export function createDashboardPropertySchema(
   t: SchemaMessageTranslator<
@@ -19,9 +26,11 @@ export function createDashboardPropertySchema(
     | 'cityRequired'
     | 'descriptionRequired'
     | 'descriptionTooLong'
+    | 'instagramPhotosRequired'
     | 'integerRequired'
     | 'mainValueRequired'
     | 'negotiationTermRequired'
+    | 'negotiationConditionsInvalid'
     | 'negotiationTermTooLong'
     | 'neighborhoodRequired'
     | 'numberInvalid'
@@ -30,13 +39,16 @@ export function createDashboardPropertySchema(
     | 'purposeRequired'
     | 'rentalValueInvalid'
     | 'rentalValueRequired'
+    | 'stateInvalid'
     | 'stateRequired'
     | 'streetRequired'
     | 'titleRequired'
     | 'titleTooLong'
     | 'zipCodeRequired'
     | 'zipCodeInvalid'
+    | 'zipCodeNotFound'
   >,
+  { isPostalCodeNotFound = () => false }: DashboardPropertySchemaOptions = {},
 ) {
   const numberField = z.coerce.number().nonnegative(t('numberInvalid'))
   const countField = numberField.int(t('integerRequired'))
@@ -50,6 +62,7 @@ export function createDashboardPropertySchema(
         .array(z.enum(['RENT', 'SALE'] satisfies [CreatePropertyPurpose, CreatePropertyPurpose]))
         .min(1, t('purposeRequired')),
       ownerUserId: z.string().default(''),
+      brokerIds: z.array(z.string().min(1)).max(100).default([]),
       ownerContact: z
         .object({ id: z.string().min(1), name: z.string().min(1) })
         .nullable()
@@ -61,12 +74,13 @@ export function createDashboardPropertySchema(
       number: z.string().min(1, t('numberRequired')),
       neighborhood: z.string().min(2, t('neighborhoodRequired')),
       city: z.string().min(2, t('cityRequired')),
-      state: z.string().length(2, t('stateRequired')),
+      state: z.string().min(1, t('stateRequired')).refine(isBrazilianState, t('stateInvalid')),
       zipCode: z
         .string()
         .trim()
         .min(1, t('zipCodeRequired'))
-        .refine((value) => normalizePostalCode(value) !== null, t('zipCodeInvalid'))
+        .refine(isValidPostalCode, t('zipCodeInvalid'))
+        .refine((value) => !isPostalCodeNotFound(value), t('zipCodeNotFound'))
         .transform((value) => normalizePostalCode(value)!),
       bedrooms: countField,
       bathrooms: countField,
@@ -86,13 +100,42 @@ export function createDashboardPropertySchema(
       rentalValue: z.coerce.number().nonnegative(t('rentalValueInvalid')).optional(),
       condominium: numberField,
       propertyTax: numberField,
-      negotiationTerm: z
-        .string()
-        .min(1, t('negotiationTermRequired'))
-        .max(2000, t('negotiationTermTooLong')),
+      negotiationTerm: z.string().max(2000, t('negotiationTermTooLong')).default(''),
+      negotiationConditions: z.array(z.enum(propertyNegotiationConditions)).default([]),
       publishingOptions: z.array(z.enum(createPropertyPublishingOptions)).default([]),
+      instagramEnabled: z.boolean().default(false),
+      instagramCaption: z.string().max(2200).default(''),
+      instagramImageUrls: z.array(z.string()).max(20).default([]),
     })
     .superRefine((values, context) => {
+      const purpose =
+        values.purpose.includes('RENT') && values.purpose.includes('SALE')
+          ? 'BOTH'
+          : values.purpose.includes('SALE')
+            ? 'SALE'
+            : 'RENT'
+      const conditions = conditionsForPurpose(purpose, values.negotiationConditions)
+      if (conditions.length === 0 && !values.negotiationTerm.trim()) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['negotiationConditions'],
+          message: t('negotiationTermRequired'),
+        })
+      }
+      if (hasConflictingConditions(conditions)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['negotiationConditions'],
+          message: t('negotiationConditionsInvalid'),
+        })
+      }
+      if (values.instagramEnabled && !values.instagramImageUrls.length) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['instagramImageUrls'],
+          message: t('instagramPhotosRequired'),
+        })
+      }
       if (
         values.purpose.includes('RENT') &&
         values.purpose.includes('SALE') &&
@@ -111,6 +154,7 @@ export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormVa
   type: 'apartment',
   purpose: ['RENT'],
   ownerUserId: '',
+  brokerIds: [],
   ownerContact: null,
   complement: '',
   title: '',
@@ -121,10 +165,10 @@ export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormVa
   city: '',
   state: '',
   zipCode: '',
-  bedrooms: 0,
-  bathrooms: 0,
-  parkingSpaces: 0,
-  area: 0,
+  bedrooms: '',
+  bathrooms: '',
+  parkingSpaces: '',
+  area: '',
   features: [],
   media: [],
   mainValue: 0,
@@ -132,5 +176,9 @@ export const createDashboardPropertyDefaultValues: CreateDashboardPropertyFormVa
   condominium: 0,
   propertyTax: 0,
   negotiationTerm: '',
+  negotiationConditions: [],
   publishingOptions: [],
+  instagramEnabled: false,
+  instagramCaption: '',
+  instagramImageUrls: [],
 }

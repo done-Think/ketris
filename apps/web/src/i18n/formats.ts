@@ -5,6 +5,13 @@ export const formats = {
       month: '2-digit',
       year: 'numeric',
     },
+    weekdayDayTime: {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    },
   },
   number: {
     currency: currencyOptions,

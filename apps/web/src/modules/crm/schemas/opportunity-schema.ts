@@ -123,18 +123,9 @@ export function createOpportunityFormSchema(
     leadEmail: z.string().trim().max(CRM_LIMITS.email, t('emailInvalid')).email(t('emailInvalid')),
     leadPhone: z.string().trim().max(CRM_LIMITS.phone, t('phoneInvalid')),
     proposedValue: z
-      .string()
-      .trim()
-      .min(1, t('proposedValueRequired'))
-      .refine((value) => {
-        const amount = Number(value)
-        return (
-          Number.isFinite(amount) &&
-          amount >= 0.01 &&
-          amount <= CRM_LIMITS.proposedValue &&
-          Math.abs(amount * 100 - Math.round(amount * 100)) < 0.0001
-        )
-      }, t('proposedValuePositive')),
+      .number()
+      .min(0.01, t('proposedValueRequired'))
+      .max(CRM_LIMITS.proposedValue, t('proposedValuePositive')),
     notes: z.string().trim().max(CRM_LIMITS.notes, t('textTooLong')),
     status: z.enum(['DRAFT', 'SENT']),
     responsibleId: z.string(),
@@ -160,18 +151,9 @@ export function createEditOpportunityFormSchema(
     leadEmail: z.string().trim().max(CRM_LIMITS.email, t('emailInvalid')).email(t('emailInvalid')),
     leadPhone: z.string().trim().max(CRM_LIMITS.phone, t('phoneInvalid')),
     proposedValue: z
-      .string()
-      .trim()
-      .min(1, t('proposedValueRequired'))
-      .refine((value) => {
-        const amount = Number(value)
-        return (
-          Number.isFinite(amount) &&
-          amount >= 0.01 &&
-          amount <= CRM_LIMITS.proposedValue &&
-          Math.abs(amount * 100 - Math.round(amount * 100)) < 0.0001
-        )
-      }, t('proposedValuePositive')),
+      .number()
+      .min(0.01, t('proposedValueRequired'))
+      .max(CRM_LIMITS.proposedValue, t('proposedValuePositive')),
     ...createOpportunityTermsSchema(t).shape,
     notes: z.string().trim().max(CRM_LIMITS.notes, t('textTooLong')),
   })

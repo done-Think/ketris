@@ -269,18 +269,18 @@ describe('deferred selfie and movement capture', () => {
     },
   )
 
-  it('retakes only a rejected back, returns directly to final review and preserves the accepted front receipt', async () => {
+  it('can retake only a back whose upload failed, preserving the other photos and the front receipt', async () => {
     let rejected = false
     vi.mocked(captureService.uploadDocumentImage).mockImplementation(async (_token, input) => {
       if (input.side === 'back' && !rejected) {
         rejected = true
-        throw new ApiError('PHOTO_REJECTED', 422, 'documentTextNotFound')
+        throw new ApiError('NETWORK_ERROR', 0)
       }
     })
     const h = open()
     await captureAll(h.user)
     await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
-    await screen.findByText(/Não foi possível validar: Verso do documento/)
+    await screen.findByText(/Não foi possível concluir o envio de: Verso do documento/)
     await h.user.click(screen.getAllByRole('button', { name: 'Refazer captura' })[1])
     expect(await screen.findByRole('heading', { name: 'Verso do RG' })).toBeVisible()
     expect(grab).toHaveBeenCalledTimes(4)
@@ -402,14 +402,16 @@ describe('deferred selfie and movement capture', () => {
       sent.push(input.challenge)
       if (input.challenge === 'turnRight' && !rejected) {
         rejected = true
-        throw new ApiError('LIVENESS_FAILED', 422, 'livenessNotTurned')
+        throw new ApiError('NETWORK_ERROR', 0)
       }
       return { remaining: 2 - challenges.indexOf(input.challenge as (typeof challenges)[number]) }
     })
     const h = open()
     await captureAll(h.user)
     await h.user.click(screen.getByRole('button', { name: 'Confirmar e enviar para análise' }))
-    expect(await screen.findByText(/Não foi possível validar: Rosto para a direita/)).toBeVisible()
+    expect(
+      await screen.findByText(/Não foi possível concluir o envio de: Rosto para a direita/),
+    ).toBeVisible()
     vi.mocked(captureService.prepareLiveness).mockResolvedValue({
       ...plan,
       planId: '22222222-2222-4222-8222-222222222222',

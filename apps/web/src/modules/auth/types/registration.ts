@@ -10,9 +10,11 @@ export type RegistrationDetailsFormValues = z.infer<
   ReturnType<typeof createRegistrationDetailsSchema>
 >
 
-export type RegistrationProfileId = 'owner' | 'broker' | 'agency' | 'developer' | 'renter'
+export type RegistrationProfileId =
+  'owner' | 'broker' | 'agency' | 'developer' | 'condoManager' | 'renter'
 
-export type RegistrationProfileIcon = 'owner' | 'broker' | 'agency' | 'developer' | 'tenant'
+export type RegistrationProfileIcon =
+  'owner' | 'broker' | 'agency' | 'developer' | 'condoManager' | 'tenant'
 
 export type RegistrationProfile = {
   id: RegistrationProfileId

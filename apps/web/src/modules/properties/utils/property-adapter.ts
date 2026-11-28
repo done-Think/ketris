@@ -54,6 +54,7 @@ function toApiListing(listing: PropertyListing) {
   return {
     amenities: listing.amenities.map((amenity) => amenityToApi[amenity]),
     negotiationTerms: listing.negotiationTerms,
+    negotiationConditions: listing.negotiationConditions,
     publishAfterReview: listing.publishAfterReview,
     allowWhatsappContact: listing.allowWhatsappContact,
     featured: listing.featured,
@@ -120,10 +121,13 @@ function fromApiMedia(media: ApiPropertyMedia[]): Property['media'] {
 
 export function mapProperty(api: ApiProperty): Property {
   return {
+    agencyManaged: api.agencyManaged ?? false,
     id: api.id,
     tenantId: api.tenantId,
+    agencyName: api.agencyName,
     responsibleUserId: api.responsibleId,
     responsibleName: api.responsibleName,
+    brokerIds: api.brokerIds ?? [],
     activeContractId: api.activeContractId,
     ownerUserId: api.ownerId,
     ownerContactId: api.ownerContactId ?? null,
@@ -135,6 +139,7 @@ export function mapProperty(api: ApiProperty): Property {
     listing: {
       amenities: api.listing.amenities.map((amenity) => amenityFromApi[amenity]),
       negotiationTerms: api.listing.negotiationTerms,
+      negotiationConditions: api.listing.negotiationConditions ?? [],
       publishAfterReview: api.listing.publishAfterReview,
       allowWhatsappContact: api.listing.allowWhatsappContact,
       featured: api.listing.featured,
@@ -165,6 +170,7 @@ export function toCreatePayload(
 ): components['schemas']['CreateTenantPropertyRequest'] {
   return {
     ownerId: values.ownerUserId,
+    brokerIds: values.brokerIds,
     ownerContactId: values.ownerContactId,
     title: values.title,
     description: values.description ?? null,
@@ -190,6 +196,7 @@ export function toUpdatePayload(
   const body: components['schemas']['UpdateTenantPropertyRequest'] = {}
 
   if (payload.ownerUserId !== undefined) body.ownerId = payload.ownerUserId
+  if (payload.brokerIds !== undefined) body.brokerIds = payload.brokerIds
   if (payload.ownerContactId !== undefined) body.ownerContactId = payload.ownerContactId
   if (payload.listing !== undefined) body.listing = toApiListing(payload.listing)
   if (payload.title !== undefined) body.title = payload.title

@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { prisma } from '@server/db/prisma'
 
+import { CnpjAlreadyInUseError } from '../../domain/errors'
 import { PrismaUserRepository } from '../../infrastructure/prisma-user.repository'
 
 describe('PrismaUserRepository (integração)', () => {
@@ -272,5 +273,34 @@ describe('PrismaUserRepository (integração)', () => {
     const stillThere = await repository.findById(created.id)
     expect(stillThere).not.toBeNull()
     expect(stillThere?.active).toBe(false)
+  })
+
+  it('guarda o CNPJ pessoal ao lado do CPF e recusa o mesmo documento duas vezes no tenant', async () => {
+    const [first, second] = await Promise.all(
+      ['a', 'b'].map((tag) =>
+        prisma.user.create({
+          data: {
+            tenantId,
+            name: `Documento ${tag}`,
+            email: `documento-${tag}-${randomUUID()}@ketris.dev`,
+            passwordHash: 'hash-nao-usado-neste-teste',
+            role: 'AGENT',
+          },
+        }),
+      ),
+    )
+
+    const updated = await repository.update(first.id, { tenantId, personalCnpj: '11222333000181' })
+    expect(updated).toMatchObject({ cnpj: '11222333000181' })
+    await expect(
+      repository.update(second.id, { tenantId, personalCnpj: '11222333000181' }),
+    ).rejects.toBeInstanceOf(CnpjAlreadyInUseError)
+
+    const swapped = await repository.update(first.id, {
+      tenantId,
+      cpf: '52998224725',
+      personalCnpj: null,
+    })
+    expect(swapped).toMatchObject({ cpf: '52998224725', cnpj: null })
   })
 })

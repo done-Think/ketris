@@ -1,4 +1,5 @@
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
+import { registerPropertyHistoryOpenApi } from './openapi-history'
 
 import { errorResponseSchema } from '@server/shared/schemas/error-response.schema'
 
@@ -11,6 +12,7 @@ import {
 import {
   propertiesResponseSchema,
   propertyOwnersResponseSchema,
+  propertyBrokersResponseSchema,
   propertyMediaUploadRequestSchema,
   propertyMediaUploadResponseSchema,
   propertyMediaKeyParamsSchema,
@@ -20,6 +22,29 @@ import {
 } from './schemas/property.schema'
 
 export function registerPropertiesOpenApi(registry: OpenAPIRegistry): void {
+  registerPropertyHistoryOpenApi(registry)
+  registry.registerPath({
+    method: 'get',
+    path: '/properties/brokers',
+    tags: ['Properties'],
+    summary: 'Lists active approved brokers in the agency for property access grants',
+    security: [{ bearerAuth: [] }],
+    request: { query: propertyOwnersQuerySchema },
+    responses: {
+      200: {
+        description: 'Brokers selectable by the agency manager.',
+        content: { 'application/json': { schema: propertyBrokersResponseSchema } },
+      },
+      401: {
+        description: 'Unauthenticated.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+      403: {
+        description: 'Agency management required.',
+        content: { 'application/json': { schema: errorResponseSchema } },
+      },
+    },
+  })
   registry.registerPath({
     method: 'get',
     path: '/properties/owners',
@@ -49,7 +74,7 @@ export function registerPropertiesOpenApi(registry: OpenAPIRegistry): void {
     tags: ['Properties'],
     summary: 'Lista imóveis do tenant autenticado',
     description:
-      'RENTER consulta somente imóveis com contrato ACTIVE do mesmo tenant e vínculo explícito de RENTER ao seu usuário, independentemente do status do anúncio.',
+      'RENTER consulta somente imóveis com contrato ACTIVE e vínculo explícito de RENTER ao seu usuário, inclusive de outras imobiliárias quando a conta está no tenant compartilhado de locatários (contrato e imóvel da mesma imobiliária), independentemente do status do anúncio.',
     security: [{ bearerAuth: [] }],
     request: { query: listPropertiesQuerySchema },
     responses: {

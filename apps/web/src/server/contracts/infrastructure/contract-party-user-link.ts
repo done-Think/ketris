@@ -10,7 +10,7 @@ export async function linkContractPartyUser(
       id: input.partyId,
       contractId: input.contractId,
       contract: { tenantId: input.tenantId },
-      role: 'RENTER',
+      role: input.role,
       email: { equals: input.email, mode: 'insensitive' },
       OR: [{ userId: null }, { userId: input.userId }],
     },

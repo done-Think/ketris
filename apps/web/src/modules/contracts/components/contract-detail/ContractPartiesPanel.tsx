@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  contractPartyLinkMessageKeys,
   contractPartyMessageKeys,
   contractSignatureMessageKeys,
 } from '../../config/contract-labels'
@@ -71,13 +72,13 @@ export function ContractPartiesPanel({
                   {party.signedBy ? ' · ' + party.signedBy.name : ''}
                 </Typography>
               )}
-              {party.role === 'RENTER' &&
+              {(party.role === 'RENTER' || party.role === 'LANDLORD') &&
                 (party.userId ? (
                   <Typography variant="body2">{t('linked')}</Typography>
                 ) : (
                   canLink && (
                     <Button size="small" disabled={isSigning} onClick={() => onLink(party)}>
-                      {t('link')}
+                      {t(contractPartyLinkMessageKeys[party.role].action)}
                     </Button>
                   )
                 ))}

@@ -1,5 +1,3 @@
-import dayjs from 'dayjs'
-
 import type {
   DashboardActivityAccent,
   DashboardUpcomingActivity,
@@ -18,16 +16,13 @@ const accentByKind: Record<ApiDashboardActivityKind, DashboardActivityAccent> = 
 export function toDashboardUpcomingActivity(
   event: ApiDashboardUpcomingActivity,
 ): DashboardUpcomingActivity {
-  const start = dayjs(event.start)
-
   return {
     id: event.id,
-    time: start.format('HH:mm'),
+    startsAt: event.start,
     title: event.title,
     contact: event.participantName,
     phone: event.participantPhone,
     accent: event.kind ? accentByKind[event.kind] : 'info',
-    meetingTime: start.format('HH:mm'),
     notes: event.notes ?? '',
     propertyId: event.propertyId,
     propertyReference: event.propertyReference,

@@ -20,6 +20,7 @@ export interface ChargeReceipt {
 
 export interface ChargeListRow {
   id: string
+  tenantId: string
   code: string
   contractId: string | null
   direction: ChargeDirection
@@ -29,6 +30,7 @@ export interface ChargeListRow {
   amount: number
   dueDate: string
   status: ChargeStatus
+  receipt: ChargeReceipt | null
 }
 
 export interface Charge extends ChargeListRow {
@@ -115,6 +117,7 @@ export interface ChargeRowProps {
 export interface ChargesTableProps {
   rows: ChargeListRow[]
   readOnly: boolean
+  viewerTenantId?: string
   totalCount: number
   page: number
   rowsPerPage: number
@@ -204,6 +207,7 @@ export interface ChargeLinksCardProps {
 
 export interface ChargeDetailFieldsProps {
   charge: Charge
+  direction: ChargeDirection
 }
 
 export interface FinancialDialogTitleProps {
@@ -219,6 +223,7 @@ export interface ChargeFormFieldsProps {
 
 export interface ChargeDetailHeaderProps {
   charge: Charge
+  direction: ChargeDirection
   canManage: boolean
   onRegisterPayment: () => void
   onReversePayment: () => void
@@ -237,3 +242,26 @@ export interface ReceiptFileFieldProps {
 }
 
 export type ChargeDetailDialog = 'payment' | 'reverse' | 'cancel'
+
+export type ContractChargeMonthStatus = 'paid' | 'overdue' | 'upcoming' | 'cancelled'
+
+export interface ContractChargeMonth {
+  month: string
+  charges: ChargeListRow[]
+  total: number
+  status: ContractChargeMonthStatus
+}
+
+export interface ContractChargeOverview {
+  openCount: number
+  openTotal: number
+  overdue: ChargeListRow[]
+  overdueTotal: number
+  nextDue: ChargeListRow | null
+  dueSoon: ChargeListRow[]
+  dueSoonTotal: number
+}
+
+export interface ContractChargesProps {
+  contractId: string
+}

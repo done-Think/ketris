@@ -45,14 +45,7 @@ const publishedTenantWithProfileInclude = {
 async function buildStats(tenantId: string) {
   const [activeListings, brokersCount, dealsClosed] = await Promise.all([
     prisma.property.count({ where: { tenantId, status: 'PUBLISHED' } }),
-    prisma.user.count({
-      where: {
-        tenantId,
-        active: true,
-        membershipApprovedAt: { not: null },
-        role: { in: ['OWNER', 'AGENT'] },
-      },
-    }),
+    prisma.user.count({ where: { tenantId, ...publicBrokerEligibility } }),
     prisma.contract.count({ where: { tenantId, status: 'ACTIVE' } }),
   ])
 
@@ -250,7 +243,11 @@ export class PrismaAgencyProfileRepository implements AgencyProfileRepository {
         ? new Set(
             (
               await prisma.user.findMany({
-                where: { tenantId, id: { in: draft.team.map((member) => member.userId) } },
+                where: {
+                  tenantId,
+                  id: { in: draft.team.map((member) => member.userId) },
+                  ...publicBrokerEligibility,
+                },
                 select: { id: true },
               })
             ).map((user) => user.id),

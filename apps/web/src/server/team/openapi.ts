@@ -5,6 +5,7 @@ import { errorResponseSchema } from '@server/shared/schemas/error-response.schem
 
 import {
   acceptTeamInvitationRequestSchema,
+  shareBrokerPortfolioRequestSchema,
   deactivateBrokerRequestSchema,
   inviteBrokerRequestSchema,
   inviteBrokerResponseSchema,
@@ -43,6 +44,22 @@ function managerRoute(config: Omit<RouteConfig, 'tags' | 'security'>): RouteConf
 }
 
 export function registerTeamOpenApi(registry: OpenAPIRegistry): void {
+  registry.registerPath(
+    managerRoute({
+      method: 'post',
+      path: '/team/members/{id}/share',
+      summary: 'Shares or revokes access to selected existing portfolio items',
+      request: { params: teamMemberIdParamsSchema, body: json(shareBrokerPortfolioRequestSchema) },
+      responses: {
+        200: {
+          description: 'Counts of changed portfolio access grants.',
+          ...json(z.object({ shared: teamTransferResponseSchema })),
+        },
+        404: error('Source member not found.'),
+        422: error('Invalid destination or empty selection.'),
+      },
+    }),
+  )
   registry.registerPath(
     managerRoute({
       method: 'get',
@@ -86,7 +103,7 @@ export function registerTeamOpenApi(registry: OpenAPIRegistry): void {
       method: 'post',
       path: '/team/members/{id}/transfer',
       summary:
-        'Transfere imóveis (com as oportunidades), leads e eventos futuros para outro corretor',
+        'Transfere imóveis (com as oportunidades), leads e eventos futuros de um corretor ou da própria imobiliária para outro membro da equipe',
       request: {
         params: teamMemberIdParamsSchema,
         body: json(transferBrokerPortfolioRequestSchema),
@@ -164,6 +181,23 @@ export function registerTeamOpenApi(registry: OpenAPIRegistry): void {
         204: { description: 'Convite cancelado.' },
         404: error('Convite pendente não encontrado.'),
         409: error('O convidado já tem imóveis, leads ou eventos.'),
+      },
+    }),
+  )
+  registry.registerPath(
+    managerRoute({
+      method: 'delete',
+      path: '/team/membership-requests/{id}',
+      summary: 'Recusa um pedido de vínculo pendente',
+      description:
+        'Remove o cadastro de um corretor que pediu para entrar na imobiliária e ainda não foi aprovado. ' +
+        'Ele nunca acessou a imobiliária, então o cadastro é apagado e o e-mail fica livre para um novo pedido. ' +
+        'Corretores já aprovados não são afetados: para retirá-los da equipe, use a desativação.',
+      request: { params: teamMemberIdParamsSchema },
+      responses: {
+        204: { description: 'Pedido recusado.' },
+        404: error('Pedido de vínculo pendente não encontrado.'),
+        409: error('O corretor já tem imóveis, leads ou eventos.'),
       },
     }),
   )

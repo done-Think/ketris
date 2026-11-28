@@ -18,6 +18,7 @@ import {
   useReverseChargePayment,
 } from '../hooks/use-financial'
 import { useFinancialError } from '../hooks/use-financial-error'
+import { chargeDirectionForViewer } from '../utils/charge-direction'
 import { styles } from '../styles/charge-details.styles'
 import type {
   ChargeDetailDialog,
@@ -73,7 +74,8 @@ function ChargeDetailsContent({ charge }: ChargeDetailsContentProps) {
   const { enqueueSnackbar } = useSnackbar()
   const errorMessage = useFinancialError()
   const { data: session } = useSession()
-  const isOwner = session?.role === 'OWNER'
+  const isOwner = session?.role === 'OWNER' && charge.tenantId === session?.tenantId
+  const direction = chargeDirectionForViewer(charge.direction, session?.role === 'RENTER')
   const [dialog, setDialog] = useState<ChargeDetailDialog | null>(null)
   const registerPayment = useRegisterChargePayment()
   const reversePayment = useReverseChargePayment()
@@ -95,6 +97,7 @@ function ChargeDetailsContent({ charge }: ChargeDetailsContentProps) {
       <Stack spacing={2.2}>
         <ChargeDetailHeader
           charge={charge}
+          direction={direction}
           canManage={isOwner}
           onRegisterPayment={() => setDialog('payment')}
           onReversePayment={() => setDialog('reverse')}
@@ -102,7 +105,7 @@ function ChargeDetailsContent({ charge }: ChargeDetailsContentProps) {
         />
         <Box sx={styles.grid}>
           <Stack spacing={2.2}>
-            <ChargeDetailFields charge={charge} />
+            <ChargeDetailFields charge={charge} direction={direction} />
             <ChargeReceiptCard charge={charge} />
           </Stack>
           <Stack spacing={2.2}>

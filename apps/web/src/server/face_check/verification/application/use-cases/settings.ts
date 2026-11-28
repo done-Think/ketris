@@ -9,12 +9,19 @@ import type { VerificationDependencies } from '../../../types/verification.types
 import { buildOverview } from '../../domain/overview'
 import { changeSession, currentSessions } from '../session-access'
 
+/** Agencies may only be stricter than the platform floor. */
+function effectiveThreshold(value: number | undefined): number {
+  return Number.isFinite(value)
+    ? Math.min(0.9, Math.max(similarityPolicy.approveAbove, value as number))
+    : similarityPolicy.approveAbove
+}
+
 export function getSettingsUseCase(deps: VerificationDependencies) {
   return {
-    execute: async (): Promise<VerificationSettings> => ({
-      ...(await deps.settings.get()),
-      faceMatchThreshold: similarityPolicy.approveAbove,
-    }),
+    execute: async (): Promise<VerificationSettings> => {
+      const settings = await deps.settings.get()
+      return { ...settings, faceMatchThreshold: effectiveThreshold(settings.faceMatchThreshold) }
+    },
   }
 }
 
@@ -23,7 +30,7 @@ export function updateSettingsUseCase(deps: VerificationDependencies) {
     execute: async (input: VerificationSettings): Promise<VerificationSettings> => {
       const saved = await deps.settings.save({
         agencyName: input.agencyName.trim(),
-        faceMatchThreshold: similarityPolicy.approveAbove,
+        faceMatchThreshold: effectiveThreshold(input.faceMatchThreshold),
         maxAttempts: input.maxAttempts,
         allowGalleryUpload: input.allowGalleryUpload,
       })

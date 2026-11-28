@@ -1,9 +1,11 @@
-import { styles, getActivityDotStyles } from '../styles/property-detail-main-panel.styles'
+import { styles } from '../styles/property-detail-main-panel.styles'
 import { Box, Chip, Stack, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
+import { PropertyNegotiationSummary } from '@shared/components/ui/PropertyNegotiationSummary'
 
 import type { PropertyDetailMainPanelProps } from '../types/dashboard-property'
 import { PropertyDetailPanel } from './PropertyDetailPanel'
+import { PropertyHistory } from './PropertyHistory'
 
 export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailMainPanelProps) {
   const t = useTranslations('properties.detail')
@@ -23,9 +25,6 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
     { label: t('pricing.sale'), value: property.pricing.sale },
     { label: t('pricing.condominium'), value: property.pricing.condominium },
     { label: t('pricing.propertyTax'), value: property.pricing.propertyTax },
-    ...(property.listing.negotiationTerms
-      ? [{ label: t('negotiationTerms'), value: property.listing.negotiationTerms }]
-      : []),
   ]
 
   if (activeTab === 'data') {
@@ -95,23 +94,21 @@ export function PropertyDetailMainPanel({ property, activeTab }: PropertyDetailM
             </Box>
           ))}
         </Box>
+        <PropertyNegotiationSummary
+          conditions={property.listing.negotiationConditions}
+          observation={property.listing.negotiationTerms}
+        />
       </PropertyDetailPanel>
     )
   }
 
   return (
     <PropertyDetailPanel title={t('historyTitle')}>
-      <Stack spacing={2.1}>
-        {property.activityHistory.map((activity) => (
-          <Stack key={`${activity.label}-${activity.date}`} direction="row" spacing={1.7}>
-            <Box sx={getActivityDotStyles(activity.tone)} />
-            <Box>
-              <Typography sx={styles.typography7}>{activity.label}</Typography>
-              <Typography sx={styles.typography8}>{activity.date}</Typography>
-            </Box>
-          </Stack>
-        ))}
-      </Stack>
+      <PropertyHistory
+        key={property.id}
+        propertyId={property.id}
+        legacy={property.activityHistory}
+      />
     </PropertyDetailPanel>
   )
 }

@@ -49,6 +49,9 @@ const user = (overrides: Partial<TenantUser>): TenantUser => ({
   tenantId: 'roberto',
   name: 'Roberto Lima',
   email: 'roberto@ketris.dev',
+  cpf: null,
+  tenantCnpj: null,
+  document: null,
   avatarUrl: null,
   phone: null,
   creci: null,
@@ -143,6 +146,24 @@ describe('PlatformTenantDetailPage', () => {
     const ana = within(users).getByRole('row', { name: /Ana Souza/ })
     expect(within(ana).getByText('Corretor')).toBeVisible()
     expect(within(ana).getByText('Aguardando aprovação')).toBeVisible()
+  })
+
+  it('mantém a tabela de usuários dentro do cartão com nome e e-mail longos', () => {
+    const email = 'maria.aparecida.dores.conceicao.albuquerque@ketris.dev'
+    vi.mocked(useTenantUsers).mockReturnValue({
+      data: usersPage([
+        user({ id: 'u1', name: 'Maria Aparecida das Dores Conceição de Albuquerque', email }),
+      ]),
+      isPending: false,
+      isError: false,
+    })
+    renderPage()
+
+    const users = screen.getByRole('region', { name: /Usuários/ })
+    expect(within(users).getByRole('table')).toHaveStyle({ tableLayout: 'fixed' })
+    const emailCell = within(users).getByText(email)
+    expect(emailCell).toHaveAttribute('title', email)
+    expect(emailCell).toHaveStyle({ textOverflow: 'ellipsis', whiteSpace: 'nowrap' })
   })
 
   it('abre a edição da conta pelo cabeçalho', async () => {

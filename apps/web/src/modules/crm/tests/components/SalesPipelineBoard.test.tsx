@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { theme } from '@shared/theme/theme'
 
 import { SalesPipelineBoard } from '../../components/SalesPipelineBoard'
+import { typographySx5 as projectedTotalTypography } from '../../styles/pipeline-stage-column.styles'
 import {
   useCreateOpportunity,
   useCrmProperties,
@@ -376,6 +377,44 @@ describe('SalesPipelineBoard', () => {
     expect(within(totals).getByText(matchesText(formatCurrency(920000)))).toBeVisible()
   })
 
+  it('keeps every projected total footer the same size, with or without a breakdown', () => {
+    mockOpportunitiesQuery({
+      data: [
+        makeOpportunity(1, 'DRAFT', { leadName: 'Carlos Eduardo', proposedValue: 5200 }),
+        makeOpportunity(2, 'DRAFT', { leadName: 'Letícia Ramos', proposedValue: 920000 }),
+      ],
+    })
+    mockPropertiesQuery({
+      data: [
+        makeProperty(1, { title: 'Studio Vila Mariana', purpose: 'RENT' }),
+        makeProperty(2, { title: 'Casa Pinheiros', purpose: 'SALE' }),
+      ],
+    })
+
+    renderPipeline()
+
+    const reservedHeights = Object.values(stageLabels).map((label) => {
+      const footer = screen.getByRole('group', { name: `Total projetado de ${label}` })
+      return window.getComputedStyle(footer.lastElementChild as HTMLElement).minHeight
+    })
+    expect(
+      within(screen.getByRole('group', { name: 'Total projetado de Prospecção' })).getByText(
+        'Venda',
+      ),
+    ).toBeVisible()
+    expect(reservedHeights[0]).toMatch(/\d/)
+    expect(new Set(reservedHeights).size).toBe(1)
+
+    const { fontSize, lineHeight } = projectedTotalTypography as {
+      fontSize: number
+      lineHeight: number
+    }
+    // 3 rows of the total text plus the 2 gaps between them.
+    expect(Number.parseFloat(reservedHeights[0])).toBeCloseTo(
+      3 * fontSize * lineHeight + 2 * Number.parseFloat(theme.spacing(0.25)),
+    )
+  })
+
   it('searches by contact and property context', async () => {
     const user = userEvent.setup()
     mockOpportunitiesQuery({
@@ -398,7 +437,7 @@ describe('SalesPipelineBoard', () => {
     await waitFor(() => expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument())
   })
 
-  it('filters by stage and restores all stages', async () => {
+  it('focuses the selected stage with its cards and totals and restores all stages', async () => {
     const user = userEvent.setup()
     mockOpportunitiesQuery({
       data: [
@@ -413,12 +452,34 @@ describe('SalesPipelineBoard', () => {
 
     expect(screen.getByText('Daniela Flores')).toBeVisible()
     expect(screen.queryByText('Carlos Eduardo')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('region')).toHaveLength(1)
+    const focusedStage = screen.getByRole('region', { name: 'Negociação' })
+    expect(within(focusedStage).getByText('1')).toBeVisible()
+    const totals = within(focusedStage).getByRole('group', {
+      name: 'Total projetado de Negociação',
+    })
+    expect(within(totals).getByText(matchesText(formatCurrency(2000)))).toBeVisible()
 
     await user.click(screen.getByRole('button', { name: 'Negociação' }))
     await user.click(screen.getByRole('menuitem', { name: 'Todas as etapas' }))
 
     expect(screen.getByText('Daniela Flores')).toBeVisible()
     expect(screen.getByText('Carlos Eduardo')).toBeVisible()
+    expect(screen.getAllByRole('region')).toHaveLength(5)
+  })
+
+  it('shows only the selected stage when it has no opportunities', async () => {
+    const user = userEvent.setup()
+    mockOpportunitiesQuery({ data: [makeOpportunity(1, 'DRAFT')] })
+    renderPipeline()
+
+    await user.click(screen.getByRole('button', { name: /Filtrar por etapa/i }))
+    await user.click(screen.getByRole('menuitem', { name: 'Qualificação' }))
+
+    expect(screen.getAllByRole('region')).toHaveLength(1)
+    const focusedStage = screen.getByRole('region', { name: 'Qualificação' })
+    expect(within(focusedStage).getByText('Sem oportunidades nesta etapa.')).toBeVisible()
+    expect(screen.queryByRole('region', { name: 'Prospecção' })).not.toBeInTheDocument()
   })
 
   it('keeps all columns stable while loading and creation available', () => {

@@ -109,7 +109,7 @@ export class PrismaCandidateVerificationRepository implements FaceCheckCandidate
       issuer.tenantId !== row.tenantId ||
       row.property.tenantId !== row.tenantId ||
       !['ACTIVE', 'TRIAL'].includes(row.tenant.status) ||
-      !['AGENCY', 'BROKER'].includes(row.tenant.accountType) ||
+      !['AGENCY', 'BROKER', 'INDIVIDUAL'].includes(row.tenant.accountType) ||
       (issuer.role !== 'OWNER' &&
         (issuer.role !== 'AGENT' || row.property.responsibleId !== issuer.id))
     )

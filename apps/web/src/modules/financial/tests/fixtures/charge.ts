@@ -9,6 +9,7 @@ import type {
 export function apiCharge(overrides: Partial<ApiCharge> = {}): ApiCharge {
   return {
     id: 'charge-1',
+    tenantId: 'tenant',
     code: 'COB-2026-0001',
     type: 'RECEIVABLE',
     status: 'PENDING',
@@ -36,6 +37,7 @@ export function apiCharge(overrides: Partial<ApiCharge> = {}): ApiCharge {
 export function apiListItem(overrides: Partial<ApiChargeListItem> = {}): ApiChargeListItem {
   return {
     id: 'charge-1',
+    tenantId: 'tenant',
     code: 'COB-2026-0001',
     type: 'RECEIVABLE',
     status: 'PENDING',
@@ -45,6 +47,7 @@ export function apiListItem(overrides: Partial<ApiChargeListItem> = {}): ApiChar
     contractId: 'contract-1',
     payerName: 'Mariana Souza',
     propertyTitle: 'Studio Pinheiros',
+    receipt: null,
     updatedAt: '2026-10-01T12:00:00.000Z',
     ...overrides,
   }

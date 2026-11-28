@@ -10,6 +10,8 @@ export interface NewUser {
   role: UserRole
   phone?: string | null
   creci?: string | null
+  cpf?: string | null
+  cnpj?: string | null
   termsAcceptedAt?: Date
   emailVerifiedAt?: Date | null
   membershipApprovedAt?: Date | null
@@ -24,6 +26,11 @@ export interface UserUpdate {
   passwordHash?: string
   phone?: string | null
   creci?: string | null
+  cpf?: string | null
+  /** CNPJ of the person's own company; stored beside the CPF and mutually exclusive with it. */
+  personalCnpj?: string | null
+  /** CNPJ of the tenant's company; only the owner of a company account may change it. */
+  cnpj?: string | null
   tenantId?: string
 }
 

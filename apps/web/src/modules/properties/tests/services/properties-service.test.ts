@@ -15,6 +15,7 @@ const apiProperty = {
   listing: {
     amenities: [],
     negotiationTerms: null,
+    negotiationConditions: [],
     publishAfterReview: false,
     allowWhatsappContact: false,
     featured: false,
@@ -52,6 +53,8 @@ const apiProperty = {
 }
 
 const mappedProperty: Property = {
+  brokerIds: [],
+  agencyManaged: false,
   id: 'property-1',
   tenantId: 'tenant-1',
   responsibleUserId: 'user-1',
@@ -63,6 +66,7 @@ const mappedProperty: Property = {
   listing: {
     amenities: [],
     negotiationTerms: null,
+    negotiationConditions: [],
     publishAfterReview: false,
     allowWhatsappContact: false,
     featured: false,
@@ -244,6 +248,7 @@ describe('PropertiesService', () => {
     const apiListing = {
       amenities: ['FURNISHED', 'PET_FRIENDLY'],
       negotiationTerms: 'Caução',
+      negotiationConditions: [],
       publishAfterReview: true,
       allowWhatsappContact: false,
       featured: true,
@@ -251,6 +256,7 @@ describe('PropertiesService', () => {
     const listing: Property['listing'] = {
       amenities: ['furnished', 'petFriendly'],
       negotiationTerms: 'Caução',
+      negotiationConditions: [],
       publishAfterReview: true,
       allowWhatsappContact: false,
       featured: true,

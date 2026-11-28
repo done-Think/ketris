@@ -9,6 +9,25 @@ export function formatIntegerCurrencyInput(value: unknown, locale: string) {
   }).format(numericValue)
 }
 
+export const MONEY_INPUT_MAX_DIGITS = 12
+
+export function formatMoneyInput(value: unknown, locale: string) {
+  const numericValue = Number(value)
+
+  if (!Number.isFinite(numericValue) || numericValue <= 0) return ''
+
+  return new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+  }).format(numericValue)
+}
+
+export function parseMoneyInput(value: string) {
+  const digits = value.replace(/\D/g, '').replace(/^0+/, '').slice(0, MONEY_INPUT_MAX_DIGITS)
+
+  return digits ? Number(digits) / 100 : 0
+}
+
 export function getNumberSeparators(locale: string) {
   const parts = new Intl.NumberFormat(locale).formatToParts(1234.5)
   const group = parts.find((part) => part.type === 'group')?.value ?? ','

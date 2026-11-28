@@ -4,6 +4,7 @@ import { assertAvatarScope } from '../../domain/avatar-policy'
 import { AccountDeactivatedError } from '../../domain/errors'
 import { isAgencyManager } from '../../domain/roles'
 import { ForbiddenError } from '@server/shared/errors'
+import { splitDocument } from '@shared/schemas/document-schema'
 
 import { EmailConfirmationRequiredError, UserNotFoundError } from '../../domain/errors'
 import { toAuthenticatedUser } from '../authenticated-user'
@@ -41,9 +42,18 @@ export class UpdateUserUseCase {
       throw new ForbiddenError('O próprio usuário não pode alterar seu papel.')
     }
 
+    if (input.cnpj !== undefined) {
+      const ownsCompany =
+        isSelfUpdate && target.role === 'OWNER' && target.tenantAccountType === 'AGENCY'
+      if (!ownsCompany)
+        throw new ForbiddenError('Só o responsável por uma conta de empresa altera o CNPJ.')
+    }
+
     if (input.email && input.email.trim().toLowerCase() !== target.email.toLowerCase()) {
       throw new EmailConfirmationRequiredError()
     }
+
+    const personal = input.document ? splitDocument(input.document) : null
 
     const updated = await this.userRepository.update(input.userId, {
       name: input.name,
@@ -51,6 +61,9 @@ export class UpdateUserUseCase {
       auditActor: { kind: 'USER', id: input.actorId },
       phone: input.phone,
       creci: input.creci,
+      cpf: personal ? personal.cpf : input.cpf,
+      personalCnpj: personal?.cnpj,
+      cnpj: input.cnpj,
       avatarUrl: input.avatarUrl,
       role: input.role,
     })

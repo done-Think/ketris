@@ -338,6 +338,15 @@ export function registerFaceCheckOpenApi(registry: OpenAPIRegistry) {
       },
       responses: {
         ...errors,
+        ...(suffix === '/submit' && schema
+          ? {
+              202: {
+                description:
+                  'Images received once; server analysis and human review continue after this response.',
+                content: json(schema),
+              },
+            }
+          : {}),
         [schema ? 200 : 204]: {
           description: schema ? 'Capture response.' : 'Capture accepted.',
           ...(schema ? { content: json(schema) } : {}),

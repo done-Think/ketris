@@ -126,9 +126,9 @@ function SettingsForm({ settings }: SettingsFormProps) {
                   </Typography>
                 </Box>
                 <Slider
-                  disabled
                   aria-labelledby="faceMatchThreshold-label"
                   value={field.value}
+                  onChange={(_, value) => field.onChange(Array.isArray(value) ? value[0] : value)}
                   min={similarityPolicy.approveAbove}
                   max={0.9}
                   step={0.01}

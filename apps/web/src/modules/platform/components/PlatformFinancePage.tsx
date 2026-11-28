@@ -139,7 +139,7 @@ export function PlatformFinancePage() {
               <Box component="ul" sx={styles.box8}>
                 {finance.accounts.map((account) => (
                   <Box component="li" key={account.id} sx={styles.box9}>
-                    <Stack direction="row" spacing={1.2} alignItems="flex-start">
+                    <Stack spacing={0.8}>
                       <AccountName account={account} />
                       {account.monthlyCharge ? (
                         <FeeCell

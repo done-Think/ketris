@@ -4,6 +4,15 @@ import type { SxProps, Theme } from '@mui/material'
 
 export const styles = {
   stack: { minWidth: 0, height: '100%' },
+  managedByChip: {
+    height: 22,
+    mt: 0.4,
+    maxWidth: '100%',
+    bgcolor: brand.magenta[50],
+    color: brand.magenta[600],
+    fontSize: 11.5,
+    fontWeight: 800,
+  },
   box: {
     width: 56,
     height: 56,

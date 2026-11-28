@@ -20,6 +20,15 @@ const scenarios = (['OWNER', 'AGENT', 'PROPERTY_OWNER', 'RENTER'] as const).flat
   ),
 )
 describe('permissões do frontend preservam as regras de Agenda do backend', () => {
+  it('respects the server read-only flag for a broker participant', () => {
+    const event = agendaEventFixture({
+      readOnly: true,
+      audience: 'SHARED_TEAM',
+      responsibleId: 'other-user',
+    })
+    expect(canEditAgendaEvent({ role: 'AGENT', userId: 'user' }, event)).toBe(false)
+    expect(canEditAgendaEvent({ role: 'OWNER', userId: 'owner' }, event)).toBe(true)
+  })
   it.each(scenarios)(
     '$role/$audience/internal=$internal/responsible=$responsibleId/creator=$createdById',
     ({ role, audience, internal, responsibleId, createdById }) => {

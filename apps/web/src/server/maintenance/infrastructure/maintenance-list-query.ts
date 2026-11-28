@@ -27,7 +27,9 @@ export function maintenanceListQuery(filters: MaintenanceTicketListFilters) {
     filters.archived ? Prisma.sql`c."deletedAt" IS NOT NULL` : Prisma.sql`c."deletedAt" IS NULL`,
   ]
   if (isAgencyManager(actor.actorRole))
-    conditions.push(Prisma.sql`c."tenantId" = ${actor.actorTenantId}`)
+    conditions.push(
+      Prisma.sql`(c."tenantId" = ${actor.actorTenantId} OR (c."deletedAt" IS NULL AND ct."tenantId" = c."tenantId" AND ct."propertyId" = c."propertyId" AND i."tenantId" = c."tenantId" AND EXISTS (SELECT 1 FROM contract_parties p JOIN users u ON u.id = p."userId" WHERE p."contractId" = ct.id AND p.role = 'LANDLORD' AND p."userId" = ${actor.actorId} AND u.active = true)))`,
+    )
   else {
     conditions.push(
       Prisma.sql`c."deletedAt" IS NULL`,
@@ -56,6 +58,7 @@ export function maintenanceListQuery(filters: MaintenanceTicketListFilters) {
   if (filters.priority) filtered.push(Prisma.sql`c.priority::text = ${filters.priority}`)
   if (filters.category) filtered.push(Prisma.sql`c.category::text = ${filters.category}`)
   if (filters.propertyId) filtered.push(Prisma.sql`c."propertyId" = ${filters.propertyId}`)
+  if (filters.contractId) filtered.push(Prisma.sql`c."contractId" = ${filters.contractId}`)
   if (filters.search?.trim()) {
     const term = '%' + normalized(filters.search.trim()).replace(/[\\%_]/g, '\\$&') + '%'
     const labels = dictionaries[filters.locale ?? 'pt-BR']

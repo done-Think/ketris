@@ -59,3 +59,21 @@ export class TeamInvitationHasPortfolioError extends AppError {
     })
   }
 }
+
+export class TeamMembershipRequestNotFoundError extends AppError {
+  constructor() {
+    super('Pedido de vínculo não encontrado ou já respondido.', {
+      status: 404,
+      code: 'TEAM_MEMBERSHIP_REQUEST_NOT_FOUND',
+    })
+  }
+}
+
+export class TeamMembershipRequestHasPortfolioError extends AppError {
+  constructor() {
+    super('Este corretor já tem imóveis, leads ou eventos. Transfira antes de recusar.', {
+      status: 409,
+      code: 'TEAM_MEMBERSHIP_REQUEST_HAS_PORTFOLIO',
+    })
+  }
+}

@@ -82,8 +82,8 @@ export function BrokerTeamCard({
                   {member.headline}
                 </Typography>
               ) : null}
-              {member.specialties[0] ? (
-                <Chip label={member.specialties[0]} size="small" sx={styles.specialty} />
+              {member.segments[0] ? (
+                <Chip label={member.segments[0]} size="small" sx={styles.specialty} />
               ) : null}
             </Box>
           </ButtonBase>

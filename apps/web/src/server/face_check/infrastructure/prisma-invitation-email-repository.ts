@@ -119,7 +119,7 @@ export class PrismaFaceCheckInvitationRepository implements FaceCheckInvitationR
       session.expiresAt.getTime() <= now.getTime() ||
       !['CREATED', 'IN_PROGRESS', 'RESUBMISSION_REQUESTED'].includes(session.status) ||
       !['ACTIVE', 'TRIAL'].includes(session.tenant.status) ||
-      !['AGENCY', 'BROKER'].includes(session.tenant.accountType) ||
+      !['AGENCY', 'BROKER', 'INDIVIDUAL'].includes(session.tenant.accountType) ||
       !issuer.active ||
       !issuer.emailVerifiedAt ||
       !issuer.membershipApprovedAt ||

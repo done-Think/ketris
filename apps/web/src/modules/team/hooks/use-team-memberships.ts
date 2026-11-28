@@ -13,11 +13,11 @@ export function useTeamMembershipRequests(enabled = true) {
   })
 }
 
-export function useApproveTeamMembership() {
+function useMembershipDecision<TResult>(decide: (userId: string) => Promise<TResult>) {
   const client = useQueryClient()
   const scope = useTenantSessionScope()
   return useMutation({
-    mutationFn: (userId: string) => teamService.approveMembership(userId),
+    mutationFn: decide,
     onSuccess: () =>
       Promise.all([
         client.invalidateQueries({ queryKey: ['team-memberships', scope.tenantId] }),
@@ -25,4 +25,12 @@ export function useApproveTeamMembership() {
         client.invalidateQueries({ queryKey: ['auth', scope.tenantId] }),
       ]),
   })
+}
+
+export function useApproveTeamMembership() {
+  return useMembershipDecision((userId: string) => teamService.approveMembership(userId))
+}
+
+export function useRejectTeamMembership() {
+  return useMembershipDecision((userId: string) => teamService.rejectMembership(userId))
 }

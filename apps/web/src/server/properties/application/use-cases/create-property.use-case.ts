@@ -1,4 +1,7 @@
 import { assertPropertyMediaScope } from '../../domain/property-media-policy'
+import { assertPropertyBrokerChange } from '../property-broker-access-policy'
+import type { PropertyBrokerDirectory } from '../ports/property-broker-directory.port'
+import { normalizeNegotiationListing } from '../../domain/property-negotiation-policy'
 import { assertOwnerContactChange } from '../property-owner-contact-policy'
 import type { PropertyOwnerContactDirectory } from '../ports/property-owner-contact-directory.port'
 import type { PropertyOwnerDirectory } from '../ports/property-owner-directory.port'
@@ -20,6 +23,7 @@ export class CreatePropertyUseCase {
     private readonly ownerDirectory: PropertyOwnerDirectory,
     private readonly geocoder: AddressGeocoder = unavailableAddressGeocoder,
     private readonly ownerContacts?: PropertyOwnerContactDirectory,
+    private readonly brokers?: PropertyBrokerDirectory,
   ) {}
 
   execute(input: CreatePropertyInput) {
@@ -28,6 +32,12 @@ export class CreatePropertyUseCase {
   }
 
   private async createProperty(input: CreatePropertyInput) {
+    await assertPropertyBrokerChange(
+      input.actorTenantId,
+      input.actorRole,
+      input.brokerIds,
+      this.brokers,
+    )
     assertPropertyMediaScope(input.actorTenantId, input.media)
     await assertOwnerContactChange(
       {
@@ -47,13 +57,14 @@ export class CreatePropertyUseCase {
       {
         tenantId: input.actorTenantId,
         responsibleId: input.actorUserId,
+        brokerIds: input.brokerIds,
         ownerId: ownerId,
         ownerContactId: input.ownerContactId ?? null,
         title: input.title,
         description: input.description,
         purpose: input.purpose,
         type: input.type,
-        listing: input.listing,
+        listing: normalizeNegotiationListing(input.listing, input.purpose),
         bedrooms: input.bedrooms,
         bathrooms: input.bathrooms,
         parkingSpots: input.parkingSpots,

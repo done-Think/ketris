@@ -7,13 +7,17 @@ import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { Link } from '@/i18n/navigation'
+import { extractErrorMessage } from '@shared/utils/error-message'
 import { AuthShell } from '@shared/components/layout/AuthShell'
-import { RhfPasswordField } from '@shared/components/form'
+import { RhfMaskedTextField, RhfPasswordField } from '@shared/components/form'
 
 import { useAcceptTeamInvitation, useTeamInvitation } from '../hooks/use-team'
 import { createAcceptInvitationSchema } from '../schemas/broker-team-action-schemas'
 import { styles } from '../styles/accept-invitation-screen.styles'
 import type { AcceptInvitationFormValues, AcceptInvitationScreenProps } from '../types/broker-team'
+
+// One field for both documents: up to 11 digits it is a CPF, beyond that the CNPJ of their company.
+const DOCUMENT_MASK = [{ mask: '000.000.000-00' }, { mask: '00.000.000/0000-00' }]
 
 export function AcceptInvitationScreen({ token }: AcceptInvitationScreenProps) {
   const t = useTranslations('dashboard.team.invitationPage')
@@ -22,7 +26,7 @@ export function AcceptInvitationScreen({ token }: AcceptInvitationScreenProps) {
   const schema = useMemo(() => createAcceptInvitationSchema((key) => t(key)), [t])
   const form = useForm<AcceptInvitationFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { password: '', passwordConfirmation: '' },
+    defaultValues: { password: '', passwordConfirmation: '', document: '' },
   })
   const invitation = preview.data
   const unavailableMessage =
@@ -34,13 +38,18 @@ export function AcceptInvitationScreen({ token }: AcceptInvitationScreenProps) {
           ? t('accepted')
           : null
 
-  const submit = form.handleSubmit(async ({ password }) => {
+  const submit = form.handleSubmit(async ({ password, document }) => {
     if (!token) return
     form.clearErrors('root')
     try {
-      await accept.mutateAsync({ token, password })
-    } catch {
-      form.setError('root', { message: t('error') })
+      await accept.mutateAsync({ token, password, document })
+    } catch (error) {
+      form.setError('root', {
+        message: extractErrorMessage(error, t('error'), {
+          CPF_ALREADY_IN_USE: t('documentInUse'),
+          CNPJ_ALREADY_IN_USE: t('documentInUse'),
+        }),
+      })
     }
   })
 
@@ -69,6 +78,16 @@ export function AcceptInvitationScreen({ token }: AcceptInvitationScreenProps) {
             </Typography>
             <TextField label={t('name')} value={invitation.name} disabled fullWidth />
             <TextField label={t('email')} value={invitation.email} disabled fullWidth />
+            <RhfMaskedTextField
+              control={form.control}
+              name="document"
+              label={t('document')}
+              mask={DOCUMENT_MASK}
+              inputMode="numeric"
+              autoComplete="off"
+              fullWidth
+              disabled={accept.isPending}
+            />
             <RhfPasswordField
               control={form.control}
               name="password"

@@ -24,6 +24,7 @@ import { useState } from 'react'
 import { useMaintenanceAction } from '../hooks/use-maintenance'
 import { useMaintenanceErrorMessage } from '../hooks/use-maintenance-error-message'
 import type { MaintenanceWorkflowFormValues } from '../types/maintenance-workflow'
+import { formatMaintenancePhone } from '../utils/maintenance-phone'
 import { buildMaintenanceWorkflowAction } from '../utils/maintenance-workflow'
 import { MaintenanceWorkflowForm } from './MaintenanceWorkflowForm'
 
@@ -89,7 +90,9 @@ export function MaintenanceWorkflowControls({ ticket }: MaintenanceWorkflowContr
         <Typography variant="body2">
           {t('providerLabel')}: {ticket.provider?.name || t('unassigned')}
         </Typography>
-        {ticket.provider?.phone && <Typography variant="body2">{ticket.provider.phone}</Typography>}
+        {ticket.provider?.phone && (
+          <Typography variant="body2">{formatMaintenancePhone(ticket.provider.phone)}</Typography>
+        )}
         {ticket.provider?.email && <Typography variant="body2">{ticket.provider.email}</Typography>}
         {ticket.provider?.notes && (
           <Typography variant="body2" sx={maintenanceStyles.typographySx}>

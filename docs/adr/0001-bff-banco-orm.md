@@ -7,7 +7,7 @@
 ## Context
 
 O scaffold inicial do repositório trazia um backend NestJS separado, que foi removido deliberadamente ao
-reaproveitar o repositório (ver `docs/estado-do-projeto.md`) até que a stack de backend fosse decidida com
+reaproveitar o repositório até que a stack de backend fosse decidida com
 calma — a constituição do projeto (`.specify/memory/constitution.md`) ficou com um `TODO(BACKEND_STACK)`
 em aberto desde então.
 

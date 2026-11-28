@@ -106,8 +106,9 @@ describe('confirmações reais de Contracts', () => {
     const edit = vi.spyOn(contractsService, 'edit').mockResolvedValue(contract)
     const close = vi.fn()
     show(<ContractEditDialog contract={contract} onClose={close} />)
-    const value = screen.getByRole('spinbutton', { name: /Valor/ })
-    fireEvent.change(value, { target: { value: '1800.25' } })
+    const value = screen.getByRole('textbox', { name: 'Valor do contrato' })
+    fireEvent.change(value, { target: { value: '180025' } })
+    expect(value).toHaveValue('1.800,25')
     fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
     await waitFor(() => expect(edit).toHaveBeenCalledOnce())
     const payload = edit.mock.calls[0][1]

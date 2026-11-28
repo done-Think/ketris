@@ -120,6 +120,9 @@
       }
     },
     "submit": {
+      "receivedTitle": "Fotos enviadas correctamente",
+      "receivedBody": "El equipo de {agency} recibió tus imágenes y se encargará de revisarlas. Si necesita una nueva captura, se pondrá en contacto contigo.",
+      "closeHint": "Ya puedes cerrar esta página. No es necesario volver a enviar las fotos.",
       "titleRunning": "Enviando y analizando",
       "titleDone": "Análisis finalizado",
       "body": "No cierres esta página. Si se pierde la conexión, abre el mismo enlace para continuar.",
@@ -332,12 +335,12 @@
     "review": {
       "title": "Revisa antes de enviar",
       "body": "Comprueba las fotos del documento, la selfie y los movimientos. No se ha enviado nada para validación. Envía cuando estés conforme con las capturas.",
-      "resumeBody": "Algunas fotos ya se han enviado. Puedes retomar la validación o repetir una captura.",
+      "resumeBody": "Ya se recibieron algunas fotos. Continúa para completar el envío de las imágenes restantes.",
       "send": "Confirmar y enviar para análisis",
-      "sending": "Enviando y validando las fotos…",
+      "sending": "Enviando las fotos…",
       "retake": "Repetir captura",
-      "checking": "Comprobando: {photo}",
-      "failedPhoto": "No se pudo validar: {photo}. Revisa la indicación y repite la captura si es necesario.",
+      "checking": "Enviando: {photo}",
+      "failedPhoto": "No se pudo completar el envío de: {photo}. Intenta continuar; las imágenes ya recibidas se conservarán.",
       "photos": {
         "front": "Frente del documento",
         "back": "Reverso del documento",
@@ -381,6 +384,8 @@
       "title": "Resumen",
       "subtitle": "Últimos 7 días",
       "newVerification": "Nueva verificación",
+      "loading": "Cargando indicadores",
+      "retry": "Intentar de nuevo",
       "pilotWarning": "El análisis ayuda a revisar las evidencias. La aprobación requiere una decisión humana del equipo de la inmobiliaria.",
       "kpis": {
         "label": "Indicadores",
@@ -809,6 +814,7 @@
       "ABANDONED": "Abandonada"
     },
     "errors": {
+      "STORAGE_UNAVAILABLE": "El almacenamiento no está disponible. Inténtalo de nuevo más tarde.",
       "SESSION_NOT_FOUND": "No encontramos esta verificación. Consulta el enlace con la inmobiliaria.",
       "SESSION_EXPIRED": "Este enlace caducó. Pide uno nuevo a la inmobiliaria.",
       "SESSION_NOT_IN_REVIEW": "Esta sesión ya no está en revisión. Actualiza la página.",
@@ -831,6 +837,7 @@
       "PERSISTENCE_BUSY": "Hay otra operación en curso. Espera un momento e inténtalo de nuevo.",
       "PERSISTENCE_UNAVAILABLE": "No se pudo guardar ni recuperar la verificación. Inténtalo de nuevo en unos instantes.",
       "AGENCY_NAME_MISSING": "Indica el nombre de la inmobiliaria en configuración antes de crear una verificación.",
+      "INVITEE_NOT_ELIGIBLE": "Este correo ya pertenece a un perfil registrado en la plataforma. La verificación facial solo se exige a quien desea alquilar un inmueble.",
       "CONSENT_TERMS_OUTDATED": "El consentimiento ha cambiado. Recarga la página y léelo de nuevo.",
       "DOCUMENT_TYPE_NOT_ACCEPTED": "Este tipo de documento no está permitido. Usa el solicitado por la inmobiliaria, el mismo en el frente y reverso.",
       "PAYLOAD_TOO_LARGE": "Cada foto debe tener un máximo de 3 MiB. Vuelve a tomarla.",

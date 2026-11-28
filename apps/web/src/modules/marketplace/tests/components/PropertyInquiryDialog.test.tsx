@@ -61,7 +61,7 @@ describe('PropertyInquiryDialog', () => {
     await user.type(screen.getByLabelText('E-mail'), 'maria@exemplo.com')
   }
 
-  it('sends no proposed value when the field is empty and rejects zero, like the API', async () => {
+  it('sends no proposed value when the field is empty or only zeros were typed', async () => {
     const user = userEvent.setup()
     render(<PropertyInquiryDialog open mode="proposal" propertyId="property-1" onClose={vi.fn()} />)
     await fillContact(user)
@@ -73,10 +73,64 @@ describe('PropertyInquiryDialog', () => {
     )
 
     mutate.mockClear()
-    await user.type(screen.getByLabelText('Valor proposto'), '0')
+    await user.type(screen.getByLabelText('Valor proposto'), '00')
+    expect(screen.getByLabelText('Valor proposto')).toHaveValue('')
     await user.click(screen.getByRole('button', { name: 'Enviar' }))
-    expect(await screen.findByText('Informe um valor válido')).toBeVisible()
+    expect(mutate).toHaveBeenLastCalledWith(
+      expect.objectContaining({ proposedValue: undefined }),
+      expect.anything(),
+    )
+  })
+
+  it('formats the proposed value in reais, filling the cents from the right', async () => {
+    const user = userEvent.setup()
+    render(<PropertyInquiryDialog open mode="proposal" propertyId="property-1" onClose={vi.fn()} />)
+    await fillContact(user)
+
+    expect(screen.getByText('R$')).toBeVisible()
+    await user.type(screen.getByLabelText('Valor proposto'), '080000000')
+    expect(screen.getByLabelText('Valor proposto')).toHaveValue('800.000,00')
+    await user.click(screen.getByRole('button', { name: 'Enviar' }))
+
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ proposedValue: 800000 }),
+      expect.anything(),
+    )
+  })
+
+  it('masks the phone with area code and stops at 11 digits', async () => {
+    const user = userEvent.setup()
+    render(<PropertyInquiryDialog open mode="visit" propertyId="property-1" onClose={vi.fn()} />)
+    await fillContact(user)
+
+    await user.type(screen.getByLabelText('Telefone'), '11111111111111111111111')
+    expect(screen.getByLabelText('Telefone')).toHaveValue('(11) 11111-1111')
+    await user.click(screen.getByRole('button', { name: 'Enviar' }))
+
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ leadPhone: '(11) 11111-1111' }),
+      expect.anything(),
+    )
+  })
+
+  it('rejects an incomplete phone but keeps the phone optional', async () => {
+    const user = userEvent.setup()
+    render(<PropertyInquiryDialog open mode="visit" propertyId="property-1" onClose={vi.fn()} />)
+    await fillContact(user)
+
+    await user.type(screen.getByLabelText('Telefone'), '3598')
+    await user.click(screen.getByRole('button', { name: 'Enviar' }))
+    expect(
+      await screen.findByText('Informe um telefone com DDD, como (11) 99999-9999'),
+    ).toBeVisible()
     expect(mutate).not.toHaveBeenCalled()
+
+    await user.clear(screen.getByLabelText('Telefone'))
+    await user.click(screen.getByRole('button', { name: 'Enviar' }))
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ leadPhone: undefined }),
+      expect.anything(),
+    )
   })
 
   it('explains the wait when the proposal limit is reached', async () => {

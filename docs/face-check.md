@@ -148,14 +148,30 @@ de consentimento e os limites de rejeições. Reiniciar invalida o plano anterio
 Somente na confirmação final o cliente envia frente, verso, selfie e movimentos,
 em requisições individuais limitadas, vinculadas ao mesmo plano. Isso evita reduzir
 a qualidade para acomodar seis imagens em um único payload. Todas as verificações
-de documento, identidade, ordem e anti-spoof continuam no backend; não se aceita
-aprovação calculada pelo cliente. O prazo de 15 segundos entre recebimentos começa
-em `liveness-start`, após o envio da selfie. Os horários registram recebimento e
-análise, sem atestar o instante de aquisição de cada foto no dispositivo.
+de documento, identidade e anti-spoof continuam no backend; não se aceita aprovação
+calculada pelo cliente. O recebimento valida formato, tamanho, consentimento, plano,
+completude e ordem das imagens, sem aguardar OCR ou reprovar uma pose pelo motor.
+O prazo geral de consentimento continua valendo. Os horários registram recebimento
+e análise, sem atestar o instante de aquisição de cada foto no dispositivo.
 
-Falhas não apagam os movimentos já aceitos. A retomada sincroniza respostas perdidas
-sem repetir etapas aceitas, e o limite de rejeições mantém a revisão humana. A
-aprovação automática permanece desativada; a sequência de fotos não constitui
+Depois das seis imagens, `POST /submit` confirma o recebimento com 202 e registra
+`PROCESSING` antes de iniciar a análise com `after()` do Next.js. A pessoa vê a
+confirmação e pode fechar a página. Uma resposta perdida pode ser recuperada pelo
+status ou pela repetição idempotente da confirmação, sem armazenar as imagens ou
+contabilizar a tentativa novamente. Falhas de transporte durante o upload permitem
+continuar com os arquivos restantes; falhas de análise ficam disponíveis à equipe.
+
+Inspeções e movimentos têm checkpoints no registro criptografado. Cada etapa usa
+um lease próprio; uma interrupção permite retomar com as fotos já armazenadas.
+As consultas da sessão retornam o snapshot confirmado, inclusive durante uma análise,
+sem disputar o lease de gravação nem aguardar o motor. Ao abrir uma sessão em
+processamento, a aplicação agenda a retomada após responder à consulta.
+
+Fotos reprovadas, prova de vida inconclusiva, baixa similaridade e indisponibilidade
+do motor seguem para `REVIEW`, com evidências e diagnósticos preservados. Somente
+o responsável pode pedir nova captura, aprovar ou reprovar. Aprovar evidências
+inconclusivas exige a revisão e a justificativa de override manual já previstas.
+A aprovação automática permanece desativada; a sequência de fotos não constitui
 sozinha uma prova certificada de captura ao vivo.
 
 ## Convites por e-mail
@@ -280,6 +296,16 @@ o script também aceita `FACE_CHECK_APP_ORIGIN` para execução operacional expl
 As permissões Terraform incluem `ListBucketVersions`, `DeleteObject` e
 `DeleteObjectVersion`, com exclusão limitada a `face_check/*` no bucket uploads.
 Essas alterações precisam ser aplicadas antes do teste de exclusão física.
+
+O mesmo workflow chama `scripts/face-check-analysis.mjs` para retomar análises
+interrompidas sem depender do navegador do candidato. O endpoint interno
+`GET /api/internal/face_check/analysis` exige o mesmo segredo de manutenção,
+revalida o acesso atual do solicitante e retorna apenas contagens. Cada execução
+seleciona até cinco sessões sem lease ativo e respeita o orçamento de tempo;
+os checkpoints e as sessões ainda pendentes permanecem para nova execução.
+Essa rotina horária é uma recuperação de contingência: a análise inicial é
+agendada imediatamente após o recebimento. O agendamento abaixo também é necessário
+para essa recuperação automática.
 
 **GitHub só agenda workflows presentes na branch padrão.** O cron horário da
 branch padrão dispara a execução na `dev`, compatível com a regra de deployment

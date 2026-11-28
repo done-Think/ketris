@@ -34,6 +34,14 @@ const event: AgendaEvent = {
   createdAt: new Date(),
   updatedAt: new Date(),
 }
+it('marks a linked broker as read-only in actor-specific responses', () => {
+  const shared = {
+    ...event,
+    participants: [{ id: 'guest', name: 'Guest', email: 'guest@example.test' }],
+  }
+  expect(toAgendaEventReadResponse(shared, 'AGENT', 'guest')).toMatchObject({ readOnly: true })
+  expect(toAgendaEventReadResponse(shared, 'AGENT', 'agent')).toMatchObject({ readOnly: false })
+})
 it('integra nome e papel reais do criador na visão completa', () => {
   expect(toAgendaEventResponse(event)).toMatchObject({
     createdById: 'manager',

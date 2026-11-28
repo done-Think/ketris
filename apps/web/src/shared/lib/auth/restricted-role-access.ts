@@ -1,3 +1,4 @@
+import { navigationHrefsFor } from '@shared/lib/auth/access-policy'
 import type { UserRole } from '@shared/types/user-role'
 import type { RestrictedRole, RestrictedRoleAccess } from '@shared/types/restricted-role-access'
 
@@ -12,16 +13,11 @@ const myVerificationsPathname = /^\/dashboard\/face_check\/my-verifications(?:\/
 export const restrictedRoleAccess: Record<RestrictedRole, RestrictedRoleAccess> = {
   RENTER: {
     home: '/dashboard/finance/charges',
-    navigationHrefs: [
-      '/dashboard/finance/charges',
-      '/dashboard/maintenance',
-      '/dashboard/agenda',
-      '/dashboard/properties',
-      '/dashboard/face_check/my-verifications',
-    ],
+    navigationHrefs: navigationHrefsFor('RENTER'),
     isAllowedPathname: (pathname) =>
       pathname === '/dashboard/agenda' ||
       myVerificationsPathname.test(pathname) ||
+      contractsPathname.test(pathname) ||
       chargesPathname.test(pathname) ||
       maintenancePathname.test(pathname) ||
       propertyDetailPathname.test(pathname),
@@ -31,14 +27,7 @@ export const restrictedRoleAccess: Record<RestrictedRole, RestrictedRoleAccess> 
   },
   PROPERTY_OWNER: {
     home: '/dashboard/properties',
-    navigationHrefs: [
-      '/dashboard/properties',
-      '/dashboard/contracts',
-      '/dashboard/finance/charges',
-      '/dashboard/maintenance',
-      '/dashboard/agenda',
-      '/dashboard/face_check/my-verifications',
-    ],
+    navigationHrefs: navigationHrefsFor('PROPERTY_OWNER'),
     isAllowedPathname: (pathname) =>
       pathname === '/dashboard/agenda' ||
       myVerificationsPathname.test(pathname) ||

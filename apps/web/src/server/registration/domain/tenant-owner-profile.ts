@@ -10,6 +10,7 @@ const ACCOUNT_TYPE_BY_PROFILE: Record<TenantOwnerProfile, RegistrationAccountTyp
   broker: 'BROKER',
   agency: 'AGENCY',
   developer: 'AGENCY',
+  condoManager: 'AGENCY',
 }
 
 export const SELF_REGISTERED_TENANT_STATUS: RegistrationTenantStatus = 'TRIAL'

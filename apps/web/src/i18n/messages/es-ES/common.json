@@ -35,6 +35,7 @@
     "team": "Equipo",
     "properties": "Mis inmuebles",
     "contracts": "Contratos",
+    "myRental": "Mi alquiler",
     "publicProfile": "Perfil público",
     "agencyPublicProfile": "Perfil de la inmobiliaria",
     "agenda": "Agenda",
@@ -64,7 +65,6 @@
     "retrySignOut": "Reintentar cerrar sesión",
     "faceCheck": "Face Check",
     "faceCheckSessions": "Sesiones",
-    "faceCheckReview": "Revisión",
     "faceCheckSettings": "Configuración",
     "faceCheckMyVerifications": "Mis verificaciones",
     "expandNavigationSection": "Expandir opciones de {section}",
@@ -111,6 +111,12 @@
       "nameTooLong": "Usa como máximo 200 caracteres.",
       "phoneTooLong": "Usa como máximo 32 caracteres.",
       "creciTooLong": "Usa como máximo 32 caracteres.",
+      "cpfRequired": "Introduce tu CPF.",
+      "cpfInvalid": "Introduce un CPF válido.",
+      "cnpjRequired": "Introduce el CNPJ.",
+      "cnpjInvalid": "Introduce un CNPJ válido.",
+      "documentRequired": "Introduce tu CPF o CNPJ.",
+      "documentInvalid": "Introduce un CPF o CNPJ válido.",
       "emailTooLong": "Usa como máximo 254 caracteres.",
       "passwordTooLong": "La contraseña debe tener como máximo 72 bytes. Usa menos caracteres."
     },
@@ -118,6 +124,13 @@
     "retry": "Reintentar",
     "loadError": "No se pudo cargar tu perfil.",
     "creci": "CRECI",
+    "cpf": "CPF",
+    "cnpj": "CNPJ",
+    "document": "CPF / CNPJ",
+    "phoneInUse": "Ya existe una cuenta con este teléfono.",
+    "creciInUse": "Ya existe una cuenta con este CRECI.",
+    "cpfInUse": "Ya existe una cuenta con este CPF.",
+    "cnpjInUse": "Este CNPJ ya está registrado.",
     "changeEmail": "Cambiar correo",
     "permissionError": "No tienes permiso para actualizar este perfil.",
     "newEmail": "Nuevo correo",
@@ -163,5 +176,25 @@
     "retry": "Intentar de nuevo",
     "retrying": "Verificando sesión…"
   },
-  "perMonth": "/mes"
+  "perMonth": "/mes",
+  "propertyNegotiation": {
+    "title": "Condiciones de negociación",
+    "sale": "Venta",
+    "rent": "Alquiler",
+    "hint": "Selecciona una o más opciones. El pago exclusivamente al contado no se puede combinar con financiación.",
+    "helpLabel": "Acerca de las condiciones de negociación",
+    "help": "Selecciona las condiciones aceptadas para la venta o el alquiler. La entrada puede combinarse con financiación. Para el alquiler, indica si se exige un depósito o si las condiciones se acordarán con el propietario.",
+    "options": {
+      "ACCEPTS_FINANCING": "Acepta financiación",
+      "REQUIRES_DOWN_PAYMENT": "Exige entrada",
+      "CASH_ONLY": "Solo pago al contado",
+      "ACCEPTS_EXCHANGE": "Acepta permuta",
+      "SALE_NEGOTIABLE": "Acepta negociación en la venta",
+      "AGREE_WITH_OWNER": "Alquiler a acordar con el propietario",
+      "RENT_NEGOTIABLE": "Acepta negociación en el alquiler",
+      "REQUIRES_DEPOSIT": "Exige depósito de garantía"
+    },
+    "observation": "Observación",
+    "observationHint": "Opcional. Esta observación se mostrará en la presentación del inmueble."
+  }
 }

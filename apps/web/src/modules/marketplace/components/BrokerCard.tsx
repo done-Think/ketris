@@ -62,13 +62,13 @@ export function BrokerCard(brokerCardProps: BrokerCardProps) {
 
               <Typography sx={styles.typography3}>{brokerCardProps.region}</Typography>
               {isListView ? (
-                <Typography sx={styles.typography4}>{brokerCardProps.bio}</Typography>
+                <Typography sx={styles.typography4}>{brokerCardProps.summary}</Typography>
               ) : null}
             </Box>
           </Stack>
 
           <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={styles.stack}>
-            {brokerCardProps.specialties.map((specialty) => (
+            {brokerCardProps.segments.map((specialty) => (
               <Chip key={specialty} label={specialty} size="small" sx={styles.chip} />
             ))}
           </Stack>

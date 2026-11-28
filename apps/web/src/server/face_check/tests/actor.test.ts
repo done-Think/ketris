@@ -41,7 +41,7 @@ describe('face_check request identity', () => {
           role: { in: ['OWNER', 'AGENT'] },
           tenant: {
             status: { in: ['ACTIVE', 'TRIAL'] },
-            accountType: { in: ['AGENCY', 'BROKER'] },
+            accountType: { in: ['AGENCY', 'BROKER', 'INDIVIDUAL'] },
           },
         }),
       }),

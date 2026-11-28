@@ -71,3 +71,12 @@ export class ProfileMediaNotFoundError extends AppError {
     super('Mídia não encontrada.', { status: 404, code: 'PROFILE_MEDIA_NOT_FOUND' })
   }
 }
+
+export class FavoriteLimitReachedError extends AppError {
+  constructor(limit: number) {
+    super(`Você já salvou ${limit} imóveis. Remova algum favorito para salvar outro.`, {
+      status: 422,
+      code: 'FAVORITE_LIMIT_REACHED',
+    })
+  }
+}

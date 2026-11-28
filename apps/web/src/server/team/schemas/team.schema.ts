@@ -1,4 +1,6 @@
+import { validationRefinement } from '@server/shared/http/validation-messages'
 import '@server/openapi/zod-extend'
+import { isValidDocument } from '@shared/schemas/document-schema'
 import { z } from 'zod'
 
 import { locales } from '@/i18n/routing'
@@ -23,6 +25,15 @@ export const transferBrokerPortfolioRequestSchema = z
   })
   .strict()
   .openapi('TransferBrokerPortfolioRequest')
+
+export const shareBrokerPortfolioRequestSchema = z
+  .object({
+    ...transferBrokerPortfolioRequestSchema.omit({ destinationId: true }).shape,
+    destinationIds: z.array(z.string().trim().min(1).max(64)).min(1).max(50),
+    revoke: z.boolean().default(false),
+  })
+  .strict()
+  .openapi('ShareBrokerPortfolioRequest')
 
 export const deactivateBrokerRequestSchema = z
   .object({ destinationId: z.string().trim().min(1).max(64) })
@@ -56,6 +67,13 @@ export const acceptTeamInvitationRequestSchema = z
         ? 'Senha muito longa. Use menos caracteres.'
         : 'Senha deve ter pelo menos 8 caracteres.',
     ),
+    // The invited broker identifies with a CPF or with the CNPJ of their own company.
+    document: z
+      .string()
+      .trim()
+      .refine(isValidDocument, validationRefinement('documentInvalid'))
+      .transform((value) => value.replace(/\D/g, ''))
+      .openapi({ example: '529.982.247-25' }),
   })
   .strict()
   .openapi('AcceptTeamInvitationRequest')
@@ -68,7 +86,7 @@ const teamMemberSchema = z
     phone: z.string().nullable(),
     avatarUrl: z.string().nullable(),
     headline: z.string().nullable(),
-    specialties: z.array(z.string()),
+    segments: z.array(z.string()),
     hasPublicProfile: z.boolean(),
     active: z.boolean(),
     invitation: z

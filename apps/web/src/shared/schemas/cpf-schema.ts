@@ -2,8 +2,12 @@ import { z } from 'zod'
 
 import type { SchemaMessageTranslator } from '@shared/types'
 
+export function cpfDigits(value: string): string {
+  return value.replace(/\D/g, '')
+}
+
 export function isValidCpf(value: string): boolean {
-  const digits = value.replace(/\D/g, '')
+  const digits = cpfDigits(value)
   if (digits.length !== 11 || /^(\d)\1{10}$/.test(digits)) return false
 
   const calcCheckDigit = (base: string, startingFactor: number): number => {

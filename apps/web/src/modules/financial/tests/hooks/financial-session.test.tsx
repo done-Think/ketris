@@ -10,7 +10,13 @@ import { useDashboardAgendaNotifications } from '@shared/hooks/use-dashboard-age
 import { httpClient } from '@shared/lib/api/http-client'
 
 const { session } = vi.hoisted(() => ({
-  session: { user: { id: 'owner' }, tenantId: 'tenant', role: 'OWNER' },
+  session: {
+    user: { id: 'owner' },
+    tenantId: 'tenant',
+    role: 'OWNER',
+    scope: 'tenant',
+    accessToken: 'test-access-token',
+  },
 }))
 vi.mock('next-auth/react', () => ({
   useSession: () => ({ data: session, status: 'authenticated' }),

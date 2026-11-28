@@ -7,6 +7,7 @@ export type VerificationErrorCode =
   | 'INVALID_CAPTURE_STATE'
   | 'NO_ATTEMPTS_LEFT'
   | 'AGENCY_NAME_MISSING'
+  | 'INVITEE_NOT_ELIGIBLE'
   | 'CONSENT_TERMS_OUTDATED'
   | 'DOCUMENT_TYPE_NOT_ACCEPTED'
   | 'IMAGE_REQUIRED'
@@ -30,6 +31,7 @@ export type ApiErrorCode =
   | 'UNKNOWN'
   | 'PERSISTENCE_BUSY'
   | 'PERSISTENCE_UNAVAILABLE'
+  | 'STORAGE_UNAVAILABLE'
 
 export interface ApiErrorBody {
   code?: ApiErrorCode

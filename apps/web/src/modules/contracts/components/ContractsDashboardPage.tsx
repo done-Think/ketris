@@ -54,7 +54,7 @@ export function ContractsDashboardPage() {
     pageSize: model.pageSize,
   })
   const contracts = (query.data?.items ?? []).map((item) =>
-    mapContractListItemFromApi(item, presentation),
+    mapContractListItemFromApi(item, presentation, session?.tenantId),
   )
   const summary = query.data?.summary
   const metrics: ContractMetric[] = [
@@ -71,12 +71,12 @@ export function ContractsDashboardPage() {
     router.push({
       pathname: '/dashboard/contracts/[id]',
       params: { id: contract.id },
-      ...(action === 'edit-data' ? { query: { edit: '1' } } : {}),
-      ...(action === 'view-history'
-        ? { hash: 'history' }
+      ...(action === 'edit-data'
+        ? { query: { edit: '1' } }
         : action === 'view-documents'
-          ? { hash: 'documents' }
+          ? { query: { tab: 'documents' } }
           : {}),
+      ...(action === 'view-history' ? { hash: 'history' } : {}),
     })
   }
   return (
@@ -84,6 +84,7 @@ export function ContractsDashboardPage() {
       <Stack spacing={2} sx={styles.stack}>
         <ContractsDashboardHeader
           control={control}
+          renter={session?.role === 'RENTER'}
           onCreateContract={readOnly ? undefined : () => router.push('/dashboard/contracts/new')}
         />
         <ContractsFilters

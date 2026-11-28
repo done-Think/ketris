@@ -1,5 +1,6 @@
 import dayjs, { type Dayjs } from 'dayjs'
 import { AGENDA_BUSINESS_HOURS_START } from '@shared/lib/utils/agenda-scheduling'
+import { isAgendaOutcomeStatus } from '@shared/lib/utils/agenda-outcome'
 
 import type { DashboardNotificationItem } from '@shared/types/dashboard-notification'
 
@@ -13,16 +14,6 @@ import type {
 export const agendaVisibleDayCount = 5
 export const scheduleStartHour = AGENDA_BUSINESS_HOURS_START
 export const scheduleHourHeight = 62
-
-export function getEventOffsetTop(time: string, startHour = scheduleStartHour) {
-  const [hour = scheduleStartHour, minute = 0] = time.split(':').map(Number)
-
-  return (hour - startHour) * scheduleHourHeight + (minute / 60) * scheduleHourHeight
-}
-
-export function getEventHeight(durationMinutes: number) {
-  return Math.max((durationMinutes / 60) * scheduleHourHeight, 38)
-}
 
 function resolveDayjsLocale(locale: string) {
   if (locale.startsWith('pt')) return 'pt-br'
@@ -87,7 +78,11 @@ export function getAgendaNotifications({
     const notifications: DashboardNotificationItem[] = []
     const href = { pathname: '/dashboard/agenda' as const, query: { eventId: event.id } }
 
-    if (eventDate.isSame(today, 'day') && isVisitEvent(event)) {
+    if (
+      eventDate.isSame(today, 'day') &&
+      isVisitEvent(event) &&
+      !isAgendaOutcomeStatus(event.status)
+    ) {
       notifications.push({
         href,
         id: `${event.id}-today-visit`,

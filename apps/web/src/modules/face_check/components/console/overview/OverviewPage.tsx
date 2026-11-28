@@ -1,7 +1,7 @@
 'use client'
 
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
-import { Alert, Box, Button, Skeleton } from '@mui/material'
+import { Alert, Box, Button, Skeleton, Stack } from '@mui/material'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
@@ -38,8 +38,17 @@ export function OverviewPage() {
         }
       />
       <Alert severity="warning">{t('pilotWarning')}</Alert>
-      {overview.isPending ? <Skeleton variant="rounded" height={420} /> : null}
-      {overview.error ? <ErrorNotice error={overview.error} /> : null}
+      {overview.isLoading ? (
+        <Skeleton role="status" aria-label={t('loading')} variant="rounded" height={420} />
+      ) : null}
+      {overview.error ? (
+        <Stack spacing={2} alignItems="flex-start">
+          <ErrorNotice error={overview.error} />
+          <Button onClick={() => void overview.refetch()} disabled={overview.isFetching}>
+            {t('retry')}
+          </Button>
+        </Stack>
+      ) : null}
       {data ? (
         <>
           <KpiGrid overview={data} />

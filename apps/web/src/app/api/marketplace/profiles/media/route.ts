@@ -1,3 +1,4 @@
+import { resolveActorAccountType } from '@server/auth/resolve-actor-account-type'
 import { validationIssue } from '@server/shared/http/validation-messages'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
@@ -39,6 +40,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     actorId: actor.sub,
     actorTenantId: actor.tenantId,
     actorRole: actor.role,
+    actorAccountType: await resolveActorAccountType(actor.sub),
     target,
     filename: file.name,
     contentType: file.type,

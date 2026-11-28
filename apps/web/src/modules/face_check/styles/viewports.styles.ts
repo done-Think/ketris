@@ -126,7 +126,7 @@ export const faceViewportStyles = {
     display: 'grid',
     placeItems: 'center',
     bgcolor: capture.viewport,
-    mx: 0,
+    mx: 'auto',
   },
   silhouette: {
     position: 'absolute',

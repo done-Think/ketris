@@ -35,6 +35,7 @@ import type {
   MaintenanceProviderOption,
   MaintenanceProvidersDialogProps,
 } from '../types/maintenance-provider'
+import { formatMaintenancePhone } from '../utils/maintenance-phone'
 import { MaintenanceProviderForm } from './MaintenanceProviderForm'
 
 export function MaintenanceProvidersDialog(props: MaintenanceProvidersDialogProps) {
@@ -85,7 +86,7 @@ function MaintenanceProvidersList({ onClose }: MaintenanceProvidersDialogProps) 
       <Dialog open onClose={onClose} fullWidth maxWidth="md">
         <DialogTitle>{t('title')}</DialogTitle>
         <DialogContent>
-          <Stack spacing={2}>
+          <Stack spacing={2} sx={maintenanceStyles.contentStackSx}>
             <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
               <TextField
                 label={t('search')}
@@ -134,7 +135,9 @@ function MaintenanceProvidersList({ onClose }: MaintenanceProvidersDialogProps) 
                     <Typography fontWeight={700}>
                       {provider.name} {!provider.active && t('inactive')}
                     </Typography>
-                    <Typography>{provider.phone}</Typography>
+                    <Typography>
+                      {provider.phone && formatMaintenancePhone(provider.phone)}
+                    </Typography>
                     <Typography>{provider.email}</Typography>
                     <Typography sx={maintenanceStyles.typographySx}>{provider.notes}</Typography>
                   </Stack>

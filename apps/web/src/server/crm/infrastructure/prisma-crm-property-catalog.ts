@@ -3,6 +3,7 @@ import type { CrmPropertyCatalog } from '../application/ports/crm-property-catal
 import type { CrmDatabase, CrmScope } from '../types/prisma'
 import type { CrmPropertyFilters } from '../types/property'
 import { crmPropertyInclude, toCrmProperty } from './crm-property.mapper'
+import { crmPropertyAccessWhere } from './crm-property-access'
 
 export class PrismaCrmPropertyCatalog implements CrmPropertyCatalog {
   constructor(
@@ -11,8 +12,12 @@ export class PrismaCrmPropertyCatalog implements CrmPropertyCatalog {
   ) {}
   private where(): Prisma.PropertyWhereInput {
     return {
-      tenantId: this.scope.actorTenantId,
-      ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
+      AND: [
+        crmPropertyAccessWhere(
+          this.scope.actorTenantId,
+          this.scope.actorRole === 'AGENT' ? (this.scope.actorId ?? '') : undefined,
+        ),
+      ],
     }
   }
   async list(filters: CrmPropertyFilters) {

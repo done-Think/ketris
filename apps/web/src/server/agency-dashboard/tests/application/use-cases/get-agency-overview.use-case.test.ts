@@ -42,7 +42,6 @@ function createRepository(overrides?: Partial<AgencyOverviewRepository>): Agency
     getActiveBrokersCount: vi.fn().mockResolvedValue(3),
     getReceivedLeadsThisMonth: vi.fn().mockResolvedValue(4),
     getReceivedLeadsPreviousPeriod: vi.fn().mockResolvedValue(6),
-    getMonthlyReceivablePreviousMonth: vi.fn().mockResolvedValue(7000),
     getOccupancyPercentage: vi.fn().mockResolvedValue(75),
     getTopBrokers: vi.fn().mockResolvedValue([topBroker]),
     getRecentActivities: vi.fn().mockResolvedValue([activity]),
@@ -101,11 +100,45 @@ describe('GetAgencyOverviewUseCase', () => {
 
       const overview = await useCase.execute({ actorTenantId: 'tenant-1', actorRole })
 
-      expect(overview.kpis.monthlyReceivable).toBe(8500)
+      expect(overview.kpis.monthlyRevenue).toBe(8500)
       expect(overview.revenueSeries).toEqual([{ year: 2026, month: 9, total: 8500 }])
       expect(getSummary).toHaveBeenCalledWith('tenant-1', expect.any(Object), expect.any(Date))
     },
   )
+
+  it('shows the billed total of the current month as revenue, not only what is still open', async () => {
+    const useCase = new GetAgencyOverviewUseCase(
+      createRepository(),
+      createFinancialSummaryProvider({
+        execute: vi.fn().mockResolvedValue({
+          monthlyReceivable: 400,
+          overdueTotal: 0,
+          monthlySeries: [
+            { year: 2026, month: 10, total: 900 },
+            { year: 2026, month: 11, total: 1400 },
+          ],
+        }),
+      }),
+    )
+
+    const overview = await useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER' })
+
+    expect(overview.kpis.monthlyRevenue).toBe(1400)
+    expect(overview.kpis).not.toHaveProperty('monthlyReceivable')
+  })
+
+  it('shows zero revenue when the financial summary has no months', async () => {
+    const useCase = new GetAgencyOverviewUseCase(
+      createRepository(),
+      createFinancialSummaryProvider({
+        execute: vi.fn().mockResolvedValue({ overdueTotal: 0, monthlySeries: [] }),
+      }),
+    )
+
+    const overview = await useCase.execute({ actorTenantId: 'tenant-1', actorRole: 'OWNER' })
+
+    expect(overview.kpis.monthlyRevenue).toBe(0)
+  })
 
   it('lança ForbiddenError quando o ator é AGENT', async () => {
     const useCase = new GetAgencyOverviewUseCase(
@@ -143,8 +176,7 @@ describe('GetAgencyOverviewUseCase', () => {
         activeBrokersCount: 3,
         receivedLeadsThisMonth: 4,
         receivedLeadsPreviousPeriod: 6,
-        monthlyReceivable: 8500,
-        monthlyReceivablePreviousMonth: 7000,
+        monthlyRevenue: 8500,
         overdueTotal: 320,
         occupancyPercentage: 75,
       },
@@ -173,10 +205,6 @@ describe('GetAgencyOverviewUseCase', () => {
       'tenant-2',
       expect.any(Date),
     )
-    expect(repository.getMonthlyReceivablePreviousMonth).toHaveBeenCalledWith(
-      'tenant-2',
-      expect.any(Date),
-    )
     expect(repository.getOccupancyPercentage).toHaveBeenCalledWith('tenant-2')
     expect(repository.getTopBrokers).toHaveBeenCalledWith('tenant-2')
     expect(repository.getRecentActivities).toHaveBeenCalledWith('tenant-2')
@@ -186,7 +214,7 @@ describe('GetAgencyOverviewUseCase', () => {
     })
   })
 
-  it('usa a mesma data de referência para o mês atual e para a comparação com o mês anterior', async () => {
+  it('usa a mesma data de referência para o mês atual e para a comparação de leads', async () => {
     const repository = createRepository()
     const useCase = new GetAgencyOverviewUseCase(repository, createFinancialSummaryProvider())
 
@@ -194,9 +222,6 @@ describe('GetAgencyOverviewUseCase', () => {
 
     const referenceDate = vi.mocked(repository.getReceivedLeadsThisMonth).mock.calls[0][1]
     expect(vi.mocked(repository.getReceivedLeadsPreviousPeriod).mock.calls[0][1]).toBe(
-      referenceDate,
-    )
-    expect(vi.mocked(repository.getMonthlyReceivablePreviousMonth).mock.calls[0][1]).toBe(
       referenceDate,
     )
     expect(vi.mocked(repository.getNewPropertiesThisMonth).mock.calls[0][1]).toBe(referenceDate)

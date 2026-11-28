@@ -23,7 +23,8 @@ import { toDashboardLead } from '../utils/map-dashboard-lead'
 import { ConvertLeadDialog } from './ConvertLeadDialog'
 import { CreateLeadDialog } from './CreateLeadDialog'
 import { CrmListLayout } from './CrmListLayout'
-import { LeadContactDialog } from './LeadContactDialog'
+import { LinkLeadContactDialog } from './interactions/LinkLeadContactDialog'
+import { TrackedLeadContactDialog } from './interactions/TrackedLeadContactDialog'
 import { LeadsCards } from './leads-list/LeadsCards'
 import { LeadsHeader } from './leads-list/LeadsHeader'
 import { LeadsStatusFilters } from './leads-list/LeadsStatusFilters'
@@ -58,10 +59,19 @@ export function LeadsDashboardPage() {
   const [selectedContactId, setSelectedContactId] = useState<string | null | undefined>(undefined)
   const contactId = selectedContactId === undefined ? linkedLeadId : selectedContactId
   const contactQuery = useLead(contactId)
+  const [linkLead, setLinkLead] = useState<DashboardLead | null>(null)
   const [convertLead, setConvertLead] = useState<DashboardLead | null>(null)
 
   function handleStageChange(leadId: string, stage: LeadApiStage) {
-    updateLeadStage.mutate({ leadId, stage })
+    updateLeadStage.mutate(
+      { leadId, stage },
+      {
+        onSuccess: () => {
+          const moved = leads.find((item) => item.id === leadId) ?? contactLead
+          if (moved && !moved.contactId) setLinkLead(moved)
+        },
+      },
+    )
   }
 
   function handleSearchChange(value: string) {
@@ -131,16 +141,19 @@ export function LeadsDashboardPage() {
         open={isCreateLeadDialogOpen}
         onClose={() => setIsCreateLeadDialogOpen(false)}
       />
-      <LeadContactDialog
+      <TrackedLeadContactDialog
+        key={contactLead?.id ?? 'none'}
         lead={contactLead}
         open={Boolean(contactLead)}
         onClose={() => setSelectedContactId(null)}
+        onLinkContact={setLinkLead}
         onStageChange={handleStageChange}
         onConvertRequest={(lead) => {
           setSelectedContactId(null)
           setConvertLead(lead)
         }}
       />
+      <LinkLeadContactDialog lead={linkLead} onClose={() => setLinkLead(null)} />
       <ConvertLeadDialog
         lead={convertLead}
         open={Boolean(convertLead)}

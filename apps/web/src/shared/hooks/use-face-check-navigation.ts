@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { API_CONTRACT_HEADER, API_CONTRACT_VERSION } from '@shared/config/api-contract'
+import { httpClient } from '@shared/lib/api/http-client'
 
 export function useFaceCheckNavigation() {
   const { data: session, status } = useSession()
@@ -15,15 +15,13 @@ export function useFaceCheckNavigation() {
   useEffect(() => {
     if (!eligible || !token) return
     const controller = new AbortController()
-    void fetch('/api/face_check/access', {
-      headers: { Authorization: `Bearer ${token}`, [API_CONTRACT_HEADER]: API_CONTRACT_VERSION },
-      cache: 'no-store',
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        const result: { allowed?: boolean; candidateVerifications?: boolean } = response.ok
-          ? await response.json()
-          : {}
+    void httpClient
+      .get<{ allowed?: boolean; candidateVerifications?: boolean }>('/face_check/access', {
+        headers: { Authorization: `Bearer ${token}` },
+        sessionAccessToken: token,
+        signal: controller.signal,
+      })
+      .then((result) => {
         if (!controller.signal.aborted)
           setAccess({
             scope,
@@ -39,5 +37,9 @@ export function useFaceCheckNavigation() {
   }, [eligible, token, scope])
 
   const ready = eligible && access.scope === scope
-  return { canManage: ready && access.allowed, hasRequests: ready && access.candidateVerifications }
+  return {
+    canManage: ready && access.allowed,
+    hasRequests: ready && access.candidateVerifications,
+    isLoading: eligible && !ready,
+  }
 }

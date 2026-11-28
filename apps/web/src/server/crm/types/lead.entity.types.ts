@@ -2,6 +2,9 @@ import type { LeadSource } from './lead-source'
 export type LeadStage = 'NEW' | 'IN_CONTACT' | 'VISIT_SCHEDULED' | 'PROPOSAL'
 
 export interface Lead {
+  accessUserIds?: readonly string[]
+  contactId?: string | null
+  lastContactAt?: Date | null
   propertyId?: string | null
   responsibleName?: string
   id: string
@@ -21,6 +24,7 @@ export interface Lead {
 }
 
 export interface NewLead {
+  contactId?: string | null
   propertyId?: string | null
   tenantId: string
   responsibleId: string
@@ -37,3 +41,5 @@ export interface LeadUpdate {
   stage?: LeadStage
   notes?: string | null
 }
+
+export type LeadContactDetails = Partial<Pick<Lead, 'name' | 'email' | 'phone'>>

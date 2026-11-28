@@ -16,6 +16,11 @@ export interface AgendaPropertyOptionsPage {
   pageSize: number
 }
 
+export interface AgendaPropertySummary extends AgendaPropertyOption {
+  accessible: boolean
+}
+
 export interface PreparedAgendaPropertySummary {
   propertyLabel: string | null
+  propertyAccessible: boolean
 }

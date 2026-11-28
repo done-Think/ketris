@@ -1,5 +1,38 @@
 import type { AuthTestEmail } from '../../types/auth-mailbox'
 
+// A valid CNPJ that differs on every run, because a company can register only once.
+function uniqueCnpj() {
+  const base = `${Date.now()}`.slice(-8).padStart(8, '0') + '0001'
+  const digits = [...base].map(Number)
+  const check = (values: number[]) => {
+    const weights =
+      values.length === 12
+        ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    const rest = values.reduce((sum, value, index) => sum + value * weights[index], 0) % 11
+    return rest < 2 ? 0 : 11 - rest
+  }
+  const first = check(digits)
+  const second = check([...digits, first])
+  return [...digits, first, second].join('')
+}
+
+// The picker is placed against the field when it opens. After a viewport change the sidebar
+// appears or hides, so wait until the field stops moving before opening it.
+function waitForSettledPosition(selector: string, settledForMs = 500) {
+  let previous = ''
+  let unchangedSince = Date.now()
+  cy.get(selector).should(($element) => {
+    const { top, left, width } = $element[0].getBoundingClientRect()
+    const current = `${top}:${left}:${width}`
+    if (current !== previous) {
+      previous = current
+      unchangedSince = Date.now()
+    }
+    expect(Date.now() - unchangedSince, `${selector} position settled`).to.be.at.least(settledForMs)
+  })
+}
+
 describe('Agency public profile defaults', () => {
   const suffix = Date.now()
   const email = `agency-profile-${suffix}@example.test`
@@ -53,10 +86,10 @@ describe('Agency public profile defaults', () => {
     cy.get('input[name="displayName"]').should('have.value', 'Tenant E2E')
     cy.get('input[name="email"]').should('have.value', email)
     cy.get('input[name="phone"]').should('have.value', '(35) 99798-9991')
-    cy.contains('p', /^URL do logo$/)
+    cy.contains('h5', /^Aparência$/)
       .parent()
-      .find('img')
-      .should('have.attr', 'src', avatarUrl)
+      .find(`img[src="${avatarUrl}"]`)
+      .should('exist')
 
     cy.contains('button', /^Editar$/).click()
     cy.get('input[name="phone"]').clear().type('3536221234').should('have.value', '(35) 3622-1234')
@@ -74,10 +107,10 @@ describe('Agency public profile defaults', () => {
     cy.reload()
     cy.get('input[name="email"]').should('have.value', publicEmail)
     cy.get('input[name="phone"]').should('have.value', '(35) 3622-1234')
-    cy.contains('p', /^URL do logo$/)
+    cy.contains('h5', /^Aparência$/)
       .parent()
-      .find('img')
-      .should('have.attr', 'src', avatarUrl)
+      .find(`img[src="${avatarUrl}"]`)
+      .should('exist')
   })
 
   const itWithMailbox = Cypress.expose('AUTH_MAILBOX_ENABLED') ? it : it.skip
@@ -92,6 +125,7 @@ describe('Agency public profile defaults', () => {
       cy.get('input[name="companyName"]').type('Imobiliária Nova')
       cy.get('input[name="email"]').type(signupEmail)
       cy.get('input[name="phone"]').type('35997989991')
+      cy.get('input[name="cnpj"]').type(uniqueCnpj())
       cy.get('input[name="creci"]').type(creci)
       cy.get('input[name="password"]').type(password, { log: false })
       cy.get('input[name="passwordConfirmation"]').type(password, { log: false })
@@ -170,24 +204,18 @@ describe('Agency public profile defaults', () => {
     cy.contains('button', 'Entrar').click()
     cy.location('pathname').should('eq', '/pt/dashboard/public-profile/agency')
     cy.contains('button', /^Editar$/).click()
-    for (const [name, color] of Object.entries({
-      primaryColor: '#123456',
-      secondaryColor: '#654321',
-      backgroundColor: '#fedcba',
-    })) {
-      cy.get(`input[name="${name}"]`)
-        .should('have.attr', 'type', 'color')
-        .then(($input) => {
-          const input = $input[0] as HTMLInputElement
-          const view = input.ownerDocument.defaultView!
-          Object.getOwnPropertyDescriptor(view.HTMLInputElement.prototype, 'value')!.set!.call(
-            input,
-            color,
-          )
-          input.dispatchEvent(new view.Event('input', { bubbles: true }))
-          input.dispatchEvent(new view.Event('change', { bubbles: true }))
-        })
-    }
+    cy.contains('button', /^Personalizar marca$/).click()
+    cy.get('[role="dialog"]').within(() => {
+      for (const [name, color] of Object.entries({
+        primaryColor: '#123456',
+        secondaryColor: '#654321',
+        backgroundColor: '#FEDCBA',
+      })) {
+        cy.get(`input[name="${name}"]`).clear().type(color).should('have.value', color)
+      }
+      cy.contains('button', /^Aplicar$/).click()
+    })
+    cy.get('[role="dialog"]').should('not.exist')
     cy.contains(
       'Opcional. Você pode publicar sem corretores em destaque e adicioná-los depois.',
     ).should('exist')
@@ -197,14 +225,17 @@ describe('Agency public profile defaults', () => {
       [375, 812],
     ]) {
       cy.viewport(width, height)
-      cy.get('input[role="combobox"]').scrollIntoView().click()
+      waitForSettledPosition('input[role="combobox"]')
+      cy.get('input[role="combobox"]').click({ scrollBehavior: 'center' })
       cy.get('.MuiAutocomplete-popper').should('have.attr', 'data-popper-placement', 'bottom-start')
-      cy.get('input[role="combobox"]').then(($input) => {
-        cy.get('.MuiAutocomplete-popper').should(($popup) => {
-          expect($popup[0].getBoundingClientRect().top).to.be.at.least(
-            $input[0].getBoundingClientRect().bottom,
-          )
-        })
+      cy.get('body').should(($body) => {
+        const $input = $body.find('input[role="combobox"]')
+        const $popup = $body.find('.MuiAutocomplete-popper')
+        expect($input).to.have.length(1)
+        expect($popup).to.have.length(1)
+        expect($popup[0].getBoundingClientRect().top).to.be.at.least(
+          $input[0].getBoundingClientRect().bottom,
+        )
       })
       cy.get('input[role="combobox"]').type('{esc}')
     }
@@ -217,7 +248,7 @@ describe('Agency public profile defaults', () => {
       expect(request.body).to.include({
         primaryColor: '#123456',
         secondaryColor: '#654321',
-        backgroundColor: '#fedcba',
+        backgroundColor: '#FEDCBA',
       })
     })
     cy.wait('@publishProfile').then(({ response }) => {
@@ -227,13 +258,13 @@ describe('Agency public profile defaults', () => {
       expect(response?.body.profile).to.include({
         primaryColor: '#123456',
         secondaryColor: '#654321',
-        backgroundColor: '#fedcba',
+        backgroundColor: '#FEDCBA',
       })
     })
     cy.reload()
-    cy.get('input[name="primaryColor"]').should('have.value', '#123456')
-    cy.get('input[name="secondaryColor"]').should('have.value', '#654321')
-    cy.get('input[name="backgroundColor"]').should('have.value', '#fedcba')
+    cy.get('[aria-label="Cor dos destaques: #123456"]').should('exist')
+    cy.get('[aria-label="Cor do nome: #654321"]').should('exist')
+    cy.get('[aria-label="Fundo da marca: #FEDCBA"]').should('exist')
     cy.visit(`/pt/imobiliarias/${tenantId}`)
     cy.get('h1').should('contain', displayName)
     cy.contains('h5', 'Equipe em destaque').should('not.exist')

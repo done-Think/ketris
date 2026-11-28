@@ -26,6 +26,9 @@ export class RegisterTenantOwnerUseCase {
       status: SELF_REGISTERED_TENANT_STATUS,
       phone: input.phone,
       creci: input.creci,
+      cpf: input.cpf,
+      document: input.document,
+      cnpj: input.cnpj,
       termsAcceptedAt: new Date(),
       createBrokerProfile: input.profile === 'broker',
     })

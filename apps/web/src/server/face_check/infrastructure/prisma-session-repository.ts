@@ -121,9 +121,10 @@ export class PrismaSessionRepository implements SessionRepository {
     record.session.contact = email
     for (const event of record.session.timeline)
       if (event.actor === 'operator') event.actor = actor.actorId
-    const candidateUserId = await new PrismaFaceCheckCandidateLookup(
-      this.access.database,
-    ).findForContact(actor.tenantId, email)
+    const candidateLookup = new PrismaFaceCheckCandidateLookup(this.access.database)
+    if (await candidateLookup.isRegisteredNonRenter(email))
+      throw new FaceCheckError('INVITEE_NOT_ELIGIBLE', 422)
+    const candidateUserId = await candidateLookup.findForContact(actor.tenantId, email)
     await this.access.database.faceCheckSession.create({
       data: {
         id: record.session.id,

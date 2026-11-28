@@ -1,5 +1,7 @@
 'use client'
 
+import { BrokerShareDialog } from './dialogs/BrokerShareDialog'
+
 import PersonAddAlt1OutlinedIcon from '@mui/icons-material/PersonAddAlt1Outlined'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import {
@@ -204,10 +206,21 @@ export function BrokerTeamDashboardPage({ renderMeetingDialog }: BrokerTeamDashb
           {dialog?.type === 'editGoal' ? (
             <BrokerGoalDialog member={dialog.member} onClose={closeDialog} />
           ) : null}
+          {dialog?.type === 'sharePortfolio' || dialog?.type === 'revokePortfolio' ? (
+            <BrokerShareDialog
+              key={dialog.type}
+              member={dialog.member}
+              members={members}
+              self={selfDestination}
+              revoke={dialog.type === 'revokePortfolio'}
+              onClose={closeDialog}
+            />
+          ) : null}
           {dialog?.type === 'transferPortfolio' ? (
             <BrokerTransferDialog
               member={dialog.member}
-              destinations={destinations}
+              members={members}
+              self={selfDestination}
               onClose={closeDialog}
             />
           ) : null}

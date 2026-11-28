@@ -1,3 +1,4 @@
+import { requireDashboardFeature } from '@shared/lib/auth/require-dashboard-feature'
 import type { ReactNode } from 'react'
 import { Box } from '@mui/material'
 import { getServerSession } from 'next-auth'
@@ -36,6 +37,8 @@ export default async function ChargesPreviewLayout({
     if (session?.authUnavailable) return <AuthenticationUnavailable />
     if (!session || session.scope !== 'tenant')
       redirect(getPathname({ href: '/login', locale: resolveLocale(locale) }))
+
+    await requireDashboardFeature('charges')
   }
 
   return (

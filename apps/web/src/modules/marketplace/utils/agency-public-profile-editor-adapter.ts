@@ -1,10 +1,16 @@
 import { buildAgencyPublicProfileHref } from '@shared/utils/public-profile-slug'
 
 import type { AgencyProfile } from '../types/agency'
+import type {
+  AgencyBrandDialogMode,
+  AgencyBrandFormValues,
+  AgencyBrandRequiredField,
+} from '../types/agency-brand-editor'
 import type { AgencyPublicProfileEditorFormValues } from '../types/profile-editor'
 import type { PublicAgencyProfile } from '../types/public-agency-profile'
 import type { AppLocale } from '@/i18n/types/locale.types'
 import type { PropertyText } from '../types/property-presentation'
+import { isHexColor } from './brand-color-contrast'
 import { formatCompactCurrency } from './search-results'
 
 export const emptyValues: AgencyPublicProfileEditorFormValues = {
@@ -25,6 +31,40 @@ export const emptyValues: AgencyPublicProfileEditorFormValues = {
   logoUrl: '',
   bannerUrl: '',
   team: [],
+}
+
+export const agencyBrandFields = [
+  'backgroundColor',
+  'primaryColor',
+  'secondaryColor',
+  'logoUrl',
+  'bannerUrl',
+] as const satisfies readonly (keyof AgencyBrandFormValues)[]
+
+export function pickBrandValues(
+  values: AgencyPublicProfileEditorFormValues,
+): AgencyBrandFormValues {
+  return {
+    backgroundColor: values.backgroundColor,
+    primaryColor: values.primaryColor,
+    secondaryColor: values.secondaryColor,
+    logoUrl: values.logoUrl,
+    bannerUrl: values.bannerUrl,
+  }
+}
+
+export function isAgencyBrandFieldReady(
+  field: AgencyBrandRequiredField,
+  values: AgencyBrandFormValues,
+): boolean {
+  return field === 'backgroundColor' ? isHexColor(values.backgroundColor) : Boolean(values[field])
+}
+
+// A profile that already has a brand opens the single-screen panel; a new one gets the setup steps.
+export function getInitialAgencyBrandDialogMode(
+  profile: Pick<PublicAgencyProfile, 'backgroundColor' | 'bannerUrl'> | null,
+): AgencyBrandDialogMode {
+  return profile?.backgroundColor || profile?.bannerUrl ? 'panel' : 'wizard'
 }
 
 function splitList(value: string): string[] {

@@ -11,14 +11,18 @@ import {
 } from '@server/team/domain/team-invitation-token'
 
 import { GET as getTeam } from '../route'
+import { POST as inviteBroker } from '../invitations/route'
 import { PUT as setGoal } from '../members/[id]/goal/route'
 import { POST as deactivate } from '../members/[id]/deactivate/route'
+import { POST as transfer } from '../members/[id]/transfer/route'
 import { GET as previewInvitation, POST as acceptInvitation } from '../invitations/accept/route'
+import { DELETE as rejectRequest } from '../membership-requests/[id]/route'
 
 describe('/api/team (integração)', () => {
   const tokenService = new JoseTokenService()
   let tenantId: string
   let ownerToken: string
+  let ownerId: string
   let agentToken: string
   let agentId: string
   let otherAgentId: string
@@ -64,7 +68,9 @@ describe('/api/team (integração)', () => {
         data: { name: 'Equipe Rotas', slug: `team-routes-${randomUUID()}` },
       })
     ).id
-    ownerToken = (await seedUser('Dona', 'OWNER')).token
+    const owner = await seedUser('Dona', 'OWNER')
+    ownerToken = owner.token
+    ownerId = owner.user.id
     const agent = await seedUser('Marina', 'AGENT')
     agentToken = agent.token
     agentId = agent.user.id
@@ -94,6 +100,52 @@ describe('/api/team (integração)', () => {
     expect((await getTeam(request('/team'))).status).toBe(401)
   })
 
+  it.each(['BROKER', 'INDIVIDUAL'] as const)(
+    'não abre a equipe para o dono de conta %s, que não é imobiliária',
+    async (accountType) => {
+      const tenant = await prisma.tenant.create({
+        data: {
+          name: `Conta ${accountType}`,
+          slug: `team-${accountType}-${randomUUID()}`,
+          accountType,
+        },
+      })
+      try {
+        const user = await prisma.user.create({
+          data: {
+            tenantId: tenant.id,
+            name: 'Dono',
+            email: `dono-${randomUUID()}@team.example.test`,
+            passwordHash: 'hash-fake',
+            role: 'OWNER',
+          },
+        })
+        const token = await tokenService.sign({
+          id: user.id,
+          tenantId: user.tenantId,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          active: user.active,
+          membershipApprovedAt: user.membershipApprovedAt,
+        })
+
+        expect((await getTeam(request('/team', 'GET', token))).status).toBe(403)
+        const invite = await inviteBroker(
+          request('/team/invitations', 'POST', token, {
+            name: 'Bruna',
+            email: `bruna-${randomUUID()}@team.example.test`,
+            locale: 'pt-BR',
+          }),
+        )
+        expect(invite.status).toBe(403)
+        expect(await prisma.user.count({ where: { tenantId: tenant.id } })).toBe(1)
+      } finally {
+        await prisma.tenant.delete({ where: { id: tenant.id } })
+      }
+    },
+  )
+
   it('grava a meta com o autor e valida o corpo', async () => {
     const response = await setGoal(
       request(`/team/members/${agentId}/goal`, 'PUT', ownerToken, { monthlySales: 6 }),
@@ -110,6 +162,70 @@ describe('/api/team (integração)', () => {
         )
       ).status,
     ).toBe(400)
+  })
+
+  it('transfere imóveis da própria imobiliária para um corretor, só dentro dela', async () => {
+    const property = await prisma.property.create({
+      data: {
+        tenantId,
+        responsibleId: ownerId,
+        title: 'Casa da imobiliária',
+        purpose: 'SALE',
+        type: 'HOUSE',
+        price: 500000,
+        status: 'PUBLISHED',
+      },
+    })
+    const otherTenantId = (
+      await prisma.tenant.create({
+        data: { name: 'Outra Imobiliária', slug: `team-routes-other-${randomUUID()}` },
+      })
+    ).id
+    const otherOwner = await prisma.user.create({
+      data: {
+        tenantId: otherTenantId,
+        name: 'Outra Dona',
+        email: `outra-${randomUUID()}@team.example.test`,
+        passwordHash: 'hash-fake',
+        role: 'OWNER',
+      },
+    })
+    const otherOwnerToken = await tokenService.sign({
+      id: otherOwner.id,
+      tenantId: otherOwner.tenantId,
+      name: otherOwner.name,
+      email: otherOwner.email,
+      role: otherOwner.role,
+      active: otherOwner.active,
+      membershipApprovedAt: otherOwner.membershipApprovedAt,
+    })
+    const body = {
+      destinationId: otherAgentId,
+      properties: true,
+      leads: false,
+      opportunities: false,
+      futureEvents: false,
+    }
+    const send = (token?: string) =>
+      transfer(request(`/team/members/${ownerId}/transfer`, 'POST', token, body), params(ownerId))
+
+    try {
+      expect((await send()).status).toBe(401)
+      expect((await send(agentToken)).status).toBe(403)
+      expect((await send(otherOwnerToken)).status).toBe(404)
+
+      const response = await send(ownerToken)
+      expect(response.status).toBe(200)
+      expect((await response.json()).transferred).toMatchObject({ properties: 1 })
+      expect(
+        await prisma.property.findUnique({
+          where: { id: property.id },
+          select: { responsibleId: true, updatedById: true },
+        }),
+      ).toEqual({ responsibleId: otherAgentId, updatedById: ownerId })
+    } finally {
+      await prisma.tenant.delete({ where: { id: otherTenantId } })
+    }
   })
 
   it('exige destino para desativar', async () => {
@@ -134,6 +250,48 @@ describe('/api/team (integração)', () => {
       opportunities: 0,
       futureEvents: 0,
     })
+  })
+
+  it('recusa um pedido de vínculo pendente uma única vez e só na própria imobiliária', async () => {
+    const pendingRequest = (tenant: string) =>
+      prisma.user.create({
+        data: {
+          tenantId: tenant,
+          name: 'Pedido',
+          email: `pedido-${randomUUID()}@team.example.test`,
+          passwordHash: 'hash-fake',
+          role: 'AGENT',
+          membershipApprovedAt: null,
+        },
+      })
+    const pending = await pendingRequest(tenantId)
+    const otherTenantId = (
+      await prisma.tenant.create({
+        data: { name: 'Outra Imobiliária', slug: `team-routes-other-${randomUUID()}` },
+      })
+    ).id
+    const otherPending = await pendingRequest(otherTenantId)
+    const activeAgentToken = (await seedUser('Rafael', 'AGENT')).token
+    const reject = (id: string, token?: string) =>
+      rejectRequest(request(`/team/membership-requests/${id}`, 'DELETE', token), params(id))
+
+    try {
+      expect((await reject(pending.id)).status).toBe(401)
+      expect((await reject(pending.id, activeAgentToken)).status).toBe(403)
+      expect((await reject(otherAgentId, ownerToken)).status).toBe(404)
+      expect((await reject(otherPending.id, ownerToken)).status).toBe(404)
+
+      const response = await reject(pending.id, ownerToken)
+      expect(response.status).toBe(204)
+      expect(await prisma.user.findUnique({ where: { id: pending.id } })).toBeNull()
+      expect(await prisma.user.findUnique({ where: { id: otherPending.id } })).not.toBeNull()
+
+      const again = await reject(pending.id, ownerToken)
+      expect(again.status).toBe(404)
+      expect((await again.json()).error.code).toBe('TEAM_MEMBERSHIP_REQUEST_NOT_FOUND')
+    } finally {
+      await prisma.tenant.delete({ where: { id: otherTenantId } })
+    }
   })
 
   it('aceita o convite pelo link público uma única vez', async () => {
@@ -171,6 +329,7 @@ describe('/api/team (integração)', () => {
         request('/team/invitations/accept', 'POST', undefined, {
           token,
           password: 'senha-forte-123',
+          document: '529.982.247-25',
         }),
       )
     expect((await accept()).status).toBe(200)

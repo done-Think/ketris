@@ -46,6 +46,56 @@ describe('HttpClient — refresh de token em respostas 401', () => {
     vi.mocked(axios.create).mock.results.at(-1)?.value?.mockReset()
   })
 
+  it('does not refresh or replay a request from a previous account', async () => {
+    const client = new HttpClient()
+    const { instance, onRejected } = getResponseErrorHandler()
+    const handler = vi.fn().mockResolvedValue('new-token')
+    client.setAuthToken('current-account-token')
+    client.setUnauthorizedHandler(handler)
+    const error = fakeUnauthorizedError({ sessionAccessToken: 'previous-account-token' })
+    await expect(onRejected(error)).rejects.toBe(error)
+    expect(handler).not.toHaveBeenCalled()
+    expect(instance).not.toHaveBeenCalled()
+  })
+
+  it('recovers a scoped request with its renewed session token', async () => {
+    const client = new HttpClient()
+    const { instance, onRejected } = getResponseErrorHandler()
+    client.setAuthToken('current-token')
+    client.setTenant('tenant-a')
+    client.setUnauthorizedHandler(async () => {
+      client.setAuthToken('renewed-token')
+      return 'renewed-token'
+    })
+    instance.mockResolvedValue({ data: 'recovered' })
+    await expect(
+      onRejected(fakeUnauthorizedError({ sessionAccessToken: 'current-token' })),
+    ).resolves.toEqual({ data: 'recovered' })
+    expect(instance).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer renewed-token' }),
+      }),
+    )
+  })
+
+  it('does not replay an aborted scoped request after refresh', async () => {
+    const client = new HttpClient()
+    const { instance, onRejected } = getResponseErrorHandler()
+    const controller = new AbortController()
+    client.setAuthToken('current-token')
+    client.setUnauthorizedHandler(async () => {
+      controller.abort()
+      client.setAuthToken('renewed-token')
+      return 'renewed-token'
+    })
+    const error = fakeUnauthorizedError({
+      sessionAccessToken: 'current-token',
+      signal: controller.signal,
+    })
+    await expect(onRejected(error)).rejects.toBe(error)
+    expect(instance).not.toHaveBeenCalled()
+  })
+
   it('declares the English contract and never retries a mutation rejected for an old contract', async () => {
     const client = new HttpClient()
     expect(axios.create).toHaveBeenLastCalledWith(

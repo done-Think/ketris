@@ -17,6 +17,14 @@ const event = (overrides: Partial<AgendaEvent> = {}) =>
   }) as AgendaEvent
 
 describe('assertCanManageAgendaEvent', () => {
+  it('keeps explicitly linked brokers read-only without restricting the responsible broker', () => {
+    const shared = event({
+      participants: [{ id: 'guest', name: 'Guest', email: 'guest@example.test' }],
+    })
+    expect(() => assertCanManageAgendaEvent('AGENT', 'guest', shared)).toThrow()
+    expect(() => assertCanManageAgendaEvent('AGENT', 'agent-1', shared)).not.toThrow()
+    expect(() => assertCanManageAgendaEvent('OWNER', 'owner-1', shared)).not.toThrow()
+  })
   it('o OWNER gerencia qualquer evento da imobiliária', () => {
     expect(() =>
       assertCanManageAgendaEvent('OWNER', 'owner-1', event({ internal: true })),

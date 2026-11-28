@@ -71,7 +71,7 @@ export interface ContractManageScope {
 }
 
 export type ContractReadScope =
-  | ({ kind: 'tenant'; tenantId: string } & ContractManageScope)
+  | ({ kind: 'tenant'; tenantId: string; landlordUserId?: string } & ContractManageScope)
   | { kind: 'party'; userId: string }
   | { kind: 'propertyOwner'; tenantId: string; ownerId: string }
 
@@ -91,6 +91,8 @@ export interface ContractListFilters {
 export interface ContractListItem {
   canEdit: boolean
   id: string
+  tenantId: string
+  agencyName: string
   code: string
   opportunityId: string
   propertyId: string

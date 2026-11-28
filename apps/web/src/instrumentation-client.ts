@@ -11,6 +11,7 @@ import {
   faceCheckPrivateSelector,
   faceCheckTracesSampler,
 } from '@shared/lib/face-check-telemetry-privacy'
+import { withInstagramTelemetry } from '@shared/lib/telemetry/instagram-telemetry'
 
 const replayOptions: Parameters<typeof Sentry.replayIntegration>[0] = {
   maskAllText: true,
@@ -46,10 +47,12 @@ if (!Sentry.isInitialized()) {
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
     environment: process.env.NEXT_PUBLIC_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development',
     tracesSampler: faceCheckTracesSampler(process.env.NODE_ENV === 'development' ? 1.0 : 0.1),
-    beforeSend: beforeSendFaceCheckEvent,
-    beforeSendTransaction: beforeSendFaceCheckTransaction,
-    beforeBreadcrumb: beforeFaceCheckBreadcrumb,
-    beforeSendLog: beforeFaceCheckLog,
+    ...withInstagramTelemetry({
+      beforeSend: beforeSendFaceCheckEvent,
+      beforeSendTransaction: beforeSendFaceCheckTransaction,
+      beforeBreadcrumb: beforeFaceCheckBreadcrumb,
+      beforeSendLog: beforeFaceCheckLog,
+    }),
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
     integrations: [faceCheckPrivacyIntegration()],

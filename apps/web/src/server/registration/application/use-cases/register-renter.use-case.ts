@@ -30,6 +30,7 @@ export class RegisterRenterUseCase {
       role: 'RENTER',
       pendingApproval: false,
       phone: input.phone,
+      cpf: input.cpf,
       termsAcceptedAt: new Date(),
       createBrokerProfile: false,
     })

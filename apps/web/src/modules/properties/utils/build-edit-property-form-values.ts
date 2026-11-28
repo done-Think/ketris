@@ -13,6 +13,7 @@ function toDashboardPurpose(purpose: Property['purpose']): CreatePropertyPurpose
 
 export function buildEditPropertyFormValues(property: Property): CreateDashboardPropertyFormValues {
   return {
+    brokerIds: property.brokerIds ?? [],
     ownerUserId: property.ownerUserId ?? '',
     ownerContact: property.ownerContact ?? null,
     complement: property.address?.complement ?? '',
@@ -26,17 +27,21 @@ export function buildEditPropertyFormValues(property: Property): CreateDashboard
     city: property.address?.city ?? '',
     state: property.address?.state ?? '',
     zipCode: property.address?.zipCode ?? '',
-    bedrooms: property.characteristics.bedrooms ?? 0,
-    bathrooms: property.characteristics.bathrooms ?? 0,
-    parkingSpaces: property.characteristics.parkingSpots ?? 0,
-    area: property.characteristics.areaSqm ?? 0,
+    bedrooms: property.characteristics.bedrooms ?? '',
+    bathrooms: property.characteristics.bathrooms ?? '',
+    parkingSpaces: property.characteristics.parkingSpots ?? '',
+    area: property.characteristics.areaSqm ?? '',
     features: property.listing.amenities,
     media: property.media.map((item) => ({ url: item.url, type: item.type, order: item.order })),
     mainValue: property.values.price,
     rentalValue: property.values.rentalPrice ?? 0,
     condominium: property.values.condoFee ?? 0,
     propertyTax: property.values.propertyTax ?? 0,
+    instagramEnabled: false,
+    instagramCaption: '',
+    instagramImageUrls: [],
     negotiationTerm: property.listing.negotiationTerms ?? '',
+    negotiationConditions: property.listing.negotiationConditions ?? [],
     publishingOptions: createPropertyPublishingOptions.filter(
       (_, index) =>
         [

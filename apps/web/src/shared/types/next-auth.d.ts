@@ -6,6 +6,7 @@ import type { UserRole } from '@shared/types/user-role'
 import type { PlatformAdminRole } from '@shared/types/user-role'
 
 type SessionScope = 'tenant' | 'platform'
+type TenantAccountType = 'INDIVIDUAL' | 'BROKER' | 'AGENCY'
 
 declare module 'next-auth' {
   interface User {
@@ -14,6 +15,7 @@ declare module 'next-auth' {
     scope: SessionScope
     tenantId?: string
     role?: UserRole
+    accountType?: TenantAccountType
     platformRole?: PlatformAdminRole
     sessionVersion?: number
   }
@@ -25,6 +27,7 @@ declare module 'next-auth' {
     scope?: SessionScope
     tenantId?: string
     role?: UserRole
+    accountType?: TenantAccountType
     platformRole?: PlatformAdminRole
     user: { id: string } & DefaultSession['user']
   }
@@ -40,6 +43,7 @@ declare module 'next-auth/jwt' {
     scope?: SessionScope
     tenantId?: string
     role?: UserRole
+    accountType?: TenantAccountType
     platformRole?: PlatformAdminRole
     sessionVersion?: number
   }

@@ -27,9 +27,17 @@ export function ContactsList({
   onEditContact,
   onOpenInteractions,
   onOpenMoreOptions,
+  onAddLead,
+  onContactAction,
 }: ContactsListProps = {}) {
   const t = useTranslations('crm.contacts')
-  const actions = { onEditContact, onOpenInteractions, onOpenMoreOptions }
+  const actions = {
+    onEditContact,
+    onOpenInteractions,
+    onOpenMoreOptions,
+    onAddLead,
+    onContactAction,
+  }
   return (
     <CrmListLayout
       isLoading={isLoading}

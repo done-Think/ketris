@@ -7,6 +7,7 @@ import type { MaintenanceActor, MaintenanceUserLinkInput } from '../types/mainte
 import type { MaintenanceContractPartyLink } from '../types/prisma-maintenance-ticket-repository'
 import { activityData, contractInclude } from './maintenance-ticket-mapper'
 import { maintenanceMutationAuthor } from './maintenance-mutation-author'
+import { recordPropertyFieldHistory } from '@server/properties/infrastructure/record-property-history'
 
 export async function regularizeMaintenanceLinks(
   actor: MaintenanceActor,
@@ -60,9 +61,23 @@ async function regularizeOnce(
           },
         })
         if (!user) throw new ForbiddenError('Proprietario invalido.')
+        await tx.$queryRaw`SELECT id FROM properties WHERE id = ${contract.propertyId} AND "tenantId" = ${contract.tenantId} FOR UPDATE`
+        const previous = await tx.property.findUniqueOrThrow({
+          where: { id: contract.propertyId, tenantId: contract.tenantId },
+          select: { owner: { select: { id: true, name: true } } },
+        })
         await tx.property.update({
           where: { id: contract.propertyId, tenantId: contract.tenantId },
           data: { ownerId: user.id, updatedById: authorId },
+        })
+        await recordPropertyFieldHistory(tx, {
+          tenantId: contract.tenantId,
+          propertyId: contract.propertyId,
+          actorId: authorId,
+          action: 'UPDATED',
+          changes: [
+            { field: 'owner', before: previous.owner, after: { id: user.id, name: user.name } },
+          ],
         })
       }
       if (input.renterId && input.partyId) {

@@ -25,6 +25,7 @@ const state = vi.hoisted(() => ({
   },
   upload: vi.fn(),
   create: vi.fn(),
+  publish: vi.fn(),
   update: vi.fn(),
   push: vi.fn(),
   notify: vi.fn(),
@@ -37,6 +38,9 @@ vi.mock('@modules/crm/hooks/use-contacts', () => ({
 vi.mock('../../services/properties-service', () => ({
   propertiesService: { uploadMedia: state.upload },
 }))
+vi.mock('../../hooks/use-property-brokers', () => ({
+  usePropertyBrokers: () => ({ data: [], isLoading: false, isError: false }),
+}))
 vi.mock('../../hooks/use-properties', async () => {
   const actual = await vi.importActual<typeof import('../../hooks/use-properties')>(
     '../../hooks/use-properties',
@@ -44,6 +48,7 @@ vi.mock('../../hooks/use-properties', async () => {
   return {
     useProperty: () => state.query,
     useCreateProperty: () => ({ mutateAsync: state.create, isPending: false }),
+    usePublishProperty: () => ({ mutateAsync: state.publish, isPending: false }),
     useUpdateProperty: () => ({ mutateAsync: state.update, isPending: false }),
     usePropertyOwners: () => ({ data: state.owners, isError: false, isLoading: false }),
     useUploadPropertyMediaBatch: actual.useUploadPropertyMediaBatch,
@@ -178,9 +183,7 @@ describe('property forms', () => {
     expect(screen.queryByLabelText('Área útil')).not.toBeInTheDocument()
   })
 
-  it('saves a new property as a draft and does not promise publication', async () => {
-    const user = userEvent.setup()
-    render(<CreatePropertyDashboardPage />)
+  async function fillDraftUntilPublication(user: ReturnType<typeof userEvent.setup>) {
     await user.type(screen.getByLabelText('Título do anúncio'), 'Casa com jardim')
     await user.type(screen.getByLabelText('Descrição'), 'Casa ampla com jardim e garagem')
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
@@ -190,31 +193,62 @@ describe('property forms', () => {
       ['Número', '10'],
       ['Bairro', 'Centro'],
       ['Cidade', 'Curitiba'],
-      ['Estado', 'PR'],
       ['CEP', '80000000'],
     ]) {
       await user.type(screen.getByLabelText(label, { selector: 'input' }), value)
     }
+    await user.click(screen.getByRole('combobox', { name: 'Estado' }))
+    await user.click(screen.getByRole('option', { name: 'PR' }))
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
-    fireEvent.change(await screen.findByLabelText('Área útil'), { target: { value: '80' } })
+    fireEvent.input(await screen.findByLabelText('Área útil'), { target: { value: '80' } })
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     await waitFor(() => expect(screen.queryByLabelText('Área útil')).not.toBeInTheDocument())
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     await user.type(await screen.findByLabelText('Valor do aluguel'), '2500,50')
-    await user.type(screen.getByLabelText('Garantia'), 'Caução de dois aluguéis')
+    await user.click(screen.getByRole('checkbox', { name: 'Exige caução' }))
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
-    const save = await screen.findByRole('button', { name: 'Salvar rascunho' })
+    return screen.findByRole('button', { name: 'Salvar rascunho' })
+  }
+
+  it('saves a new property as a draft and does not promise publication', async () => {
+    const user = userEvent.setup()
+    render(<CreatePropertyDashboardPage />)
+    const save = await fillDraftUntilPublication(user)
     expect(screen.queryByRole('button', { name: 'Publicar' })).not.toBeInTheDocument()
     await user.click(save)
     await waitFor(() => expect(state.create).toHaveBeenCalledOnce())
     expect(state.create).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Casa com jardim', price: 2500.5, purpose: 'RENT' }),
     )
+    expect(state.publish).not.toHaveBeenCalled()
     expect(state.push).toHaveBeenCalledWith({
       pathname: '/dashboard/properties/[id]',
       params: { id: 'new-property' },
     })
-  })
+  }, 20000)
+
+  it('creates a single property when the draft button is double clicked', async () => {
+    const user = userEvent.setup()
+    render(<CreatePropertyDashboardPage />)
+    const save = await fillDraftUntilPublication(user)
+    await user.dblClick(save)
+    await waitFor(() => expect(state.push).toHaveBeenCalled())
+    expect(state.create).toHaveBeenCalledOnce()
+  }, 20000)
+
+  it('lets the user save again after a failed attempt', async () => {
+    const user = userEvent.setup()
+    state.create.mockRejectedValueOnce(new Error('network'))
+    render(<CreatePropertyDashboardPage />)
+    const save = await fillDraftUntilPublication(user)
+    await user.click(save)
+    await waitFor(() =>
+      expect(state.notify).toHaveBeenCalledWith(expect.any(String), { variant: 'error' }),
+    )
+    await user.click(save)
+    await waitFor(() => expect(state.create).toHaveBeenCalledTimes(2))
+    expect(state.push).toHaveBeenCalledOnce()
+  }, 20000)
 
   it('blocks advancing and submitting until all selected media uploads finish', async () => {
     const user = userEvent.setup()
@@ -235,13 +269,14 @@ describe('property forms', () => {
       ['Número', '10'],
       ['Bairro', 'Centro'],
       ['Cidade', 'Curitiba'],
-      ['Estado', 'PR'],
       ['CEP', '80000000'],
     ]) {
       await user.type(screen.getByLabelText(label, { selector: 'input' }), value)
     }
+    await user.click(screen.getByRole('combobox', { name: 'Estado' }))
+    await user.click(screen.getByRole('option', { name: 'PR' }))
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
-    fireEvent.change(await screen.findByLabelText('Área útil'), { target: { value: '80' } })
+    fireEvent.input(await screen.findByLabelText('Área útil'), { target: { value: '80' } })
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     await waitFor(() => expect(screen.queryByLabelText('Área útil')).not.toBeInTheDocument())
     const input = container.querySelector<HTMLInputElement>('input[type="file"]')!
@@ -257,7 +292,7 @@ describe('property forms', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Próximo' })).toBeEnabled())
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     await user.type(await screen.findByLabelText('Valor do aluguel'), '2500,50')
-    await user.type(screen.getByLabelText('Garantia'), 'Caução de dois aluguéis')
+    await user.click(screen.getByRole('checkbox', { name: 'Exige caução' }))
     await user.click(screen.getByRole('button', { name: 'Próximo' }))
     const save = await screen.findByRole('button', { name: 'Salvar rascunho' })
     expect(screen.queryByRole('button', { name: 'Publicar' })).not.toBeInTheDocument()
@@ -277,7 +312,7 @@ describe('property forms', () => {
       pathname: '/dashboard/properties/[id]',
       params: { id: 'new-property' },
     })
-  })
+  }, 20000)
 
   it('preserves local edits and untouched initial values when a background refetch arrives', async () => {
     const user = userEvent.setup()
@@ -352,15 +387,18 @@ describe('property forms', () => {
     )
   })
 
-  it('rejects fractional room counts before leaving the features step', async () => {
+  it('accepts only digits in the numeric fields and has no spin arrows', async () => {
     const user = userEvent.setup()
     state.query.data = editableProperty
     render(<EditPropertyDashboardPage propertyId={editableProperty.id} />)
     await user.click(screen.getAllByRole('button', { name: /Características/ })[0])
-    fireEvent.change(await screen.findByLabelText('Quartos'), { target: { value: '1.5' } })
-    await user.click(screen.getByRole('button', { name: 'Próximo' }))
-    expect(await screen.findByText('Informe um número inteiro')).toBeVisible()
-    expect(screen.getByLabelText('Quartos')).toBeVisible()
-    expect(state.update).not.toHaveBeenCalled()
+    const bedrooms = await screen.findByLabelText('Quartos')
+    expect(bedrooms).toHaveAttribute('type', 'text')
+    fireEvent.input(bedrooms, { target: { value: '1abc5' } })
+    expect(bedrooms).toHaveValue('15')
+    const area = screen.getByLabelText('Área útil')
+    expect(area).toHaveAttribute('type', 'text')
+    fireEvent.input(area, { target: { value: '85,5x' } })
+    expect(area).toHaveValue('85.5')
   })
 })

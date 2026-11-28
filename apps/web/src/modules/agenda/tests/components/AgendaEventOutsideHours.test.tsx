@@ -100,9 +100,11 @@ it('revalidates changed values instead of saving the stale period shown before c
   fireEvent.change(screen.getByLabelText('Data'), {
     target: { value: daytimeSchedule.scheduledDate },
   })
-  fireEvent.change(screen.getByLabelText('Horário'), {
-    target: { value: daytimeSchedule.scheduledTime },
-  })
+  const timeField = screen.getByLabelText('Horário')
+  for (const key of daytimeSchedule.scheduledTime.split(':')[0]) {
+    fireEvent.keyDown(timeField, { key })
+  }
+  fireEvent.keyDown(screen.getByRole('menu', { name: 'Horas' }), { key: 'Escape' })
   await userEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
   expect(onCreate.mock.calls[0][0]).toMatchObject({
@@ -122,6 +124,7 @@ it('warns when an edited duration extends past business hours', async () => {
     property: '',
     propertyHref: '/dashboard/properties',
     propertyId: null,
+    propertyAccessible: false,
     apiKind: 'MEETING',
     participant: '',
     phone: '',
