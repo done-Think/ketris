@@ -39,6 +39,9 @@ const baseApiEvent: AgendaEventApi = {
 }
 
 describe('toAgendaEvent', () => {
+  it('preserves the read-only participant flag returned by the API', () => {
+    expect(toAgendaEvent({ ...baseApiEvent, readOnly: true })).toMatchObject({ readOnly: true })
+  })
   it('maps the API fields to the UI shape, computing duration from start/end', () => {
     const result = toAgendaEvent(baseApiEvent)
 

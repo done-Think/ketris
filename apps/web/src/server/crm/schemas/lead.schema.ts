@@ -24,6 +24,7 @@ export const leadSchema = z
     id: z.string(),
     tenantId: z.string(),
     responsibleId: z.string(),
+    accessUserIds: z.array(z.string()).optional(),
     responsibleName: z.string().optional(),
     contactId: z.string().nullable().optional(),
     name: z.string(),

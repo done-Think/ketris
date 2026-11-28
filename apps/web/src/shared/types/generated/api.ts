@@ -16246,6 +16246,96 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/team/members/{id}/share': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Shares or revokes access to selected existing portfolio items */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['ShareBrokerPortfolioRequest']
+        }
+      }
+      responses: {
+        /** @description Counts of changed portfolio access grants. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              shared: components['schemas']['TeamTransferResponse']
+            }
+          }
+        }
+        /** @description Access token ausente, inválido ou expirado. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Só o dono da imobiliária (OWNER) gerencia a equipe. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Source member not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Invalid destination or empty selection. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/team/members/{id}/transfer': {
     parameters: {
       query?: never
@@ -16591,6 +16681,7 @@ export interface components {
       propertyLabel: string | null
       /** @description Referência livre de imóvel, usada quando propertyId é nulo. */
       propertyReference: string | null
+      readOnly?: boolean
       /** @description ID do usuário responsável pelo evento. */
       responsibleId: string
       responsibleName: string
@@ -17784,6 +17875,7 @@ export interface components {
       emailDelivered: boolean
     }
     Lead: {
+      accessUserIds?: string[]
       budget: string
       contactId?: string | null
       createdAt: string
@@ -18559,6 +18651,7 @@ export interface components {
       usageUnit: 'PROPERTIES' | 'BROKERS'
     } | null
     Opportunity: {
+      accessUserIds?: string[]
       archivedAt: string | null
       contactId: string | null
       contractTermMonths: number | null
@@ -19403,6 +19496,15 @@ export interface components {
     SetBrokerGoalRequest: {
       /** @example 8 */
       monthlySales: number
+    }
+    ShareBrokerPortfolioRequest: {
+      destinationIds: string[]
+      futureEvents: boolean
+      leads: boolean
+      opportunities: boolean
+      properties: boolean
+      /** @default false */
+      revoke?: boolean
     }
     /** @enum {string} */
     SignatureStatus: 'PENDING' | 'SIGNED'

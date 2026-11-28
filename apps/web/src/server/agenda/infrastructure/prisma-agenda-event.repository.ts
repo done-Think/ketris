@@ -390,6 +390,7 @@ function readScopeWhere(scope: AgendaReadScope): Prisma.AgendaEventWhereInput {
         { audience: 'SHARED_TEAM', internal: false },
         { audience: 'ALL_AGENTS' },
         { audience: 'ASSIGNED_AGENT', responsibleId: scope.userId },
+        { participants: { some: { userId: scope.userId } } },
       ],
     }
   }

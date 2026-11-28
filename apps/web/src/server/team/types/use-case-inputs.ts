@@ -17,6 +17,11 @@ export interface TransferBrokerPortfolioInput extends TeamActor {
   items: TeamTransferItems
 }
 
+export type ShareBrokerPortfolioInput = Omit<TransferBrokerPortfolioInput, 'destinationId'> & {
+  destinationIds: string[]
+  revoke?: boolean
+}
+
 export interface DeactivateBrokerInput extends TeamActor {
   brokerId: string
   destinationId: string

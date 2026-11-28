@@ -1,4 +1,5 @@
 import { BaseService } from '@shared/lib/api/base-service'
+import type { SharePortfolioPayload, TeamPortfolioShareResponse } from '../types/team'
 
 import type {
   InviteBrokerPayload,
@@ -60,6 +61,12 @@ class TeamService extends BaseService {
     return this.http
       .put<TeamGoalResponse>(`${this.path}/members/${memberId}/goal`, { monthlySales })
       .then((data) => data.goal)
+  }
+
+  sharePortfolio(memberId: string, payload: SharePortfolioPayload): Promise<TeamTransferCounts> {
+    return this.http
+      .post<TeamPortfolioShareResponse>(`${this.path}/members/${memberId}/share`, payload)
+      .then((data) => data.shared)
   }
 
   transfer(memberId: string, payload: TransferPortfolioPayload): Promise<TeamTransferCounts> {

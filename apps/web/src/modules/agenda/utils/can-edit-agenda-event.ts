@@ -4,6 +4,7 @@ import type { AgendaEvent } from '../types/agenda-event'
 export function canEditAgendaEvent(actor: AgendaActor, event: AgendaEvent | null): boolean {
   if (!event || !actor.userId || !actor.role) return false
   if (actor.role === 'OWNER') return true
+  if (event.readOnly) return false
   if (event.internal || event.audience === 'ALL_AGENTS') return false
   if (
     (actor.role === 'PROPERTY_OWNER' || actor.role === 'RENTER') &&
