@@ -34,6 +34,13 @@ Todos os contadores da API usam a tabela `auth_rate_limit_buckets` existente. Os
 separam os orçamentos geral, autenticação, propostas por cliente e propostas por imóvel/contato.
 A atualização por UPSERT é atômica entre instâncias e a expiração usa o relógio do PostgreSQL.
 
+A recuperação de senha tem um orçamento próprio por cliente (`auth-password-recovery`),
+com o mesmo limite e janela configurados em `AUTH_RATE_LIMIT_*`. Solicitar o código,
+validá-lo e concluir a redefinição compartilham essa quota, inclusive em caminhos
+codificados ou com barra final. Login, callbacks e renovação de sessão não a consomem;
+o esgotamento da recuperação também não bloqueia o login. As proteções adicionais por
+e-mail, o intervalo de reenvio e o limite de tentativas do código continuam valendo.
+
 | Configuração                                                                      | Padrão                                  |
 | --------------------------------------------------------------------------------- | --------------------------------------- |
 | `API_RATE_LIMIT_MAX` / `API_RATE_LIMIT_WINDOW_MS`                                 | 300 por 60.000 ms                       |

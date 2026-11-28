@@ -34,7 +34,7 @@ describe('Postgres shared rate limit', () => {
     }
   })
 
-  it.each(['auth', 'api', 'marketplace-inquiry'])(
+  it.each(['auth', 'auth-password-recovery', 'api', 'marketplace-inquiry'])(
     'shares an atomic capped %s counter across instances and resets expired windows',
     async (policyName) => {
       const key = `test-${randomUUID()}`
