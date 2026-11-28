@@ -4,7 +4,7 @@ import { Box, Skeleton, Typography } from '@mui/material'
 import { useTranslations } from 'next-intl'
 
 import type { SearchResultsListProps } from '../../types/search'
-import { SearchPropertyCard } from '../SearchPropertyCard'
+import { FavoritablePropertyCard } from '../favorites/FavoritablePropertyCard'
 import { styles, getBoxStyles } from '../../styles/search-results-list.styles'
 
 export function SearchResultsList({
@@ -24,11 +24,13 @@ export function SearchResultsList({
         ))
       ) : properties.length ? (
         properties.map((property) => (
-          <SearchPropertyCard
+          <FavoritablePropertyCard
             key={property.id}
             property={property}
             selected={property.id === selectedPropertyId}
-            onActivate={() => setSelectedPropertyId(property.id)}
+            onActivate={
+              setSelectedPropertyId ? () => setSelectedPropertyId(property.id) : undefined
+            }
             viewMode={viewMode}
           />
         ))

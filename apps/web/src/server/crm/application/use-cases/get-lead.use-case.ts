@@ -16,7 +16,7 @@ export class GetLeadUseCase {
       throw new LeadNotFoundError()
     }
 
-    assertLeadAccess(lead.responsibleId, input.actorId, input.actorRole)
+    assertLeadAccess(lead.responsibleId, input.actorId, input.actorRole, lead.accessUserIds)
 
     return lead
   }

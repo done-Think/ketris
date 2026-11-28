@@ -1,3 +1,4 @@
+import { crmRecordAccess } from './crm-record-access'
 import { Prisma } from '@prisma/client'
 import { OpportunityLinkedToContractError } from '../domain/errors'
 import type { CrmPage } from '../types/pagination'
@@ -15,10 +16,16 @@ import type {
 } from '../application/ports/opportunity-repository.port'
 import type { NewOpportunity, Opportunity, OpportunityUpdate } from '../domain/opportunity.entity'
 
-const responsibleInclude = { responsible: { select: { name: true } } } as const
+const responsibleInclude = {
+  responsible: { select: { name: true } },
+  brokerAccess: { select: { userId: true } },
+} as const
 
 function toDomain(row: OpportunityRow): Opportunity {
   return {
+    ...(row.brokerAccess?.length
+      ? { accessUserIds: row.brokerAccess.map((access) => access.userId) }
+      : {}),
     id: row.id,
     tenantId: row.tenantId,
     propertyId: row.propertyId,
@@ -101,7 +108,7 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
+        ...crmRecordAccess(this.scope),
       },
       include: responsibleInclude,
     })
@@ -117,7 +124,7 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
+        ...crmRecordAccess(this.scope),
       },
       data: {
         updatedById: authorId,
@@ -190,7 +197,7 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
       where: {
         id,
         tenantId: this.scope.actorTenantId,
-        ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
+        ...crmRecordAccess(this.scope),
       },
       data: { archivedAt: new Date(), archivedById: authorId, updatedById: authorId },
       include: responsibleInclude,
@@ -225,7 +232,7 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
         where: {
           id,
           tenantId: this.scope.actorTenantId,
-          ...(this.scope.actorRole === 'AGENT' ? { responsibleId: this.scope.actorId ?? '' } : {}),
+          ...crmRecordAccess(this.scope),
         },
       })
     } catch (error) {
@@ -246,14 +253,18 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
       FROM opportunities o
       WHERE o."tenantId" = ${this.scope.actorTenantId} AND o."contactId" IN (${Prisma.join([...contactIds])})
         AND o."archivedAt" IS NULL
-        ${this.scope.actorRole === 'AGENT' ? Prisma.sql`AND o."responsibleId" = ${this.scope.actorId ?? ''}` : Prisma.empty}
+        ${this.scope.actorRole === 'AGENT' ? Prisma.sql`AND (o."responsibleId" = ${this.scope.actorId ?? ''} OR EXISTS (SELECT 1 FROM opportunity_broker_access a WHERE a."opportunityId" = o.id AND a."tenantId" = o."tenantId" AND a."userId" = ${this.scope.actorId ?? ''}))` : Prisma.empty}
       GROUP BY o."contactId"`)
     return new Map(rows.map((row) => [row.contactId, Number(row.count)]))
   }
 
   async existsForAgent(tenantId: string, contactId: string, agentId: string): Promise<boolean> {
     const count = await this.db.opportunity.count({
-      where: { tenantId, contactId: contactId, responsibleId: agentId },
+      where: {
+        tenantId,
+        contactId,
+        ...crmRecordAccess({ actorTenantId: tenantId, actorRole: 'AGENT', actorId: agentId }),
+      },
     })
 
     return count > 0

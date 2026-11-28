@@ -10673,6 +10673,318 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/instagram/connection': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Consulta conexão pessoal no tenant; gestor, corretor ou proprietário; nunca retorna token */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Estado da conexão */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              accountId?: string
+              configured: boolean
+              connected: boolean
+              expired?: boolean
+              /** Format: date-time */
+              expiresAt?: string
+              username?: string
+            }
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    /** Desconecta a conta local e cancela trabalhos pendentes; gestor, corretor ou proprietário */
+    delete: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Desconectado */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/instagram/oauth/start': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Inicia Instagram Login e emite cookie seguro; gestor, corretor ou proprietário */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description URL oficial de autorização */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              /** Format: uri */
+              authorizationUrl: string
+            }
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/instagram/properties/{propertyId}/publications': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Consulta histórico pessoal do imóvel autorizado no tenant; gestor, corretor ou proprietário */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          propertyId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Publicações */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              publications: {
+                accountId: string
+                /** Format: date-time */
+                createdAt: string
+                errorCode: string | null
+                id: string
+                permalink: string | null
+                propertyId: string
+                /** @enum {string} */
+                status:
+                  | 'QUEUED'
+                  | 'PREPARING'
+                  | 'READY'
+                  | 'PUBLISHING'
+                  | 'VERIFYING'
+                  | 'PUBLISHED'
+                  | 'FAILED'
+                  | 'BLOCKED'
+                  | 'CANCELLED'
+              }[]
+            }
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    /**
+     * Registra envio após revisão; imóvel precisa estar publicado; gestor, corretor ou proprietário
+     * @description Um envio por tenant, imóvel e conta Instagram. A conta pertence ao usuário autenticado, que precisa ter acesso atual ao imóvel. Uma solicitação repetida não produz outro post. Falha externa não altera o imóvel no site.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          propertyId: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': {
+            caption: string
+            imageUrls: string[]
+          }
+        }
+      }
+      responses: {
+        /** @description Publicação registrada ou existente */
+        202: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              publication: {
+                accountId: string
+                /** Format: date-time */
+                createdAt: string
+                errorCode: string | null
+                id: string
+                permalink: string | null
+                propertyId: string
+                /** @enum {string} */
+                status:
+                  | 'QUEUED'
+                  | 'PREPARING'
+                  | 'READY'
+                  | 'PUBLISHING'
+                  | 'VERIFYING'
+                  | 'PUBLISHED'
+                  | 'FAILED'
+                  | 'BLOCKED'
+                  | 'CANCELLED'
+              }
+            }
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/instagram/publications/{id}/retry': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Retenta somente falhas anteriores à confirmação; gestor, corretor ou proprietário
+     * @description Somente o solicitante com acesso atual ao imóvel pode tentar novamente. VERIFYING, BLOCKED, PUBLISHING e PUBLISHED não podem ser reenviados por esta rota.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Nova tentativa registrada */
+        202: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Estado não permite tentativa segura */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/maintenance/links': {
     parameters: {
       query?: never
@@ -12144,6 +12456,202 @@ export interface paths {
     put?: never
     post?: never
     delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/marketplace/favorites': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Lista os imóveis favoritos de quem está logado
+     * @description Qualquer usuário de tenant logado. Retorna só os favoritos do próprio usuário, do mais recente para o mais antigo, até o limite. O favorito guarda o tenant de quem salvou e pode apontar para imóvel de qualquer tenant (mesma exceção do marketplace público). Imóvel que deixou de estar publicado volta com available=false e só título, cidade e bairro.
+     */
+    get: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Favoritos do usuário. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['FavoritePropertiesResponse']
+          }
+        }
+        /** @description Autenticação obrigatória. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/marketplace/favorites/{propertyId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /**
+     * Salva um imóvel publicado nos favoritos
+     * @description Idempotente: se o imóvel já estava salvo, devolve a data original. Só imóveis publicados podem ser salvos.
+     */
+    put: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          propertyId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Imóvel salvo. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['SavedFavoriteProperty']
+          }
+        }
+        /** @description ID do imóvel inválido. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Autenticação obrigatória. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Imóvel não encontrado ou não publicado. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Limite de favoritos atingido. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    post?: never
+    /**
+     * Remove um imóvel dos favoritos
+     * @description Idempotente: responde 204 mesmo que o imóvel não estivesse salvo.
+     */
+    delete: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          propertyId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Imóvel removido dos favoritos. */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description ID do imóvel inválido. */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Autenticação obrigatória. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
     options?: never
     head?: never
     patch?: never
@@ -16050,6 +16558,96 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/team/members/{id}/share': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Shares or revokes access to selected existing portfolio items */
+    post: {
+      parameters: {
+        query?: never
+        header: {
+          /** @description Versão do contrato em inglês. Clientes anteriores devem recarregar antes de repetir a operação. */
+          'X-Ketris-Api-Version': '3'
+        }
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['ShareBrokerPortfolioRequest']
+        }
+      }
+      responses: {
+        /** @description Counts of changed portfolio access grants. */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': {
+              shared: components['schemas']['TeamTransferResponse']
+            }
+          }
+        }
+        /** @description Access token ausente, inválido ou expirado. */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Só o dono da imobiliária (OWNER) gerencia a equipe. */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description Source member not found. */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+        /** @description CLIENT_UPDATE_REQUIRED: recarregar a aplicação para usar o contrato atual. */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Invalid destination or empty selection. */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ErrorResponse']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/team/members/{id}/transfer': {
     parameters: {
       query?: never
@@ -16395,6 +16993,7 @@ export interface components {
       propertyLabel: string | null
       /** @description Referência livre de imóvel, usada quando propertyId é nulo. */
       propertyReference: string | null
+      readOnly?: boolean
       /** @description ID do usuário responsável pelo evento. */
       responsibleId: string
       responsibleName: string
@@ -17494,6 +18093,21 @@ export interface components {
       faceMatchThreshold: number
       maxAttempts: number
     }
+    FavoritePropertiesResponse: {
+      favorites: components['schemas']['FavoritePropertyEntry'][]
+      limit: number
+    }
+    FavoritePropertyEntry:
+      | (components['schemas']['SavedFavoriteProperty'] & {
+          /** @enum {boolean} */
+          available: true
+          property: components['schemas']['PublicPropertySummary']
+        })
+      | (components['schemas']['SavedFavoriteProperty'] & {
+          /** @enum {boolean} */
+          available: false
+          property: components['schemas']['UnavailableFavoriteProperty']
+        })
     FinancialMonthlyTotal: {
       month: number
       total: number
@@ -17573,6 +18187,7 @@ export interface components {
       emailDelivered: boolean
     }
     Lead: {
+      accessUserIds?: string[]
       budget: string
       contactId?: string | null
       createdAt: string
@@ -18348,6 +18963,7 @@ export interface components {
       usageUnit: 'PROPERTIES' | 'BROKERS'
     } | null
     Opportunity: {
+      accessUserIds?: string[]
       archivedAt: string | null
       contactId: string | null
       contractTermMonths: number | null
@@ -19143,6 +19759,11 @@ export interface components {
       segments?: string[]
       summary?: string | null
     }
+    SavedFavoriteProperty: {
+      propertyId: string
+      /** @description Quando o imóvel foi salvo (ISO 8601). */
+      savedAt: string
+    }
     SavePublicProfileAddress: {
       handle: string
     }
@@ -19187,6 +19808,15 @@ export interface components {
     SetBrokerGoalRequest: {
       /** @example 8 */
       monthlySales: number
+    }
+    ShareBrokerPortfolioRequest: {
+      destinationIds: string[]
+      futureEvents: boolean
+      leads: boolean
+      opportunities: boolean
+      properties: boolean
+      /** @default false */
+      revoke?: boolean
     }
     /** @enum {string} */
     SignatureStatus: 'PENDING' | 'SIGNED'
@@ -19473,6 +20103,11 @@ export interface components {
     }
     TransitionContractRequest: {
       reason: string
+    }
+    UnavailableFavoriteProperty: {
+      city: string | null
+      neighborhood: string | null
+      title: string
     }
     UpdateAgendaEventRequest: {
       /** @enum {string} */

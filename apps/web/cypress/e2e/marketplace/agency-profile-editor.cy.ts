@@ -17,6 +17,22 @@ function uniqueCnpj() {
   return [...digits, first, second].join('')
 }
 
+// The picker is placed against the field when it opens. After a viewport change the sidebar
+// appears or hides, so wait until the field stops moving before opening it.
+function waitForSettledPosition(selector: string, settledForMs = 500) {
+  let previous = ''
+  let unchangedSince = Date.now()
+  cy.get(selector).should(($element) => {
+    const { top, left, width } = $element[0].getBoundingClientRect()
+    const current = `${top}:${left}:${width}`
+    if (current !== previous) {
+      previous = current
+      unchangedSince = Date.now()
+    }
+    expect(Date.now() - unchangedSince, `${selector} position settled`).to.be.at.least(settledForMs)
+  })
+}
+
 describe('Agency public profile defaults', () => {
   const suffix = Date.now()
   const email = `agency-profile-${suffix}@example.test`
@@ -209,6 +225,7 @@ describe('Agency public profile defaults', () => {
       [375, 812],
     ]) {
       cy.viewport(width, height)
+      waitForSettledPosition('input[role="combobox"]')
       cy.get('input[role="combobox"]').click({ scrollBehavior: 'center' })
       cy.get('.MuiAutocomplete-popper').should('have.attr', 'data-popper-placement', 'bottom-start')
       cy.get('body').should(($body) => {

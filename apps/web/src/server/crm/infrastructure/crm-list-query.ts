@@ -48,7 +48,7 @@ export function crmListSql(
     if (!filters.includeArchived) base.push(Prisma.sql`r."archivedAt" IS NULL`)
     if (scope.actorRole === 'AGENT')
       base.push(
-        Prisma.sql`(r."createdById" = ${scope.actorId ?? ''} OR EXISTS (SELECT 1 FROM leads l WHERE l."contactId" = r.id AND l."tenantId" = ${scope.actorTenantId} AND l."responsibleId" = ${scope.actorId ?? ''}) OR EXISTS (SELECT 1 FROM opportunities o WHERE o."contactId" = r.id AND o."tenantId" = ${scope.actorTenantId} AND o."responsibleId" = ${scope.actorId ?? ''}))`,
+        Prisma.sql`(r."createdById" = ${scope.actorId ?? ''} OR EXISTS (SELECT 1 FROM leads l WHERE l."contactId" = r.id AND l."tenantId" = ${scope.actorTenantId} AND l."responsibleId" = ${scope.actorId ?? ''}) OR EXISTS (SELECT 1 FROM opportunities o WHERE o."contactId" = r.id AND o."tenantId" = ${scope.actorTenantId} AND (o."responsibleId" = ${scope.actorId ?? ''} OR EXISTS (SELECT 1 FROM opportunity_broker_access a WHERE a."opportunityId" = o.id AND a."tenantId" = o."tenantId" AND a."userId" = ${scope.actorId ?? ''}))))`,
       )
     if (filters.type) extra.push(Prisma.sql`r.type::text = ${filters.type}`)
     searchable = [Prisma.sql`r.name`, Prisma.sql`r.email`, Prisma.sql`r.phone`]
@@ -70,7 +70,9 @@ export function crmListSql(
     from = Prisma.sql`leads r JOIN users u ON u.id = r."responsibleId"`
     group = Prisma.sql`r.stage::text`
     if (scope.actorRole === 'AGENT')
-      base.push(Prisma.sql`r."responsibleId" = ${scope.actorId ?? ''}`)
+      base.push(
+        Prisma.sql`(r."responsibleId" = ${scope.actorId ?? ''} OR EXISTS (SELECT 1 FROM lead_broker_access a WHERE a."leadId" = r.id AND a."tenantId" = r."tenantId" AND a."userId" = ${scope.actorId ?? ''}))`,
+      )
     if (filters.stage) extra.push(Prisma.sql`r.stage::text = ${filters.stage}`)
     const sourceLabels = Object.fromEntries(
       LEAD_SOURCES.map((code) => [code, messages.leads.create.sources[LEAD_SOURCE_KEYS[code]]]),
@@ -100,7 +102,9 @@ export function crmListSql(
     purpose = Prisma.sql`i.purpose::text`
     if (!filters.includeArchived) base.push(Prisma.sql`r."archivedAt" IS NULL`)
     if (scope.actorRole === 'AGENT')
-      base.push(Prisma.sql`r."responsibleId" = ${scope.actorId ?? ''}`)
+      base.push(
+        Prisma.sql`(r."responsibleId" = ${scope.actorId ?? ''} OR EXISTS (SELECT 1 FROM opportunity_broker_access a WHERE a."opportunityId" = r.id AND a."tenantId" = r."tenantId" AND a."userId" = ${scope.actorId ?? ''}))`,
+      )
     if (filters.status) extra.push(Prisma.sql`r.status::text = ${filters.status}`)
     if (filters.statuses?.length)
       extra.push(Prisma.sql`r.status::text IN (${Prisma.join(filters.statuses)})`)

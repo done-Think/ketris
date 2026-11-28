@@ -30,7 +30,8 @@
       "settings": "Settings",
       "signOut": "Sign out",
       "support": "Support",
-      "switchMode": "Switch mode"
+      "switchMode": "Switch mode",
+      "favorites": "My favorites"
     }
   },
   "navigation": {
@@ -67,6 +68,13 @@
       "notFoundTitle": "Ketris",
       "agencyDescription": "{name}, {creci}, operates in {headquarters}.",
       "brokerDescription": "{name}, {creci}, represents properties in {region}."
+    },
+    "privacy": {
+      "metadataTitle": "Ketris | Privacy Policy",
+      "metadataDescription": "How Ketris handles data from the Instagram integration."
+    },
+    "favorites": {
+      "metadataTitle": "My favorites"
     }
   },
   "home": {
@@ -194,7 +202,6 @@
     "mapUnavailable": "Map location is not yet available for this address.",
     "searchAddressOnMaps": "Search address on Google Maps",
     "mapApproximate": "Approximate location",
-    "favorite": "Favorite",
     "share": "Share",
     "linkCopied": "Link copied.",
     "shareError": "Could not share. Copy the address from your browser.",
@@ -625,5 +632,92 @@
     "loadError": "Could not load your public address.",
     "loading": "Loading public address…",
     "unpublishedHint": "Publish your profile to enable its public link and edit your custom address. The link works only while the profile is published."
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "updatedAt": "Updated on {date}",
+    "intro": "This page explains how Ketris handles data from the Instagram integration. It applies to anyone who connects a professional Instagram account to Ketris to publish properties.",
+    "sections": {
+      "access": {
+        "title": "Instagram data Ketris accesses",
+        "intro": "Ketris only accesses Instagram after you connect your account and grant two permissions:",
+        "basic": "instagram_business_basic: reads the ID and username (@) of the professional account. Ketris uses them to show which account is connected.",
+        "publish": "instagram_business_content_publish: publishes to your account the photos and caption you review and confirm in Ketris. Nothing is published without your confirmation.",
+        "notAccessed": "Ketris does not read messages, comments, followers, insights or posts you did not publish through Ketris. Ketris never receives your Instagram password."
+      },
+      "storage": {
+        "title": "How we store the data",
+        "token": "The access token issued by Meta is stored encrypted (AES-256-GCM) in the Ketris database, separated by agency and by user. The token is never sent to the browser.",
+        "photos": "To publish, Ketris creates copies of the chosen photos in the Instagram format and stores them in Amazon S3. Meta downloads the copies through a signed address that expires in 48 hours. The copies exist only for publishing and are deleted when you request data deletion.",
+        "history": "Ketris keeps the history of each post (caption, chosen photos, status and post link) to show the result on the property details page."
+      },
+      "use": {
+        "title": "How we use the data",
+        "body": "Instagram data is used only to connect your account and publish the properties you choose. Ketris does not sell, share or use this data for advertising."
+      },
+      "disconnect": {
+        "title": "How to disconnect your account",
+        "ketris": "In Ketris, open My Profile and click Disconnect on the My Instagram card. Ketris deletes the token immediately and cancels posts that were not sent yet.",
+        "instagram": "In Instagram, open Settings, then Apps and websites, and remove Ketris. Meta notifies Ketris and the access is revoked."
+      },
+      "deletion": {
+        "title": "How to request data deletion",
+        "meta": "When you remove Ketris in the Instagram settings, you can request data deletion. Meta sends the request to Ketris at {endpoint}. Ketris deletes the token, the post history and the photo copies, and returns a confirmation code so you can follow the request.",
+        "kept": "This request does not delete properties published on the site or posts already published on Instagram. To delete a post, use Instagram itself.",
+        "email": "You can also request deletion by email: {email}. Include the Instagram account @ and the email you use in Ketris.",
+        "emailFallback": "You can also request deletion from your agency administrator, who forwards the request to Ketris."
+      },
+      "changes": {
+        "title": "Changes to this policy",
+        "body": "If this policy changes, the update date at the top of this page changes too."
+      }
+    }
+  },
+  "favorites": {
+    "save": "Save",
+    "saved": "Saved",
+    "addLabel": "Save to favorites",
+    "removeLabel": "Remove from favorites",
+    "login": {
+      "title": "Sign in to save this property",
+      "description": "Your favorites stay in your account and show up on your phone and computer. After you sign in, the property is already saved.",
+      "signIn": "Sign in",
+      "signUp": "Create account",
+      "notNow": "Not now"
+    },
+    "errors": {
+      "generic": "We couldn't update your favorites. Please try again.",
+      "unavailable": "This property is no longer available.",
+      "limitReached": "You have already saved {limit} properties. Remove a favorite to save another one."
+    },
+    "removed": "Property removed from favorites.",
+    "undo": "Undo",
+    "page": {
+      "title": "My favorites",
+      "count": "{count, plural, =0 {No saved properties} one {# saved property} other {# saved properties}}",
+      "loadError": "We couldn't load your favorites.",
+      "retry": "Try again",
+      "purpose": {
+        "all": "All ({count})",
+        "rent": "Rent ({count})",
+        "buy": "Buy ({count})"
+      },
+      "unavailable": {
+        "title": "No longer available",
+        "note": "The listing was taken down.",
+        "remove": "Remove"
+      },
+      "guest": {
+        "title": "Sign in to see your favorites",
+        "description": "The properties you save stay in your account and show up on your phone and computer.",
+        "action": "Sign in"
+      },
+      "empty": {
+        "title": "You haven't saved any property yet",
+        "description": "Tap the heart on any property to keep it here and compare later.",
+        "rentAction": "See properties for rent",
+        "buyAction": "See properties for sale"
+      }
+    }
   }
 }

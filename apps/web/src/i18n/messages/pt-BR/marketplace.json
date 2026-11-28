@@ -30,7 +30,8 @@
       "settings": "Configurações",
       "signOut": "Sair",
       "support": "Suporte",
-      "switchMode": "Trocar modalidade"
+      "switchMode": "Trocar modalidade",
+      "favorites": "Meus favoritos"
     }
   },
   "navigation": {
@@ -67,6 +68,13 @@
       "notFoundTitle": "Ketris",
       "agencyDescription": "{name}, {creci}, atua em {headquarters}.",
       "brokerDescription": "{name}, {creci}, representa imóveis em {region}."
+    },
+    "privacy": {
+      "metadataTitle": "Ketris | Política de Privacidade",
+      "metadataDescription": "Como o Ketris trata os dados da integração com o Instagram."
+    },
+    "favorites": {
+      "metadataTitle": "Meus favoritos"
     }
   },
   "home": {
@@ -194,7 +202,6 @@
     "mapUnavailable": "Localização no mapa ainda não disponível para este endereço.",
     "searchAddressOnMaps": "Buscar endereço no Google Maps",
     "mapApproximate": "Localização aproximada",
-    "favorite": "Favoritar",
     "share": "Compartilhar",
     "linkCopied": "Link copiado.",
     "shareError": "Não foi possível compartilhar. Copie o endereço pelo navegador.",
@@ -625,5 +632,92 @@
     "loadError": "Não foi possível carregar seu endereço público.",
     "loading": "Carregando endereço público…",
     "unpublishedHint": "Publique o perfil para liberar seu link público e a edição do endereço personalizado. O link funciona apenas enquanto o perfil estiver publicado."
+  },
+  "privacy": {
+    "title": "Política de Privacidade",
+    "updatedAt": "Atualizada em {date}",
+    "intro": "Esta página explica como o Ketris trata os dados da integração com o Instagram. Ela vale para quem conecta uma conta profissional do Instagram ao Ketris para publicar imóveis.",
+    "sections": {
+      "access": {
+        "title": "Dados do Instagram que o Ketris acessa",
+        "intro": "O Ketris só acessa o Instagram depois que você conecta a sua conta e autoriza duas permissões:",
+        "basic": "instagram_business_basic: lê o identificador e o nome de usuário (@) da conta profissional. O Ketris usa esses dados para mostrar qual conta está conectada.",
+        "publish": "instagram_business_content_publish: publica na sua conta as fotos e a legenda que você revisa e confirma no Ketris. Nada é publicado sem a sua confirmação.",
+        "notAccessed": "O Ketris não lê mensagens, comentários, seguidores, estatísticas nem posts que você não publicou pelo Ketris. O Ketris nunca recebe a sua senha do Instagram."
+      },
+      "storage": {
+        "title": "Como guardamos os dados",
+        "token": "O token de acesso entregue pela Meta fica guardado criptografado (AES-256-GCM) no banco de dados do Ketris, separado por imobiliária e por usuário. O token nunca é enviado ao navegador.",
+        "photos": "Para publicar, o Ketris cria cópias das fotos escolhidas no formato do Instagram e guarda essas cópias no Amazon S3. A Meta baixa as cópias por um endereço assinado que expira em 48 horas. As cópias servem só para a publicação e são apagadas quando você pede a exclusão dos dados.",
+        "history": "O Ketris guarda o histórico de cada publicação (legenda, fotos escolhidas, situação e link do post) para mostrar o resultado no detalhe do imóvel."
+      },
+      "use": {
+        "title": "Como usamos os dados",
+        "body": "Os dados do Instagram servem só para conectar a sua conta e publicar os imóveis que você escolher. O Ketris não vende, não compartilha e não usa esses dados para anúncios."
+      },
+      "disconnect": {
+        "title": "Como desconectar a conta",
+        "ketris": "No Ketris, abra Meu Perfil e clique em Desconectar no cartão Meu Instagram. O Ketris apaga o token na hora e cancela as publicações que ainda não foram enviadas.",
+        "instagram": "No Instagram, abra Configurações, depois Apps e sites, e remova o Ketris. A Meta avisa o Ketris, e o acesso fica revogado."
+      },
+      "deletion": {
+        "title": "Como pedir a exclusão dos dados",
+        "meta": "Ao remover o Ketris nas configurações do Instagram, você pode pedir a exclusão dos dados. A Meta envia o pedido ao Ketris pelo endereço {endpoint}. O Ketris apaga o token, o histórico das publicações e as cópias das fotos, e devolve um código de confirmação para você acompanhar o pedido.",
+        "kept": "Esse pedido não apaga os imóveis publicados no site nem os posts já publicados no Instagram. Para apagar um post, use o próprio Instagram.",
+        "email": "Você também pode pedir a exclusão por e-mail: {email}. Informe o @ da conta do Instagram e o e-mail usado no Ketris.",
+        "emailFallback": "Você também pode pedir a exclusão ao administrador da sua imobiliária, que encaminha o pedido ao Ketris."
+      },
+      "changes": {
+        "title": "Mudanças nesta política",
+        "body": "Se esta política mudar, a data de atualização no topo desta página muda também."
+      }
+    }
+  },
+  "favorites": {
+    "save": "Favoritar",
+    "saved": "Favoritado",
+    "addLabel": "Salvar nos favoritos",
+    "removeLabel": "Remover dos favoritos",
+    "login": {
+      "title": "Entre para salvar este imóvel",
+      "description": "Seus favoritos ficam na sua conta e aparecem no celular e no computador. Depois de entrar, o imóvel já volta salvo.",
+      "signIn": "Entrar",
+      "signUp": "Criar conta",
+      "notNow": "Agora não"
+    },
+    "errors": {
+      "generic": "Não foi possível atualizar seus favoritos. Tente novamente.",
+      "unavailable": "Este imóvel não está mais disponível.",
+      "limitReached": "Você já salvou {limit} imóveis. Remova algum favorito para salvar outro."
+    },
+    "removed": "Imóvel removido dos favoritos.",
+    "undo": "Desfazer",
+    "page": {
+      "title": "Meus favoritos",
+      "count": "{count, plural, =0 {Nenhum imóvel salvo} one {# imóvel salvo} other {# imóveis salvos}}",
+      "loadError": "Não foi possível carregar seus favoritos.",
+      "retry": "Tentar novamente",
+      "purpose": {
+        "all": "Todos ({count})",
+        "rent": "Alugar ({count})",
+        "buy": "Comprar ({count})"
+      },
+      "unavailable": {
+        "title": "Não estão mais disponíveis",
+        "note": "O anúncio saiu do ar.",
+        "remove": "Remover"
+      },
+      "guest": {
+        "title": "Entre para ver seus favoritos",
+        "description": "Os imóveis que você salvar ficam na sua conta e aparecem no celular e no computador.",
+        "action": "Entrar"
+      },
+      "empty": {
+        "title": "Você ainda não salvou nenhum imóvel",
+        "description": "Toque no coração de qualquer imóvel para guardá-lo aqui e comparar com calma depois.",
+        "rentAction": "Ver imóveis para alugar",
+        "buyAction": "Ver imóveis para comprar"
+      }
+    }
   }
 }

@@ -25,7 +25,7 @@ it('limits the administrator to its tenant', async () => {
   })
 })
 
-it('combines the agent tenant with collective, legacy and personally assigned events', async () => {
+it('combines the agent tenant with collective, assigned and participant-linked events', async () => {
   const scope = { kind: 'agent', tenantId: 'agency', userId: 'agent' } as const
   const expected = {
     tenantId: 'agency',
@@ -33,6 +33,7 @@ it('combines the agent tenant with collective, legacy and personally assigned ev
       { audience: 'SHARED_TEAM', internal: false },
       { audience: 'ALL_AGENTS' },
       { audience: 'ASSIGNED_AGENT', responsibleId: 'agent' },
+      { participants: { some: { userId: 'agent' } } },
     ],
   }
   expect(await filters(scope)).toMatchObject({ AND: [expected, {}] })

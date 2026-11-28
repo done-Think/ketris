@@ -6,6 +6,7 @@ import type {
   createBrokerGoalSchema,
   createBrokerInviteSchema,
   createBrokerTransferSchema,
+  createBrokerShareSchema,
 } from '../schemas/broker-team-action-schemas'
 import type {
   BrokerTeamMenuAction,
@@ -84,3 +85,9 @@ export interface TeamDialogTitleProps {
   title: string
   onClose: () => void
 }
+
+export interface BrokerShareDialogProps extends BrokerTransferDialogProps {
+  revoke?: boolean
+}
+
+export type BrokerShareFormValues = z.infer<ReturnType<typeof createBrokerShareSchema>>

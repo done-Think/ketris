@@ -5,6 +5,7 @@ export type OpportunityStatus = 'DRAFT' | 'SENT' | 'IN_NEGOTIATION' | 'ACCEPTED'
 export type GuaranteeType = 'GUARANTOR' | 'DEPOSIT' | 'SURETY_BOND' | 'NONE'
 
 export interface Opportunity {
+  accessUserIds?: readonly string[]
   property?: CrmPropertySummary
   id: string
   tenantId: string

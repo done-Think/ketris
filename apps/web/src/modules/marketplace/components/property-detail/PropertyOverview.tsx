@@ -1,7 +1,6 @@
 'use client'
 
 import { Box, Button, Stack, Typography } from '@mui/material'
-import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import { useTranslations } from 'next-intl'
 
@@ -11,6 +10,7 @@ import { useShareLink } from '../../hooks/use-share-link'
 import type { PropertyOverviewProps } from '../../types/property-detail'
 import { getPropertyFeatureLabel } from '../../utils/property-feature-label'
 import { PropertyDetailMap } from '../PropertyDetailMap'
+import { FavoriteButton } from '../favorites/FavoriteButton'
 import { styles } from '../../styles/property-overview.styles'
 import { PropertyNegotiationSummary } from '@shared/components/ui/PropertyNegotiationSummary'
 
@@ -35,9 +35,7 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
       </Typography>
 
       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={styles.stack2}>
-        <Button startIcon={<FavoriteBorderOutlinedIcon />} variant="outlined" color="secondary">
-          {t('favorite')}
-        </Button>
+        <FavoriteButton propertyId={property.id} variant="detail" />
         <Button
           startIcon={<ShareOutlinedIcon />}
           variant="outlined"

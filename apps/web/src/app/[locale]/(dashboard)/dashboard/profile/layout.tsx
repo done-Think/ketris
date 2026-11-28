@@ -8,7 +8,9 @@ export const metadata = privateMetadata
 
 export default function ScopedLayout({ children }: { children: ReactNode }) {
   return (
-    <ScopedMessages namespaces={[...dashboardMessageNamespaces, 'auth', 'validation']}>
+    <ScopedMessages
+      namespaces={[...dashboardMessageNamespaces, 'auth', 'validation', 'properties.instagram']}
+    >
       {children}
     </ScopedMessages>
   )

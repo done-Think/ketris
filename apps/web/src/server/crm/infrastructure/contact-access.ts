@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client'
 import type { CrmScope } from '../types/prisma'
+import { crmRecordAccess } from './crm-record-access'
 
 export function contactAccess(scope: CrmScope): Prisma.ContactWhereInput {
   return {
@@ -15,7 +16,7 @@ export function contactAccess(scope: CrmScope): Prisma.ContactWhereInput {
             },
             {
               opportunities: {
-                some: { tenantId: scope.actorTenantId, responsibleId: scope.actorId ?? '' },
+                some: { tenantId: scope.actorTenantId, ...crmRecordAccess(scope) },
               },
             },
           ],

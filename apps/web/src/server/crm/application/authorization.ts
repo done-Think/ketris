@@ -7,12 +7,16 @@ import type { Opportunity } from '../domain/opportunity.entity'
 import type { OpportunityRepository } from './ports/opportunity-repository.port'
 
 export function assertOpportunityAccess(
-  opportunity: Pick<Opportunity, 'responsibleId'>,
+  opportunity: Pick<Opportunity, 'responsibleId' | 'accessUserIds'>,
   actorId: string,
   actorRole: UserRole,
 ): void {
   if (isAgencyManager(actorRole)) return
-  if (actorRole === 'AGENT' && opportunity.responsibleId === actorId) return
+  if (
+    actorRole === 'AGENT' &&
+    (opportunity.responsibleId === actorId || opportunity.accessUserIds?.includes(actorId))
+  )
+    return
 
   throw new OpportunityNotFoundError()
 }
@@ -39,9 +43,11 @@ export function assertLeadAccess(
   responsibleId: string,
   actorId: string,
   actorRole: UserRole,
+  accessUserIds: readonly string[] = [],
 ): void {
   if (isAgencyManager(actorRole)) return
-  if (actorRole === 'AGENT' && responsibleId === actorId) return
+  if (actorRole === 'AGENT' && (responsibleId === actorId || accessUserIds.includes(actorId)))
+    return
 
   throw new LeadNotFoundError()
 }

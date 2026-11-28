@@ -7,6 +7,9 @@ import {
   toMarketplacePropertyDetail as mapped,
 } from '../fixtures/public-property-detail'
 
+vi.mock('../../components/favorites/FavoriteButton', () => ({
+  FavoriteButton: () => <button type="button">Favoritar</button>,
+}))
 vi.mock('../../components/PropertyDetailMap', () => ({
   PropertyDetailMap: ({ latitude, longitude }: { latitude: number; longitude: number }) => (
     <div data-testid="property-map">
